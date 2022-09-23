@@ -1,9 +1,13 @@
 import type { Abi } from './types'
+import aToken from '../abis/aave/AToken.json';
 import ERC20 from '../abis/tokens/ERC20.json';
+import cToken from '../abis/compound/cDAI.json';
 import IdleCDO from '../abis/idle/IdleCDO.json';
+import IdleTokenV4 from '../abis/idle/IdleTokenV4.json';
 import TruefiPool from '../abis/truefi/TruefiPool.json';
 import IdleStrategy from '../abis/idle/IdleStrategy.json';
 import IdleCDOPolygon from '../abis/idle/IdleCDOPolygon.json';
+import LiquidityGauge from '../abis/idle/LiquidityGauge.json';
 import IdleCDOTrancheRewards from '../abis/idle/IdleCDOTrancheRewards.json';
 import TrancheStakingRewards from '../abis/idle/TrancheStakingRewards.json';
 
@@ -1459,7 +1463,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           enabled:true,
           buttonText:'Continue',
           title:'Truefi exit fee',
-          icon:'images/warning-2.png',
           id:'modal_truefi_usdc_exit_fee',
           text:'This strategy is subject to an exit fee between 0.05% and 10% depending on the utilization ratio of the Truefi pool, in addition to the performance fee. Read more at <a href="https://docs.truefi.io/faq/dao-managed-pools/pool#what-is-liquid-exit" class="link" rel="nofollow noopener noreferrer" target="_blank">https://docs.truefi.io/faq/dao-managed-pools/pool#what-is-liquid-exit</a>'
         },
@@ -1529,3 +1532,650 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     }
   }
 };
+
+export type IdleToken = {
+  abi: Abi
+  token: string
+  address: string
+}
+
+export type ProtocolFunction = {
+  name: string
+  params: any[]
+}
+
+export type IdleTokenProtocol = {
+  enabled: boolean
+  abi: Abi
+  name: string
+  address: string
+  token: string
+  decimals: number
+  functions?: Record<string, ProtocolFunction>
+}
+
+export type BestYieldConfig = {
+  idle: IdleToken
+  enabledEnvs?: string[]
+  underlyingToken: string
+  protocols: IdleTokenProtocol[]
+}
+
+export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
+  1: { // Mainnet
+    DAI: {
+      underlyingToken: 'DAI',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleDAIYield',
+        address: '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
+      },
+      protocols: [
+        {
+          enabled: true,
+          abi: cToken as Abi,
+          name: 'compound',
+          address: '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
+          token: 'cDAI',
+          decimals: 28,
+          functions: {
+            exchangeRate: {
+              name: 'exchangeRateStored',
+              params: []
+            }
+          },
+        },
+        {
+          abi: aToken as Abi,
+          name: 'aave',
+          enabled: true,
+          address: '0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d',
+          token: 'aDAI',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          abi: aToken as Abi,
+          name: 'aavev2',
+          enabled: true,
+          address: '0x028171bCA77440897B824Ca71D1c56caC55b68A3',
+          token: 'aDAIv2',
+          decimals: 18,
+          functions: {
+
+          }
+        }
+      ]
+    },
+    USDC: {
+      underlyingToken: 'USDC',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleUSDCYield',
+        address: '0x5274891bEC421B39D23760c04A6755eCB444797C',
+      },
+      protocols: [
+        {
+          enabled: true,
+          abi: cToken as Abi,
+          name: 'compound',
+          address: '0x39aa39c021dfbae8fac545936693ac917d5e7563',
+          token: 'cUSDC',
+          decimals: 16,
+          functions: {
+            exchangeRate: {
+              name: 'exchangeRateStored',
+              params: []
+            }
+          },
+        },
+        {
+          name: 'aave',
+          enabled: true,
+          abi: aToken as Abi,
+          address: '0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
+          token: 'aUSDC',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          abi: aToken as Abi,
+          decimals: 18,
+          enabled: true,
+          name: 'aavev2',
+          token: 'aUSDCv2',
+          address: '0xBcca60bB61934080951369a648Fb03DF4F96263C',
+          functions: {
+
+          }
+        },
+      ]
+    },
+    USDT: {
+      underlyingToken: 'USDT',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleUSDTYield',
+        address: '0xF34842d05A1c888Ca02769A633DF37177415C2f8',
+      },
+      protocols: [
+        {
+          name: 'compound',
+          enabled: true,
+          abi: cToken as Abi,
+          address: '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
+          token: 'cUSDT',
+          decimals: 16,
+          functions: {
+            exchangeRate: {
+              name: 'exchangeRateStored',
+              params: []
+            }
+          },
+        },
+        {
+          name: 'aave',
+          enabled: true,
+          abi: aToken as Abi,
+          address: '0x71fc860F7D3A592A4a98740e39dB31d25db65ae8',
+          token: 'aUSDT',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          abi: aToken as Abi,
+          decimals: 18,
+          name: 'aavev2',
+          enabled: true,
+          token: 'aUSDTv2',
+          address: '0x3ed3b47dd13ec9a98b44e6204a523e766b225811',
+          functions: {
+
+          }
+        }
+      ]
+    },
+    SUSD: {
+      underlyingToken: 'SUSD',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleSUSDYield',
+        address: '0xf52cdcd458bf455aed77751743180ec4a595fd3f',
+      },
+      protocols: [
+        {
+          name: 'aave',
+          enabled: true,
+          abi: aToken as Abi,
+          address: '0x625aE63000f46200499120B906716420bd059240',
+          token: 'aSUSD',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          name: 'aavev2',
+          enabled: true,
+          abi: aToken as Abi,
+          address: '0x6c5024cd4f8a59110119c56f8933403a539555eb',
+          token: 'aSUSDv2',
+          decimals: 18,
+          functions: {
+
+          }
+        }
+      ]
+    },
+    TUSD: {
+      underlyingToken: 'TUSD',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleTUSDYield',
+        address: '0xc278041fDD8249FE4c1Aad1193876857EEa3D68c',
+      },
+      protocols: [
+        {
+          name: 'aave',
+          enabled: true,
+          abi: aToken as Abi,
+          address: '0x4da9b813057d04baef4e5800e36083717b4a0341',
+          token: 'aTUSD',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          abi: aToken as Abi,
+          enabled: true,
+          name: 'aavev2',
+          token: 'aTUSDv2',
+          address: '0x101cc05f4A51C0319f570d5E146a8C625198e636',
+          decimals: 18,
+          functions: {
+
+          }
+        }
+      ]
+    },
+    WETH: {
+      underlyingToken: 'WETH',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleWETHYield',
+        address: '0xC8E6CA6E96a326dC448307A5fDE90a0b21fd7f80',
+      },
+      protocols: [
+        {
+          enabled: true,
+          abi: cToken as Abi,
+          name: 'compound',
+          address: '0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5',
+          token: 'cETH',
+          decimals: 28,
+          functions: {
+            exchangeRate: {
+              name: 'exchangeRateStored',
+              params: []
+            }
+          },
+        },
+        {
+          abi: aToken as Abi,
+          name: 'aavev2',
+          enabled: true,
+          address: '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e',
+          token: 'aWETH',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+      ]
+    },
+    WBTC: {
+      underlyingToken: 'WBTC',
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleWBTCYield',
+        address: '0x8C81121B15197fA0eEaEE1DC75533419DcfD3151',
+      },
+      protocols: [
+        {
+          enabled: true,
+          token: 'cWBTC',
+          abi: cToken as Abi,
+          name: 'compound',
+          address: '0xccF4429DB6322D5C611ee964527D42E5d685DD6a',
+          decimals: 18,
+          functions: {
+            exchangeRate: {
+              name: 'exchangeRateStored',
+              params: []
+            }
+          },
+        },
+        {
+          abi: aToken as Abi,
+          name: 'aave',
+          enabled: true,
+          token: 'aWBTC',
+          address: '0xfc4b8ed459e00e5400be803a9bb3954234fd50e3',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          abi: aToken as Abi,
+          enabled: true,
+          name: 'aavev2',
+          token: 'aWBTCv2',
+          address: '0x9ff58f4fFB29fA2266Ab25e75e2A8b3503311656',
+          decimals: 18,
+          functions: {
+
+          }
+        }
+      ]
+    },
+    RAI: {
+      underlyingToken: 'RAI',
+      enabledEnvs: [],
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleRAIYield',
+        address: '0x5C960a3DCC01BE8a0f49c02A8ceBCAcf5D07fABe',
+      },
+      protocols: [
+        {
+          abi: aToken as Abi,
+          decimals: 18,
+          token: 'aRAI',
+          enabled: true,
+          name: 'aavev2',
+          functions: {
+          },
+          address: '0xc9bc48c72154ef3e5425641a3c747242112a46af',
+        }
+      ]
+    },
+    FEI: {
+      underlyingToken: 'FEI',
+      enabledEnvs: ['beta'],
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleFEIYield',
+        address: '0xb2d5CB72A621493fe83C6885E4A776279be595bC',
+      },
+      protocols: [
+        {
+          abi: aToken as Abi,
+          decimals: 18,
+          token: 'aFEI',
+          enabled: true,
+          functions: {},
+          name: 'aavev2',
+          address: '0x683923dB55Fead99A79Fa01A27EeC3cB19679cC3',
+        }
+      ]
+    },
+  },
+  137:{ // Matic Mainnet
+    DAI:{
+      underlyingToken:'DAI',
+      idle:{
+        abi: IdleTokenV4 as Abi,
+        token:'idleDAIYield',
+        address:'0x8a999F5A3546F8243205b2c0eCb0627cC10003ab',
+      },
+      protocols:[
+        {
+          abi: aToken as Abi,
+          name:'aavev2',
+          enabled:true,
+          token:'amDAI',
+          address:'0x27F8D03b3a2196956ED754baDc28D73be8830A6e',
+          decimals:18,
+          functions:{
+
+          }
+        },
+      ]
+    },
+    USDC:{
+      underlyingToken:'USDC',
+      idle:{
+        abi: IdleTokenV4 as Abi,
+        token:'idleUSDCYield',
+        address:'0x1ee6470CD75D5686d0b2b90C0305Fa46fb0C89A1',
+      },
+      protocols:[
+        {
+          abi: aToken as Abi,
+          name:'aavev2',
+          enabled:true,
+          token:'amUSDC',
+          address:'0x1a13F4Ca1d028320A707D99520AbFefca3998b7F',
+          decimals:18,
+          functions:{
+
+          }
+        },
+      ]
+    },
+    WETH:{
+      underlyingToken:'WETH',
+      idle:{
+        abi: IdleTokenV4 as Abi,
+        token:'idleWETHYield',
+        address:'0xfdA25D931258Df948ffecb66b5518299Df6527C4',
+      },
+      protocols:[
+        {
+          abi: aToken as Abi,
+          decimals:18,
+          enabled:true,
+          token:'aWETH',
+          name:'aavev2',
+          address:'0x28424507fefb6f7f8E9D3860F56504E4e5f5f390',
+          functions:{
+
+          }
+        },
+      ]
+    },
+  },
+};
+
+export type MultiReward = {
+  name: string
+  address: string
+  rewardTokens: string[]
+}
+
+export type TrancheToken = {
+  name: string
+  token: string
+  address: string
+}
+
+export type GaugeConfig = {
+  abi:Abi
+  name: string
+  token: string
+  address:string
+  protocol:string
+  rewardTokens:string[]
+  underlyingToken:string
+  multiRewards?:MultiReward
+  trancheToken:TrancheToken
+}
+
+export const gauges: Record<string, GaugeConfig> = {
+  stETH:{
+    protocol:'lido',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'stETH',
+    name: "LiquidityGauge_aa_lido_steth",
+    token: "LiquidityGauge_aa_lido_steth",
+    address:'0x675eC042325535F6e176638Dd2d4994F645502B9',
+    multiRewards:{
+      rewardTokens:['LDO'],
+      name:'multiRewards_aa_lido_stETH',
+      address:'0xA357AF9430e4504419A7A05e217D4A490Ecec6FA',
+    },
+    trancheToken:{
+      name: 'AA_lido_stETH',
+      token: 'AA_lido_stETH',
+      address: '0x2688fc68c4eac90d9e5e1b94776cf14eade8d877'
+    }
+  },
+  ALUSD3CRV:{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'ALUSD3CRV',
+    name: "LiquidityGauge_aa_convex_alusd3crv",
+    token: "LiquidityGauge_aa_convex_alusd3crv",
+    address:'0x21dDA17dFF89eF635964cd3910d167d562112f57',
+    trancheToken:{
+      name: 'AA_convex_alusd3crv',
+      token: 'AA_convex_alusd3crv',
+      address: '0x790E38D85a364DD03F682f5EcdC88f8FF7299908'
+    }
+  },
+  FRAX3CRV:{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'FRAX3CRV',
+    name: "LiquidityGauge_aa_convex_frax3crv",
+    token: "LiquidityGauge_aa_convex_frax3crv",
+    address:'0x7ca919Cf060D95B3A51178d9B1BCb1F324c8b693',
+    trancheToken:{
+      name: 'AA_convex_frax3crv',
+      token: 'AA_convex_frax3crv',
+      address: '0x15794da4dcf34e674c18bbfaf4a67ff6189690f5'
+    }
+  },
+  MIM3CRV:{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'MIM3CRV',
+    name: "LiquidityGauge_aa_convex_mim3crv",
+    token: "LiquidityGauge_aa_convex_mim3crv",
+    address:'0x8cC001dd6C9f8370dB99c1e098e13215377Ecb95',
+    trancheToken:{
+      name: 'AA_convex_mim3crv',
+      token: 'AA_convex_mim3crv',
+      address: '0xFC96989b3Df087C96C806318436B16e44c697102'
+    }
+  },
+  "3EUR":{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'3EUR',
+    name: "LiquidityGauge_aa_convex_3eur",
+    token: "LiquidityGauge_aa_convex_3eur",
+    address:'0xDfB27F2fd160166dbeb57AEB022B9EB85EA4611C',
+    trancheToken:{
+      name: 'AA_convex_3eur',
+      token: 'AA_convex_3eur',
+      address: '0x158e04225777BBEa34D2762b5Df9eBD695C158D2'
+    }
+  },
+  steCRV:{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'steCRV',
+    name: "LiquidityGauge_aa_convex_steCRV",
+    token: "LiquidityGauge_aa_convex_steCRV",
+    address:'0x30a047d720f735Ad27ad384Ec77C36A4084dF63E',
+    trancheToken:{
+      name: 'AA_convex_steCRV',
+      token: 'AA_convex_steCRV',
+      address: '0x060a53BCfdc0452F35eBd2196c6914e0152379A6'
+    }
+  },
+  MUSD3CRV:{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'MUSD3CRV',
+    name: "LiquidityGauge_aa_convex_musd3crv",
+    token: "LiquidityGauge_aa_convex_musd3crv",
+    address:'0xAbd5e3888ffB552946Fc61cF4C816A73feAee42E',
+    multiRewards:{
+      rewardTokens:['MUSD'],
+      name:'multiRewards_aa_convex_musd3crv',
+      address:'0x7f366a2b4c4380fd9746cf10b4ded562c890b0b1',
+    },
+    trancheToken:{
+      name: 'AA_convex_musd3crv',
+      token: 'AA_convex_musd3crv',
+      address: '0x4585F56B06D098D4EDBFc5e438b8897105991c6A'
+    }
+  },
+  PBTCCRV:{
+    protocol:'convex',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'PBTCCRV',
+    name: "LiquidityGauge_aa_convex_pbtccrv",
+    token: "LiquidityGauge_aa_convex_pbtccrv",
+    address:'0x2bea05307b42707be6cce7a16d700a06ff93a29d',
+    multiRewards:{
+      rewardTokens:['PNT'],
+      name:'multiRewards_aa_convex_pbtccrv',
+      address:'0x7d4091D8b28d09b4135905213DE105C45d7F459d',
+    },
+    trancheToken:{
+      name: 'AA_convex_pbtccrv',
+      token: 'AA_convex_pbtccrv',
+      address: '0x4657B96D587c4d46666C244B40216BEeEA437D0d'
+    }
+  },
+  AGEUR:{
+    protocol:'euler',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'AGEUR',
+    name: "LiquidityGauge_aa_euler_ageur",
+    token: "LiquidityGauge_aa_euler_ageur",
+    address:'0x8f195979f7af6c500b4688e492d07036c730c1b2',
+    trancheToken:{
+      name: 'AA_euler_AGEUR',
+      token: 'AA_euler_AGEUR',
+      address: '0x624DfE05202b66d871B8b7C0e14AB29fc3a5120c'
+    }
+  },
+  USDC:{
+    protocol:'euler',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'USDC',
+    name: "LiquidityGauge_aa_euler_usdc",
+    token: "LiquidityGauge_aa_euler_usdc",
+    address:'0x1cd24f833af78ae877f90569eaec3174d6769995',
+    trancheToken:{
+      name: 'AA_euler_USDC',
+      token: 'AA_euler_USDC',
+      address: '0x1e095cbF663491f15cC1bDb5919E701b27dDE90C'
+    }
+  },
+  DAI:{
+    protocol:'euler',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'DAI',
+    name: "LiquidityGauge_aa_euler_dai",
+    token: "LiquidityGauge_aa_euler_dai",
+    address:'0x57d59d4bbb0e2432f1698f33d4a47b3c7a9754f3',
+    trancheToken:{
+      name: 'AA_euler_DAI',
+      token: 'AA_euler_DAI',
+      address: '0x852c4d2823E98930388b5cE1ed106310b942bD5a'
+    }
+  },
+  USDT:{
+    protocol:'euler',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    underlyingToken:'USDT',
+    name: "LiquidityGauge_aa_euler_usdt",
+    token: "LiquidityGauge_aa_euler_usdt",
+    address:'0x0c3310b0b57b86d376040b755f94a925f39c4320',
+    trancheToken:{
+      name: 'AA_euler_USDT',
+      token: 'AA_euler_USDT',
+      address: '0xE0f126236d2a5b13f26e72cBb1D1ff5f297dDa07'
+    }
+  },
+  /*
+  mUSD:{
+    protocol:'mstable',
+    abi:LiquidityGauge as Abi,
+    rewardTokens:['IDLE'],
+    name: "LiquidityGauge_aa_mstable_musd",
+    token: "LiquidityGauge_aa_mstable_musd",
+    address:'0x41653c7AF834F895Db778B1A31EF4F68Be48c37c',
+    trancheToken:{
+      name: 'AA_mstable_musd',
+      token: 'AA_mstable_musd',
+      address: '0xfC558914b53BE1DfAd084fA5Da7f281F798227E7'
+    }
+  },
+  */
+}

@@ -1,7 +1,7 @@
 import Web3 from 'web3'
+import { Contract } from 'web3-eth-contract'
 import { selectUnderlyingToken } from '../selectors'
 import { GenericContract } from '../contracts/GenericContract'
-import { Contract, ContractSendMethod } from 'web3-eth-contract'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
 import type { CDO, Strategy, Pool, Tranche, TrancheConfig, UnderlyingTokenConfig, Assets, ContractRawCall } from '../constants'
 
@@ -78,14 +78,14 @@ export class TrancheVault {
   public getPricesCalls(): any[] {
     return [
       {
-        assetId:this.trancheAAConfig.address,
         decimals:this.underlyingToken?.decimals || 18,
-        call:this.cdoContract.methods.tranchePrice(this.trancheAAConfig.address)
+        assetId:this.trancheAAConfig.address.toLowerCase(),
+        call:this.cdoContract.methods.virtualPrice(this.trancheAAConfig.address)
       },
       {
-        assetId:this.trancheBBConfig.address,
         decimals:this.underlyingToken?.decimals || 18,
-        call:this.cdoContract.methods.tranchePrice(this.trancheBBConfig.address)
+        assetId:this.trancheBBConfig.address.toLowerCase(),
+        call:this.cdoContract.methods.virtualPrice(this.trancheBBConfig.address)
       }
     ]
   }
@@ -106,6 +106,36 @@ export class TrancheVault {
       {
         params:conversionRateParams,
         call:conversionRateParams.call,
+        assetId:this.trancheBBConfig.address.toLowerCase()
+      }
+    ]
+  }
+
+  public getAprsCalls(): ContractRawCall[] {
+    return [
+      {
+        decimals:this.underlyingToken?.decimals || 18,
+        assetId:this.trancheAAConfig.address.toLowerCase(),
+        call:this.cdoContract.methods.getApr(this.trancheAAConfig.address)
+      },
+      {
+        decimals:this.underlyingToken?.decimals || 18,
+        assetId:this.trancheBBConfig.address.toLowerCase(),
+        call:this.cdoContract.methods.getApr(this.trancheBBConfig.address)
+      }
+    ]
+  }
+
+  public getTotalSupplyCalls(): ContractRawCall[] {
+    return [
+      {
+        decimals:this.underlyingToken?.decimals || 18,
+        call:this.trancheAAContract.methods.totalSupply(),
+        assetId:this.trancheAAConfig.address.toLowerCase()
+      },
+      {
+        decimals:this.underlyingToken?.decimals || 18,
+        call:this.trancheBBContract.methods.totalSupply(),
         assetId:this.trancheBBConfig.address.toLowerCase()
       }
     ]

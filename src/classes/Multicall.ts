@@ -117,13 +117,21 @@ export class  Multicall {
         call.batchId = batchId;
         calls.push(call);
       });
-      return calls
+      return calls;
     }, []);
       
     // Execute calls
     const results = await this.executeMulticalls(calls);
 
     // Group by BatchID
+    const output = Array.from(Array(callBatches.length).keys()).reduce( (output: BatchesResults, batchId: number) => {
+      output[batchId] = results?.filter( call => call.callData.batchId === batchId ) || []
+      return output
+    }, {});
+
+    return Object.values(output);
+
+    /*
     return results ? Object.values(results.reduce( (output: BatchesResults, r) => {
       const batchId = r.callData.batchId;
       if (!output[batchId]){
@@ -132,6 +140,7 @@ export class  Multicall {
       output[batchId].push(r);
       return output;
     },{})) : [];
+    */
   }
 
   catchEm(promise: Promise<any>) {

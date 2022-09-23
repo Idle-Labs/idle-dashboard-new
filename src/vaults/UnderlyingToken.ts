@@ -1,7 +1,6 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import ERC20 from '../abis/tokens/ERC20.json'
-import { selectUnderlyingToken } from '../selectors'
 import { GenericContract } from '../contracts/GenericContract'
 import { Abi, Assets, ContractRawCall } from '../constants/types'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
@@ -34,6 +33,15 @@ export class UnderlyingToken {
     this.contract = new web3.eth.Contract(abi, tokenConfig.address)
   }
 
+  public getBalancesCalls(params: any[] = []): any[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.contract.methods.balanceOf(...params)
+      }
+    ]
+  }
+
   public getPricesCalls(): ContractRawCall[] {
     return []
   }
@@ -54,11 +62,15 @@ export class UnderlyingToken {
     ]
   }
 
-  public getBalancesCalls(params: any[] = []): any[] {
+  public getAprsCalls(): ContractRawCall[] {
+    return []
+  }
+
+  public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
         assetId:this.id,
-        call:this.contract.methods.balanceOf(...params)
+        call:this.contract.methods.totalSupply()
       }
     ]
   }

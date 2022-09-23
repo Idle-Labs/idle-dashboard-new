@@ -13,6 +13,7 @@ export type Asset = {
   token: string
   decimals: number
 }
+
 export type Assets = Record<string, Asset>
 export type Vaults = Record<string, Vault>
 
@@ -22,29 +23,30 @@ export type VaultBalance = {
 }
 
 export type Avatar = {
-    url: string;
-    linkage: Array<{
-        type: string;
-        content: string;
-    }>;
+  url: string;
+  linkage: Array<{
+    type: string;
+    content: string;
+  }>;
 };
 
 export type Ens = {
-    name: string;
-    avatar: Avatar | null;
-    contentHash: string | null;
-    getText: (key: string) => Promise<string | undefined>;
+  name: string;
+  avatar: Avatar | null;
+  contentHash: string | null;
+  getText: (key: string) => Promise<string | undefined>;
 }
 
 export type Balances = Record<string, BigNumber>;
 
 export type Account = {
-    address: string;
-    ens: Ens | null;
-    balance: Record<string, string> | null;
+  address: string;
+  ens: Ens | null;
+  balance: Record<string, string> | null;
 }
 
 export type ContractRawCall = {
   assetId: string
   call: ContractSendMethod
+  decimals?: number
 }

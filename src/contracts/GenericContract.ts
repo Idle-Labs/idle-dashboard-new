@@ -1,9 +1,7 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
-import ERC20 from '../abis/tokens/ERC20.json'
-import { selectUnderlyingToken } from '../selectors'
+import type { ContractRawCall } from '../constants/types'
 import type { GenericContractConfig } from '../constants'
-import type { Abi, Assets, ContractRawCall } from '../constants/types'
 
 export class GenericContract {
 
