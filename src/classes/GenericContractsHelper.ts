@@ -1,9 +1,9 @@
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js';
 import { ContractSendMethod } from 'web3-eth-contract'
+import { BNify, normalizeTokenDecimals } from '../helpers'
 import { GenericContract } from '../contracts/GenericContract'
 import type { UnderlyingTokenConfig } from '../constants/underlyingTokens'
-import { BNify, normalizeTokenDecimals } from '../helpers/helperFunctions'
 import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from '../selectors'
 
 type ConversionRateParams = {
@@ -60,10 +60,8 @@ export class GenericContractsHelper {
     let decimals = tokenConfig.decimals || 18
     
     // Use decimals of underlying token if set
-    if (routerMethod === 'getAmountsOut'){
-      if (underlyingToken && underlyingToken.decimals){
-        decimals = underlyingToken.decimals
-      }
+    if (routerMethod === 'getAmountsOut' && underlyingToken && underlyingToken.decimals){
+      decimals = underlyingToken.decimals
     }
     
     const one = normalizeTokenDecimals(decimals);

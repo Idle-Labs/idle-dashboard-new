@@ -12,6 +12,11 @@ export type Asset = {
   name: string
   token: string
   decimals: number
+  apr?: BigNumber
+  balance?: BigNumber
+  priceUsd?: BigNumber
+  vaultPrice?: BigNumber
+  totalSupply?: BigNumber
 }
 
 export type Assets = Record<string, Asset>

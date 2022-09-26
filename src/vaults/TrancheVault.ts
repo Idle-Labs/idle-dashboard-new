@@ -129,12 +129,12 @@ export class TrancheVault {
   public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
-        decimals:this.underlyingToken?.decimals || 18,
+        // decimals:this.trancheAAContract.decimals || 18,
         call:this.trancheAAContract.methods.totalSupply(),
         assetId:this.trancheAAConfig.address.toLowerCase()
       },
       {
-        decimals:this.underlyingToken?.decimals || 18,
+        // decimals:this.trancheAAContract.decimals || 18,
         call:this.trancheBBContract.methods.totalSupply(),
         assetId:this.trancheBBConfig.address.toLowerCase()
       }

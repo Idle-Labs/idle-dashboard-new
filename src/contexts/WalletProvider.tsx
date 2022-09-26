@@ -5,7 +5,7 @@ import type { WalletState } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets'
 import { chains, defaultChainId } from '../constants'
 import React, { useState, useContext, useEffect } from 'react'
-import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
+import { init, useConnectWallet/*, useSetChain*/ } from '@web3-onboard/react'
 
 const injected = injectedModule()
 
@@ -36,6 +36,7 @@ type ContextProps = {
   connecting: boolean
   connect: Function
   disconnect: Function
+  setChainId: Function
   walletInitialized: boolean
 }
 
@@ -45,6 +46,7 @@ const initialState: ContextProps = {
   connecting: false,
   connect: () => {},
   disconnect: () => {},
+  setChainId: () => {},
   chainId: defaultChainId,
   walletInitialized: false
 }
@@ -58,7 +60,7 @@ export function WalletProvider({ children }: ProviderProps) {
   // const [ { chains, connectedChain, settingChain }, setChain ] = useSetChain()
   const [ account, setAccount ] = useState<Account | null>(null)
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
-  const [ chainId, setChainId, removeChainId ] = useLocalForge('selectedChain', defaultChainId)
+  const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
 
   // Auto-connect wallet
@@ -91,7 +93,7 @@ export function WalletProvider({ children }: ProviderProps) {
   }
 
   return (
-    <WalletProviderContext.Provider value={{wallet, account, walletInitialized, chainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, account, walletInitialized, chainId, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )
