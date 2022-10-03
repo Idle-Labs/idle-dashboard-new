@@ -1,5 +1,6 @@
+import { Template } from '../components/Template/Template'
 import { Dashboard } from '../components/Dashboard/Dashboard'
-import { TestConsumer } from '../components/TestConsumer/TestConsumer'
+// import { TestConsumer } from '../components/TestConsumer/TestConsumer'
 import { RouteObject, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
 
 const ComponentWithProps = (props:any) => {
@@ -15,64 +16,66 @@ const ComponentWithProps = (props:any) => {
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: <TestConsumer />,
-  },
-  {
-    path:'dashboard',
-    // state: {'dashboard'},
-    element:<Dashboard />,
-  },
-  {
-    path:'earn',
+    element: <Template />,
     children:[
       {
-        index: true,
-        element:<ComponentWithProps state={{section:'earn'}} />,
+        path:'dashboard',
+        // state: {'dashboard'},
+        element:<Dashboard />,
       },
       {
-        path:':strategy',
+        path:'earn',
         children:[
           {
             index: true,
-            element:<ComponentWithProps state={{section:'earn/strategy'}} />,
+            element:<ComponentWithProps state={{section:'earn'}} />,
           },
           {
-            path:':asset',
-            element:<ComponentWithProps state={{section:'earn/strategy/asset'}} />,
+            path:':strategy',
             children:[
               {
                 index: true,
-                element: <ComponentWithProps state={{section:'earn/strategy/asset/earn'}} />,
+                element:<ComponentWithProps state={{section:'earn/strategy'}} />,
               },
               {
-                path:'stats',
-                element: <ComponentWithProps state={{section:'earn/strategy/asset/stats'}} />,
-              }
+                path:':asset',
+                element:<ComponentWithProps state={{section:'earn/strategy/asset'}} />,
+                children:[
+                  {
+                    index: true,
+                    element: <ComponentWithProps state={{section:'earn/strategy/asset/earn'}} />,
+                  },
+                  {
+                    path:'stats',
+                    element: <ComponentWithProps state={{section:'earn/strategy/asset/stats'}} />,
+                  }
+                ]
+              },
             ]
           },
         ]
       },
-    ]
-  },
-  {
-    path:'stats',
-    children:[
       {
-        index: true,
-        element:<ComponentWithProps state={{section:'stats'}} />,
+        path:'stats',
+        children:[
+          {
+            index: true,
+            element:<ComponentWithProps state={{section:'stats'}} />,
+          },
+          {
+            path:':asset',
+            element:<ComponentWithProps state={{section:'stats/asset'}} />,
+          }
+        ]
       },
       {
-        path:':asset',
-        element:<ComponentWithProps state={{section:'stats/asset'}} />,
-      }
+        path:'stake',
+        element:<ComponentWithProps state={{section:'stake'}} />,
+      },
+      {
+        path:'vote',
+        element:<ComponentWithProps state={{section:'vote'}} />,
+      },
     ]
-  },
-  {
-    path:'stake',
-    element:<ComponentWithProps state={{section:'stake'}} />,
-  },
-  {
-    path:'vote',
-    element:<ComponentWithProps state={{section:'vote'}} />,
   },
 ]

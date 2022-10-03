@@ -1,9 +1,11 @@
 import React from 'react'
+import { Header } from '../Header/Header'
 import { ContainerProps } from '@chakra-ui/react'
 
-export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
   return (
     <>
+      <Header />
     </>
   )
 }
