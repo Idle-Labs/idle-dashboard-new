@@ -1,6 +1,6 @@
 // import { useTestContext } from './TestContext'
-import { useWeb3Provider } from './contexts/Web3Provider'
-import { useWalletProvider } from './contexts/WalletProvider'
+import { useWeb3Provider } from '../../contexts/Web3Provider'
+import { useWalletProvider } from '../../contexts/WalletProvider'
 export function TestConsumer(){
 	const { web3 } = useWeb3Provider()
 	const { wallet, connecting, connect, disconnect } = useWalletProvider()

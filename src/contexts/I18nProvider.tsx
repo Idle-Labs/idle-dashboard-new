@@ -22,7 +22,7 @@ const I18nContext = React.createContext<ContextProps>(initialState)
 export const useI18nProvider = () => useContext(I18nContext)
 
 export const I18nProvider = ({ children }: { children: React.ReactNode }) => {
-  const [ locale, setLocale ] = useLocalForge('locale', defaultLocale)
+  const [ locale, setLocale ] = useLocalForge('selectedLocale', defaultLocale)
   const messages = translations[locale]
   const onMissingKey = (key: string, substitutions?: InterpolationOptions) => {
     const translation = getObjectPath(translations[defaultLocale], key)

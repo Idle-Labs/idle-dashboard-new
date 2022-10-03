@@ -24,6 +24,7 @@ type InitialState = {
   vaultsPrices: Balances
   totalSupplies: Balances
   contracts: GenericContract[]
+  selectors: Record<string, Function[]>
 }
 
 type ContextProps = {
@@ -40,12 +41,13 @@ const initialState: InitialState = {
   aprs: {},
   vaults: [],
   balances: {},
+  selectors: {},
   contracts: [],
   pricesUsd: {},
   assetsData: {},
   balancesUsd: {},
   vaultsPrices: {},
-  totalSupplies: {}
+  totalSupplies: {},
 }
 
 const initialContextState = {
@@ -54,6 +56,8 @@ const initialContextState = {
 
 const reducer = (state: InitialState, action: ActionTypes) => {
   switch (action.type){
+    case 'SET_SELECTORS':
+      return {...state, selectors: action.payload}
     case 'SET_CONTRACTS':
       return {...state, contracts: action.payload}
     case 'SET_VAULTS':
@@ -101,7 +105,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
     },{})
   }
 
-  const getVault = useCallback( (vaultId: string): Vault | null => {
+  const getVaultsByType = useCallback( (vaultType: string): Vault | null => {
+    return state.vaults ? state.vaults.find( (vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
+  }, [state.vaults])
+
+  const getVaultById = useCallback( (vaultId: string): Vault | null => {
     return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId.toLowerCase()) || null : null
   }, [state.vaults])
 
@@ -186,9 +194,32 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   }, [web3, chainId])
 
+  // Set selectors
   useEffect(() => {
-    console.log('assetsData', state.assetsData)
-  }, [state.assetsData])
+    const selectors = {
+      getVaultById,
+      getVaultsByType,
+      selectAssetById,
+      selectVaultPrice,
+      selectAssetBalance,
+      selectAssetPriceUsd,
+      selectAssetBalanceUsd
+    };
+
+    dispatch({type: 'SET_SELECTORS', payload: selectors})
+  }, [
+    getVaultById,
+    getVaultsByType,
+    selectAssetById,
+    selectVaultPrice,
+    selectAssetBalance,
+    selectAssetPriceUsd,
+    selectAssetBalanceUsd
+  ])
+
+  // useEffect(() => {
+  //   console.log('assetsData', state.assetsData)
+  // }, [state.assetsData])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
@@ -244,7 +275,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const asset = selectAssetById(assetId)
           if (asset){
             balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
-            console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
+            // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
           }
         }
@@ -258,7 +289,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             const decimals = callResult.extraData.decimals || asset.decimals
             vaultsPrices[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-            console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
+            // console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPrice: vaultsPrices[assetId]} }})
           }
         }
@@ -271,7 +302,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const asset = selectAssetById(assetId)
           if (asset){
             pricesUsd[assetId] = callResult.extraData.params.processResults(callResult.data, callResult.extraData.params)
-            console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
+            // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {priceUsd: pricesUsd[assetId]} }})
           }
         }
@@ -285,7 +316,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             const decimals = callResult.extraData.decimals || 18
             aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-            console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
+            // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId]} }})
           }
         }
@@ -299,7 +330,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             const decimals = callResult.extraData.decimals || asset.decimals
             totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-            console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
+            // console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {totalSupply: totalSupplies[assetId]} }})
           }
         }
@@ -331,17 +362,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const assetPriceUsd = selectAssetPriceUsd(assetId)
 
         balancesUsd[assetId] = assetBalance.times(vaultPrice).times(assetPriceUsd)//.times(underlyingTokenPrice)
-        console.log(`Balance USD ${asset.name}: ${assetBalance.toString()}, ${vaultPrice.toString()}, ${assetPriceUsd.toString()} ${balancesUsd[assetId].toString()}`)
+        dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balanceUsd: balancesUsd[assetId]} }})
+        // console.log(`Balance USD ${asset.name}: ${assetBalance.toString()}, ${vaultPrice.toString()}, ${assetPriceUsd.toString()} ${balancesUsd[assetId].toString()}`)
 
         totalBalanceUsd = totalBalanceUsd.plus(balancesUsd[assetId])
       }
       return balancesUsd
     }, {})
 
-    console.log('totalBalanceUsd', totalBalanceUsd.toString())
+    // console.log('totalBalanceUsd', totalBalanceUsd.toString())
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
-  }, [state.balances, state.vaultsPrices, state.pricesUsd, selectAssetBalance, selectAssetById, selectAssetPriceUsd, selectVaultPrice])
+  // eslint-disable-next-line
+  }, [state.balances, state.vaultsPrices, state.pricesUsd])
 
   return (
     <PortfolioProviderContext.Provider value={{state}}>

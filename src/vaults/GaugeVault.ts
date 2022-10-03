@@ -92,6 +92,7 @@ export class GaugeVault {
     return {
       [this.id]:{
         decimals: 18,
+        type: this.type,
         name: this.gaugeConfig.name,
         token: this.gaugeConfig.token,
       }

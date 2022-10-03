@@ -144,18 +144,20 @@ export class TrancheVault {
   public getAssetsData(): Assets {
     return {
       [this.id]:{
-        token: this.cdoConfig.name,
         name: this.cdoConfig.name,
+        token: this.cdoConfig.name,
         decimals: this.cdoConfig.decimals
       },
       [this.trancheAAConfig.address.toLowerCase()]:{
         vaultId:this.id,
+        type: `protected-yield`,
         token: this.trancheAAConfig.token,
         name: this.trancheAAConfig.label||this.trancheAAConfig.token,
         decimals: this.trancheAAConfig.decimals
       },
       [this.trancheBBConfig.address.toLowerCase()]:{
         vaultId:this.id,
+        type: `boosted-yield`,
         token: this.trancheBBConfig.token,
         name: this.trancheBBConfig.label||this.trancheBBConfig.token,
         decimals: this.trancheBBConfig.decimals

@@ -94,6 +94,7 @@ export class BestYieldVault {
     return {
       [this.id]:{
         decimals: 18,
+        type: this.type,
         name: this.idleConfig.token,
         token: this.idleConfig.token,
       },

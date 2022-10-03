@@ -9,6 +9,7 @@ export type Abi = AbiItem[]
 
 export type Asset = {
   vaultId?: string
+  type?: string
   name: string
   token: string
   decimals: number
