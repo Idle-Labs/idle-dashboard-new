@@ -26,6 +26,14 @@ export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals: number
   return balance;
 }
 
+export const shortenHash = (hash: string, startLen: number = 7, endLen: number = 4) => {
+  let shortHash = hash;
+  const txStart = shortHash.substr(0, startLen);
+  const txEnd = shortHash.substr(shortHash.length - endLen);
+  shortHash = txStart + "..." + txEnd;
+  return shortHash;
+}
+
 export const getObjectPath = (object: any, path: string, fallback: any = null): any => {
   const dot = path.indexOf('.');
   

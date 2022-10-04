@@ -10,15 +10,29 @@ import { PortfolioProvider } from './contexts/PortfolioProvider'
 import { BrowserRouterProvider } from './contexts/BrowserRouterProvider'
 
 const theme = extendTheme({
-  config:{
+  config: {
     initialColorMode: 'dark'
   },
   colors: {
-    primary:'#04117B',
-    secondary:'#0C48A4',
-    tertiary:'#2272C8',
     cta:'#CDD0D6',
     white:'#FFFFFF',
+    menu: {
+      bg:'#202A3E',
+      item: {
+        bg:'#404F6A'
+      }
+    },
+    button:{
+      bg:'#404F6A',
+      bgHover:'#293243',
+      colorHover:'#CDD0D6'
+    },
+    orange:'#FF9859',
+    cardBg:'#202A3E',
+    primary:'#FFFFFF',
+    buttonBg:'#404F6A',
+    secondary:'#0C48A4',
+    tertiary:'#2272C8',
   },
   fontSizes: {
     xs:'12px',
@@ -40,7 +54,7 @@ const theme = extendTheme({
       },
       // styles for the `a`
       a: {
-        color: '#6AE4FF',
+        // color: '#6AE4FF',
         _hover: {
           textDecoration: 'none',
         },
@@ -53,20 +67,57 @@ const theme = extendTheme({
   },
   // Group different text styles
   textStyles: {
-    cta:{
+    cta: {
       color:'cta',
       fontSize:'md',
       fontWeight:700,
-      _hover:{
+      cursor:'pointer',
+      fontFamily:`'Open Sans', sans-serif`,
+      _hover: {
         color:'white'
       }
     }
   },
-  // Create components variants
+  // Create components styles
   components: {
-    Text:{
-      variants:{
-        
+    Button: {
+      variants: {
+        cta:{
+          borderRadius:8,
+          backgroundColor:'button.bg',
+          _hover: {
+            color:'button.colorHover',
+            backgroundColor:'button.bgHover',
+          }
+        }
+      }
+    },
+    Menu: {
+      baseStyle: {
+        list: {
+          px:4,
+          py:3,
+          border:0,
+          borderRadius:8,
+          minWidth:'auto',
+          backgroundColor:'menu.bg'
+        },
+        item: {
+          p:2,
+          my:1,
+          color:'cta',
+          borderRadius:8,
+          textStyle:'cta',
+          backgroundColor:'menu.bg',
+          _focus: {
+            color:'white',
+            backgroundColor:'menu.item.bg'
+          },
+          _hover: {
+            color:'white',
+            backgroundColor:'menu.item.bg'
+          }
+        }
       }
     }
   },

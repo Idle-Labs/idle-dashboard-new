@@ -1,7 +1,11 @@
+import { IconType } from './types'
+import { FaEthereum } from 'react-icons/fa'
+
 const env = process.env;
 
 export interface Network {
   version?: string
+  icon?: IconType
   name: string
   baseToken: string
   color: string
@@ -18,6 +22,8 @@ export const networks: Record<number, Network> = {
     name: 'Ethereum',
     baseToken: 'ETH',
     color: '#4474f1',
+    icon: FaEthereum,
+    // icon: 'https://raw.githubusercontent.com/Idle-Labs/idle-dashboard/master/public/images/networks/ethereum.svg',
     network: 'mainnet',
     provider: 'infura',
     explorer: 'etherscan',
