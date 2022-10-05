@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "react-app",
+    "react-app/jest",
+    "plugin:jsx-a11y/recommended",
+  ],
+  "plugins": [
+    "jest",
+  ],
+  "env": {
+    "browser": true,
+    "jest/globals": true
+  },
+  "rules": {
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/no-autofocus": "off",
+    "no-console": "warn",
+    "@typescript-eslint/no-unused-vars": "error",
+    "default-case": "error",
+    "object-shorthand": "error",
+    "eqeqeq": "error",
+    "react-hooks/exhaustive-deps": "error"
+  }
+}
