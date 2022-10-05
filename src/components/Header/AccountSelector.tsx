@@ -2,7 +2,7 @@ import { shortenHash } from '../../helpers'
 import { MenuItemType } from '../../constants'
 import React, { useState, useEffect } from 'react'
 import { Menu, Spinner, Button } from '@chakra-ui/react'
-import { MenuItemExpandable } from './MenuItemExpandable'
+import { MenuItemExpandable } from './Menu/MenuItemExpandable'
 import { MdOutlineChangeCircle, MdClose } from 'react-icons/md'
 import { useWalletProvider } from '../../contexts/WalletProvider'
 
@@ -29,6 +29,7 @@ export const AccountSelector: React.FC = () => {
       label: shortenHash(account.address),
       children: [
         {
+          onClick: connect,
           icon: MdOutlineChangeCircle,
           label:'Switch wallet provider'
         },
@@ -47,7 +48,7 @@ export const AccountSelector: React.FC = () => {
     }
 
     setMenuItem(menuItem)
-  }, [wallet, account, connecting, disconnect])
+  }, [wallet, account, connecting, connect, disconnect])
 
   return menuItem ? (
     <Menu>

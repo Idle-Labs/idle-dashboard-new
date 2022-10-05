@@ -1,7 +1,8 @@
 import React from 'react'
-import { TopBarMenu } from './TopBarMenu'
+import { TopBarMenu } from './Menu/TopBarMenu'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
+import { NotificationList } from './NotificationList'
 import { ContainerProps, Flex, Stack } from '@chakra-ui/react'
 
 export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
@@ -18,6 +19,7 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
       >
         <NetworkSelector />
         <AccountSelector />
+        <NotificationList />
       </Stack>
     </Flex>
   )

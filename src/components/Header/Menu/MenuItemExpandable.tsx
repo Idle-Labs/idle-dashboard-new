@@ -7,7 +7,7 @@ import {
   useTheme
 } from '@chakra-ui/react'
 import { MenuNavItem, NavItemText } from './MenuNavItem'
-import type { MenuItemType } from '../../constants/menu'
+import type { MenuItemType } from '../../../constants/menu'
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
 
 type MenuItemExpandableProps = {
@@ -24,7 +24,7 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = (props) => 
           direction={'row'}
           alignItems={'center'}
         > 
-          <NavItemText {...props.menuItem} />
+          <NavItemText isActive={props.isOpen} {...props.menuItem} />
           {
             props.isOpen ? (
               <MdKeyboardArrowUp

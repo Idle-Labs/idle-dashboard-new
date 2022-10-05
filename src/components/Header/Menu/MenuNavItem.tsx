@@ -1,8 +1,8 @@
 import React from 'react'
-import { Icon } from '../Icon/Icon'
+import { Icon } from '../../Icon/Icon'
 import { NavLink } from "react-router-dom"
 import { Text, Flex, useTheme } from '@chakra-ui/react'
-import type { MenuItemType } from '../../constants/menu'
+import type { MenuItemType } from '../../../constants/menu'
 
 type NavItemTextProps = {
   isActive?: boolean

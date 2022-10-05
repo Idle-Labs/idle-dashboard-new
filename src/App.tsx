@@ -29,6 +29,7 @@ const theme = extendTheme({
     },
     orange:'#FF9859',
     cardBg:'#202A3E',
+    divider:'#555B67',
     primary:'#FFFFFF',
     buttonBg:'#404F6A',
     secondary:'#0C48A4',
@@ -67,6 +68,15 @@ const theme = extendTheme({
   },
   // Group different text styles
   textStyles: {
+    base: {
+      fontWeight: 500,
+      // fontFamily:`"Source Sans Pro", sans-serif`
+    },
+    bodyTitle: {
+      fontWeight: 600,
+      color: 'primary'
+      // fontFamily:`"Source Sans Pro", sans-serif`
+    },
     cta: {
       color:'cta',
       fontSize:'md',
@@ -94,6 +104,14 @@ const theme = extendTheme({
     },
     Menu: {
       baseStyle: {
+        groupTitle: {
+          mx:0,
+          mt:0,
+          mb:4,
+          fontSize:'lg',
+          color:'primary',
+          textStyle:'cta',
+        },
         list: {
           px:4,
           py:3,
@@ -107,7 +125,6 @@ const theme = extendTheme({
           my:1,
           color:'cta',
           borderRadius:8,
-          textStyle:'cta',
           backgroundColor:'menu.bg',
           _focus: {
             color:'white',
@@ -118,9 +135,37 @@ const theme = extendTheme({
             backgroundColor:'menu.item.bg'
           }
         }
+      },
+      variants: {
+        notifications: {
+          groupTitle: {
+            m:0,
+            px:6,
+            pt:6,
+            pb:4,
+            fontSize:'lg',
+            color:'primary',
+            textStyle:'cta',
+          },
+          item: {
+            m:0,
+            pt:2,
+            pb:2,
+            pr:6,
+            pl:6,
+            borderRadius:0,
+            borderBottom:'1px solid',
+            borderBottomColor:'divider'
+          },
+          list: {
+            p:0,
+            width:'sm',
+            overflow:'hidden'
+          }
+        }
       }
     }
-  },
+  }
 })
 
 

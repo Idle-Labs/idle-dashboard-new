@@ -1,5 +1,5 @@
 import React from 'react'
-import { menu } from '../../constants/menu'
+import { menu } from '../../../constants/menu'
 import { MenuNavItem } from './MenuNavItem'
 import { Menu, Flex, Stack } from '@chakra-ui/react'
 import { MenuItemExpandable } from './MenuItemExpandable'
