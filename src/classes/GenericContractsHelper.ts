@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { ContractSendMethod } from 'web3-eth-contract'
 import { BNify, normalizeTokenDecimals } from '../helpers'
 import { GenericContract } from '../contracts/GenericContract'
-import type { UnderlyingTokenConfig } from '../constants/underlyingTokens'
+import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
 import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from '../selectors'
 
 type ConversionRateParams = {
@@ -26,7 +26,7 @@ export class GenericContractsHelper {
     this.contracts = contracts
   }
 
-  public getConversionRateParams(tokenConfig: UnderlyingTokenConfig): ConversionRateParams | null {
+  public getConversionRateParams(tokenConfig: UnderlyingTokenProps): ConversionRateParams | null {
 
     const conversionRateProps = tokenConfig.conversionRate
     if (!conversionRateProps || !tokenConfig.address) return null
@@ -89,7 +89,7 @@ export class GenericContractsHelper {
     }
   }
 
-  public async getConversionRate(tokenConfig: UnderlyingTokenConfig): Promise<BigNumber> {
+  public async getConversionRate(tokenConfig: UnderlyingTokenProps): Promise<BigNumber> {
     const conversionRateParams = this.getConversionRateParams(tokenConfig)
     if (!conversionRateParams){
       return BNify(1)

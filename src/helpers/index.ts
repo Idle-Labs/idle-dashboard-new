@@ -26,6 +26,46 @@ export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals: number
   return balance;
 }
 
+export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) => {
+
+  const isNegative = parseFloat(value) < 0;
+  let newValue: any = BNify(value).abs();
+  const suffixes = ["", "K", "M", "B", "T"];
+  let suffixNum = 0;
+  while (newValue.gte(1000)) {
+    newValue = newValue.div(1000);
+    suffixNum++;
+  }
+
+  maxPrecision = Math.max(1, maxPrecision);
+
+  // Prevent decimals on integer number
+  if (value >= 1000) {
+    const decimalPart = decimals ? newValue.mod(1).toFixed(maxPrecision).substr(2, decimals) : null;
+    newValue = parseInt(newValue).toString() + (decimalPart ? '.' + decimalPart : '');
+  } else {
+    newValue = newValue.toFixed(decimals);
+  }
+
+  // Adjust number precision
+  if (newValue >= 1 && (newValue.length - 1) > maxPrecision) {
+    newValue = parseFloat(newValue).toPrecision(maxPrecision);
+  } else if ((newValue.length - 1) < minPrecision) {
+    const difference = minPrecision - (newValue.length - 1);
+    const append = BNify(value).abs().toString().replace('.', '').substr((newValue.length - 1), difference);
+    newValue += append;
+  }
+
+  // Add minus if number is negative
+  if (isNegative) {
+    newValue = '-' + newValue;
+  }
+
+  newValue += suffixes[suffixNum];
+
+  return newValue;
+}
+
 export const shortenHash = (hash: string, startLen: number = 7, endLen: number = 4) => {
   let shortHash = hash;
   const txStart = shortHash.substr(0, startLen);

@@ -20,7 +20,7 @@ type ConversionRateProps = {
   isPoolToken?: boolean
 }
 
-export interface UnderlyingTokenConfig {
+export interface UnderlyingTokenProps {
   token: string,
   label?: string
   enabled: boolean
@@ -32,7 +32,7 @@ export interface UnderlyingTokenConfig {
   conversionRate?: ConversionRateProps
 }
 
-export const underlyingTokens: Record<number, Record<string, UnderlyingTokenConfig>> = {
+export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProps>> = {
   1: {
     DAI: {
       token:'DAI',

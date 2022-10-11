@@ -1,9 +1,10 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
+import { imageFolder } from 'constants/folders'
 import { selectUnderlyingToken } from '../selectors'
 import { GenericContract } from '../contracts/GenericContract'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import type { CDO, Strategy, Pool, Tranche, TrancheConfig, UnderlyingTokenConfig, Assets, ContractRawCall } from '../constants'
+import { strategies, CDO, Strategy, Pool, Tranche, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall } from '../constants'
 
 export class TrancheVault {
 
@@ -19,35 +20,41 @@ export class TrancheVault {
 
   // 
   public readonly cdoConfig: CDO
+  public readonly trancheConfig: Tranche
   public readonly strategyConfig: Strategy
-  public readonly trancheAAConfig: Tranche
-  public readonly trancheBBConfig: Tranche
   public readonly poolConfig: Pool | undefined
-  public readonly underlyingToken: UnderlyingTokenConfig | undefined
+  public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly underlyingToken: UnderlyingTokenProps | undefined
 
   // Contracts
   public readonly cdoContract: Contract
   public readonly underlyingContract: Contract | undefined
-  public readonly trancheAAContract: Contract
-  public readonly trancheBBContract: Contract
+  public readonly trancheContract: Contract
 
-  constructor(web3: Web3, chainId: number, protocol: string, vaultConfig: TrancheConfig){
+  constructor(web3: Web3, chainId: number, protocol: string, vaultConfig: TrancheConfig, type: string){
     
     // Init global data
     this.web3 = web3
-    this.type = 'tranche'
     this.chainId = chainId
     this.protocol = protocol
     this.vaultConfig = vaultConfig
-    this.id = vaultConfig.CDO.address.toLowerCase()
+    this.type = strategies[type]?.route
+    this.trancheConfig = vaultConfig.Tranches[type]
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
+
+    this.rewardTokens = vaultConfig.autoFarming ? vaultConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
+      const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
+      if (underlyingToken){
+        rewards.push(underlyingToken)
+      }
+      return rewards
+    },[]) : []
 
     // Init tranche configs
     this.cdoConfig = vaultConfig.CDO
     this.poolConfig = vaultConfig.Pool
     this.strategyConfig = vaultConfig.Strategy
-    this.trancheAAConfig = vaultConfig.Tranches.AA
-    this.trancheBBConfig = vaultConfig.Tranches.BB
+    this.id = this.trancheConfig.address.toLowerCase()
 
     // Init CDO contract
     this.cdoContract = new web3.eth.Contract(this.cdoConfig.abi, this.cdoConfig.address)
@@ -58,20 +65,15 @@ export class TrancheVault {
     }
 
     // Init tranche tokens contracts
-    this.trancheAAContract = new web3.eth.Contract(this.trancheAAConfig.abi, this.trancheAAConfig.address)
-    this.trancheBBContract = new web3.eth.Contract(this.trancheBBConfig.abi, this.trancheBBConfig.address)
+    this.trancheContract = new web3.eth.Contract(this.trancheConfig.abi, this.trancheConfig.address)
   }
 
   public getBalancesCalls(params: any[] = []): any[] {
     return [
       {
-        assetId:this.trancheAAConfig.address,
-        call:this.trancheAAContract.methods.balanceOf(...params),
+        assetId:this.trancheConfig.address,
+        call:this.trancheContract.methods.balanceOf(...params),
       },
-      {
-        assetId:this.trancheBBConfig.address,
-        call:this.trancheBBContract.methods.balanceOf(...params),
-      }
     ]
   }
 
@@ -79,14 +81,9 @@ export class TrancheVault {
     return [
       {
         decimals:this.underlyingToken?.decimals || 18,
-        assetId:this.trancheAAConfig.address.toLowerCase(),
-        call:this.cdoContract.methods.virtualPrice(this.trancheAAConfig.address)
+        assetId:this.trancheConfig.address.toLowerCase(),
+        call:this.cdoContract.methods.virtualPrice(this.trancheConfig.address)
       },
-      {
-        decimals:this.underlyingToken?.decimals || 18,
-        assetId:this.trancheBBConfig.address.toLowerCase(),
-        call:this.cdoContract.methods.virtualPrice(this.trancheBBConfig.address)
-      }
     ]
   }
 
@@ -101,13 +98,8 @@ export class TrancheVault {
       {
         params:conversionRateParams,
         call:conversionRateParams.call,
-        assetId:this.trancheAAConfig.address.toLowerCase()
+        assetId:this.trancheConfig.address.toLowerCase()
       },
-      {
-        params:conversionRateParams,
-        call:conversionRateParams.call,
-        assetId:this.trancheBBConfig.address.toLowerCase()
-      }
     ]
   }
 
@@ -115,53 +107,36 @@ export class TrancheVault {
     return [
       {
         decimals:this.underlyingToken?.decimals || 18,
-        assetId:this.trancheAAConfig.address.toLowerCase(),
-        call:this.cdoContract.methods.getApr(this.trancheAAConfig.address)
+        assetId:this.trancheConfig.address.toLowerCase(),
+        call:this.cdoContract.methods.getApr(this.trancheConfig.address)
       },
-      {
-        decimals:this.underlyingToken?.decimals || 18,
-        assetId:this.trancheBBConfig.address.toLowerCase(),
-        call:this.cdoContract.methods.getApr(this.trancheBBConfig.address)
-      }
     ]
   }
 
   public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
-        // decimals:this.trancheAAContract.decimals || 18,
-        call:this.trancheAAContract.methods.totalSupply(),
-        assetId:this.trancheAAConfig.address.toLowerCase()
+        // decimals:this.trancheContract.decimals || 18,
+        call:this.trancheContract.methods.totalSupply(),
+        assetId:this.trancheConfig.address.toLowerCase()
       },
-      {
-        // decimals:this.trancheAAContract.decimals || 18,
-        call:this.trancheBBContract.methods.totalSupply(),
-        assetId:this.trancheBBConfig.address.toLowerCase()
-      }
     ]
   }
 
   public getAssetsData(): Assets {
     return {
+      // [this.id]:{
+      //   name: this.cdoConfig.name,
+      //   token: this.cdoConfig.name,
+      //   decimals: this.cdoConfig.decimals
+      // },
       [this.id]:{
-        name: this.cdoConfig.name,
-        token: this.cdoConfig.name,
-        decimals: this.cdoConfig.decimals
+        type: this.type,
+        token: this.trancheConfig.token,
+        icon: `${imageFolder}${this.underlyingToken?.token}.svg`,
+        name: this.underlyingToken?.label || this.underlyingToken?.token || this.trancheConfig.label || this.trancheConfig.token,
+        decimals: this.trancheConfig.decimals
       },
-      [this.trancheAAConfig.address.toLowerCase()]:{
-        vaultId:this.id,
-        type: `protected-yield`,
-        token: this.trancheAAConfig.token,
-        name: this.trancheAAConfig.label||this.trancheAAConfig.token,
-        decimals: this.trancheAAConfig.decimals
-      },
-      [this.trancheBBConfig.address.toLowerCase()]:{
-        vaultId:this.id,
-        type: `boosted-yield`,
-        token: this.trancheBBConfig.token,
-        name: this.trancheBBConfig.label||this.trancheBBConfig.token,
-        decimals: this.trancheBBConfig.decimals
-      }
     }
   }
 }

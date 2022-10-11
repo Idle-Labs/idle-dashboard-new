@@ -180,7 +180,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       }
     }
   },
-  1:{
+  1: {
     idle:{
       DAI:{
         protocol:'idle',
@@ -983,8 +983,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs: [],
         protocol:'euler',
         blockNumber:14785127,
-        adaptiveYieldSplitEnabled:true,
         underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -1556,6 +1556,7 @@ export type IdleTokenProtocol = {
 
 export type BestYieldConfig = {
   idle: IdleToken
+  autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
   protocols: IdleTokenProtocol[]

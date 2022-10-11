@@ -1,10 +1,11 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import ERC20 from '../abis/tokens/ERC20.json'
+import { imageFolder } from 'constants/folders'
 import { GenericContract } from '../contracts/GenericContract'
 import { Abi, Assets, ContractRawCall } from '../constants/types'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import type { UnderlyingTokenConfig } from '../constants/underlyingTokens'
+import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
 
 export class UnderlyingToken {
 
@@ -14,12 +15,12 @@ export class UnderlyingToken {
   readonly type: string
   readonly chainId: number
 
-  readonly tokenConfig: UnderlyingTokenConfig
+  readonly tokenConfig: UnderlyingTokenProps
 
   // Contracts
   public readonly contract: Contract
 
-  constructor(web3: Web3, chainId: number, tokenConfig: UnderlyingTokenConfig){
+  constructor(web3: Web3, chainId: number, tokenConfig: UnderlyingTokenProps){
     
     // Init global data
     this.web3 = web3
@@ -79,6 +80,7 @@ export class UnderlyingToken {
     return {
       [this.id]:{
         token: this.tokenConfig.token,
+        icon: `${imageFolder}${this.tokenConfig.token}.svg`,
         name: this.tokenConfig.label||this.tokenConfig.token,
         decimals: this.tokenConfig.decimals || 18
       }

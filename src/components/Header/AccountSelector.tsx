@@ -1,10 +1,10 @@
-import { shortenHash } from '../../helpers'
-import { MenuItemType } from '../../constants'
+import { shortenHash } from 'helpers'
+import { MenuItemType } from 'constants/menu'
 import React, { useState, useEffect } from 'react'
 import { Menu, Spinner, Button } from '@chakra-ui/react'
 import { MenuItemExpandable } from './Menu/MenuItemExpandable'
 import { MdOutlineChangeCircle, MdClose } from 'react-icons/md'
-import { useWalletProvider } from '../../contexts/WalletProvider'
+import { useWalletProvider } from 'contexts/WalletProvider'
 
 export const AccountSelector: React.FC = () => {
 

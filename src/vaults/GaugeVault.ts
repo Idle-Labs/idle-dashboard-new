@@ -4,7 +4,7 @@ import { selectUnderlyingToken } from '../selectors'
 import { TrancheVault } from '../vaults/TrancheVault'
 import { GenericContract } from '../contracts/GenericContract'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import type { TrancheToken, GaugeConfig, UnderlyingTokenConfig, Assets, ContractRawCall } from '../constants'
+import type { TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall } from '../constants'
 
 export class GaugeVault {
 
@@ -18,7 +18,8 @@ export class GaugeVault {
   public readonly gaugeConfig: GaugeConfig
   public readonly trancheVault: TrancheVault | undefined
   public readonly trancheToken: TrancheToken
-  public readonly underlyingToken: UnderlyingTokenConfig | undefined
+  public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly underlyingToken: UnderlyingTokenProps | undefined
 
   // Contracts
   public readonly contract: Contract
@@ -34,6 +35,14 @@ export class GaugeVault {
     this.trancheToken = gaugeConfig.trancheToken
     this.id = this.gaugeConfig.address.toLowerCase()
     this.underlyingToken = selectUnderlyingToken(chainId, gaugeConfig.underlyingToken)
+
+    this.rewardTokens = gaugeConfig.rewardTokens ? gaugeConfig.rewardTokens.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
+      const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
+      if (underlyingToken){
+        rewards.push(underlyingToken)
+      }
+      return rewards
+    },[]) : []
 
     // Init idle token contract
     this.contract = new web3.eth.Contract(this.gaugeConfig.abi, this.gaugeConfig.address)

@@ -27,6 +27,11 @@ const theme = extendTheme({
       bgHover:'#293243',
       colorHover:'#CDD0D6'
     },
+    table:{
+      arrow:'#555B67',
+      header:'#323D53',
+      headerHover:'#404F6A'
+    },
     orange:'#FF9859',
     cardBg:'#202A3E',
     divider:'#555B67',
@@ -40,7 +45,15 @@ const theme = extendTheme({
     sm:'14px',
     md:'16px',
     lg:'20px',
-    xl:'36px'
+    xl:'36px',
+    '2xl':'36px',
+    '3xl':'36px',
+    '4xl':'20px',
+    '5xl':'36px',
+    '6xl':'36px',
+    '7xl':'36px',
+    '8xl':'36px',
+    '9xl':'36px',
   },
   fonts: {
     heading: `'Open Sans', sans-serif`,
@@ -64,13 +77,37 @@ const theme = extendTheme({
   },
   // Group different layer styles
   layerStyles: {
-
+    tableHeader: {
+      p:1,
+      pl:4,
+      color:'cta',
+      fontSize:'sm',
+      borderRadius:8,
+      cursor:'pointer',
+      fontFamily: 'body',
+      textTransform:'initial',
+      backgroundColor:'table.header',
+      _hover:{
+        backgroundColor:'table.headerHover'
+      }
+    },
+    card: {
+      p:8,
+      borderRadius:8,
+      backgroundColor:'cardBg'
+    }
   },
   // Group different text styles
   textStyles: {
     base: {
+      fontSize:'sm',
       fontWeight: 500,
       // fontFamily:`"Source Sans Pro", sans-serif`
+    },
+    tableCell: {
+      fontSize:'md',
+      fontWeight: 600,
+      fontFamily: 'body'
     },
     bodyTitle: {
       fontWeight: 600,
@@ -82,7 +119,8 @@ const theme = extendTheme({
       fontSize:'md',
       fontWeight:700,
       cursor:'pointer',
-      fontFamily:`'Open Sans', sans-serif`,
+      fontFamily: 'heading',
+      // fontFamily:`'Open Sans', sans-serif`,
       _hover: {
         color:'white'
       }
@@ -90,6 +128,23 @@ const theme = extendTheme({
   },
   // Create components styles
   components: {
+    Heading: {
+      baseStyle:{
+        fontWeight:600
+      }
+    },
+    Tooltip:{
+      baseStyle:{
+        borderRadius:4,
+        color:'primary',
+        fontWeight: 500,
+        bg:'table.header',
+        fontFamily:'body'
+      },
+      defaultProps:{
+        placement:'top'
+      }
+    },
     Button: {
       variants: {
         cta:{

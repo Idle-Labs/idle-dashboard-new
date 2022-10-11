@@ -19,6 +19,26 @@ export type MenuItemType = {
   labelProps?: Record<string, any>
 }
 
+type StrategyProps = {
+  route: string
+  label: string
+}
+
+export const strategies:Record<string, StrategyProps> = {
+  BY:{
+    route:'best-yield',
+    label:'Best Yield',
+  },
+  AA:{
+    route:'protected-yield',
+    label:'Protected Yield'
+  },
+  BB:{
+    route:'boosted-yield',
+    label:'Boosted Yield'
+  },
+}
+
 export const menu: MenuItemType[] = [
   {
     path:'dashboard',
@@ -26,20 +46,10 @@ export const menu: MenuItemType[] = [
   },
   {
     label:'Earn',
-    children:[
-      {
-        path:'earn/best-yield',
-        label:'Best Yield'
-      },
-      {
-        path:'earn/protected-yield',
-        label:'Protected Yield'
-      },
-      {
-        path:'earn/boosted-yield',
-        label:'Boosted Yield'
-      },
-    ]
+    children: Object.values(strategies).map( (strategy: StrategyProps) => ({
+      path:`earn/${strategy.route}`,
+      label: strategy.label
+    }))
   },
   {
     path:'stats',

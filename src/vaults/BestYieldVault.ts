@@ -1,9 +1,10 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
-import { selectUnderlyingToken } from '../selectors'
-import { GenericContract } from '../contracts/GenericContract'
-import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import type { BestYieldConfig, IdleToken, UnderlyingTokenConfig, Assets, ContractRawCall } from '../constants'
+import { imageFolder } from 'constants/folders'
+import { selectUnderlyingToken } from 'selectors/'
+import { GenericContract } from 'contracts/GenericContract'
+import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import { strategies, BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall } from 'constants/'
 
 export class BestYieldVault {
 
@@ -16,21 +17,30 @@ export class BestYieldVault {
   // Raw config
   public readonly idleConfig: IdleToken
   public readonly tokenConfig: BestYieldConfig
-  public readonly underlyingToken: UnderlyingTokenConfig | undefined
+  public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly underlyingToken: UnderlyingTokenProps | undefined
 
   // Contracts
   public readonly contract: Contract
 
-  constructor(web3: Web3, chainId: number, tokenConfig: BestYieldConfig){
+  constructor(web3: Web3, chainId: number, tokenConfig: BestYieldConfig, type: string){
     
     // Init global data
     this.web3 = web3
     this.chainId = chainId
-    this.type = 'best-yield'
     this.tokenConfig = tokenConfig
     this.idleConfig = tokenConfig.idle
+    this.type = strategies[type]?.route
     this.id = this.idleConfig.address.toLowerCase()
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
+
+    this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
+      const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
+      if (underlyingToken){
+        rewards.push(underlyingToken)
+      }
+      return rewards
+    },[]) : []
 
     // Init idle token contract
     this.contract = new web3.eth.Contract(this.idleConfig.abi, this.idleConfig.address)
@@ -95,8 +105,9 @@ export class BestYieldVault {
       [this.id]:{
         decimals: 18,
         type: this.type,
-        name: this.idleConfig.token,
         token: this.idleConfig.token,
+        icon: `${imageFolder}${this.underlyingToken?.token}.svg`,
+        name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },
       ...(this.tokenConfig.protocols.reduce( (tokens: Assets, protocolToken) => {
         tokens[protocolToken.address.toLowerCase()] = {

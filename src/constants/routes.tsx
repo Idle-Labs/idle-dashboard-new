@@ -1,6 +1,7 @@
-import { Template } from '../components/Template/Template'
-import { Dashboard } from '../components/Dashboard/Dashboard'
-// import { TestConsumer } from '../components/TestConsumer/TestConsumer'
+import { Template } from 'components/Template/Template'
+import { Dashboard } from 'components/Dashboard/Dashboard'
+import { Strategy } from 'components/Strategy/Strategy'
+// import { TestConsumer } from 'components/TestConsumer/TestConsumer'
 import { RouteObject, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
 
 const ComponentWithProps = (props:any) => {
@@ -35,7 +36,7 @@ export const routes: RouteObject[] = [
             children:[
               {
                 index: true,
-                element:<ComponentWithProps state={{section:'earn/strategy'}} />,
+                element:<Strategy />,
               },
               {
                 path:':asset',
@@ -71,10 +72,12 @@ export const routes: RouteObject[] = [
       {
         path:'stake',
         element:<ComponentWithProps state={{section:'stake'}} />,
-      },
-      {
-        path:'vote',
-        element:<ComponentWithProps state={{section:'vote'}} />,
+        children: [
+          {
+            path:'vote',
+            element:<ComponentWithProps state={{section:'vote'}} />,
+          },
+        ]
       },
     ]
   },

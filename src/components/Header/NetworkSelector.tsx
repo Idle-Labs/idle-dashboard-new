@@ -1,7 +1,7 @@
 import { Menu, Spinner } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import { MenuItemExpandable } from './Menu/MenuItemExpandable'
-import { useWalletProvider } from '../../contexts/WalletProvider'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { chains, networks, MenuItemType, MenuListType } from '../../constants'
 
 export const NetworkSelector: React.FC = () => {

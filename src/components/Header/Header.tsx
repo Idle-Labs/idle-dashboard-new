@@ -13,7 +13,7 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
     >
       <TopBarMenu />
       <Stack
-        spacing={'12px'}
+        spacing={4}
         direction={'row'}
         alignItems={'center'}
       >

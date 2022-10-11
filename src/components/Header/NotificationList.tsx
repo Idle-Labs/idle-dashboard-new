@@ -1,8 +1,9 @@
 import { IconType } from 'constants/types'
 import { Icon } from 'components/Icon/Icon'
 import React, { useState, useEffect } from 'react'
+import { Scrollable } from 'components/Scrollable/Scrollable'
 import { MdOutlineNotificationsNone/*, MdWbSunny*/ } from 'react-icons/md'
-import { ContainerProps, Menu, MenuGroup, MenuButton, MenuList, MenuItem, IconButton, Text, Flex, Box } from '@chakra-ui/react'
+import { Menu, MenuGroup, MenuButton, MenuList, MenuItem, IconButton, Text, Flex } from '@chakra-ui/react'
 
 type NotificationType = {
   title: string
@@ -41,20 +42,9 @@ export const Notification: React.FC<NotificationType> = (props) => {
   )
 }
 
-const Scrollable: React.FC<ContainerProps> = ({children, ...props}) => {
-  return (
-    <Box
-      {...props}
-      overflow={'scroll'}
-    >
-      {children}
-    </Box>
-  )
-}
-
 export const NotificationList: React.FC = () => {
 
-  const [ notifications, setNotifications ] = useState<NotificationType[] | null>(null)
+  const [ notifications, setNotifications ] = useState<NotificationType[]>([])
 
   useEffect(() => {
     setNotifications([
@@ -93,6 +83,7 @@ export const NotificationList: React.FC = () => {
                 )) : (
                   <MenuItem
                     minH={240}
+                    borderBottom={0}
                     alignItems={'center'}
                     justifyContent={'center'}
                     backgroundColor={'transparent !important'}
