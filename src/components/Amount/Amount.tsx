@@ -1,14 +1,15 @@
 import React from 'react'
+import { BigNumber } from 'bignumber.js'
 import type { Number } from 'constants/types'
-import { abbreviateNumber, BNify } from 'helpers/'
 import { Text, TextProps } from '@chakra-ui/react'
+import { abbreviateNumber, BNify, isBigNumberNaN } from 'helpers/'
 
 type AmountProps = {
   value: Number
   prefix?: string | React.ReactElement
   suffix?: string | React.ReactElement
   maxDecimals?: number
-  abbreviated?: boolean
+  abbreviate?: boolean
 } & TextProps
 
 type PercentageProps = {
@@ -20,10 +21,10 @@ export const Amount = ({
   prefix = '',
   suffix = '',
   maxDecimals,
-  abbreviated = true,
+  abbreviate = true,
   ...props
 }: AmountProps) => {
-  const parsedValue = typeof value === 'string' ? value : (abbreviated ? abbreviateNumber(value, maxDecimals) : value)
+  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' ? value : (abbreviate ? abbreviateNumber(value, maxDecimals) : value))
   return (
     <Text {...props}>
       {prefix}
@@ -38,9 +39,10 @@ export const Percentage: React.FC<PercentageProps> = ({
   maxValue = 9999,
   ...props
 }) => {
-  const parsedValue = maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : value
+  const parsedValue = isBigNumberNaN(value) ? '-' : (maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : value)
+  const suffix = isBigNumberNaN(value) ? '' : '%'
   return (
-    <Amount suffix={'%'} value={parsedValue} {...props} />
+    <Amount suffix={suffix} value={parsedValue} {...props} />
   )
 }
 

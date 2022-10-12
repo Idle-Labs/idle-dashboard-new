@@ -85,6 +85,20 @@
       "description": "Your currency has been reset to USD"
     }
   },
+  "strategies": {
+    "best": {
+      "title": "Best Yield",
+      "description": "The flagship yield automation strategy. Funds optimized across multiple DeFi protocols"
+    },
+    "protected": {
+      "title": "Protected Yield",
+      "description": "Senior Tranches provide a shielded access to optimized DeFi yields, thanks to an integrated funds' coverage given by Junior Tranches"
+    },
+    "boosted": {
+      "title": "Boosted Yield",
+      "description": "Senior Tranches provide a shielded access to optimized DeFi yields, thanks to an integrated funds' coverage given by Junior Tranches"
+    }
+  },
   "dashboard": {
     "portfolio": {
       "rainbowChart": "🌈 Rainbow",
@@ -253,6 +267,7 @@
     "amountStaked": "Amount Staked",
     "assetStaking": "%{assetName} Staking",
     "stake": "Stake",
+    "protocol": "Protocol",
     "unstake": "Unstake",
     "stakeAsset": "Stake %{assetSymbol}",
     "unstakeAsset": "Unstake %{assetSymbol}",

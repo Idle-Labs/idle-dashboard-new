@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
-import { imageFolder } from 'constants/folders'
+import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { GenericContract } from 'contracts/GenericContract'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
@@ -106,7 +106,7 @@ export class BestYieldVault {
         decimals: 18,
         type: this.type,
         token: this.idleConfig.token,
-        icon: `${imageFolder}${this.underlyingToken?.token}.svg`,
+        icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },
       ...(this.tokenConfig.protocols.reduce( (tokens: Assets, protocolToken) => {

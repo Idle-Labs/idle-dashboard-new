@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom"
 import { Icon } from 'components/Icon/Icon'
 import type { MenuItemType } from 'constants/menu'
 import { Text, Flex, useTheme } from '@chakra-ui/react'
+import { Translation } from 'components/Translation/Translation'
 
 type NavItemTextProps = {
   isActive?: boolean
@@ -23,7 +24,7 @@ export const NavItemText:React.FC<NavItemTextProps> = ({isActive, ...props}) => 
           </Flex>
         )
       }
-      <Text textStyle={'cta'} sx={isActive ? {color:'primary'} : {}} {...props.labelProps}>{props.label}</Text>
+      <Translation translation={props.label} textStyle={'cta'} sx={isActive ? {color:'primary'} : {}} {...props.labelProps}></Translation>
     </>
   )
 }

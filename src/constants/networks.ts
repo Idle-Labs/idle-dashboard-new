@@ -1,5 +1,5 @@
 import { IconType } from './types'
-import { FaEthereum } from 'react-icons/fa'
+import { networksFolder } from 'constants/folders'
 
 const env = process.env;
 
@@ -22,7 +22,7 @@ export const networks: Record<number, Network> = {
     name: 'Ethereum',
     baseToken: 'ETH',
     color: '#4474f1',
-    icon: FaEthereum,
+    icon: `${networksFolder}ethereum.svg`,
     // icon: 'https://raw.githubusercontent.com/Idle-Labs/idle-dashboard/master/public/images/networks/ethereum.svg',
     network: 'mainnet',
     provider: 'infura',
@@ -67,6 +67,7 @@ export const networks: Record<number, Network> = {
     blocksPerCall: 1000000,
     explorer: 'polygonscan',
     chainName: 'Matic(Polygon) Mainnet',
+    icon: `${networksFolder}polygon.svg`,
   },
   5: {
     name: 'Görli',

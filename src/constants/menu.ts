@@ -1,4 +1,5 @@
 import { IconType } from './types'
+import { strategiesFolder } from 'constants/folders'
 
 export type MenuListType = {
   path?: string
@@ -20,22 +21,38 @@ export type MenuItemType = {
 }
 
 type StrategyProps = {
+  bg: string
   route: string
   label: string
+  image: string
+  description: string
+  showProtocol: boolean
 }
 
 export const strategies:Record<string, StrategyProps> = {
   BY:{
     route:'best-yield',
-    label:'Best Yield',
+    showProtocol: false,
+    label:'strategies.best.title',
+    description:'strategies.best.description',
+    image: `${strategiesFolder}best-yield.png`,
+    bg: `${strategiesFolder}best-yield-bg.svg`
   },
   AA:{
+    showProtocol: true,
     route:'protected-yield',
-    label:'Protected Yield'
+    label:'strategies.protected.title',
+    description:'strategies.protected.description',
+    bg: `${strategiesFolder}protected-yield-bg.png`,
+    image: `${strategiesFolder}protected-yield.png`
   },
   BB:{
     route:'boosted-yield',
-    label:'Boosted Yield'
+    showProtocol: true,
+    label:'strategies.boosted.title',
+    description:'strategies.boosted.description',
+    image: `${strategiesFolder}boosted-yield.png`,
+    bg: `${strategiesFolder}boosted-yield-bg.png`
   },
 }
 

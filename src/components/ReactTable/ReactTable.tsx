@@ -20,12 +20,16 @@ const TableHeader: React.FC<any> = ({column}) => {
       justifyContent={'space-between'}
     >
       {column.render('Header')}
-      <Flex
-        direction={'column'}
-      >
-        <MdKeyboardArrowUp size={20} fill={column.isSorted ? (column.isSortedDesc ? theme.colors.primary : theme.colors.table.arrow) : theme.colors.table.arrow} aria-label='sorted ascending' style={{position:'absolute'}} />
-        <MdKeyboardArrowDown size={20} fill={column.isSorted ? (column.isSortedDesc ? theme.colors.table.arrow : theme.colors.primary) : theme.colors.table.arrow} aria-label='sorted descending' style={{marginTop:10}} />
-      </Flex>
+      {
+        column.canSort && (
+          <Flex
+            direction={'column'}
+          >
+            <MdKeyboardArrowUp size={20} fill={column.isSorted ? (column.isSortedDesc ? theme.colors.primary : theme.colors.table.arrow) : theme.colors.table.arrow} aria-label='sorted ascending' style={{position:'absolute'}} />
+            <MdKeyboardArrowDown size={20} fill={column.isSorted ? (column.isSortedDesc ? theme.colors.table.arrow : theme.colors.primary) : theme.colors.table.arrow} aria-label='sorted descending' style={{marginTop:10}} />
+          </Flex>
+        )
+      }
     </Flex>
   )
 }
@@ -48,20 +52,30 @@ export const ReactTable = <T extends {}>({
   )
 
   const renderRows = useMemo(() => {
-    return rows.map(row => {
+    return rows.map( row => {
+      let firstCellFound = false
       prepareRow(row)
       return (
         <Tr
           {...row.getRowProps()}
           tabIndex={row.index}
+          layerStyle={'tableRow'}
           onClick={() => onRowClick?.(row)}
           cursor={onRowClick ? 'pointer' : undefined}
         >
-          {row.cells.map(cell => (
-            <Td {...cell.getCellProps()} display={cell.column.display}>
-              {cell.render('Cell')}
-            </Td>
-          ))}
+          {row.cells.map( (cell, cellIndex) => {
+            const isFirstCell = !firstCellFound && cell.column.display !== 'none'
+            const isLastCell = cellIndex === row.cells.length-1
+            if (isFirstCell) {
+              firstCellFound = true
+            }
+            const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
+            return (
+              <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
+                {cell.render('Cell')}
+              </Td>
+            )
+          })}
         </Tr>
       )
     })
@@ -71,22 +85,34 @@ export const ReactTable = <T extends {}>({
     <Table variant='clickable' size={{ base: 'sm', md: 'md' }} {...getTableProps()}>
       {displayHeaders && (
         <Thead>
-          {headerGroups.map(headerGroup => (
-            <Tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map(column => (
-                <Th
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
-                  color={'gray.500'}
-                  display={column.display}
-                  textAlign={column.textAlign}
-                  _hover={{ color: column.canSort ? hoverColor : 'gray.500' }}
-                  style={{paddingLeft:4, paddingRight: 4}}
-                >
-                  <TableHeader column={column} />
-                </Th>
-              ))}
-            </Tr>
-          ))}
+          {headerGroups.map(headerGroup => {
+            let firstColumnFound = false
+            return (
+              <Tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map( (column, colIndex) => {
+                  
+                  const isFirstCell = !firstColumnFound && column.display !== 'none'
+                  const isLastCell = colIndex === headerGroup.headers.length-1
+                  if (isFirstCell) {
+                    firstColumnFound = true
+                  }
+                  const style = isFirstCell ? {paddingLeft:0, paddingRight: 4} : (isLastCell ? {paddingLeft:4, paddingRight: 0} : {paddingLeft:4, paddingRight: 4})
+                  return (
+                    <Th
+                      {...column.getHeaderProps(column.getSortByToggleProps({title: undefined /*remove mouse hover tooltip*/}))}
+                      color={'gray.500'}
+                      display={column.display}
+                      textAlign={column.textAlign}
+                      _hover={{ color: column.canSort ? hoverColor : 'gray.500' }}
+                      style={style}
+                    >
+                      <TableHeader column={column} />
+                    </Th>
+                  )
+                })}
+              </Tr>
+            )
+          })}
         </Thead>
       )}
       <Tbody {...getTableBodyProps()}>{renderRows}</Tbody>

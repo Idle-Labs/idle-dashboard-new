@@ -269,83 +269,83 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
-      FEI:{
-        protocol:'idle',
-        blockNumber:13575397,
-        underlyingToken:'FEI',
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_idleFEIYield',
-          address:'0x77648a2661687ef3b05214d824503f6717311596'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_idleFEIYield',
-          address:'0x73A44027bDAF5D71296d2C73cfb13e561c76a916'
-        },
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              stakedBalance:'usersStakes',
-              rewards:'expectedUserReward'
-            },
-            CDORewards:{
-              decimals:18,
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_idleFEIYield_AA',
-              address:'0x8fcD21253AaA7E228531291cC6f644d13B3cF0Ba',
-              stakingRewards:[
-                {
-                  token:'IDLE',
-                  enabled:true,
-                  address:'0x875773784Af8135eA0ef43b5a374AaD105c5D39e'
-                }
-              ]
-            },
-            label:'idleFEI AA',
-            blockNumber:13575397,
-            name:'AA_idleFEIYield',
-            token:'AA_idleFEIYield',
-            address:'0x9cE3a740Df498646939BcBb213A66BBFa1440af6'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_idleFEIYield_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            label:'idleFEI BB',
-            blockNumber:13575397,
-            name:'BB_idleFEIYield',
-            token:'BB_idleFEIYield',
-            address:'0x2490D810BF6429264397Ba721A488b0C439aA745'
-          }
-        }
-      }
+      // FEI:{
+      //   protocol:'idle',
+      //   blockNumber:13575397,
+      //   underlyingToken:'FEI',
+      //   CDO:{
+      //     abi:IdleCDO as Abi,
+      //     decimals:18,
+      //     name:'IdleCDO_idleFEIYield',
+      //     address:'0x77648a2661687ef3b05214d824503f6717311596'
+      //   },
+      //   Strategy:{
+      //     abi:IdleStrategy as Abi,
+      //     name:'IdleStrategy_idleFEIYield',
+      //     address:'0x73A44027bDAF5D71296d2C73cfb13e561c76a916'
+      //   },
+      //   Tranches:{
+      //     AA:{
+      //       abi:ERC20 as Abi,
+      //       decimals:18,
+      //       tranche:'AA',
+      //       functions:{
+      //         stake:'stake',
+      //         claim:'claim',
+      //         unstake:'unstake',
+      //         deposit:'depositAA',
+      //         withdraw:'withdrawAA',
+      //         stakedBalance:'usersStakes',
+      //         rewards:'expectedUserReward'
+      //       },
+      //       CDORewards:{
+      //         decimals:18,
+      //         unstakeWithBalance:true,
+      //         abi:IdleCDOTrancheRewards as Abi,
+      //         name:'IdleCDOTrancheRewards_idleFEIYield_AA',
+      //         address:'0x8fcD21253AaA7E228531291cC6f644d13B3cF0Ba',
+      //         stakingRewards:[
+      //           {
+      //             token:'IDLE',
+      //             enabled:true,
+      //             address:'0x875773784Af8135eA0ef43b5a374AaD105c5D39e'
+      //           }
+      //         ]
+      //       },
+      //       label:'idleFEI AA',
+      //       blockNumber:13575397,
+      //       name:'AA_idleFEIYield',
+      //       token:'AA_idleFEIYield',
+      //       address:'0x9cE3a740Df498646939BcBb213A66BBFa1440af6'
+      //     },
+      //     BB:{
+      //       abi:ERC20 as Abi,
+      //       decimals:18,
+      //       tranche:'BB',
+      //       functions:{
+      //         stake:'stake',
+      //         claim:'claim',
+      //         unstake:'unstake',
+      //         deposit:'depositBB',
+      //         withdraw:'withdrawBB',
+      //         stakedBalance:'usersStakes'
+      //       },
+      //       CDORewards:{
+      //         decimals:18,
+      //         stakingRewards:[],
+      //         unstakeWithBalance:true,
+      //         abi:IdleCDOTrancheRewards as Abi,
+      //         name:'IdleCDOTrancheRewards_idleFEIYield_BB',
+      //         address:'0x0000000000000000000000000000000000000000'
+      //       },
+      //       label:'idleFEI BB',
+      //       blockNumber:13575397,
+      //       name:'BB_idleFEIYield',
+      //       token:'BB_idleFEIYield',
+      //       address:'0x2490D810BF6429264397Ba721A488b0C439aA745'
+      //     }
+      //   }
+      // }
     },
     lido:{
       stETH:{
@@ -1571,6 +1571,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleDAIYield',
         address: '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
       },
+      autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
           enabled: true,
@@ -1617,6 +1618,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleUSDCYield',
         address: '0x5274891bEC421B39D23760c04A6755eCB444797C',
       },
+      autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
           enabled: true,
@@ -1663,6 +1665,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleUSDTYield',
         address: '0xF34842d05A1c888Ca02769A633DF37177415C2f8',
       },
+      autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
           name: 'compound',
@@ -1709,6 +1712,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleSUSDYield',
         address: '0xf52cdcd458bf455aed77751743180ec4a595fd3f',
       },
+      autoFarming:['IDLE'],
       protocols: [
         {
           name: 'aave',
@@ -1741,6 +1745,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleTUSDYield',
         address: '0xc278041fDD8249FE4c1Aad1193876857EEa3D68c',
       },
+      autoFarming:['IDLE'],
       protocols: [
         {
           name: 'aave',
@@ -1773,6 +1778,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleWETHYield',
         address: '0xC8E6CA6E96a326dC448307A5fDE90a0b21fd7f80',
       },
+      autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
           enabled: true,
@@ -1808,6 +1814,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleWBTCYield',
         address: '0x8C81121B15197fA0eEaEE1DC75533419DcfD3151',
       },
+      autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
           enabled: true,
@@ -1855,6 +1862,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleRAIYield',
         address: '0x5C960a3DCC01BE8a0f49c02A8ceBCAcf5D07fABe',
       },
+      autoFarming:['IDLE'],
       protocols: [
         {
           abi: aToken as Abi,
@@ -1865,26 +1873,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
           },
           address: '0xc9bc48c72154ef3e5425641a3c747242112a46af',
-        }
-      ]
-    },
-    FEI: {
-      underlyingToken: 'FEI',
-      enabledEnvs: ['beta'],
-      idle: {
-        abi: IdleTokenV4 as Abi,
-        token: 'idleFEIYield',
-        address: '0xb2d5CB72A621493fe83C6885E4A776279be595bC',
-      },
-      protocols: [
-        {
-          abi: aToken as Abi,
-          decimals: 18,
-          token: 'aFEI',
-          enabled: true,
-          functions: {},
-          name: 'aavev2',
-          address: '0x683923dB55Fead99A79Fa01A27EeC3cB19679cC3',
         }
       ]
     },

@@ -1,3 +1,5 @@
+import { protocolsFolder } from 'constants/folders'
+
 type ProtocolColors = {
   rgb: number[]
   hsl: string[]
@@ -23,27 +25,11 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "Compound",
+    icon:`${protocolsFolder}compound.svg`,
     colors: {
       rgb: [0, 209, 146],
       hsl: ["162", "100%", "41%"]
     }
-  },
-  aavev2WithStkAAVE: {
-    enabled: true,
-    label: "Aave V2 + stkAAVE",
-    colors: {
-      hex: "#B6509E",
-      rgb: [182, 80, 158],
-      hsl: ["314", "41%", "51%"]
-    },
-  },
-  compoundWithCOMP: {
-    enabled: true,
-    label: "Compound + COMP",
-    colors: {
-      rgb: [0, 153, 107],
-      hsl: ["162", "100%", "30%"]
-    },
   },
   fulcrum: {
     stats: {
@@ -51,6 +37,7 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: false,
     label: "Fulcrum",
+    icon:`${protocolsFolder}fulcrum.svg`,
     colors: {
       rgb: [2, 138, 192],
       hsl: ["197", "98%", "38%"]
@@ -59,13 +46,14 @@ export const protocols: Record<string, Protocol> = {
   dsr: {
     label: "DSR",
     enabled: false,
-    icon: "CHAI.png",
+    icon:`${protocolsFolder}dsr.svg`,
     colors: {
       rgb: [222, 52, 67],
       hsl: ["355", "72%", "54%"]
     }
   },
   dydx: {
+    icon:`${protocolsFolder}dydx.svg`,
     stats: {
       showLegend: true,
     },
@@ -77,10 +65,12 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   iearn: {
+    icon:`${protocolsFolder}iearn.svg`,
     label: "Yearn",
     enabled: true
   },
   aave: {
+    icon:`${protocolsFolder}aave.svg`,
     label: "Aave V1",
     stats: {
       showLegend: false,
@@ -96,32 +86,32 @@ export const protocols: Record<string, Protocol> = {
       showLegend: true,
     },
     enabled: true,
-    icon: "aave.svg",
     label: "Aave V2",
+    icon:`${protocolsFolder}aave.svg`,
     colors: {
       rgb: [151, 79, 141],
       hsl: ["308", "31%", "45%"]
     }
   },
   cream: {
+    icon:`${protocolsFolder}cream.svg`,
     stats: {
       showLegend: false,
     },
     enabled: false,
     label: "Cream",
-    icon: "cream.svg",
     colors: {
       rgb: [105, 226, 220],
       hsl: ["177", "68%", "65%"]
     }
   },
   lido: {
+    icon:`${protocolsFolder}lido.png`,
     stats: {
       showLegend: false,
     },
     enabled: true,
     label: "Lido",
-    icon: "lido.png",
     colors: {
       rgb: [0, 163, 255],
       hsl: ['202', '100%', '50%']
@@ -133,13 +123,14 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "QuickSwap",
-    icon: "quickswap.png",
+    icon:`${protocolsFolder}quickswap.png`,
     colors: {
       rgb: [0, 163, 255],
       hsl: ['202', '100%', '50%']
     }
   },
   convex: {
+    icon:`${protocolsFolder}convex.svg`,
     stats: {
       showLegend: false,
     },
@@ -151,6 +142,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   mstable: {
+    icon:`${protocolsFolder}mstable.svg`,
     stats: {
       showLegend: false,
     },
@@ -162,6 +154,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   euler: {
+    icon:`${protocolsFolder}euler.svg`,
     label: "Euler",
     stats: {
       showLegend: false,
@@ -173,6 +166,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   wintermute: {
+    icon:`${protocolsFolder}wintermute.svg`,
     stats: {
       showLegend: false,
     },
@@ -184,6 +178,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   clearpool: {
+    icon:`${protocolsFolder}clearpool.svg`,
     stats: {
       showLegend: false,
     },
@@ -195,6 +190,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   truefi: {
+    icon:`${protocolsFolder}truefi.svg`,
     stats: {
       showLegend: false,
     },
@@ -211,13 +207,14 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: false,
     label: "Fuse",
-    icon: "fuse.png",
+    icon:`${protocolsFolder}fuse.png`,
     colors: {
       rgb: [0, 0, 0],
       hsl: ["0", "0%", "0%"]
     }
   },
   curve: {
+    icon:`${protocolsFolder}curve.svg`,
     label: "",
     enabled: true,
     colors: {
@@ -226,6 +223,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   idle: {
+    icon:`${protocolsFolder}idle.svg`,
     label: "Idle",
     enabled: true,
     colors: {

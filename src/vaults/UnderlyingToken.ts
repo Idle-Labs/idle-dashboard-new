@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import ERC20 from '../abis/tokens/ERC20.json'
-import { imageFolder } from 'constants/folders'
+import { tokensFolder } from 'constants/folders'
 import { GenericContract } from '../contracts/GenericContract'
 import { Abi, Assets, ContractRawCall } from '../constants/types'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
@@ -80,7 +80,7 @@ export class UnderlyingToken {
     return {
       [this.id]:{
         token: this.tokenConfig.token,
-        icon: `${imageFolder}${this.tokenConfig.token}.svg`,
+        icon: `${tokensFolder}${this.tokenConfig.token}.svg`,
         name: this.tokenConfig.label||this.tokenConfig.token,
         decimals: this.tokenConfig.decimals || 18
       }

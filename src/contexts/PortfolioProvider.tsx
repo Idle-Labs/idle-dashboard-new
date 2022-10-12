@@ -1,13 +1,13 @@
-import { BNify } from 'helpers'
 import BigNumber from 'bignumber.js'
+import { GaugeVault } from 'vaults/GaugeVault'
 import { useWeb3Provider } from './Web3Provider'
+import { TrancheVault } from 'vaults/TrancheVault'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
-import { GaugeVault } from 'vaults/GaugeVault'
-import { TrancheVault } from 'vaults/TrancheVault'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import type { GenericContractConfig } from 'constants/'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
+import { BNify, makeEtherscanApiRequest } from 'helpers/'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { Balances, Asset, Assets, Vault } from 'constants/types'
@@ -98,7 +98,7 @@ export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 export function PortfolioProvider({ children }:ProviderProps) {
   const { web3, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { walletInitialized, account, chainId } = useWalletProvider()
+  const { walletInitialized, account, chainId, explorer } = useWalletProvider()
 
   const generateAssetsData = (vaults: Vault[]) => {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
@@ -261,6 +261,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
   //   console.log('assetsData', state.assetsData)
   // }, [state.assetsData])
 
+  useEffect(() => {
+    if (!account?.address || !explorer) return
+    ;(async () => {
+      const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
+      const transactions = makeEtherscanApiRequest(endpoint, explorer.keys)
+
+      console.log('transactions', transactions)
+    })()
+  },[account?.address, chainId, explorer])
+
   // Get tokens prices, balances, rates
   useEffect(() => {
     if (!state.vaults || !state.contracts || !multiCall) return
@@ -401,6 +411,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const assetPriceUsd = selectAssetPriceUsd(assetId)
 
         balancesUsd[assetId] = assetBalance.times(vaultPrice).times(assetPriceUsd)
+
         dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balanceUsd: balancesUsd[assetId]} }})
 
         totalBalanceUsd = totalBalanceUsd.plus(balancesUsd[assetId])

@@ -1,11 +1,11 @@
-import type { Account } from '../constants/types'
-import useLocalForge from '../hooks/useLocalForge'
+import type { Account } from 'constants/types'
+import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
-import { chains, defaultChainId } from '../constants'
 import type { WalletState } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
+import { chains, networks, explorers, defaultChainId, Network, Explorer } from 'constants/'
 
 const injected = injectedModule()
 
@@ -40,6 +40,8 @@ init({
 type ContextProps = {
   account: Account | null
   chainId: number
+  network: Network | null
+  explorer: Explorer | null
   wallet: WalletState | null
   connecting: boolean
   connect: Function
@@ -52,6 +54,8 @@ type ContextProps = {
 const initialState: ContextProps = {
   account: null,
   wallet: null,
+  network: null,
+  explorer: null,
   connecting: false,
   connect: () => {},
   disconnect: () => {},
@@ -77,6 +81,14 @@ export function WalletProvider({ children }: ProviderProps) {
   const chainIdHex = useMemo(() => {
     return chains[chainId].id
   }, [chainId])
+
+  const network = useMemo(() => {
+    return networks[chainId]
+  }, [chainId])
+
+  const explorer = useMemo(() => {
+    return explorers[network.explorer]
+  }, [network])
 
   // Auto-connect wallet
   useEffect(() => {
@@ -124,7 +136,7 @@ export function WalletProvider({ children }: ProviderProps) {
   }
 
   return (
-    <WalletProviderContext.Provider value={{wallet, account, walletInitialized, isNetworkCorrect, chainId, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

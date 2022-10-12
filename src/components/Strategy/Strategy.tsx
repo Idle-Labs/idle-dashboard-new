@@ -1,4 +1,5 @@
 import { BNify } from 'helpers/'
+import { strategies } from 'constants/'
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import type { Asset } from 'constants/types'
@@ -8,12 +9,19 @@ import { Amount } from 'components/Amount/Amount'
 import { AssetCell } from 'components/AssetCell/AssetCell'
 import React, { useState, useEffect, useMemo } from 'react'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
+import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { ContainerProps, Flex } from '@chakra-ui/react'
+import { ContainerProps, Flex, Heading, Image, Stack, Skeleton, SkeletonText } from '@chakra-ui/react'
 
-const sortNumeric = (a: any, b: any, field: any): number => {
-  return BNify(a.original[field]).gt(BNify(b.original[field])) ? -1 : 1
+const sortNumeric = (a: any, b: any, field: any, c: any): number => {
+
+  const n1 = BNify(a.original[field]).isNaN() ? BNify(-1) : BNify(a.original[field])
+  const n2 = BNify(b.original[field]).isNaN() ? BNify(-1) : BNify(b.original[field])
+  // console.log('n1', field, a, a.original[field], n1.toString())
+  // console.log('n2', field, b, b.original[field], n2.toString())
+
+  return n1.gt(n2) ? -1 : 1
 }
 
 const sortAlpha = (a: any, b: any, field: any): number => {
@@ -33,11 +41,37 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [ depositedAssetsData, setDepositedAssetsData ] = useState([])
   const [ availableAssetsData, setAvailableAssetsData ] = useState([])
 
+  const strategy = useMemo(() => (
+    Object.values(strategies).find( strategy => strategy.route === params.strategy )
+  ), [params])
+
   const depositedAssetsColumns: Column[] = useMemo(() => ([
     {
       Header: '#',
       accessor: 'id',
       display: 'none'
+    },
+    {
+      id: 'protocol',
+      accessor: 'id',
+      title: 'Protocol',
+      Header: translate('defi.protocol'),
+      display: strategy?.showProtocol ? 'block' : 'none',
+      Cell: ({ value }: { value: string }) => {
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetCell assetId={value}>
+              <Flex
+                width={'100%'}
+                alignItems={'center'}
+              >
+                <AssetCell.ProtocolIcon size={'sm'} mr={2} />
+                <AssetCell.ProtocolName textStyle={'tableCell'} />
+              </Flex>
+            </AssetCell>
+          </SkeletonText>
+        )
+      },
     },
     {
       id:'name',
@@ -59,12 +93,14 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       sortType: sortAlpha
     },
     {
-      // id:'pool',
+      id:'tvlUsd',
       accessor:'tvlUsd',
       Header:translate('defi.pool'),
       Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
         return (
-          <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+          <Skeleton isLoaded={!!value}>
+            <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+          </Skeleton>
         )
       },
       sortType: sortNumeric
@@ -75,7 +111,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.apy'),
       Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
         return (
-          <Amount.Percentage value={value} textStyle={'tableCell'} />
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <Amount.Percentage value={value} textStyle={'tableCell'} />
+          </SkeletonText>
         )
       },
       sortType: sortNumeric
@@ -86,9 +124,11 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.rewards'),
       Cell: ({ value, row }: { value: string; row: Row }) => {
         return (
-          <AssetCell assetId={value}>
-            <AssetCell.Rewards size={'sm'} />
-          </AssetCell>
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetCell assetId={value}>
+              <AssetCell.Rewards size={'sm'} />
+            </AssetCell>
+          </SkeletonText>
         )
       }
     },
@@ -98,7 +138,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.balance'),
       Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
         return (
-          <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+          </SkeletonText>
         )
       },
       sortType: sortNumeric
@@ -109,12 +151,14 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.earnings'),
       Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
         return (
-          <Amount value={0} textStyle={'tableCell'} />
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <Amount value={0} textStyle={'tableCell'} />
+          </SkeletonText>
         )
       },
       sortType: sortNumeric
     },
-  ]), [translate])
+  ]), [translate, strategy])
 
   const availableAssetsColumns: Column[] = useMemo(() => ([
     {
@@ -123,30 +167,57 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       display: 'none'
     },
     {
-      id:'name',
-      accessor:'id',
-      Header:translate('defi.asset'),
+      id: 'protocol',
+      accessor: 'id',
+      title: 'Protocol',
+      Header: translate('defi.protocol'),
+      display: strategy?.showProtocol ? 'block' : 'none',
       Cell: ({ value }: { value: string }) => {
         return (
-          <AssetCell assetId={value}>
-            <Flex
-              width={'100%'}
-              alignItems={'center'}
-            >
-              <AssetCell.Icon size={'sm'} mr={2} />
-              <AssetCell.Name textStyle={'tableCell'} />
-            </Flex>
-          </AssetCell>
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetCell assetId={value}>
+              <Flex
+                width={'100%'}
+                alignItems={'center'}
+              >
+                <AssetCell.ProtocolIcon size={'sm'} mr={2} />
+                <AssetCell.ProtocolName textStyle={'tableCell'} />
+              </Flex>
+            </AssetCell>
+          </SkeletonText>
+        )
+      },
+    },
+    {
+      id:'name',
+      accessor:'id',
+      Header: translate('defi.asset'),
+      Cell: ({ value }: { value: string }) => {
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetCell assetId={value}>
+              <Flex
+                width={'100%'}
+                alignItems={'center'}
+              >
+                <AssetCell.Icon size={'sm'} mr={2} />
+                <AssetCell.Name textStyle={'tableCell'} />
+              </Flex>
+            </AssetCell>
+          </SkeletonText>
         )
       },
       sortType: sortAlpha
     },
     {
+      id:'tvlUsd',
       accessor:'tvlUsd',
-      Header:translate('defi.pool'),
+      Header: translate('defi.pool'),
       Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
         return (
-          <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+          </SkeletonText>
         )
       },
       sortType: sortNumeric
@@ -156,7 +227,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.apy'),
       Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
         return (
-          <Amount.Percentage value={value} textStyle={'tableCell'} />
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <Amount.Percentage value={value} textStyle={'tableCell'} />
+          </SkeletonText>
         )
       },
       sortType: sortNumeric
@@ -167,18 +240,23 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.rewards'),
       Cell: ({ value, row }: { value: string; row: Row }) => {
         return (
-          <AssetCell assetId={value}>
-            <AssetCell.Rewards size={'sm'} />
-          </AssetCell>
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetCell assetId={value}>
+              <AssetCell.Rewards size={'sm'} />
+            </AssetCell>
+          </SkeletonText>
         )
       }
     },
     {
       accessor:'id',
       id:'aprLastWeek',
+      canSort: false, // does nothing
+      disableSortBy: true, // disables sorting
+      defaultCanSort: false, // I think it disabled it? Not sure
       Header:translate('defi.aprLastWeek'),
     },
-  ]), [translate])
+  ]), [translate, strategy])
 
   useEffect(() => {
     if (!getVaultsByType || !isPortfolioLoaded) return;
@@ -208,28 +286,79 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const depositedAssets = useMemo(() => {
     if (!depositedAssetsData.length) return null
+
+    const initialState = {
+      sortBy: [
+        {
+          id: 'balanceUsd',
+          desc: false
+        }
+      ]
+    }
+
     return (
       <Card mt={10}>
         <Card.Heading>Deposited assets</Card.Heading>
-        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} onRowClick={() => {}} />
+        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={() => {}} />
       </Card>
     )
   }, [depositedAssetsColumns, depositedAssetsData])
 
   const availableAssets = useMemo(() => {
-    if (!availableAssetsData.length) return null
+    // if (!availableAssetsData.length) return null
+
+    const initialState = {
+      sortBy: [
+        {
+          id: 'tvlUsd',
+          desc: false
+        }
+      ]
+    }
+
     return (
       <Card mt={10}>
         <Card.Heading>Available assets</Card.Heading>
-        <ReactTable columns={availableAssetsColumns} data={availableAssetsData} onRowClick={() => {}} />
+        {
+          !availableAssetsData.length ? (
+            <Stack>
+              <Skeleton />
+              <Skeleton />
+              <Skeleton />
+              <Skeleton />
+            </Stack>
+          ) : (
+            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={() => {}} />
+          )
+        }
       </Card>
     )
   }, [availableAssetsColumns, availableAssetsData])
 
   return (
-    <>
+    <Flex
+      mt={14}
+      width={'100%'}
+      direction={'column'}
+      alignItems={'center'}
+    >
+      <Flex
+        direction={'row'}
+        width={['100%', '100%', '100%', '80%', '55%']}
+      >
+        <Flex
+          pr={14}
+          pt={20}
+          width={['100%', '65%']}
+          direction={'column'}
+        >
+          <Translation translation={strategy?.label} component={Heading} as={'h2'} size={'3xl'} />
+          <Translation mt={10} translation={strategy?.description} />
+        </Flex>
+        <Image width={'35%'} src={strategy?.image} />
+      </Flex>
       {depositedAssets}
       {availableAssets}
-    </>
+    </Flex>
   )
 }

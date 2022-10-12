@@ -8,10 +8,12 @@ import { useLocation, useParams, useRoutes, matchPath } from 'react-router-dom'
 export type BrowserRouterContextProps = {
   location: Location | null
   params: any
+  match: any
   query: any
 }
 
 const initalState: BrowserRouterContextProps = {
+  match: {},
   query: {},
   params: {},
   location: null
@@ -40,8 +42,9 @@ export function BrowserRouterProvider() {
       location,
       params,
       query,
+      match
     }),
-    [location, params, query],
+    [location, params, query, match],
   )
 
   return (

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { strategies } from 'constants/'
 // import { Logo } from "./Logo"
 import { HashRouter } from "react-router-dom";
 import { Web3Provider } from './contexts/Web3Provider'
@@ -45,10 +46,10 @@ const theme = extendTheme({
     sm:'14px',
     md:'16px',
     lg:'20px',
-    xl:'36px',
+    xl:'20px',
     '2xl':'36px',
     '3xl':'36px',
-    '4xl':'20px',
+    '4xl':'36px',
     '5xl':'36px',
     '6xl':'36px',
     '7xl':'36px',
@@ -66,6 +67,18 @@ const theme = extendTheme({
         bg: '#1B1E27',
         color: 'white',
       },
+      '.earn-best-yield': {
+        background:`url(${strategies.BY.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
+      '.earn-protected-yield': {
+        background:`url(${strategies.AA.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
+      '.earn-boosted-yield': {
+        background:`url(${strategies.BB.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
       // styles for the `a`
       a: {
         // color: '#6AE4FF',
@@ -77,9 +90,15 @@ const theme = extendTheme({
   },
   // Group different layer styles
   layerStyles: {
+    tableRow: {
+      _hover:{
+        bg:'table.header'
+      }
+    },
     tableHeader: {
       p:1,
       pl:4,
+      minH:'38px',
       color:'cta',
       fontSize:'sm',
       borderRadius:8,
@@ -128,6 +147,11 @@ const theme = extendTheme({
   },
   // Create components styles
   components: {
+    Skeleton: {
+      baseStyle: {
+        height: '20px'
+      }
+    },
     Heading: {
       baseStyle:{
         fontWeight:600

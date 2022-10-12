@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
-import { imageFolder } from 'constants/folders'
+import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from '../selectors'
 import { GenericContract } from '../contracts/GenericContract'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
@@ -71,7 +71,7 @@ export class TrancheVault {
   public getBalancesCalls(params: any[] = []): any[] {
     return [
       {
-        assetId:this.trancheConfig.address,
+        assetId:this.id,
         call:this.trancheContract.methods.balanceOf(...params),
       },
     ]
@@ -80,8 +80,8 @@ export class TrancheVault {
   public getPricesCalls(): any[] {
     return [
       {
+        assetId:this.id,
         decimals:this.underlyingToken?.decimals || 18,
-        assetId:this.trancheConfig.address.toLowerCase(),
         call:this.cdoContract.methods.virtualPrice(this.trancheConfig.address)
       },
     ]
@@ -96,9 +96,9 @@ export class TrancheVault {
 
     return [
       {
+        assetId:this.id,
         params:conversionRateParams,
         call:conversionRateParams.call,
-        assetId:this.trancheConfig.address.toLowerCase()
       },
     ]
   }
@@ -106,8 +106,8 @@ export class TrancheVault {
   public getAprsCalls(): ContractRawCall[] {
     return [
       {
+        assetId:this.id,
         decimals:this.underlyingToken?.decimals || 18,
-        assetId:this.trancheConfig.address.toLowerCase(),
         call:this.cdoContract.methods.getApr(this.trancheConfig.address)
       },
     ]
@@ -116,9 +116,8 @@ export class TrancheVault {
   public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
-        // decimals:this.trancheContract.decimals || 18,
-        call:this.trancheContract.methods.totalSupply(),
-        assetId:this.trancheConfig.address.toLowerCase()
+        assetId:this.id,
+        call:this.trancheContract.methods.totalSupply()
       },
     ]
   }
@@ -133,7 +132,7 @@ export class TrancheVault {
       [this.id]:{
         type: this.type,
         token: this.trancheConfig.token,
-        icon: `${imageFolder}${this.underlyingToken?.token}.svg`,
+        icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.trancheConfig.label || this.trancheConfig.token,
         decimals: this.trancheConfig.decimals
       },
