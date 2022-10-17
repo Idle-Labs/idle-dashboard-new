@@ -12,9 +12,9 @@ export class TrancheVault {
   // Global data
   readonly id: string
   readonly web3: Web3
-  readonly type: string
   readonly chainId: number
   readonly protocol: string
+  public readonly type: string
 
   // Raw config
   public readonly vaultConfig: TrancheConfig
@@ -30,8 +30,8 @@ export class TrancheVault {
 
   // Contracts
   public readonly cdoContract: Contract
-  public readonly underlyingContract: Contract | undefined
   public readonly trancheContract: Contract
+  public readonly underlyingContract: Contract | undefined
 
   constructor(web3: Web3, chainId: number, protocol: string, vaultConfig: TrancheConfig, gaugeConfig: GaugeConfig | null | undefined, type: string){
     

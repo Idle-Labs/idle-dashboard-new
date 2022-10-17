@@ -12,8 +12,8 @@ export class UnderlyingToken {
   // Global data
   readonly id: string
   readonly web3: Web3
-  readonly type: string
   readonly chainId: number
+  public readonly type: string
 
   readonly tokenConfig: UnderlyingTokenProps
 

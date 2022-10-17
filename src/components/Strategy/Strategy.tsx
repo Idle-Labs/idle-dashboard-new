@@ -30,10 +30,10 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { isPortfolioLoaded, selectors: {
-    getVaultsByType,
-    getVaultsWithBalance,
-    getVaultsAssetsByType,
-    getVaultsAssetsWithBalance
+    selectVaultsByType,
+    selectVaultsWithBalance,
+    selectVaultsAssetsByType,
+    selectVaultsAssetsWithBalance
   } } = usePortfolioProvider()
   const [ depositedAssetsData, setDepositedAssetsData ] = useState([])
   const [ availableAssetsData, setAvailableAssetsData ] = useState([])
@@ -158,17 +158,17 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       alignItems={'center'}
                     >
                       <StatArrow type={value.earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                      <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'tableCell'} />
+                      <Amount prefix={'$ '} value={value.usd.earnings} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>
-                  <Amount prefix={'$ '} value={value.earningsAmount} textStyle={'earnings'} />
+                  <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'earnings'} />
                 </Stat>
               )
             }
           </SkeletonText>
         )
       },
-      sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage', c)
+      sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.usd.earnings', c)
     },
   ]), [translate, strategy])
 
@@ -271,27 +271,29 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   ]), [translate, strategy])
 
   useEffect(() => {
-    if (!getVaultsByType || !isPortfolioLoaded) return;
-    // const vaults = getVaultsByType(params.strategy)
+    if (!selectVaultsByType || !isPortfolioLoaded) return;
+    // const vaults = selectVaultsByType(params.strategy)
     // console.log('vaults', vaults)
 
-    const vaultsAssets = getVaultsAssetsByType(params.strategy)
+    const vaultsAssets = selectVaultsAssetsByType(params.strategy)
     // console.log('vaultsAssets', vaultsAssets)
 
     const availableAssetsData = vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
 
     setAvailableAssetsData(availableAssetsData)
 
-  }, [isPortfolioLoaded, getVaultsByType, getVaultsAssetsByType, depositedAssetsData, params])
+  }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, params])
 
   useEffect(() => {
-    if (!getVaultsWithBalance || !isPortfolioLoaded) return;
+    if (!selectVaultsWithBalance || !isPortfolioLoaded) return;
 
-    const vaultsAssetsWithBalance = getVaultsAssetsWithBalance(params.strategy)
+    const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(params.strategy)
+
+    // console.log('vaultsAssetsWithBalance', params.strategy, vaultsAssetsWithBalance)
 
     setDepositedAssetsData(vaultsAssetsWithBalance)
 
-  }, [isPortfolioLoaded, getVaultsWithBalance, getVaultsAssetsWithBalance, params])
+  }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, params])
 
   const depositedAssets = useMemo(() => {
     if (!depositedAssetsData.length) return null

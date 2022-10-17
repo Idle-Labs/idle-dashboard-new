@@ -47,10 +47,19 @@ export type Transaction = EtherscanTransaction & {
 
 export type VaultPosition = {
   avgBuyPrice: BigNumber
-  earningsAmount: BigNumber
-  depositedAmount: BigNumber
-  redeemableAmount: BigNumber
   earningsPercentage: BigNumber
+  underlying: {
+    staked: BigNumber
+    earnings: BigNumber
+    deposited: BigNumber
+    redeemable: BigNumber
+  },
+  usd: {
+    staked: BigNumber
+    earnings: BigNumber
+    deposited: BigNumber
+    redeemable: BigNumber
+  }
 }
 
 export type Asset = {
@@ -63,8 +72,8 @@ export type Asset = {
   decimals: number
   apr?: BigNumber
   balance?: BigNumber
-  balanceUsd?: BigNumber
   priceUsd?: BigNumber
+  balanceUsd?: BigNumber
   vaultPrice?: BigNumber
   totalSupply?: BigNumber
   tvl?: BigNumber

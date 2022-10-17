@@ -126,24 +126,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetData
   }
 
-  const getVaultsAssetsByType = useCallback( (vaultType: string): Asset[] | null => {
-    const vaults = state.vaults ? state.vaults.filter( (vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
-    return Object.keys(state.assetsData).filter( assetId => vaults.map( (vault: Vault) => vault.id.toLowerCase() ).includes(assetId) ).map( assetId => state.assetsData[assetId] )
-  }, [state.vaults, state.assetsData])
-
-  const getVaultsAssetsWithBalance = useCallback( (vaultType: string | null = null): Asset[] | null => {
-    const vaultsWithBalance = state.vaults ? state.vaults.filter( (vault: Vault) => (!vaultType || vault.type.toLowerCase() === vaultType.toLowerCase()) && state.assetsData[vault.id.toLowerCase()] && state.assetsData[vault.id.toLowerCase()].balance && BNify(state.assetsData[vault.id.toLowerCase()].balance).gt(0) ) || null : null
-    return Object.keys(state.assetsData).filter( assetId => vaultsWithBalance.map( (vault: Vault) => vault.id.toLowerCase() ).includes(assetId) ).map( assetId => state.assetsData[assetId] )
-  }, [state.vaults, state.assetsData])
-
-  const getVaultsWithBalance = useCallback( (vaultType: string | null = null): Vault[] | null => {
-    return state.vaults ? state.vaults.filter( (vault: Vault) => (!vaultType || vault.type.toLowerCase() === vaultType.toLowerCase()) && state.assetsData[vault.id.toLowerCase()] && state.assetsData[vault.id.toLowerCase()].balance && BNify(state.assetsData[vault.id.toLowerCase()].balance).gt(0) ) || null : null
-  }, [state.vaults, state.assetsData])
-
-  const getVaultsByType = useCallback( (vaultType: string): Vault | null => {
-    return state.vaults ? state.vaults.filter( (vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
-  }, [state.vaults])
-
   const selectVaultById = useCallback( (vaultId: string): Vault | null => {
     return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId.toLowerCase()) || null : null
   }, [state.vaults])
@@ -151,6 +133,36 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const selectAssetById = useCallback( (assetId: string | undefined): Asset | null => {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
   }, [state.assetsData])
+
+  const selectVaultsAssetsByType = useCallback( (vaultType: string): Asset[] | null => {
+    const vaults = state.vaults ? state.vaults.filter( (vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
+    return Object.keys(state.assetsData).filter( assetId => vaults.map( (vault: Vault) => vault.id.toLowerCase() ).includes(assetId) ).map( assetId => state.assetsData[assetId] )
+  }, [state.vaults, state.assetsData])
+
+  const selectVaultsAssetsWithBalance = useCallback( (vaultType: string | null = null, includeStakedAmount: boolean = true): Asset[] | null => {
+    const vaultsWithBalance = state.vaults ? state.vaults.filter( (vault: Vault) => {
+      const asset = selectAssetById(vault.id)
+      const checkVaultType = !vaultType || vault.type.toLowerCase() === vaultType.toLowerCase()
+      const vaultHasBalance = BNify(asset?.balance).gt(0)
+      const vaultHasStakedBalance = includeStakedAmount && BNify(asset?.vaultPosition?.underlying.staked).gt(0)
+      return checkVaultType && (vaultHasBalance || vaultHasStakedBalance)
+    }) : null
+    return Object.keys(state.assetsData).filter( assetId => vaultsWithBalance.map( (vault: Vault) => vault.id.toLowerCase() ).includes(assetId) ).map( assetId => state.assetsData[assetId] )
+  }, [state.vaults, state.assetsData, selectAssetById])
+
+  const selectVaultsWithBalance = useCallback( (vaultType: string | null = null): Vault[] | null => {
+    return state.vaults ? state.vaults.filter( (vault: Vault) => (!vaultType || vault.type.toLowerCase() === vaultType.toLowerCase()) && state.assetsData[vault.id.toLowerCase()] && state.assetsData[vault.id.toLowerCase()].balance && BNify(state.assetsData[vault.id.toLowerCase()].balance).gt(0) ) || null : null
+  }, [state.vaults, state.assetsData])
+
+  const selectVaultsByType = useCallback( (vaultType: string): Vault | null => {
+    return state.vaults ? state.vaults.filter( (vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
+  }, [state.vaults])
+
+  const selectVaultGauge = useCallback( (vaultId: string): Vault | null => {
+    const vault = selectVaultById(vaultId)
+    if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig) return null
+    return selectVaultById(vault.gaugeConfig?.address)
+  }, [selectVaultById])
 
   const selectVaultPosition = useCallback( (assetId: string | undefined): VaultPosition | null => {
     if (!state.vaultsPositions || !assetId) return null
@@ -207,17 +219,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       if (depositedAmount.lte(0)) return vaultsPositions
 
-      const vault = selectVaultById(assetId)
+      let stakedAmount = BNify(0);
+      // const vault = selectVaultById(assetId)
       // const asset = selectAssetById(assetId)
       const vaultPrice = selectVaultPrice(assetId)
+      const assetPriceUsd = selectAssetPriceUsd(assetId)
       let vaultBalance = selectAssetBalance(assetId)
 
       // Add gauge balance to vault balance
-      const gaugeId = vault && ("gaugeConfig" in vault) ? vault.gaugeConfig?.address : null
-      const gaugeBalance = gaugeId ? selectAssetBalance(gaugeId) : BNify(0)
-      if (gaugeBalance) {
-        vaultBalance = vaultBalance.plus(gaugeBalance)
-        // console.log('gaugeBalance', assetId, gaugeBalance.toString(), vaultBalance.toString())
+      const gauge = selectVaultGauge(assetId)
+      if (gauge) {
+        stakedAmount = selectAssetBalance(gauge.id)
+        vaultBalance = vaultBalance.plus(stakedAmount)
       }
 
       const redeemableAmount = vaultBalance.times(vaultPrice)
@@ -225,11 +238,24 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
       const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
 
+      const underlying = {
+        staked: stakedAmount,
+        earnings: earningsAmount,
+        deposited: depositedAmount,
+        redeemable: redeemableAmount
+      }
+
+      const usd = {
+        staked: stakedAmount.times(assetPriceUsd),
+        earnings: earningsAmount.times(assetPriceUsd),
+        deposited: depositedAmount.times(assetPriceUsd),
+        redeemable: redeemableAmount.times(assetPriceUsd)
+      }
+
       vaultsPositions[assetId] = {
+        usd,
+        underlying,
         avgBuyPrice,
-        earningsAmount,
-        depositedAmount,
-        redeemableAmount,
         earningsPercentage,
       }
 
@@ -238,7 +264,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return vaultsPositions
 
     }, {})
-  }, [selectVaultById, selectVaultPrice, selectAssetBalance])
+  }, [selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetPriceUsd])
 
   // Init underlying tokens and vaults contracts
   useEffect(() => {
@@ -304,31 +330,31 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     const selectors = {
       selectVaultById,
-      getVaultsByType,
       selectAssetById,
       selectVaultPrice,
+      selectVaultsByType,
       selectAssetBalance,
       selectVaultPosition,
       selectAssetPriceUsd,
-      getVaultsWithBalance,
       selectAssetBalanceUsd,
-      getVaultsAssetsByType,
-      getVaultsAssetsWithBalance
+      selectVaultsWithBalance,
+      selectVaultsAssetsByType,
+      selectVaultsAssetsWithBalance
     };
 
     dispatch({type: 'SET_SELECTORS', payload: selectors})
   }, [
     selectVaultById,
-    getVaultsByType,
     selectAssetById,
     selectVaultPrice,
+    selectVaultsByType,
     selectAssetBalance,
     selectAssetPriceUsd,
     selectVaultPosition,
-    getVaultsWithBalance,
     selectAssetBalanceUsd,
-    getVaultsAssetsByType,
-    getVaultsAssetsWithBalance
+    selectVaultsWithBalance,
+    selectVaultsAssetsByType,
+    selectVaultsAssetsWithBalance
   ])
 
   // useEffect(() => {
@@ -346,8 +372,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const vaultsTransactions = await state.vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
         const txs = await txsPromise
         if (!("getTransactions" in vault)) return txs
-        txs[vault.id] = await vault.getTransactions(account.address, etherscanTransactions)
-        return txs
+        const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
+        // txs[vault.id] = 
+        return {
+          ...txs,
+          [vault.id]: vaultTransactions
+        }
       }, Promise.resolve({}))
 
       const vaultsPositions = getVaultsPositions(vaultsTransactions)
@@ -422,8 +452,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const asset = selectAssetById(assetId)
           if (asset){
             balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
+
+            const assetData = {
+              balance: balances[assetId]
+            }
+
             // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
+            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData }})
           }
         }
         return balances
@@ -501,15 +536,26 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [account, state.vaults, state.contracts, multiCall, walletInitialized])
 
   useEffect(() => {
+
+    if (!Object.values(state.balances).length || !Object.values(state.vaultsPositions).length) return
+
     let totalBalanceUsd = BNify(0);
     const balancesUsd = Object.keys(state.balances).reduce( (balancesUsd: Balances, assetId) => {
       const asset = selectAssetById(assetId)
       if (asset) {
         const vaultPrice = selectVaultPrice(assetId)
-        const assetBalance = selectAssetBalance(assetId)
+        let assetBalance = selectAssetBalance(assetId)
         const assetPriceUsd = selectAssetPriceUsd(assetId)
+        const vaultPosition = selectVaultPosition(assetId)
+
+        // Add staked amount
+        if (vaultPosition) {
+          assetBalance = assetBalance.plus(vaultPosition.underlying.staked)
+        }
 
         balancesUsd[assetId] = assetBalance.times(vaultPrice).times(assetPriceUsd)
+
+        // console.log('balancesUsd', assetId, vaultPosition, balancesUsd[assetId])
 
         dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balanceUsd: balancesUsd[assetId]} }})
 
@@ -521,7 +567,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
   // eslint-disable-next-line
-  }, [state.balances, state.vaultsPrices, state.pricesUsd])
+  }, [state.balances, state.vaultsPositions, selectVaultPosition, selectAssetPriceUsd, selectAssetBalance, selectVaultPrice])
 
   useEffect(() => {
     Object.keys(state.totalSupplies).forEach( assetId => {

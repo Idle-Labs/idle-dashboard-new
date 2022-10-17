@@ -12,8 +12,8 @@ export class BestYieldVault {
   // Global data
   readonly id: string
   readonly web3: Web3
-  readonly type: string
   readonly chainId: number
+  public readonly type: string
 
   // Raw config
   public readonly idleConfig: IdleToken
