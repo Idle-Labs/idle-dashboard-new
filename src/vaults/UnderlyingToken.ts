@@ -3,7 +3,7 @@ import { Contract } from 'web3-eth-contract'
 import ERC20 from '../abis/tokens/ERC20.json'
 import { tokensFolder } from 'constants/folders'
 import { GenericContract } from '../contracts/GenericContract'
-import { Abi, Assets, ContractRawCall } from '../constants/types'
+import type { Abi, Assets, ContractRawCall } from '../constants/types'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
 import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
 
@@ -32,6 +32,10 @@ export class UnderlyingToken {
     // Init CDO contract
     const abi = tokenConfig.abi || ERC20 as Abi
     this.contract = new web3.eth.Contract(abi, tokenConfig.address)
+  }
+
+  public getTransactions(account: string, etherscanTransactions: any[]): any[] {
+    return []
   }
 
   public getBalancesCalls(params: any[] = []): any[] {

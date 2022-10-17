@@ -202,11 +202,11 @@ export class  Multicall {
           callData:calls[i],
           extraData:calls[i].extraData
         };
-        const [err, result] = decodedCall
+        const [, result] = decodedCall
 
-        if (err){
-          console.log('Multicall Error:', err, calls[i])
-        }
+        // if (err){
+        //   console.log('Multicall Error:', err, calls[i])
+        // }
 
         if (result){
           output.data = result;

@@ -10,9 +10,9 @@ import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { BNify, makeEtherscanApiRequest } from 'helpers/'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
-import type { Balances, Asset, Assets, Vault } from 'constants/types'
 import React, { useContext, useEffect, useCallback, useReducer } from 'react'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens } from 'constants/'
+import type { Balances, Asset, Assets, Vault, Transaction, VaultPosition } from 'constants/types'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
 
 type InitialState = {
   aprs: Balances
@@ -24,8 +24,10 @@ type InitialState = {
   vaultsPrices: Balances
   totalSupplies: Balances
   isPortfolioLoaded: boolean
+  transactions: Transaction[]
   contracts: GenericContract[]
   selectors: Record<string, Function>
+  vaultsPositions: Record<string, VaultPosition>
 }
 
 type ContextProps = InitialState
@@ -45,7 +47,9 @@ const initialState: InitialState = {
   assetsData: {},
   balancesUsd: {},
   vaultsPrices: {},
+  transactions: [],
   totalSupplies: {},
+  vaultsPositions: {},
   isPortfolioLoaded:false
 }
 
@@ -59,6 +63,10 @@ const reducer = (state: InitialState, action: ActionTypes) => {
       return {...state, selectors: action.payload}
     case 'SET_CONTRACTS':
       return {...state, contracts: action.payload}
+    case 'SET_TRANSACTIONS':
+      return {...state, transactions: action.payload}
+    case 'SET_VAULTS_POSITIONS':
+      return {...state, vaultsPositions: action.payload}  
     case 'SET_VAULTS':
       return {...state, vaults: action.payload}
     case 'SET_APRS':
@@ -144,6 +152,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
   }, [state.assetsData])
 
+  const selectVaultPosition = useCallback( (assetId: string | undefined): VaultPosition | null => {
+    if (!state.vaultsPositions || !assetId) return null
+    return state.vaultsPositions[assetId.toLowerCase()] || null
+  }, [state.vaultsPositions])
+
   const selectVaultPrice = useCallback( (assetId: string | undefined): BigNumber => {
     if (!state.vaultsPrices || !assetId) return BNify(1)
     return state.vaultsPrices[assetId.toLowerCase()] || BNify(1)
@@ -169,6 +182,64 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return state.balancesUsd[assetId.toLowerCase()] || BNify(0)
   }, [state.balancesUsd])
 
+  const getVaultsPositions = useCallback( (vaultsTransactions: Record<string, Transaction[]>): Record<string, VaultPosition> => {
+    return Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: string) => {
+
+      const transactions = vaultsTransactions[assetId]
+
+      if (!transactions || !transactions.length) return vaultsPositions
+
+      const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
+        // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
+        switch (transaction.action) {
+          case 'deposit':
+            depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
+          break;
+          case 'redeem':
+            depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
+          break;
+          default:
+          break;
+        }
+
+        return depositedAmount
+      }, BNify(0))
+
+      if (depositedAmount.lte(0)) return vaultsPositions
+
+      const vault = selectVaultById(assetId)
+      // const asset = selectAssetById(assetId)
+      const vaultPrice = selectVaultPrice(assetId)
+      let vaultBalance = selectAssetBalance(assetId)
+
+      // Add gauge balance to vault balance
+      const gaugeId = vault && ("gaugeConfig" in vault) ? vault.gaugeConfig?.address : null
+      const gaugeBalance = gaugeId ? selectAssetBalance(gaugeId) : BNify(0)
+      if (gaugeBalance) {
+        vaultBalance = vaultBalance.plus(gaugeBalance)
+        // console.log('gaugeBalance', assetId, gaugeBalance.toString(), vaultBalance.toString())
+      }
+
+      const redeemableAmount = vaultBalance.times(vaultPrice)
+      const earningsAmount = redeemableAmount.minus(depositedAmount)
+      const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
+      const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
+
+      vaultsPositions[assetId] = {
+        avgBuyPrice,
+        earningsAmount,
+        depositedAmount,
+        redeemableAmount,
+        earningsPercentage,
+      }
+
+      // console.log(assetId, vaultsPrices[assetId].toString(), avgBuyPrice.toString(), depositedAmount.toString(), earningsAmount.toString(), earningsPercentage.toString())
+
+      return vaultsPositions
+
+    }, {})
+  }, [selectVaultById, selectVaultPrice, selectAssetBalance])
+
   // Init underlying tokens and vaults contracts
   useEffect(() => {
     if (!web3) return
@@ -192,8 +263,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const trancheVaults = Object.keys(tranches[chainId]).reduce( (vaultsContracts: TrancheVault[], protocol) => {
       Object.keys(tranches[chainId][protocol]).forEach( token => {
         const vaultConfig = tranches[chainId][protocol][token]
-        const trancheVaultAA = new TrancheVault(web3, chainId, protocol, vaultConfig, 'AA')
-        const trancheVaultBB = new TrancheVault(web3, chainId, protocol, vaultConfig, 'BB')
+        const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
+        const trancheVaultAA = new TrancheVault(web3, chainId, protocol, vaultConfig, gaugeConfig, 'AA')
+        const trancheVaultBB = new TrancheVault(web3, chainId, protocol, vaultConfig, null, 'BB')
         vaultsContracts.push(trancheVaultAA)
         vaultsContracts.push(trancheVaultBB)
       })
@@ -236,6 +308,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectAssetById,
       selectVaultPrice,
       selectAssetBalance,
+      selectVaultPosition,
       selectAssetPriceUsd,
       getVaultsWithBalance,
       selectAssetBalanceUsd,
@@ -251,6 +324,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectVaultPrice,
     selectAssetBalance,
     selectAssetPriceUsd,
+    selectVaultPosition,
     getVaultsWithBalance,
     selectAssetBalanceUsd,
     getVaultsAssetsByType,
@@ -262,14 +336,39 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // }, [state.assetsData])
 
   useEffect(() => {
-    if (!account?.address || !explorer) return
+    if (!account?.address || !explorer || !state.isPortfolioLoaded) return
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
-      const transactions = makeEtherscanApiRequest(endpoint, explorer.keys)
+      const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
 
-      console.log('transactions', transactions)
+      // console.log('etherscanTransactions', etherscanTransactions)
+
+      const vaultsTransactions = await state.vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
+        const txs = await txsPromise
+        if (!("getTransactions" in vault)) return txs
+        txs[vault.id] = await vault.getTransactions(account.address, etherscanTransactions)
+        return txs
+      }, Promise.resolve({}))
+
+      const vaultsPositions = getVaultsPositions(vaultsTransactions)
+
+      // Set asset data with vault position
+      Object.keys(vaultsPositions).forEach( (assetId: string) => {
+        const vaultPosition = vaultsPositions[assetId]
+        dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPosition} }})
+      })
+
+      // console.log('vaultsPositions', vaultsPositions)
+      // console.log('vaultsTransactions', vaultsTransactions)
+
+      dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
+
+      // console.log('vaultsPositions', vaultsPositions)
+
     })()
-  },[account?.address, chainId, explorer])
+  // eslint-disable-next-line
+  },[account?.address, chainId, explorer, state.vaults, state.balances, state.vaultsPrices, state.isPortfolioLoaded])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
@@ -285,13 +384,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vault.getTotalSupplyCalls()
       ]
 
-      aggregatedRawCalls.forEach( (calls: any[], index: number) => {
+      aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
         // Init array index
         if (rawCalls.length<=index){
           rawCalls.push([])
         }
 
-        calls.forEach( rawCall => {
+        calls.forEach( (rawCall: ContractRawCall) => {
           const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
           if (callData){
             rawCalls[index].push(callData)

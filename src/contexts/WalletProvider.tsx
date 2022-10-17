@@ -25,7 +25,7 @@ init({
    enabled: true,
    position: 'bottomRight',
    transactionHandler: transaction => {
-     console.log('transaction', transaction)
+     // console.log('transaction', transaction)
      if (transaction.eventCode === 'txPool') {
        return {
          autoDismiss: 0,

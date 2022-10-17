@@ -8,7 +8,7 @@ export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
   
   const { location } = useBrowserRouter()
 
-  const className = location?.pathname.replace(/\//g,'-').replace(/^\-/,'')
+  const className = location?.pathname.replace(/\//g,'-').replace(/^-/,'')
 
   return (
     <Box

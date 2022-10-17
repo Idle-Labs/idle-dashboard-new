@@ -6,12 +6,52 @@ import { IconType as ReactIcon } from 'react-icons'
 import { ContractSendMethod } from 'web3-eth-contract'
 
 export type { Vault } from 'vaults/'
+export type { BigNumber } from 'bignumber.js'
 
 export type Abi = AbiItem[]
 
 export type IconType = string | ReactIcon | React.ElementType
 
 export type Number = string | number | BigNumber
+
+
+export type EtherscanTransaction = {
+  blockHash: string
+  blockNumber: string
+  confirmations: string
+  contractAddress: string
+  cumulativeGasUsed: string
+  from: string
+  gas: string
+  gasPrice: string
+  gasUsed: string
+  hash: string
+  input: string
+  nonce: string
+  timeStamp: string
+  to: string
+  tokenDecimal: string
+  tokenName: string
+  tokenSymbol: string
+  transactionIndex: string
+  value: string
+}
+
+export type Transaction = EtherscanTransaction & {
+  action: string,
+  assetId: string
+  idleAmount: BigNumber
+  idlePrice: BigNumber
+  underlyingAmount: BigNumber
+}
+
+export type VaultPosition = {
+  avgBuyPrice: BigNumber
+  earningsAmount: BigNumber
+  depositedAmount: BigNumber
+  redeemableAmount: BigNumber
+  earningsPercentage: BigNumber
+}
 
 export type Asset = {
   id?: string
@@ -29,6 +69,7 @@ export type Asset = {
   totalSupply?: BigNumber
   tvl?: BigNumber
   tvlUsd?: BigNumber
+  vaultPosition?: VaultPosition
 }
 
 export type Assets = Record<string, Asset>

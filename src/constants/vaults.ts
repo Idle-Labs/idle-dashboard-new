@@ -181,6 +181,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     }
   },
   1: {
+    /*
     idle:{
       DAI:{
         protocol:'idle',
@@ -347,6 +348,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       //   }
       // }
     },
+    */
     lido:{
       stETH:{
         protocol:'lido',
@@ -1059,18 +1061,18 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         protocol:'euler',
         blockNumber:15445762,
         enabledEnvs: ['beta'],
-        adaptiveYieldSplitEnabled:true,
         underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
           name:'IdleCDO_euler_levUSDC',
-          address:'0x29d094110c7a89f1cb6c975df0a38cae80f24b21'
+          address:'0xcb2bd49d4b7874e6597dedfaa3e7b4e01831c5af'
         },
         Strategy:{
           abi:IdleStrategy as Abi,
           name:'IdleStrategy_euler_levUSDC',
-          address:'0x37De1D299C93743472343699c58Ec95000870Dc5'
+          address:'0xee5ec95ce2c8700a2d152db3249fa13b163f0073'
         },
         description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
@@ -1100,7 +1102,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             label:'euler USDC AA',
             name:'AA_euler_levUSDC',
             token:'AA_euler_levUSDC',
-            address:'0xb43B101F1261784E3c4AF931dBD6082e08BB3317'
+            address:'0x9F94fa97cC2d48315015040708D12aB855283164'
           },
           BB:{
             abi:ERC20 as Abi,
@@ -1126,7 +1128,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             label:'euler USDC BB',
             name:'BB_euler_levUSDC',
             token:'BB_euler_levUSDC',
-            address:'0x19ef72c89e0B28406B7EbAcf2556CAb7Cc623eF9'
+            address:'0x617648B846512E2F49dC21Bf27e4505C285E6977'
           }
         }
       },
@@ -1556,6 +1558,7 @@ export type IdleTokenProtocol = {
 
 export type BestYieldConfig = {
   idle: IdleToken
+  proxies?: string[]
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
@@ -1571,6 +1574,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleDAIYield',
         address: '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
       },
+      proxies: ['0xDe3c769cCD1878372864375e9f89956806B86daA'],
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
@@ -1618,6 +1622,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleUSDCYield',
         address: '0x5274891bEC421B39D23760c04A6755eCB444797C',
       },
+      proxies: ['0x43bD6a78b37b50E3f52CAcec53F1202dbDe6a761'],
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {

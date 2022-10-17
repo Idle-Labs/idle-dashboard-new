@@ -1,9 +1,8 @@
 import { Location } from 'history'
 import { routes } from '../constants/routes'
 import { useQuery } from '../hooks/useQuery'
-// import { ProviderProps } from './common/types'
+import { useLocation, useRoutes } from 'react-router-dom'
 import React, { useMemo, createContext, useContext } from 'react'
-import { useLocation, useParams, useRoutes, matchPath } from 'react-router-dom'
 
 export type BrowserRouterContextProps = {
   location: Location | null

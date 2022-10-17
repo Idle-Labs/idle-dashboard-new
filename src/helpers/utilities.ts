@@ -11,19 +11,13 @@ export const normalizeTokenDecimals = (tokenDecimals: number): BigNumber => {
   return BNify(`1e${tokenDecimals}`);
 }
 export const normalizeTokenAmount = (tokenBalance: BNifyInput, tokenDecimals: number, round: boolean = true) => {
-  const normalizedTokenDecimals = normalizeTokenDecimals(tokenDecimals);
-  return BNify(tokenBalance).times(normalizedTokenDecimals).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
+  return BNify(tokenBalance).times(`1e${tokenDecimals}`).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
-export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals: number, exchangeRate?: BNifyInput) => {
+export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals?: number, exchangeRate?: BNifyInput) => {
   if (!tokenDecimals) {
     return BNify(tokenBalance);
   }
-  const normalizedTokenDecimals = normalizeTokenDecimals(tokenDecimals);
-  let balance = BNify(tokenBalance).div(normalizedTokenDecimals);
-  if (exchangeRate && !exchangeRate.isNaN()) {
-    balance = balance.times(exchangeRate);
-  }
-  return balance;
+  return BNify(tokenBalance).div(`1e${tokenDecimals}`);
 }
 
 export const isBigNumberNaN = (amount: any) => {
@@ -70,6 +64,20 @@ export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, min
   newValue += suffixes[suffixNum];
 
   return newValue;
+}
+
+export const asyncForEach = async (array: any[], callback: Function, async: boolean = true) => {
+  let output = [];
+  if (async) {
+    output = await Promise.all(array.map((c, index) => {
+      return callback(c, index, array);
+    }));
+  } else {
+    for (let index = 0; index < array.length; index++) {
+      output.push(await callback(array[index], index, array));
+    }
+  }
+  return output;
 }
 
 export const shortenHash = (hash: string, startLen: number = 7, endLen: number = 4) => {

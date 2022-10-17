@@ -42,6 +42,7 @@ const theme = extendTheme({
     tertiary:'#2272C8',
   },
   fontSizes: {
+    xxs:'11px',
     xs:'12px',
     sm:'14px',
     md:'16px',
@@ -91,6 +92,9 @@ const theme = extendTheme({
   // Group different layer styles
   layerStyles: {
     tableRow: {
+      borderBottomWidth:'1px',
+      borderBottomStyle:'solid',
+      borderBottomColor:'divider',
       _hover:{
         bg:'table.header'
       }
@@ -122,6 +126,11 @@ const theme = extendTheme({
       fontSize:'sm',
       fontWeight: 500,
       // fontFamily:`"Source Sans Pro", sans-serif`
+    },
+    earnings: {
+      color:'cta',
+      fontWeight:400,
+      fontSize:'sm',
     },
     tableCell: {
       fontSize:'md',

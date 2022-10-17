@@ -1,31 +1,28 @@
-import { BNify } from 'helpers/'
 import { strategies } from 'constants/'
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
-import type { Asset } from 'constants/types'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
+import { BNify, getObjectPath } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
 import { AssetCell } from 'components/AssetCell/AssetCell'
+import type { Asset, VaultPosition } from 'constants/types'
 import React, { useState, useEffect, useMemo } from 'react'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { ContainerProps, Flex, Heading, Image, Stack, Skeleton, SkeletonText } from '@chakra-ui/react'
+import { ContainerProps, Flex, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 const sortNumeric = (a: any, b: any, field: any, c: any): number => {
-
-  const n1 = BNify(a.original[field]).isNaN() ? BNify(-1) : BNify(a.original[field])
-  const n2 = BNify(b.original[field]).isNaN() ? BNify(-1) : BNify(b.original[field])
-  // console.log('n1', field, a, a.original[field], n1.toString())
-  // console.log('n2', field, b, b.original[field], n2.toString())
+  const n1 = BNify(getObjectPath(a.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(a.original, field))
+  const n2 = BNify(getObjectPath(b.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(b.original, field))
 
   return n1.gt(n2) ? -1 : 1
 }
 
 const sortAlpha = (a: any, b: any, field: any): number => {
-  return a.original[field].localeCompare(b.original[field])
+  return getObjectPath(a.original, field).localeCompare(getObjectPath(b.original, field))
 }
 
 export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
@@ -56,7 +53,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       accessor: 'id',
       title: 'Protocol',
       Header: translate('defi.protocol'),
-      display: strategy?.showProtocol ? 'block' : 'none',
+      display: strategy?.showProtocol ? 'table-cell' : 'none',
       Cell: ({ value }: { value: string }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -147,16 +144,31 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     },
     {
       // id:'earnings',
-      accessor:'earnings',
+      accessor:'vaultPosition',
       Header:translate('defi.earnings'),
-      Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
+      Cell: ({ value, row }: { value: VaultPosition; row: Row }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <Amount value={0} textStyle={'tableCell'} />
+            {
+              value && (
+                <Stat>
+                  <StatNumber>
+                    <Flex
+                      direction={'row'}
+                      alignItems={'center'}
+                    >
+                      <StatArrow type={value.earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
+                      <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'tableCell'} />
+                    </Flex>
+                  </StatNumber>
+                  <Amount prefix={'$ '} value={value.earningsAmount} textStyle={'earnings'} />
+                </Stat>
+              )
+            }
           </SkeletonText>
         )
       },
-      sortType: sortNumeric
+      sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage', c)
     },
   ]), [translate, strategy])
 
@@ -171,7 +183,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       accessor: 'id',
       title: 'Protocol',
       Header: translate('defi.protocol'),
-      display: strategy?.showProtocol ? 'block' : 'none',
+      display: strategy?.showProtocol ? 'table-cell' : 'none',
       Cell: ({ value }: { value: string }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -274,11 +286,8 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   useEffect(() => {
     if (!getVaultsWithBalance || !isPortfolioLoaded) return;
-    // const vaultsWithBalance = getVaultsWithBalance(params.strategy)
-    // console.log('vaultsWithBalance', vaultsWithBalance)
 
     const vaultsAssetsWithBalance = getVaultsAssetsWithBalance(params.strategy)
-    // console.log('vaultsAssetsWithBalance', vaultsAssetsWithBalance)
 
     setDepositedAssetsData(vaultsAssetsWithBalance)
 
@@ -305,7 +314,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [depositedAssetsColumns, depositedAssetsData])
 
   const availableAssets = useMemo(() => {
-    // if (!availableAssetsData.length) return null
+    if (!availableAssetsData.length) return null
 
     const initialState = {
       sortBy: [

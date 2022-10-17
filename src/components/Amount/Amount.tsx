@@ -1,5 +1,4 @@
 import React from 'react'
-import { BigNumber } from 'bignumber.js'
 import type { Number } from 'constants/types'
 import { Text, TextProps } from '@chakra-ui/react'
 import { abbreviateNumber, BNify, isBigNumberNaN } from 'helpers/'
