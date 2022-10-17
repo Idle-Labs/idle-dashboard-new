@@ -4,7 +4,7 @@ import { Text, TextProps } from '@chakra-ui/react'
 import { abbreviateNumber, BNify, isBigNumberNaN } from 'helpers/'
 
 type AmountProps = {
-  value: Number
+  value?: Number
   prefix?: string | React.ReactElement
   suffix?: string | React.ReactElement
   maxDecimals?: number

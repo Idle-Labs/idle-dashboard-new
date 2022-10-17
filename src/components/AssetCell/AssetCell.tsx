@@ -1,4 +1,5 @@
 import type { BigNumber } from 'bignumber.js'
+import { Amount } from 'components/Amount/Amount'
 import { Text, Flex, Avatar, Tooltip } from '@chakra-ui/react'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
@@ -45,9 +46,7 @@ export const AssetCell = ({assetId, children, ...rest}: AssetCellProps) => {
 
   return (
     <AssetContext.Provider value={{asset, vault, assetId}}>
-      <Flex
-        width={'100%'}
-      >
+      <Flex>
         {children}
       </Flex>
 
@@ -162,9 +161,17 @@ const Rewards: React.FC<AvatarProps> = (props) => {
     </Flex>
   )
 }
+const Balance: React.FC<AvatarProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return (
+    <Amount value={asset?.balance} {...props} />
+  )
+}
 
 AssetCell.Name = Name
 AssetCell.Icon = Icon
 AssetCell.Rewards = Rewards
+AssetCell.Balance = Balance
 AssetCell.ProtocolName = ProtocolName
 AssetCell.ProtocolIcon = ProtocolIcon

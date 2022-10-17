@@ -25,6 +25,9 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = (props) => 
           alignItems={'center'}
         > 
           <NavItemText isActive={props.isOpen} {...props.menuItem} />
+          <Flex
+            width={'24px'}
+          >
           {
             props.isOpen ? (
               <MdKeyboardArrowUp
@@ -38,6 +41,7 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = (props) => 
               />
             )
           }
+          </Flex>
         </Flex>
       </MenuButton>
       {

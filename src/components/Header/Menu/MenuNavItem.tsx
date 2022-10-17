@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink } from "react-router-dom"
 import { Icon } from 'components/Icon/Icon'
-import { Flex, useTheme } from '@chakra-ui/react'
+import { useTheme } from '@chakra-ui/react'
 import type { MenuItemType } from 'constants/menu'
 import { Translation } from 'components/Translation/Translation'
 
@@ -17,11 +17,7 @@ export const NavItemText:React.FC<NavItemTextProps> = ({isActive, ...props}) => 
     <>
       {
         MenuItemIcon && (
-          <Flex
-            mr={1}
-          >
-            <Icon IconComponent={MenuItemIcon} color={isActive ? theme.colors.primary : theme.colors.cta} width={6} height={6} size={'24px'} {...props.iconProps}/>
-          </Flex>
+          <Icon IconComponent={MenuItemIcon} color={isActive ? theme.colors.primary : theme.colors.cta} mr={1} width={6} height={6} size={'24px'} {...props.iconProps}/>
         )
       }
       <Translation translation={props.label} textStyle={'cta'} sx={isActive ? {color:'primary'} : {}} {...props.labelProps}></Translation>

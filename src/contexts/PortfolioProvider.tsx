@@ -332,6 +332,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectVaultById,
       selectAssetById,
       selectVaultPrice,
+      selectVaultGauge,
       selectVaultsByType,
       selectAssetBalance,
       selectVaultPosition,
@@ -346,6 +347,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [
     selectVaultById,
     selectAssetById,
+    selectVaultGauge,
     selectVaultPrice,
     selectVaultsByType,
     selectAssetBalance,
@@ -356,10 +358,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectVaultsAssetsByType,
     selectVaultsAssetsWithBalance
   ])
-
-  // useEffect(() => {
-  //   console.log('assetsData', state.assetsData)
-  // }, [state.assetsData])
 
   useEffect(() => {
     if (!account?.address || !explorer || !state.isPortfolioLoaded) return
@@ -393,12 +391,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
-
-      // console.log('vaultsPositions', vaultsPositions)
-
     })()
   // eslint-disable-next-line
-  },[account?.address, chainId, explorer, state.vaults, state.balances, state.vaultsPrices, state.isPortfolioLoaded])
+  }, [account?.address, chainId, explorer, state.vaults, state.balances, state.vaultsPrices, state.isPortfolioLoaded])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
