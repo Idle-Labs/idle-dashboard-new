@@ -5,7 +5,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { ZERO_ADDRESS, strategies, BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from 'constants/'
+import { ZERO_ADDRESS, BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from 'constants/'
 
 export class BestYieldVault {
 
@@ -28,10 +28,10 @@ export class BestYieldVault {
     
     // Init global data
     this.web3 = web3
+    this.type = type
     this.chainId = chainId
     this.tokenConfig = tokenConfig
     this.idleConfig = tokenConfig.idle
-    this.type = strategies[type]?.route
     this.id = this.idleConfig.address.toLowerCase()
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
 

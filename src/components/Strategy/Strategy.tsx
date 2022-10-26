@@ -3,15 +3,16 @@ import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
+import { useNavigate } from 'react-router-dom'
 import { BNify, getObjectPath } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
 import { AssetCell } from 'components/AssetCell/AssetCell'
 import type { Asset, VaultPosition } from 'constants/types'
-import React, { useState, useEffect, useMemo } from 'react'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { ContainerProps, Flex, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 const sortNumeric = (a: any, b: any, field: any, c: any): number => {
@@ -25,10 +26,13 @@ const sortAlpha = (a: any, b: any, field: any): number => {
   return getObjectPath(a.original, field).localeCompare(getObjectPath(b.original, field))
 }
 
+type RowProps = Row<Asset>
+
 export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
+  const navigate = useNavigate()
   const translate = useTranslate()
-  const { params } = useBrowserRouter()
+  const { location, params } = useBrowserRouter()
   const { isPortfolioLoaded, selectors: {
     selectVaultsByType,
     selectVaultsWithBalance,
@@ -39,10 +43,14 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [ availableAssetsData, setAvailableAssetsData ] = useState([])
 
   const strategy = useMemo(() => (
-    Object.values(strategies).find( strategy => strategy.route === params.strategy )
+    Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
   ), [params])
 
-  const depositedAssetsColumns: Column[] = useMemo(() => ([
+  const onRowClick = useCallback((row: RowProps) => {
+    return navigate(`${location?.pathname}/${row.original.id}`)
+  }, [navigate, location])
+
+  const depositedAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {
       Header: '#',
       accessor: 'id',
@@ -53,8 +61,8 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       accessor: 'id',
       title: 'Protocol',
       Header: translate('defi.protocol'),
-      display: strategy?.showProtocol ? 'table-cell' : 'none',
-      Cell: ({ value }: { value: string }) => {
+      display: strategy && strategies[strategy].showProtocol ? 'table-cell' : 'none',
+      Cell: ({ value }: { value: string | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <AssetCell assetId={value}>
@@ -74,7 +82,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       id:'name',
       accessor:'id',
       Header:translate('defi.asset'),
-      Cell: ({ value }: { value: string }) => {
+      Cell: ({ value }: { value: string | undefined }) => {
         return (
           <AssetCell assetId={value}>
             <Flex
@@ -93,7 +101,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       id:'tvlUsd',
       accessor:'tvlUsd',
       Header:translate('defi.pool'),
-      Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
+      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
         return (
           <Skeleton isLoaded={!!value}>
             <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
@@ -106,7 +114,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       // id:'apy',
       accessor:'apr',
       Header:translate('defi.apy'),
-      Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
+      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <Amount.Percentage value={value} textStyle={'tableCell'} />
@@ -119,7 +127,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       id:'rewards',
       accessor:'id',
       Header:translate('defi.rewards'),
-      Cell: ({ value, row }: { value: string; row: Row }) => {
+      Cell: ({ value, row }: { value: string | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <AssetCell assetId={value}>
@@ -133,7 +141,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       // id:'deposited',
       accessor:'balanceUsd',
       Header:translate('defi.balance'),
-      Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
+      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
@@ -146,7 +154,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       // id:'earnings',
       accessor:'vaultPosition',
       Header:translate('defi.earnings'),
-      Cell: ({ value, row }: { value: VaultPosition; row: Row }) => {
+      Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             {
@@ -172,7 +180,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     },
   ]), [translate, strategy])
 
-  const availableAssetsColumns: Column[] = useMemo(() => ([
+  const availableAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {
       Header: '#',
       accessor: 'id',
@@ -183,8 +191,8 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       accessor: 'id',
       title: 'Protocol',
       Header: translate('defi.protocol'),
-      display: strategy?.showProtocol ? 'table-cell' : 'none',
-      Cell: ({ value }: { value: string }) => {
+      display: strategy && strategies[strategy].showProtocol ? 'table-cell' : 'none',
+      Cell: ({ value }: { value: string | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <AssetCell assetId={value}>
@@ -204,7 +212,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       id:'name',
       accessor:'id',
       Header: translate('defi.asset'),
-      Cell: ({ value }: { value: string }) => {
+      Cell: ({ value }: { value: string | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <AssetCell assetId={value}>
@@ -225,7 +233,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       id:'tvlUsd',
       accessor:'tvlUsd',
       Header: translate('defi.pool'),
-      Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
+      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
@@ -237,7 +245,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     {
       accessor:'apr',
       Header:translate('defi.apy'),
-      Cell: ({ value, row }: { value: BigNumber; row: Row }) => {
+      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <Amount.Percentage value={value} textStyle={'tableCell'} />
@@ -250,7 +258,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       id:'rewards',
       accessor:'id',
       Header:translate('defi.rewards'),
-      Cell: ({ value, row }: { value: string; row: Row }) => {
+      Cell: ({ value, row }: { value: string | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <AssetCell assetId={value}>
@@ -261,12 +269,12 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       }
     },
     {
-      accessor:'id',
-      id:'aprLastWeek',
+      accessor: 'id',
       canSort: false, // does nothing
+      id: 'aprLastWeek',
       disableSortBy: true, // disables sorting
       defaultCanSort: false, // I think it disabled it? Not sure
-      Header:translate('defi.aprLastWeek'),
+      Header: translate('defi.aprLastWeek'),
     },
   ]), [translate, strategy])
 
@@ -275,25 +283,25 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     // const vaults = selectVaultsByType(params.strategy)
     // console.log('vaults', vaults)
 
-    const vaultsAssets = selectVaultsAssetsByType(params.strategy)
+    const vaultsAssets = selectVaultsAssetsByType(strategy)
     // console.log('vaultsAssets', vaultsAssets)
 
     const availableAssetsData = vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
 
     setAvailableAssetsData(availableAssetsData)
 
-  }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, params])
+  }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   useEffect(() => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return;
 
-    const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(params.strategy)
+    const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(strategy)
 
     // console.log('vaultsAssetsWithBalance', params.strategy, vaultsAssetsWithBalance)
 
     setDepositedAssetsData(vaultsAssetsWithBalance)
 
-  }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, params])
+  }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
 
   const depositedAssets = useMemo(() => {
     if (!depositedAssetsData.length) return null
@@ -310,10 +318,10 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return (
       <Card mt={10}>
         <Card.Heading>Deposited assets</Card.Heading>
-        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={() => {}} />
+        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={onRowClick} />
       </Card>
     )
-  }, [depositedAssetsColumns, depositedAssetsData])
+  }, [depositedAssetsColumns, depositedAssetsData, onRowClick])
 
   const availableAssets = useMemo(() => {
     if (!availableAssetsData.length) return null
@@ -339,20 +347,16 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
               <Skeleton />
             </Stack>
           ) : (
-            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={() => {}} />
+            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={onRowClick} />
           )
         }
       </Card>
     )
-  }, [availableAssetsColumns, availableAssetsData])
+  }, [availableAssetsColumns, availableAssetsData, onRowClick])
 
-  return (
-    <Flex
-      mt={14}
-      width={'100%'}
-      direction={'column'}
-      alignItems={'center'}
-    >
+  const heading = useMemo(() => {
+    if (!strategy) return null
+    return (
       <Flex
         direction={'row'}
         width={['100%', '100%', '100%', '80%', '55%']}
@@ -363,11 +367,22 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
           width={['100%', '65%']}
           direction={'column'}
         >
-          <Translation translation={strategy?.label} component={Heading} as={'h2'} size={'3xl'} />
-          <Translation mt={10} translation={strategy?.description} />
+          <Translation translation={strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
+          <Translation mt={10} translation={strategies[strategy].description} />
         </Flex>
-        <Image width={'35%'} src={strategy?.image} />
+        <Image width={'35%'} src={strategies[strategy].image} />
       </Flex>
+    )
+  }, [strategy])
+
+  return (
+    <Flex
+      mt={14}
+      width={'100%'}
+      direction={'column'}
+      alignItems={'center'}
+    >
+      {heading}
       {depositedAssets}
       {availableAssets}
     </Flex>

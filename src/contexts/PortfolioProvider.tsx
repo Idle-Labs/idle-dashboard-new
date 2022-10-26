@@ -10,9 +10,10 @@ import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { BNify, makeEtherscanApiRequest } from 'helpers/'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
+import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import React, { useContext, useEffect, useCallback, useReducer } from 'react'
-import type { Balances, Asset, Assets, Vault, Transaction, VaultPosition } from 'constants/types'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
+import type { Balances, Asset, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr } from 'constants/types'
 
 type InitialState = {
   aprs: Balances
@@ -56,6 +57,7 @@ const initialState: InitialState = {
 const initialContextState = initialState
 
 const reducer = (state: InitialState, action: ActionTypes) => {
+
   switch (action.type){
     case 'SET_PORTFOLIO_LOADED':
       return {...state, isPortfolioLoaded: action.payload}
@@ -194,78 +196,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return state.balancesUsd[assetId.toLowerCase()] || BNify(0)
   }, [state.balancesUsd])
 
-  const getVaultsPositions = useCallback( (vaultsTransactions: Record<string, Transaction[]>): Record<string, VaultPosition> => {
-    return Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: string) => {
-
-      const transactions = vaultsTransactions[assetId]
-
-      if (!transactions || !transactions.length) return vaultsPositions
-
-      const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
-        // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
-        switch (transaction.action) {
-          case 'deposit':
-            depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
-          break;
-          case 'redeem':
-            depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
-          break;
-          default:
-          break;
-        }
-
-        return depositedAmount
-      }, BNify(0))
-
-      if (depositedAmount.lte(0)) return vaultsPositions
-
-      let stakedAmount = BNify(0);
-      // const vault = selectVaultById(assetId)
-      // const asset = selectAssetById(assetId)
-      const vaultPrice = selectVaultPrice(assetId)
-      const assetPriceUsd = selectAssetPriceUsd(assetId)
-      let vaultBalance = selectAssetBalance(assetId)
-
-      // Add gauge balance to vault balance
-      const gauge = selectVaultGauge(assetId)
-      if (gauge) {
-        stakedAmount = selectAssetBalance(gauge.id)
-        vaultBalance = vaultBalance.plus(stakedAmount)
-      }
-
-      const redeemableAmount = vaultBalance.times(vaultPrice)
-      const earningsAmount = redeemableAmount.minus(depositedAmount)
-      const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
-      const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
-
-      const underlying = {
-        staked: stakedAmount,
-        earnings: earningsAmount,
-        deposited: depositedAmount,
-        redeemable: redeemableAmount
-      }
-
-      const usd = {
-        staked: stakedAmount.times(assetPriceUsd),
-        earnings: earningsAmount.times(assetPriceUsd),
-        deposited: depositedAmount.times(assetPriceUsd),
-        redeemable: redeemableAmount.times(assetPriceUsd)
-      }
-
-      vaultsPositions[assetId] = {
-        usd,
-        underlying,
-        avgBuyPrice,
-        earningsPercentage,
-      }
-
-      // console.log(assetId, vaultsPrices[assetId].toString(), avgBuyPrice.toString(), depositedAmount.toString(), earningsAmount.toString(), earningsPercentage.toString())
-
-      return vaultsPositions
-
-    }, {})
-  }, [selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetPriceUsd])
-
   // Init underlying tokens and vaults contracts
   useEffect(() => {
     if (!web3) return
@@ -324,6 +254,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
 
+    // Cleanup
+    return () => {
+      dispatch({type: 'SET_VAULTS', payload: []})
+      dispatch({type: 'SET_CONTRACTS', payload: []})
+      dispatch({type: 'SET_ASSETS_DATA', payload: {}})
+    };
+
   }, [web3, chainId])
 
   // Set selectors
@@ -371,14 +308,83 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const txs = await txsPromise
         if (!("getTransactions" in vault)) return txs
         const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
-        // txs[vault.id] = 
         return {
           ...txs,
           [vault.id]: vaultTransactions
         }
       }, Promise.resolve({}))
 
-      const vaultsPositions = getVaultsPositions(vaultsTransactions)
+      const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: string) => {
+        const transactions = vaultsTransactions[assetId]
+
+        if (!transactions || !transactions.length) return vaultsPositions
+
+        const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
+          // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
+          switch (transaction.action) {
+            case 'deposit':
+              depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
+            break;
+            case 'redeem':
+              depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
+            break;
+            default:
+            break;
+          }
+
+          return depositedAmount
+        }, BNify(0))
+
+        if (depositedAmount.lte(0)) return vaultsPositions
+
+        let stakedAmount = BNify(0);
+        // const vault = selectVaultById(assetId)
+        // const asset = selectAssetById(assetId)
+        const vaultPrice = selectVaultPrice(assetId)
+        const assetPriceUsd = selectAssetPriceUsd(assetId)
+        let vaultBalance = selectAssetBalance(assetId)
+
+        // Add gauge balance to vault balance
+        const gauge = selectVaultGauge(assetId)
+        if (gauge) {
+          stakedAmount = selectAssetBalance(gauge.id)
+          vaultBalance = vaultBalance.plus(stakedAmount)
+        }
+
+        // Wait for balances to be loaded
+        if (vaultBalance.lte(0)) return vaultsPositions
+
+        const redeemableAmount = vaultBalance.times(vaultPrice)
+        const earningsAmount = redeemableAmount.minus(depositedAmount)
+        const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
+        const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
+
+        const underlying = {
+          staked: stakedAmount,
+          earnings: earningsAmount,
+          deposited: depositedAmount,
+          redeemable: redeemableAmount
+        }
+
+        const usd = {
+          staked: stakedAmount.times(assetPriceUsd),
+          earnings: earningsAmount.times(assetPriceUsd),
+          deposited: depositedAmount.times(assetPriceUsd),
+          redeemable: redeemableAmount.times(assetPriceUsd)
+        }
+
+        vaultsPositions[assetId] = {
+          usd,
+          underlying,
+          avgBuyPrice,
+          earningsPercentage,
+        }
+
+        // console.log(assetId, 'vaultPrice', vaultPrice.toString(), 'depositedAmount', depositedAmount.toString(), 'vaultBalance', vaultBalance.toString(), 'redeemableAmount', redeemableAmount.toString(), 'earningsAmount', earningsAmount.toString(), 'earningsPercentage', earningsPercentage.toString(), 'avgBuyPrice', avgBuyPrice.toString())
+
+        return vaultsPositions
+
+      }, {})
 
       // Set asset data with vault position
       Object.keys(vaultsPositions).forEach( (assetId: string) => {
@@ -392,12 +398,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
     })()
+
+    // Clean transactions and positions
+    return () => {
+      dispatch({type: 'SET_TRANSACTIONS', payload: []})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+    };
   // eslint-disable-next-line
-  }, [account?.address, chainId, explorer, state.vaults, state.balances, state.vaultsPrices, state.isPortfolioLoaded])
+  }, [account, chainId, explorer, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetPriceUsd, state.isPortfolioLoaded])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-    if (!state.vaults || !state.contracts || !multiCall) return
+
+    if (!state.vaults.length || !state.contracts.length || !web3 || !multiCall || !explorer) return
+
+    const vaultFunctionsHelper: VaultFunctionsHelper = new VaultFunctionsHelper(chainId, web3, multiCall, explorer)
+
+    // console.log('Make chain calls', account, state.vaults, state.contracts, multiCall, walletInitialized)
 
     const rawCalls = state.vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
 
@@ -428,6 +445,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Execute promises with multicall
     ;(async () => {
+
+      // Get vaults additional APRs
+      const vaultsAdditionalAprsPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
+        promises.push(vaultFunctionsHelper.getVaultAdditionalApr(vault))
+        return promises
+      }, [])
+
+      const vaultsAdditionalAprs = await Promise.all(vaultsAdditionalAprsPromises)
+
       const [
         balanceCallsResults,
         vaultsPricesCallsResults,
@@ -493,6 +519,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             const decimals = callResult.extraData.decimals || 18
             aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
+
+            // Add additional Apr
+            const vaultAdditionalApr: VaultAdditionalApr = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => apr.vaultId === assetId )
+            if (vaultAdditionalApr){
+              aprs[assetId] = aprs[assetId].plus(vaultAdditionalApr.apr.div(`1e${decimals}`))
+            }
+
             // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId]} }})
           }
@@ -527,8 +560,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies})
       dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
     })()
+
+    // Cleanup
+    return () => {
+      dispatch({type: 'SET_APRS', payload: {}})
+      dispatch({type: 'SET_BALANCES', payload: {}})
+      dispatch({type: 'SET_PRICES_USD', payload: {}})
+      dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
+      dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
+      dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
+    };
   // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts, multiCall, walletInitialized])
+  }, [account, state.vaults, state.contracts, web3, explorer, multiCall, walletInitialized])
 
   useEffect(() => {
 
@@ -561,6 +604,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
+    // Cleanup
+    return () => {
+      dispatch({type: 'SET_BALANCES_USD', payload: {}})
+    };
+
   // eslint-disable-next-line
   }, [state.balances, state.vaultsPositions, selectVaultPosition, selectAssetPriceUsd, selectAssetBalance, selectVaultPrice])
 
@@ -578,7 +626,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {tvl, tvlUsd} }})
       }
     })
-
   // eslint-disable-next-line
   }, [state.totalSupplies, state.vaultsPrices, state.pricesUsd])
 

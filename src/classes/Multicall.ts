@@ -45,7 +45,7 @@ export class  Multicall {
     return this.getCallData(contract, methodName, params, extraData)
   }
 
-  getCallData(contract: Contract, methodName: string, params: Param[], extraData: object = {}): CallData | null {
+  getCallData(contract: Contract, methodName: string, params: Param[] = [], extraData: object = {}): CallData | null {
     const methodAbi = contract.options.jsonInterface.find(f => f.name === methodName && f.inputs?.length === params.length);
     if (!methodAbi || !methodAbi.inputs || !methodAbi.outputs) return null
 

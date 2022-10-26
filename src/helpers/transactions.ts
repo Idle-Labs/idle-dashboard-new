@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { Explorer } from 'constants/networks'
 
-export const makeRequest = async (endpoint: string, error_callback?: Function, config?: any): Promise<any> => {
+export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
   const data = await axios
     .get(endpoint, config)
     .catch(err => {
@@ -10,15 +10,15 @@ export const makeRequest = async (endpoint: string, error_callback?: Function, c
       }
     });
 
-  return data || null;
+  return data?.data || null;
 }
 
 export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["keys"] = [], TTL: number = 180, apiKeyIndex: number = 0): Promise<any> => {
   const apiKey = keys[apiKeyIndex];
   const data = await makeRequest(endpoint + '&apikey=' + apiKey);
 
-  if (data && data.data && data.data.result && (data.data.message.match(/^OK/) || data.data.message === "No transactions found")) {
-    return data.data.result;
+  if (data?.result && (data.message.match(/^OK/) || data.message === "No transactions found")) {
+    return data.result;
   } else if (apiKeyIndex < keys.length - 1) {
     return await makeEtherscanApiRequest(endpoint, keys, TTL, apiKeyIndex + 1);
   }

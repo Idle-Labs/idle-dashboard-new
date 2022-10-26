@@ -483,8 +483,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         Tranches: {
           AA:{
             decimals:18,
-            abi:ERC20 as Abi,
             tranche:'AA',
+            abi:ERC20 as Abi,
             functions:{
               stake:'stake',
               unstake:'exit',
@@ -513,8 +513,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           },
           BB:{
             decimals:18,
-            abi:ERC20 as Abi,
             tranche:'BB',
+            abi:ERC20 as Abi,
             functions:{
               stake:'stake',
               claim:'claim',

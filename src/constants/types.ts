@@ -14,6 +14,10 @@ export type IconType = string | ReactIcon | React.ElementType
 
 export type Number = string | number | BigNumber
 
+export type VaultAdditionalApr = {
+  vaultId: string
+  apr: BigNumber
+}
 
 export type EtherscanTransaction = {
   blockHash: string

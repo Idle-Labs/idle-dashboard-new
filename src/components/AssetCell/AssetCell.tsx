@@ -1,13 +1,13 @@
 import type { BigNumber } from 'bignumber.js'
 import { Amount } from 'components/Amount/Amount'
-import { Text, Flex, Avatar, Tooltip } from '@chakra-ui/react'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
+import { Text, Flex, Avatar, Tooltip, Spinner } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols } from 'constants/'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
 
 type AssetCellProps = {
-  assetId: string
+  assetId: string | undefined
 } & BoxProps & ThemingProps
 
 // type LogoProps = AssetProps & {
@@ -15,7 +15,7 @@ type AssetCellProps = {
 // }
 
 type ContextProps = {
-  assetId: string | null
+  assetId: string | null | undefined
   asset: Asset | null
   vault: Vault | null
 }
@@ -164,9 +164,9 @@ const Rewards: React.FC<AvatarProps> = (props) => {
 const Balance: React.FC<AvatarProps> = (props) => {
   const { asset } = useAssetProvider();
   
-  return (
-    <Amount value={asset?.balance} {...props} />
-  )
+  return asset?.balance ? (
+    <Amount value={asset.balance} {...props} />
+  ) : <Spinner size={'sm'} />
 }
 
 AssetCell.Name = Name

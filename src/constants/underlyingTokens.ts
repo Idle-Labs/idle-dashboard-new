@@ -287,6 +287,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [130, 71, 229],
         hsl: ['262, 75%, 59%']
       },
+      conversionRate: {
+        field: "maticDAIPrice"
+      },
       address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
     },
     USDC: {

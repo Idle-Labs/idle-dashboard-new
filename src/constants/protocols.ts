@@ -1,5 +1,7 @@
 import { protocolsFolder } from 'constants/folders'
 
+const env = process.env;
+
 type ProtocolColors = {
   rgb: number[]
   hsl: string[]
@@ -10,12 +12,19 @@ type StatsProps = {
   showLegend?: boolean
 }
 
+type ApisProps = {
+  path: string,
+  endpoint: string,
+  config: Record<any, any>
+}
+
 export interface Protocol {
   enabled: boolean
   label: string
   icon?: string
   colors?: ProtocolColors
   stats?: StatsProps
+  apis?: Record<string, ApisProps>
 }
 
 export const protocols: Record<string, Protocol> = {
@@ -109,6 +118,15 @@ export const protocols: Record<string, Protocol> = {
     icon:`${protocolsFolder}lido.png`,
     stats: {
       showLegend: false,
+    },
+    apis: {
+      rates:{
+        path:'apr',
+        endpoint:'https://api.idle.finance/poLidoStats',
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        },
+      }
     },
     enabled: true,
     label: "Lido",

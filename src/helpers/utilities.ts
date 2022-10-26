@@ -2,9 +2,9 @@ import BigNumber from 'bignumber.js';
 
 type BNifyInput = any
 
-export const BNify = (s:BNifyInput): BigNumber => new BigNumber(typeof s === 'object' ? s : String(s))
+export const BNify = (s: BNifyInput): BigNumber => new BigNumber(typeof s === 'object' ? s : String(s))
 
-export const integerValue = (value:BNifyInput) :string => {
+export const integerValue = (value: BNifyInput) :string => {
   return BNify(value).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
 export const normalizeTokenDecimals = (tokenDecimals: number): BigNumber => {
@@ -18,6 +18,10 @@ export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals?: numbe
     return BNify(tokenBalance);
   }
   return BNify(tokenBalance).div(`1e${tokenDecimals}`);
+}
+
+export const apr2apy = (apr: BNifyInput) => {
+  return BNify((BNify(1).plus(BNify(apr).div(365))).pow(365).minus(1).toFixed(18));
 }
 
 export const isBigNumberNaN = (amount: any) => {
@@ -91,7 +95,7 @@ export const shortenHash = (hash: string, startLen: number = 7, endLen: number =
 export const getObjectPath = (object: any, path: string, fallback: any = null): any => {
   const dot = path.indexOf('.');
   
-  if (object === undefined) {
+  if (!object || object === undefined) {
     return fallback || undefined;
   }
   

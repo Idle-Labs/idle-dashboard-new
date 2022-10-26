@@ -2,9 +2,9 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js';
 import { ContractSendMethod } from 'web3-eth-contract'
 import { BNify, normalizeTokenDecimals } from '../helpers'
-import { GenericContract } from '../contracts/GenericContract'
-import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
-import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from '../selectors'
+import { GenericContract } from 'contracts/GenericContract'
+import type { UnderlyingTokenProps } from 'constants/underlyingTokens'
+import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors/'
 
 type ConversionRateParams = {
   one: BigNumber

@@ -1,11 +1,11 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
-import { selectUnderlyingToken } from '../selectors'
-import { GenericContract } from '../contracts/GenericContract'
+import { selectUnderlyingToken } from 'selectors/'
+import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
-import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import { ZERO_ADDRESS, strategies, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from '../constants'
+import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from '../constants'
 
 export class TrancheVault {
 
@@ -37,11 +37,11 @@ export class TrancheVault {
     
     // Init global data
     this.web3 = web3
+    this.type = type
     this.chainId = chainId
     this.protocol = protocol
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
-    this.type = strategies[type]?.route
     this.trancheConfig = vaultConfig.Tranches[type]
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
@@ -208,10 +208,11 @@ export class TrancheVault {
   }
 
   public getAprsCalls(): ContractRawCall[] {
+
     return [
       {
+        decimals:18,
         assetId:this.id,
-        decimals:this.underlyingToken?.decimals || 18,
         call:this.cdoContract.methods.getApr(this.trancheConfig.address)
       },
     ]
