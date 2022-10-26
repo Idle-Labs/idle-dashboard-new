@@ -6,6 +6,7 @@ import { BalanceChartData } from 'hooks/useBalanceChartData'
 
 import { GraphLoading } from './GraphLoading'
 import { PrimaryChart } from './PrimaryChart'
+import { RainbowChart } from './RainbowChart'
 
 type GraphProps = {
   data: BalanceChartData
@@ -40,11 +41,15 @@ export const Graph: React.FC<GraphProps> = ({ data, isLoaded, loading, color, is
             </Fade>
           ) : !isEmpty(data) ? (
             <SlideFade in={!loading}>
-              <PrimaryChart {...primaryChartProps} data={total} />
+              {isRainbowChart ? (
+                <RainbowChart {...primaryChartProps} data={rainbow} />
+              ) : (
+                <PrimaryChart {...primaryChartProps} data={total} />
+              )}
             </SlideFade>
           ) : null
         }}
       </ParentSize>
     )
-  }, [color, data, isLoaded, loading])
+  }, [color, data, isLoaded, loading, isRainbowChart])
 }

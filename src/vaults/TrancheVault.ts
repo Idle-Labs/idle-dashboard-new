@@ -237,6 +237,7 @@ export class TrancheVault {
       [this.id]:{
         type: this.type,
         token: this.trancheConfig.token,
+        color: this.underlyingToken?.colors.hex,
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.trancheConfig.label || this.trancheConfig.token,
         decimals: this.trancheConfig.decimals

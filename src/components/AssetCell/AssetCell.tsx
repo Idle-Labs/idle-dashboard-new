@@ -67,6 +67,12 @@ const Name: React.FC<AssetFieldProps> = (props) => {
     <Text {...props}>{asset?.name}</Text>
   )
 }
+const Symbol: React.FC<AssetFieldProps> = (props) => {
+  const { asset } = useAssetProvider();
+  return (
+    <Text {...props}>{asset?.token}</Text>
+  )
+}
 
 const ProtocolName: React.FC<AssetFieldProps> = (props) => {
   const { vault } = useAssetProvider();
@@ -171,6 +177,7 @@ const Balance: React.FC<AvatarProps> = (props) => {
 
 AssetCell.Name = Name
 AssetCell.Icon = Icon
+AssetCell.Symbol = Symbol
 AssetCell.Rewards = Rewards
 AssetCell.Balance = Balance
 AssetCell.ProtocolName = ProtocolName

@@ -90,6 +90,7 @@ export type Asset = {
   name: string
   token: string
   decimals: number
+  color?: string
   apr?: BigNumber
   balance?: BigNumber
   priceUsd?: BigNumber

@@ -183,6 +183,7 @@ export class GaugeVault {
         type: this.type,
         name: this.gaugeConfig.name,
         token: this.gaugeConfig.token,
+        color: this.underlyingToken?.colors.hex
       }
     }
   }

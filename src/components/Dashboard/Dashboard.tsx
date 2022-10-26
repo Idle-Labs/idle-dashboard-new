@@ -12,7 +12,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <Card.Heading>Titolo Card</Card.Heading>
         <BalanceChart
           assetIds={[]}
-          isRainbowChart={false}
+          isRainbowChart={true}
           percentChange={percentChange}
           timeframe={HistoryTimeframe.MONTH}
           setPercentChange={setPercentChange}

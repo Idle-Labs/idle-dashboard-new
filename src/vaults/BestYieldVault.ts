@@ -198,6 +198,7 @@ export class BestYieldVault {
         decimals: 18,
         type: this.type,
         token: this.idleConfig.token,
+        color: this.underlyingToken?.colors.hex,
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },
