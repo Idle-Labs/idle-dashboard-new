@@ -4,6 +4,11 @@ type BNifyInput = any
 
 export const BNify = (s: BNifyInput): BigNumber => new BigNumber(typeof s === 'object' ? s : String(s))
 
+export const bnOrZero = (n: BNifyInput): BigNumber => {
+  const value = BNify(n || 0)
+  return value.isFinite() ? value : BNify(0)
+}
+
 export const integerValue = (value: BNifyInput) :string => {
   return BNify(value).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }

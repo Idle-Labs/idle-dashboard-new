@@ -70,9 +70,9 @@ export class VaultFunctionsHelper {
     if (!protocolApis || !protocolApis.apis) return null
     
     const apiConfig = protocolApis.apis[api]
-    if (!apiConfig) return null
+    if (!apiConfig || !apiConfig.endpoint[this.chainId]) return null
 
-    const results = await makeRequest(apiConfig.endpoint, apiConfig.config)
+    const results = await makeRequest(apiConfig.endpoint[this.chainId], apiConfig.config)
 
     return apiConfig.path ? getObjectPath(results, apiConfig.path) : results
   }

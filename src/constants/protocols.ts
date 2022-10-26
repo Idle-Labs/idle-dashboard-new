@@ -13,9 +13,9 @@ type StatsProps = {
 }
 
 type ApisProps = {
-  path: string,
-  endpoint: string,
+  path?: string,
   config: Record<any, any>
+  endpoint: Record<number, string>,
 }
 
 export interface Protocol {
@@ -122,7 +122,9 @@ export const protocols: Record<string, Protocol> = {
     apis: {
       rates:{
         path:'apr',
-        endpoint:'https://api.idle.finance/poLidoStats',
+        endpoint: {
+          1: 'https://api.idle.finance/poLidoStats'
+        },
         config: {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         },
@@ -247,6 +249,17 @@ export const protocols: Record<string, Protocol> = {
     colors: {
       rgb: [0, 55, 255],
       hsl: ["227", "100%", "50%"]
-    }
+    },
+    apis: {
+      rates:{
+        endpoint: {
+          1: 'https://api.idle.finance/rates/',
+          137: "https://api-polygon.idle.finance/rates/"
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        },
+      }
+    },
   }
 }

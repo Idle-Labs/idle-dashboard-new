@@ -19,6 +19,20 @@ export type VaultAdditionalApr = {
   apr: BigNumber
 }
 
+export type HistoryData = {
+  price: number
+  date: number
+}
+
+export enum HistoryTimeframe {
+  HOUR = "1H",
+  DAY = "24H",
+  WEEK = "1W",
+  MONTH = "1M",
+  YEAR = "1Y",
+  ALL = "All"
+}
+
 export type EtherscanTransaction = {
   blockHash: string
   blockNumber: string
@@ -41,9 +55,11 @@ export type EtherscanTransaction = {
   value: string
 }
 
+export type AssetId = string
+
 export type Transaction = EtherscanTransaction & {
   action: string,
-  assetId: string
+  assetId: AssetId
   idleAmount: BigNumber
   idlePrice: BigNumber
   underlyingAmount: BigNumber
@@ -117,7 +133,7 @@ export type Account = {
 }
 
 export type ContractRawCall = {
-  assetId: string
+  assetId: AssetId
   call: ContractSendMethod
   decimals?: number
 }

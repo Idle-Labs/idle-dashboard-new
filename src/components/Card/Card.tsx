@@ -16,11 +16,11 @@ const HeadingTitle = (props: CardProps) => {
 }
 
 export const Card = (props: CardProps) => {
-  const { children, ...rest } = props
+  const { children, layerStyle, ...rest } = props
   return (
     <Box
       width={'100%'}
-      layerStyle={'card'}
+      layerStyle={layerStyle || 'card'}
       {...rest}
     >
       {children}
@@ -28,4 +28,12 @@ export const Card = (props: CardProps) => {
   )
 }
 
+export const Dark = (props: CardProps) => {
+  const { children, ...rest } = props
+  return (
+    <Card {...rest} layerStyle={'cardDark'}>{children}</Card>
+  )
+}
+
+Card.Dark = Dark
 Card.Heading = HeadingTitle
