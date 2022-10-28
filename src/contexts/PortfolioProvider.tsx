@@ -267,9 +267,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
 
     // Cleanup
-    return () => {
-      dispatch({type: 'RESET_STATE', payload: {}})
-    };
+    // return () => {
+    //   dispatch({type: 'SET_VAULTS', payload: []})
+    //   dispatch({type: 'SET_CONTRACTS', payload: []})
+    //   dispatch({type: 'SET_ASSETS_DATA', payload: {}})
+    // };
 
   }, [web3, chainId])
 
@@ -404,8 +406,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPosition} }})
       })
 
-      // console.log('vaultsPositions', vaultsPositions)
-      // console.log('vaultsTransactions', vaultsTransactions)
+      // console.log('vaultsPositions', account, vaultsPositions)
+      // console.log('vaultsTransactions', account, vaultsTransactions)
 
       dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
@@ -413,7 +415,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Clean transactions and positions
     return () => {
-      dispatch({type: 'RESET_STATE', payload: {}})
+      dispatch({type: 'SET_TRANSACTIONS', payload: []})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
     };
   // eslint-disable-next-line
   }, [account, chainId, explorer, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetPriceUsd, state.isPortfolioLoaded])
@@ -632,7 +635,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Cleanup
     return () => {
-      dispatch({type: 'RESET_STATE', payload: {}})
+      dispatch({type: 'SET_APRS', payload: {}})
+      dispatch({type: 'SET_BALANCES', payload: {}})
+      dispatch({type: 'SET_PRICES_USD', payload: {}})
+      dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
+      dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
+      dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
     };
   // eslint-disable-next-line
   }, [account, state.vaults, state.contracts, web3, explorer, multiCall, walletInitialized])
