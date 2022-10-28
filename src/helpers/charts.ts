@@ -5,8 +5,8 @@ import { bnOrZero } from 'helpers/utilities'
 type CalculatePercentChange = (data: HistoryData[]) => number
 
 export const calculatePercentChange: CalculatePercentChange = data => {
-  const firstPrice = bnOrZero(data?.[0]?.price)
-  const lastPrice = bnOrZero(data?.[data.length - 1]?.price)
+  const firstPrice = bnOrZero(data?.[0]?.value)
+  const lastPrice = bnOrZero(data?.[data.length - 1]?.value)
   return lastPrice.minus(firstPrice).div(firstPrice.abs()).times(100).decimalPlaces(2).toNumber()
 }
 
@@ -26,7 +26,7 @@ export const priceAtDate: PriceAtDate = ({ date, priceHistoryData }): number => 
   }
   // https://lodash.com/docs/4.17.15#sortedIndexBy - binary search (O(log n)) rather than O(n)
   const i = sortedIndexBy(priceHistoryData, { date, price: 0 }, ({ date }) => Number(date))
-  if (i >= length) return priceHistoryData[length - 1].price
-  return priceHistoryData[i].price
+  if (i >= length) return priceHistoryData[length - 1].value
+  return priceHistoryData[i].value
 }
 */

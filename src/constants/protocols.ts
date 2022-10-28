@@ -14,6 +14,8 @@ type StatsProps = {
 
 type ApisProps = {
   path?: string,
+  filters?: string[]
+  params?: string[]
   config: Record<any, any>
   endpoint: Record<number, string>,
 }
@@ -256,6 +258,7 @@ export const protocols: Record<string, Protocol> = {
           1: 'https://api.idle.finance/rates/',
           137: "https://api-polygon.idle.finance/rates/"
         },
+        filters: ['start', 'end', 'limit', 'frequency', 'order'],
         config: {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         },

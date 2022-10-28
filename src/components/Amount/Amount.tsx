@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Number } from 'constants/types'
 import { Text, TextProps } from '@chakra-ui/react'
-import { abbreviateNumber, BNify, isBigNumberNaN } from 'helpers/'
+import { abbreviateNumber, numberToPercentage, isBigNumberNaN } from 'helpers/'
 
 type AmountProps = {
   value?: Number
@@ -38,10 +38,9 @@ export const Percentage: React.FC<PercentageProps> = ({
   maxValue = 9999,
   ...props
 }) => {
-  const parsedValue = isBigNumberNaN(value) ? '-' : (maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : value)
-  const suffix = isBigNumberNaN(value) ? '' : '%'
+  const parsedValue = numberToPercentage(value)
   return (
-    <Amount suffix={suffix} value={parsedValue} {...props} />
+    <Amount value={parsedValue} {...props} />
   )
 }
 

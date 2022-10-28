@@ -5,7 +5,7 @@ import { TrancheVault } from '../vaults/TrancheVault'
 import { GenericContract } from '../contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from '../constants'
+import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from '../constants'
 
 export class GaugeVault {
 
@@ -174,6 +174,13 @@ export class GaugeVault {
         call:this.contract.methods.totalSupply()
       }
     ]
+  }
+
+  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+    return {
+      vaultId: this.id,
+      rates: []
+    }
   }
 
   public getAssetsData(): Assets {

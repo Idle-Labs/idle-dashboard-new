@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { Box } from '@chakra-ui/react'
 import { Graph } from 'components/Graph/Graph'
-import { calculatePercentChange } from 'helpers/charts'
 import type { AssetId, HistoryTimeframe } from 'constants/types'
-import { useBalanceChartData } from 'hooks/useBalanceChartData'
+import { abbreviateNumber, calculatePercentChange } from 'helpers/'
+import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 type BalanceChartArgs = {
   assetIds: AssetId[]
@@ -34,14 +34,17 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
 
   const color = 'chart.stroke'
 
+  const formatFn = (n: any) => abbreviateNumber(n)
+
   return (
     <Box p={0} height='350px'>
       <Graph
         color={color}
+        formatFn={formatFn}
         data={balanceChartData}
+        isRainbowChart={isRainbowChart}
         loading={balanceChartDataLoading}
         isLoaded={!balanceChartDataLoading}
-        isRainbowChart={isRainbowChart}
       />
     </Box>
   )

@@ -19,10 +19,17 @@ export type VaultAdditionalApr = {
   apr: BigNumber
 }
 
+export type VaultHistoricalRates = {
+  vaultId: string
+  rates: HistoryData[]
+}
+
 export type HistoryData = {
-  price: number
+  value: number
   date: number
 }
+
+export type PlatformApiFilters = Record<string, string | number>
 
 export enum HistoryTimeframe {
   HOUR = "1H",
@@ -99,6 +106,7 @@ export type Asset = {
   totalSupply?: BigNumber
   tvl?: BigNumber
   tvlUsd?: BigNumber
+  rates?: HistoryData[]
   vaultPosition?: VaultPosition
 }
 

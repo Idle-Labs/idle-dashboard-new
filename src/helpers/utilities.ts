@@ -35,6 +35,10 @@ export const isBigNumberNaN = (amount: any) => {
   return isUndefined || (isBigNumber && BNify(amount).isNaN())
 }
 
+export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999) => {
+  return isBigNumberNaN(value) ? '-' : (maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : BNify(value).toFixed(decimals))+'%'
+}
+
 export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) => {
 
   const isNegative = parseFloat(value) < 0;

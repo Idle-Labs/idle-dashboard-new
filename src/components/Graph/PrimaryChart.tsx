@@ -2,7 +2,6 @@ import { useColorModeValue } from '@chakra-ui/color-mode'
 import { useToken } from '@chakra-ui/system'
 import { useTheme } from '@chakra-ui/react'
 import { HistoryData } from 'constants/types'
-import { abbreviateNumber } from 'helpers/'
 import { localPoint } from '@visx/event'
 import { Group } from '@visx/group'
 import { ScaleSVG } from '@visx/responsive'
@@ -25,8 +24,10 @@ export interface PrimaryChartProps {
   data: HistoryData[]
   width: number
   height: number
+  formatFn: Function
   margin?: { top: number; right: number; bottom: number; left: number }
   color?: string
+  axisEnabled?: boolean
 }
 
 
@@ -34,13 +35,15 @@ dayjs.extend(localizedFormat)
 
 // accessors
 const getDate = (d: HistoryData) => new Date(d.date)
-const getStockValue = (d: HistoryData) => d?.price || 0
+const getValue = (d: HistoryData) => d?.value || 0
 const bisectDate = bisector<HistoryData, Date>(d => new Date(d.date)).left
 
 export const PrimaryChart = ({
   data,
   width = 10,
   height,
+  formatFn,
+  axisEnabled = true,
   color = 'chart.stroke',
   margin = { top: 0, right: 0, bottom: 0, left: 0 },
 }: PrimaryChartProps) => {
@@ -64,10 +67,10 @@ export const PrimaryChart = ({
   const xMax = Math.max(width - margin.left - margin.right, 0)
   const yMax = Math.max(height - margin.top - margin.bottom, 0)
 
-  const minPrice = Math.min(...data.map(getStockValue))
-  const maxPrice = Math.max(...data.map(getStockValue))
-  const maxPriceIndex = data.findIndex(x => x.price === maxPrice)
-  const minPriceIndex = data.findIndex(x => x.price === minPrice)
+  const minPrice = Math.min(...data.map(getValue))
+  const maxPrice = Math.max(...data.map(getValue))
+  const maxPriceIndex = data.findIndex(x => x.value === maxPrice)
+  const minPriceIndex = data.findIndex(x => x.value === minPrice)
   const maxPriceDate = getDate(data[maxPriceIndex])
   const minPriceDate = getDate(data[minPriceIndex])
 
@@ -81,7 +84,7 @@ export const PrimaryChart = ({
   const priceScale = useMemo(() => {
     return scaleLinear({
       range: [yMax + margin.top, margin.top],
-      domain: [min(data, getStockValue) || 0, max(data, getStockValue) || 0],
+      domain: [min(data, getValue) || 0, max(data, getValue) || 0],
       nice: true,
     })
     //
@@ -110,7 +113,7 @@ export const PrimaryChart = ({
       showTooltip({
         tooltipData: d,
         tooltipLeft: x,
-        tooltipTop: priceScale(getStockValue(d)),
+        tooltipTop: priceScale(getValue(d)),
       })
     },
     [showTooltip, priceScale, dateScale, data, margin.left],
@@ -128,9 +131,7 @@ export const PrimaryChart = ({
           xScale={dateScale}
           yScale={priceScale}
           stroke={chartColor}
-          xTickFormat={d => {
-            return abbreviateNumber(d)
-          }}
+          xTickFormat={(d) => formatFn(d)}
         />
         <AreaChart
           hideLeftAxis
@@ -159,7 +160,7 @@ export const PrimaryChart = ({
         <Group top={margin.top} left={margin.left}>
           <MaxPrice
             yText={priceScale(maxPrice)}
-            label={abbreviateNumber(maxPrice)}
+            label={formatFn(maxPrice)}
             xDate={maxPriceDate}
             xScale={dateScale}
             width={width}
@@ -168,7 +169,7 @@ export const PrimaryChart = ({
           />
           <MinPrice
             yText={priceScale(minPrice)}
-            label={abbreviateNumber(minPrice)}
+            label={formatFn(minPrice)}
             xScale={dateScale}
             xDate={minPriceDate}
             width={width}
@@ -229,7 +230,7 @@ export const PrimaryChart = ({
           >
             <ul style={{ padding: '0', margin: '0', listStyle: 'none' }}>
               <li>
-                <Amount fontWeight='bold' fontSize='lg' my={2} value={tooltipData.price} />
+                <Amount fontWeight='bold' fontSize='lg' my={2} value={formatFn(tooltipData.value)} />
               </li>
               <li style={{ paddingBottom: '0.25rem', fontSize: '12px', color: theme.colors.gray[500] }}>
                 {dateToLocale(tooltipData)}

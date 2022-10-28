@@ -1,4 +1,4 @@
-import { useTheme, Stack, Text } from '@chakra-ui/react'
+import { useTheme, Stack, Text, Flex } from '@chakra-ui/react'
 import { useColorModeValue, useToken } from '@chakra-ui/system'
 import { curveLinear } from '@visx/curve'
 import { Group } from '@visx/group'
@@ -7,21 +7,22 @@ import { Text as VisxText } from '@visx/text'
 import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
 import { extent, Numeric } from 'd3-array'
 import dayjs from 'dayjs'
-import { abbreviateNumber } from 'helpers/'
 import omit from 'lodash/omit'
 import React, { useCallback, useMemo } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetCell } from 'components/AssetCell/AssetCell'
-import { RainbowData } from 'hooks/useBalanceChartData'
+import { RainbowData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 export type RainbowChartProps = {
   data: RainbowData[]
   width: number
   height: number
   color: string
+  formatFn: Function
   margin?: Margin
+  axisEnabled?: boolean
 }
 
 const getScaledX = (date: number, start: number, end: number, width: number) =>
@@ -36,6 +37,8 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   width,
   height,
   color,
+  formatFn,
+  axisEnabled = true,
   margin = { top: 0, right: 0, bottom: 0, left: 0 },
 }) => {
   const theme = useTheme()
@@ -128,11 +131,11 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
         const asset = selectAssetById(assetId)
         return (
           <AreaSeries
-            key={assetId}
             data={data}
+            key={assetId}
+            fillOpacity={0.1}
             dataKey={assetId}
             fill={asset?.color}
-            fillOpacity={0.1}
             xAccessor={accessors.x[assetId]}
             yAccessor={accessors.y[assetId]}
           />
@@ -140,6 +143,15 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
       }),
     [selectAssetById, accessors, assetIds, data],
   )
+
+  const crosshairColor = useMemo(() => {
+    if (assetIds.length>1) return colors.blue[500]
+      const asset = selectAssetById(assetIds[0])
+      if (asset && asset?.color) {
+        return asset.color
+      }
+      return colors.blue[500]
+  }, [assetIds, selectAssetById, colors.blue])
 
   return (
     <div style={{ position: 'relative' }}>
@@ -150,21 +162,25 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
               {areaLines}
             </AreaStack>
           </Group>
-          <Axis
-            key={'date'}
-            orientation={'bottom'}
-            top={height - magicXAxisOffset}
-            hideTicks
-            hideAxisLine
-            numTicks={5}
-            tickLabelProps={() => tickLabelProps}
-          />
+          {
+            axisEnabled && (
+              <Axis
+                key={'date'}
+                orientation={'bottom'}
+                top={height - magicXAxisOffset}
+                hideTicks
+                hideAxisLine
+                numTicks={5}
+                tickLabelProps={() => tickLabelProps}
+              />
+            )
+          }
           <Tooltip<RainbowData>
             applyPositionStyle
             style={{ zIndex: 10 }} // render over swapper TokenButton component
             showVerticalCrosshair
             verticalCrosshairStyle={{
-              stroke: colors.blue[500],
+              stroke: crosshairColor,
               strokeWidth: 2,
               opacity: 0.5,
               strokeDasharray: '5,2',
@@ -187,11 +203,16 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                 >
                   <Stack direction='row' alignItems={'center'}>
                     <AssetCell assetId={assetId}>
+                      <Flex
+                        direction={'row'}
+                        alignItems={'center'}
+                      >
                         <AssetCell.Icon size={'2xs'} mr={2} />
-                        <AssetCell.Symbol fontWeight='bold' />
+                        <AssetCell.Name fontWeight='bold' />
+                      </Flex>
                     </AssetCell>
                   </Stack>
-                  <Amount value={price} fontWeight='bold' />
+                  <Amount value={formatFn(price)} fontWeight='bold' />
                   <Text fontSize={'xs'} color={colors.gray[500]}>
                     {dayjs(date).locale(locale).format('LLL')}
                   </Text>
@@ -210,7 +231,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                 dy='1rem'
                 dx='-0.5rem'
               >
-                {abbreviateNumber(maxPrice)}
+                {formatFn(maxPrice)}
               </VisxText>
             </g>
             <g>
@@ -224,7 +245,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                 dx='-0.5rem'
                 width={100}
               >
-                {abbreviateNumber(minPrice)}
+                {formatFn(minPrice)}
               </VisxText>
             </g>
           </Group>

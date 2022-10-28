@@ -56,7 +56,7 @@ export const LineChart = ({
   if (!data) return null
   // accessors
   const getDate = (d: HistoryData) => new Date(d?.date)
-  const getStockValue = (d: HistoryData) => d?.price
+  const getValue = (d: HistoryData) => d?.value
 
   if (width < 10) return null
   return (
@@ -65,7 +65,7 @@ export const LineChart = ({
         <LinePath<HistoryData>
           data={data}
           x={d => xScale(getDate(d)) || 0}
-          y={d => yScale(getStockValue(d)) || 0}
+          y={d => yScale(getValue(d)) || 0}
           strokeWidth={1.5}
           stroke={stroke}
         />

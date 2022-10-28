@@ -3,9 +3,9 @@ import { Contract } from 'web3-eth-contract'
 import ERC20 from '../abis/tokens/ERC20.json'
 import { tokensFolder } from 'constants/folders'
 import { GenericContract } from '../contracts/GenericContract'
-import type { Abi, Assets, ContractRawCall } from '../constants/types'
-import { GenericContractsHelper } from '../classes/GenericContractsHelper'
 import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
+import { GenericContractsHelper } from '../classes/GenericContractsHelper'
+import type { Abi, Assets, ContractRawCall, VaultHistoricalRates, PlatformApiFilters } from '../constants/types'
 
 export class UnderlyingToken {
 
@@ -78,6 +78,13 @@ export class UnderlyingToken {
         call:this.contract.methods.totalSupply()
       }
     ]
+  }
+
+  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+    return {
+      vaultId: this.id,
+      rates: []
+    }
   }
 
   public getAssetsData(): Assets {

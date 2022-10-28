@@ -1,11 +1,13 @@
 import Web3 from 'web3'
+import { ZERO_ADDRESS } from 'constants/'
 import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
+import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { ZERO_ADDRESS, BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from 'constants/'
+import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from 'constants/'
 
 export class BestYieldVault {
 
@@ -190,6 +192,11 @@ export class BestYieldVault {
         call:this.contract.methods.totalSupply()
       }
     ]
+  }
+
+  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+    const vaultFunctionsHelper: VaultFunctionsHelper = new VaultFunctionsHelper(this.chainId, this.web3)
+    return await vaultFunctionsHelper.getVaultRatesFromIdleApi(this, filters)
   }
 
   public getAssetsData(): Assets {

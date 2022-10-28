@@ -7,8 +7,8 @@ import { useNavigate } from 'react-router-dom'
 import { BNify, getObjectPath } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
 import { AssetCell } from 'components/AssetCell/AssetCell'
-import type { Asset, VaultPosition } from 'constants/types'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
+import { Asset, AssetId, VaultPosition } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -270,11 +270,21 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     },
     {
       accessor: 'id',
-      canSort: false, // does nothing
+      canSort: false,
       id: 'aprLastWeek',
-      disableSortBy: true, // disables sorting
-      defaultCanSort: false, // I think it disabled it? Not sure
+      disableSortBy: true,
+      defaultCanSort: false,
       Header: translate('defi.aprLastWeek'),
+      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
+        // console.log('aprLastWeek', value)
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetCell assetId={value}>
+              <AssetCell.HistoricalRates height={'50px'} />
+            </AssetCell>
+          </SkeletonText>
+        )
+      }
     },
   ]), [translate, strategy])
 

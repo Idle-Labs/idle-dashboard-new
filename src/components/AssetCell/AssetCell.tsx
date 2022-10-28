@@ -1,10 +1,11 @@
 import type { BigNumber } from 'bignumber.js'
 import { Amount } from 'components/Amount/Amount'
+import { RateChart } from 'components/RateChart/RateChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { Text, Flex, Avatar, Tooltip, Spinner } from '@chakra-ui/react'
-import { Asset, Vault, UnderlyingTokenProps, protocols } from 'constants/'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
+import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe } from 'constants/'
 
 type AssetCellProps = {
   assetId: string | undefined
@@ -49,7 +50,6 @@ export const AssetCell = ({assetId, children, ...rest}: AssetCellProps) => {
       <Flex>
         {children}
       </Flex>
-
     </AssetContext.Provider>
   )
 }
@@ -175,6 +175,26 @@ const Balance: React.FC<AvatarProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const HistoricalRates: React.FC<BoxProps> = (props) => {
+  const { asset } = useAssetProvider();
+
+  const chart = useMemo(() => {
+    if (!asset?.id || !asset?.rates) return null
+    return (
+      <RateChart
+        {...props}
+        percentChange={0}
+        axisEnabled={false}
+        assetIds={[asset.id]}
+        setPercentChange={() => {}}
+        timeframe={HistoryTimeframe.DAY}
+      />
+    )
+  }, [asset?.id, asset?.rates, props])
+
+  return chart
+}
+
 AssetCell.Name = Name
 AssetCell.Icon = Icon
 AssetCell.Symbol = Symbol
@@ -182,3 +202,4 @@ AssetCell.Rewards = Rewards
 AssetCell.Balance = Balance
 AssetCell.ProtocolName = ProtocolName
 AssetCell.ProtocolIcon = ProtocolIcon
+AssetCell.HistoricalRates = HistoricalRates

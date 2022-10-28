@@ -1,19 +1,18 @@
 import Web3 from 'web3'
 import { Vault } from 'vaults/'
-import { protocols } from 'constants/'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
-import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr } from 'constants/'
-import { BNify, normalizeTokenAmount, makeRequest, getObjectPath, makeEtherscanApiRequest, apr2apy } from 'helpers/'
+import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates } from 'constants/'
+import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, apr2apy, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
 
 export class VaultFunctionsHelper {
 
   readonly web3: Web3
   readonly chainId: number
-  readonly explorer: Explorer
-  readonly multiCall: Multicall
+  readonly explorer: Explorer | undefined
+  readonly multiCall: Multicall | undefined
 
-  constructor(chainId: number, web3: Web3, multiCall: Multicall, explorer: Explorer) {
+  constructor(chainId: number, web3: Web3, multiCall?: Multicall, explorer?: Explorer) {
     this.web3 = web3
     this.chainId = chainId
     this.explorer = explorer
@@ -21,6 +20,8 @@ export class VaultFunctionsHelper {
   }
 
   public async getTrancheHarvestApy(trancheVault: TrancheVault, trancheType: string): Promise<BigNumber> {
+
+    if (!this.multiCall || !this.explorer) return BNify(0)
 
     const rawCalls: CallData[] = [
       this.multiCall.getCallData(trancheVault.cdoContract, `lastNAV${trancheType}`),
@@ -65,20 +66,8 @@ export class VaultFunctionsHelper {
     }
   }
 
-  public async callPlatformApis(protocol: string, api: string): Promise<any> {
-    const protocolApis = protocols[protocol]
-    if (!protocolApis || !protocolApis.apis) return null
-    
-    const apiConfig = protocolApis.apis[api]
-    if (!apiConfig || !apiConfig.endpoint[this.chainId]) return null
-
-    const results = await makeRequest(apiConfig.endpoint[this.chainId], apiConfig.config)
-
-    return apiConfig.path ? getObjectPath(results, apiConfig.path) : results
-  }
-
   public async getMaticTrancheStrategyApr(): Promise<BigNumber> {
-    const apr = await this.callPlatformApis('lido', 'rates');
+    const apr = await callPlatformApis(this.chainId, 'lido', 'rates');
     if (!BNify(apr).isNaN()){
       return BNify(apr).div(100);
     }
@@ -86,6 +75,8 @@ export class VaultFunctionsHelper {
   }
 
   public async getMaticTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
+
+    if (!this.multiCall) return BNify(0)
 
     const rawCalls: CallData[] = [
       this.multiCall.getCallData(trancheVault.cdoContract, 'FULL_ALLOC'),
@@ -148,5 +139,50 @@ export class VaultFunctionsHelper {
       vaultId: vault.id,
       apr: BNify(0)
     }
+  }
+
+  public async getVaultRatesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+    const historicalRates: VaultHistoricalRates = {
+      vaultId: vault.id,
+      rates: []
+    }
+
+    const rates = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
+
+    historicalRates.rates = rates.map( (rate: any) => {
+      const date = +rate.timeStamp
+      const value = parseFloat(fixTokenDecimals(rate.apr, 18).toFixed(8))
+      return {
+        date,
+        value
+      }
+    })
+
+    // console.log('historicalRates', historicalRates)
+
+    return historicalRates
+  }
+
+  public async getVaultRatesFromIdleApi(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+
+    const historicalRates = {
+      vaultId: vault.id,
+      rates: []
+    }
+
+    if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalRates
+
+    const rates = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
+
+    historicalRates.rates = rates.map( (rate: any) => {
+      const date = parseInt(rate.timestamp)
+      const value = parseFloat(fixTokenDecimals(rate.idleRate, 18).toFixed(8))
+      return {
+        date,
+        value
+      }
+    })
+
+    return historicalRates
   }
 }

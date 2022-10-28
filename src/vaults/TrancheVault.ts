@@ -4,8 +4,9 @@ import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
+import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from '../constants'
+import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from '../constants'
 
 export class TrancheVault {
 
@@ -225,6 +226,11 @@ export class TrancheVault {
         call:this.trancheContract.methods.totalSupply()
       },
     ]
+  }
+
+  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+    const vaultFunctionsHelper: VaultFunctionsHelper = new VaultFunctionsHelper(this.chainId, this.web3)
+    return await vaultFunctionsHelper.getVaultRatesFromSubgraph(this, filters)
   }
 
   public getAssetsData(): Assets {

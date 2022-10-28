@@ -57,7 +57,7 @@ export const AreaChart = ({
 
   // accessors
   const getDate = (d: HistoryData) => new Date(d?.date)
-  const getStockValue = (d: HistoryData) => d?.price
+  const getValue = (d: HistoryData) => d?.value
 
   if (width < 10) return null
   return (
@@ -72,7 +72,7 @@ export const AreaChart = ({
       <AreaClosed<HistoryData>
         data={data}
         x={d => xScale(getDate(d)) || 0}
-        y={d => yScale(getStockValue(d)) || 0}
+        y={d => yScale(getValue(d)) || 0}
         yScale={yScale}
         strokeWidth={1.5}
         stroke={`url(#gradient)`}
