@@ -9,17 +9,11 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [percentChange, setPercentChange] = useState(0)
   return (
     <>
-      <Card.Dark>
-        <Card.Heading>Titolo Card</Card.Heading>
+      <Card.Dark p={0}>
+        <Card.Heading m={8}>Titolo Card</Card.Heading>
         <BalanceChart
           assetIds={[]}
           isRainbowChart={false}
-          percentChange={percentChange}
-          timeframe={HistoryTimeframe.MONTH}
-          setPercentChange={setPercentChange}
-        />
-        <RateChart
-          assetIds={[]}
           percentChange={percentChange}
           timeframe={HistoryTimeframe.MONTH}
           setPercentChange={setPercentChange}

@@ -150,7 +150,7 @@ export class VaultFunctionsHelper {
     const rates = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
 
     historicalRates.rates = rates.map( (rate: any) => {
-      const date = +rate.timeStamp
+      const date = +rate.timeStamp*1000
       const value = parseFloat(fixTokenDecimals(rate.apr, 18).toFixed(8))
       return {
         date,
@@ -175,7 +175,7 @@ export class VaultFunctionsHelper {
     const rates = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
 
     historicalRates.rates = rates.map( (rate: any) => {
-      const date = parseInt(rate.timestamp)
+      const date = +rate.timestamp*1000
       const value = parseFloat(fixTokenDecimals(rate.idleRate, 18).toFixed(8))
       return {
         date,

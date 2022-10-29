@@ -23,6 +23,7 @@ export type RainbowChartProps = {
   formatFn: Function
   margin?: Margin
   axisEnabled?: boolean
+  maxMinEnabled?: boolean
 }
 
 const getScaledX = (date: number, start: number, end: number, width: number) =>
@@ -39,6 +40,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   color,
   formatFn,
   axisEnabled = true,
+  maxMinEnabled = true,
   margin = { top: 0, right: 0, bottom: 0, left: 0 },
 }) => {
   const theme = useTheme()

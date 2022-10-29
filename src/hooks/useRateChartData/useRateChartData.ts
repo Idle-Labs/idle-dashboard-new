@@ -14,6 +14,7 @@ export type RateChartData = {
 }
 
 type UseRateChartDataReturn = {
+  assets?: Asset[]
   rateChartData: RateChartData
   rateChartDataLoading: boolean
 }
@@ -50,7 +51,7 @@ export const useRateChartData: UseRateChartData = args => {
     const ratesByDate = assets.reduce( (ratesByDate: Record<number, RainbowData>, asset: Asset) => {
       if (!asset.id || !asset.rates) return ratesByDate
       asset.rates.forEach( (rate: HistoryData) => {
-        const date = rate.date*1000
+        const date = rate.date
         if (!ratesByDate[date]) {
           ratesByDate[date] = {
             date,
@@ -64,6 +65,7 @@ export const useRateChartData: UseRateChartData = args => {
       return ratesByDate
     }, {})
 
+    rateChartData.total = assets[0]?.rates
     rateChartData.rainbow = Object.values(ratesByDate)
     return rateChartData
   }, [assets, rates])
@@ -80,6 +82,7 @@ export const useRateChartData: UseRateChartData = args => {
   // console.log('rateChartData', assetIds, rateChartData)
 
   return {
+    assets,
     rateChartData,
     rateChartDataLoading
   }

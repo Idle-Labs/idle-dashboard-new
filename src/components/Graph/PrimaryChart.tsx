@@ -28,6 +28,7 @@ export interface PrimaryChartProps {
   margin?: { top: number; right: number; bottom: number; left: number }
   color?: string
   axisEnabled?: boolean
+  maxMinEnabled?: boolean
 }
 
 
@@ -44,6 +45,7 @@ export const PrimaryChart = ({
   height,
   formatFn,
   axisEnabled = true,
+  maxMinEnabled = true,
   color = 'chart.stroke',
   margin = { top: 0, right: 0, bottom: 0, left: 0 },
 }: PrimaryChartProps) => {
@@ -59,7 +61,7 @@ export const PrimaryChart = ({
   const { locale } = useI18nProvider()
 
   const [chartColor] = useToken('colors', [color])
-  const tooltipBg = useColorModeValue('white', theme.colors.gray[800])
+  const tooltipBg = useColorModeValue('white', theme.colors.card.bg)
   const tooltipBorder = useColorModeValue(theme.colors.gray[200], theme.colors.gray[700])
   const tooltipColor = useColorModeValue(theme.colors.gray[800], 'white')
 
@@ -157,27 +159,31 @@ export const PrimaryChart = ({
           onMouseMove={handleTooltip}
           onMouseLeave={() => hideTooltip()}
         />
-        <Group top={margin.top} left={margin.left}>
-          <MaxPrice
-            yText={priceScale(maxPrice)}
-            label={formatFn(maxPrice)}
-            xDate={maxPriceDate}
-            xScale={dateScale}
-            width={width}
-            yMax={yMax}
-            stroke={chartColor}
-          />
-          <MinPrice
-            yText={priceScale(minPrice)}
-            label={formatFn(minPrice)}
-            xScale={dateScale}
-            xDate={minPriceDate}
-            width={width}
-            yMax={yMax}
-            stroke={chartColor}
-            margin={{ ...margin }}
-          />
-        </Group>
+        {
+          maxMinEnabled && (
+            <Group top={margin.top} left={margin.left}>
+              <MaxPrice
+                yText={priceScale(maxPrice)}
+                label={formatFn(maxPrice)}
+                xDate={maxPriceDate}
+                xScale={dateScale}
+                width={width}
+                yMax={yMax}
+                stroke={chartColor}
+              />
+              <MinPrice
+                yText={priceScale(minPrice)}
+                label={formatFn(minPrice)}
+                xScale={dateScale}
+                xDate={minPriceDate}
+                width={width}
+                yMax={yMax}
+                stroke={chartColor}
+                margin={{ ...margin }}
+              />
+            </Group>
+          )
+        }
         {/* drawing the line and circle indicator to be display in cursor over a
           selected area */}
         {tooltipData && (
@@ -185,7 +191,7 @@ export const PrimaryChart = ({
             <Line
               from={{ x: tooltipLeft, y: margin.top * 2 }}
               to={{ x: tooltipLeft, y: yMax + margin.top * 2 }}
-              stroke={theme.colors.blue[500]}
+              stroke={chartColor}
               strokeWidth={2}
               opacity={0.5}
               pointerEvents='none'
@@ -194,23 +200,22 @@ export const PrimaryChart = ({
             <circle
               cx={tooltipLeft}
               cy={tooltipTop + 1 + margin.top}
-              r={4}
-              fill='black'
-              fillOpacity={0.1}
-              stroke='black'
-              strokeOpacity={0.1}
-              strokeWidth={2}
-              pointerEvents='none'
+              r={3.5}
+              fill={'white'}
+              fillOpacity={1}
+              pointerEvents={'none'}
             />
+            {/*
             <circle
               cx={tooltipLeft}
               cy={tooltipTop + margin.top}
               r={4}
-              fill={theme.colors.gray[500]}
+              fill={theme.colors.gray[300]}
               stroke='white'
               strokeWidth={2}
               pointerEvents='none'
             />
+            */}
           </Group>
         )}
       </ScaleSVG>
@@ -224,6 +229,7 @@ export const PrimaryChart = ({
               ...defaultTooltipStyles,
               background: tooltipBg,
               padding: '0.5rem',
+              borderRadius: '8px',
               border: `1px solid ${tooltipBorder}`,
               color: tooltipColor,
             }}
@@ -232,7 +238,7 @@ export const PrimaryChart = ({
               <li>
                 <Amount fontWeight='bold' fontSize='lg' my={2} value={formatFn(tooltipData.value)} />
               </li>
-              <li style={{ paddingBottom: '0.25rem', fontSize: '12px', color: theme.colors.gray[500] }}>
+              <li style={{ paddingBottom: '0.25rem', fontSize: '12px', color: theme.colors.gray[300] }}>
                 {dateToLocale(tooltipData)}
               </li>
             </ul>

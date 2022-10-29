@@ -16,6 +16,7 @@ type GraphProps = {
   color: string
   formatFn?: Function
   axisEnabled?: boolean
+  maxMinEnabled?: boolean
   isRainbowChart?: boolean
 }
 
@@ -26,7 +27,8 @@ export const Graph: React.FC<GraphProps> = ({
     color,
     formatFn,
     isRainbowChart,
-    axisEnabled = true
+    axisEnabled = true,
+    maxMinEnabled = true
   }) => {
   return useMemo(() => {
     const { total, rainbow } = data
@@ -55,14 +57,14 @@ export const Graph: React.FC<GraphProps> = ({
           ) : !isEmpty(data) ? (
             <SlideFade in={!loading}>
               {isRainbowChart && rainbow.length ? (
-                <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} />
+                <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
               ) : total.length && (
-                <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} />
+                <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
               )}
             </SlideFade>
           ) : null
         }}
       </ParentSize>
     )
-  }, [color, data, isLoaded, loading, isRainbowChart, formatFn, axisEnabled])
+  }, [color, data, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled])
 }
