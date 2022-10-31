@@ -6,7 +6,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from '../constants'
+import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from 'constants/'
 
 export class TrancheVault {
 
@@ -205,6 +205,15 @@ export class TrancheVault {
         params:conversionRateParams,
         call:conversionRateParams.call,
       },
+    ]
+  }
+
+  public getFeesCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.cdoContract.methods.fee()
+      }
     ]
   }
 

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { strategies } from 'constants/'
 // import { Logo } from "./Logo"
-import { HashRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom"
 import { Web3Provider } from './contexts/Web3Provider'
 import { I18nProvider } from './contexts/I18nProvider'
 // import { ColorModeSwitcher } from "./ColorModeSwitcher"
@@ -74,6 +74,7 @@ const theme = extendTheme({
       300: '#3F6D6C',
     },
     cta:'#CDD0D6',
+    ctaDisabled:'#555B67',
     white:'#FFFFFF',
     menu: {
       bg:'#202A3E',
@@ -100,6 +101,7 @@ const theme = extendTheme({
     table:{
       arrow:'#555B67',
       header:'#323D53',
+      axisLabel:'#555B67',
       headerHover:'#404F6A'
     },
     orange:'#FF9859',
@@ -203,7 +205,14 @@ const theme = extendTheme({
       fontWeight: 500,
       // fontFamily:`"Source Sans Pro", sans-serif`
     },
-    earnings: {
+    heading: {
+      fontWeight: 600,
+      fontFamily: 'heading'
+    },
+    h3: {
+      fontSize:'lg',
+    },
+    captionSmall: {
       color:'cta',
       fontWeight:400,
       fontSize:'sm',
@@ -218,13 +227,28 @@ const theme = extendTheme({
       color: 'primary'
       // fontFamily:`"Source Sans Pro", sans-serif`
     },
+    h2: {
+      fontSize:'36px',
+      color: 'primary',
+      fontWeight: 700,
+    },
+    titleSmall: {
+      color:'cta',
+      fontSize:'sm',
+      fontWeight:700,
+      lineHeight:'initial'
+    },
+    captionSmaller: {
+      color:'cta',
+      fontSize:'xs',
+      fontWeight:300,
+    },
     cta: {
       color:'cta',
       fontSize:'md',
       fontWeight:700,
       cursor:'pointer',
       fontFamily: 'heading',
-      // fontFamily:`'Open Sans', sans-serif`,
       _hover: {
         color:'white'
       }
@@ -265,6 +289,19 @@ const theme = extendTheme({
           }
         }
       }
+    },
+    Tabs: {
+      baseStyle: {
+        tab: {
+          textStyle: 'cta',
+          color:'ctaDisabled',
+          borderBottom: '2px solid transparent',
+          _selected: {
+            color: 'white',
+            borderBottom: '2px solid white',
+          }
+        },
+      },
     },
     Menu: {
       baseStyle: {

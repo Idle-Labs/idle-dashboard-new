@@ -39,7 +39,7 @@ export const LineChart = ({
 }: LineChartProps) => {
   const theme = useTheme()
   const strokeColor = useColorModeValue(theme.colors.gray[200], theme.colors.gray[750])
-  const labelColor = useColorModeValue(theme.colors.gray[300], theme.colors.gray[700])
+  const labelColor = useColorModeValue(theme.colors.gray[300], theme.colors.table.axisLabel)
   const AXIS_BOTTOM_TICK_LABEL_PROPS = {
     textAnchor: 'middle' as const,
     fontSize: 12,
@@ -86,12 +86,12 @@ export const LineChart = ({
       </Group>
       {!hideBottomAxis && (
         <AxisBottom
-          top={yMax + margin.top + 25}
+          top={yMax}
           scale={xScale}
-          numTicks={width > 520 ? 5 : 5}
-          stroke={strokeColor}
           strokeWidth={0}
           hideTicks={true}
+          stroke={strokeColor}
+          numTicks={width > 520 ? 5 : 5}
           tickLabelProps={() => AXIS_BOTTOM_TICK_LABEL_PROPS}
         />
       )}

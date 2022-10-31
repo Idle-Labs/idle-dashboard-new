@@ -169,7 +169,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       <Amount prefix={'$ '} value={value.usd.earnings} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>
-                  <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'earnings'} />
+                  <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'captionSmall'} />
                 </Stat>
               )
             }

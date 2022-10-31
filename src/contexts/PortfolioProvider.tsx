@@ -8,9 +8,9 @@ import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import type { GenericContractConfig } from 'constants/'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
-import { BNify, makeEtherscanApiRequest } from 'helpers/'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
+import { BNify, makeEtherscanApiRequest, apr2apy } from 'helpers/'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import React, { useContext, useEffect, useCallback, useReducer } from 'react'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
@@ -316,8 +316,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
       const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
 
-      // console.log('etherscanTransactions', etherscanTransactions)
-
       const vaultsTransactions = await state.vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
         const txs = await txsPromise
         if (!("getTransactions" in vault)) return txs
@@ -333,14 +331,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
         if (!transactions || !transactions.length) return vaultsPositions
 
+        let firstDepositTx: any = null
+
         const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
           // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
           switch (transaction.action) {
             case 'deposit':
+              if (!firstDepositTx) firstDepositTx = transaction
               depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
             break;
             case 'redeem':
               depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
+              if (depositedAmount.lte(0)) firstDepositTx = null
             break;
             default:
             break;
@@ -355,8 +357,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // const vault = selectVaultById(assetId)
         // const asset = selectAssetById(assetId)
         const vaultPrice = selectVaultPrice(assetId)
-        const assetPriceUsd = selectAssetPriceUsd(assetId)
         let vaultBalance = selectAssetBalance(assetId)
+        const assetPriceUsd = selectAssetPriceUsd(assetId)
+        const depositDuration = firstDepositTx ? Math.round(Date.now() / 1000) - parseInt(firstDepositTx.timeStamp) : 0
 
         // Add gauge balance to vault balance
         const gauge = selectVaultGauge(assetId)
@@ -391,7 +394,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
           usd,
           underlying,
           avgBuyPrice,
-          earningsPercentage,
+          depositDuration,
+          earningsPercentage
         }
 
         // console.log(assetId, 'vaultPrice', vaultPrice.toString(), 'depositedAmount', depositedAmount.toString(), 'vaultBalance', vaultBalance.toString(), 'redeemableAmount', redeemableAmount.toString(), 'earningsAmount', earningsAmount.toString(), 'earningsPercentage', earningsPercentage.toString(), 'avgBuyPrice', avgBuyPrice.toString())
@@ -469,10 +473,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const aggregatedRawCalls = [
         account ? vault.getBalancesCalls([account.address]) : [],
-        vault.getPricesCalls(),
-        vault.getPricesUsdCalls(state.contracts),
-        vault.getAprsCalls(),
-        vault.getTotalSupplyCalls()
+        ("getPricesCalls" in vault) ? vault.getPricesCalls() : [],
+        ("getPricesUsdCalls" in vault) ? vault.getPricesUsdCalls(state.contracts) : [],
+        ("getAprsCalls" in vault) ? vault.getAprsCalls() : [],
+        ("getTotalSupplyCalls" in vault) ? vault.getTotalSupplyCalls() : [],
+        ("getFeesCalls" in vault) ? vault.getFeesCalls() : []
       ]
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
@@ -536,13 +541,26 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsPricesCallsResults,
         pricesUsdCallsResults,
         aprsCallsResults,
-        totalSupplyCallsResults
+        totalSupplyCallsResults,
+        feesCallsResults
       ] = await multiCall.executeMultipleBatches(rawCalls)
 
       // console.log('pricesCallsResults', pricesCallsResults)
       // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
       // console.log('balanceCallsResults', balanceCallsResults)
       // console.log('totalSupplyCallsResults', totalSupplyCallsResults)
+      // console.log('feesCallsResults', feesCallsResults)
+
+      feesCallsResults.forEach( (callResult: DecodedResult) => {
+        if (callResult.data) {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          const asset = selectAssetById(assetId)
+          if (asset){
+            const fee = BNify(callResult.data.toString()).div(`1e05`)
+            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { fee } }})
+          }
+        }
+      })
 
       const balances = balanceCallsResults.reduce( (balances: Balances, callResult: DecodedResult) => {
         if (callResult.data) {
@@ -598,8 +616,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
               aprs[assetId] = aprs[assetId].plus(vaultAdditionalApr.apr.div(`1e${decimals}`))
             }
 
+            const apy = apr2apy(aprs[assetId].div(100)).times(100)
+
             // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId]} }})
+            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId], apy} }})
           }
         }
         return aprs

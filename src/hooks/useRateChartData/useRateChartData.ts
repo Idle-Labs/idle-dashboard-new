@@ -37,7 +37,10 @@ export const useRateChartData: UseRateChartData = args => {
   // })
   const [rateChartDataLoading, setRateChartDataLoading] = useState<boolean>(true)
 
-  const assets = selectAssetsByIds(assetIds)
+  const assets = useMemo(() => {
+    if (!selectAssetsByIds) return []
+    return selectAssetsByIds(assetIds)
+  }, [assetIds, selectAssetsByIds])
 
   const rateChartData = useMemo((): RateChartData => {
 

@@ -44,4 +44,14 @@ export const Percentage: React.FC<PercentageProps> = ({
   )
 }
 
+export const Usd: React.FC<AmountProps> = ({
+  value,
+  ...props
+}) => {
+  return (
+    <Amount value={value} prefix={'$'} {...props} />
+  )
+}
+
+Amount.Usd = Usd
 Amount.Percentage = Percentage

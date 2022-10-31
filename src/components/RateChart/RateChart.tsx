@@ -1,17 +1,9 @@
+import { Box } from '@chakra-ui/react'
 import { useEffect, useMemo } from 'react'
 import { Graph } from 'components/Graph/Graph'
-import { Box, BoxProps } from '@chakra-ui/react'
-import type { AssetId, HistoryTimeframe } from 'constants/types'
+import type { RateChartArgs } from 'constants/types'
 import { calculatePercentChange, numberToPercentage } from 'helpers/'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
-
-type RateChartArgs = {
-  assetIds: AssetId[]
-  percentChange: number
-  timeframe: HistoryTimeframe
-  axisEnabled?: boolean
-  setPercentChange: (percentChange: number) => void
-} & BoxProps
 
 export const RateChart: React.FC<RateChartArgs> = ({
   assetIds,
@@ -19,6 +11,7 @@ export const RateChart: React.FC<RateChartArgs> = ({
   percentChange,
   setPercentChange,
   axisEnabled = true,
+  margins = { top: 0, right: 0, bottom: 0, left: 0 },
   ...props
 }) => {
   const { assets, rateChartData, rateChartDataLoading } = useRateChartData({
@@ -29,7 +22,6 @@ export const RateChart: React.FC<RateChartArgs> = ({
   const { total } = rateChartData
 
   useEffect(() => setPercentChange(calculatePercentChange(total)), [total, setPercentChange])
-
 
   const formatFn = (n: any) => numberToPercentage(n)
   
@@ -48,6 +40,7 @@ export const RateChart: React.FC<RateChartArgs> = ({
       <Graph
         color={color}
         formatFn={formatFn}
+        margins={margins}
         data={rateChartData}
         maxMinEnabled={false}
         axisEnabled={axisEnabled}

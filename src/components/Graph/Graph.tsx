@@ -18,6 +18,7 @@ type GraphProps = {
   axisEnabled?: boolean
   maxMinEnabled?: boolean
   isRainbowChart?: boolean
+  margins?: { top: number; right: number; bottom: number; left: number }
 }
 
 export const Graph: React.FC<GraphProps> = ({
@@ -28,7 +29,8 @@ export const Graph: React.FC<GraphProps> = ({
     formatFn,
     isRainbowChart,
     axisEnabled = true,
-    maxMinEnabled = true
+    maxMinEnabled = true,
+    margins = { top: 0, right: 0, bottom: 0, left: 0 }
   }) => {
   return useMemo(() => {
     const { total, rainbow } = data
@@ -41,12 +43,7 @@ export const Graph: React.FC<GraphProps> = ({
             height: parent.height,
             width: parent.width,
             color,
-            margin: {
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-            },
+            margins
           }
           return loading || !isLoaded ? (
             <Fade in={loading || !isLoaded}>
@@ -66,5 +63,5 @@ export const Graph: React.FC<GraphProps> = ({
         }}
       </ParentSize>
     )
-  }, [color, data, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled])
+  }, [color, data, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, margins])
 }

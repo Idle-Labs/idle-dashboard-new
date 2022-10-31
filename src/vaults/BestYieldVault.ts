@@ -175,10 +175,19 @@ export class BestYieldVault {
     ]
   }
 
+  public getFeesCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.contract.methods.fee()
+      }
+    ]
+  }
+
   public getAprsCalls(): ContractRawCall[] {
     return [
       {
-        decimals: 18,
+        decimals:18,
         assetId:this.id,
         call:this.contract.methods.getAvgAPR()
       }
@@ -202,7 +211,7 @@ export class BestYieldVault {
   public getAssetsData(): Assets {
     return {
       [this.id]:{
-        decimals: 18,
+        decimals:18,
         type: this.type,
         token: this.idleConfig.token,
         color: this.underlyingToken?.colors.hex,

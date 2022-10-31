@@ -14,6 +14,7 @@ export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
     <Box
       width={'100%'}
       minH={'100vh'}
+      overflowX={'hidden'}
       position={'absolute'}
       className={className}
     >

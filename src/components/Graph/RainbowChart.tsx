@@ -21,7 +21,7 @@ export type RainbowChartProps = {
   height: number
   color: string
   formatFn: Function
-  margin?: Margin
+  margins?: Margin
   axisEnabled?: boolean
   maxMinEnabled?: boolean
 }
@@ -41,7 +41,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   formatFn,
   axisEnabled = true,
   maxMinEnabled = true,
-  margin = { top: 0, right: 0, bottom: 0, left: 0 },
+  margins = { top: 0, right: 0, bottom: 0, left: 0 },
 }) => {
   const theme = useTheme()
   const colors = theme.colors
@@ -109,18 +109,18 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const scaledMinPriceX = handleTextPosition(
     getScaledX(minPriceDate, xScale.domain[0].getTime(), xScale.domain[1].getTime(), width),
   )
-  const yMax = Math.max(height - margin.top - margin.bottom, 0)
+  const yMax = Math.max(height - margins.top - margins.bottom, 0)
   const yScale = useMemo(
     () => ({
       type: 'linear' as const,
-      range: [yMax + margin.top, margin.top], // values are reversed, y increases down - this is really [bottom, top] in cartersian coordinates
+      range: [yMax + margins.top, margins.top], // values are reversed, y increases down - this is really [bottom, top] in cartersian coordinates
       domain: [minPrice ?? 0, maxPrice ?? 0],
       nice: true,
     }),
-    [margin.top, maxPrice, minPrice, yMax],
+    [margins.top, maxPrice, minPrice, yMax],
   )
-  const scaledMaxPriceY = getScaledY(maxPrice, minPrice, maxPrice, height - margin.bottom)
-  const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margin.bottom)
+  const scaledMaxPriceY = getScaledY(maxPrice, minPrice, maxPrice, height - margins.bottom)
+  const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margins.bottom)
 
   const tooltipBg = useColorModeValue('white', colors.gray[700])
   const tooltipBorder = useColorModeValue(colors.gray[200], colors.gray[600])
@@ -158,8 +158,8 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   return (
     <div style={{ position: 'relative' }}>
       <ScaleSVG width={width} height={height}>
-        <XYChart margin={margin} height={height} width={width} xScale={xScale} yScale={yScale}>
-          <Group top={margin.top} left={margin.left}>
+        <XYChart margin={margins} height={height} width={width} xScale={xScale} yScale={yScale}>
+          <Group top={margins.top} left={margins.left}>
             <AreaStack order='ascending' curve={curveLinear}>
               {areaLines}
             </AreaStack>
@@ -222,7 +222,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
               )
             }}
           />
-          <Group top={margin.top} left={margin.left}>
+          <Group top={margins.top} left={margins.left}>
             <g>
               <VisxText
                 x={scaledMaxPriceX.x}

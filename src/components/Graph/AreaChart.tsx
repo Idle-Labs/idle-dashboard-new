@@ -60,10 +60,13 @@ export const AreaChart = ({
   const getValue = (d: HistoryData) => d?.value
 
   if (width < 10) return null
+
+  const gradientId = `gradient_${Math.random()}`
+
   return (
     <Group left={left || margin.left} top={top || margin.top}>
       <LinearGradient
-        id='gradient'
+        id={gradientId}
         from={`${gradientColor}20`}
         fromOpacity={1}
         to={`${gradientColor}02`}
@@ -75,8 +78,8 @@ export const AreaChart = ({
         y={d => yScale(getValue(d)) || 0}
         yScale={yScale}
         strokeWidth={1.5}
-        stroke={`url(#gradient)`}
-        fill={`url(#gradient)`}
+        stroke={`url(#${gradientId})`}
+        fill={`url(#${gradientId})`}
       />
       {!hideBottomAxis && (
         <AxisBottom

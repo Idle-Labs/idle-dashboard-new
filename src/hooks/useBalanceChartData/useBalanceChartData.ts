@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { balanceChartDataMock } from './balanceChartData.mock'
-import { AssetId, HistoryData, HistoryTimeframe } from 'constants/types'
+import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { AssetId, HistoryData, HistoryTimeframe, Asset } from 'constants/types'
 
 export type RainbowData = {
   date: number
@@ -14,6 +15,7 @@ export type BalanceChartData = {
 }
 
 type UseBalanceChartDataReturn = {
+  assets?: Asset[]
   balanceChartData: BalanceChartData
   balanceChartDataLoading: boolean
 }
@@ -28,11 +30,19 @@ type UseBalanceChartData = (args: UseBalanceChartDataArgs) => UseBalanceChartDat
 
 export const useBalanceChartData: UseBalanceChartData = args => {
 
+  const { assetIds/*, timeframe*/ } = args
+  const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
   const [balanceChartData, setBalanceChartData] = useState<BalanceChartData>({
     total: [],
     rainbow: [],
   })
   const [balanceChartDataLoading, setBalanceChartDataLoading] = useState<boolean>(true)
+
+
+  const assets = useMemo(() => {
+    if (!selectAssetsByIds) return []
+    return selectAssetsByIds(assetIds)
+  }, [assetIds, selectAssetsByIds])
 
   setTimeout(() => {
     setBalanceChartData(balanceChartDataMock)
@@ -40,6 +50,7 @@ export const useBalanceChartData: UseBalanceChartData = args => {
   },2000)
 
   return {
+    assets,
     balanceChartData,
     balanceChartDataLoading
   }

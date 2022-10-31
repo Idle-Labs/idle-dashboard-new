@@ -2,6 +2,7 @@ import React from 'react'
 import type { Vault } from 'vaults/'
 import type { AbiItem } from 'web3-utils'
 import type { BigNumber } from 'bignumber.js'
+import type { BoxProps } from '@chakra-ui/react'
 import { IconType as ReactIcon } from 'react-icons'
 import { ContractSendMethod } from 'web3-eth-contract'
 
@@ -40,6 +41,15 @@ export enum HistoryTimeframe {
   ALL = "All"
 }
 
+export type RateChartArgs = {
+  assetIds: AssetId[]
+  percentChange: number
+  axisEnabled?: boolean
+  timeframe: HistoryTimeframe
+  setPercentChange: (percentChange: number) => void
+  margins?: { top: number; right: number; bottom: number; left: number }
+} & BoxProps
+
 export type EtherscanTransaction = {
   blockHash: string
   blockNumber: string
@@ -74,6 +84,7 @@ export type Transaction = EtherscanTransaction & {
 
 export type VaultPosition = {
   avgBuyPrice: BigNumber
+  depositDuration: number
   earningsPercentage: BigNumber
   underlying: {
     staked: BigNumber
@@ -99,6 +110,8 @@ export type Asset = {
   decimals: number
   color?: string
   apr?: BigNumber
+  apy?: BigNumber
+  fee?: BigNumber
   balance?: BigNumber
   priceUsd?: BigNumber
   balanceUsd?: BigNumber

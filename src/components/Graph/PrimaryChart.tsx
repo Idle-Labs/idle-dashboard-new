@@ -25,10 +25,10 @@ export interface PrimaryChartProps {
   width: number
   height: number
   formatFn: Function
-  margin?: { top: number; right: number; bottom: number; left: number }
   color?: string
   axisEnabled?: boolean
   maxMinEnabled?: boolean
+  margins?: { top: number; right: number; bottom: number; left: number }
 }
 
 
@@ -41,13 +41,13 @@ const bisectDate = bisector<HistoryData, Date>(d => new Date(d.date)).left
 
 export const PrimaryChart = ({
   data,
-  width = 10,
   height,
   formatFn,
+  width = 10,
   axisEnabled = true,
   maxMinEnabled = true,
   color = 'chart.stroke',
-  margin = { top: 0, right: 0, bottom: 0, left: 0 },
+  margins = { top: 0, right: 0, bottom: 0, left: 0 },
 }: PrimaryChartProps) => {
   const {
     showTooltip,
@@ -66,8 +66,8 @@ export const PrimaryChart = ({
   const tooltipColor = useColorModeValue(theme.colors.gray[800], 'white')
 
   // bounds
-  const xMax = Math.max(width - margin.left - margin.right, 0)
-  const yMax = Math.max(height - margin.top - margin.bottom, 0)
+  const xMax = useMemo(() => Math.max(width - margins.left - margins.right, 0), [width, margins])
+  const yMax = useMemo(() => Math.max(height - margins.top - margins.bottom, 0), [height, margins])
 
   const minPrice = Math.min(...data.map(getValue))
   const maxPrice = Math.max(...data.map(getValue))
@@ -85,12 +85,12 @@ export const PrimaryChart = ({
   }, [xMax, data])
   const priceScale = useMemo(() => {
     return scaleLinear({
-      range: [yMax + margin.top, margin.top],
+      range: [yMax + margins.top, margins.top],
       domain: [min(data, getValue) || 0, max(data, getValue) || 0],
       nice: true,
     })
     //
-  }, [margin.top, yMax, data])
+  }, [margins.top, yMax, data])
 
   const dateToLocale = useCallback( (tooltipData: HistoryData) => {
     return dayjs(getDate(tooltipData)).locale(locale).format('LLL')
@@ -100,7 +100,7 @@ export const PrimaryChart = ({
   const handleTooltip = useCallback(
     (event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>) => {
       const { x } = localPoint(event) || { x: 0 }
-      const currX = x - margin.left
+      const currX = x - margins.left
       const x0 = dateScale.invert(currX)
       const index = bisectDate(data, x0, 1)
       const d0 = data[index - 1]
@@ -118,7 +118,7 @@ export const PrimaryChart = ({
         tooltipTop: priceScale(getValue(d)),
       })
     },
-    [showTooltip, priceScale, dateScale, data, margin.left],
+    [showTooltip, priceScale, dateScale, data, margins.left],
   )
 
   return (
@@ -128,7 +128,7 @@ export const PrimaryChart = ({
           data={data}
           width={width}
           hideLeftAxis
-          margin={{ ...margin }}
+          margin={{ ...margins }}
           yMax={yMax}
           xScale={dateScale}
           yScale={priceScale}
@@ -140,7 +140,7 @@ export const PrimaryChart = ({
           hideBottomAxis
           data={data}
           width={width}
-          margin={{ ...margin }}
+          margin={{ ...margins }}
           yMax={yMax}
           xScale={dateScale}
           yScale={priceScale}
@@ -148,8 +148,8 @@ export const PrimaryChart = ({
         />
         {/* a transparent ele that track the pointer event, allow us to display tooltup */}
         <Bar
-          x={margin.left}
-          y={margin.top * 2}
+          x={margins.left}
+          y={margins.top * 2}
           width={xMax}
           height={yMax}
           fill='transparent'
@@ -161,7 +161,7 @@ export const PrimaryChart = ({
         />
         {
           maxMinEnabled && (
-            <Group top={margin.top} left={margin.left}>
+            <Group top={margins.top} left={margins.left}>
               <MaxPrice
                 yText={priceScale(maxPrice)}
                 label={formatFn(maxPrice)}
@@ -179,7 +179,7 @@ export const PrimaryChart = ({
                 width={width}
                 yMax={yMax}
                 stroke={chartColor}
-                margin={{ ...margin }}
+                margin={{ ...margins }}
               />
             </Group>
           )
@@ -189,8 +189,8 @@ export const PrimaryChart = ({
         {tooltipData && (
           <Group>
             <Line
-              from={{ x: tooltipLeft, y: margin.top * 2 }}
-              to={{ x: tooltipLeft, y: yMax + margin.top * 2 }}
+              from={{ x: tooltipLeft, y: margins.top * 2 }}
+              to={{ x: tooltipLeft, y: yMax + margins.top * 2 }}
               stroke={chartColor}
               strokeWidth={2}
               opacity={0.5}
@@ -199,7 +199,7 @@ export const PrimaryChart = ({
             />
             <circle
               cx={tooltipLeft}
-              cy={tooltipTop + 1 + margin.top}
+              cy={tooltipTop + 1 + margins.top}
               r={3.5}
               fill={'white'}
               fillOpacity={1}
@@ -208,7 +208,7 @@ export const PrimaryChart = ({
             {/*
             <circle
               cx={tooltipLeft}
-              cy={tooltipTop + margin.top}
+              cy={tooltipTop + margins.top}
               r={4}
               fill={theme.colors.gray[300]}
               stroke='white'

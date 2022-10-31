@@ -33,8 +33,10 @@ export function BrowserRouterProvider() {
   }, [renderedRoutes])
 
   const params = useMemo(() => {
-    return match.params
+    return match?.params || {}
   }, [match])
+
+  // console.log('match', match, 'params', params)
 
   const router = useMemo(
     () => ({

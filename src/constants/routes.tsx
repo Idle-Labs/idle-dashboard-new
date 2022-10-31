@@ -1,6 +1,8 @@
+import { Stats } from 'components/Stats/Stats'
 import { Template } from 'components/Template/Template'
-import { Dashboard } from 'components/Dashboard/Dashboard'
 import { Strategy } from 'components/Strategy/Strategy'
+import { Dashboard } from 'components/Dashboard/Dashboard'
+import { AssetPage } from 'components/AssetPage/AssetPage'
 // import { TestConsumer } from 'components/TestConsumer/TestConsumer'
 import { RouteObject, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
 
@@ -40,15 +42,11 @@ export const routes: RouteObject[] = [
               },
               {
                 path:':asset',
-                element:<ComponentWithProps state={{section:'earn/strategy/asset'}} />,
+                element:<AssetPage />,
                 children:[
                   {
-                    index: true,
-                    element: <ComponentWithProps state={{section:'earn/strategy/asset/earn'}} />,
-                  },
-                  {
                     path:'stats',
-                    element: <ComponentWithProps state={{section:'earn/strategy/asset/stats'}} />,
+                    element: <Stats />,
                   }
                 ]
               },

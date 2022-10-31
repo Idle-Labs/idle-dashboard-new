@@ -1,3 +1,4 @@
+import { BNify, apr2apy } from 'helpers/'
 import type { BigNumber } from 'bignumber.js'
 import { Amount } from 'components/Amount/Amount'
 import { RateChart } from 'components/RateChart/RateChart'
@@ -59,7 +60,7 @@ export const AssetCell = ({assetId, children, ...rest}: AssetCellProps) => {
 // }
 type AssetFieldProps = {
   value?: string | number | BigNumber
-} & TextProps & BoxProps & ThemingProps
+} & TextProps
 
 const Name: React.FC<AssetFieldProps> = (props) => {
   const { asset } = useAssetProvider();
@@ -146,20 +147,21 @@ const ProtocolIcon: React.FC<IconProps> = ({
   return showTooltip ? tooltip : avatar
 }
 
-const Rewards: React.FC<AvatarProps> = (props) => {
+const Rewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
   const {vault} = useAssetProvider();
   
   const rewardTokens = useMemo(() => {
-    if (!vault || !("rewardTokens" in vault)) return null
-    return vault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
+    if (!vault || !("rewardTokens" in vault)) return children
+    const rewards = vault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
         <AssetCell key={`asset_${index}`} assetId={rewardToken.address}>
-          <AssetCell.Icon {...props} ml={-2} showTooltip={true} />
+          <AssetCell.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
         </AssetCell>
       )
-    })
-  }, [vault, props])
+    }).filter( reward => !!reward )
+    return rewards.length ? rewards : children
+  }, [children, vault, props])
 
   return (
     <Flex>
@@ -167,11 +169,115 @@ const Rewards: React.FC<AvatarProps> = (props) => {
     </Flex>
   )
 }
-const Balance: React.FC<AvatarProps> = (props) => {
+
+const Balance: React.FC<TextProps> = (props) => {
   const { asset } = useAssetProvider();
   
   return asset?.balance ? (
     <Amount value={asset.balance} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const Earnings: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.vaultPosition?.underlying.earnings ? (
+    <Amount value={asset?.vaultPosition?.underlying.earnings} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const EarningsUsd: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.vaultPosition?.usd.earnings ? (
+    <Amount.Usd value={asset?.vaultPosition?.usd.earnings} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const BalanceUsd: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.vaultPosition?.usd.redeemable ? (
+    <Amount.Usd value={asset?.vaultPosition?.usd.redeemable} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const EarningsPerc: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.vaultPosition?.earningsPercentage ? (
+    <Amount.Percentage value={asset?.vaultPosition?.earningsPercentage.times(100)} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const DepositedUsd: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.vaultPosition?.usd.deposited ? (
+    <Amount.Usd value={asset?.vaultPosition?.usd.deposited} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const Deposited: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.vaultPosition?.underlying.deposited ? (
+    <Amount value={asset?.vaultPosition?.underlying.deposited} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const Apr: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.apr ? (
+    <Amount.Percentage value={asset?.apr} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const Apy: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.apy ? (
+    <Amount.Percentage value={asset?.apy} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const RealizedApy: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+
+  const realizedApy = asset?.vaultPosition?.earningsPercentage && asset?.vaultPosition?.depositDuration ? apr2apy(asset?.vaultPosition?.earningsPercentage.times(31536000).div(asset?.vaultPosition?.depositDuration)).times(100) : BNify(0);
+  // console.log('earningsPercentage', asset?.vaultPosition?.earningsPercentage, 'depositDuration', asset?.vaultPosition?.depositDuration, 'realizedApy', realizedApy.toString())
+  
+  return asset?.vaultPosition?.depositDuration ? (
+    <Amount.Percentage value={realizedApy} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const FeesUsd: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+
+  const feeUsd = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset.vaultPosition.usd.earnings).times(asset.fee) : BNify(0)
+  
+  return asset?.vaultPosition?.usd.earnings ? (
+    <Amount.Usd value={feeUsd} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const Fees: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+
+  const fee = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset.vaultPosition.underlying.earnings).times(asset.fee) : BNify(0)
+  
+  return asset?.vaultPosition?.usd.earnings ? (
+    <Amount value={fee} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const PoolUsd: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider();
+  
+  return asset?.tvlUsd ? (
+    <Amount.Usd value={asset?.tvlUsd} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -195,11 +301,23 @@ const HistoricalRates: React.FC<BoxProps> = (props) => {
   return chart
 }
 
+AssetCell.Apr = Apr
+AssetCell.Apy = Apy
 AssetCell.Name = Name
 AssetCell.Icon = Icon
+AssetCell.Fees = Fees
 AssetCell.Symbol = Symbol
 AssetCell.Rewards = Rewards
 AssetCell.Balance = Balance
+AssetCell.FeesUsd = FeesUsd
+AssetCell.PoolUsd = PoolUsd
+AssetCell.Earnings = Earnings
+AssetCell.Deposited = Deposited
+AssetCell.BalanceUsd = BalanceUsd
+AssetCell.RealizedApy = RealizedApy
+AssetCell.EarningsUsd = EarningsUsd
+AssetCell.EarningsPerc = EarningsPerc
+AssetCell.DepositedUsd = DepositedUsd
 AssetCell.ProtocolName = ProtocolName
 AssetCell.ProtocolIcon = ProtocolIcon
 AssetCell.HistoricalRates = HistoricalRates

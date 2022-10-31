@@ -3,7 +3,7 @@ import { Vault } from 'vaults/'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates } from 'constants/'
-import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, apr2apy, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
+import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
 
 export class VaultFunctionsHelper {
 
@@ -59,7 +59,7 @@ export class VaultFunctionsHelper {
       
       // console.log('getTrancheHarvestApy', harvestedValue.toString(), tranchePool.toString(), trancheAprRatio.toString(), tokenApr.toString(), apr2apy(tokenApr).toString())
       
-      return apr2apy(tokenApr);
+      return tokenApr;
     } catch (err) {
       // console.log('err', err)
       return BNify(0)
