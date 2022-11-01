@@ -143,6 +143,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
   }, [state.assetsData])
 
+  const selectVaultTransactions = useCallback( (vaultId: AssetId | undefined): Transaction[] | null => {
+    return vaultId && state.transactions ? state.transactions[vaultId.toLowerCase()] : null
+  }, [state.transactions])
+
   const selectAssetsByIds = useCallback( (assetIds: AssetId[]): Asset[] | null => {
     const assetIdsLowerCase = assetIds.map( assetId => assetId.toLowerCase() )
     return Object.keys(state.assetsData).filter( assetId => assetIdsLowerCase.includes(assetId) ).map( assetId => state.assetsData[assetId] )
@@ -288,6 +292,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectVaultPosition,
       selectAssetPriceUsd,
       selectAssetBalanceUsd,
+      selectVaultTransactions,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
       selectVaultsAssetsWithBalance
@@ -305,6 +310,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetPriceUsd,
     selectVaultPosition,
     selectAssetBalanceUsd,
+    selectVaultTransactions,
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
     selectVaultsAssetsWithBalance
@@ -394,6 +400,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           usd,
           underlying,
           avgBuyPrice,
+          firstDepositTx,
           depositDuration,
           earningsPercentage
         }

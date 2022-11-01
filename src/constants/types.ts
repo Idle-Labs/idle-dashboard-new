@@ -86,6 +86,7 @@ export type VaultPosition = {
   avgBuyPrice: BigNumber
   depositDuration: number
   earningsPercentage: BigNumber
+  firstDepositTx?: Transaction | null
   underlying: {
     staked: BigNumber
     earnings: BigNumber
