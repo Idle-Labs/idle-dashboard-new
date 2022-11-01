@@ -96,7 +96,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   assetIds={[params.asset]}
                   setPercentChange={() => {}}
                   timeframe={HistoryTimeframe.MONTH}
-                  margins={{ top: 0, right: 0, bottom: 40, left: 0 }}
+                  margins={{ top: 10, right: 0, bottom: 45, left: 0 }}
                 />
               </Card.Dark>
             </Box>

@@ -60,6 +60,8 @@ export const useBalanceChartData: UseBalanceChartData = args => {
         const assetsBalancesByDate = await promiseAssetBalancesByDate
         const vaultTransactions = selectVaultTransactions(asset.id)
 
+        if (!vaultTransactions) return
+
         // Loop through asset transactions
         const assetBalancesByDate = vaultTransactions.reduce( (balances: Record<number, BigNumber>, transaction: Transaction) => {
           const date = +(dayjs(+(transaction.timeStamp)*1000).startOf('day').valueOf())
@@ -99,18 +101,60 @@ export const useBalanceChartData: UseBalanceChartData = args => {
         return assetsBalancesByDate
       }, Promise.resolve({}))
 
-      const total = Object.keys(assetsBalancesByDate).reduce( (total: HistoryData[], date: string ) => {
+      if (!assetsBalancesByDate) return
+
+      // console.log('assetsBalancesByDate', assetsBalancesByDate)
+
+      // Extend balances for each day between the first one and today
+      const startDate = +(Object.keys(assetsBalancesByDate).sort()[0])
+      const endDate = +(dayjs().endOf('day').valueOf())
+
+      const assetsBalancesByDateExtended: Record<number, Record<AssetId, number>> = {}
+
+      for (let date: number = startDate, prevDate: number | null = null; date <= endDate; date+=86400000) {
+        // Initialize date key
+        assetsBalancesByDateExtended[date] = {}
+
+        // Copy new balances to the new date
+        if (assetsBalancesByDate[date]){
+          assetsBalancesByDateExtended[date] = {...assetsBalancesByDate[date]}
+        }
+
+        // Copy prev balances
+        if (prevDate && assetsBalancesByDateExtended[prevDate]) {
+          const prevBalancesToCopy: Record<AssetId, number> = Object.keys(assetsBalancesByDateExtended[prevDate]).reduce( (prevBalances: Record<AssetId, number>, assetId: string ) => {
+            // Copy asset balance if not already set
+            if (prevDate && !assetsBalancesByDateExtended[date][assetId]){
+              prevBalances[assetId] = assetsBalancesByDateExtended[prevDate][assetId]
+            }
+            return prevBalances
+          }, {})
+
+          // Copy prev balances
+          assetsBalancesByDateExtended[date] = {
+            ...assetsBalancesByDateExtended[date],
+            ...prevBalancesToCopy
+          }
+        }
+
+        prevDate = date
+      }
+
+      // Generate total array
+      const total = Object.keys(assetsBalancesByDateExtended).reduce( (total: HistoryData[], date: any ) => {
         total.push({
           date: parseInt(date),
-          value: parseFloat(assetsBalancesByDate[date].total)
+          value: assetsBalancesByDateExtended[date].total
         })
         return total
       }, [])
 
-      const rainbow = Object.keys(assetsBalancesByDate).reduce( (rainbow: RainbowData[], date: string ) => {
+      // Generate rainbow array
+      const rainbow = Object.keys(assetsBalancesByDateExtended).reduce( (rainbow: RainbowData[], date: any ) => {
         rainbow.push({
           date: parseInt(date),
-          ...assetsBalancesByDate[date]
+          total: assetsBalancesByDateExtended[date].total,
+          ...assetsBalancesByDateExtended[date]
         })
         return rainbow
       }, [])
@@ -120,7 +164,7 @@ export const useBalanceChartData: UseBalanceChartData = args => {
         rainbow
       }
 
-      // console.log('balanceChartData', balanceChartData)
+      console.log('balanceChartData', balanceChartData)
       setBalanceChartData(balanceChartData)
       setBalanceChartDataLoading(false)
     })()

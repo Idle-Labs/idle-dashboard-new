@@ -53,9 +53,9 @@ export const Graph: React.FC<GraphProps> = ({
             </Fade>
           ) : !isEmpty(data) ? (
             <SlideFade in={!loading}>
-              {isRainbowChart && rainbow.length ? (
+              {isRainbowChart && rainbow.length>0 ? (
                 <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
-              ) : total.length && (
+              ) : total.length>0 && (
                 <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
               )}
             </SlideFade>

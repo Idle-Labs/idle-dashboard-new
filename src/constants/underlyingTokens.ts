@@ -320,9 +320,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       token: 'TUSD',
       enabled: true,
       colors: {
-        hex: "0340a1",
-        rgb: [3, 64, 161],
-        hsl: ["217", "96%", "32%"]
+        hex: "#002868",
+        rgb: [0, 40, 104],
+        hsl: ["217", "100%", "20%"]
       },
       address: "0x0000000000085d4780b73119b644ae5ecd22b376"
     },
