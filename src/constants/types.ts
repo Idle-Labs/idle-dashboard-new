@@ -25,6 +25,17 @@ export type VaultHistoricalRates = {
   rates: HistoryData[]
 }
 
+export type VaultHistoricalPrices = {
+  vaultId: string
+  prices: HistoryData[]
+}
+
+export type VaultHistoricalData = {
+  vaultId: string
+  rates: HistoryData[]
+  prices: HistoryData[]
+}
+
 export type HistoryData = {
   value: number
   date: number
@@ -102,7 +113,7 @@ export type VaultPosition = {
 }
 
 export type Asset = {
-  id?: string
+  id?: AssetId
   icon?: string
   vaultId?: string
   type?: string
@@ -110,6 +121,7 @@ export type Asset = {
   token: string
   decimals: number
   color?: string
+  underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber
   fee?: BigNumber
@@ -121,6 +133,8 @@ export type Asset = {
   tvl?: BigNumber
   tvlUsd?: BigNumber
   rates?: HistoryData[]
+  prices?: HistoryData[]
+  pricesUsd?: HistoryData[]
   vaultPosition?: VaultPosition
 }
 

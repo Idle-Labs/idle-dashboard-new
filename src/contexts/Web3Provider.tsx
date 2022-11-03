@@ -27,16 +27,20 @@ export function Web3Provider({ children }: ProviderProps) {
   // Update wallet and provider
   useEffect(() => {
     if (!walletInitialized || !chainId) return
-    if (wallet) {
+    if (wallet?.provider) {
       // @ts-ignore
       setWeb3(new Web3(wallet.provider))
     } else {
       setWeb3(new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl)))
     }
-  }, [wallet, walletInitialized, chainId])
+  }, [wallet?.provider, walletInitialized, chainId])
 
   useEffect(() => {
     if (!chainId || !web3) return
+
+    // @ts-ignore // TO REMOVE
+    window.web3 = web3
+
     const multiCall = new Multicall(chainId, web3)
     setMultiCall(multiCall)
   }, [web3, chainId])

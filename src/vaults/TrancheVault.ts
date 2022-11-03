@@ -6,7 +6,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from 'constants/'
+import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 export class TrancheVault {
 
@@ -15,15 +15,14 @@ export class TrancheVault {
   readonly web3: Web3
   readonly chainId: number
   readonly protocol: string
-  public readonly type: string
+  readonly vaultFunctionsHelper: VaultFunctionsHelper
 
   // Raw config
-  public readonly vaultConfig: TrancheConfig
-
-  // 
+  public readonly type: string
   public readonly cdoConfig: CDO
   public readonly trancheConfig: Tranche
   public readonly strategyConfig: Strategy
+  public readonly vaultConfig: TrancheConfig
   public readonly poolConfig: Pool | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
@@ -44,6 +43,7 @@ export class TrancheVault {
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
     this.trancheConfig = vaultConfig.Tranches[type]
+    this.vaultFunctionsHelper = new VaultFunctionsHelper(chainId, web3)
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
     this.rewardTokens = vaultConfig.autoFarming ? vaultConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
@@ -237,9 +237,16 @@ export class TrancheVault {
     ]
   }
 
+  public async getHistoricalData(filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
+    return await this.vaultFunctionsHelper.getVaultHistoricalDataFromSubgraph(this, filters)
+  }
+
+  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
+    return await this.vaultFunctionsHelper.getVaultPricesFromSubgraph(this, filters)
+  }
+
   public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
-    const vaultFunctionsHelper: VaultFunctionsHelper = new VaultFunctionsHelper(this.chainId, this.web3)
-    return await vaultFunctionsHelper.getVaultRatesFromSubgraph(this, filters)
+    return await this.vaultFunctionsHelper.getVaultRatesFromSubgraph(this, filters)
   }
 
   public getAssetsData(): Assets {
@@ -253,6 +260,7 @@ export class TrancheVault {
         type: this.type,
         token: this.trancheConfig.token,
         color: this.underlyingToken?.colors.hex,
+        underlyingId: this.underlyingToken?.address,
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.trancheConfig.label || this.trancheConfig.token,
         decimals: this.trancheConfig.decimals

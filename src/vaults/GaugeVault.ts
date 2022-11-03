@@ -5,7 +5,7 @@ import { TrancheVault } from '../vaults/TrancheVault'
 import { GenericContract } from '../contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from '../constants'
+import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
 
 export class GaugeVault {
 
@@ -176,7 +176,22 @@ export class GaugeVault {
     ]
   }
 
-  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+  public async getHistoricalData(filters?: PlatformApiFilters): Promise<any> {
+    return {
+      vaultId: this.id,
+      rates: [],
+      prices: []
+    }
+  }
+
+  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<any> {
+    return {
+      vaultId: this.id,
+      prices: []
+    }
+  }
+
+  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<any> {
     return {
       vaultId: this.id,
       rates: []
@@ -190,7 +205,8 @@ export class GaugeVault {
         type: this.type,
         name: this.gaugeConfig.name,
         token: this.gaugeConfig.token,
-        color: this.underlyingToken?.colors.hex
+        color: this.underlyingToken?.colors.hex,
+        underlyingId: this.underlyingToken?.address
       }
     }
   }

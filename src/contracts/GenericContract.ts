@@ -41,6 +41,11 @@ export class GenericContract {
   public async call(methodName: string, params: any[] = []): Promise<any | null> {
     const rawCall = this.getRawCall(methodName, params);
     if (!rawCall) return null
-    return await rawCall[0].call
+
+    try {
+      return await rawCall[0].call.call()
+    } catch (err) {
+      return null
+    }
   }
 }

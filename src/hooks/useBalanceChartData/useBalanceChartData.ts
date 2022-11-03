@@ -1,10 +1,10 @@
 import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js'
-import { asyncForEach, BNify } from 'helpers/'
 import { useState, useMemo, useEffect } from 'react'
-import { balanceChartDataMock } from './balanceChartData.mock'
+import { BNify, getTimestampRange, isEmpty } from 'helpers/'
+// import { balanceChartDataMock } from './balanceChartData.mock'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { AssetId, HistoryData, HistoryTimeframe, Asset, Transaction, Balances } from 'constants/types'
+import { AssetId, HistoryData, HistoryTimeframe, Asset, Transaction } from 'constants/types'
 
 export type RainbowData = {
   date: number
@@ -34,7 +34,7 @@ type UseBalanceChartData = (args: UseBalanceChartDataArgs) => UseBalanceChartDat
 export const useBalanceChartData: UseBalanceChartData = args => {
 
   const { assetIds/*, timeframe*/ } = args
-  const { isPortfolioLoaded, selectors: { selectAssetsByIds, selectVaultTransactions } } = usePortfolioProvider()
+  const { isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectors: { selectAssetsByIds, selectVaultTransactions, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp } } = usePortfolioProvider()
   const [balanceChartData, setBalanceChartData] = useState<BalanceChartData>({
     total: [],
     rainbow: [],
@@ -47,52 +47,56 @@ export const useBalanceChartData: UseBalanceChartData = args => {
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
-  console.log('assets', assets)
+  // console.log('assets', assets)
 
   useEffect(() => {
-    if (!isPortfolioLoaded) return
+    if (!isPortfolioLoaded || isEmpty(historicalPrices) || isEmpty(historicalPricesUsd)) return
+
+    // console.log('prices', prices)
 
     ;(async() => {
       const assetsBalancesByDate = await assets.reduce( async (promiseAssetBalancesByDate: Promise<Record<number, Record<AssetId, number>>>, asset: Asset) => {
 
         if (!asset?.id) return
+
+        const assetId: AssetId = asset.id
         
         const assetsBalancesByDate = await promiseAssetBalancesByDate
-        const vaultTransactions = selectVaultTransactions(asset.id)
+        const vaultTransactions = selectVaultTransactions(assetId)
 
         if (!vaultTransactions) return
 
-        // Loop through asset transactions
-        const assetBalancesByDate = vaultTransactions.reduce( (balances: Record<number, BigNumber>, transaction: Transaction) => {
-          const date = +(dayjs(+(transaction.timeStamp)*1000).startOf('day').valueOf())
+        // console.log('vaultTransactions', assetId, vaultTransactions)
 
-          if (!balances[date]) {
-            balances[date] = BNify(0)
-          }
+        // Loop through asset transactions
+        const assetBalancesByDate = vaultTransactions.reduce( (balances: Record<string, any>, transaction: Transaction) => {
+          const timestamp = +(dayjs(+(transaction.timeStamp)*1000).startOf('day').valueOf())
 
           switch (transaction.action) {
             case 'deposit':
-              balances[date] = balances[date].plus(transaction.underlyingAmount)
+              balances.total = balances.total.plus(transaction.idleAmount)
             break;
             case 'redeem':
-              balances[date] = BigNumber.maximum(0, balances[date].minus(transaction.underlyingAmount))
+              balances.total = BigNumber.maximum(0, balances.total.minus(transaction.idleAmount))
             break;
             default:
             break;
           }
 
-          return balances
-        }, {})
+          balances.byDate[timestamp] = balances.total
 
-        Object.keys(assetBalancesByDate).forEach( (date: any) => {
-          if (!assetsBalancesByDate[date]) {
-            assetsBalancesByDate[date] = {
-              total: 0
-            }
+          return balances
+        }, {
+          total: BNify(0),
+          byDate: {}
+        })
+
+        Object.keys(assetBalancesByDate.byDate).forEach( (timestamp: any) => {
+          if (!assetsBalancesByDate[timestamp]) {
+            assetsBalancesByDate[timestamp] = {}
           }
           if (asset.id) {
-            assetsBalancesByDate[date][asset.id] = parseFloat(assetBalancesByDate[date])
-            assetsBalancesByDate[date].total += assetsBalancesByDate[date][asset.id]
+            assetsBalancesByDate[timestamp][asset.id] = parseFloat(assetBalancesByDate.byDate[timestamp])
           }
         })
 
@@ -101,60 +105,78 @@ export const useBalanceChartData: UseBalanceChartData = args => {
         return assetsBalancesByDate
       }, Promise.resolve({}))
 
-      if (!assetsBalancesByDate) return
+      if (isEmpty(assetsBalancesByDate)) return
 
       // console.log('assetsBalancesByDate', assetsBalancesByDate)
 
       // Extend balances for each day between the first one and today
-      const startDate = +(Object.keys(assetsBalancesByDate).sort()[0])
-      const endDate = +(dayjs().endOf('day').valueOf())
+      const startTimestamp = +(Object.keys(assetsBalancesByDate).sort()[0])
+      const endTimestamp = +(dayjs().endOf('day').valueOf())
 
+
+      const timestampRange = getTimestampRange(startTimestamp, endTimestamp)
       const assetsBalancesByDateExtended: Record<number, Record<AssetId, number>> = {}
-
-      for (let date: number = startDate, prevDate: number | null = null; date <= endDate; date+=86400000) {
-        // Initialize date key
-        assetsBalancesByDateExtended[date] = {}
-
-        // Copy new balances to the new date
-        if (assetsBalancesByDate[date]){
-          assetsBalancesByDateExtended[date] = {...assetsBalancesByDate[date]}
-        }
+      for (let timestampIndex: number = 0, prevTimestamp: number | null = null; timestampIndex < timestampRange.length; timestampIndex++) {
+        const timestamp = timestampRange[timestampIndex]
 
         // Copy prev balances
-        if (prevDate && assetsBalancesByDateExtended[prevDate]) {
-          const prevBalancesToCopy: Record<AssetId, number> = Object.keys(assetsBalancesByDateExtended[prevDate]).reduce( (prevBalances: Record<AssetId, number>, assetId: string ) => {
-            // Copy asset balance if not already set
-            if (prevDate && !assetsBalancesByDateExtended[date][assetId]){
-              prevBalances[assetId] = assetsBalancesByDateExtended[prevDate][assetId]
-            }
-            return prevBalances
-          }, {})
-
-          // Copy prev balances
-          assetsBalancesByDateExtended[date] = {
-            ...assetsBalancesByDateExtended[date],
-            ...prevBalancesToCopy
-          }
+        assetsBalancesByDateExtended[timestamp] = {
+          ...(prevTimestamp ? assetsBalancesByDateExtended[prevTimestamp] : {}),
+          ...assetsBalancesByDate[timestamp],
         }
 
-        prevDate = date
+        // console.log('assetsBalancesByDateExtended', prevTimestamp, timestamp, (prevTimestamp ? assetsBalancesByDateExtended[prevTimestamp] : {}), assetsBalancesByDateExtended[timestamp])
+
+        prevTimestamp = timestamp
       }
 
+      // console.log('assetsBalancesByDateExtended', assetsBalancesByDateExtended)
+
+      // Add totals
+      Object.keys(assetsBalancesByDateExtended).forEach( (timestamp: any) => {
+
+        const assetsBalances = assetsBalancesByDateExtended[timestamp]
+
+        // Multiply balance by vault price
+        Object.keys(assetsBalances).forEach( (assetId: AssetId) => {
+
+          const asset = assets.find( (asset: Asset) => asset.id === assetId )
+          const underlyingId: AssetId = asset?.underlyingId
+
+          const vaultPriceInfo = selectAssetHistoricalPriceByTimestamp(assetId, timestamp)
+          // console.log('vaultPriceInfo', assetId, timestamp, vaultPriceInfo, assetsBalances[assetId])
+          if (vaultPriceInfo) {
+            assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfo.value)).toFixed(8))
+          }
+
+          const vaultPriceInfoUsd = selectAssetHistoricalPriceUsdByTimestamp(underlyingId, timestamp)
+          // console.log('vaultPriceInfoUsd', assetId, underlyingId, timestamp, vaultPriceInfoUsd, assetsBalances[assetId]);
+          if (vaultPriceInfoUsd) {
+            assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfoUsd.value)).toFixed(8))
+          }
+        })
+
+        // Calculate total balance
+        assetsBalances.total = Object.values(assetsBalances).reduce( (total: number, value: number) => (total+value), 0 )
+      })
+
+      // console.log('assetsBalancesByDateExtended', assetsBalancesByDateExtended)
+
       // Generate total array
-      const total = Object.keys(assetsBalancesByDateExtended).reduce( (total: HistoryData[], date: any ) => {
+      const total = Object.keys(assetsBalancesByDateExtended).reduce( (total: HistoryData[], timestamp: any ) => {
         total.push({
-          date: parseInt(date),
-          value: assetsBalancesByDateExtended[date].total
+          date: parseInt(timestamp),
+          value: assetsBalancesByDateExtended[timestamp].total
         })
         return total
       }, [])
 
       // Generate rainbow array
-      const rainbow = Object.keys(assetsBalancesByDateExtended).reduce( (rainbow: RainbowData[], date: any ) => {
+      const rainbow = Object.keys(assetsBalancesByDateExtended).reduce( (rainbow: RainbowData[], timestamp: any ) => {
         rainbow.push({
-          date: parseInt(date),
-          total: assetsBalancesByDateExtended[date].total,
-          ...assetsBalancesByDateExtended[date]
+          date: parseInt(timestamp),
+          total: assetsBalancesByDateExtended[timestamp].total,
+          ...assetsBalancesByDateExtended[timestamp]
         })
         return rainbow
       }, [])
@@ -164,11 +186,11 @@ export const useBalanceChartData: UseBalanceChartData = args => {
         rainbow
       }
 
-      console.log('balanceChartData', balanceChartData)
+      // console.log('balanceChartData', balanceChartData)
       setBalanceChartData(balanceChartData)
       setBalanceChartDataLoading(false)
     })()
-  }, [assets, selectVaultTransactions, isPortfolioLoaded])
+  }, [assets, selectVaultTransactions, isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
 
   return {
     assets,

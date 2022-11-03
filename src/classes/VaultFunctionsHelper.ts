@@ -1,9 +1,10 @@
 import Web3 from 'web3'
+import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
-import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
-import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates } from 'constants/'
+import { Multicall, CallData, ChainlinkHelper } from 'classes/'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
+import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, AssetId } from 'constants/'
 
 export class VaultFunctionsHelper {
 
@@ -11,12 +12,14 @@ export class VaultFunctionsHelper {
   readonly chainId: number
   readonly explorer: Explorer | undefined
   readonly multiCall: Multicall | undefined
+  readonly chainlinkHelper: ChainlinkHelper
 
   constructor(chainId: number, web3: Web3, multiCall?: Multicall, explorer?: Explorer) {
     this.web3 = web3
     this.chainId = chainId
     this.explorer = explorer
     this.multiCall = multiCall
+    this.chainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
   }
 
   public async getTrancheHarvestApy(trancheVault: TrancheVault, trancheType: string): Promise<BigNumber> {
@@ -141,6 +144,105 @@ export class VaultFunctionsHelper {
     }
   }
 
+  public async getChainlinkAssetHistoricalPrices(assetId: AssetId): Promise<any> {
+    return await this.chainlinkHelper.getHistoricalPrices(assetId)
+  }
+
+  public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
+
+    const results = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
+
+    const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
+      
+      const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
+      const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
+      const price = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
+      const rate = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
+
+      dailyData.rates[date] = {
+        date,
+        value: rate
+      }
+
+      dailyData.prices[date] = {
+        date,
+        value: price
+      }
+
+      return dailyData
+    }, {
+      rates: {},
+      prices: {}
+    })
+
+    return {
+      vaultId: vault.id,
+      rates: Object.values(dailyData.rates),
+      prices: Object.values(dailyData.prices)
+    }
+  }
+
+  public async getVaultHistoricalDataFromIdleApi(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
+
+    const historicalData: VaultHistoricalData = {
+      vaultId: vault.id,
+      rates: [],
+      prices: []
+    }
+
+    if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalData
+
+    const results = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
+
+    const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
+      const decimals = vault.underlyingToken?.decimals || 18
+      const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
+      const price = parseFloat(fixTokenDecimals(result.idlePrice, decimals).toFixed(8))
+      const rate = parseFloat(fixTokenDecimals(result.idleRate, 18).toFixed(8))
+
+      dailyData.rates[date] = {
+        date,
+        value: rate
+      }
+
+      dailyData.prices[date] = {
+        date,
+        value: price
+      }
+
+      return dailyData
+    }, {
+      rates: {},
+      prices: {}
+    })
+
+    historicalData.rates = Object.values(dailyData.rates)
+    historicalData.prices = Object.values(dailyData.prices)
+
+    return historicalData
+  }
+
+  public async getVaultPricesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
+    const historicalPrices: VaultHistoricalPrices = {
+      vaultId: vault.id,
+      prices: []
+    }
+
+    const infos = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
+    
+    historicalPrices.prices = infos.map( (result: any) => {
+      const date = +result.timeStamp*1000
+      const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
+      const value = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
+      return {
+        date,
+        value
+      }
+    })
+
+    return historicalPrices
+  }
+
   public async getVaultRatesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
     const historicalRates: VaultHistoricalRates = {
       vaultId: vault.id,
@@ -149,18 +251,40 @@ export class VaultFunctionsHelper {
 
     const rates = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
 
-    historicalRates.rates = rates.map( (rate: any) => {
-      const date = +rate.timeStamp*1000
-      const value = parseFloat(fixTokenDecimals(rate.apr, 18).toFixed(8))
+    historicalRates.rates = rates.map( (result: any) => {
+      const date = +result.timeStamp*1000
+      const value = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
       return {
         date,
         value
       }
     })
 
-    // console.log('historicalRates', historicalRates)
-
     return historicalRates
+  }
+
+  public async getVaultPricesFromIdleApi(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
+
+    const historicalPrices = {
+      vaultId: vault.id,
+      prices: []
+    }
+
+    if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalPrices
+
+    const infos = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
+
+    historicalPrices.prices = infos.map( (result: any) => {
+      const decimals = vault.underlyingToken?.decimals || 18
+      const date = +result.timestamp*1000
+      const value = parseFloat(fixTokenDecimals(result.idlePrice, decimals).toFixed(8))
+      return {
+        date,
+        value
+      }
+    })
+
+    return historicalPrices
   }
 
   public async getVaultRatesFromIdleApi(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
@@ -174,9 +298,9 @@ export class VaultFunctionsHelper {
 
     const rates = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
 
-    historicalRates.rates = rates.map( (rate: any) => {
-      const date = +rate.timestamp*1000
-      const value = parseFloat(fixTokenDecimals(rate.idleRate, 18).toFixed(8))
+    historicalRates.rates = rates.map( (result: any) => {
+      const date = +result.timestamp*1000
+      const value = parseFloat(fixTokenDecimals(result.idleRate, 18).toFixed(8))
       return {
         date,
         value

@@ -5,7 +5,7 @@ import { tokensFolder } from 'constants/folders'
 import { GenericContract } from '../contracts/GenericContract'
 import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import type { Abi, Assets, ContractRawCall, VaultHistoricalRates, PlatformApiFilters } from '../constants/types'
+import type { Abi, Assets, ContractRawCall, PlatformApiFilters } from '../constants/types'
 
 export class UnderlyingToken {
 
@@ -14,8 +14,7 @@ export class UnderlyingToken {
   readonly web3: Web3
   readonly chainId: number
   public readonly type: string
-
-  readonly tokenConfig: UnderlyingTokenProps
+  public readonly tokenConfig: UnderlyingTokenProps
 
   // Contracts
   public readonly contract: Contract
@@ -80,7 +79,22 @@ export class UnderlyingToken {
     ]
   }
 
-  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+  public async getHistoricalData(filters?: PlatformApiFilters): Promise<any> {
+    return {
+      vaultId: this.id,
+      rates: [],
+      prices: []
+    }
+  }
+
+  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<any> {
+    return {
+      vaultId: this.id,
+      prices: []
+    }
+  }
+
+  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<any> {
     return {
       vaultId: this.id,
       rates: []
@@ -90,6 +104,7 @@ export class UnderlyingToken {
   public getAssetsData(): Assets {
     return {
       [this.id]:{
+        underlyingId: this.id,
         token: this.tokenConfig.token,
         color: this.tokenConfig?.colors.hex,
         decimals: this.tokenConfig.decimals || 18,

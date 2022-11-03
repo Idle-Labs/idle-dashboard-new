@@ -15,7 +15,7 @@ export type CallData = {
 }
 
 export type DecodedResult = {
-  data:string | number | null,
+  data:any,
   callData:CallData,
   extraData: Record<string, any>
 }
@@ -30,8 +30,11 @@ export class  Multicall {
 
   constructor(chainId: number, web3: Web3) {
     this.networksContracts = {
-      1:'0xeefba1e63905ef1d7acba5a8513c70307c1ce441',
-      137:'0x11ce4B23bD875D7F5C6a31084f55fDe1e9A87507'
+      // 1:'0xeefba1e63905ef1d7acba5a8513c70307c1ce441',
+      // 137:'0x11ce4B23bD875D7F5C6a31084f55fDe1e9A87507'
+      1:'0xcA11bde05977b3631167028862bE2a173976CA11',
+      137:'0xcA11bde05977b3631167028862bE2a173976CA11'
+      
     };
     
     this.web3 = web3
@@ -89,6 +92,7 @@ export class  Multicall {
       calls.map(({ target, method, args, returnTypes }) => {
         return [
           target,
+          1,
           this.web3.utils.keccak256(method).substr(0, 10) +
             (args && args.length > 0
               ? strip0x(this.web3.eth.abi.encodeParameters(args.map(a => a[1]), args.map(a => a[0])))
@@ -99,7 +103,7 @@ export class  Multicall {
     const calldata = this.web3.eth.abi.encodeParameters(
       [
         {
-          components: [{ type: 'address' }, { type: 'bytes' }],
+          components: [{ type: 'address' }, {type: 'bool'}, { type: 'bytes' }],
           name: 'data',
           type: 'tuple[]'
         }
@@ -107,7 +111,10 @@ export class  Multicall {
       values
     );
 
-    return '0x252dba42'+strip0x(calldata);
+    // const methodSignature = this.web3.utils.keccak256('aggregate((address,bytes)[])').substr(0, 10)
+    const methodSignature = this.web3.utils.keccak256('aggregate3((address,bool,bytes)[])').substr(0, 10)
+
+    return methodSignature+strip0x(calldata);
   }
 
   async executeMultipleBatches(callBatches: CallData[][]): Promise<DecodedResult[][]> {
@@ -144,54 +151,75 @@ export class  Multicall {
   }
 
   catchEm(promise: Promise<any>) {
-    return promise.then(data => [null,data])
-      .catch(err => [err,null]);
+    return promise.then(data => [null, data])
+      .catch(err => [err, null]);
   }
 
-  async executeMulticalls(calls: CallData[]): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled: boolean = false): Promise<DecodedResult[] | null> {
 
     const calldata = this.prepareMulticallData(calls);
 
     if (!calldata) return null;
+
+    // console.log('callData', calldata)
 
     const contractAddress = this.networksContracts[this.chainId];
 
     try {
       const results = await this.web3.eth.call({
         data: calldata,
-        to: contractAddress
+        to: contractAddress,
+        from: contractAddress
       });
 
-      const decodedParams = this.web3.eth.abi.decodeParameters(['uint256', 'bytes[]'], results);
+      // console.log('Multicall raw:', results)
 
-      if (decodedParams && typeof decodedParams[1] !== 'undefined'){
-        const decodedResults = decodedParams[1];
+      const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results);
+      
+      // console.log('decodedResults', results, decodedResults)
 
-        if (decodedResults && decodedResults.length){
-          return decodedResults.map( (decodedResult: string, i:number ) => {
-            const output = {
-              data:null,
-              callData:calls[i],
-              extraData:calls[i].extraData
-            };
-            const returnTypes = calls[i].returnTypes;
-            const returnFields = calls[i].returnFields;
-            const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
-            if (returnTypes.length === 1){
-              output.data = decodedValues[0];
-            } else {
-              const values = decodedValues.splice(0,returnTypes.length);
-              output.data = values ? values.reduce( (acc,v,j) => {
-                acc[j] = v;
-                acc[returnFields[j]] = v;
-                return acc;
-              },{}) : {};
-            }
-            return output;
-          });
-        }
+      if (decodedResults && decodedResults[0].length){
+
+        const decodedData = decodedResults[0].map( (callResult: any, index: number ) => {
+          const success = callResult[0]
+          const decodedResult = callResult[1]
+          const output = {
+            data:null,
+            callData:calls[index],
+            extraData:calls[index].extraData
+          };
+
+          if (!success) return output
+
+          const returnTypes = calls[index].returnTypes;
+          const returnFields = calls[index].returnFields;
+          
+          // console.log(returnTypes, returnFields, decodedResult)
+
+          const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
+
+          if (returnTypes.length === 1){
+            output.data = decodedValues[0];
+          } else {
+            const values = decodedValues.splice(0,returnTypes.length);
+            output.data = values ? values.reduce( (acc, v, j) => {
+              acc[j] = v;
+              acc[returnFields[j]] = v;
+              return acc;
+            },{}) : {};
+          }
+          return output;
+        });
+
+        console.log('Multicall decoded:', decodedData)
+
+        return decodedData
       }
     } catch (err) {
+
+      // console.log('Multicall Error:', calls, err)
+
+      if (!singleCallsEnabled) return null
 
       const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
       const decodedCalls = await Promise.all(callPromises);
@@ -203,10 +231,6 @@ export class  Multicall {
           extraData:calls[i].extraData
         };
         const [, result] = decodedCall
-
-        // if (err){
-        //   console.log('Multicall Error:', err, calls[i])
-        // }
 
         if (result){
           output.data = result;

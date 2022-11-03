@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js';
 
 type BNifyInput = any
@@ -77,6 +78,24 @@ export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, min
   newValue += suffixes[suffixNum];
 
   return newValue;
+}
+
+export const isEmpty = (object: any) => {
+  return !object || !Object.keys(object).length
+}
+
+export const getTimestampRange = (startDate: (Date | number | string), endDate: (Date | number | string)) => {
+  const startDayTimestamp = +(dayjs(startDate).startOf('day').valueOf())
+  const endDayTimestamp = +(dayjs(endDate).startOf('day').valueOf())
+
+  const dayTimestamp = 86400000
+  const days = Math.floor((endDayTimestamp-startDayTimestamp)/dayTimestamp)
+
+  if (isBigNumberNaN(days)) return []
+
+  return Array.from(Array(days).keys()).map( (dayIndex: number) => {
+    return +(dayjs(startDayTimestamp+(dayTimestamp*dayIndex)).startOf('day').valueOf())
+  })
 }
 
 export const asyncForEach = async (array: any[], callback: Function, async: boolean = true) => {

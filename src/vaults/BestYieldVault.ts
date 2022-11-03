@@ -7,7 +7,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, PlatformApiFilters } from 'constants/'
+import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
 export class BestYieldVault {
 
@@ -15,9 +15,10 @@ export class BestYieldVault {
   readonly id: string
   readonly web3: Web3
   readonly chainId: number
-  public readonly type: string
+  readonly vaultFunctionsHelper: VaultFunctionsHelper
 
   // Raw config
+  public readonly type: string
   public readonly idleConfig: IdleToken
   public readonly tokenConfig: BestYieldConfig
   public readonly rewardTokens: UnderlyingTokenProps[]
@@ -35,6 +36,7 @@ export class BestYieldVault {
     this.tokenConfig = tokenConfig
     this.idleConfig = tokenConfig.idle
     this.id = this.idleConfig.address.toLowerCase()
+    this.vaultFunctionsHelper = new VaultFunctionsHelper(chainId, web3)
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
 
     this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
@@ -203,9 +205,16 @@ export class BestYieldVault {
     ]
   }
 
+  public async getHistoricalData(filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
+    return await this.vaultFunctionsHelper.getVaultHistoricalDataFromIdleApi(this, filters)
+  }
+
+  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
+    return await this.vaultFunctionsHelper.getVaultPricesFromIdleApi(this, filters)
+  }
+
   public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
-    const vaultFunctionsHelper: VaultFunctionsHelper = new VaultFunctionsHelper(this.chainId, this.web3)
-    return await vaultFunctionsHelper.getVaultRatesFromIdleApi(this, filters)
+    return await this.vaultFunctionsHelper.getVaultRatesFromIdleApi(this, filters)
   }
 
   public getAssetsData(): Assets {
@@ -215,6 +224,7 @@ export class BestYieldVault {
         type: this.type,
         token: this.idleConfig.token,
         color: this.underlyingToken?.colors.hex,
+        underlyingId: this.underlyingToken?.address,
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },

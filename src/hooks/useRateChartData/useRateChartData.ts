@@ -30,7 +30,7 @@ export const useRateChartData: UseRateChartData = args => {
 
   const { assetIds/*, timeframe*/ } = args
 
-  const { rates, selectors: { selectAssetsByIds } } = usePortfolioProvider()
+  const { historicalRates, selectors: { selectAssetsByIds } } = usePortfolioProvider()
   // const [rateChartData, setRateChartData] = useState<RateChartData>({
   //   total: [],
   //   rainbow: [],
@@ -49,7 +49,7 @@ export const useRateChartData: UseRateChartData = args => {
       rainbow: []
     }
 
-    if (!Object.keys(rates).length) return rateChartData
+    if (!Object.keys(historicalRates).length) return rateChartData
 
     const ratesByDate = assets.reduce( (ratesByDate: Record<number, RainbowData>, asset: Asset) => {
       if (!asset.id || !asset.rates) return ratesByDate
@@ -71,7 +71,7 @@ export const useRateChartData: UseRateChartData = args => {
     rateChartData.total = assets[0]?.rates
     rateChartData.rainbow = Object.values(ratesByDate)
     return rateChartData
-  }, [assets, rates])
+  }, [assets, historicalRates])
 
   useEffect(() => {
     if (!rateChartData.rainbow.length) return

@@ -1,8 +1,8 @@
 import type { Abi } from './types'
-import DAI from '../abis/tokens/DAI.json'
-import USDC from '../abis/tokens/USDC.json'
-import WETH from '../abis/tokens/WETH.json'
-import QuickswapLiquidityPool from "../abis/quickswap/QuickswapLiquidityPool.json";
+import DAI from 'abis/tokens/DAI.json'
+import USDC from 'abis/tokens/USDC.json'
+import WETH from 'abis/tokens/WETH.json'
+import QuickswapLiquidityPool from "abis/quickswap/QuickswapLiquidityPool.json";
 
 type TokenColors = {
   rgb: number[]
