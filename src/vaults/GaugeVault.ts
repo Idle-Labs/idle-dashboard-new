@@ -206,7 +206,7 @@ export class GaugeVault {
         name: this.gaugeConfig.name,
         token: this.gaugeConfig.token,
         color: this.underlyingToken?.colors.hex,
-        underlyingId: this.underlyingToken?.address
+        underlyingId: this.underlyingToken?.address?.toLowerCase(),
       }
     }
   }

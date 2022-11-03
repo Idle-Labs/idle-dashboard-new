@@ -297,7 +297,6 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     // console.log('vaultsAssets', vaultsAssets)
 
     const availableAssetsData = vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
-
     setAvailableAssetsData(availableAssetsData)
 
   }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
@@ -306,9 +305,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return;
 
     const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(strategy)
-
-    // console.log('vaultsAssetsWithBalance', params.strategy, vaultsAssetsWithBalance)
-
+    // console.log('vaultsAssetsWithBalance', vaultsAssetsWithBalance)
     setDepositedAssetsData(vaultsAssetsWithBalance)
 
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])

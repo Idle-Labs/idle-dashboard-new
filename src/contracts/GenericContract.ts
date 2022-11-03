@@ -28,24 +28,25 @@ export class GenericContract {
     this.contract = new web3.eth.Contract(contractConfig.abi, this.id)
   }
 
-  public getRawCall(methodName: string, params: any[] = []): ContractRawCall[] | null {
-    if (!this.contract.methods[methodName]) return null
-    return [
-      {
-        assetId:this.id,
-        call:this.contract.methods[methodName](...params)
-      }
-    ]
+  public getRawCall(methodName: string, params: any[] = [], assetId?: string): ContractRawCall {
+    const call = this.contract.methods[methodName] ? this.contract.methods[methodName](...params) : null
+    return {
+      call,
+      assetId: assetId || this.id,
+    }
+  }
+
+  public async executeRawCall(rawCall: ContractRawCall): Promise<any | null> {
+    if (!rawCall.call) return null
+    try {
+      return await rawCall.call.call()
+    } catch (err) {
+      return null
+    }
   }
 
   public async call(methodName: string, params: any[] = []): Promise<any | null> {
     const rawCall = this.getRawCall(methodName, params);
-    if (!rawCall) return null
-
-    try {
-      return await rawCall[0].call.call()
-    } catch (err) {
-      return null
-    }
+    return await this.executeRawCall(rawCall)
   }
 }

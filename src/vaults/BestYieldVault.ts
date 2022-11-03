@@ -224,8 +224,8 @@ export class BestYieldVault {
         type: this.type,
         token: this.idleConfig.token,
         color: this.underlyingToken?.colors.hex,
-        underlyingId: this.underlyingToken?.address,
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
+        underlyingId: this.underlyingToken?.address?.toLowerCase(),
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },
       ...(this.tokenConfig.protocols.reduce( (tokens: Assets, protocolToken) => {

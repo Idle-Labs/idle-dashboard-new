@@ -1,9 +1,15 @@
 import Web3 from 'web3'
 import { Multicall, CallData } from 'classes/'
 import { GenericContract } from 'contracts/GenericContract'
-import type { Abi, GenericContractConfig, ContractRawCall } from 'constants/'
 import ChainlinkFeedRegistry from 'abis/chainlink/ChainlinkFeedRegistry.json'
 import ChainlinkAggregatorV3 from 'abis/chainlink/ChainlinkAggregatorV3.json'
+import type { Abi, GenericContractConfig, ContractRawCall, AssetId } from 'constants/'
+
+export type FeedRoundBounds = {
+  latestRound: string
+  firstTimestamp: string
+  latestTimestamp: string
+}
 
 export class ChainlinkHelper {
   readonly web3: Web3
@@ -24,19 +30,84 @@ export class ChainlinkHelper {
     this.feedRegistry = new GenericContract(web3, chainId, feedRegistryContract)
   }
 
-  public async getUsdFeedAddress(address: string): Promise<any> {
-    const feedAddress = await this.feedRegistry.call('getFeed', [address, '0x0000000000000000000000000000000000000348']);
-    // console.log('getUsdFeedAddress', address, feedAddress)
+  public getUsdFeedAddressRawCall(address: string, assetId?: AssetId): ContractRawCall {
+    return this.feedRegistry.getRawCall('getFeed', [address, '0x0000000000000000000000000000000000000348'], assetId || address)
+  }
+
+  public getEthFeedAddressRawCall(address: string, assetId?: AssetId): ContractRawCall {
+    return this.feedRegistry.getRawCall('getFeed', [address, '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'], assetId || address)
+  }
+
+  public async getUsdFeedAddress(address: string): Promise<string | null> {
+    const rawCall = this.getUsdFeedAddressRawCall(address)
+    const feedAddress = await this.feedRegistry.executeRawCall(rawCall)
     return feedAddress || null
   }
 
-  public async getHistoricalPricesRawCalls(address: string): Promise<ContractRawCall[]> {
+  // Get Round Bounds (first timestamp, latest Round ID, latestTimestamp)
+  public getFeedRoundBoundsRawCalls(address: string, feedAddress: string): ContractRawCall[] {
 
-    const feedAddress = await this.getUsdFeedAddress(address)
+    if (!this.multiCall) return []
 
-    // console.log('feedAddress', address, feedAddress)
+    const priceFeedContract: GenericContractConfig = {
+      address: feedAddress,
+      name: 'chainlinkPriceFeed',
+      abi: ChainlinkAggregatorV3 as Abi
+    }
+    const priceFeed: GenericContract = new GenericContract(this.web3, this.chainId, priceFeedContract)
 
-    if (!feedAddress) return []
+    return [
+      priceFeed.getRawCall('getTimestamp', [1], address),
+      priceFeed.getRawCall('latestRound', [], address),
+      priceFeed.getRawCall('latestTimestamp', [], address)
+    ]
+  }
+
+  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds): ContractRawCall[] {
+
+    const priceFeedContract: GenericContractConfig = {
+      address: feedAddress,
+      name: 'chainlinkPriceFeed',
+      abi: ChainlinkAggregatorV3 as Abi
+    }
+    const priceFeed: GenericContract = new GenericContract(this.web3, this.chainId, priceFeedContract)
+
+    const latestRound = +roundBounds.latestRound
+    const firstTimestamp = +roundBounds.firstTimestamp
+    const latestTimestamp = +roundBounds.latestTimestamp
+
+    const maxDays = 365
+    const secondsBetweenInterval = Math.round((latestTimestamp-firstTimestamp)/latestRound)
+    const roundsPerDay = Math.max(1, Math.floor(86400/secondsBetweenInterval))
+    const maxRounds = roundsPerDay*maxDays
+    const firstRoundId = Math.max(1, latestRound-maxRounds)
+    const increment = Math.round(roundsPerDay/2)
+
+    // const rawCalls: ContractRawCall[] = Array.from(Array(+latestRound).keys()).map( (roundId: number) => {
+    const rawCalls: ContractRawCall[] = []
+    for (let roundId = firstRoundId; roundId <= +latestRound; roundId += increment) {
+      rawCalls.push({
+        assetId: address,
+        call: priceFeed.contract.methods.getRoundData(+roundId)
+      })
+    }
+    // console.log('getHistoricalPricesRawCalls', address, firstTimestamp, latestTimestamp, firstRoundId, latestRound, roundsPerDay, rawCalls)
+    // console.log('rawCalls', address, rawCalls.length)
+
+    return rawCalls
+  }
+
+  /*
+  public async getHistoricalPricesRawCalls(address: string, feedAddress: string | null = null): Promise<ContractRawCall[]> {
+
+    if (!feedAddress) {
+      feedAddress = await this.getUsdFeedAddress(address)
+    }
+
+    if (!feedAddress) {
+      console.log('Feed not found:', address)
+      return []
+    }
 
     const priceFeedContract: GenericContractConfig = {
       address: feedAddress,
@@ -55,7 +126,6 @@ export class ChainlinkHelper {
       priceFeed.call('latestRound'),
       priceFeed.call('latestTimestamp')
     ])
-
 
     const maxDays = 365
     const secondsBetweenInterval = Math.round((latestTimestamp-firstTimestamp)/lastRoundId)
@@ -86,4 +156,5 @@ export class ChainlinkHelper {
     const prices = await this.multiCall?.executeMulticalls(batchCalls)
     return prices
   }
+  */
 }

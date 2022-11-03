@@ -260,8 +260,8 @@ export class TrancheVault {
         type: this.type,
         token: this.trancheConfig.token,
         color: this.underlyingToken?.colors.hex,
-        underlyingId: this.underlyingToken?.address,
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
+        underlyingId: this.underlyingToken?.address?.toLowerCase(),
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.trancheConfig.label || this.trancheConfig.token,
         decimals: this.trancheConfig.decimals
       },

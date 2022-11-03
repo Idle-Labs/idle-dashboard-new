@@ -1,4 +1,5 @@
 import Web3 from 'web3'
+import { ContractRawCall } from 'constants/'
 import { Contract, ContractSendMethod } from 'web3-eth-contract'
 
 type Param = any
@@ -41,7 +42,18 @@ export class  Multicall {
     this.chainId = chainId
   }
 
+  getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
+    return rawCalls.reduce( (calls: CallData[], rawCall: ContractRawCall) => {
+      const callData = this.getDataFromRawCall(rawCall.call, rawCall)
+      if (callData){
+        calls.push(callData)
+      }
+      return calls
+    }, [])
+  }
+
   getDataFromRawCall(rawCall: any, extraData: object = {}): CallData | null {
+    if (!rawCall) return null
     const params = rawCall.arguments
     const contract = rawCall._parent
     const methodName = rawCall._method.name
@@ -211,7 +223,7 @@ export class  Multicall {
           return output;
         });
 
-        console.log('Multicall decoded:', decodedData)
+        // console.log('Multicall decoded:', decodedData)
 
         return decodedData
       }

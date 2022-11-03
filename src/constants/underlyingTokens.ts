@@ -20,6 +20,12 @@ type ConversionRateProps = {
   isPoolToken?: boolean
 }
 
+interface ChainlinkConfig {
+  address?: string
+  feedUsdAddress?: string
+  feedEthAddress?: string
+}
+
 export interface UnderlyingTokenProps {
   token: string,
   label?: string
@@ -29,6 +35,7 @@ export interface UnderlyingTokenProps {
   underlyingToken?: string
   abi?: Abi
   address?: string
+  chainlinkPriceFeed?: ChainlinkConfig
   conversionRate?: ConversionRateProps
 }
 
@@ -141,6 +148,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [150, 149, 247],
         hsl: ['241', '86%', '78%']
       },
+      chainlinkPriceFeed: {
+        address: '0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3'
+      },
       address: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B'
     },
     ALUSD3CRV: {
@@ -182,6 +192,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         field: 'PBTCDAIPrice',
         routerMethod: 'getAmountsOut',
         address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'
+      },
+      chainlinkPriceFeed: {
+        address: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB'
       },
       address: '0xC9467E453620f16b57a34a770C6bceBECe002587'
     },
@@ -236,6 +249,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8',
         addressFrom: '0x956f47f50a910163d8bf957cf5846d573e7f87ca'
       },
+      chainlinkPriceFeed: {
+        address: '0x00000000000000000000000000000000000003d2'
+      },
       address: '0xb9446c4Ef5EBE66268dA6700D26f96273DE3d571'
     },
     STECRV: {
@@ -250,6 +266,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       conversionRate: {
         field: "stETHDAIPrice",
+        address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84'
+      },
+      chainlinkPriceFeed: {
         address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84'
       },
       address: '0x06325440D014e39736583c165C2963BA99fAf14E'
@@ -351,6 +370,10 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         routerMethod: 'getAmountsOut'
       },
       address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      chainlinkPriceFeed: {
+        address: '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
+        feedUsdAddress: '0xAe74faA92cB67A95ebCAB07358bC222e33A34dA7',
+      }
     },
     WETH: {
       decimals: 18,
@@ -471,6 +494,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hex: '#fbcea9',
         rgb: [251, 206, 169],
         hsl: ['27', '91%', '82%']
+      },
+      chainlinkPriceFeed: {
+        address: '0x00000000000000000000000000000000000003d2'
       },
       address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'
     },

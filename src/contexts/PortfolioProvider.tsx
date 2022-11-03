@@ -6,13 +6,13 @@ import { TrancheVault } from 'vaults/TrancheVault'
 import type { ProviderProps, } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
-import type { GenericContractConfig } from 'constants/'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
-import { VaultFunctionsHelper, ChainlinkHelper } from 'classes/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty } from 'helpers/'
+import type { GenericContractConfig, UnderlyingTokenProps } from 'constants/'
 import React, { useContext, useEffect, useCallback, useReducer } from 'react'
+import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
 import type { Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
@@ -29,10 +29,10 @@ type InitialState = {
   transactions: Transaction[]
   contracts: GenericContract[]
   selectors: Record<string, Function>
+  vaultsPositions: Record<string, VaultPosition>
   historicalRates: Record<AssetId, HistoryData[]>
   historicalPrices: Record<AssetId, HistoryData[]>
   historicalPricesUsd: Record<AssetId, HistoryData[]>
-  vaultsPositions: Record<string, VaultPosition>
 }
 
 type ContextProps = InitialState
@@ -287,13 +287,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
 
     // Cleanup
-    // return () => {
-    //   dispatch({type: 'SET_VAULTS', payload: []})
-    //   dispatch({type: 'SET_CONTRACTS', payload: []})
-    //   dispatch({type: 'SET_ASSETS_DATA', payload: {}})
-    // };
+    return () => {
+      // dispatch({type: 'SET_VAULTS', payload: []})
+      // dispatch({type: 'SET_CONTRACTS', payload: []})
+      dispatch({type: 'SET_ASSETS_DATA', payload: {}})
+    };
 
-  }, [web3, chainId])
+  }, [account, web3, chainId])
 
   // Set selectors
   useEffect(() => {
@@ -462,23 +462,171 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Get Historical data
     ;(async () => {
 
-      // Get Chainlink historical underlying prices
       const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
-      const rawCalls = await state.vaults.filter( (vault: Vault) => vault.type === 'underlying' ).reduce( async (rawCallsPromise: Promise<CallData[]>, vault: Vault): Promise<CallData[]> => {
-        const rawCalls = await rawCallsPromise
 
-        const calls = await chainlinkHelper.getHistoricalPricesRawCalls(vault.id)
+      // Get assets chainlink feeds
+      const vaultsUnderlyingTokens = state.vaults.reduce( ( assets: Record<AssetId, UnderlyingTokenProps>, vault: Vault): Record<AssetId, UnderlyingTokenProps> => {
+        if (!("underlyingToken" in vault) || !vault.underlyingToken) return assets
+        const underlyingTokenAddress = vault.underlyingToken?.address?.toLowerCase()
+        if (underlyingTokenAddress && !assets[underlyingTokenAddress]) {
+          assets[underlyingTokenAddress] = vault.underlyingToken
+        }
+        return assets
+      }, {})
 
-        calls.forEach( (rawCall: ContractRawCall) => {
-          const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
-          if (callData){
-            rawCalls.push(callData)
-          }
+      // console.log('vaultsUnderlyingTokens', vaultsUnderlyingTokens)
+
+      const feedsCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[][], assetId: AssetId): CallData[][] => {
+
+        const underlyingToken = vaultsUnderlyingTokens[assetId]
+        const address = underlyingToken.chainlinkPriceFeed?.address || assetId
+
+        const rawCallUsd = chainlinkHelper.getUsdFeedAddressRawCall(address, assetId)
+        const callDataUsd = rawCallUsd && multiCall.getDataFromRawCall(rawCallUsd.call, rawCallUsd)
+        if (callDataUsd) calls[0].push(callDataUsd)
+
+        const rawCallEth = chainlinkHelper.getEthFeedAddressRawCall(address, assetId)
+        const callDataEth = rawCallEth && multiCall.getDataFromRawCall(rawCallEth.call, rawCallEth)
+        if (callDataEth) calls[1].push(callDataEth)
+
+        return calls
+      }, [[],[]])
+
+      const [
+        feedsUsd,
+        feedsEth
+      ] = await multiCall.executeMultipleBatches(feedsCalls)
+
+      // console.log('feedsUsd', feedsUsd)
+      // console.log('feedsEth', feedsEth)
+
+      // Group feeds by asset
+      const assetsFeedsUsd = feedsUsd.reduce( (assetsFeedsUsd: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const underlyingToken = vaultsUnderlyingTokens[assetId]
+        const feedAddress = callResult.data || underlyingToken.chainLinkPriceFeedUsd
+        return {
+          ...assetsFeedsUsd,
+          [assetId]: feedAddress
+        }
+      }, {})
+
+      const assetsFeedsEth = feedsEth.reduce( (assetsFeedsEth: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const underlyingToken = vaultsUnderlyingTokens[assetId]
+        const feedAddress = callResult.data || underlyingToken.chainLinkPriceFeedUsd
+        return {
+          ...assetsFeedsEth,
+          [assetId]: feedAddress
+        }
+      }, {})
+
+      console.log('assetsFeedsUsd', assetsFeedsUsd)
+      console.log('assetsFeedsEth', assetsFeedsEth)
+
+      // Get feeds rounds bounds (timestamp, latestRound, latestTimestamp)
+      const feedsUsdRoundBoundsCalls = Object.keys(assetsFeedsUsd).reduce( (calls: CallData[][], assetId: string) => {
+        const feedUsdAddress = assetsFeedsUsd[assetId]
+        if (!feedUsdAddress) return calls
+        const feedRoundBoundsRawCalls = chainlinkHelper.getFeedRoundBoundsRawCalls(assetId, feedUsdAddress)
+        const newCalls = multiCall.getCallsFromRawCalls(feedRoundBoundsRawCalls)
+
+        // Group by index
+        newCalls.forEach( (callData: CallData, index: number) => {
+          if (!calls[index]) calls[index] = []
+          calls[index].push(callData)
         })
-        return rawCalls
-      }, Promise.resolve([]))
-      
-      const results = await multiCall.executeMulticalls(rawCalls)
+
+        return calls
+      }, [])
+
+      const feedsEthRoundBoundsCalls = Object.keys(assetsFeedsEth).reduce( (calls: CallData[][], assetId: string) => {
+        const feedEthAddress = assetsFeedsEth[assetId]
+        if (!feedEthAddress) return calls
+        const feedRoundBoundsRawCalls = chainlinkHelper.getFeedRoundBoundsRawCalls(assetId, feedEthAddress)
+        const newCalls = multiCall.getCallsFromRawCalls(feedRoundBoundsRawCalls)
+
+        // Group by index
+        newCalls.forEach( (callData: CallData, index: number) => {
+          if (!calls[index]) calls[index] = []
+          calls[index].push(callData)
+        })
+
+        return calls
+      }, [])
+
+      const [
+        [
+          feedsUsdTimestampResults,
+          feedsUsdLatestRoundResults,
+          feedsUsdLatestTimestampResults,
+        ],
+        [
+          feedsEthTimestampResults,
+          feedsEthLatestRoundResults,
+          feedsEthLatestTimestampResults,
+        ],
+      ] = await Promise.all([
+        multiCall.executeMultipleBatches(feedsUsdRoundBoundsCalls),
+        multiCall.executeMultipleBatches(feedsEthRoundBoundsCalls),
+      ])
+
+      // console.log('feedsUsdRoundBoundsResults', feedsUsdTimestampResults, feedsUsdLatestRoundResults, feedsUsdLatestTimestampResults)
+      // console.log('feedsEthRoundBoundsResults', feedsEthRoundBoundsResults)
+
+      // Generate assets usd feeds rounds bounds (latestRound, firstTimestamp, latestTimestamp)
+      const feedsUsdRoundBounds = Array.from(Array(feedsUsdTimestampResults.length).keys()).reduce( (feedsUsdRoundBounds: Record<AssetId, FeedRoundBounds>, callIndex: number): Record<AssetId, FeedRoundBounds> => {
+        const { data: firstTimestamp } = feedsUsdTimestampResults[callIndex]
+        const { data: latestRound } = feedsUsdLatestRoundResults[callIndex]
+        const { data: latestTimestamp } = feedsUsdLatestTimestampResults[callIndex]
+        const assetId = feedsUsdTimestampResults[callIndex].extraData.assetId?.toString() || feedsUsdTimestampResults[callIndex].callData.target.toLowerCase()
+        return {
+          ...feedsUsdRoundBounds,
+          [assetId]: {
+            latestRound,
+            firstTimestamp,
+            latestTimestamp,
+          }
+        }
+      }, {})
+
+      // Generate assets eth feeds rounds bounds (latestRound, firstTimestamp, latestTimestamp)
+      const feedsEthRoundBounds = Array.from(Array(feedsEthTimestampResults.length).keys()).reduce( (feedsEthRoundBounds: Record<AssetId, FeedRoundBounds>, callIndex: number): Record<AssetId, FeedRoundBounds> => {
+        const { data: firstTimestamp } = feedsEthTimestampResults[callIndex]
+        const { data: latestRound } = feedsEthLatestRoundResults[callIndex]
+        const { data: latestTimestamp } = feedsEthLatestTimestampResults[callIndex]
+        const assetId = feedsEthTimestampResults[callIndex].extraData.assetId?.toString() || feedsEthTimestampResults[callIndex].callData.target.toLowerCase()
+        return {
+          ...feedsEthRoundBounds,
+          [assetId]: {
+            latestRound,
+            firstTimestamp,
+            latestTimestamp,
+          }
+        }
+      }, {})
+
+      console.log('feedsUsdRoundBounds', feedsUsdRoundBounds)
+      console.log('feedsEthRoundBounds', feedsEthRoundBounds)
+
+      // Get Chainlink historical assets prices
+      const historicalPricesCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[], assetId: AssetId): CallData[] => {
+        const feedUsdAddress = assetsFeedsUsd[assetId]
+        const feedUsdRoundBounds = feedsUsdRoundBounds[assetId]
+
+        if (!feedUsdAddress || !feedUsdRoundBounds) return calls
+
+        const rawCalls = chainlinkHelper.getHistoricalPricesRawCalls(assetId, feedUsdAddress, feedUsdRoundBounds)
+        return [
+          ...calls,
+          ...multiCall.getCallsFromRawCalls(rawCalls)
+        ]
+      }, [])
+
+      const startTimestamp = Date.now();
+      const results = await multiCall.executeMulticalls(historicalPricesCalls)
+
+      console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, results)
 
       const assetsPricesUsd: Record<AssetId, Record<number, HistoryData>> = {}
       results?.forEach( (callResult: DecodedResult) => {

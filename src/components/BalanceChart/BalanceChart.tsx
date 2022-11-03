@@ -42,7 +42,7 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
     return defaultColor
   }, [assets])
 
-  const formatFn = (n: any) => abbreviateNumber(n)
+  const formatFn = (n: any) => `$${abbreviateNumber(n)}`
 
   return (
     <Box p={0} height={'350px'}>

@@ -144,9 +144,9 @@ export class VaultFunctionsHelper {
     }
   }
 
-  public async getChainlinkAssetHistoricalPrices(assetId: AssetId): Promise<any> {
-    return await this.chainlinkHelper.getHistoricalPrices(assetId)
-  }
+  // public async getChainlinkAssetHistoricalPrices(assetId: AssetId): Promise<any> {
+  //   return await this.chainlinkHelper.getHistoricalPrices(assetId)
+  // }
 
   public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
 
