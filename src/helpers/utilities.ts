@@ -40,6 +40,15 @@ export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999) =>
   return isBigNumberNaN(value) ? '-' : (maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : BNify(value).toFixed(decimals))+'%'
 }
 
+export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
+  const output = []
+  for (let i = 0; i < array.length; i += chunkSize) {
+      const chunk = array.slice(i, i + chunkSize);
+      output.push(chunk)
+  }
+  return output
+}
+
 export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) => {
 
   const isNegative = parseFloat(value) < 0;

@@ -1,8 +1,8 @@
 import Web3 from 'web3'
-import { chains } from '../constants'
-import { Multicall } from '../classes'
-import { useWalletProvider } from './WalletProvider'
+import { chains } from 'constants/'
+import { Multicall } from 'classes/'
 import type { ProviderProps } from './common/types'
+import { useWalletProvider } from './WalletProvider'
 import React, { useState, useContext, useEffect } from 'react'
 
 type ContextProps = {

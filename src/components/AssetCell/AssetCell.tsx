@@ -37,12 +37,12 @@ export const AssetCell = ({assetId, children, ...rest}: AssetCellProps) => {
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
-    if (!selectAssetById) return null
+    if (!selectAssetById || !assetId) return null
     return selectAssetById(assetId)
   }, [assetId, selectAssetById])
 
   const vault = useMemo(() => {
-    if (!selectVaultById) return null
+    if (!selectVaultById || !assetId) return null
     return selectVaultById(assetId)
   }, [assetId, selectVaultById])
 
@@ -283,22 +283,23 @@ const PoolUsd: React.FC<TextProps> = (props) => {
 
 const HistoricalRates: React.FC<BoxProps> = (props) => {
   const { asset } = useAssetProvider();
+  // const { selectors: { selectAssetHistoricalRates } } = usePortfolioProvider()
 
-  const chart = useMemo(() => {
-    if (!asset?.id || !asset?.rates) return null
-    return (
+  // const chart = useMemo(() => {
+    // if (!asset?.id) return null
+    return asset?.id ? (
       <RateChart
         {...props}
         percentChange={0}
         axisEnabled={false}
-        assetIds={[asset.id]}
+        assetIds={[asset?.id]}
         setPercentChange={() => {}}
         timeframe={HistoryTimeframe.DAY}
       />
-    )
-  }, [asset?.id, asset?.rates, props])
+    ) : null
+  // }, [asset?.id, props])
 
-  return chart
+  // return chart
 }
 
 AssetCell.Apr = Apr

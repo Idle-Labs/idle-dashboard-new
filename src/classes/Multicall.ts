@@ -1,5 +1,6 @@
 import Web3 from 'web3'
 import { ContractRawCall } from 'constants/'
+import { splitArrayIntoChunks } from 'helpers/'
 import { Contract, ContractSendMethod } from 'web3-eth-contract'
 
 type Param = any
@@ -27,6 +28,7 @@ export class  Multicall {
 
   readonly web3: Web3
   readonly chainId: number
+  readonly maxBatchSize: number
   readonly networksContracts: Record<number, string>
 
   constructor(chainId: number, web3: Web3) {
@@ -40,6 +42,7 @@ export class  Multicall {
     
     this.web3 = web3
     this.chainId = chainId
+    this.maxBatchSize = 600
   }
 
   getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
@@ -167,7 +170,20 @@ export class  Multicall {
       .catch(err => [err, null]);
   }
 
+  // Split multicall into smaller chunks and execute
+  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled: boolean = false): Promise<DecodedResult[] | null> {
+    const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
+    const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled) ))
+    return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
+      return results.concat(...chunkResults)
+    }, [])
+  }
+
   async executeMulticalls(calls: CallData[], singleCallsEnabled: boolean = false): Promise<DecodedResult[] | null> {
+
+    if (calls.length > this.maxBatchSize) {
+      return await this.executeMulticallsChunks(calls, singleCallsEnabled)
+    }
 
     const calldata = this.prepareMulticallData(calls);
 

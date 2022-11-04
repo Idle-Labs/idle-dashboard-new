@@ -2,9 +2,9 @@ import Web3 from 'web3'
 import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import { TrancheVault } from 'vaults/TrancheVault'
-import { Multicall, CallData, ChainlinkHelper } from 'classes/'
+import { Multicall, CallData } from 'classes/'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
-import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, AssetId } from 'constants/'
+import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export class VaultFunctionsHelper {
 
@@ -12,14 +12,12 @@ export class VaultFunctionsHelper {
   readonly chainId: number
   readonly explorer: Explorer | undefined
   readonly multiCall: Multicall | undefined
-  readonly chainlinkHelper: ChainlinkHelper
 
   constructor(chainId: number, web3: Web3, multiCall?: Multicall, explorer?: Explorer) {
     this.web3 = web3
     this.chainId = chainId
     this.explorer = explorer
     this.multiCall = multiCall
-    this.chainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
   }
 
   public async getTrancheHarvestApy(trancheVault: TrancheVault, trancheType: string): Promise<BigNumber> {
@@ -143,10 +141,6 @@ export class VaultFunctionsHelper {
       apr: BNify(0)
     }
   }
-
-  // public async getChainlinkAssetHistoricalPrices(assetId: AssetId): Promise<any> {
-  //   return await this.chainlinkHelper.getHistoricalPrices(assetId)
-  // }
 
   public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
 

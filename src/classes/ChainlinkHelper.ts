@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { Multicall, CallData } from 'classes/'
+import { Multicall } from 'classes/'
 import { GenericContract } from 'contracts/GenericContract'
 import ChainlinkFeedRegistry from 'abis/chainlink/ChainlinkFeedRegistry.json'
 import ChainlinkAggregatorV3 from 'abis/chainlink/ChainlinkAggregatorV3.json'

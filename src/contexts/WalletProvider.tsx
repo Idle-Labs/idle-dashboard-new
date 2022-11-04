@@ -123,9 +123,19 @@ export function WalletProvider({ children }: ProviderProps) {
     if (connecting) return
     if (wallet) {
       setWalletProvider(wallet.label)
+        
+      // console.log('setAccount', wallet.accounts[0])
       setAccount(wallet.accounts[0])
+      // Set custom wallet
+      // setAccount({
+      //   address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
+      //   ens: null,
+      //   balance: {
+      //     ETH: "0.838159899709204532"
+      //   }
+      // })
     }
-  }, [walletProvider, wallet, connect, connecting, setWalletProvider])
+  }, [wallet, connecting, setWalletProvider])
 
   const disconnectWallet = async () => {
     if (wallet) {

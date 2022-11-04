@@ -16,7 +16,7 @@ export const RateChart: React.FC<RateChartArgs> = ({
 }) => {
   const { assets, rateChartData, rateChartDataLoading } = useRateChartData({
     assetIds,
-    timeframe,
+    timeframe
   })
 
   const { total } = rateChartData
@@ -39,8 +39,8 @@ export const RateChart: React.FC<RateChartArgs> = ({
     <Box p={0} width={'100%'} {...props}>
       <Graph
         color={color}
-        formatFn={formatFn}
         margins={margins}
+        formatFn={formatFn}
         data={rateChartData}
         maxMinEnabled={false}
         axisEnabled={axisEnabled}
