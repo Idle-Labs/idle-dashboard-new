@@ -44,22 +44,14 @@ export type HistoryData = {
 export type PlatformApiFilters = Record<string, string | number>
 
 export enum HistoryTimeframe {
-  HOUR = "1H",
-  DAY = "24H",
+  // HOUR = "1H",
+  // DAY = "24H",
   WEEK = "1W",
   MONTH = "1M",
+  "6MONTHS" = "6M",
   YEAR = "1Y",
-  ALL = "All"
+  ALL = "ALL"
 }
-
-export type RateChartArgs = {
-  assetIds: AssetId[]
-  percentChange: number
-  axisEnabled?: boolean
-  timeframe: HistoryTimeframe
-  setPercentChange: (percentChange: number) => void
-  margins?: { top: number; right: number; bottom: number; left: number }
-} & BoxProps
 
 export type EtherscanTransaction = {
   blockHash: string

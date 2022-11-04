@@ -12,7 +12,7 @@ import React, { useCallback, useMemo } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { AssetCell } from 'components/AssetCell/AssetCell'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { RainbowData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 export type RainbowChartProps = {
@@ -204,15 +204,15 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                   p={2}
                 >
                   <Stack direction='row' alignItems={'center'}>
-                    <AssetCell assetId={assetId}>
+                    <AssetProvider assetId={assetId}>
                       <Flex
                         direction={'row'}
                         alignItems={'center'}
                       >
-                        <AssetCell.Icon size={'2xs'} mr={2} />
-                        <AssetCell.Name fontWeight='bold' />
+                        <AssetProvider.Icon size={'2xs'} mr={2} />
+                        <AssetProvider.Name fontWeight='bold' />
                       </Flex>
-                    </AssetCell>
+                    </AssetProvider>
                   </Stack>
                   <Amount value={formatFn(price)} fontWeight='bold' />
                   <Text fontSize={'xs'} color={colors.gray[500]}>

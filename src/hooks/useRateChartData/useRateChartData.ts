@@ -1,3 +1,4 @@
+import { getTimeframeTimestamp } from 'helpers/'
 import { useState, useMemo, useEffect } from 'react'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetId, HistoryData, HistoryTimeframe, Asset } from 'constants/types'
@@ -21,20 +22,16 @@ type UseRateChartDataReturn = {
 
 type UseRateChartDataArgs = {
   assetIds: AssetId[]
-  timeframe: HistoryTimeframe
+  timeframe?: HistoryTimeframe
 }
 
 type UseRateChartData = (args: UseRateChartDataArgs) => UseRateChartDataReturn
 
 export const useRateChartData: UseRateChartData = args => {
 
-  const { assetIds/*, timeframe*/ } = args
+  const { assetIds, timeframe } = args
 
   const { historicalRates, selectors: { selectAssetsByIds, selectAssetHistoricalRates } } = usePortfolioProvider()
-  // const [rateChartData, setRateChartData] = useState<RateChartData>({
-  //   total: [],
-  //   rainbow: [],
-  // })
   const [rateChartDataLoading, setRateChartDataLoading] = useState<boolean>(true)
 
   const assets = useMemo(() => {
@@ -42,21 +39,30 @@ export const useRateChartData: UseRateChartData = args => {
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
+  const timeframeStartTimestamp = useMemo((): number => {
+    if (!timeframe) return 0
+    return getTimeframeTimestamp(timeframe)
+  }, [timeframe])
+
   const rateChartData = useMemo((): RateChartData => {
 
-    const rateChartData = {
+    const chartData: RateChartData = {
       total: [],
       rainbow: []
     }
 
-    if (!Object.keys(historicalRates).length) return rateChartData
+    if (!Object.keys(historicalRates).length) return chartData
 
-    const ratesByDate = assets.reduce( (ratesByDate: Record<number, RainbowData>, asset: Asset) => {
+    const ratesByDate = assets.reduce( (ratesByDate: Record<number, RainbowData>, asset: Asset, assetIndex: number) => {
       if (!asset.id) return ratesByDate
       const rates = selectAssetHistoricalRates(asset.id)
       if (!rates) return ratesByDate
       rates.forEach( (rate: HistoryData) => {
         const date = rate.date
+
+        // Filter by selected timestamp
+        if (date<timeframeStartTimestamp) return 
+
         if (!ratesByDate[date]) {
           ratesByDate[date] = {
             date,
@@ -65,15 +71,22 @@ export const useRateChartData: UseRateChartData = args => {
         }
         if (asset.id) {
           ratesByDate[date][asset.id] = rate.value
+
+          // Take the first asset to populate the total chart
+          if (!assetIndex) {
+            chartData.total.push({
+              date,
+              value: rate.value
+            })
+          }
         }
       })
       return ratesByDate
     }, {})
 
-    rateChartData.total = selectAssetHistoricalRates(assets[0]?.id)
-    rateChartData.rainbow = Object.values(ratesByDate)
-    return rateChartData
-  }, [assets, historicalRates, selectAssetHistoricalRates])
+    chartData.rainbow = Object.values(ratesByDate)
+    return chartData
+  }, [assets, timeframeStartTimestamp, historicalRates, selectAssetHistoricalRates])
 
   useEffect(() => {
     if (!rateChartData.rainbow.length) return

@@ -102,6 +102,7 @@
   "dashboard": {
     "portfolio": {
       "rainbowChart": "🌈 Rainbow",
+      "assetPerformance": "Asset Performance",
       "totalChart": "Total Funds",
       "addAsset": "Add Asset",
       "yourAssets": "Your Assets",
@@ -299,6 +300,7 @@
     "clickHereToEarn": "Click here to Earn",
     "byFarming": " APR* by farming your ETH-FOX liquidity pool tokens",
     "overview": "Overview",
+    "historicalPerformance": "Historical Performance",
     "fundsOverview": "Funds Overview",
     "liquidityPools": "Liquidity Pools",
     "stakingVaults": "Staking & Vaults",

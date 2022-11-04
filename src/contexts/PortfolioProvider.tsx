@@ -167,12 +167,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetId && state.historicalPricesUsd[assetId.toLowerCase()] ? state.historicalPricesUsd[assetId.toLowerCase()].find( (historyData: HistoryData) => historyData.date === +timestamp ) : null
   }, [state.historicalPricesUsd])
 
+  const selectAssetHistoricalPrices = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
+    return assetId && state.historicalPrices[assetId.toLowerCase()] ? state.historicalPrices[assetId.toLowerCase()] : null
+  }, [state.historicalPrices])
+
   const selectAssetHistoricalRates = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
     return assetId && state.historicalRates[assetId.toLowerCase()] ? state.historicalRates[assetId.toLowerCase()] : null
   }, [state.historicalRates])
 
   const selectAssetsByIds = useCallback( (assetIds: AssetId[]): Asset[] | null => {
-    const assetIdsLowerCase = assetIds.map( assetId => assetId.toLowerCase() )
+    const assetIdsLowerCase = assetIds.map( assetId => assetId && assetId.toLowerCase() )
     return Object.keys(state.assetsData).filter( assetId => assetIdsLowerCase.includes(assetId) ).map( assetId => state.assetsData[assetId] )
   }, [state.assetsData])
 
@@ -327,6 +331,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
       selectAssetHistoricalRates,
+      selectAssetHistoricalPrices,
       selectVaultsAssetsWithBalance,
       selectAssetHistoricalPriceByTimestamp,
       selectAssetHistoricalPriceUsdByTimestamp,
@@ -348,6 +353,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
     selectAssetHistoricalRates,
+    selectAssetHistoricalPrices,
     selectVaultsAssetsWithBalance,
     selectAssetHistoricalPriceByTimestamp,
     selectAssetHistoricalPriceUsdByTimestamp,
@@ -511,20 +517,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const callDataUsd = rawCallUsd && multiCall.getDataFromRawCall(rawCallUsd.call, rawCallUsd)
         if (callDataUsd) calls[0].push(callDataUsd)
 
-        // const rawCallEth = chainlinkHelper.getEthFeedAddressRawCall(address, assetId)
-        // const callDataEth = rawCallEth && multiCall.getDataFromRawCall(rawCallEth.call, rawCallEth)
-        // if (callDataEth) calls[1].push(callDataEth)
-
         return calls
       }, [[],[]])
 
       const [
-        feedsUsd,
-        // feedsEth
+        feedsUsd
       ] = await multiCall.executeMultipleBatches(feedsCalls)
 
       // console.log('feedsUsd', feedsUsd)
-      // console.log('feedsEth', feedsEth)
 
       // Group feeds by asset
       const assetsFeedsUsd = feedsUsd.reduce( (assetsFeedsUsd: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
@@ -537,20 +537,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }, {})
 
-      /*
-      const assetsFeedsEth = feedsEth.reduce( (assetsFeedsEth: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
-        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-        const underlyingToken = vaultsUnderlyingTokens[assetId]
-        const feedAddress = callResult.data || underlyingToken.chainLinkPriceFeedUsd
-        return {
-          ...assetsFeedsEth,
-          [assetId]: feedAddress
-        }
-      }, {})
-      */
-
       // console.log('assetsFeedsUsd', assetsFeedsUsd)
-      // console.log('assetsFeedsEth', assetsFeedsEth)
 
       // Get feeds rounds bounds (timestamp, latestRound, latestTimestamp)
       const feedsUsdRoundBoundsCalls = Object.keys(assetsFeedsUsd).reduce( (calls: CallData[][], assetId: string) => {
@@ -568,41 +555,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
         return calls
       }, [])
 
-      /*
-      const feedsEthRoundBoundsCalls = Object.keys(assetsFeedsEth).reduce( (calls: CallData[][], assetId: string) => {
-        const feedEthAddress = assetsFeedsEth[assetId]
-        if (!feedEthAddress) return calls
-        const feedRoundBoundsRawCalls = chainlinkHelper.getFeedRoundBoundsRawCalls(assetId, feedEthAddress)
-        const newCalls = multiCall.getCallsFromRawCalls(feedRoundBoundsRawCalls)
-
-        // Group by index
-        newCalls.forEach( (callData: CallData, index: number) => {
-          if (!calls[index]) calls[index] = []
-          calls[index].push(callData)
-        })
-
-        return calls
-      }, [])
-      */
-
       const [
-        [
-          feedsUsdTimestampResults,
-          feedsUsdLatestRoundResults,
-          feedsUsdLatestTimestampResults,
-        ],
-        // [
-        //   feedsEthTimestampResults,
-        //   feedsEthLatestRoundResults,
-        //   feedsEthLatestTimestampResults,
-        // ],
-      ] = await Promise.all([
-        multiCall.executeMultipleBatches(feedsUsdRoundBoundsCalls),
-        // multiCall.executeMultipleBatches(feedsEthRoundBoundsCalls),
-      ])
+        feedsUsdTimestampResults,
+        feedsUsdLatestRoundResults,
+        feedsUsdLatestTimestampResults,
+      ] = await multiCall.executeMultipleBatches(feedsUsdRoundBoundsCalls)
 
       // console.log('feedsUsdRoundBoundsResults', feedsUsdTimestampResults, feedsUsdLatestRoundResults, feedsUsdLatestTimestampResults)
-      // console.log('feedsEthRoundBoundsResults', feedsEthRoundBoundsResults)
 
       // Generate assets usd feeds rounds bounds (latestRound, firstTimestamp, latestTimestamp)
       const feedsUsdRoundBounds = Array.from(Array(feedsUsdTimestampResults.length).keys()).reduce( (feedsUsdRoundBounds: Record<AssetId, FeedRoundBounds>, callIndex: number): Record<AssetId, FeedRoundBounds> => {
@@ -620,26 +579,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }, {})
 
-      // Generate assets eth feeds rounds bounds (latestRound, firstTimestamp, latestTimestamp)
-      /*
-      const feedsEthRoundBounds = Array.from(Array(feedsEthTimestampResults.length).keys()).reduce( (feedsEthRoundBounds: Record<AssetId, FeedRoundBounds>, callIndex: number): Record<AssetId, FeedRoundBounds> => {
-        const { data: firstTimestamp } = feedsEthTimestampResults[callIndex]
-        const { data: latestRound } = feedsEthLatestRoundResults[callIndex]
-        const { data: latestTimestamp } = feedsEthLatestTimestampResults[callIndex]
-        const assetId = feedsEthTimestampResults[callIndex].extraData.assetId?.toString() || feedsEthTimestampResults[callIndex].callData.target.toLowerCase()
-        return {
-          ...feedsEthRoundBounds,
-          [assetId]: {
-            latestRound,
-            firstTimestamp,
-            latestTimestamp,
-          }
-        }
-      }, {})
-      */
-
       // console.log('feedsUsdRoundBounds', feedsUsdRoundBounds)
-      // console.log('feedsEthRoundBounds', feedsEthRoundBounds)
 
       // Get Chainlink historical assets prices
       const historicalPricesCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[], assetId: AssetId): CallData[] => {
@@ -703,19 +643,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical vaults data
   useEffect(() => {
 
-    if (!state.vaults.length || !state.isPortfolioLoaded || !walletInitialized || connecting) return
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !walletInitialized || connecting) return
 
     // Get Historical data
     ;(async () => {
 
       const startTimestamp = Date.now();
 
-      // Fetch historical data from the first deposit (min 1 week)
+      // Fetch historical data from the first deposit (min 1 year)
       const vaultsHistoricalDataPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
         const asset = selectAssetById(vault.id)
         if (asset) {
-          const firstDepositTimestamp = asset.vaultPosition?.firstDepositTx?.timeStamp
-          const startTimestamp = firstDepositTimestamp ? firstDepositTimestamp : dayjs().subtract(7, 'days').unix()
+          // const firstDepositTimestamp = asset.vaultPosition?.firstDepositTx?.timeStamp
+          const startTimestamp = /*firstDepositTimestamp ? firstDepositTimestamp : */dayjs().subtract(1, 'year').unix()
           const start = Math.round(dayjs(+startTimestamp*1000).startOf('day').valueOf()/1000)
           const end = Math.round(dayjs().startOf('day').valueOf()/1000)
 
@@ -753,7 +693,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded, state.vaultsPositions, walletInitialized])
+  }, [state.vaults, state.isPortfolioLoaded, walletInitialized])
 
   // Get tokens prices, balances, rates
   useEffect(() => {

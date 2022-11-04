@@ -32,7 +32,7 @@ const AssetContext = createContext<ContextProps>(initialState)
 
 const useAssetProvider = () => useContext(AssetContext)
 
-export const AssetCell = ({assetId, children, ...rest}: AssetCellProps) => {
+export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
 
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
@@ -55,9 +55,6 @@ export const AssetCell = ({assetId, children, ...rest}: AssetCellProps) => {
   )
 }
 
-// const Logo: React.FC = ({assetId, ...rest}) => {
-    
-// }
 type AssetFieldProps = {
   value?: string | number | BigNumber
 } & TextProps
@@ -155,9 +152,9 @@ const Rewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
     const rewards = vault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
-        <AssetCell key={`asset_${index}`} assetId={rewardToken.address}>
-          <AssetCell.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
-        </AssetCell>
+        <AssetProvider key={`asset_${index}`} assetId={rewardToken.address}>
+          <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
+        </AssetProvider>
       )
     }).filter( reward => !!reward )
     return rewards.length ? rewards : children
@@ -283,42 +280,35 @@ const PoolUsd: React.FC<TextProps> = (props) => {
 
 const HistoricalRates: React.FC<BoxProps> = (props) => {
   const { asset } = useAssetProvider();
-  // const { selectors: { selectAssetHistoricalRates } } = usePortfolioProvider()
-
-  // const chart = useMemo(() => {
-    // if (!asset?.id) return null
-    return asset?.id ? (
-      <RateChart
-        {...props}
-        percentChange={0}
-        axisEnabled={false}
-        assetIds={[asset?.id]}
-        setPercentChange={() => {}}
-        timeframe={HistoryTimeframe.DAY}
-      />
-    ) : null
-  // }, [asset?.id, props])
-
-  // return chart
+  return asset?.id ? (
+    <RateChart
+      {...props}
+      percentChange={0}
+      axisEnabled={false}
+      assetIds={[asset?.id]}
+      setPercentChange={() => {}}
+      timeframe={HistoryTimeframe.WEEK}
+    />
+  ) : null
 }
 
-AssetCell.Apr = Apr
-AssetCell.Apy = Apy
-AssetCell.Name = Name
-AssetCell.Icon = Icon
-AssetCell.Fees = Fees
-AssetCell.Symbol = Symbol
-AssetCell.Rewards = Rewards
-AssetCell.Balance = Balance
-AssetCell.FeesUsd = FeesUsd
-AssetCell.PoolUsd = PoolUsd
-AssetCell.Earnings = Earnings
-AssetCell.Deposited = Deposited
-AssetCell.BalanceUsd = BalanceUsd
-AssetCell.RealizedApy = RealizedApy
-AssetCell.EarningsUsd = EarningsUsd
-AssetCell.EarningsPerc = EarningsPerc
-AssetCell.DepositedUsd = DepositedUsd
-AssetCell.ProtocolName = ProtocolName
-AssetCell.ProtocolIcon = ProtocolIcon
-AssetCell.HistoricalRates = HistoricalRates
+AssetProvider.Apr = Apr
+AssetProvider.Apy = Apy
+AssetProvider.Name = Name
+AssetProvider.Icon = Icon
+AssetProvider.Fees = Fees
+AssetProvider.Symbol = Symbol
+AssetProvider.Rewards = Rewards
+AssetProvider.Balance = Balance
+AssetProvider.FeesUsd = FeesUsd
+AssetProvider.PoolUsd = PoolUsd
+AssetProvider.Earnings = Earnings
+AssetProvider.Deposited = Deposited
+AssetProvider.BalanceUsd = BalanceUsd
+AssetProvider.RealizedApy = RealizedApy
+AssetProvider.EarningsUsd = EarningsUsd
+AssetProvider.EarningsPerc = EarningsPerc
+AssetProvider.DepositedUsd = DepositedUsd
+AssetProvider.ProtocolName = ProtocolName
+AssetProvider.ProtocolIcon = ProtocolIcon
+AssetProvider.HistoricalRates = HistoricalRates

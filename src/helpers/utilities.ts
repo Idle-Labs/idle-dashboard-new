@@ -1,5 +1,6 @@
-import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js';
+import dayjs, { ManipulateType } from 'dayjs'
+import { HistoryTimeframe } from 'constants/types'
 
 type BNifyInput = any
 
@@ -38,6 +39,18 @@ export const isBigNumberNaN = (amount: any) => {
 
 export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999) => {
   return isBigNumberNaN(value) ? '-' : (maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : BNify(value).toFixed(decimals))+'%'
+}
+
+export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {
+  if (timeframe === 'ALL') return 0
+  const periods: Record<string, ManipulateType> = {
+    'W':'week',
+    'M':'month',
+    'Y':'year',
+  }
+  const value = parseInt(timeframe.substr(0, 1))
+  const period = periods[timeframe.substr(1)]
+  return dayjs().subtract(value, period).startOf('day').valueOf()
 }
 
 export const splitArrayIntoChunks = (array: any, chunkSize: number) => {

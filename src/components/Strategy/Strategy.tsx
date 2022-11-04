@@ -6,7 +6,7 @@ import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { BNify, getObjectPath } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
-import { AssetCell } from 'components/AssetCell/AssetCell'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Asset, AssetId, VaultPosition } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
@@ -65,15 +65,15 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Cell: ({ value }: { value: string | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetCell assetId={value}>
+            <AssetProvider assetId={value}>
               <Flex
                 width={'100%'}
                 alignItems={'center'}
               >
-                <AssetCell.ProtocolIcon size={'sm'} mr={2} />
-                <AssetCell.ProtocolName textStyle={'tableCell'} />
+                <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
+                <AssetProvider.ProtocolName textStyle={'tableCell'} />
               </Flex>
-            </AssetCell>
+            </AssetProvider>
           </SkeletonText>
         )
       },
@@ -84,15 +84,15 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Header:translate('defi.asset'),
       Cell: ({ value }: { value: string | undefined }) => {
         return (
-          <AssetCell assetId={value}>
+          <AssetProvider assetId={value}>
             <Flex
               width={'100%'}
               alignItems={'center'}
             >
-              <AssetCell.Icon size={'sm'} mr={2} />
-              <AssetCell.Name textStyle={'tableCell'} />
+              <AssetProvider.Icon size={'sm'} mr={2} />
+              <AssetProvider.Name textStyle={'tableCell'} />
             </Flex>
-          </AssetCell>
+          </AssetProvider>
         )
       },
       sortType: sortAlpha
@@ -130,9 +130,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Cell: ({ value, row }: { value: string | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetCell assetId={value}>
-              <AssetCell.Rewards size={'sm'} />
-            </AssetCell>
+            <AssetProvider assetId={value}>
+              <AssetProvider.Rewards size={'sm'} />
+            </AssetProvider>
           </SkeletonText>
         )
       }
@@ -195,15 +195,15 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Cell: ({ value }: { value: string | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetCell assetId={value}>
+            <AssetProvider assetId={value}>
               <Flex
                 width={'100%'}
                 alignItems={'center'}
               >
-                <AssetCell.ProtocolIcon size={'sm'} mr={2} />
-                <AssetCell.ProtocolName textStyle={'tableCell'} />
+                <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
+                <AssetProvider.ProtocolName textStyle={'tableCell'} />
               </Flex>
-            </AssetCell>
+            </AssetProvider>
           </SkeletonText>
         )
       },
@@ -215,15 +215,15 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Cell: ({ value }: { value: string | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetCell assetId={value}>
+            <AssetProvider assetId={value}>
               <Flex
                 width={'100%'}
                 alignItems={'center'}
               >
-                <AssetCell.Icon size={'sm'} mr={2} />
-                <AssetCell.Name textStyle={'tableCell'} />
+                <AssetProvider.Icon size={'sm'} mr={2} />
+                <AssetProvider.Name textStyle={'tableCell'} />
               </Flex>
-            </AssetCell>
+            </AssetProvider>
           </SkeletonText>
         )
       },
@@ -261,9 +261,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       Cell: ({ value, row }: { value: string | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetCell assetId={value}>
-              <AssetCell.Rewards size={'sm'} />
-            </AssetCell>
+            <AssetProvider assetId={value}>
+              <AssetProvider.Rewards size={'sm'} />
+            </AssetProvider>
           </SkeletonText>
         )
       }
@@ -279,9 +279,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         // console.log('aprLastWeek', value)
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetCell assetId={value}>
-              <AssetCell.HistoricalRates height={'50px'} />
-            </AssetCell>
+            <AssetProvider assetId={value}>
+              <AssetProvider.HistoricalRates height={'50px'} />
+            </AssetProvider>
           </SkeletonText>
         )
       }

@@ -4,7 +4,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
 import { NotificationList } from './NotificationList'
-import { AssetCell } from 'components/AssetCell/AssetCell'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { ContainerProps, Flex, Stack } from '@chakra-ui/react'
 
@@ -16,15 +16,15 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
     if (!account?.address) return null
     const idleToken = selectUnderlyingToken(chainId, 'IDLE')
     return (
-      <AssetCell assetId={idleToken?.address}>
+      <AssetProvider assetId={idleToken?.address}>
         <Flex
           width={'100%'}
           alignItems={'center'}
         >
-          <AssetCell.Icon size={'xs'} mr={2} />
-          <AssetCell.Balance textStyle={'cta'} />
+          <AssetProvider.Icon size={'xs'} mr={2} />
+          <AssetProvider.Balance textStyle={'cta'} />
         </Flex>
-      </AssetCell>
+      </AssetProvider>
     )
   }, [account, chainId])
 

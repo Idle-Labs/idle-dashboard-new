@@ -1,9 +1,18 @@
 import { Box } from '@chakra-ui/react'
 import { useEffect, useMemo } from 'react'
 import { Graph } from 'components/Graph/Graph'
-import type { RateChartArgs } from 'constants/types'
+import { AssetId, HistoryTimeframe } from 'constants/types'
 import { calculatePercentChange, numberToPercentage } from 'helpers/'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
+
+export type RateChartArgs = {
+  assetIds: AssetId[]
+  percentChange: number
+  axisEnabled?: boolean
+  timeframe: HistoryTimeframe
+  setPercentChange: (percentChange: number) => void
+  margins?: { top: number; right: number; bottom: number; left: number }
+}
 
 export const RateChart: React.FC<RateChartArgs> = ({
   assetIds,

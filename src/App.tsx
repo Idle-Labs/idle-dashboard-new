@@ -249,6 +249,9 @@ const theme = extendTheme({
       fontWeight:700,
       cursor:'pointer',
       fontFamily: 'heading',
+      _selected: {
+        color:'white'
+      },
       _hover: {
         color:'white'
       }
