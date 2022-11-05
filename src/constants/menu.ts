@@ -27,6 +27,7 @@ type StrategyProps = {
   image: string
   description: string
   showProtocol: boolean
+  generalDataFields: string[]
 }
 
 export const strategies:Record<string, StrategyProps> = {
@@ -36,7 +37,8 @@ export const strategies:Record<string, StrategyProps> = {
     label:'strategies.best.title',
     description:'strategies.best.description',
     image: `${strategiesFolder}best-yield.png`,
-    bg: `${strategiesFolder}best-yield-bg.svg`
+    bg: `${strategiesFolder}best-yield-bg.svg`,
+    generalDataFields:['protocol', 'pool', 'apy', 'rewards']
   },
   AA:{
     showProtocol: true,
@@ -44,7 +46,8 @@ export const strategies:Record<string, StrategyProps> = {
     label:'strategies.protected.title',
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
-    image: `${strategiesFolder}protected-yield.png`
+    image: `${strategiesFolder}protected-yield.png`,
+    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'status', 'pool', 'apy', 'apyRatio', 'coverage']
   },
   BB:{
     route:'boosted-yield',
@@ -52,7 +55,8 @@ export const strategies:Record<string, StrategyProps> = {
     label:'strategies.boosted.title',
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
-    bg: `${strategiesFolder}boosted-yield-bg.png`
+    bg: `${strategiesFolder}boosted-yield-bg.png`,
+    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'status', 'pool', 'apy', 'apyRatio', 'apyBoost']
   },
 }
 

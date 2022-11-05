@@ -18,8 +18,8 @@ export const TimeframeSelector: React.FC<TimeframeSelectorArgs> = ({ timeframe: 
           const selected = timeframe === selectedTimeframe
           return (
             <Text
-              textStyle={'cta'}
               aria-selected={selected}
+              textStyle={['cta', 'dark']}
               key={`timeframe_${timeframe}`}
               onClick={() => setTimeframe(timeframe)}
             >

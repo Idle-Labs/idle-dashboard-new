@@ -15,6 +15,7 @@ export class BestYieldVault {
   readonly id: string
   readonly web3: Web3
   readonly chainId: number
+  readonly protocol: string
   readonly vaultFunctionsHelper: VaultFunctionsHelper
 
   // Raw config
@@ -33,6 +34,7 @@ export class BestYieldVault {
     this.web3 = web3
     this.type = type
     this.chainId = chainId
+    this.protocol = 'idle'
     this.tokenConfig = tokenConfig
     this.idleConfig = tokenConfig.idle
     this.id = this.idleConfig.address.toLowerCase()

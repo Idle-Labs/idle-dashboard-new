@@ -31,6 +31,7 @@ export class TrancheVault {
   // Contracts
   public readonly cdoContract: Contract
   public readonly trancheContract: Contract
+  public readonly strategyContract: Contract
   public readonly underlyingContract: Contract | undefined
 
   constructor(web3: Web3, chainId: number, protocol: string, vaultConfig: TrancheConfig, gaugeConfig: GaugeConfig | null | undefined, type: string){
@@ -62,6 +63,9 @@ export class TrancheVault {
 
     // Init CDO contract
     this.cdoContract = new web3.eth.Contract(this.cdoConfig.abi, this.cdoConfig.address)
+
+    // Init Strategy contract
+    this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
         
     // Init underlying token contract
     if (this.underlyingToken){
@@ -233,6 +237,24 @@ export class TrancheVault {
       {
         assetId:this.id,
         call:this.trancheContract.methods.totalSupply()
+      },
+    ]
+  }
+
+  public getAprRatioCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.cdoContract.methods.trancheAPRSplitRatio()
+      },
+    ]
+  }
+
+  public getBaseAprCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.strategyContract.methods.getApr()
       },
     ]
   }

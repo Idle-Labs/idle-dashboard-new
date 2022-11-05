@@ -111,11 +111,11 @@ export const getTimestampRange = (startDate: (Date | number | string), endDate: 
   const endDayTimestamp = +(dayjs(endDate).startOf('day').valueOf())
 
   const dayTimestamp = 86400000
-  const days = Math.floor((endDayTimestamp-startDayTimestamp)/dayTimestamp)
+  const days = Math.ceil((endDayTimestamp-startDayTimestamp)/dayTimestamp)
 
   if (isBigNumberNaN(days)) return []
 
-  return Array.from(Array(days).keys()).map( (dayIndex: number) => {
+  return Array.from(Array(days+1).keys()).map( (dayIndex: number) => {
     return +(dayjs(startDayTimestamp+(dayTimestamp*dayIndex)).startOf('day').valueOf())
   })
 }

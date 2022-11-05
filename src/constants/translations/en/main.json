@@ -273,6 +273,8 @@
     "stakeAsset": "Stake %{assetSymbol}",
     "unstakeAsset": "Unstake %{assetSymbol}",
     "claimAsset": "Claim Staking Rewards",
+    "stakingRewards": "Staking Rewards",
+    "autoCompounding": "Auto Compounding",
     "claim": "Claim",
     "rewards": "Rewards",
     "unstaking": "Unstaking",
@@ -291,6 +293,11 @@
     "aprLastWeek": "APR last week",
     "ended": "Ended",
     "balance": "Balance",
+    "status": "Status",
+    "apyRatio": "APY Ratio",
+    "apyBoost": "APY Boost",
+    "coverage": "Coverage",
+    "coverageAmount": "%{amount} is covered by %{coverageAmount}",
     "defi": "DeFi",
     "defiBody": "Explore a growing universe of DeFi opportunities.",
     "netWorth": "Net Worth",
@@ -1206,6 +1213,12 @@
     }
   },
   "assets": {
+    "status": {
+      "production": "Production",
+      "paused": "Paused",
+      "beta": "Beta",
+      "disabled": "Disabled"
+    },
     "assetDetails": {
       "assetHeader": {
         "balance": "Balance",

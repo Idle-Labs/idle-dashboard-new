@@ -11,6 +11,13 @@ import LiquidityGauge from '../abis/idle/LiquidityGauge.json';
 import IdleCDOTrancheRewards from '../abis/idle/IdleCDOTrancheRewards.json';
 import TrancheStakingRewards from '../abis/idle/TrancheStakingRewards.json';
 
+export const vaultsStatusSchemes: Record<string, string> = {
+  'production' : 'green',
+  'paused' : 'gray',
+  'disabled' : 'gray',
+  'beta' : 'blue'
+}
+
 export interface CDO {
   decimals:number
   abi:Abi

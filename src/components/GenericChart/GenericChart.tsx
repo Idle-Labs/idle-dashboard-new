@@ -1,10 +1,10 @@
+import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
-import { useEffect, useMemo } from 'react'
+import { abbreviateNumber } from 'helpers/'
 import { Graph } from 'components/Graph/Graph'
 import type { AssetId, HistoryTimeframe } from 'constants/types'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { abbreviateNumber, calculatePercentChange } from 'helpers/'
-import { BalanceChartData, useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
+import { BalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 type GenericChartArgs = {
   assetIds: AssetId[]

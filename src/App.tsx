@@ -82,6 +82,9 @@ const theme = extendTheme({
         bg:'#404F6A'
       }
     },
+    status:{
+      production:'#00AE8F'
+    },
     button:{
       bg:'#404F6A',
       bgHover:'#293243',
@@ -255,10 +258,17 @@ const theme = extendTheme({
       _hover: {
         color:'white'
       }
+    },
+    dark: {
+      color: '#555B67'
     }
   },
   // Create components styles
   components: {
+    Tag: {
+      variants: {
+      }
+    },
     Skeleton: {
       baseStyle: {
         height: '20px'

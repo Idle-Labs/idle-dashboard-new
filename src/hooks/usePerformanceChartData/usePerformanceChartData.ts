@@ -1,7 +1,6 @@
 import { getTimeframeTimestamp } from 'helpers/'
 import { useState, useMemo, useEffect } from 'react'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
 import { AssetId, HistoryData, HistoryTimeframe, Asset } from 'constants/types'
 
 export type RainbowData = {

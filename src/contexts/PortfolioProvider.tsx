@@ -137,7 +137,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const vaultAssetsDataWithIds = Object.keys(vaultAssetsData).reduce( (vaultAssetsDataWithIds: Assets, assetId: AssetId) => {
         vaultAssetsDataWithIds[assetId] = {
           id: assetId,
-          ...vaultAssetsData[assetId]
+          ...vaultAssetsData[assetId],
+          status: 'production'
         }
         return vaultAssetsDataWithIds
       }, {})
@@ -160,11 +161,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [state.transactions])
 
   const selectAssetHistoricalPriceByTimestamp = useCallback( (assetId: AssetId | undefined, timestamp: string | number): HistoryData | null => {
-    return assetId && state.historicalPrices[assetId.toLowerCase()] ? state.historicalPrices[assetId.toLowerCase()].find( (historyData: HistoryData) => historyData.date === +timestamp ) : null
+    return assetId && state.historicalPrices[assetId.toLowerCase()] ? state.historicalPrices[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp ) : null
   }, [state.historicalPrices])
 
   const selectAssetHistoricalPriceUsdByTimestamp = useCallback( (assetId: AssetId | undefined, timestamp: string | number): HistoryData | null => {
-    return assetId && state.historicalPricesUsd[assetId.toLowerCase()] ? state.historicalPricesUsd[assetId.toLowerCase()].find( (historyData: HistoryData) => historyData.date === +timestamp ) : null
+    return assetId && state.historicalPricesUsd[assetId.toLowerCase()] ? state.historicalPricesUsd[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp ) : null
   }, [state.historicalPricesUsd])
 
   const selectAssetHistoricalPrices = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
@@ -489,7 +490,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Prices are already stored
     if (storedHistoricalPricesUsd){
-      console.log('storedHistoricalPricesUsd', storedHistoricalPricesUsd)
       return dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: storedHistoricalPricesUsd})
     }
 
@@ -595,9 +595,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ]
       }, [])
 
-      const startTimestamp = Date.now();
+      // const startTimestamp = Date.now();
       const results = await multiCall.executeMulticalls(historicalPricesCalls)
-      console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, results)
+      // console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, results)
 
       const assetsPricesUsd: Record<AssetId, Record<number, HistoryData>> = {}
       results?.forEach( (callResult: DecodedResult) => {
@@ -626,7 +626,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }, {})
 
-      console.log('historicalPricesUsd', historicalPricesUsd)
+      // console.log('historicalPricesUsd', historicalPricesUsd)
 
       Object.keys(historicalPricesUsd).forEach( (assetId: AssetId) => {
         const pricesUsd = historicalPricesUsd[assetId]
@@ -657,7 +657,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           // const firstDepositTimestamp = asset.vaultPosition?.firstDepositTx?.timeStamp
           const startTimestamp = /*firstDepositTimestamp ? firstDepositTimestamp : */dayjs().subtract(1, 'year').unix()
           const start = Math.round(dayjs(+startTimestamp*1000).startOf('day').valueOf()/1000)
-          const end = Math.round(dayjs().startOf('day').valueOf()/1000)
+          const end = Math.round(dayjs().endOf('day').valueOf()/1000)
 
           // Get vaults historical rates
           const historicalAprsFilters = {
@@ -693,7 +693,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded, walletInitialized])
+  }, [state.vaults, state.isPortfolioLoaded, walletInitialized, connecting])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
@@ -712,7 +712,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getPricesUsdCalls" in vault) ? vault.getPricesUsdCalls(state.contracts) : [],
         ("getAprsCalls" in vault) ? vault.getAprsCalls() : [],
         ("getTotalSupplyCalls" in vault) ? vault.getTotalSupplyCalls() : [],
-        ("getFeesCalls" in vault) ? vault.getFeesCalls() : []
+        ("getFeesCalls" in vault) ? vault.getFeesCalls() : [],
+        ("getAprRatioCalls" in vault) ? vault.getAprRatioCalls() : [],
+        ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : []
       ]
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
@@ -751,7 +753,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
           pricesUsdCallsResults,
           aprsCallsResults,
           totalSupplyCallsResults,
-          feesCallsResults
+          feesCallsResults,
+          aprRatioResults,
+          baseAprResults
         ]
       ] = await Promise.all([
         Promise.all(vaultsAdditionalAprsPromises),
@@ -763,19 +767,45 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('balanceCallsResults', balanceCallsResults)
       // console.log('totalSupplyCallsResults', totalSupplyCallsResults)
       // console.log('feesCallsResults', feesCallsResults)
+      // console.log('aprRatioResults', aprRatioResults)
+      // console.log('baseAprResults', baseAprResults)
 
-      const assetsData = {...state.assetsData}
+      // Process Apr Ratio
+      aprRatioResults.forEach( (callResult: DecodedResult) => {
+        if (callResult.data) {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          const asset = selectAssetById(assetId)
+          if (asset){
+            const trancheAPRSplitRatio = BNify(callResult.data.toString()).div(`1e03`)
+            const aprRatio = asset.type === 'AA' ? trancheAPRSplitRatio : BNify(100).minus(trancheAPRSplitRatio)
+            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { aprRatio } }})
+          }
+        }
+      })
 
+      // Process Strategy Aprs
+      baseAprResults.forEach( (callResult: DecodedResult) => {
+        if (callResult.data) {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          const asset = selectAssetById(assetId)
+          if (asset){
+            const baseApr = BNify(callResult.data.toString()).div(`1e18`)
+            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { baseApr } }})
+          }
+        }
+      })
+
+      // Process Fees
       feesCallsResults.forEach( (callResult: DecodedResult) => {
         if (callResult.data) {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
           const asset = selectAssetById(assetId)
           if (asset){
             const fee = BNify(callResult.data.toString()).div(`1e05`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              fee
-            }
+            // assetsData[assetId] = {
+            //   ...assetsData[assetId],
+            //   fee
+            // }
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { fee } }})
           }
         }
@@ -788,10 +818,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
             // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              balance: balances[assetId]
-            }
+            // assetsData[assetId] = {
+            //   ...assetsData[assetId],
+            //   balance: balances[assetId]
+            // }
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
           }
         }
@@ -806,10 +836,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const decimals = callResult.extraData.decimals || asset.decimals
             vaultsPrices[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
             // console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              vaultPrice: vaultsPrices[assetId]
-            }
+            // assetsData[assetId] = {
+            //   ...assetsData[assetId],
+            //   vaultPrice: vaultsPrices[assetId]
+            // }
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPrice: vaultsPrices[assetId]} }})
           }
         }
@@ -823,10 +853,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             pricesUsd[assetId] = callResult.extraData.params.processResults(callResult.data, callResult.extraData.params)
             // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              priceUsd: pricesUsd[assetId]
-            }
+            // assetsData[assetId] = {
+            //   ...assetsData[assetId],
+            //   priceUsd: pricesUsd[assetId]
+            // }
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {priceUsd: pricesUsd[assetId]} }})
           }
         }
@@ -850,12 +880,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const apy = apr2apy(aprs[assetId].div(100)).times(100)
 
             // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              priceUsd: pricesUsd[assetId],
-              apr: aprs[assetId],
-              apy
-            }
+            // assetsData[assetId] = {
+            //   ...assetsData[assetId],
+            //   priceUsd: pricesUsd[assetId],
+            //   apr: aprs[assetId],
+            //   apy
+            // }
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId], apy} }})
           }
         }
@@ -870,11 +900,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const decimals = callResult.extraData.decimals || asset.decimals
             totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
             // console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              priceUsd: pricesUsd[assetId],
-              totalSupply: totalSupplies[assetId]
-            }
+            // assetsData[assetId] = {
+            //   ...assetsData[assetId],
+            //   priceUsd: pricesUsd[assetId],
+            //   totalSupply: totalSupplies[assetId]
+            // }
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {totalSupply: totalSupplies[assetId]} }})
           }
         }

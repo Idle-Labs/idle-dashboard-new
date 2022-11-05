@@ -10,6 +10,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 // import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
@@ -19,18 +20,17 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
   // const { account } = useWalletProvider()
 
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
-  const { isPortfolioLoaded, selectors: { selectAssetById, selectAssetBalance } } = usePortfolioProvider()
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
+  const { isPortfolioLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
-    if (!selectAssetById) return
-    return selectAssetById(params.asset)
+    return selectAssetById && selectAssetById(params.asset)
   }, [selectAssetById, params.asset])
 
   const assetBalance = useMemo(() => {
-    if (!asset?.id || !selectAssetBalance) return
-    return selectAssetBalance(asset.id)
-  }, [asset, selectAssetBalance])
+    if (!asset?.id) return
+    return selectAssetBalanceUsd && selectAssetBalanceUsd(asset.id)
+  }, [asset, selectAssetBalanceUsd])
 
   const hasBalance = useMemo(() => {
     return assetBalance && assetBalance.gt(0)
@@ -41,14 +41,8 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const chartData = useMemo(() => {
     if (!isPortfolioLoaded) return
-    if (hasBalance) {
-      return balanceChartData
-    } else {
-      return performanceChartData
-    }
+    return hasBalance ? balanceChartData : performanceChartData
   }, [isPortfolioLoaded, hasBalance, balanceChartData, performanceChartData])
-
-  // console.log('isPortfolioLoaded', isPortfolioLoaded, assetBalance, performanceChartData)
 
   // console.log('locaton', location, 'params', params, account)
 
@@ -58,7 +52,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const chartHeading = useMemo(() => {
     const earningsPercentage = hasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
-    const earningsDays = chartData?.total ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
+    const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
     const apy = earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
     return (
       <VStack
@@ -81,7 +75,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
               {
                 hasBalance ? (
                   <AssetProvider.EarningsPerc textStyle={'captionSmall'} />
-                ) : (
+                ) : apy.gt(0) && (
                   <HStack
                     spacing={1}
                   >
@@ -159,11 +153,25 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     )
   }, [asset, hasBalance])
 
-  const assetGenericData = (
+  const assetGeneralData = (
     <Card.Dark>
       <SimpleGrid
-        columns={[2, 4]}
+        columns={[2, 5]}
       >
+        <VStack
+          spacing={2}
+          alignItems={'flex-start'}
+          justifyContent={'flex-start'}
+        >
+          <Translation component={Text} translation={'defi.protocol'} textStyle={'captionSmall'} />
+          <HStack
+            alignItems={'center'}
+          >
+            <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
+            <AssetProvider.ProtocolName textStyle={'tableCell'} />
+          </HStack>
+        </VStack>
+
         <VStack
           spacing={2}
           alignItems={'flex-start'}
@@ -193,6 +201,61 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           </AssetProvider.Rewards>
         </VStack>
       </SimpleGrid>
+
+      {
+        /*
+          <SimpleGrid
+            pt={6}
+            mt={6}
+            columns={[2, 5]}
+            borderTop={'1px solid'}
+            borderTopColor={'divider'}
+          >
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.protocol'} textStyle={'captionSmall'} />
+              <HStack
+                alignItems={'center'}
+              >
+                <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
+                <AssetProvider.ProtocolName textStyle={'tableCell'} />
+              </HStack>
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.pool'} textStyle={'captionSmall'} />
+              <AssetProvider.PoolUsd textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
+              <AssetProvider.Apy textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.rewards'} textStyle={'captionSmall'} />
+              <AssetProvider.Rewards size={'xs'}>
+                <Text textStyle={'tableCell'}>-</Text>
+              </AssetProvider.Rewards>
+            </VStack>
+          </SimpleGrid>
+        */
+      }
     </Card.Dark>
   )
 
@@ -261,16 +324,16 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 <GenericChart
                   data={chartData}
                   percentChange={0}
+                  timeframe={timeframe}
                   isRainbowChart={false}
                   assetIds={[params.asset]}
-                  timeframe={timeframe}
                   setPercentChange={() => {}}
                   margins={{ top: 10, right: 0, bottom: 45, left: 0 }}
                 />
               </Card.Dark>
             </Box>
             {fundsOverview}
-            {assetGenericData}
+            <AssetGeneralData assetId={asset?.id} />
           </Stack>
         </Box>
       </Box>

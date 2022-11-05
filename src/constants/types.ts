@@ -2,7 +2,6 @@ import React from 'react'
 import type { Vault } from 'vaults/'
 import type { AbiItem } from 'web3-utils'
 import type { BigNumber } from 'bignumber.js'
-import type { BoxProps } from '@chakra-ui/react'
 import { IconType as ReactIcon } from 'react-icons'
 import { ContractSendMethod } from 'web3-eth-contract'
 
@@ -113,11 +112,15 @@ export type Asset = {
   token: string
   decimals: number
   color?: string
+  status?: string
   underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber
   fee?: BigNumber
   balance?: BigNumber
+  aprRatio?: BigNumber
+  baseApr?: BigNumber
+  apyBoost?: BigNumber
   priceUsd?: BigNumber
   balanceUsd?: BigNumber
   vaultPrice?: BigNumber

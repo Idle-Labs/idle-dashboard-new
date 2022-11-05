@@ -58,16 +58,17 @@ export const useBalanceChartData: UseBalanceChartData = args => {
 
     if (!isPortfolioLoaded || isEmpty(historicalPrices) || isEmpty(historicalPricesUsd)) return chartData
 
-    // console.log('prices', prices)
+    // console.log('historicalPricesUsd', historicalPricesUsd)
+
     const assetsBalancesByDate = assets.reduce( (assetsBalancesByDate: Record<number, Record<AssetId, number>>, asset: Asset) => {
 
-      if (!asset?.id) return
+      if (!asset?.id) return assetsBalancesByDate
 
       const assetId: AssetId = asset.id
 
       const vaultTransactions = selectVaultTransactions(assetId)
 
-      if (!vaultTransactions) return
+      if (!vaultTransactions) return assetsBalancesByDate
 
       // Loop through asset transactions
       const assetBalancesByDate = vaultTransactions.reduce( (balances: Record<string, any>, transaction: Transaction) => {
@@ -132,6 +133,10 @@ export const useBalanceChartData: UseBalanceChartData = args => {
 
     // console.log('assetsBalancesByDateExtended', assetsBalancesByDateExtended)
 
+    // Trailing prices
+    let prevVaultPriceInfo: Record<AssetId, HistoryData> = {}
+    let prevVaultPriceInfoUsd: Record<AssetId, HistoryData> = {}
+
     // Add totals
     Object.keys(assetsBalancesByDateExtended).forEach( (timestamp: any) => {
 
@@ -139,20 +144,21 @@ export const useBalanceChartData: UseBalanceChartData = args => {
 
       // Multiply balance by vault price
       Object.keys(assetsBalances).forEach( (assetId: AssetId) => {
-
         const asset = assets.find( (asset: Asset) => asset.id === assetId )
         const underlyingId: AssetId = asset?.underlyingId
 
-        const vaultPriceInfo = selectAssetHistoricalPriceByTimestamp(assetId, timestamp)
+        const vaultPriceInfo: HistoryData | null = selectAssetHistoricalPriceByTimestamp(assetId, timestamp) || prevVaultPriceInfo[assetId]
         // console.log('vaultPriceInfo', assetId, timestamp, vaultPriceInfo, assetsBalances[assetId])
         if (vaultPriceInfo) {
           assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfo.value)).toFixed(8))
+          prevVaultPriceInfo[assetId] = vaultPriceInfo
         }
 
-        const vaultPriceInfoUsd = selectAssetHistoricalPriceUsdByTimestamp(underlyingId, timestamp)
-        // console.log('vaultPriceInfoUsd', assetId, underlyingId, timestamp, vaultPriceInfoUsd, assetsBalances[assetId]);
+        const vaultPriceInfoUsd: HistoryData | null = selectAssetHistoricalPriceUsdByTimestamp(underlyingId, timestamp) || prevVaultPriceInfoUsd[assetId]
+        // console.log('vaultPriceInfoUsd', assetId, underlyingId, timestamp, prevVaultPriceInfoUsd[assetId], vaultPriceInfoUsd, assetsBalances[assetId]);
         if (vaultPriceInfoUsd) {
           assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfoUsd.value)).toFixed(8))
+          prevVaultPriceInfoUsd[assetId] = vaultPriceInfoUsd
         }
       })
 

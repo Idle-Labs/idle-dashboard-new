@@ -85,12 +85,18 @@ export class ChainlinkHelper {
 
     // const rawCalls: ContractRawCall[] = Array.from(Array(+latestRound).keys()).map( (roundId: number) => {
     const rawCalls: ContractRawCall[] = []
-    for (let roundId = firstRoundId; roundId <= +latestRound; roundId += increment) {
+    for (let roundId = firstRoundId; roundId < +latestRound; roundId += increment) {
       rawCalls.push({
         assetId: address,
         call: priceFeed.contract.methods.getRoundData(+roundId)
       })
     }
+
+    // Add latest round
+    rawCalls.push({
+      assetId: address,
+      call: priceFeed.contract.methods.getRoundData(+latestRound)
+    })
     // console.log('getHistoricalPricesRawCalls', address, firstTimestamp, latestTimestamp, firstRoundId, latestRound, roundsPerDay, rawCalls)
     // console.log('rawCalls', address, rawCalls.length)
 
