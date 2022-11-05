@@ -310,9 +310,11 @@ const ApyRatio: React.FC<TextProps> = (props) => {
 
 const ApyBoost: React.FC<TextProps> = (props) => {
   const { asset } = useAssetProvider()
+
+  const apyBoost = asset?.apy && asset?.baseApr?.gt(0) ? asset?.apy.div(asset?.baseApr) : BNify(0)
   
   return asset?.apy && asset?.baseApr ? (
-    <Amount suffix={'x'} maxDecimals={2} value={asset?.apy.div(asset?.baseApr)} {...props} />
+    <Amount suffix={'x'} maxDecimals={2} value={apyBoost} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -334,6 +336,14 @@ const FeesUsd: React.FC<TextProps> = (props) => {
   
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount.Usd value={feeUsd} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const PerformanceFee: React.FC<TextProps> = (props) => {
+  const { asset } = useAssetProvider()
+  
+  return asset?.fee ? (
+    <Amount.Percentage value={asset?.fee?.times(100)} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -378,9 +388,7 @@ const Coverage: React.FC<TextProps> = (props) => {
   if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
-
   const coverageAmount = bbTranche.tvl && asset?.tvl ? bbTranche.tvl.div(asset.tvl).toFixed(2)+'$' : '0.00$';
-
   const coverageText = translate('defi.coverageAmount', {amount: '1$', coverageAmount})
   
   return asset?.tvlUsd ? (
@@ -428,6 +436,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
       return (<ApyBoost textStyle={'tableCell'} />)  
     case 'coverage':
       return (<Coverage textStyle={'tableCell'} />)  
+    case 'performanceFee':
+      return (<PerformanceFee textStyle={'tableCell'} />)  
     case 'rewards':
       return (
         <Rewards size={'xs'}>

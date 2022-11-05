@@ -745,8 +745,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
         return promises
       }, [])
 
+      // Get vaults additional base APRs
+      const vaultsAdditionalBaseAprsPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
+        promises.push(vaultFunctionsHelper.getVaultAdditionalBaseApr(vault))
+        return promises
+      }, [])
+
       const [
         vaultsAdditionalAprs,
+        vaultsAdditionalBaseAprs,
         [
           balanceCallsResults,
           vaultsPricesCallsResults,
@@ -759,6 +766,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ]
       ] = await Promise.all([
         Promise.all(vaultsAdditionalAprsPromises),
+        Promise.all(vaultsAdditionalBaseAprsPromises),
         multiCall.executeMultipleBatches(rawCalls)
       ])
 
@@ -789,7 +797,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
           const asset = selectAssetById(assetId)
           if (asset){
-            const baseApr = BNify(callResult.data.toString()).div(`1e18`)
+            let baseApr = BNify(callResult.data.toString()).div(`1e18`)
+
+            // Add additional Apr
+            const vaultAdditionalBaseApr: VaultAdditionalApr = vaultsAdditionalBaseAprs.find( (apr: VaultAdditionalApr) => apr.vaultId === assetId )
+            if (vaultAdditionalBaseApr){
+              baseApr = baseApr.plus(vaultAdditionalBaseApr.apr)
+            }
+
             dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { baseApr } }})
           }
         }

@@ -59,42 +59,44 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         spacing={1}
         alignItems={'flex-start'}
       >
-        <Translation translation={ hasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
-        <HStack
-          spacing={4}
-        >
-          {
-            hasBalance ? (
-              <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} />
-            ) : (
-              <Amount.Percentage value={earningsPercentage} textStyle={['heading', 'h2']} />
-            )
-          }
-          <Stat>
-            <HStack spacing={2}>
-              {
-                hasBalance ? (
-                  <AssetProvider.EarningsPerc textStyle={'captionSmall'} />
-                ) : apy.gt(0) && (
-                  <HStack
-                    spacing={1}
-                  >
-                    <Amount.Percentage value={apy} textStyle={'captionSmall'} />
-                    <Text textStyle={'captionSmall'}>APY</Text>
-                  </HStack>
-                )
-              }
-              {
-                earningsPercentage && (
-                  <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                )
-              }
-            </HStack>
-          </Stat>
-        </HStack>
+        <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+          <Translation translation={ hasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+          <HStack
+            spacing={4}
+          >
+            {
+              hasBalance ? (
+                <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} />
+              ) : (
+                <Amount.Percentage value={earningsPercentage} textStyle={['heading', 'h2']} />
+              )
+            }
+            <Stat>
+              <HStack spacing={2}>
+                {
+                  hasBalance ? (
+                    <AssetProvider.EarningsPerc textStyle={'captionSmall'} />
+                  ) : apy.gt(0) && (
+                    <HStack
+                      spacing={1}
+                    >
+                      <Amount.Percentage value={apy} textStyle={'captionSmall'} />
+                      <Text textStyle={'captionSmall'}>APY</Text>
+                    </HStack>
+                  )
+                }
+                {
+                  earningsPercentage && (
+                    <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
+                  )
+                }
+              </HStack>
+            </Stat>
+          </HStack>
+        </SkeletonText>
       </VStack>
     )
-  }, [hasBalance, asset, chartData])
+  }, [hasBalance, asset, chartData, isPortfolioLoaded])
 
   const fundsOverview = useMemo(() => {
     if (!asset || !hasBalance) return null
@@ -152,112 +154,6 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </SimpleGrid>
     )
   }, [asset, hasBalance])
-
-  const assetGeneralData = (
-    <Card.Dark>
-      <SimpleGrid
-        columns={[2, 5]}
-      >
-        <VStack
-          spacing={2}
-          alignItems={'flex-start'}
-          justifyContent={'flex-start'}
-        >
-          <Translation component={Text} translation={'defi.protocol'} textStyle={'captionSmall'} />
-          <HStack
-            alignItems={'center'}
-          >
-            <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
-            <AssetProvider.ProtocolName textStyle={'tableCell'} />
-          </HStack>
-        </VStack>
-
-        <VStack
-          spacing={2}
-          alignItems={'flex-start'}
-          justifyContent={'flex-start'}
-        >
-          <Translation component={Text} translation={'defi.pool'} textStyle={'captionSmall'} />
-          <AssetProvider.PoolUsd textStyle={'tableCell'} />
-        </VStack>
-
-        <VStack
-          spacing={2}
-          alignItems={'flex-start'}
-          justifyContent={'flex-start'}
-        >
-          <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
-          <AssetProvider.Apy textStyle={'tableCell'} />
-        </VStack>
-
-        <VStack
-          spacing={2}
-          alignItems={'flex-start'}
-          justifyContent={'flex-start'}
-        >
-          <Translation component={Text} translation={'defi.rewards'} textStyle={'captionSmall'} />
-          <AssetProvider.Rewards size={'xs'}>
-            <Text textStyle={'tableCell'}>-</Text>
-          </AssetProvider.Rewards>
-        </VStack>
-      </SimpleGrid>
-
-      {
-        /*
-          <SimpleGrid
-            pt={6}
-            mt={6}
-            columns={[2, 5]}
-            borderTop={'1px solid'}
-            borderTopColor={'divider'}
-          >
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.protocol'} textStyle={'captionSmall'} />
-              <HStack
-                alignItems={'center'}
-              >
-                <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
-                <AssetProvider.ProtocolName textStyle={'tableCell'} />
-              </HStack>
-            </VStack>
-
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.pool'} textStyle={'captionSmall'} />
-              <AssetProvider.PoolUsd textStyle={'tableCell'} />
-            </VStack>
-
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
-              <AssetProvider.Apy textStyle={'tableCell'} />
-            </VStack>
-
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.rewards'} textStyle={'captionSmall'} />
-              <AssetProvider.Rewards size={'xs'}>
-                <Text textStyle={'tableCell'}>-</Text>
-              </AssetProvider.Rewards>
-            </VStack>
-          </SimpleGrid>
-        */
-      }
-    </Card.Dark>
-  )
 
   return (
     <AssetProvider
@@ -328,7 +224,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   isRainbowChart={false}
                   assetIds={[params.asset]}
                   setPercentChange={() => {}}
-                  margins={{ top: 10, right: 0, bottom: 45, left: 0 }}
+                  margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                 />
               </Card.Dark>
             </Box>

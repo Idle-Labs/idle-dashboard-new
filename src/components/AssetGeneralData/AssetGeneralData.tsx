@@ -4,6 +4,7 @@ import { Card } from 'components/Card/Card'
 import type { AssetId } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { HStack, VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
@@ -12,18 +13,12 @@ type AssetGeneralDataArgs = {
 }
 
 export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) => {
-
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
-
-  const asset = useMemo(() => {
-    return selectAssetById && selectAssetById(assetId)
-  }, [selectAssetById, assetId])
+  const { params } = useBrowserRouter()
 
   const strategy = useMemo(() => {
-    return asset?.type && strategies[asset?.type]
-  }, [asset?.type])
-
-  // console.log('strategy', strategy)
+    const foundStrategy = Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
+    return foundStrategy ? strategies[foundStrategy] : null
+  }, [params])
 
   return (
     <AssetProvider
@@ -34,7 +29,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
           columns={[2, 5]}
         >
           {
-            strategy?.generalDataFields.slice(0, 5).map( (field: string) => {
+            strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (field: string) => {
               return (
                 <VStack
                   spacing={2}
@@ -50,7 +45,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
           }
         </SimpleGrid>
         {
-          strategy?.generalDataFields.length>5 && (
+          strategy?.generalDataFields && strategy?.generalDataFields.length>5 && (
             <SimpleGrid
               pt={6}
               mt={6}

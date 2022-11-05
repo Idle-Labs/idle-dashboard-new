@@ -47,7 +47,7 @@ export const strategies:Record<string, StrategyProps> = {
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
-    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'status', 'pool', 'apy', 'apyRatio', 'coverage']
+    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'performanceFee', 'status', 'pool', 'apy', 'apyRatio', 'coverage']
   },
   BB:{
     route:'boosted-yield',
@@ -56,7 +56,7 @@ export const strategies:Record<string, StrategyProps> = {
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
-    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'status', 'pool', 'apy', 'apyRatio', 'apyBoost']
+    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'performanceFee', 'status', 'pool', 'apy', 'apyRatio', 'apyBoost']
   },
 }
 

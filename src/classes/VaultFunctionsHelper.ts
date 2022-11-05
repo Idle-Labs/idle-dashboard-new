@@ -142,6 +142,30 @@ export class VaultFunctionsHelper {
     }
   }
 
+  public async getVaultAdditionalBaseApr(vault: Vault): Promise<VaultAdditionalApr> {
+    if (vault instanceof TrancheVault) {
+      switch (vault.cdoConfig.name) {
+        case 'IdleCDO_lido_MATIC':
+          const maticTrancheBaseApr = await this.getMaticTrancheStrategyApr()
+          const apr = maticTrancheBaseApr ? BNify(maticTrancheBaseApr).times(100) : BNify(0)
+          return {
+            vaultId: vault.id,
+            apr
+          }
+        default:
+          return {
+            vaultId: vault.id,
+            apr: BNify(0)
+          }
+      }
+    }
+
+    return {
+      vaultId: vault.id,
+      apr: BNify(0)
+    }
+  }
+
   public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
 
     const results = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
