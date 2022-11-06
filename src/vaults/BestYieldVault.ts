@@ -207,6 +207,25 @@ export class BestYieldVault {
     ]
   }
 
+  public getProtocolsCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.contract.methods.getAPRs()
+      }
+    ]
+  }
+
+  public getAllocationsCalls(index: number, data?: any): ContractRawCall[] {
+    return [
+      {
+        data,
+        assetId:this.id,
+        call:this.contract.methods.lastAllocations(index)
+      }
+    ]
+  }
+
   public async getHistoricalData(filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
     return await this.vaultFunctionsHelper.getVaultHistoricalDataFromIdleApi(this, filters)
   }

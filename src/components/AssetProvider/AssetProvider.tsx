@@ -5,6 +5,7 @@ import { Amount } from 'components/Amount/Amount'
 import { RateChart } from 'components/RateChart/RateChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
+import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { Text, Flex, Avatar, Tooltip, Spinner, HStack, Tag } from '@chakra-ui/react'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
@@ -415,6 +416,9 @@ type GeneralDataProps = {
 } & TextProps & AvatarProps & BoxProps & ThemingProps
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
+
+  const { asset } = useAssetProvider()
+
   switch (field) {
     case 'protocol':
       return (
@@ -445,8 +449,15 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
         </Rewards>
       )
     case 'status':
+      return (<Status size={'md'}></Status>)
+    case 'allocation':
       return (
-        <Status size={'md'}></Status>
+        <Flex
+          width={'100%'}
+          height={'16px'}
+        >
+          <AllocationChart assetId={asset?.id} />
+        </Flex>
       )
     case 'stakingRewards':
       return (

@@ -714,7 +714,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getTotalSupplyCalls" in vault) ? vault.getTotalSupplyCalls() : [],
         ("getFeesCalls" in vault) ? vault.getFeesCalls() : [],
         ("getAprRatioCalls" in vault) ? vault.getAprRatioCalls() : [],
-        ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : []
+        ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : [],
+        ("getProtocolsCalls" in vault) ? vault.getProtocolsCalls() : []
       ]
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
@@ -762,7 +763,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
           totalSupplyCallsResults,
           feesCallsResults,
           aprRatioResults,
-          baseAprResults
+          baseAprResults,
+          protocolsResults
         ]
       ] = await Promise.all([
         Promise.all(vaultsAdditionalAprsPromises),
@@ -777,6 +779,52 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('feesCallsResults', feesCallsResults)
       // console.log('aprRatioResults', aprRatioResults)
       // console.log('baseAprResults', baseAprResults)
+      // console.log('protocolsResults', protocolsResults)
+
+      // Process protocols
+      const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
+        if (callResult.data) {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          const vault = selectVaultById(assetId)
+          if (vault && ("getAllocationsCalls" in vault)){
+            callResult.data[0].forEach( (protocolAddress: string, index: number) => {
+              calls.push(...vault.getAllocationsCalls(index, { protocolAddress }))
+            })
+          }
+        }
+        return calls
+      }, [])
+
+      const allocationsResults = await multiCall.executeMulticalls(multiCall.getCallsFromRawCalls(lastAllocationsCalls))
+
+      // Process allocations
+      const allocations: Record<AssetId, Balances> = {}
+      allocationsResults?.forEach( (callResult: DecodedResult) => {
+        if (callResult.data) {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          const vault = selectVaultById(assetId)
+          if (vault && ("tokenConfig" in vault) && ("protocols" in vault.tokenConfig)){
+            const protocolAddress = callResult.extraData.data.protocolAddress
+            const protocolInfo = vault.tokenConfig?.protocols.find( protocolInfo => protocolInfo.address.toLowerCase() === protocolAddress.toLowerCase() )
+            if (!protocolInfo) return allocations
+
+            const protocolName = protocolInfo.name
+            const allocationPercentage = BNify(callResult.data.toString()).div(`1e03`)
+
+            allocations[assetId] = {
+              ...allocations[assetId],
+              [protocolName]: allocationPercentage
+            }
+          }
+        }
+      })
+
+      // console.log('allocations', allocations)
+
+      // Set allocations
+      Object.keys(allocations).forEach( (assetId: AssetId) => {
+        dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { allocations: allocations[assetId] } }})
+      })
 
       // Process Apr Ratio
       aprRatioResults.forEach( (callResult: DecodedResult) => {

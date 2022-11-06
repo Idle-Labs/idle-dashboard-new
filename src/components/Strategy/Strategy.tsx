@@ -331,7 +331,6 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [depositedAssetsColumns, depositedAssetsData, onRowClick])
 
   const availableAssets = useMemo(() => {
-    if (!availableAssetsData.length) return null
 
     const initialState = {
       sortBy: [
@@ -347,9 +346,8 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <Card.Heading>Available assets</Card.Heading>
         {
           !availableAssetsData.length ? (
-            <Stack>
-              <Skeleton />
-              <Skeleton />
+            <Stack
+            >
               <Skeleton />
               <Skeleton />
             </Stack>

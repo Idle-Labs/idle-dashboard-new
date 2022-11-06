@@ -37,7 +37,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                   alignItems={'flex-start'}
                   justifyContent={'flex-start'}
                 >
-                  <Translation component={Text} translation={`defi.${field}`} textStyle={'captionSmall'} />
+                  <Translation component={Text} translation={`assets.assetDetails.generalData.${field}`} textStyle={'captionSmall'} />
                   <AssetProvider.GeneralData field={field} />
                 </VStack>
               )
@@ -62,7 +62,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                       alignItems={'flex-start'}
                       justifyContent={'flex-start'}
                     >
-                      <Translation component={Text} translation={`defi.${field}`} textStyle={'captionSmall'} />
+                      <Translation component={Text} translation={`assets.assetDetails.generalData.${field}`} textStyle={'captionSmall'} />
                       <AssetProvider.GeneralData field={field} />
                     </VStack>
                   )

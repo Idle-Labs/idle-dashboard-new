@@ -130,6 +130,7 @@ export type Asset = {
   rates?: HistoryData[]
   prices?: HistoryData[]
   pricesUsd?: HistoryData[]
+  allocations?: Balances
   vaultPosition?: VaultPosition
 }
 
@@ -166,6 +167,7 @@ export type Account = {
 
 export type ContractRawCall = {
   assetId: AssetId
+  data?: any
   call: ContractSendMethod
   decimals?: number
 }

@@ -205,17 +205,19 @@ export const PrimaryChart = ({
               fillOpacity={1}
               pointerEvents={'none'}
             />
-            {/*
-            <circle
-              cx={tooltipLeft}
-              cy={tooltipTop + margins.top}
-              r={4}
-              fill={theme.colors.gray[300]}
-              stroke='white'
-              strokeWidth={2}
-              pointerEvents='none'
-            />
-            */}
+            {
+              /*
+              <circle
+                cx={tooltipLeft}
+                cy={tooltipTop + margins.top}
+                r={4}
+                fill={theme.colors.gray[300]}
+                stroke='white'
+                strokeWidth={2}
+                pointerEvents='none'
+              />
+              */
+            }
           </Group>
         )}
       </ScaleSVG>

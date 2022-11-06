@@ -211,6 +211,17 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["232", "87%", "66%"]
     }
   },
+  ribbon: {
+    stats: {
+      showLegend: false,
+    },
+    enabled: true,
+    label: "Ribbon",
+    colors: {
+      rgb: [252, 10, 84],
+      hsl: ["342", "98%", "51%"]
+    }
+  },
   truefi: {
     icon:`${protocolsFolder}truefi.svg`,
     stats: {

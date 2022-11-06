@@ -1729,6 +1729,45 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    USDCBB: {
+      underlyingToken: 'USDC',
+      enabledEnvs: ['beta'],
+      idle: {
+        abi: IdleTokenV4 as Abi,
+        token: 'idleUSDCYieldBB',
+        address: '0x1440469fba56ea663de7c29bbe8bca7ad5158647',
+      },
+      protocols: [
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'clearpool',
+          abi: IdleCDO as Abi,
+          token: 'BB_clearpool_USDC',
+          address: '0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d']
+            }
+          },
+        },
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'ribbon',
+          abi: IdleCDO as Abi,
+          token: 'BB_ribbon_USDC',
+          address: '0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C']
+            }
+          },
+        },
+      ]
+    },
     USDC: {
       underlyingToken: 'USDC',
       idle: {

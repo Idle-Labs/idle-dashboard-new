@@ -1221,6 +1221,20 @@
       "disabled": "Disabled"
     },
     "assetDetails": {
+      "generalData": {
+        "protocol":"Protocol",
+        "rewards":"Rewards",
+        "allocation":"Allocation",
+        "stakingRewards":"Staking Rewards",
+        "autoCompounding":"Auto Compounding",
+        "performanceFee":"Performance Fee",
+        "status":"Status",
+        "pool":"Pool",
+        "apy":"APY",
+        "apyRatio":"APY Ratio",
+        "apyBoost":"APY Boost",
+        "coverage":"Coverage"
+      },
       "assetHeader": {
         "balance": "Balance",
         "price": "Price",
