@@ -500,17 +500,17 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'
     },
-    WMATIC: {
-      decimals: 18,
-      enabled: true,
-      token: 'WMATIC',
-      colors: {
-        hex: '#2891f8',
-        rgb: [40, 145, 248],
-        hsl: ['210', '94%', '56%']
-      },
-      address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
-    }
+    // WMATIC: {
+    //   decimals: 18,
+    //   enabled: true,
+    //   token: 'WMATIC',
+    //   colors: {
+    //     hex: '#2891f8',
+    //     rgb: [40, 145, 248],
+    //     hsl: ['210', '94%', '56%']
+    //   },
+    //   address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
+    // }
   },
   137:{
     DQUICK:{

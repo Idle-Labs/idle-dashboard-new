@@ -1,14 +1,16 @@
+import dayjs from 'dayjs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
+import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
-import { BNify, apr2apy, abbreviateNumber } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
+import { BNify, apr2apy, abbreviateNumber, dateToLocale } from 'helpers/'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
-import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, HStack, Tag } from '@chakra-ui/react'
+import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 
@@ -355,6 +357,34 @@ const PerformanceFee: React.FC<PercentageProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const LastHarvest: React.FC<TextProps> = (props) => {
+  const { locale } = useI18nProvider()
+  const { asset, vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (!vault || !selectAssetById) return null
+
+  const harvestedAsset = selectAssetById(asset?.lastHarvest?.tokenAddress)
+
+  if (!harvestedAsset) return null
+
+  const harvestAPY = asset?.lastHarvest?.aprs[vault.type]
+  const harvestValue = asset?.lastHarvest?.value[vault.type]
+  // const harvestDate = dayjs(+asset.lastHarvest.timestamp*1000).format('YYYY/MM/DD HH:mm')
+  
+  return asset?.lastHarvest === null ? (
+    <Text {...props}>-</Text>
+  ) : asset?.lastHarvest ? (
+    <VStack
+      spacing={0}
+      alignItems={'flex-start'}
+    >
+      <Text {...props}>{harvestValue?.toFixed(4)} {harvestedAsset.token}</Text>
+      <Amount.Percentage textStyle={'captionSmaller'} lineHeight={'normal'} prefix={'(+'} suffix={' APY)'} value={harvestAPY?.times(100)} />
+    </VStack>
+  ) : <Spinner size={'sm'} />
+}
+
 const Fees: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
@@ -449,11 +479,12 @@ const ApyRatioChart: React.FC<BoxProps> = (props) => {
 
   return apyRatio ? (
     <Flex
-      width={'90%'}
+      width={'80%'}
       height={'100%'}
-      alignItems={'flex-end'}
+      alignItems={'flex-start'}
     >
       <Flex
+        mt={2}
         width={'100%'}
         height={'12px'}
       >
@@ -471,9 +502,10 @@ const Allocation: React.FC<BoxProps> = (props) => {
     <Flex
       width={'100%'}
       height={'100%'}
-      alignItems={'flex-end'}
+      alignItems={'flex-start'}
     >
       <Flex
+        mt={2}
         width={'100%'}
         height={'12px'}
       >
@@ -514,6 +546,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
       return (<Coverage textStyle={'tableCell'} />)  
     case 'performanceFee':
       return (<PerformanceFee textStyle={'tableCell'} />)  
+    case 'lastHarvest':
+      return (<LastHarvest textStyle={'tableCell'} />)  
     case 'rewards':
       return (
         <Rewards size={'xs'}>

@@ -1,10 +1,16 @@
 import Web3 from 'web3'
 import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
-import { TrancheVault } from 'vaults/TrancheVault'
+import type { Block } from 'web3-eth'
 import { Multicall, CallData } from 'classes/'
+import { TrancheVault } from 'vaults/TrancheVault'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
-import type { BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import type { Harvest, Number, BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+
+export interface CdoLastHarvest {
+  cdoId: string
+  harvest: Harvest | null
+}
 
 export class VaultFunctionsHelper {
 
@@ -18,6 +24,80 @@ export class VaultFunctionsHelper {
     this.chainId = chainId
     this.explorer = explorer
     this.multiCall = multiCall
+  }
+
+  public async getTrancheLastHarvest(trancheVault: TrancheVault): Promise<CdoLastHarvest> {
+    const lastHarvest: CdoLastHarvest = {
+      cdoId: trancheVault.cdoConfig.address,
+      harvest: null
+    }
+
+    if (!this.multiCall || !this.explorer) return lastHarvest
+
+    const rawCalls: CallData[] = [
+      this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVAA'),
+      this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVBB'),
+      this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
+    ].filter( (call): call is CallData => !!call )
+
+    const [
+      multicallResults,
+      lastHarvestBlockHex
+    ] = await Promise.all([
+      this.multiCall.executeMulticalls(rawCalls),
+      this.web3.eth.getStorageAt(trancheVault.cdoConfig.address, 204)
+    ]);
+
+    if (!multicallResults) return lastHarvest
+
+    const [
+      trancheNAVAA,
+      trancheNAVBB,
+      trancheAPRSplitRatio
+    ] = multicallResults.map( r => BNify(r.data) )
+    const lastHarvestBlock = this.web3.utils.hexToNumber(lastHarvestBlockHex)
+
+    const tranchePoolAA = BNify(trancheNAVAA).div(`1e${trancheVault.underlyingToken?.decimals}`)
+    const tranchePoolBB = BNify(trancheNAVBB).div(`1e${trancheVault.underlyingToken?.decimals}`)
+
+    const aprRatioAA = BNify(trancheAPRSplitRatio).div(1000)
+    const aprRatioBB = BNify(100).minus(BNify(trancheAPRSplitRatio).div(1000))
+
+    try {
+      const endpoint = `${this.explorer.endpoints[this.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
+      const harvestTxs = await makeEtherscanApiRequest(endpoint, this.explorer.keys)
+
+      if (!harvestTxs) return lastHarvest
+
+      const harvestTx = harvestTxs.find( (tx: EtherscanTransaction) => tx.contractAddress.toLowerCase() === trancheVault.underlyingToken?.address?.toLowerCase() && tx.to.toLowerCase() === trancheVault.cdoConfig.address.toLowerCase() )
+
+      if (!harvestTx) return lastHarvest
+
+      const harvestedValueAA = BNify(harvestTx.value).div(`1e${trancheVault.underlyingToken?.decimals}`).times(aprRatioAA.div(100));
+      const harvestedValueBB = BNify(harvestTx.value).div(`1e${trancheVault.underlyingToken?.decimals}`).times(aprRatioBB.div(100));
+      const tokenAprAA = harvestedValueAA.div(tranchePoolAA).times(52.1429);
+      const tokenAprBB = harvestedValueBB.div(tranchePoolBB).times(52.1429);
+      
+      // console.log('getTrancheHarvestApy', harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString())
+
+      lastHarvest.harvest = {
+        aprs: {
+          AA: tokenAprAA,
+          BB: tokenAprBB
+        },
+        value: {
+          AA: harvestedValueAA,
+          BB: harvestedValueBB,
+        },
+        timestamp: +harvestTx.timeStamp,
+        blockNumber: +harvestTx.blockNumber,
+        tokenAddress: harvestTx.contractAddress,
+      }
+    } catch (err) {
+
+    }
+
+    return lastHarvest
   }
 
   public async getTrancheHarvestApy(trancheVault: TrancheVault, trancheType: string): Promise<BigNumber> {

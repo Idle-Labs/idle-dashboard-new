@@ -89,6 +89,10 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field:'coverage',
         label:'assets.assetDetails.generalData.coverage'
+      },
+      {
+        field:'lastHarvest',
+        label:'assets.assetDetails.generalData.lastHarvest'
       }
     ]
   },
@@ -135,6 +139,10 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field:'apyBoost',
         label:'assets.assetDetails.generalData.apyBoost'
+      },
+      {
+        field:'lastHarvest',
+        label:'assets.assetDetails.generalData.lastHarvest'
       }
     ]
   },

@@ -1233,7 +1233,8 @@
         "apy":"APY",
         "apyRatio":"APY Ratio",
         "apyBoost":"APY Boost",
-        "coverage":"Coverage"
+        "coverage":"Coverage",
+        "lastHarvest":"Last Harvest"
       },
       "assetHeader": {
         "balance": "Balance",

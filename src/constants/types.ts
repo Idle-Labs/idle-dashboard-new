@@ -75,6 +75,7 @@ export type EtherscanTransaction = {
 }
 
 export type AssetId = string
+export type Balances = Record<string, BigNumber>
 
 export type Transaction = EtherscanTransaction & {
   action: string,
@@ -103,6 +104,14 @@ export type VaultPosition = {
   }
 }
 
+export type Harvest ={
+  aprs: Balances
+  value: Balances
+  timestamp: number
+  blockNumber: number
+  tokenAddress: string
+}
+
 export type Asset = {
   id?: AssetId
   icon?: string
@@ -113,6 +122,7 @@ export type Asset = {
   decimals: number
   color?: string
   status?: string
+  lastHarvest?: Harvest
   underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber
@@ -151,18 +161,16 @@ export type Avatar = {
 };
 
 export type Ens = {
-  name: string;
-  avatar: Avatar | null;
-  contentHash: string | null;
-  getText: (key: string) => Promise<string | undefined>;
+  name: string
+  avatar: Avatar | null
+  contentHash: string | null
+  getText: (key: string) => Promise<string | undefined>
 }
 
-export type Balances = Record<string, BigNumber>;
-
 export type Account = {
-  address: string;
-  ens: Ens | null;
-  balance: Record<string, string> | null;
+  address: string
+  ens: Ens | null
+  balance: Record<string, string> | null
 }
 
 export type ContractRawCall = {

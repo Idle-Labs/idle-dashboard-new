@@ -10,6 +10,7 @@ import { BestYieldVault } from 'vaults/BestYieldVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
+import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty } from 'helpers/'
 import type { GenericContractConfig, UnderlyingTokenProps } from 'constants/'
 import React, { useContext, useEffect, useCallback, useReducer } from 'react'
@@ -752,9 +753,21 @@ export function PortfolioProvider({ children }:ProviderProps) {
         return promises
       }, [])
 
+      // Get vaults last harvests
+      const vaultsLastHarvestsPromises = state.vaults.reduce( (promises: Record<AssetId, Promise<CdoLastHarvest> | undefined>, vault: Vault):Record<AssetId, Promise<CdoLastHarvest> | undefined> => {
+        if (!("cdoConfig" in vault) || promises[vault.cdoConfig.address]) return promises
+        return {
+          ...promises,
+          [vault.cdoConfig.address]: vaultFunctionsHelper.getTrancheLastHarvest(vault)
+        }
+      }, {})
+
+      // console.log('vaultsLastHarvestsPromises', vaultsLastHarvestsPromises)
+
       const [
         vaultsAdditionalAprs,
         vaultsAdditionalBaseAprs,
+        vaultsLastHarvests,
         [
           balanceCallsResults,
           vaultsPricesCallsResults,
@@ -769,6 +782,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       ] = await Promise.all([
         Promise.all(vaultsAdditionalAprsPromises),
         Promise.all(vaultsAdditionalBaseAprsPromises),
+        Promise.all(Object.values<Promise<CdoLastHarvest>>(vaultsLastHarvestsPromises)),
         multiCall.executeMultipleBatches(rawCalls)
       ])
 
@@ -780,6 +794,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('aprRatioResults', aprRatioResults)
       // console.log('baseAprResults', baseAprResults)
       // console.log('protocolsResults', protocolsResults)
+      // console.log('vaultsLastHarvests', vaultsLastHarvests)
+
+      // Process last harvest blocks
+      Object.values<CdoLastHarvest>(vaultsLastHarvests).forEach( (lastHarvest: CdoLastHarvest) => {
+        const cdoId = lastHarvest.cdoId
+        const vaults = state.vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
+        vaults.forEach( (vault: Vault) => {
+          const assetId = vault.id
+          dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { lastHarvest: lastHarvest.harvest || null } }})
+        })
+      })
 
       // Process protocols
       const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {

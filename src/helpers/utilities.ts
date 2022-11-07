@@ -53,6 +53,10 @@ export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {
   return dayjs().subtract(value, period).startOf('day').valueOf()
 }
 
+export const dateToLocale =(timestamp: number, locale: string) => {
+  return dayjs(timestamp).locale(locale).format('LLL')
+}
+
 export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
   const output = []
   for (let i = 0; i < array.length; i += chunkSize) {
