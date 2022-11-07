@@ -1,11 +1,10 @@
 import Web3 from 'web3'
 import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
-import type { Block } from 'web3-eth'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
-import type { Harvest, Number, BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import type { Harvest, BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string

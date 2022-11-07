@@ -243,6 +243,24 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       sortType: sortNumeric
     },
     {
+      accessor: 'id',
+      canSort: false,
+      disableSortBy: true,
+      id: 'allocationChart',
+      defaultCanSort: false,
+      display: strategy === 'BY' ? 'table-cell' : 'none',
+      Header: translate('assets.assetDetails.generalData.allocation'),
+      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetProvider assetId={value}>
+              <AssetProvider.Allocation />
+            </AssetProvider>
+          </SkeletonText>
+        )
+      }
+    },
+    {
       accessor:'apr',
       Header:translate('defi.apy'),
       Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
@@ -268,6 +286,26 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         )
       }
     },
+    /*
+    {
+      accessor: 'id',
+      canSort: false,
+      id: 'apyRatioChart',
+      disableSortBy: true,
+      defaultCanSort: false,
+      display: strategy !== 'BY' ? 'table-cell' : 'none',
+      Header: translate('assets.assetDetails.generalData.apyRatio'),
+      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <AssetProvider assetId={value}>
+              <AssetProvider.ApyRatioChart />
+            </AssetProvider>
+          </SkeletonText>
+        )
+      }
+    },
+    */
     {
       accessor: 'id',
       canSort: false,

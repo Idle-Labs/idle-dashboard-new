@@ -138,9 +138,9 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
                         if (events) alert(`clicked: ${JSON.stringify(bar)}`);
                       }}
                       onMouseLeave={() => {
-                        tooltipTimeout = window.setTimeout(() => {
-                          hideTooltip();
-                        }, 100);
+                        hideTooltip();
+                        // tooltipTimeout = window.setTimeout(() => {
+                        // }, 100);
                       }}
                       onMouseMove={() => {
                         if (tooltipTimeout) clearTimeout(tooltipTimeout);

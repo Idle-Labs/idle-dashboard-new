@@ -217,6 +217,7 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "Ribbon",
+    icon:`${protocolsFolder}ribbon.svg`,
     colors: {
       rgb: [252, 10, 84],
       hsl: ["342", "98%", "51%"]

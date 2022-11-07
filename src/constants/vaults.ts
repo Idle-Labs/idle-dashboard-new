@@ -5,6 +5,7 @@ import cToken from '../abis/compound/cDAI.json';
 import IdleCDO from '../abis/idle/IdleCDO.json';
 import IdleTokenV4 from '../abis/idle/IdleTokenV4.json';
 import TruefiPool from '../abis/truefi/TruefiPool.json';
+import RibbonPool from '../abis/ribbon/RibbonPool.json';
 import IdleStrategy from '../abis/idle/IdleStrategy.json';
 import IdleCDOPolygon from '../abis/idle/IdleCDOPolygon.json';
 import LiquidityGauge from '../abis/idle/LiquidityGauge.json';
@@ -187,7 +188,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       }
     }
   },
-  1: {
+  1:{
     /*
     idle:{
       DAI:{
@@ -1645,7 +1646,177 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       }
-    }
+    },
+    ribbon:{
+      USDC:{
+        protocol:'ribbon',
+        autoFarming:['RBN'],
+        enabledEnvs:['beta'],
+        blockNumber:15831531,
+        underlyingToken:'USDC',
+        // maxUtilizationRate:0.99,
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_ribbon_USDC',
+          address:'0x4bC5E595d2e0536Ea989a7a9741e9EB5c3CAea33'
+        },
+        Pool:{
+          abi:RibbonPool as Abi,
+          name:'Pool_ribbon_USDC',
+          address:'0x3cd0ecf1552d135b8da61c7f44cefe93485c616d'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_ribbon_USDC',
+          address:'0x25e7337037817DD9Bddd0334Ca1591f370518893'
+        },
+        description:'This strategy deploys funds in the <a href="https://lend.ribbon.finance/app/pool/folkvang" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Folkvang USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf',
+              utilizationRate:'getUtilizationRate'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_ribbon_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15831531,
+            name:'AA_ribbon_USDC',
+            token:'AA_ribbon_USDC',
+            label:'ribbon USDC AA',
+            address:'0x5f45A578491A23AC5AEE218e2D405347a0FaFa8E'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes',
+              utilizationRate:'getUtilizationRate'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_ribbon_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15831531,
+            name:'BB_ribbon_USDC',
+            token:'BB_ribbon_USDC',
+            label:'ribbon USDC BB',
+            address:'0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C'
+          }
+        }
+      },
+      DAI:{
+        protocol:'ribbon',
+        autoFarming:['RBN'],
+        blockNumber:15831214,
+        enabledEnvs:['beta'],
+        underlyingToken:'DAI',
+        // maxUtilizationRate:0.99,
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_ribbon_DAI',
+          address:'0xc8c64CC8c15D9aa1F4dD40933f3eF742A7c62478'
+        },
+        Pool:{
+          abi:RibbonPool as Abi,
+          name:'Pool_ribbon_DAI',
+          address:'0x0aea75705be8281f4c24c3e954d1f8b1d0f8044c'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_ribbon_DAI',
+          address:'0x94BcFfc172Af69132BbCE7DF52D567e5ce651dcd'
+        },
+        description:'This strategy converts 1:1 DAI into USDC via <a href="https://makerdao.world/en/learn/governance/module-psm/" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://lend.ribbon.finance/app/pool/wintermute" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Wintermute USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf',
+              utilizationRate:'getUtilizationRate'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_ribbon_DAI_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15831214,
+            name:'AA_ribbon_DAI',
+            token:'AA_ribbon_DAI',
+            label:'ribbon DAI AA',
+            address:'0xd54E5C263298E60A5030Ce2C8ACa7981EaAaED4A'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes',
+              utilizationRate:'getUtilizationRate'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_ribbon_DAI_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15831214,
+            name:'BB_ribbon_DAI',
+            token:'BB_ribbon_DAI',
+            label:'ribbon DAI BB',
+            address:'0xD3E4C5C37Ba3185410550B836557B8FA51d5EA3b'
+          }
+        }
+      }
+    },
   }
 };
 
@@ -1734,8 +1905,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       idle: {
         abi: IdleTokenV4 as Abi,
-        token: 'idleUSDCYieldBB',
-        address: '0x1440469fba56ea663de7c29bbe8bca7ad5158647',
+        token: 'idleUSDCBB',
+        address: '0xf6954b03d6a94ba9e8c80cbe5824f22a401ee5d2',
       },
       protocols: [
         {

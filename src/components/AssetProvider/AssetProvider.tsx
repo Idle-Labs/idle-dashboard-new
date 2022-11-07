@@ -1,12 +1,13 @@
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
+import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
-import { useI18nProvider } from 'contexts/I18nProvider'
+// import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
+import { BNify, apr2apy, abbreviateNumber } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
-import { BNify, apr2apy, abbreviateNumber, dateToLocale } from 'helpers/'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
@@ -136,6 +137,7 @@ const ProtocolIcon: React.FC<IconProps> = ({
   const avatar = useMemo(() => (
     <Avatar
       src={protocol?.icon}
+      icon={<BsQuestion size={24} />}
       {...props}
     />
   ), [protocol, props])
@@ -358,15 +360,13 @@ const PerformanceFee: React.FC<PercentageProps> = (props) => {
 }
 
 const LastHarvest: React.FC<TextProps> = (props) => {
-  const { locale } = useI18nProvider()
+  // const { locale } = useI18nProvider()
   const { asset, vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   if (!vault || !selectAssetById) return null
 
   const harvestedAsset = selectAssetById(asset?.lastHarvest?.tokenAddress)
-
-  if (!harvestedAsset) return null
 
   const harvestAPY = asset?.lastHarvest?.aprs[vault.type]
   const harvestValue = asset?.lastHarvest?.value[vault.type]
@@ -379,7 +379,7 @@ const LastHarvest: React.FC<TextProps> = (props) => {
       spacing={0}
       alignItems={'flex-start'}
     >
-      <Text {...props}>{harvestValue?.toFixed(4)} {harvestedAsset.token}</Text>
+      <Text {...props}>{harvestValue?.toFixed(4)} {harvestedAsset?.token}</Text>
       <Amount.Percentage textStyle={'captionSmaller'} lineHeight={'normal'} prefix={'(+'} suffix={' APY)'} value={harvestAPY?.times(100)} />
     </VStack>
   ) : <Spinner size={'sm'} />
@@ -479,9 +479,10 @@ const ApyRatioChart: React.FC<BoxProps> = (props) => {
 
   return apyRatio ? (
     <Flex
-      width={'80%'}
+      width={'100%'}
       height={'100%'}
       alignItems={'flex-start'}
+      {...props}
     >
       <Flex
         mt={2}
@@ -539,7 +540,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
     // case 'apyRatio':
     //   return (<ApyRatio textStyle={'tableCell'} />)  
     case 'apyRatio':
-      return <ApyRatioChart />
+      return <ApyRatioChart width={'80%'} />
     case 'apyBoost':
       return (<ApyBoost textStyle={'tableCell'} />)  
     case 'coverage':
@@ -586,7 +587,9 @@ AssetProvider.Balance = Balance
 AssetProvider.FeesUsd = FeesUsd
 AssetProvider.PoolUsd = PoolUsd
 AssetProvider.Earnings = Earnings
+AssetProvider.ApyRatio = ApyRatio
 AssetProvider.Deposited = Deposited
+AssetProvider.Allocation = Allocation
 AssetProvider.BalanceUsd = BalanceUsd
 AssetProvider.GeneralData = GeneralData
 AssetProvider.RealizedApy = RealizedApy
@@ -595,5 +598,6 @@ AssetProvider.EarningsPerc = EarningsPerc
 AssetProvider.DepositedUsd = DepositedUsd
 AssetProvider.ProtocolName = ProtocolName
 AssetProvider.ProtocolIcon = ProtocolIcon
+AssetProvider.ApyRatioChart = ApyRatioChart
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.HistoricalRates = HistoricalRates
