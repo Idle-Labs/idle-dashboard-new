@@ -30,8 +30,8 @@ export const strategies:Record<string, StrategyProps> = {
     generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'performanceFee', 'status', 'pool', 'apy', 'apyRatio', 'coverage']
   },
   BB:{
-    route:'boosted-yield',
     showProtocol: true,
+    route:'boosted-yield',
     label:'strategies.boosted.title',
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,

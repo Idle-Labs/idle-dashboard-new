@@ -2,10 +2,9 @@ import React, { useMemo } from 'react'
 import { strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
 import type { AssetId } from 'constants/types'
+import { VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
-import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
-import { HStack, VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type AssetGeneralDataArgs = {

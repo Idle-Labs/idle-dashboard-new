@@ -85,6 +85,11 @@ const theme = extendTheme({
     status:{
       production:'#00AE8F'
     },
+    strategies: {
+      BY: '#6AE4FF',
+      AA: '#4DE3B0',
+      BB: '#FFD15C',
+    },
     button:{
       bg:'#404F6A',
       bgHover:'#293243',

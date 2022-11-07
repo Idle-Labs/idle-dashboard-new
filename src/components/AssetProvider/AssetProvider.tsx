@@ -1,14 +1,16 @@
-import { BNify, apr2apy } from 'helpers/'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { Amount } from 'components/Amount/Amount'
+import { strategies } from 'constants/strategies'
 import { RateChart } from 'components/RateChart/RateChart'
+import { BNify, apr2apy, abbreviateNumber } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
-import { Text, Flex, Avatar, Tooltip, Spinner, HStack, Tag } from '@chakra-ui/react'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
+import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, HStack, Tag } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
+import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 
 type AssetCellProps = {
   assetId: string | undefined
@@ -22,12 +24,16 @@ type ContextProps = {
   assetId: string | null | undefined
   asset: Asset | null
   vault: Vault | null
+  translate: Function
+  theme: any
 }
 
 const initialState = {
   assetId: null,
   asset: null,
-  vault: null
+  vault: null,
+  translate: () => {},
+  theme: null
 }
 
 const AssetContext = createContext<ContextProps>(initialState)
@@ -35,7 +41,8 @@ const AssetContext = createContext<ContextProps>(initialState)
 const useAssetProvider = () => useContext(AssetContext)
 
 export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
-
+  const theme = useTheme()
+  const translate = useTranslate()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -49,7 +56,7 @@ export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
   }, [assetId, selectVaultById])
 
   return (
-    <AssetContext.Provider value={{asset, vault, assetId}}>
+    <AssetContext.Provider value={{asset, vault, assetId, translate, theme}}>
       <Flex>
         {children}
       </Flex>
@@ -367,8 +374,7 @@ const PoolUsd: React.FC<TextProps> = (props) => {
 }
 
 const Status: React.FC<TextProps> = (props) => {
-  const translate = useTranslate()
-  const { asset } = useAssetProvider()
+  const { asset, translate } = useAssetProvider()
 
   if (!asset?.status) return null
 
@@ -382,15 +388,14 @@ const Status: React.FC<TextProps> = (props) => {
 }
 
 const Coverage: React.FC<TextProps> = (props) => {
-  const translate = useTranslate()
-  const { asset, vault } = useAssetProvider()
+  const { asset, vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
-  const coverageAmount = bbTranche.tvl && asset?.tvl ? bbTranche.tvl.div(asset.tvl).toFixed(2)+'$' : '0.00$';
-  const coverageText = translate('defi.coverageAmount', {amount: '1$', coverageAmount})
+  const coverageAmount = bbTranche.tvl && asset?.tvl ? bbTranche.tvl.div(asset.tvl) : 0;
+  const coverageText = translate('defi.coverageAmount', {amount: '$1', coverageAmount: `$${abbreviateNumber(coverageAmount, 2)}`})
   
   return asset?.tvlUsd ? (
     <Text {...props}>{coverageText}</Text>
@@ -411,13 +416,78 @@ const HistoricalRates: React.FC<BoxProps> = (props) => {
   ) : null
 }
 
+const ApyRatioChart: React.FC<BoxProps> = (props) => {
+  const { asset, vault, translate, theme } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const vaultType = vault?.type
+  const apyRatio = asset?.aprRatio
+
+  const otherVaultType = vaultType === 'AA' ? 'BB' : 'AA'
+  const otherVault = selectAssetById(vault?.vaultConfig.Tranches[otherVaultType].address)
+
+  const data: BarChartData = {
+    [vaultType]:apyRatio,
+    [otherVaultType]:otherVault?.aprRatio
+  }
+
+  const labels = Object.keys(data).reduce( (labels: BarChartLabels, key: BarChartKey) => {
+    return {
+      ...labels,
+      [key]: translate(strategies[key].label)
+    }
+  }, {})
+
+  const colors = Object.keys(data).reduce( (colors: BarChartColors, key: BarChartKey) => {
+    return {
+      ...colors,
+      [key]: theme.colors.strategies[key]
+    }
+  }, {})
+
+  return apyRatio ? (
+    <Flex
+      width={'90%'}
+      height={'100%'}
+      alignItems={'flex-end'}
+    >
+      <Flex
+        width={'100%'}
+        height={'12px'}
+      >
+        <BarChart data={data} labels={labels} colors={colors} />
+      </Flex>
+    </Flex>
+  ) : <Spinner size={'sm'} />
+}
+
+const Allocation: React.FC<BoxProps> = (props) => {
+
+  const { asset } = useAssetProvider()
+
+  return asset?.allocations ? (
+    <Flex
+      width={'100%'}
+      height={'100%'}
+      alignItems={'flex-end'}
+    >
+      <Flex
+        width={'100%'}
+        height={'12px'}
+      >
+        <AllocationChart assetId={asset?.id} />
+      </Flex>
+    </Flex>
+  ) : <Spinner size={'sm'} />
+}
+
 type GeneralDataProps = {
   field: string
 } & TextProps & AvatarProps & BoxProps & ThemingProps
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
-
-  const { asset } = useAssetProvider()
 
   switch (field) {
     case 'protocol':
@@ -434,8 +504,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
       return (<PoolUsd textStyle={'tableCell'} />)
     case 'apy':
       return (<Apy textStyle={'tableCell'} />)
+    // case 'apyRatio':
+    //   return (<ApyRatio textStyle={'tableCell'} />)  
     case 'apyRatio':
-      return (<ApyRatio textStyle={'tableCell'} />)  
+      return <ApyRatioChart />
     case 'apyBoost':
       return (<ApyBoost textStyle={'tableCell'} />)  
     case 'coverage':
@@ -451,14 +523,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
     case 'status':
       return (<Status size={'md'}></Status>)
     case 'allocation':
-      return (
-        <Flex
-          width={'100%'}
-          height={'16px'}
-        >
-          <AllocationChart assetId={asset?.id} />
-        </Flex>
-      )
+      return (<Allocation />)
     case 'stakingRewards':
       return (
         <StakingRewards size={'xs'}>

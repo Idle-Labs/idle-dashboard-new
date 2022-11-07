@@ -797,6 +797,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const allocationsResults = await multiCall.executeMulticalls(multiCall.getCallsFromRawCalls(lastAllocationsCalls))
 
+      // console.log('allocationsResults', allocationsResults)
+
       // Process allocations
       const allocations: Record<AssetId, Balances> = {}
       allocationsResults?.forEach( (callResult: DecodedResult) => {
@@ -804,7 +806,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
           const vault = selectVaultById(assetId)
           if (vault && ("tokenConfig" in vault) && ("protocols" in vault.tokenConfig)){
-            const protocolAddress = callResult.extraData.data.protocolAddress
+            const protocolAddress = callResult.extraData.data?.protocolAddress
+            if (!protocolAddress) return allocations
+
             const protocolInfo = vault.tokenConfig?.protocols.find( protocolInfo => protocolInfo.address.toLowerCase() === protocolAddress.toLowerCase() )
             if (!protocolInfo) return allocations
 

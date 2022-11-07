@@ -249,14 +249,14 @@ export class BestYieldVault {
         underlyingId: this.underlyingToken?.address?.toLowerCase(),
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },
-      ...(this.tokenConfig.protocols.reduce( (tokens: Assets, protocolToken) => {
-        tokens[protocolToken.address.toLowerCase()] = {
-          name:protocolToken.token,
-          token:protocolToken.token,
-          decimals:protocolToken.decimals,
-        }
-        return tokens
-      }, {}))
+      // ...(this.tokenConfig.protocols.reduce( (tokens: Assets, protocolToken) => {
+      //   tokens[protocolToken.address.toLowerCase()] = {
+      //     name:protocolToken.token,
+      //     token:protocolToken.token,
+      //     decimals:protocolToken.decimals,
+      //   }
+      //   return tokens
+      // }, {}))
     }
   }
 }

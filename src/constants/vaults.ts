@@ -1814,6 +1814,20 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
 
           }
         },
+        {
+          abi: IdleCDO as Abi,
+          enabled: true,
+          name: 'clearpool',
+          token: 'AA_clearpool_USDC',
+          address: '0xb86264c21418aa75f7c337b1821ccb4ff4d57673',
+          decimals: 18,
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xb86264c21418aa75f7c337b1821ccb4ff4d57673']
+            }
+          },
+        },
       ]
     },
     USDT: {
