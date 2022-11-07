@@ -4,8 +4,8 @@ import { ParentSize } from '@visx/responsive'
 import type { Number } from 'constants/types'
 import { BarStackHorizontal } from '@visx/shape'
 import { Amount } from 'components/Amount/Amount'
+import { useTheme, Text } from '@chakra-ui/react'
 import { SeriesPoint } from '@visx/shape/lib/types'
-import { useTheme, Text, Box } from '@chakra-ui/react'
 import { useColorModeValue } from '@chakra-ui/color-mode'
 import { scaleBand, scaleLinear, scaleOrdinal } from '@visx/scale'
 import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip'
@@ -112,58 +112,53 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
     dateScale.rangeRound([yMax, 0])
 
     return (
-      <Box>
-        <Box
-          position={'relative'}
-          height={`${height}px`}
-        >
-          <ScaleSVG width={width} height={`${height}px`}>
-            <Group top={margin.top} left={margin.left}>
-              <BarStackHorizontal<BarChartData, BarChartKey>
-                y={getDate}
-                data={[data]}
-                keys={keys}
-                height={yMax}
-                xScale={allocationScale}
-                yScale={dateScale}
-                color={colorScale}
-              >
-                {(barStacks) =>
-                  barStacks.map((barStack) =>
-                    barStack.bars.map((bar) => (
-                      <rect
-                        x={bar.x}
-                        y={bar.y}
-                        fill={bar.color}
-                        width={bar.width}
-                        height={bar.height}
-                        key={`barstack-horizontal-${barStack.index}-${bar.index}`}
-                        onClick={() => {
-                          if (events) alert(`clicked: ${JSON.stringify(bar)}`);
-                        }}
-                        onMouseLeave={() => {
-                          tooltipTimeout = window.setTimeout(() => {
-                            hideTooltip();
-                          }, 100);
-                        }}
-                        onMouseMove={() => {
-                          if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                          const top = bar.y + margin.top;
-                          const left = bar.x + bar.width + margin.left;
-                          showTooltip({
-                            tooltipData: bar,
-                            tooltipTop: top,
-                            tooltipLeft: left,
-                          });
-                        }}
-                      />
-                    )),
-                  )
-                }
-              </BarStackHorizontal>
-            </Group>
-          </ScaleSVG>
-        </Box>
+      <div style={{ position: 'relative' }}>
+        <ScaleSVG width={width} height={height}>
+          <Group top={margin.top} left={margin.left}>
+            <BarStackHorizontal<BarChartData, BarChartKey>
+              y={getDate}
+              data={[data]}
+              keys={keys}
+              height={yMax}
+              xScale={allocationScale}
+              yScale={dateScale}
+              color={colorScale}
+            >
+              {(barStacks) =>
+                barStacks.map((barStack) =>
+                  barStack.bars.map((bar) => (
+                    <rect
+                      x={bar.x}
+                      y={bar.y}
+                      fill={bar.color}
+                      width={bar.width}
+                      height={bar.height}
+                      key={`barstack-horizontal-${barStack.index}-${bar.index}`}
+                      onClick={() => {
+                        if (events) alert(`clicked: ${JSON.stringify(bar)}`);
+                      }}
+                      onMouseLeave={() => {
+                        tooltipTimeout = window.setTimeout(() => {
+                          hideTooltip();
+                        }, 100);
+                      }}
+                      onMouseMove={() => {
+                        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+                        const top = bar.y + margin.top;
+                        const left = bar.x + bar.width + margin.left;
+                        showTooltip({
+                          tooltipData: bar,
+                          tooltipTop: top,
+                          tooltipLeft: left,
+                        });
+                      }}
+                    />
+                  )),
+                )
+              }
+            </BarStackHorizontal>
+          </Group>
+        </ScaleSVG>
         {tooltipOpen && tooltipData && (
           <TooltipWithBounds
             key={Math.random()}
@@ -179,7 +174,7 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
             }
           </TooltipWithBounds>
         )}
-      </Box>
+      </div>
     )
   }
 )
@@ -193,7 +188,8 @@ export const BarChart = ({
     <ParentSize debounceTime={10}>
       { parent => (
         <BarChartWithTooltip
-          {...parent}
+          width={parent.width}
+          height={parent.height}
           data={data}
           colors={colors}
           labels={labels}
