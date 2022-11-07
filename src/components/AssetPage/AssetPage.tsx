@@ -114,7 +114,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
           <AssetProvider.DepositedUsd textStyle={['heading', 'h3']} />
           <HStack spacing={1}>
-            <AssetProvider.Deposited textStyle={'captionSmaller'} />
+            <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
@@ -126,7 +126,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Translation component={Text} translation={'defi.earnings'} textStyle={'titleSmall'} />
           <AssetProvider.EarningsUsd textStyle={['heading', 'h3']} />
           <HStack spacing={1}>
-            <AssetProvider.Earnings textStyle={'captionSmaller'} />
+            <AssetProvider.Earnings decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
@@ -138,7 +138,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
           <AssetProvider.FeesUsd textStyle={['heading', 'h3']} />
           <HStack spacing={1}>
-            <AssetProvider.Fees textStyle={'captionSmaller'} />
+            <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>

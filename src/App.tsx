@@ -1,7 +1,7 @@
 import * as React from "react"
-import { strategies } from 'constants/'
 // import { Logo } from "./Logo"
 import { HashRouter } from "react-router-dom"
+import { strategies } from 'constants/strategies'
 import { Web3Provider } from './contexts/Web3Provider'
 import { I18nProvider } from './contexts/I18nProvider'
 // import { ColorModeSwitcher } from "./ColorModeSwitcher"

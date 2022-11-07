@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
-import { strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
 import type { AssetId } from 'constants/types'
 import { VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
+import { strategies, GeneralDataField } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type AssetGeneralDataArgs = {
@@ -28,16 +28,16 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
           columns={[2, 5]}
         >
           {
-            strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (field: string) => {
+            strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => {
               return (
                 <VStack
                   spacing={2}
-                  key={`field_${field}`}
+                  key={`field_${generalData.field}`}
                   alignItems={'flex-start'}
                   justifyContent={'flex-start'}
                 >
-                  <Translation component={Text} translation={`assets.assetDetails.generalData.${field}`} textStyle={'captionSmall'} />
-                  <AssetProvider.GeneralData field={field} />
+                  <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+                  <AssetProvider.GeneralData field={generalData.field} />
                 </VStack>
               )
             })
@@ -53,16 +53,16 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
               borderTopColor={'divider'}
             >
               {
-                strategy?.generalDataFields.slice(5).map( (field: string) => {
+                strategy?.generalDataFields.slice(5).map( (generalData: GeneralDataField) => {
                   return (
                     <VStack
                       spacing={2}
-                      key={`field_${field}`}
+                      key={`field_${generalData.field}`}
                       alignItems={'flex-start'}
                       justifyContent={'flex-start'}
                     >
-                      <Translation component={Text} translation={`assets.assetDetails.generalData.${field}`} textStyle={'captionSmall'} />
-                      <AssetProvider.GeneralData field={field} />
+                      <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+                      <AssetProvider.GeneralData field={generalData.field} />
                     </VStack>
                   )
                 })

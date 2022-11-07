@@ -1,5 +1,10 @@
 import { strategiesFolder } from 'constants/folders'
 
+export type GeneralDataField = {
+  field: string
+  label: string
+}
+
 export type StrategyProps = {
   bg: string
   route: string
@@ -7,10 +12,10 @@ export type StrategyProps = {
   image: string
   description: string
   showProtocol: boolean
-  generalDataFields: string[]
+  generalDataFields: GeneralDataField[]
 }
 
-export const strategies:Record<string, StrategyProps> = {
+export const strategies: Record<string, StrategyProps> = {
   BY:{
     route:'best-yield',
     showProtocol: false,
@@ -18,7 +23,28 @@ export const strategies:Record<string, StrategyProps> = {
     description:'strategies.best.description',
     image: `${strategiesFolder}best-yield.png`,
     bg: `${strategiesFolder}best-yield-bg.svg`,
-    generalDataFields:['protocol', 'pool', 'apy', 'rewards', 'allocation']
+    generalDataFields:[
+      {
+        field: 'protocol',
+        label: 'assets.assetDetails.generalData.protocol'
+      },
+      {
+        field:'pool',
+        label:'assets.assetDetails.generalData.pool'
+      },
+      {
+        field:'apy',
+        label:'assets.assetDetails.generalData.apy'
+      },
+      {
+        field:'rewards',
+        label:'assets.assetDetails.generalData.rewards'
+      },
+      {
+        field:'allocation',
+        label:'assets.assetDetails.generalData.allocation'
+      }
+    ]
   },
   AA:{
     showProtocol: true,
@@ -27,7 +53,44 @@ export const strategies:Record<string, StrategyProps> = {
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
-    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'performanceFee', 'status', 'pool', 'apy', 'apyRatio', 'coverage']
+    generalDataFields:[
+      {
+        field: 'protocol',
+        label: 'assets.assetDetails.generalData.protocol'
+      },
+      {
+        field:'stakingRewards',
+        label:'assets.assetDetails.generalData.stakingRewards'
+      },
+      {
+        field:'autoCompounding',
+        label:'assets.assetDetails.generalData.autoCompounding'
+      },
+      {
+        field:'performanceFee',
+        label:'assets.assetDetails.generalData.performanceFee'
+      },
+      {
+        field:'status',
+        label:'assets.assetDetails.generalData.status'
+      },
+      {
+        field:'pool',
+        label:'assets.assetDetails.generalData.pool'
+      },
+      {
+        field:'apy',
+        label:'assets.assetDetails.generalData.apy'
+      },
+      {
+        field:'apyRatio',
+        label:'assets.assetDetails.generalData.apyRatio'
+      },
+      {
+        field:'coverage',
+        label:'assets.assetDetails.generalData.coverage'
+      }
+    ]
   },
   BB:{
     showProtocol: true,
@@ -36,6 +99,43 @@ export const strategies:Record<string, StrategyProps> = {
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
-    generalDataFields:['protocol', 'stakingRewards', 'autoCompounding', 'performanceFee', 'status', 'pool', 'apy', 'apyRatio', 'apyBoost']
+    generalDataFields:[
+      {
+        field: 'protocol',
+        label: 'assets.assetDetails.generalData.protocol'
+      },
+      {
+        field:'stakingRewards',
+        label:'assets.assetDetails.generalData.stakingRewards'
+      },
+      {
+        field:'autoCompounding',
+        label:'assets.assetDetails.generalData.autoCompounding'
+      },
+      {
+        field:'performanceFee',
+        label:'assets.assetDetails.generalData.performanceFee'
+      },
+      {
+        field:'status',
+        label:'assets.assetDetails.generalData.status'
+      },
+      {
+        field:'pool',
+        label:'assets.assetDetails.generalData.pool'
+      },
+      {
+        field:'apy',
+        label:'assets.assetDetails.generalData.apy'
+      },
+      {
+        field:'apyRatio',
+        label:'assets.assetDetails.generalData.apyRatio'
+      },
+      {
+        field:'apyBoost',
+        label:'assets.assetDetails.generalData.apyBoost'
+      }
+    ]
   },
 }

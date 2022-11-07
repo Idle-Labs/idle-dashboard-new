@@ -1,12 +1,12 @@
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
-import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { RateChart } from 'components/RateChart/RateChart'
 import { BNify, apr2apy, abbreviateNumber } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
+import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
 import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, HStack, Tag } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
@@ -236,7 +236,7 @@ const Rewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
   )
 }
 
-const Balance: React.FC<TextProps> = (props) => {
+const Balance: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.balance ? (
@@ -244,7 +244,7 @@ const Balance: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Earnings: React.FC<TextProps> = (props) => {
+const Earnings: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.underlying.earnings ? (
@@ -252,7 +252,7 @@ const Earnings: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const EarningsUsd: React.FC<TextProps> = (props) => {
+const EarningsUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.usd.earnings ? (
@@ -260,7 +260,7 @@ const EarningsUsd: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const BalanceUsd: React.FC<TextProps> = (props) => {
+const BalanceUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.usd.redeemable ? (
@@ -268,7 +268,7 @@ const BalanceUsd: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const EarningsPerc: React.FC<TextProps> = (props) => {
+const EarningsPerc: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.earningsPercentage ? (
@@ -276,7 +276,7 @@ const EarningsPerc: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const DepositedUsd: React.FC<TextProps> = (props) => {
+const DepositedUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.usd.deposited ? (
@@ -284,7 +284,7 @@ const DepositedUsd: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Deposited: React.FC<TextProps> = (props) => {
+const Deposited: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.underlying.deposited ? (
@@ -292,7 +292,7 @@ const Deposited: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Apr: React.FC<TextProps> = (props) => {
+const Apr: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.apr ? (
@@ -300,7 +300,7 @@ const Apr: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Apy: React.FC<TextProps> = (props) => {
+const Apy: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.apy ? (
@@ -308,7 +308,7 @@ const Apy: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const ApyRatio: React.FC<TextProps> = (props) => {
+const ApyRatio: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.aprRatio ? (
@@ -316,17 +316,17 @@ const ApyRatio: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const ApyBoost: React.FC<TextProps> = (props) => {
+const ApyBoost: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const apyBoost = asset?.apy && asset?.baseApr?.gt(0) ? asset?.apy.div(asset?.baseApr) : BNify(0)
   
   return asset?.apy && asset?.baseApr ? (
-    <Amount suffix={'x'} maxDecimals={2} value={apyBoost} {...props} />
+    <Amount suffix={'x'} decimals={2} value={apyBoost} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
-const RealizedApy: React.FC<TextProps> = (props) => {
+const RealizedApy: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const realizedApy = asset?.vaultPosition?.earningsPercentage && asset?.vaultPosition?.depositDuration ? apr2apy(asset?.vaultPosition?.earningsPercentage.times(31536000).div(asset?.vaultPosition?.depositDuration)).times(100) : BNify(0);
@@ -337,7 +337,7 @@ const RealizedApy: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const FeesUsd: React.FC<TextProps> = (props) => {
+const FeesUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const feeUsd = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset.vaultPosition.usd.earnings).times(asset.fee) : BNify(0)
@@ -347,7 +347,7 @@ const FeesUsd: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const PerformanceFee: React.FC<TextProps> = (props) => {
+const PerformanceFee: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.fee ? (
@@ -355,7 +355,7 @@ const PerformanceFee: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Fees: React.FC<TextProps> = (props) => {
+const Fees: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const fee = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset.vaultPosition.underlying.earnings).times(asset.fee) : BNify(0)
@@ -365,7 +365,7 @@ const Fees: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const PoolUsd: React.FC<TextProps> = (props) => {
+const PoolUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.tvlUsd ? (
@@ -373,7 +373,7 @@ const PoolUsd: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Status: React.FC<TextProps> = (props) => {
+const Status: React.FC<AmountProps> = (props) => {
   const { asset, translate } = useAssetProvider()
 
   if (!asset?.status) return null
@@ -387,7 +387,7 @@ const Status: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Coverage: React.FC<TextProps> = (props) => {
+const Coverage: React.FC<AmountProps> = (props) => {
   const { asset, vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 

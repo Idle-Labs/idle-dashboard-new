@@ -3,15 +3,15 @@ import type { Number } from 'constants/types'
 import { Text, TextProps } from '@chakra-ui/react'
 import { abbreviateNumber, numberToPercentage, isBigNumberNaN } from 'helpers/'
 
-type AmountProps = {
+export type AmountProps = {
   value?: Number
   prefix?: string | React.ReactElement
   suffix?: string | React.ReactElement
-  maxDecimals?: number
+  decimals?: number
   abbreviate?: boolean
 } & TextProps
 
-type PercentageProps = {
+export type PercentageProps = {
   maxValue?: number
 } & AmountProps
 
@@ -19,11 +19,11 @@ export const Amount = ({
   value,
   prefix = '',
   suffix = '',
-  maxDecimals,
+  decimals,
   abbreviate = true,
   ...props
 }: AmountProps) => {
-  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' ? value : (abbreviate ? abbreviateNumber(value, maxDecimals) : value))
+  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' ? value : (abbreviate ? abbreviateNumber(value, decimals) : value))
   return (
     <Text {...props}>
       {prefix}
