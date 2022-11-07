@@ -83,17 +83,17 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.apy'
       },
       {
-        field:'apyRatio',
-        label:'assets.assetDetails.generalData.apyRatio'
-      },
-      {
         field:'coverage',
         label:'assets.assetDetails.generalData.coverage'
       },
       {
         field:'lastHarvest',
         label:'assets.assetDetails.generalData.lastHarvest'
-      }
+      },
+      {
+        field:'apyRatio',
+        label:'assets.assetDetails.generalData.apyRatio'
+      },
     ]
   },
   BB:{
@@ -133,17 +133,17 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.apy'
       },
       {
-        field:'apyRatio',
-        label:'assets.assetDetails.generalData.apyRatio'
-      },
-      {
         field:'apyBoost',
         label:'assets.assetDetails.generalData.apyBoost'
       },
       {
         field:'lastHarvest',
         label:'assets.assetDetails.generalData.lastHarvest'
-      }
+      },
+      {
+        field:'apyRatio',
+        label:'assets.assetDetails.generalData.apyRatio'
+      },
     ]
   },
 }

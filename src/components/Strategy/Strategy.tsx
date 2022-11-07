@@ -242,6 +242,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       },
       sortType: sortNumeric
     },
+    /*
     {
       accessor: 'id',
       canSort: false,
@@ -260,6 +261,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         )
       }
     },
+    */
     {
       accessor:'apr',
       Header:translate('defi.apy'),

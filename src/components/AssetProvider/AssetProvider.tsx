@@ -104,6 +104,7 @@ const Icon: React.FC<IconProps> = ({
   const avatar = useMemo(() => (
     <Avatar
       src={asset?.icon}
+      icon={<BsQuestion size={24} />}
       {...props}
     />
   ), [asset, props])
@@ -540,7 +541,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
     // case 'apyRatio':
     //   return (<ApyRatio textStyle={'tableCell'} />)  
     case 'apyRatio':
-      return <ApyRatioChart width={'80%'} />
+      return <ApyRatioChart width={'100%'} />
     case 'apyBoost':
       return (<ApyBoost textStyle={'tableCell'} />)  
     case 'coverage':

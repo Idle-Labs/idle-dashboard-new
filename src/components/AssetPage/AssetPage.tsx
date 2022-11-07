@@ -224,7 +224,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   isRainbowChart={false}
                   assetIds={[params.asset]}
                   setPercentChange={() => {}}
-                  margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
+                  margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
                 />
               </Card.Dark>
             </Box>
