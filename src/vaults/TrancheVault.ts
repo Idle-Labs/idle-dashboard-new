@@ -1,11 +1,13 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
+import type { Number } from 'constants/types'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
+import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContract } from 'contracts/GenericContract'
-import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncForEach } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 export class TrancheVault {
@@ -288,5 +290,20 @@ export class TrancheVault {
         decimals: this.trancheConfig.decimals
       },
     }
+  }
+
+  // Transactions
+
+  public getAllowanceOwner() {
+    return this.cdoConfig.address
+  }
+
+  public getDepositParams(amount: Number): any[] {
+    const decimals = this.underlyingToken?.decimals || 18
+    return [normalizeTokenAmount(amount, decimals)]
+  }
+
+  public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.cdoContract.methods[`deposit${this.type}`](...params)
   }
 }

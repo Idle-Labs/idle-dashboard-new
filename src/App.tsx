@@ -2,13 +2,14 @@ import * as React from "react"
 // import { Logo } from "./Logo"
 import { HashRouter } from "react-router-dom"
 import { strategies } from 'constants/strategies'
-import { Web3Provider } from './contexts/Web3Provider'
-import { I18nProvider } from './contexts/I18nProvider'
+import { Web3Provider } from 'contexts/Web3Provider'
+import { I18nProvider } from 'contexts/I18nProvider'
 // import { ColorModeSwitcher } from "./ColorModeSwitcher"
-import { WalletProvider } from './contexts/WalletProvider'
+import { WalletProvider } from 'contexts/WalletProvider'
 import { ChakraProvider, extendTheme } from "@chakra-ui/react"
-import { PortfolioProvider } from './contexts/PortfolioProvider'
-import { BrowserRouterProvider } from './contexts/BrowserRouterProvider'
+import { PortfolioProvider } from 'contexts/PortfolioProvider'
+import { BrowserRouterProvider } from 'contexts/BrowserRouterProvider'
+import { TransactionManagerProvider } from 'contexts/TransactionManagerProvider'
 
 const theme = extendTheme({
   config: {
@@ -281,11 +282,17 @@ const theme = extendTheme({
       cursor:'pointer',
       fontFamily: 'heading',
       _selected: {
-        color:'white'
+        color:'primary'
       },
       _hover: {
-        color:'white'
+        color:'primary'
       }
+    },
+    ctaStatic: {
+      fontSize:'md',
+      fontWeight:700,
+      color:'primary',
+      fontFamily: 'heading'
     },
     semiBold:{
       fontWeight:600
@@ -486,7 +493,9 @@ export const App = () => (
         <WalletProvider>
           <Web3Provider>
             <PortfolioProvider>
-              <BrowserRouterProvider />
+              <TransactionManagerProvider>
+                <BrowserRouterProvider />
+              </TransactionManagerProvider>
             </PortfolioProvider>
           </Web3Provider>
         </WalletProvider>

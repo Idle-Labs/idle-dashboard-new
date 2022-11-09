@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js'
 import dayjs, { ManipulateType } from 'dayjs'
 import { HistoryTimeframe } from 'constants/types'
 

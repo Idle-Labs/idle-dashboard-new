@@ -19,6 +19,11 @@ export type VaultAdditionalApr = {
   apr: BigNumber
 }
 
+export type ReducerActionTypes = {
+  type: string,
+  payload: any
+}
+
 export type VaultHistoricalRates = {
   vaultId: string
   rates: HistoryData[]

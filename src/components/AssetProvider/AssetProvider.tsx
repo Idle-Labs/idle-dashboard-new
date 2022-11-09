@@ -3,6 +3,7 @@ import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
+import { UnderlyingToken } from 'vaults/UnderlyingToken'
 // import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
 import { BNify, apr2apy, abbreviateNumber } from 'helpers/'
@@ -12,8 +13,8 @@ import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
 import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
-import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
+import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 
 type AssetCellProps = {
   assetId: string | undefined
@@ -28,6 +29,7 @@ type ContextProps = {
   asset: Asset | null
   vault: Vault | null
   underlyingAsset: Asset | null
+  underlyingAssetVault: UnderlyingToken | null
   translate: Function
   theme: any
 }
@@ -36,6 +38,7 @@ const initialState = {
   assetId: null,
   asset: null,
   underlyingAsset: null,
+  underlyingAssetVault: null,
   vault: null,
   translate: () => {},
   theme: null
@@ -65,8 +68,13 @@ export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
     return selectAssetById(asset.underlyingId)
   }, [asset, selectAssetById])
 
+  const underlyingAssetVault = useMemo(() => {
+    if (!selectVaultById || !asset?.underlyingId) return null
+    return selectVaultById(asset.underlyingId)
+  }, [asset, selectVaultById])
+
   return (
-    <AssetContext.Provider value={{asset, vault, underlyingAsset, assetId, translate, theme}}>
+    <AssetContext.Provider value={{asset, vault, underlyingAsset, underlyingAssetVault, assetId, translate, theme}}>
       <Flex {...rest}>
         {children}
       </Flex>

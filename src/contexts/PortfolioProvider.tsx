@@ -4,7 +4,7 @@ import { GaugeVault } from 'vaults/GaugeVault'
 import useLocalForge from 'hooks/useLocalForge'
 import { useWeb3Provider } from './Web3Provider'
 import { TrancheVault } from 'vaults/TrancheVault'
-import type { ProviderProps, } from './common/types'
+import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
@@ -16,7 +16,7 @@ import type { GenericContractConfig, UnderlyingTokenProps } from 'constants/'
 import React, { useContext, useEffect, useCallback, useReducer } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
-import type { Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
+import type { ReducerActionTypes, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
 type InitialState = {
   aprs: Balances
@@ -39,11 +39,6 @@ type InitialState = {
 
 type ContextProps = InitialState
 
-type ActionTypes = {
-  type: string,
-  payload: any
-}
-
 const initialState: InitialState = {
   aprs: {},
   vaults: [],
@@ -65,7 +60,7 @@ const initialState: InitialState = {
 
 const initialContextState = initialState
 
-const reducer = (state: InitialState, action: ActionTypes) => {
+const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
   // console.log(action.type, action.payload)
 
@@ -301,6 +296,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
     
     const assetsData = generateAssetsData(allVaults)
+
+    console.log('bestYieldVaults', bestYieldVaults)
 
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
@@ -716,7 +713,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getFeesCalls" in vault) ? vault.getFeesCalls() : [],
         ("getAprRatioCalls" in vault) ? vault.getAprRatioCalls() : [],
         ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : [],
-        ("getProtocolsCalls" in vault) ? vault.getProtocolsCalls() : []
+        ("getProtocolsCalls" in vault) ? vault.getProtocolsCalls() : [],
+        // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
       ]
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
