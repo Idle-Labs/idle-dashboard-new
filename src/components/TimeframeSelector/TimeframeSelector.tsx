@@ -8,7 +8,6 @@ type TimeframeSelectorArgs = {
 }
 
 export const TimeframeSelector: React.FC<TimeframeSelectorArgs> = ({ timeframe: selectedTimeframe, setTimeframe }) => {
-
   return (
     <HStack
       spacing={[6, 10]}

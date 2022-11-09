@@ -371,6 +371,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [depositedAssetsColumns, depositedAssetsData, onRowClick])
 
   const availableAssets = useMemo(() => {
+    if (isPortfolioLoaded && !availableAssetsData.length) return null
 
     const initialState = {
       sortBy: [
@@ -397,7 +398,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </Card>
     )
-  }, [availableAssetsColumns, availableAssetsData, onRowClick])
+  }, [isPortfolioLoaded, availableAssetsColumns, availableAssetsData, onRowClick])
 
   const heading = useMemo(() => {
     if (!strategy) return null

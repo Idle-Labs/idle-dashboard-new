@@ -35,5 +35,13 @@ export const Dark = (props: CardProps) => {
   )
 }
 
+export const Outline = (props: CardProps) => {
+  const { children, ...rest } = props
+  return (
+    <Card {...rest} layerStyle={'cardOutline'}>{children}</Card>
+  )
+}
+
 Card.Dark = Dark
+Card.Outline = Outline
 Card.Heading = HeadingTitle

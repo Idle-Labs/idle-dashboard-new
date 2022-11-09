@@ -13,6 +13,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
+import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, StatArrow, SkeletonText } from '@chakra-ui/react'
 
@@ -53,7 +54,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const chartHeading = useMemo(() => {
     const earningsPercentage = hasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
     const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
-    const apy = earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
+    const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
     return (
       <VStack
         spacing={1}
@@ -176,9 +177,9 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             direction={['column', 'row']}
           >
             <Stack
-                direction={'row'}
-                alignItems={'center'}
-              >
+              direction={'row'}
+              alignItems={'center'}
+            >
               <AssetProvider.Icon size={'sm'} />
               <AssetProvider.Name textStyle={'h2'} />
             </Stack>
@@ -193,10 +194,14 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             </Tabs>
           </Stack>
         </Flex>
-        <Box>
+        <HStack
+          spacing={10}
+          alignItems={'space-between'}
+        >
           <Stack
+            flex={1}
             spacing={10}
-            width={['100%', 2/3]}
+            width={['100%', 14/20]}
           >
             <Box>
               <Flex mb={6}>
@@ -231,7 +236,12 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             {fundsOverview}
             <AssetGeneralData assetId={asset?.id} />
           </Stack>
-        </Box>
+          <Box
+            width={[0, '27em']}
+          >
+            <OperativeComponent />
+          </Box>
+        </HStack>
       </Box>
     </AssetProvider>
   )

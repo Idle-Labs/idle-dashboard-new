@@ -1648,7 +1648,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       }
     },
     ribbon:{
-      USDC:{
+      USDCFolk:{
         protocol:'ribbon',
         autoFarming:['RBN'],
         enabledEnvs:['beta'],
@@ -1729,6 +1729,94 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_ribbon_USDC',
             label:'ribbon USDC BB',
             address:'0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C'
+          }
+        }
+      },
+      USDCWin:{
+        protocol:'ribbon',
+        autoFarming:['RBN'],
+        // lender:'wintermute',
+        enabledEnvs:['beta'],
+        blockNumber:15925109,
+        underlyingToken:'USDC',
+        // maxUtilizationRate:0.99,
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_ribbon_wintermute_USDC',
+          address:'0xf6B692CC9A5421E4C66D32511d65F94c64fbD043'
+        },
+        Pool:{
+          abi:RibbonPool as Abi,
+          name:'Pool_ribbon_wintermute_USDC',
+          address:'0x0Aea75705Be8281f4c24c3E954D1F8b1D0f8044C'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_ribbon_wintermute_USDC',
+          address:'0x73f3fb86cb579eeea9d482df2e91b6770a42fd6a'
+        },
+        // links:{
+        //   default:'https://docs.ribbon.finance/ribbon-lend/introduction-to-ribbon-lend/no-lockups/pool-status',
+        // },
+        description:'This strategy deploys funds in the <a href="https://lend.ribbon.finance/app/pool/wintermute" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Wintermute USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches: {
+          AA:{
+            decimals:18,
+            abi:ERC20 as Abi,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf',
+              utilizationRate:'getUtilizationRate'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_ribbon_wintermute_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15925109,
+            name:'AA_ribbon_wintermute_USDC',
+            token:'AA_ribbon_wintermute_USDC',
+            label:'Ribbon Wintermute USDC AA',
+            address:'0x3e041C9980Bc03011cc30491d0c4ccD53602F89B'
+          },
+          BB:{
+            decimals:18,
+            abi:ERC20 as Abi,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes',
+              utilizationRate:'getUtilizationRate'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_ribbon_wintermute_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15925109,
+            name:'BB_ribbon_wintermute_USDC',
+            token:'BB_ribbon_wintermute_USDC',
+            label:'Ribbon Wintermute USDC BB',
+            address:'0x65237B6Fc6E62B05B62f1EbE53eDAadcCd1684Ad'
           }
         }
       },

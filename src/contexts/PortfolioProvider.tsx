@@ -796,13 +796,22 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('protocolsResults', protocolsResults)
       // console.log('vaultsLastHarvests', vaultsLastHarvests)
 
+      const assetsData: Assets = {
+        ...state.assetsData
+      }
+
       // Process last harvest blocks
       Object.values<CdoLastHarvest>(vaultsLastHarvests).forEach( (lastHarvest: CdoLastHarvest) => {
         const cdoId = lastHarvest.cdoId
         const vaults = state.vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
         vaults.forEach( (vault: Vault) => {
           const assetId = vault.id
-          dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { lastHarvest: lastHarvest.harvest || null } }})
+
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+           lastHarvest: lastHarvest.harvest || null 
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { lastHarvest: lastHarvest.harvest || null } }})
         })
       })
 
@@ -852,7 +861,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // Set allocations
       Object.keys(allocations).forEach( (assetId: AssetId) => {
-        dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { allocations: allocations[assetId] } }})
+        assetsData[assetId] = {
+          ...assetsData[assetId],
+          allocations: allocations[assetId]
+        }
+        // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { allocations: allocations[assetId] } }})
       })
 
       // Process Apr Ratio
@@ -863,7 +876,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             const trancheAPRSplitRatio = BNify(callResult.data.toString()).div(`1e03`)
             const aprRatio = asset.type === 'AA' ? trancheAPRSplitRatio : BNify(100).minus(trancheAPRSplitRatio)
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { aprRatio } }})
+
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              aprRatio
+            }
+
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { aprRatio } }})
           }
         }
       })
@@ -882,7 +901,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
               baseApr = baseApr.plus(vaultAdditionalBaseApr.apr)
             }
 
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { baseApr } }})
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              baseApr
+            }
+
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { baseApr } }})
           }
         }
       })
@@ -894,11 +918,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const asset = selectAssetById(assetId)
           if (asset){
             const fee = BNify(callResult.data.toString()).div(`1e05`)
-            // assetsData[assetId] = {
-            //   ...assetsData[assetId],
-            //   fee
-            // }
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { fee } }})
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              fee
+            }
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { fee } }})
           }
         }
       })
@@ -910,11 +934,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (asset){
             balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
             // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
-            // assetsData[assetId] = {
-            //   ...assetsData[assetId],
-            //   balance: balances[assetId]
-            // }
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              balance: balances[assetId]
+            }
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
           }
         }
         return balances
@@ -928,29 +952,35 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const decimals = callResult.extraData.decimals || asset.decimals
             vaultsPrices[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
             // console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
-            // assetsData[assetId] = {
-            //   ...assetsData[assetId],
-            //   vaultPrice: vaultsPrices[assetId]
-            // }
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPrice: vaultsPrices[assetId]} }})
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              vaultPrice: vaultsPrices[assetId]
+            }
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPrice: vaultsPrices[assetId]} }})
           }
         }
         return vaultsPrices
       }, {})
 
       const pricesUsd = pricesUsdCallsResults.reduce( (pricesUsd: Balances, callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            pricesUsd[assetId] = callResult.extraData.params.processResults(callResult.data, callResult.extraData.params)
-            // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
-            // assetsData[assetId] = {
-            //   ...assetsData[assetId],
-            //   priceUsd: pricesUsd[assetId]
-            // }
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {priceUsd: pricesUsd[assetId]} }})
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          pricesUsd[assetId] = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
+          // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            priceUsd: pricesUsd[assetId]
           }
+
+          if (asset.underlyingId){
+            assetsData[asset.underlyingId] = {
+              ...assetsData[asset.underlyingId],
+              priceUsd: pricesUsd[asset.underlyingId]
+            }
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {priceUsd: pricesUsd[assetId]} }})
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId: asset.underlyingId, assetData: {priceUsd: pricesUsd[assetId]} }})
         }
         return pricesUsd
       }, {})
@@ -972,13 +1002,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const apy = apr2apy(aprs[assetId].div(100)).times(100)
 
             // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-            // assetsData[assetId] = {
-            //   ...assetsData[assetId],
-            //   priceUsd: pricesUsd[assetId],
-            //   apr: aprs[assetId],
-            //   apy
-            // }
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId], apy} }})
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              apr: aprs[assetId],
+              apy
+            }
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId], apy} }})
           }
         }
         return aprs
@@ -992,12 +1021,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const decimals = callResult.extraData.decimals || asset.decimals
             totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
             // console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
-            // assetsData[assetId] = {
-            //   ...assetsData[assetId],
-            //   priceUsd: pricesUsd[assetId],
-            //   totalSupply: totalSupplies[assetId]
-            // }
-            dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {totalSupply: totalSupplies[assetId]} }})
+            assetsData[assetId] = {
+              ...assetsData[assetId],
+              totalSupply: totalSupplies[assetId]
+            }
+            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {totalSupply: totalSupplies[assetId]} }})
           }
         }
         return totalSupplies
@@ -1005,7 +1033,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // console.log('assetsData', assetsData)
       // Set assets data one time instead of updating for every asset
-      // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
+      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
 
       // console.log('aprs', aprs)
       // console.log('balances', balances)

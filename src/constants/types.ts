@@ -122,7 +122,7 @@ export type Asset = {
   decimals: number
   color?: string
   status?: string
-  lastHarvest?: Harvest
+  lastHarvest?: Harvest | null
   underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber

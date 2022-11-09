@@ -66,7 +66,7 @@ export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
   return output
 }
 
-export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) => {
+export const abbreviateNumber = (value: any, decimals: number = 2, maxPrecision: number = 5, minPrecision: number = 0) => {
 
   const isNegative = parseFloat(value) < 0;
   let newValue: any = BNify(value).abs();
@@ -101,7 +101,8 @@ export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, min
     newValue = '-' + newValue;
   }
 
-  newValue += suffixes[suffixNum];
+  const suffix = suffixNum>=suffixes.length ? '' : suffixes[suffixNum];
+  newValue += suffix;
 
   return newValue;
 }

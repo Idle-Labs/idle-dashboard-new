@@ -51,14 +51,18 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
     }
   }, [data])
 
+  const loading = useMemo(() => {
+    return !chartData.rainbow.length
+  }, [chartData])
+
   return (
     <Box p={0} height={'350px'}>
       <Graph
         color={color}
-        loading={!data}
         data={chartData}
+        loading={loading}
         margins={margins}
-        isLoaded={!!data}
+        isLoaded={!loading}
         formatFn={formatFn}
         isRainbowChart={isRainbowChart}
       />

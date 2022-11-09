@@ -85,12 +85,18 @@ const theme = extendTheme({
     status:{
       production:'#00AE8F'
     },
+    brightGreen: '#4DE3B0',
     strategies: {
       BY: '#6AE4FF',
       AA: '#4DE3B0',
       BB: '#FFD15C',
     },
-    button:{
+    tab: {
+      color: '#555B67',
+      bgSelected: '#323D53',
+      colorSelected: '#FFFFFF'
+    },
+    button: {
       bg:'#404F6A',
       bgHover:'#293243',
       colorHover:'#CDD0D6'
@@ -98,6 +104,7 @@ const theme = extendTheme({
     card:{
       bg:'#202A3E',
       bgDark:'#1B1E27',
+      bgLight:'#323D53',
       borderColor:'#555B67'
     },
     chart:{
@@ -116,12 +123,13 @@ const theme = extendTheme({
     divider:'#555B67',
     primary:'#FFFFFF',
     buttonBg:'#404F6A',
-    secondary:'#0C48A4',
     tertiary:'#2272C8',
+    secondary:'#0C48A4',
+    nearBlack:'#1B1E27',
   },
   fontSizes: {
     xxs:'11px',
-    xs:'12px',
+    xs:'13px',
     sm:'14px',
     md:'16px',
     lg:'20px',
@@ -197,6 +205,21 @@ const theme = extendTheme({
       borderRadius:8,
       backgroundColor:'card.bg'
     },
+    cardOutline: {
+      p:8,
+      borderRadius:8,
+      borderWidth:'1px',
+      borderStyle:'solid',
+      borderColor:'card.borderColor',
+    },
+    cardLight: {
+      p:8,
+      borderRadius:8,
+      borderWidth:'1px',
+      borderStyle:'solid',
+      borderColor:'card.borderColor',
+      backgroundColor:'card.bgLight',
+    },
     cardDark: {
       p:8,
       borderRadius:8,
@@ -264,6 +287,12 @@ const theme = extendTheme({
         color:'white'
       }
     },
+    semiBold:{
+      fontWeight:600
+    },
+    bold:{
+      fontWeight:700
+    },
     dark: {
       color: '#555B67'
     }
@@ -272,6 +301,19 @@ const theme = extendTheme({
   components: {
     Tag: {
       variants: {
+      }
+    },
+    Input: {
+      variants: {
+        balance: {
+          field: {
+            p:0,
+            border:0,
+            outline: 'none',
+            textStyle: ['heading', 'h3'],
+            backgroundColor: 'transparent',
+          }
+        }
       }
     },
     Skeleton: {
@@ -298,6 +340,35 @@ const theme = extendTheme({
     },
     Button: {
       variants: {
+        ctaFull:{
+          height:12,
+          bg:'primary',
+          width:'100%',
+          textStyle:'cta',
+          color:'nearBlack'
+        },
+        selector:{
+          px:2,
+          py:1,
+          height:'auto',
+          fontSize:'xs',
+          fontWeight:700,
+          borderRadius:8,
+          textStyle:'cta',
+          borderWidth:'1px',
+          borderStyle:'solid',
+          color:'ctaDisabled',
+          borderColor:'ctaDisabled',
+          backgroundColor:'transparent',
+          _hover: {
+            color:'primary',
+            borderColor:'primary',
+          },
+          _selected: {
+            color:'primary',
+            borderColor:'primary',
+          }
+        },
         cta:{
           borderRadius:8,
           backgroundColor:'button.bg',
@@ -320,6 +391,26 @@ const theme = extendTheme({
           }
         },
       },
+      variants: {
+        button:{
+          tab: {
+            borderRadius:8,
+            borderBottom:0,
+            textStyle:'cta',
+            color:'tab.color',
+            backgroundColor:'transparent',
+            _selected: {
+              borderBottom:0,
+              color:'tab.colorSelected',
+              backgroundColor:'tab.bgSelected',
+            },
+            _hover: {
+              borderBottom:0,
+              color:'tab.colorSelected',
+            }
+          }
+        }
+      }
     },
     Menu: {
       baseStyle: {

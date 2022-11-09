@@ -10,14 +10,14 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
-import type { BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
+import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
 import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 
 type AssetCellProps = {
   assetId: string | undefined
-} & BoxProps & ThemingProps
+} & FlexProps & ThemingProps
 
 // type LogoProps = AssetProps & {
 //   [x: string]: any
@@ -27,6 +27,7 @@ type ContextProps = {
   assetId: string | null | undefined
   asset: Asset | null
   vault: Vault | null
+  underlyingAsset: Asset | null
   translate: Function
   theme: any
 }
@@ -34,6 +35,7 @@ type ContextProps = {
 const initialState = {
   assetId: null,
   asset: null,
+  underlyingAsset: null,
   vault: null,
   translate: () => {},
   theme: null
@@ -41,7 +43,7 @@ const initialState = {
 
 const AssetContext = createContext<ContextProps>(initialState)
 
-const useAssetProvider = () => useContext(AssetContext)
+export const useAssetProvider = () => useContext(AssetContext)
 
 export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
   const theme = useTheme()
@@ -58,9 +60,14 @@ export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
     return selectVaultById(assetId)
   }, [assetId, selectVaultById])
 
+  const underlyingAsset = useMemo(() => {
+    if (!selectAssetById || !asset?.underlyingId) return null
+    return selectAssetById(asset.underlyingId)
+  }, [asset, selectAssetById])
+
   return (
-    <AssetContext.Provider value={{asset, vault, assetId, translate, theme}}>
-      <Flex>
+    <AssetContext.Provider value={{asset, vault, underlyingAsset, assetId, translate, theme}}>
+      <Flex {...rest}>
         {children}
       </Flex>
     </AssetContext.Provider>
@@ -601,4 +608,5 @@ AssetProvider.ProtocolName = ProtocolName
 AssetProvider.ProtocolIcon = ProtocolIcon
 AssetProvider.ApyRatioChart = ApyRatioChart
 AssetProvider.StakingRewards = StakingRewards
+AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
