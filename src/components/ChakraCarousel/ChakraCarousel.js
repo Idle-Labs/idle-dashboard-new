@@ -355,12 +355,12 @@ const Track = ({
   useEffect(() => {
     handleResize(positions);
 
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("mousedown", handleClick);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("mousedown", handleClick);
-    };
+    // document.addEventListener("keydown", handleKeyDown);
+    // document.addEventListener("mousedown", handleClick);
+    // return () => {
+    //   document.removeEventListener("keydown", handleKeyDown);
+    //   document.removeEventListener("mousedown", handleClick);
+    // };
   }, [handleClick, handleResize, handleKeyDown, positions]);
 
   return (

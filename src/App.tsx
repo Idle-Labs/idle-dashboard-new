@@ -297,6 +297,12 @@ const theme = extendTheme({
     semiBold:{
       fontWeight:600
     },
+    active:{
+      color:'primary'
+    },
+    inactive:{
+      color: '#555B67'
+    },
     bold:{
       fontWeight:700
     },
@@ -308,6 +314,11 @@ const theme = extendTheme({
   components: {
     Tag: {
       variants: {
+      }
+    },
+    Switch: {
+      baseStyle : {
+        outline: 'none'
       }
     },
     Input: {

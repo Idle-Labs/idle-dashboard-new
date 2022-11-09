@@ -5,18 +5,19 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { MdOutlineLocalGasStation, MdKeyboardArrowLeft } from 'react-icons/md'
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner } from 'helpers/'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BoxProps, useTheme, Center, Box, Flex, VStack, HStack, Text, Button, Tabs, TabList, Tab, Input } from '@chakra-ui/react'
+import { MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen } from 'react-icons/md'
+import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, Text, Button, Tabs, TabList, Tab, Input } from '@chakra-ui/react'
 
 type ActionComponentProps = {
   setActiveItem: Function
 } & BoxProps
 
 const Approve: React.FC<ActionComponentProps> = ({ children }) => {
-  const { underlyingAsset, translate } = useAssetProvider()
+  const { underlyingAsset, translate, theme } = useAssetProvider()
+  const [ allowanceMode, setAllowanceMode ] = useState<boolean>(false)
   return (
     <Center
       p={14}
@@ -25,7 +26,44 @@ const Approve: React.FC<ActionComponentProps> = ({ children }) => {
       <VStack
         spacing={6}
       >
+        <MdOutlineLockOpen size={72} />
         <Translation component={Text} prefix={`${translate("modals.approve.routerName")} `} translation={"modals.approve.body"} params={{asset: underlyingAsset?.name}} textStyle={['heading', 'h3']} textAlign={'center'} />
+        <VStack
+          spacing={6}
+        >
+          <HStack
+            py={2}
+            width={'100%'}
+            justifyContent={'space-between'}
+            borderTop={`1px solid ${theme.colors.divider}`}
+            borderBottom={`1px solid ${theme.colors.divider}`}
+          >
+            <Translation component={Text} translation={"trade.allowance"} textStyle={'captionSmall'} />
+            <HStack
+              spacing={1}
+            >
+              <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'bold', !allowanceMode ? 'active' : 'inactive']} />
+              <Switch size={'sm'} onChange={ (e) => setAllowanceMode(e.target.checked) } />
+              <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'bold', allowanceMode ? 'active' : 'inactive']} />
+            </HStack>
+          </HStack>
+          <HStack>
+            <AssetProvider.Icon size={'sm'} />
+            <Card
+              px={4}
+              py={2}
+              layerStyle={'cardLight'}
+            >
+              <HStack
+                width={'100%'}
+                justifyContent={'space-between'}
+              >
+                <Input height={6} flex={1} type={'number'} placeholder={'0'} variant={'balance'} onChange={() => {}} />
+                <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} />
+              </HStack>
+            </Card>
+          </HStack>
+        </VStack>
         <Translation component={Button} translation={"common.approve"} onClick={() => {}} variant={'ctaFull'} />
       </VStack>
     </Center>
