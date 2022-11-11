@@ -303,6 +303,12 @@ const theme = extendTheme({
     inactive:{
       color: '#555B67'
     },
+    clickable:{
+      cursor:'pointer',
+      _hover: {
+        color:'cta'
+      }
+    },
     bold:{
       fontWeight:700
     },

@@ -2,7 +2,7 @@ import Polyglot from 'node-polyglot'
 import { useTranslate } from 'react-polyglot'
 import { TextProps, HeadingProps, Text } from '@chakra-ui/react'
 
-type TranslationProps = {
+export type TranslationProps = {
   component?: React.FC,
   prefix?: string
   suffix?: string

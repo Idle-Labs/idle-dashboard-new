@@ -1,19 +1,19 @@
 import { estimateGasLimit } from 'helpers/'
 import type { TransactionReceipt } from 'web3-core'
 import { useWeb3Provider } from 'contexts/Web3Provider'
-import type { ReducerActionTypes } from 'constants/types'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import type { ReducerActionTypes, ErrnoException } from 'constants/types'
 import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 
 type Transaction = {
   hash: string | null
-  error: Error | null
   status: string | null
   created: number | null
   confirmationCount: number
   lastUpdated: number | null
+  error: ErrnoException | null
   receipt: TransactionReceipt | null
 }
 
@@ -91,6 +91,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         .on("transactionHash", (hash: string) => {
           console.log('transactionHash', hash)
           dispatch({type: 'SET_HASH', payload: hash})
+          dispatch({type: 'SET_STATUS', payload: "pending"})
         })
         .on("receipt", (receipt: TransactionReceipt) => {
           console.log('receipt', receipt)
@@ -105,7 +106,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             dispatch({type: 'SET_STATUS', payload: "error"})
           }
         })
-        .on("error", (error: Error) => {
+        .on("error", (error: ErrnoException) => {
           console.log('error', error)
           dispatch({type: 'SET_ERROR', payload: error})
           dispatch({type: 'SET_STATUS', payload: 'error'})

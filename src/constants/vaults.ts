@@ -1,16 +1,16 @@
 import type { Abi } from './types'
-import aToken from '../abis/aave/AToken.json';
-import ERC20 from '../abis/tokens/ERC20.json';
-import cToken from '../abis/compound/cDAI.json';
-import IdleCDO from '../abis/idle/IdleCDO.json';
-import IdleTokenV4 from '../abis/idle/IdleTokenV4.json';
-import TruefiPool from '../abis/truefi/TruefiPool.json';
-import RibbonPool from '../abis/ribbon/RibbonPool.json';
-import IdleStrategy from '../abis/idle/IdleStrategy.json';
-import IdleCDOPolygon from '../abis/idle/IdleCDOPolygon.json';
-import LiquidityGauge from '../abis/idle/LiquidityGauge.json';
-import IdleCDOTrancheRewards from '../abis/idle/IdleCDOTrancheRewards.json';
-import TrancheStakingRewards from '../abis/idle/TrancheStakingRewards.json';
+import aToken from 'abis/aave/AToken.json';
+import ERC20 from 'abis/tokens/ERC20.json';
+import cToken from 'abis/compound/cDAI.json';
+import IdleCDO from 'abis/idle/IdleCDO.json';
+import IdleTokenV4 from 'abis/idle/IdleTokenV4.json';
+import TruefiPool from 'abis/truefi/TruefiPool.json';
+import RibbonPool from 'abis/ribbon/RibbonPool.json';
+import IdleStrategy from 'abis/idle/IdleStrategy.json';
+import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json';
+import LiquidityGauge from 'abis/idle/LiquidityGauge.json';
+import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json';
+import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json';
 
 export const vaultsStatusSchemes: Record<string, string> = {
   'production' : 'green',

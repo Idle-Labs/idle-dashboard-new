@@ -238,7 +238,7 @@ export const PrimaryChart = ({
           >
             <ul style={{ padding: '0', margin: '0', listStyle: 'none' }}>
               <li>
-                <Amount fontWeight='bold' fontSize='lg' my={2} value={formatFn(tooltipData.value)} />
+                <Amount abbreviate={false} fontWeight='bold' fontSize='lg' my={2} value={formatFn(tooltipData.value)} />
               </li>
               <li style={{ paddingBottom: '0.25rem', fontSize: '12px', color: theme.colors.gray[300] }}>
                 {dateToLocale(tooltipData)}

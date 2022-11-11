@@ -25,8 +25,9 @@ export const Amount = ({
   abbreviateThresold,
   ...props
 }: AmountProps) => {
-  const checkThreshold = value && !isBigNumberNaN(value) && (!abbreviateThresold || value>=abbreviateThresold)
-  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals) : (decimals ? BNify(value).toFixed(decimals) : value)))
+  const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) &&  value>=abbreviateThresold)
+  const parsedValue = isBigNumberNaN(value) ? '-' : /*(typeof value === 'string' ? value : */(abbreviate && checkThreshold ? abbreviateNumber(value, decimals) : (decimals ? BNify(value).toFixed(decimals) : value))
+  // console.log('parsedValue', typeof value, decimals, parsedValue)
   return (
     <Text {...props}>
       {prefix}
@@ -43,7 +44,7 @@ export const Percentage: React.FC<PercentageProps> = ({
 }) => {
   const parsedValue = numberToPercentage(value)
   return (
-    <Amount value={parsedValue} {...props} />
+    <Amount abbreviate={false} value={parsedValue} {...props} />
   )
 }
 

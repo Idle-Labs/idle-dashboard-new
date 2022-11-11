@@ -11,14 +11,14 @@ export type BrowserRouterContextProps = {
   query: any
 }
 
-const initalState: BrowserRouterContextProps = {
+const initialState: BrowserRouterContextProps = {
   match: {},
   query: {},
   params: {},
   location: null
 }
 
-const BrowserRouterContext = createContext<BrowserRouterContextProps>(initalState)
+const BrowserRouterContext = createContext<BrowserRouterContextProps>(initialState)
 
 export const useBrowserRouter = () => useContext(BrowserRouterContext)
 

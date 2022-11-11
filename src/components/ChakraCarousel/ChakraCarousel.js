@@ -71,6 +71,7 @@ export const ChakraCarousel = ({ children, gap, activeItem: defaultActiveItem = 
   }, [positions, defaultActiveItem])
 
   useEffect(() => {
+    // console.log('itemWidth', sliderWidth, gap, sliderWidth - gap)
     setItemWidth(sliderWidth - gap);
     setMultiplier(0.65);
     setConstraint(1);

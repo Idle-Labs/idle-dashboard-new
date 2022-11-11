@@ -297,8 +297,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     
     const assetsData = generateAssetsData(allVaults)
 
-    console.log('bestYieldVaults', bestYieldVaults)
-
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})

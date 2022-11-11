@@ -1,7 +1,9 @@
 import Web3 from 'web3'
+import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
-import type { Number } from 'constants/types'
+import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
+import type { Abi, Number } from 'constants/types'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContract } from 'contracts/GenericContract'
@@ -71,7 +73,8 @@ export class TrancheVault {
         
     // Init underlying token contract
     if (this.underlyingToken){
-      this.underlyingContract = new web3.eth.Contract(this.cdoConfig.abi, this.cdoConfig.address)
+      const abi: Abi = this.underlyingToken?.abi || ERC20 as Abi
+      this.underlyingContract = new web3.eth.Contract(abi, this.underlyingToken.address)
     }
 
     // Init tranche tokens contracts
@@ -296,6 +299,20 @@ export class TrancheVault {
 
   public getAllowanceOwner() {
     return this.cdoConfig.address
+  }
+
+  public getAllowanceParams(amount: Number): any[] {
+    const decimals = this.underlyingToken?.decimals || 18
+    const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, decimals)
+    return [this.cdoConfig.address, amountToApprove]
+  }
+
+  public getUnlimitedAllowanceParams(): any[] {
+    return this.getAllowanceParams(MAX_ALLOWANCE)
+  }
+
+  public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
+    return this.underlyingContract?.methods.approve(...params)
   }
 
   public getDepositParams(amount: Number): any[] {

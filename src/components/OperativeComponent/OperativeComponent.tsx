@@ -1,76 +1,135 @@
 import { Card } from 'components/Card/Card'
+import { MAX_ALLOWANCE } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
+import type { ReducerActionTypes } from 'constants/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner } from 'helpers/'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen } from 'react-icons/md'
+import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
+import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen } from 'react-icons/md'
 import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, Text, Button, Tabs, TabList, Tab, Input } from '@chakra-ui/react'
 
-type ActionComponentProps = {
-  setActiveItem: Function
-} & BoxProps
+type InputAmountArgs = {
+  amount?: string
+  setAmount: Function
+  inputHeight?: number
+}
 
-const Approve: React.FC<ActionComponentProps> = ({ children }) => {
-  const { underlyingAsset, translate, theme } = useAssetProvider()
-  const [ allowanceMode, setAllowanceMode ] = useState<boolean>(false)
+const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount }) => {
+  const { asset, underlyingAsset } = useAssetProvider()
+  const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const { selectors: { selectAssetPriceUsd } } = usePortfolioProvider()
+  
+  const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
+
+  useEffect(() => {
+    if (!selectAssetPriceUsd || !underlyingAsset) return
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+    setAmountUsd(amountUsd)
+  }, [underlyingAsset, amount, selectAssetPriceUsd])
+
   return (
-    <Center
-      p={14}
-      flex={1}
+    <HStack
+      width={'100%'}
+      justifyContent={'space-between'}
     >
-      <VStack
-        spacing={6}
-      >
-        <MdOutlineLockOpen size={72} />
-        <Translation component={Text} prefix={`${translate("modals.approve.routerName")} `} translation={"modals.approve.body"} params={{asset: underlyingAsset?.name}} textStyle={['heading', 'h3']} textAlign={'center'} />
-        <VStack
-          spacing={6}
-        >
-          <HStack
-            py={2}
-            width={'100%'}
-            justifyContent={'space-between'}
-            borderTop={`1px solid ${theme.colors.divider}`}
-            borderBottom={`1px solid ${theme.colors.divider}`}
-          >
-            <Translation component={Text} translation={"trade.allowance"} textStyle={'captionSmall'} />
-            <HStack
-              spacing={1}
-            >
-              <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'bold', !allowanceMode ? 'active' : 'inactive']} />
-              <Switch size={'sm'} onChange={ (e) => setAllowanceMode(e.target.checked) } />
-              <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'bold', allowanceMode ? 'active' : 'inactive']} />
-            </HStack>
-          </HStack>
-          <HStack>
-            <AssetProvider.Icon size={'sm'} />
-            <Card
-              px={4}
-              py={2}
-              layerStyle={'cardLight'}
-            >
-              <HStack
-                width={'100%'}
-                justifyContent={'space-between'}
-              >
-                <Input height={6} flex={1} type={'number'} placeholder={'0'} variant={'balance'} onChange={() => {}} />
-                <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} />
-              </HStack>
-            </Card>
-          </HStack>
-        </VStack>
-        <Translation component={Button} translation={"common.approve"} onClick={() => {}} variant={'ctaFull'} />
-      </VStack>
-    </Center>
+      <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={amount} onChange={handleAmountChange} />
+      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={amountUsd} />
+    </HStack>
   )
 }
 
-const Deposit: React.FC<ActionComponentProps> = ({ setActiveItem }) => {
+type ActionComponentArgs = {
+} & BoxProps
+
+const Approve: React.FC<ActionComponentArgs> = ({ children }) => {
+  const { dispatch } = useOperativeComponent()
+  const { sendTransaction } = useTransactionManager()
+  const { amount: defaultAmount } = useOperativeComponent()
+  const [ amount, setAmount ] = useState<string>(defaultAmount)
+  const { underlyingAsset, vault, translate, theme } = useAssetProvider()
+  const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(false)
+
+  useEffect(() => {
+    setAmount(defaultAmount)
+  }, [defaultAmount])
+
+  const amountToApprove = useMemo((): string => {
+    return !allowanceModeExact ? MAX_ALLOWANCE : amount
+  }, [allowanceModeExact, amount])
+
+  const approve = useCallback(() => {
+    if (!vault || !("getAllowanceContractSendMethod" in vault) || !("getAllowanceParams" in vault)) return
+    const allowanceParams = vault.getAllowanceParams(amountToApprove)
+    const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
+    console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
+    if (!allowanceContractSendMethod) return
+    sendTransaction(allowanceContractSendMethod)
+  }, [amountToApprove, vault, sendTransaction])
+
+  return (
+    <VStack
+      flex={1}
+      alignItems={'flex-start'}
+    >
+      <NavBar goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: 0})} translation={"modals.approve.header"} params={{asset: underlyingAsset?.name}} />
+      <Center
+        p={14}
+        flex={1}
+      >
+        <VStack
+          spacing={6}
+        >
+          <MdOutlineLockOpen size={72} />
+          <Translation component={Text} prefix={`${translate("modals.approve.routerName")} `} translation={"modals.approve.body"} params={{asset: underlyingAsset?.name}} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <VStack
+            width={'100%'}
+            spacing={6}
+          >
+            <HStack
+              py={2}
+              width={'100%'}
+              justifyContent={'space-between'}
+              borderTop={`1px solid ${theme.colors.divider}`}
+              borderBottom={`1px solid ${theme.colors.divider}`}
+            >
+              <Translation component={Text} translation={"trade.allowance"} textStyle={'captionSmall'} />
+              <HStack
+                spacing={1}
+              >
+                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'bold', 'clickable', !allowanceModeExact ? 'active' : 'inactive']} onClick={ (e) => setAllowanceModeExact(false) } />
+                <Switch size={'sm'} isChecked={allowanceModeExact} onChange={ (e) => setAllowanceModeExact(e.target.checked) } />
+                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'bold', 'clickable', allowanceModeExact ? 'active' : 'inactive']} onClick={ (e) => setAllowanceModeExact(true) } />
+              </HStack>
+            </HStack>
+            {
+              allowanceModeExact && (
+                <HStack>
+                  <AssetProvider.Icon size={'sm'} />
+                  <Card
+                    px={4}
+                    py={2}
+                    layerStyle={'cardLight'}
+                  >
+                    <InputAmount inputHeight={6} amount={amount} setAmount={setAmount} />
+                  </Card>
+                </HStack>
+              )
+            }
+          </VStack>
+          <Translation component={Button} translation={"common.approve"} onClick={approve} variant={'ctaFull'} />
+        </VStack>
+      </Center>
+    </VStack>
+  )
+}
+
+const Deposit: React.FC<ActionComponentArgs> = () => {
 
   const theme = useTheme()
   const [ amount, setAmount ] = useState('0')
@@ -78,11 +137,10 @@ const Deposit: React.FC<ActionComponentProps> = ({ setActiveItem }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
+  const { dispatch } = useOperativeComponent()
   const { transaction, sendTransaction } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
-
-  // console.log('DepositWithdraw', asset, underlyingAsset)
 
   const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
 
@@ -92,23 +150,25 @@ const Deposit: React.FC<ActionComponentProps> = ({ setActiveItem }) => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
 
     ;(async() => {
-      const depositParams = vault.getDepositParams(amount)
-      const contractSendMethod = vault.getDepositContractSendMethod(depositParams)
-      
-      console.log('depositParams', depositParams, contractSendMethod)
       // console.log('underlyingAssetVault', underlyingAssetVault)
 
       const vaultOwner = getVaultAllowanceOwner(vault)
       const allowance = await getAllowance(underlyingAssetVault.contract, account.address, vaultOwner)
-
+      
       console.log('allowance', vaultOwner, account.address, allowance)
 
-      setActiveItem(1)
-
-      // sendTransaction(contractSendMethod)
+      if (allowance.gte(amount)){
+        const depositParams = vault.getDepositParams(amount)
+        const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+        console.log('depositParams', depositParams, depositContractSendMethod)
+        sendTransaction(depositContractSendMethod)
+        // dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+      } else {
+        dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+      }
     })()
 
-  }, [account, amount, vault, underlyingAssetVault, setActiveItem])
+  }, [account, amount, vault, underlyingAssetVault, dispatch, sendTransaction])
 
   useEffect(() => {
     // if (!underlyingAsset?.priceUsd) return
@@ -116,7 +176,8 @@ const Deposit: React.FC<ActionComponentProps> = ({ setActiveItem }) => {
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
     setAmountUsd(amountUsd)
-  }, [underlyingAsset, amount, selectAssetPriceUsd])
+    dispatch({type:'SET_AMOUNT', payload: amount})
+  }, [underlyingAsset, amount, selectAssetPriceUsd, dispatch])
 
   const setMaxBalance = useCallback(() => {
     if (!underlyingAsset?.balance) return
@@ -218,14 +279,50 @@ const Deposit: React.FC<ActionComponentProps> = ({ setActiveItem }) => {
   )
 }
 
+type NavBarProps = {
+  goBack: Function
+} & TranslationProps
+
+const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
+  return (
+    <HStack
+      width={'100%'}
+      position={'relative'}
+      alignItems={'center'}
+      justifyContent={'flex-start'}
+    >
+      <Flex
+        zIndex={1}
+        position={'relative'}
+      >
+        <MdKeyboardArrowLeft
+          size={24}
+          onClick={() => goBack()}
+          style={{cursor:'pointer'}}
+        />
+      </Flex>
+      <Flex
+        zIndex={0}
+        width={'100%'}
+        position={'absolute'}
+        justifyContent={'center'}
+      >
+        <Translation component={Text} textStyle={'ctaStatic'} aria-selected={true} {...props} />
+      </Flex>
+    </HStack>
+  )
+}
+
 const actions = [
   {
-    label: 'common.deposit',
+    type: 'deposit',
     component: Deposit,
+    label: 'common.deposit',
     steps: [
       {
-        label:'modals.approve.header',
-        component: Approve
+        type: 'approve',
+        component: Approve,
+        label:'modals.approve.header'
       }
     ]
   },
@@ -236,95 +333,165 @@ const actions = [
   }
 ]
 
+interface OperativeComponentContextProps {
+  amount: string
+  activeStep: number
+  dispatch: Function
+}
+
+const initialState: OperativeComponentContextProps = {
+  amount: '',
+  activeStep: 0,
+  dispatch: () => {}
+}
+
+const reducer = (state: OperativeComponentContextProps, action: ReducerActionTypes) => {
+  switch (action.type){
+    case 'SET_AMOUNT':
+      return {...state, amount: action.payload}
+    case 'SET_ACTIVE_STEP':
+      return {...state, activeStep: action.payload}
+    default:
+      return {...state}
+  }
+}
+
+const OperativeComponentContext = createContext<OperativeComponentContextProps>(initialState)
+const useOperativeComponent = () => useContext(OperativeComponentContext)
+
 export const OperativeComponent: React.FC = () => {
+  const { transaction } = useTransactionManager()
   const { asset, underlyingAsset } = useAssetProvider()
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
+  const [ state, dispatch ] = useReducer(reducer, initialState)
 
   const handleActionChange = (index: number) => {
     setActionIndex(index)
   }
 
-  const ActionComponent = useMemo((): React.FC<ActionComponentProps> | null => actions[actionIndex].component, [actionIndex])
+  const activeAction = useMemo(() => actions[actionIndex], [actionIndex])
+  const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep+1], [activeAction, state.activeStep])
+  const actionType = useMemo(() => activeStep ? activeStep.type : activeAction.type, [activeAction, activeStep])
+  const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actionIndex])
+
+  // console.log('actionType', activeAction, state.activeStep, activeStep, actionType)
+
+  const onComplete = useCallback(() => {}, [])
+
+  useEffect(() => {
+    setActiveItem(state.activeStep)
+  }, [state.activeStep])
+
+  useEffect(() => {
+    console.log('TransactionProcess', transaction)
+    const firstProcessIndex = activeAction.steps.length+1
+    switch (transaction?.status) {
+      case 'created':
+        return setActiveItem(firstProcessIndex)
+      break;
+      case 'pending':
+        return setActiveItem(firstProcessIndex+1)
+      break;
+      case 'error':
+        switch (transaction.error?.code) {
+          case 4001:
+            return setActiveItem(state.activeStep)
+          break;
+          default:
+            return setActiveItem(firstProcessIndex+2)
+          break;
+        }
+      break;
+      case 'success':
+        setActiveItem(firstProcessIndex+3)
+        return onComplete()
+      break;
+      default:
+      break;
+    }
+  }, [transaction, onComplete, activeAction, state.activeStep])
 
   return (
-    <VStack
-      p={4}
-      width={'100%'}
-      bg={'card.bg'}
-      minHeight={'590px'}
-      alignItems={'flex-start'}
-      id={'operative-component'}
-    >
-      <ChakraCarousel
-        gap={0}
-        activeItem={activeItem}
+    <OperativeComponentContext.Provider value={{...state, dispatch}}>
+      <VStack
+        p={4}
+        width={'100%'}
+        bg={'card.bg'}
+        minHeight={'590px'}
+        alignItems={'flex-start'}
+        id={'operative-component'}
       >
-        <VStack
-          flex={1}
-          alignItems={'flex-start'}
+        <ChakraCarousel
+          gap={0}
+          activeItem={activeItem}
         >
-          <HStack
-            alignItems={'center'}
-            justifyContent={'space-between'}
-            id={'operative-component-header'}
+          <VStack
+            flex={1}
+            alignItems={'flex-start'}
           >
-            <Tabs
-              defaultIndex={0}
-              variant={'button'}
-              onChange={handleActionChange}
+            <HStack
+              alignItems={'center'}
+              justifyContent={'space-between'}
+              id={'operative-component-header'}
             >
-              <TabList>
-                {
-                  actions.map( (action, index) => (
-                    <Translation key={`action_${index}`} mr={2} component={Tab} translation={action.label} />
-                  ))
-                }
-              </TabList>
-            </Tabs>
-          </HStack>
-          {ActionComponent && <ActionComponent setActiveItem={setActiveItem} />}
-        </VStack>
-        {
-          actions[actionIndex].steps.map( (step, index) => {
-            const StepComponent = step.component
-            return (
-              <VStack
-                flex={1}
-                key={`step_${index}`}
-                alignItems={'flex-start'}
+              <Tabs
+                defaultIndex={0}
+                variant={'button'}
+                onChange={handleActionChange}
               >
-                <HStack
-                  width={'100%'}
-                  position={'relative'}
-                  alignItems={'center'}
-                  justifyContent={'flex-start'}
+                <TabList>
+                  {
+                    actions.map( (action, index) => (
+                      <Translation key={`action_${index}`} mr={2} component={Tab} translation={action.label} />
+                    ))
+                  }
+                </TabList>
+              </Tabs>
+            </HStack>
+            <Flex
+              flex={1}
+              width={'100%'}
+            >
+              {ActionComponent && <ActionComponent />}
+            </Flex>
+          </VStack>
+          {
+            actions[actionIndex].steps.map((step, index) => {
+              const StepComponent = step.component
+              return (
+                <StepComponent key={`step_${index}`} />
+              )
+            })
+          }
+          <VStack
+            flex={1}
+            alignItems={'flex-start'}
+          >
+            <NavBar goBack={() => setActiveItem(state.activeStep) } translation={"common.confirmOnWallet"} />
+            <Center
+              p={14}
+              flex={1}
+            >
+              <VStack
+                spacing={6}
+              >
+                <MdOutlineAccountBalanceWallet size={72} />
+                <Translation component={Text} translation={"trade.confirmTransactionWallet"} textStyle={['heading', 'h3']} textAlign={'center'} />
+                <VStack
+                  spacing={1}
                 >
-                  <Flex
-                    zIndex={1}
-                    position={'relative'}
-                  >
-                    <MdKeyboardArrowLeft
-                      size={24}
-                      style={{cursor:'pointer'}}
-                      onClick={() => setActiveItem( prevActiveItem => prevActiveItem-1 )}
-                    />
-                  </Flex>
-                  <Flex
-                    zIndex={0}
-                    width={'100%'}
-                    position={'absolute'}
-                    justifyContent={'center'}
-                  >
-                    <Translation component={Text} translation={step.label} params={{asset: underlyingAsset?.name}} textStyle={'ctaStatic'} aria-selected={true} />
-                  </Flex>
-                </HStack>
-                <StepComponent setActiveItem={setActiveItem} />
+                  <Translation component={Text} translation={`trade.actions.${actionType}.confirm`} textStyle={'captionSmall'} textAlign={'center'} />
+                  <HStack>
+                    <Amount textStyle={'bold'} value={parseFloat(state.amount)} decimals={8} suffix={` ${underlyingAsset?.name}`}></Amount>
+                  </HStack>
+                </VStack>
+                {/*<Translation component={Button} translation={"common.cancel"} onClick={() => setActiveItem(activeItem-1)} variant={'ctaFull'} />*/}
               </VStack>
-            )
-          })
-        }
-      </ChakraCarousel>
-    </VStack>
+            </Center>
+          </VStack>
+        </ChakraCarousel>
+      </VStack>
+    </OperativeComponentContext.Provider>
   )
 }
