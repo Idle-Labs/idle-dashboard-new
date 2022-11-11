@@ -849,6 +849,7 @@
       "transactionId": "TX ID",
       "averageApy": "Average APY",
       "estimatedReturns": "Estimated Yearly Returns*",
+      "calculateEstimatedTime": "Calculating estimated time",
       "estimatedTime": "Estimated time",
       "estimatedGas": "Estimated Gas Fee",
       "gasUsed": "Total Gas Fee",
