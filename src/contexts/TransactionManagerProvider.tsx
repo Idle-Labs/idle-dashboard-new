@@ -15,14 +15,17 @@ type Transaction = {
   lastUpdated: number | null
   error: ErrnoException | null
   receipt: TransactionReceipt | null
+  contractSendMethod: ContractSendMethod | null
 }
 
 type ContextProps = {
-  transaction: Transaction | null
+  retry: Function
   sendTransaction: Function
+  transaction: Transaction | null
 }
 
 const initialContextState = {
+  retry: () => {},
   transaction: null,
   sendTransaction: () => {}
 }
@@ -34,7 +37,8 @@ const transactionInitialState: Transaction = {
   receipt: null,
   created: null,
   lastUpdated: null,
-  confirmationCount: 0
+  confirmationCount: 0,
+  contractSendMethod: null
 }
 
 const reducer = (state: Transaction, action: ReducerActionTypes) => {
@@ -43,7 +47,7 @@ const reducer = (state: Transaction, action: ReducerActionTypes) => {
     case 'RESET':
       return {...transactionInitialState}
     case 'CREATE':
-      return {...transactionInitialState, status: 'created', created: lastUpdated, lastUpdated}
+      return {...transactionInitialState, contractSendMethod: action.payload, status: 'created', created: lastUpdated, lastUpdated}
     case 'SET_RECEIPT':
       return {...state, receipt: action.payload, lastUpdated}
     case 'SET_HASH':
@@ -103,21 +107,27 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           if (receipt.status) {
             dispatch({type: 'SET_STATUS', payload: "success"})
           } else if (!receipt.status) {
-            dispatch({type: 'SET_STATUS', payload: "error"})
+            dispatch({type: 'SET_STATUS', payload: "failed"})
           }
         })
         .on("error", (error: ErrnoException) => {
           console.log('error', error)
           dispatch({type: 'SET_ERROR', payload: error})
-          dispatch({type: 'SET_STATUS', payload: 'error'})
+          dispatch({type: 'SET_STATUS', payload: 'failed'})
         });
 
-      dispatch({type: 'CREATE', payload: null})
+      dispatch({type: 'CREATE', payload: contractSendMethod})
     }
   , [account, web3])
 
+  const retry = useCallback(() => {
+    console.log('retry', transaction.contractSendMethod)
+    if (!transaction.contractSendMethod) return
+    sendTransaction(transaction.contractSendMethod)
+  }, [sendTransaction, transaction.contractSendMethod])
+
   return (
-    <TransactionManagerContext.Provider value={{ transaction, sendTransaction }}>
+    <TransactionManagerContext.Provider value={{ transaction, sendTransaction, retry }}>
       {children}
     </TransactionManagerContext.Provider>
   )

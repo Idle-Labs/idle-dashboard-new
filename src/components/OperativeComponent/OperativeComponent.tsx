@@ -7,11 +7,11 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner } from 'helpers/'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen } from 'react-icons/md'
-import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, Text, Button, Tabs, TabList, Tab, Input } from '@chakra-ui/react'
+import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
+import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
+import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, Text, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
 type InputAmountArgs = {
   amount?: string
@@ -24,7 +24,9 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
   const { selectors: { selectAssetPriceUsd } } = usePortfolioProvider()
   
-  const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
+  const handleAmountChange = ({target: { value }}: { target: {value: string} }) => {
+    setAmount(Math.max(0, parseFloat(value)).toString())
+  }
 
   useEffect(() => {
     if (!selectAssetPriceUsd || !underlyingAsset) return
@@ -45,10 +47,11 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount
 }
 
 type ActionComponentArgs = {
+  itemIndex: number
+  goBack?: Function
 } & BoxProps
 
-const Approve: React.FC<ActionComponentArgs> = ({ children }) => {
-  const { dispatch } = useOperativeComponent()
+const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children }) => {
   const { sendTransaction } = useTransactionManager()
   const { amount: defaultAmount } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
@@ -77,7 +80,7 @@ const Approve: React.FC<ActionComponentArgs> = ({ children }) => {
       flex={1}
       alignItems={'flex-start'}
     >
-      <NavBar goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: 0})} translation={"modals.approve.header"} params={{asset: underlyingAsset?.name}} />
+      <NavBar goBack={goBack} translation={"modals.approve.header"} params={{asset: underlyingAsset?.name}} />
       <Center
         p={14}
         flex={1}
@@ -102,9 +105,9 @@ const Approve: React.FC<ActionComponentArgs> = ({ children }) => {
               <HStack
                 spacing={1}
               >
-                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'bold', 'clickable', !allowanceModeExact ? 'active' : 'inactive']} onClick={ (e) => setAllowanceModeExact(false) } />
+                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'bold', 'clickable', !allowanceModeExact ? 'active' : 'inactive']} onClick={ (e: any) => setAllowanceModeExact(false) } />
                 <Switch size={'sm'} isChecked={allowanceModeExact} onChange={ (e) => setAllowanceModeExact(e.target.checked) } />
-                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'bold', 'clickable', allowanceModeExact ? 'active' : 'inactive']} onClick={ (e) => setAllowanceModeExact(true) } />
+                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'bold', 'clickable', allowanceModeExact ? 'active' : 'inactive']} onClick={ (e: any) => setAllowanceModeExact(true) } />
               </HStack>
             </HStack>
             {
@@ -129,6 +132,17 @@ const Approve: React.FC<ActionComponentArgs> = ({ children }) => {
   )
 }
 
+const ConnectWalletButton: React.FC<ButtonProps> = ({...props}) => {
+  const { account, connect, connecting } = useWalletProvider()
+  return connecting ? (
+    <Button disabled={true} variant={'ctaFull'}>
+      <Spinner size={'sm'} />
+    </Button>
+  ) : (
+    <Translation component={Button} translation={"common.connectWallet"} onClick={() => connect()} variant={'ctaFull'} {...props} />
+  )
+}
+
 const Deposit: React.FC<ActionComponentArgs> = () => {
 
   const theme = useTheme()
@@ -136,16 +150,30 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
-  const { account } = useWalletProvider()
   const { dispatch } = useOperativeComponent()
+  const { account } = useWalletProvider()
   const { transaction, sendTransaction } = useTransactionManager()
-  const { selectors: { selectAssetPriceUsd } } = usePortfolioProvider()
+  const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
 
   const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
 
+  const disabled = useMemo(() => {
+    if (BNify(amount).lte(0)) return true
+    if (selectAssetBalance){
+      const assetBalance = selectAssetBalance(underlyingAsset?.id)
+      if (BNify(amount).gt(assetBalance)){
+        setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
+        return true
+      }
+    }
+    setError('')
+    return false
+  }, [amount, selectAssetBalance, underlyingAsset, translate])
+
+  // Deposit
   const deposit = useCallback(() => {
-    if (!account) return
+    if (!account || disabled) return
     if (!underlyingAssetVault || !("contract" in underlyingAssetVault)) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
 
@@ -162,16 +190,16 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         console.log('depositParams', depositParams, depositContractSendMethod)
         sendTransaction(depositContractSendMethod)
-        // dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       } else {
+        // Approve amount
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
 
-  }, [account, amount, vault, underlyingAssetVault, dispatch, sendTransaction])
+  }, [account, disabled, amount, vault, underlyingAssetVault, dispatch, sendTransaction])
 
+  // Update amount USD and disabled
   useEffect(() => {
-    // if (!underlyingAsset?.priceUsd) return
     if (!selectAssetPriceUsd || !underlyingAsset) return
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
@@ -179,10 +207,19 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
     dispatch({type:'SET_AMOUNT', payload: amount})
   }, [underlyingAsset, amount, selectAssetPriceUsd, dispatch])
 
+  // Set max balance function
   const setMaxBalance = useCallback(() => {
     if (!underlyingAsset?.balance) return
     setAmount(underlyingAsset.balance.toString())
   }, [underlyingAsset])
+
+  const depositButton = useMemo(() => {
+    return account ? (
+      <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
+    ) : (
+      <ConnectWalletButton />
+    )
+  }, [account, disabled, deposit])
 
   return (
     <AssetProvider
@@ -223,13 +260,7 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
                 spacing={2}
                 alignItems={'flex-start'}
               >
-                <HStack
-                  width={'100%'}
-                  justifyContent={'space-between'}
-                >
-                  <Input flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={amount} onChange={handleAmountChange} />
-                  <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={amountUsd} />
-                </HStack>
+                <InputAmount amount={amount} setAmount={setAmount} />
                 <HStack
                   width={'100%'}
                   justifyContent={'space-between'}
@@ -245,7 +276,7 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
               </VStack>
             </Card>
             {
-              error && <Text textStyle={'captionSmaller'} color={'orange'}>You can't deposit more that your balance</Text>
+              error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
             }
           </VStack>
         </HStack>
@@ -272,7 +303,7 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
             <MdOutlineLocalGasStation color={theme.colors.ctaDisabled} size={24} />
             <Translation translation={'trade.estimatedGasFee'} suffix={':'} textStyle={'captionSmaller'} />
           </HStack>
-          <Translation component={Button} translation={"common.deposit"} onClick={deposit} variant={'ctaFull'} />
+          {depositButton}
         </VStack>
       </VStack>
     </AssetProvider>
@@ -280,27 +311,32 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
 }
 
 type NavBarProps = {
-  goBack: Function
+  goBack?: Function
 } & TranslationProps
 
 const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
   return (
     <HStack
+      height={'24px'}
       width={'100%'}
       position={'relative'}
       alignItems={'center'}
       justifyContent={'flex-start'}
     >
-      <Flex
-        zIndex={1}
-        position={'relative'}
-      >
-        <MdKeyboardArrowLeft
-          size={24}
-          onClick={() => goBack()}
-          style={{cursor:'pointer'}}
-        />
-      </Flex>
+      {
+        goBack && (
+          <Flex
+            zIndex={1}
+            position={'relative'}
+          >
+            <MdKeyboardArrowLeft
+              size={24}
+              onClick={() => goBack()}
+              style={{cursor:'pointer'}}
+            />
+          </Flex>
+        )
+      }
       <Flex
         zIndex={0}
         width={'100%'}
@@ -310,6 +346,75 @@ const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
         <Translation component={Text} textStyle={'ctaStatic'} aria-selected={true} {...props} />
       </Flex>
     </HStack>
+  )
+}
+
+type TransactionStatusProps = {
+  goBack: Function
+}
+
+const TransactionSuccess: React.FC<TransactionStatusProps> = ({ goBack }) => {
+  const { transaction } = useTransactionManager()
+  const { underlyingAsset, theme } = useAssetProvider()
+  const { amount, actionType } = useOperativeComponent()
+
+  return (
+    <>
+      <NavBar translation={`modals.status.header.success`} />
+      <Center
+        p={14}
+        flex={1}
+        width={'100%'}
+      >
+        <VStack
+          spacing={4}
+        >
+          <Center
+            width={'120px'}
+            height={'120px'}
+            bg={'card.bgLight'}
+            borderRadius={'120px'}
+          >
+            <MdOutlineDone size={50} color={theme.colors.green['400']} />
+          </Center>
+          <Translation component={Text} translation={`modals.${actionType}.status.success`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
+        </VStack>
+      </Center>
+    </>
+  )
+}
+
+const TransactionFailed: React.FC<TransactionStatusProps> = ({ goBack }) => {
+  const { transaction, retry } = useTransactionManager()
+  const { underlyingAsset, theme } = useAssetProvider()
+  const { amount, actionType } = useOperativeComponent()
+
+  return (
+    <>
+      <NavBar translation={`modals.status.header.failed`} />
+      <Center
+        p={14}
+        flex={1}
+        width={'100%'}
+      >
+        <VStack
+          spacing={4}
+        >
+          <Center
+            width={'120px'}
+            height={'120px'}
+            bg={'card.bgLight'}
+            borderRadius={'120px'}
+          >
+            <MdOutlineClose size={50} color={theme.colors.red['400']} />
+          </Center>
+          <Translation component={Text} translation={`modals.${actionType}.status.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={'captionSmall'} textAlign={'center'} />
+          <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => retry} variant={'ctaFull'} />
+          <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => goBack()} />
+        </VStack>
+      </Center>
+    </>
   )
 }
 
@@ -335,6 +440,7 @@ const actions = [
 
 interface OperativeComponentContextProps {
   amount: string
+  actionType: string
   activeStep: number
   dispatch: Function
 }
@@ -342,6 +448,7 @@ interface OperativeComponentContextProps {
 const initialState: OperativeComponentContextProps = {
   amount: '',
   activeStep: 0,
+  actionType: '',
   dispatch: () => {}
 }
 
@@ -349,6 +456,8 @@ const reducer = (state: OperativeComponentContextProps, action: ReducerActionTyp
   switch (action.type){
     case 'SET_AMOUNT':
       return {...state, amount: action.payload}
+    case 'SET_ACTION_TYPE':
+      return {...state, actionType: action.payload}
     case 'SET_ACTIVE_STEP':
       return {...state, activeStep: action.payload}
     default:
@@ -360,10 +469,11 @@ const OperativeComponentContext = createContext<OperativeComponentContextProps>(
 const useOperativeComponent = () => useContext(OperativeComponentContext)
 
 export const OperativeComponent: React.FC = () => {
-  const { transaction } = useTransactionManager()
-  const { asset, underlyingAsset } = useAssetProvider()
+  const { chainId, explorer } = useWalletProvider()
+  const { transaction, retry } = useTransactionManager()
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
+  const { asset, underlyingAsset, theme } = useAssetProvider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
 
   const handleActionChange = (index: number) => {
@@ -371,8 +481,7 @@ export const OperativeComponent: React.FC = () => {
   }
 
   const activeAction = useMemo(() => actions[actionIndex], [actionIndex])
-  const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep+1], [activeAction, state.activeStep])
-  const actionType = useMemo(() => activeStep ? activeStep.type : activeAction.type, [activeAction, activeStep])
+  const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep-1], [activeAction, state.activeStep])
   const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actionIndex])
 
   // console.log('actionType', activeAction, state.activeStep, activeStep, actionType)
@@ -384,6 +493,11 @@ export const OperativeComponent: React.FC = () => {
   }, [state.activeStep])
 
   useEffect(() => {
+    const actionType = activeStep ? activeStep.type : activeAction.type
+    dispatch({type:'SET_ACTION_TYPE', payload: actionType})
+  }, [activeAction, activeStep])
+
+  useEffect(() => {
     console.log('TransactionProcess', transaction)
     const firstProcessIndex = activeAction.steps.length+1
     switch (transaction?.status) {
@@ -393,7 +507,7 @@ export const OperativeComponent: React.FC = () => {
       case 'pending':
         return setActiveItem(firstProcessIndex+1)
       break;
-      case 'error':
+      case 'failed':
         switch (transaction.error?.code) {
           case 4001:
             return setActiveItem(state.activeStep)
@@ -404,7 +518,7 @@ export const OperativeComponent: React.FC = () => {
         }
       break;
       case 'success':
-        setActiveItem(firstProcessIndex+3)
+        setActiveItem(firstProcessIndex+2)
         return onComplete()
       break;
       default:
@@ -453,25 +567,27 @@ export const OperativeComponent: React.FC = () => {
               flex={1}
               width={'100%'}
             >
-              {ActionComponent && <ActionComponent />}
+              {ActionComponent && <ActionComponent itemIndex={0} />}
             </Flex>
           </VStack>
           {
             actions[actionIndex].steps.map((step, index) => {
               const StepComponent = step.component
               return (
-                <StepComponent key={`step_${index}`} />
+                <StepComponent key={`step_${index}`} itemIndex={index+1} goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} />
               )
             })
           }
           <VStack
             flex={1}
+            id={'confirm-on-wallet'}
             alignItems={'flex-start'}
           >
-            <NavBar goBack={() => setActiveItem(state.activeStep) } translation={"common.confirmOnWallet"} />
+            <NavBar goBack={() => setActiveItem(state.activeStep) } translation={`modals.confirm.${state.actionType}.header`} />
             <Center
               p={14}
               flex={1}
+              width={'100%'}
             >
               <VStack
                 spacing={6}
@@ -481,7 +597,7 @@ export const OperativeComponent: React.FC = () => {
                 <VStack
                   spacing={1}
                 >
-                  <Translation component={Text} translation={`trade.actions.${actionType}.confirm`} textStyle={'captionSmall'} textAlign={'center'} />
+                  <Translation component={Text} translation={`modals.${state.actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
                   <HStack>
                     <Amount textStyle={'bold'} value={parseFloat(state.amount)} decimals={8} suffix={` ${underlyingAsset?.name}`}></Amount>
                   </HStack>
@@ -489,6 +605,70 @@ export const OperativeComponent: React.FC = () => {
                 {/*<Translation component={Button} translation={"common.cancel"} onClick={() => setActiveItem(activeItem-1)} variant={'ctaFull'} />*/}
               </VStack>
             </Center>
+            <HStack
+              spacing={1}
+              width={'100%'}
+              justifyContent={'center'}
+            >
+              <Translation component={Text} translation={`trade.transactionDontAppear`} textStyle={'captionSmall'} />
+              <Translation component={Text} translation={`common.retry`} textStyle={['captionSmall', 'link', 'bold']} onClick={() => retry()} />
+            </HStack>
+          </VStack>
+
+          <VStack
+            flex={1}
+            alignItems={'flex-start'}
+            id={'transaction-pending'}
+          >
+            <NavBar goBack={() => setActiveItem(state.activeStep) } translation={"modals.status.header.pending"} />
+            <Center
+              p={14}
+              flex={1}
+              width={'100%'}
+            >
+              <VStack
+                spacing={4}
+              >
+                <Translation component={Text} translation={"modals.status.estimatedTime"} textStyle={'captionSmaller'} textAlign={'center'} />
+                <CircularProgress value={30} size={145} color={'green.400'} thickness={'5px'}>
+                  <CircularProgressLabel>30s</CircularProgressLabel>
+                </CircularProgress>
+                <Translation component={Text} translation={`modals.${state.actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
+              </VStack>
+            </Center>
+            <HStack
+              spacing={1}
+              width={'100%'}
+              justifyContent={'center'}
+            >
+              <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={['captionSmall', 'link', 'bold']} isExternal href={"https://etherscan.io"} />
+            </HStack>
+          </VStack>
+
+
+          <VStack
+            flex={1}
+            alignItems={'flex-start'}
+            id={'transaction-completed'}
+          >
+            {
+              transaction?.status === 'success' ? (
+                <TransactionSuccess goBack={() => setActiveItem(state.activeStep) } />
+              ) : (
+                <TransactionFailed goBack={() => setActiveItem(state.activeStep) } />
+              )
+            }
+            {
+              transaction?.hash && (
+                <HStack
+                  spacing={1}
+                  width={'100%'}
+                  justifyContent={'center'}
+                >
+                  <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={['captionSmall', 'link', 'bold']} isExternal href={getExplorerTxUrl(chainId, explorer, transaction.hash)} />
+                </HStack>
+              )
+            }
           </VStack>
         </ChakraCarousel>
       </VStack>

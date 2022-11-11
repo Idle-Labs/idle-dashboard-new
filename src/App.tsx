@@ -309,6 +309,11 @@ const theme = extendTheme({
         color:'cta'
       }
     },
+    link:{
+      color:'primary',
+      cursor:'pointer',
+      textDecoration:'underline',
+    },
     bold:{
       fontWeight:700
     },
@@ -366,8 +371,18 @@ const theme = extendTheme({
       variants: {
         ctaFull:{
           height:12,
-          bg:'primary',
           width:'100%',
+          textStyle:'cta',
+          color:'nearBlack',
+          bg:'primary !important',
+          // _hover: {
+          //   bg:'primary !important',
+          // }
+        },
+        ctaPrimary:{
+          height:12,
+          bg:'primary',
+          width:'auto',
           textStyle:'cta',
           color:'nearBlack'
         },

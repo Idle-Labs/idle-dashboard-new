@@ -9,6 +9,7 @@
     "continue": "Continue",
     "approve": "Approve",
     "confirm": "Confirm",
+    "retry": "Retry",
     "reject": "Reject",
     "connected": "Connected",
     "created": "Created %{date}",
@@ -485,6 +486,8 @@
     "gasFeeExceedsTradeAmountThreshold": "Gas fee exceeds %{percentage}% of trade amount",
     "confirmDetails": "Confirm Details",
     "confirmAndTrade": "Confirm and Trade",
+    "waitingForConfirmation": "Waiting for confirmation",
+    "transactionDontAppear": "The confirmation don't appear in your wallet?",
     "complete": "Trade Complete",
     "approveAsset": "Approve interacting with %{symbol}",
     "needPermission": "needs your permission to use your %{symbol}",
@@ -733,8 +736,9 @@
       "footerDisclaimerLink": "terms of service.",
       "slippageSettings": "Slippage Settings",
       "status": {
+        "confirm": "You are depositing",
         "pending": "Your transaction has been broadcast and is pending confirmation.",
-        "success": "You have successfully deposited into %{opportunity}.",
+        "success": "You have successfully deposited %{amount} %{asset}.",
         "failed": "There was an issue with your deposit."
       }
     },
@@ -750,7 +754,7 @@
       "footerDisclaimerLink": "terms of service.",
       "status": {
         "pending": "Your transaction has been broadcast and is pending confirmation.",
-        "success": "You have successfully staked your %{opportunity}.",
+        "success": "You have successfully staked %{amount} %{asset}.",
         "failed": "There was an issue with your staking transaction."
       }
     },
@@ -770,8 +774,9 @@
       "disclaimer": "Subsequent requests will be combined and reset the withdrawal time.",
       "withdrawalFee": "Withdrawal Fee",
       "status": {
+        "confirm": "You are withdrawing",
         "pending": "Your transaction has been broadcast and is pending confirmation.",
-        "success": "You have successfully withdrawn from %{opportunity}.",
+        "success": "You have successfully withdrawn %{amount} %{asset}.",
         "failed": "There was an issue with your withdraw."
       },
       "info": {
@@ -788,12 +793,20 @@
       "learnMore": "Why do I need to do this?",
       "depositFee": "There will be a separate gas fee to deposit.",
       "estimatedGas": "Estimated Gas Fee",
-      "confirm": "Confirm",
+      "status": {
+        "confirm": "You are approving",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully approved",
+        "failed": "There was an issue with your withdraw."
+      },
       "reject": "Reject"
     },
     "confirm": {
       "withdraw": {
         "header": "Confirm Withdraw"
+      },
+      "approve": {
+        "header": "Confirm Approve"
       },
       "deposit": {
         "header": "Confirm Deposit",
@@ -825,12 +838,18 @@
       "header": {
         "pending": "Transaction Pending",
         "success": "Transaction Confirmed",
-        "failed": "Transaction Execution Failed"
+        "failed": "Transaction Failed"
+      },
+      "body": {
+        "pending": "",
+        "success": "",
+        "failed": "There was a problem with the execution your transaction, make sure the gas limit is high enough and try again"
       },
       "depositTo": "Deposit To",
       "transactionId": "TX ID",
       "averageApy": "Average APY",
       "estimatedReturns": "Estimated Yearly Returns*",
+      "estimatedTime": "Estimated time",
       "estimatedGas": "Estimated Gas Fee",
       "gasUsed": "Total Gas Fee",
       "continue": "View Transaction",

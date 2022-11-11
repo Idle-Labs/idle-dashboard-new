@@ -119,3 +119,8 @@ export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["
   }
   return null;
 }
+
+export const getExplorerTxUrl = (chainId: number, explorer: Explorer | null, txHash: string): string => {
+  if (!explorer) return ''
+  return `${explorer.baseUrl[chainId]}/tx/${txHash}`
+}
