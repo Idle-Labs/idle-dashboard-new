@@ -1,9 +1,10 @@
 import Web3 from 'web3'
 import { Multicall } from 'classes/'
+import { BNify, fixTokenDecimals } from 'helpers/'
 import { GenericContract } from 'contracts/GenericContract'
 import ChainlinkFeedRegistry from 'abis/chainlink/ChainlinkFeedRegistry.json'
 import ChainlinkAggregatorV3 from 'abis/chainlink/ChainlinkAggregatorV3.json'
-import type { Abi, GenericContractConfig, ContractRawCall, AssetId } from 'constants/'
+import type { BigNumber, Abi, GenericContractConfig, ContractRawCall, AssetId } from 'constants/'
 
 export type FeedRoundBounds = {
   latestRound: string
@@ -101,6 +102,30 @@ export class ChainlinkHelper {
     // console.log('rawCalls', address, rawCalls.length)
 
     return rawCalls
+  }
+
+  public async getTokenPriceUsd(address: string): Promise<BigNumber | null> {
+    const feedAddress = await this.getUsdFeedAddress(address)
+    if (!feedAddress) return null
+
+    const priceFeedContract: GenericContractConfig = {
+      address: feedAddress,
+      name: 'chainlinkPriceFeed',
+      abi: ChainlinkAggregatorV3 as Abi
+    }
+
+    const priceFeed: GenericContract = new GenericContract(this.web3, this.chainId, priceFeedContract)
+
+    const latestRound = await priceFeed.contract.methods.latestRound().call()
+
+    if (!latestRound) return null
+
+    const roundData = await priceFeed.contract.methods.getRoundData(+latestRound).call()
+
+    if (!roundData) return null
+
+    // console.log('roundData', feedAddress, latestRound, roundData)
+    return fixTokenDecimals(roundData.answer, 8)
   }
 
   /*

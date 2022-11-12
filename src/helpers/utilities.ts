@@ -32,9 +32,10 @@ export const apr2apy = (apr: BNifyInput) => {
 }
 
 export const isBigNumberNaN = (amount: any) => {
+  const isNull = amount === null
   const isUndefined = amount === undefined
   const isBigNumber = amount instanceof BigNumber
-  return isUndefined || (isBigNumber && BNify(amount).isNaN())
+  return isNull || isUndefined || (isBigNumber && BNify(amount).isNaN())
 }
 
 export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999) => {

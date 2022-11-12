@@ -29,11 +29,12 @@ interface ChainlinkConfig {
 export interface UnderlyingTokenProps {
   token: string,
   label?: string
+  symbol?: string,
   enabled: boolean
   decimals?: number
   colors: TokenColors
   underlyingToken?: string
-  abi?: Abi
+  abi?: Abi | null
   address?: string
   chainlinkPriceFeed?: ChainlinkConfig
   conversionRate?: ConversionRateProps
@@ -54,6 +55,8 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       address: '0x6b175474e89094c44da98b954eedeac495271d0f'
     },
     ETH: {
+      abi: null,
+      symbol:'Ξ',
       token:'ETH',
       decimals: 18,
       enabled: true,
@@ -62,6 +65,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [51, 51, 51],
         hsl: ['0, 0%, 20%']
       },
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
     },
     STETH: {
       decimals: 18,

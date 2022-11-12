@@ -1,11 +1,12 @@
 import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
+import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
 import type { WalletState } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
-import { chains, networks, explorers, defaultChainId, Network, Explorer } from 'constants/'
+import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
 
 const injected = injectedModule()
 
@@ -49,6 +50,7 @@ type ContextProps = {
   setChainId: Function
   isNetworkCorrect: boolean
   walletInitialized: boolean
+  chainToken: UnderlyingTokenProps | null
 }
 
 const initialState: ContextProps = {
@@ -56,6 +58,7 @@ const initialState: ContextProps = {
   wallet: null,
   network: null,
   explorer: null,
+  chainToken: null,
   connecting: false,
   connect: () => {},
   disconnect: () => {},
@@ -70,12 +73,12 @@ const WalletProviderContext = React.createContext<ContextProps>(initialState)
 export const useWalletProvider = () => useContext(WalletProviderContext)
 
 export function WalletProvider({ children }: ProviderProps) {
+  const [ { connectedChain }, setChain ] = useSetChain()
   const [ account, setAccount ] = useState<Account | null>(null)
   const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
-  const [ { connectedChain }, setChain ] = useSetChain()
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
 
   const chainIdHex = useMemo(() => {
@@ -89,6 +92,10 @@ export function WalletProvider({ children }: ProviderProps) {
   const explorer = useMemo(() => {
     return explorers[network.explorer]
   }, [network])
+
+  const chainToken = useMemo(() => {
+    return selectUnderlyingToken(chainId, chains[chainId].token) || null
+  }, [chainId])
 
   // Auto-connect wallet
   useEffect(() => {
@@ -126,7 +133,7 @@ export function WalletProvider({ children }: ProviderProps) {
         
       // console.log('setAccount', wallet.accounts[0])
       setAccount(wallet.accounts[0])
-      
+
       // Set custom wallet
       // setAccount({
       //   address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
@@ -147,7 +154,7 @@ export function WalletProvider({ children }: ProviderProps) {
   }
 
   return (
-    <WalletProviderContext.Provider value={{wallet, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

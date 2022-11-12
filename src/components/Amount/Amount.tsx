@@ -4,7 +4,7 @@ import { Text, TextProps } from '@chakra-ui/react'
 import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN } from 'helpers/'
 
 export type AmountProps = {
-  value?: Number
+  value?: Number | null
   prefix?: string | React.ReactElement
   suffix?: string | React.ReactElement
   decimals?: number
@@ -28,11 +28,13 @@ export const Amount = ({
   const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) &&  value>=abbreviateThresold)
   const parsedValue = isBigNumberNaN(value) ? '-' : /*(typeof value === 'string' ? value : */(abbreviate && checkThreshold ? abbreviateNumber(value, decimals) : (decimals ? BNify(value).toFixed(decimals) : value))
   // console.log('parsedValue', typeof value, decimals, parsedValue)
+
+  const showPrefixSuffix = parsedValue.toString().length>0 && parsedValue !== '-'
   return (
     <Text {...props}>
-      {prefix}
+      {showPrefixSuffix && (prefix || '')}
       {parsedValue.toString()}
-      {suffix}
+      {showPrefixSuffix && (suffix || '')}
     </Text>
   )
 }
@@ -50,11 +52,13 @@ export const Percentage: React.FC<PercentageProps> = ({
 
 export const Usd: React.FC<AmountProps> = ({
   value,
+  prefix = '',
   decimals = 2,
   ...props
 }) => {
+  prefix = isBigNumberNaN(value) ? '' : `${prefix.replace(/\$/,'')}$`
   return (
-    <Amount value={value} prefix={'$'} decimals={decimals} {...props} />
+    <Amount value={value} prefix={prefix} decimals={decimals} {...props} />
   )
 }
 

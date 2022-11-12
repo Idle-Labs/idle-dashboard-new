@@ -70,6 +70,9 @@ const theme = extendTheme({
       800: '#AE3C3B',
       900: '#923231',
     },
+    brand: {
+      blue: '#0519D3'
+    },
     darkTeal: {
       500: '#144241',
       300: '#3F6D6C',
@@ -408,6 +411,14 @@ const theme = extendTheme({
             borderColor:'primary',
           }
         },
+        ctaBlue:{
+          borderRadius:8,
+          backgroundColor:'brand.blue',
+          _hover: {
+            color:'button.colorHover',
+            backgroundColor:'brand.blue',
+          }
+        },
         cta:{
           borderRadius:8,
           backgroundColor:'button.bg',
@@ -524,11 +535,11 @@ export const App = () => (
       <I18nProvider>
         <WalletProvider>
           <Web3Provider>
-            <PortfolioProvider>
-              <TransactionManagerProvider>
+            <TransactionManagerProvider>
+              <PortfolioProvider>
                 <BrowserRouterProvider />
-              </TransactionManagerProvider>
-            </PortfolioProvider>
+              </PortfolioProvider>
+            </TransactionManagerProvider>
           </Web3Provider>
         </WalletProvider>
       </I18nProvider>

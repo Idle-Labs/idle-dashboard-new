@@ -1,18 +1,31 @@
+import { chains } from 'constants/'
+import BigNumber from 'bignumber.js'
+import { ChainlinkHelper } from 'classes/'
+import { selectUnderlyingToken } from 'selectors/'
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { Transaction, TransactionReceipt } from 'web3-core'
-import { estimateGasLimit, makeEtherscanApiRequest } from 'helpers/'
 import type { ReducerActionTypes, ErrnoException } from 'constants/types'
 import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+import { BNify, estimateGasLimit, makeEtherscanApiRequest, fixTokenDecimals } from 'helpers/'
 
-type StateProps = {
+type GasOracle = {
+  FastGasPrice: string
+  LastBlock: string
+  ProposeGasPrice: string
+  SafeGasPrice: string
+  gasUsedRatio: string
+  suggestBaseFee: string
+}
+
+type TransactionStatus = {
   hash: string | null
   status: string | null
   created: number | null
-  confirmationCount: number
   timestamp: number | null
+  confirmationCount: number
   lastUpdated: number | null
   estimatedTime: number | null
   error: ErrnoException | null
@@ -21,20 +34,48 @@ type StateProps = {
   contractSendMethod: ContractSendMethod | null
 }
 
+type StateProps = {
+  gasPrice: string | null,
+  gasOracle: GasOracle | null,
+  tokenPriceUsd: BigNumber | null,
+  transaction: TransactionStatus
+}
+
 type ContextProps = {
   retry: Function
+  state: StateProps
   sendTransaction: Function
-  state: StateProps | null
+  estimateGasFee: Function
+}
+
+const initialState: StateProps = {
+  gasPrice: null,
+  gasOracle: null,
+  tokenPriceUsd: null,
+  transaction: {
+    hash: null,
+    error: null,
+    status: null,
+    receipt: null,
+    created: null,
+    timestamp: null,
+    transaction: null,
+    lastUpdated: null,
+    estimatedTime: null,
+    confirmationCount: 0,
+    contractSendMethod: null,
+  }
 }
 
 const initialContextState = {
   retry: () => {},
-  state: null,
-  sendTransaction: () => {}
+  state: initialState,
+  sendTransaction: () => {},
+  estimateGasFee: () => {}
 }
 
 // const initialStateMock = : StateProps = {
-//   hash: 'dwa',
+//   hash: '0x90ef32488e8fa4206d02b8acb411f1c49b092ba855efb158d27b751c93de7ad6',
 //   error: null,
 //   status: 'failed',
 //   receipt: null,
@@ -59,41 +100,106 @@ const initialContextState = {
 //   contractSendMethod: null,
 // }
 
-const initialState: StateProps = {
-  hash: null,
-  error: null,
-  status: null,
-  receipt: null,
-  created: null,
-  timestamp: null,
-  transaction: null,
-  lastUpdated: null,
-  estimatedTime: null,
-  confirmationCount: 0,
-  contractSendMethod: null,
-}
-
 const reducer = (state: StateProps, action: ReducerActionTypes) => {
   const lastUpdated = Date.now()
   switch (action.type){
     case 'RESET':
-      return {...initialState}
+      return {
+        ...state,
+        transaction: {
+          ...initialState.transaction
+        }
+      }
+    case 'SET_GAS_PRICE':
+      return {
+        ...state,
+        gasPrice: action.payload
+      }
+    case 'SET_GAS_ORACLE':
+      return {
+        ...state,
+        gasOracle : action.payload
+      }
+    case 'SET_TOKEN_PRICE':
+      return {
+        ...state,
+        tokenPriceUsd : action.payload
+      }
     case 'CREATE':
-      return {...initialState, contractSendMethod: action.payload, status: 'created', created: lastUpdated, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...initialState.transaction,
+          contractSendMethod: action.payload,
+          status: 'created',
+          created: lastUpdated,
+          lastUpdated
+        }
+      }
     case 'SET_RECEIPT':
-      return {...state, receipt: action.payload, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          receipt: action.payload,
+            lastUpdated
+        }
+      }
     case 'SET_ESTIMATED_TIME':
-      return {...state, timestamp: lastUpdated, estimatedTime: action.payload, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          timestamp: lastUpdated,
+            estimatedTime: action.payload,
+            lastUpdated
+        }
+      }
     case 'SET_HASH':
-      return {...state, hash: action.payload, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          hash: action.payload,
+            lastUpdated
+        }
+      }
     case 'SET_TRANSACTION':
-      return {...state, transaction: action.payload, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          transaction: action.payload,
+            lastUpdated
+        }
+      }
     case 'SET_STATUS':
-      return {...state, status: action.payload, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          status: action.payload,
+            lastUpdated
+        }
+      }
     case 'SET_ERROR':
-      return {...state, error: action.payload, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          error: action.payload,
+            lastUpdated
+        }
+      }
     case 'INCREASE_CONFIRMATION_COUNT':
-      return {...state, confirmationCount: state.confirmationCount+1, lastUpdated}
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          confirmationCount: state.transaction.confirmationCount+1,
+          lastUpdated
+        }
+      }
     default:
       return {...state}
   }
@@ -108,21 +214,66 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   const { account, chainId, explorer } = useWalletProvider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
 
+  // Get chain token price
   useEffect(() => {
-    if (!state) return
-    console.log('Transaction CHANGED', state)
-  }, [state])
+    if (!chainId || !web3) return
+    ;(async () => {
+      const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
+      if (!chainToken || !chainToken.address) return
+      
+      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3)
+      const chainTokenPriceUsd = await chainlinkHelper.getTokenPriceUsd(chainToken.address)
+      if (!chainTokenPriceUsd) return
+      dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
+      // console.log('chainToken', chainToken, chainTokenPriceUsd)
+    })()
+  }, [chainId, web3])
+
+  // Track transaction changed
+  useEffect(() => {
+    if (!state.transaction) return
+    console.log('Transaction CHANGED', state.transaction)
+  }, [state.transaction])
+
+  // Fix gas price decimals
+  const setGasPrice = useCallback((gasPrice: string) => {
+    dispatch({type: 'SET_GAS_PRICE', payload: BNify(gasPrice).times(1e9)})
+  }, [dispatch])
 
   // Get estimated time
   useEffect(() => {
-    if (!state.transaction?.gasPrice || !explorer || !chainId) return
-    (async() => {
-      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.gasPrice}`
+    if (!state.transaction?.transaction?.gasPrice || !explorer || !chainId) return
+    ;(async () => {
+      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
       const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt('15')})
+      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
     })()
   }, [state.transaction, explorer, chainId])
 
+  // Get Gas Oracle
+  useEffect(() => {
+    if (!explorer || !chainId) return
+    ;(async () => {
+      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
+      const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
+      console.log('gasOracle', gasOracle)
+      if (gasOracle) {
+        dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
+        // Set gas price
+        // setGasPrice(gasOracle.ProposeGasPrice)
+        dispatch({type: 'SET_GAS_PRICE', payload: gasOracle.ProposeGasPrice})
+      }
+    })()
+  }, [explorer, chainId, setGasPrice])
+
+  // Estimate gas fees
+  const estimateGasFee = useCallback( async (contractSendMethod: ContractSendMethod, sendOptions?: SendOptions): Promise<BigNumber | null> => {
+    if (!account || !web3 || !state.gasPrice || !state.tokenPriceUsd) return null
+    const gasLimit = await estimateGasLimit(contractSendMethod, sendOptions)
+    return fixTokenDecimals(BNify(gasLimit).times(BNify(state.gasPrice).times(1e09)), 18)
+  }, [account, web3, state.gasPrice, state.tokenPriceUsd])
+
+  // Send transaction
   const sendTransaction = useCallback(
     async (contractSendMethod: ContractSendMethod) => {
       if (!account || !web3) return null
@@ -134,7 +285,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
       if (gas) {
         sendOptions.gas = gas
+        sendOptions.gasPrice = (+state.gasPrice+100).toString()
       }
+
+      console.log('sendOptions', sendOptions)
+
+      dispatch({type: 'CREATE', payload: contractSendMethod})
 
       const transactionHandler = contractSendMethod.send(sendOptions)
         .on("transactionHash", async (hash: string) => {
@@ -167,19 +323,18 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           dispatch({type: 'SET_ERROR', payload: error})
           dispatch({type: 'SET_STATUS', payload: 'failed'})
         });
-
-      dispatch({type: 'CREATE', payload: contractSendMethod})
     }
-  , [account, web3])
+  , [account, web3, state.gasPrice])
 
+  // Send again the transaction
   const retry = useCallback(() => {
-    console.log('retry', state.contractSendMethod)
-    if (!state.contractSendMethod) return
-    sendTransaction(state.contractSendMethod)
-  }, [sendTransaction, state.contractSendMethod])
+    console.log('retry', state.transaction.contractSendMethod)
+    if (!state.transaction.contractSendMethod) return
+    sendTransaction(state.transaction.contractSendMethod)
+  }, [sendTransaction, state.transaction.contractSendMethod])
 
   return (
-    <TransactionManagerContext.Provider value={{ state, sendTransaction, retry }}>
+    <TransactionManagerContext.Provider value={{ state, sendTransaction, retry, estimateGasFee }}>
       {children}
     </TransactionManagerContext.Provider>
   )

@@ -17,7 +17,7 @@ export class UnderlyingToken {
   public readonly tokenConfig: UnderlyingTokenProps
 
   // Contracts
-  public readonly contract: Contract
+  public readonly contract: Contract | null
 
   constructor(web3: Web3, chainId: number, tokenConfig: UnderlyingTokenProps){
     
@@ -29,8 +29,11 @@ export class UnderlyingToken {
     this.id = tokenConfig.address?.toLowerCase() || '0x0000000000000000000000000000000000000000'
 
     // Init CDO contract
-    const abi = tokenConfig.abi || ERC20 as Abi
-    this.contract = new web3.eth.Contract(abi, tokenConfig.address)
+    this.contract = null
+    if (tokenConfig.abi !== null) {
+      const abi = tokenConfig.abi || ERC20 as Abi
+      this.contract = new web3.eth.Contract(abi, tokenConfig.address)
+    }
   }
 
   public getTransactions(account: string, etherscanTransactions: any[]): any[] {
@@ -38,6 +41,7 @@ export class UnderlyingToken {
   }
 
   public getBalancesCalls(params: any[] = []): any[] {
+    if (!this.contract) return []
     return [
       {
         assetId:this.id,
@@ -51,6 +55,7 @@ export class UnderlyingToken {
   }
 
   public getPricesUsdCalls(contracts: GenericContract[]): any[] {
+    if (!this.contract) return []
     if (!this.tokenConfig.conversionRate) return []
     
     const genericContractsHelper = new GenericContractsHelper(this.chainId, this.web3, contracts)
@@ -71,6 +76,7 @@ export class UnderlyingToken {
   }
 
   public getTotalSupplyCalls(): ContractRawCall[] {
+    if (!this.contract) return []
     return [
       {
         assetId:this.id,

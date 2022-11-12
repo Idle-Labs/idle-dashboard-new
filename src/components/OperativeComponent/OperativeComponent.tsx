@@ -1,8 +1,10 @@
+import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
-import { MAX_ALLOWANCE } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
-import type { ReducerActionTypes } from 'constants/types'
+import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
+import { ContractSendMethod } from 'web3-eth-contract'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import type { Number, ReducerActionTypes } from 'constants/types'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
@@ -32,6 +34,7 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount
     if (!selectAssetPriceUsd || !underlyingAsset) return
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+    console.log('amountUsd', amountUsd)
     setAmountUsd(amountUsd)
   }, [underlyingAsset, amount, selectAssetPriceUsd])
 
@@ -149,11 +152,13 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const [ gasFee, setGasFee ] = useState<Number | null>(null)
+  const [ gasFeeUsd, setGasFeeUsd ] = useState<Number | null>(null)
 
   const { dispatch } = useOperativeComponent()
-  const { account } = useWalletProvider()
-  const { sendTransaction } = useTransactionManager()
+  const { account, chainToken } = useWalletProvider()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
+  const { sendTransaction, estimateGasFee, state: { tokenPriceUsd } } = useTransactionManager()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
 
   const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
@@ -174,12 +179,11 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
   // Deposit
   const deposit = useCallback(() => {
     if (!account || disabled) return
-    if (!underlyingAssetVault || !("contract" in underlyingAssetVault)) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
     ;(async() => {
-      // console.log('underlyingAssetVault', underlyingAssetVault)
-
+      if (!underlyingAssetVault.contract) return
       const vaultOwner = getVaultAllowanceOwner(vault)
       const allowance = await getAllowance(underlyingAssetVault.contract, account.address, vaultOwner)
       
@@ -220,6 +224,24 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
       <ConnectWalletButton />
     )
   }, [account, disabled, deposit])
+
+  useEffect(() => {
+    if (!account || !tokenPriceUsd) return
+    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    ;(async () => {
+      const depositParams = vault.getDepositParams('1')
+      const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+
+      const sendOptions = {
+        from: account?.address
+      }
+      const estimatedGasFee = await estimateGasFee(depositContractSendMethod, sendOptions)
+      if (!estimatedGasFee) return null
+      const estimatedGasFeeUsd = estimatedGasFee.times(tokenPriceUsd)
+      setGasFee(estimatedGasFee)
+      setGasFeeUsd(estimatedGasFeeUsd)
+    })()
+  }, [estimateGasFee, vault, account, tokenPriceUsd])
 
   return (
     <AssetProvider
@@ -302,7 +324,12 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
           >
             <MdOutlineLocalGasStation color={theme.colors.ctaDisabled} size={24} />
             <Translation translation={'trade.estimatedGasFee'} suffix={':'} textStyle={'captionSmaller'} />
-
+            <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={gasFeeUsd}></Amount.Usd>
+            {
+              gasFeeUsd && (
+                <Amount textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={`(`} suffix={`${chainToken?.symbol})`} value={gasFee} decimals={4}></Amount>
+              )
+            }
           </HStack>
           {depositButton}
         </VStack>
@@ -353,7 +380,7 @@ const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
 const TransactionPending: React.FC = () => {
   const { actionType } = useOperativeComponent()
   const { chainId, explorer } = useWalletProvider()
-  const { state: transactionState } = useTransactionManager()
+  const { state: { transaction: transactionState } } = useTransactionManager()
   const [ progressValue, setProgressValue ] = useState<number>(0)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(0)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
@@ -475,7 +502,7 @@ const TransactionFailed: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { chainId, explorer } = useWalletProvider()
   const { underlyingAsset, theme } = useAssetProvider()
   const { amount, actionType } = useOperativeComponent()
-  const { state: transactionState } = useTransactionManager()
+  const { state: { transaction: transactionState } } = useTransactionManager()
 
   return (
     <>
@@ -573,7 +600,7 @@ export const OperativeComponent: React.FC = () => {
   const [ actionIndex, setActionIndex ] = useState<number>(0)
   const { asset, underlyingAsset, theme } = useAssetProvider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { state: transactionState, retry } = useTransactionManager()
+  const { state: { gasPrice, gasOracle, transaction: transactionState }, retry } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
     setActionIndex(index)
@@ -627,20 +654,42 @@ export const OperativeComponent: React.FC = () => {
 
   return (
     <OperativeComponentContext.Provider value={{...state, dispatch}}>
-      <VStack
+      <Flex
         p={4}
         width={'100%'}
         bg={'card.bg'}
         minHeight={'590px'}
+        direction={'column'}
+        position={'relative'}
         alignItems={'flex-start'}
         id={'operative-component'}
       >
+        {
+          (!transactionState?.status || transactionState?.status === 'failed') && (
+            <Button
+              p={2}
+              right={4}
+              zIndex={10}
+              borderRadius={8}
+              variant={'ctaBlue'}
+              position={'absolute'}
+            >
+              <HStack
+                spacing={1}
+              >
+                <MdOutlineLocalGasStation color={'primary'} size={24} />
+                <Amount abbreviate={false} textStyle={'titleSmall'} color={'primary'} value={gasPrice} />
+              </HStack>
+            </Button>
+          )
+        }
         <ChakraCarousel
           gap={0}
           activeItem={activeItem}
         >
-          <VStack
+          <Flex
             flex={1}
+            direction={'column'}
             alignItems={'flex-start'}
           >
             <HStack
@@ -668,7 +717,7 @@ export const OperativeComponent: React.FC = () => {
             >
               {!!ActionComponent && <ActionComponent itemIndex={0} />}
             </Flex>
-          </VStack>
+          </Flex>
           {
             actions[actionIndex].steps.map((step, index) => {
               const StepComponent = step.component
@@ -679,6 +728,7 @@ export const OperativeComponent: React.FC = () => {
           }
           <VStack
             flex={1}
+            spacing={0}
             id={'confirm-on-wallet'}
             alignItems={'flex-start'}
           >
@@ -716,6 +766,7 @@ export const OperativeComponent: React.FC = () => {
 
           <VStack
             flex={1}
+            spacing={0}
             alignItems={'flex-start'}
             id={'transaction-pending'}
           >
@@ -724,6 +775,7 @@ export const OperativeComponent: React.FC = () => {
 
           <VStack
             flex={1}
+            spacing={0}
             alignItems={'flex-start'}
             id={'transaction-completed'}
           >
@@ -736,7 +788,7 @@ export const OperativeComponent: React.FC = () => {
             }
           </VStack>
         </ChakraCarousel>
-      </VStack>
+      </Flex>
     </OperativeComponentContext.Provider>
   )
 }

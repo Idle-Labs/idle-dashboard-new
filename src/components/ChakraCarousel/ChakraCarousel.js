@@ -177,41 +177,40 @@ const Slider = ({
   };
 
   return (
+    <Flex
+      flex={1}
+      ref={ref}
+      w={{ base: "100%", md: `calc(100% + ${gap}px)` }}
+      ml={{ base: 0, md: `-${gap / 2}px` }}
+      mt={0}
+      px={`${gap / 2}px`}
+      position="relative"
+      overflow="hidden"
+      _before={{
+        bgGradient: "linear(to-r, base.d400, transparent)",
+        position: "absolute",
+        w: `${gap / 2}px`,
+        content: "''",
+        zIndex: 1,
+        h: "100%",
+        left: 0,
+        top: 0
+      }}
+      _after={{
+        bgGradient: "linear(to-l, base.d400, transparent)",
+        position: "absolute",
+        w: `${gap / 2}px`,
+        content: "''",
+        zIndex: 1,
+        h: "100%",
+        right: 0,
+        top: 0
+      }}
+    >
+      {children}
+    </Flex>
+    /*
     <>
-      <Flex
-        flex={1}
-        ref={ref}
-        w={{ base: "100%", md: `calc(100% + ${gap}px)` }}
-        ml={{ base: 0, md: `-${gap / 2}px` }}
-        px={`${gap / 2}px`}
-        position="relative"
-        overflow="hidden"
-        _before={{
-          bgGradient: "linear(to-r, base.d400, transparent)",
-          position: "absolute",
-          w: `${gap / 2}px`,
-          content: "''",
-          zIndex: 1,
-          h: "100%",
-          left: 0,
-          top: 0
-        }}
-        _after={{
-          bgGradient: "linear(to-l, base.d400, transparent)",
-          position: "absolute",
-          w: `${gap / 2}px`,
-          content: "''",
-          zIndex: 1,
-          h: "100%",
-          right: 0,
-          top: 0
-        }}
-      >
-        {children}
-      </Flex>
-
-      {
-        /*
         <Flex w={`${itemWidth}px`} mt={`${gap / 2}px`} mx="auto">
           <Button
             onClick={handleDecrementClick}
@@ -250,9 +249,8 @@ const Slider = ({
             <ChevronRightIcon boxSize={9} />
           </Button>
         </Flex>
-        */
-      }
     </>
+    */
   );
 };
 

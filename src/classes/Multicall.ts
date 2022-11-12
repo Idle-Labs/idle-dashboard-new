@@ -174,7 +174,9 @@ export class  Multicall {
   async executeMulticallsChunks(calls: CallData[], singleCallsEnabled: boolean = false): Promise<DecodedResult[] | null> {
     const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
     const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled) ))
+    // console.log('chunksResults', callsChunks, chunksResults)
     return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
+      // if (!chunkResults) return results
       return results.concat(...chunkResults)
     }, [])
   }
@@ -186,65 +188,21 @@ export class  Multicall {
     }
 
     const calldata = this.prepareMulticallData(calls);
+    
+    // console.log('callData', calldata)
 
     if (!calldata) return null;
 
-    // console.log('callData', calldata)
-
+    let results = null
     const contractAddress = this.networksContracts[this.chainId];
 
     try {
-      const results = await this.web3.eth.call({
+      results = await this.web3.eth.call({
         data: calldata,
         to: contractAddress,
         from: contractAddress
       });
-
-      // console.log('Multicall raw:', results)
-
-      const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results);
-      
-      // console.log('decodedResults', results, decodedResults)
-
-      if (decodedResults && decodedResults[0].length){
-
-        const decodedData = decodedResults[0].map( (callResult: any, index: number ) => {
-          const success = callResult[0]
-          const decodedResult = callResult[1]
-          const output = {
-            data:null,
-            callData:calls[index],
-            extraData:calls[index].extraData
-          };
-
-          if (!success) return output
-
-          const returnTypes = calls[index].returnTypes;
-          const returnFields = calls[index].returnFields;
-          
-          // console.log(returnTypes, returnFields, decodedResult)
-
-          const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
-
-          if (returnTypes.length === 1){
-            output.data = decodedValues[0];
-          } else {
-            const values = decodedValues.splice(0,returnTypes.length);
-            output.data = values ? values.reduce( (acc, v, j) => {
-              acc[j] = v;
-              acc[returnFields[j]] = v;
-              return acc;
-            },{}) : {};
-          }
-          return output;
-        });
-
-        // console.log('Multicall decoded:', decodedData)
-
-        return decodedData
-      }
     } catch (err) {
-
       // console.log('Multicall Error:', calls, err)
 
       if (!singleCallsEnabled) return null
@@ -267,6 +225,52 @@ export class  Multicall {
         decodedResults.push(output)
         return decodedResults
       },[])
+    }
+
+    const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results);
+    
+    // console.log('Multicall raw:', results)
+    // console.log('decodedResults', results, decodedResults)
+
+    if (decodedResults && decodedResults[0].length){
+
+      const decodedData = decodedResults[0].map( (callResult: any, index: number ) => {
+        const success = callResult[0]
+        const decodedResult = callResult[1]
+        const output = {
+          data:null,
+          callData:calls[index],
+          extraData:calls[index].extraData
+        };
+
+        if (!success) return output
+
+        const returnTypes = calls[index].returnTypes;
+        const returnFields = calls[index].returnFields;
+        
+        // console.log(returnTypes, returnFields, decodedResult)
+        try {
+          const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
+          if (returnTypes.length === 1){
+            output.data = decodedValues[0];
+          } else {
+            const values = decodedValues.splice(0,returnTypes.length);
+            output.data = values ? values.reduce( (acc, v, j) => {
+              acc[j] = v;
+              acc[returnFields[j]] = v;
+              return acc;
+            },{}) : {};
+          }
+        } catch (error) {
+          // console.log('Decode error: ', error, calls[index], success, returnTypes, returnFields, decodedResult)
+        }
+
+        return output;
+      });
+
+      // console.log('Multicall decoded:', decodedData)
+
+      return decodedData
     }
 
     return null;
