@@ -14,7 +14,7 @@ type StateProps = {
   confirmationCount: number
   timestamp: number | null
   lastUpdated: number | null
-  estimatedTime: string | null
+  estimatedTime: number | null
   error: ErrnoException | null
   transaction: Transaction | null
   receipt: TransactionReceipt | null
@@ -33,10 +33,36 @@ const initialContextState = {
   sendTransaction: () => {}
 }
 
+// const initialStateMock = : StateProps = {
+//   hash: 'dwa',
+//   error: null,
+//   status: 'failed',
+//   receipt: null,
+//   created: null,
+//   timestamp: null,
+//   transaction: {
+//     blockHash: "0x78530138977589b8b3b8aa253126c2691124c56f3c9c52057ffc2269d14ac593",
+//     blockNumber: 15947982,
+//     from: "0x473780deAF4a2Ac070BBbA936B0cdefe7F267dFc",
+//     gas: 27500,
+//     gasPrice: "530146068900",
+//     hash: "0x90ef32488e8fa4206d02b8acb411f1c49b092ba855efb158d27b751c93de7ad6",
+//     input: "0x",
+//     to: "",
+//     nonce: 8666,
+//     transactionIndex: 123,
+//     value: "676521416807297978",
+//   },
+//   lastUpdated: null,
+//   estimatedTime: 15,
+//   confirmationCount: 0,
+//   contractSendMethod: null,
+// }
+
 const initialState: StateProps = {
   hash: null,
   error: null,
-  status: 'pending',
+  status: null,
   receipt: null,
   created: null,
   timestamp: null,
@@ -93,7 +119,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     (async() => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.gasPrice}`
       const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      dispatch({type: 'SET_ESTIMATED_TIME', payload: estimatedTime})
+      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt('15')})
     })()
   }, [state.transaction, explorer, chainId])
 

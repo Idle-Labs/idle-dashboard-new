@@ -843,6 +843,7 @@
       "body": {
         "pending": "",
         "success": "",
+        "long": "Your transaction is taking more time than expected... please hang on",
         "failed": "There was a problem with the execution your transaction, make sure the gas limit is high enough and try again"
       },
       "depositTo": "Deposit To",

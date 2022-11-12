@@ -354,10 +354,43 @@ const TransactionPending: React.FC = () => {
   const { actionType } = useOperativeComponent()
   const { chainId, explorer } = useWalletProvider()
   const { state: transactionState } = useTransactionManager()
+  const [ progressValue, setProgressValue ] = useState<number>(0)
+  const [ progressMaxValue, setProgressMaxValue ] = useState<number>(0)
+  const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
+  const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
 
-  const remainingTime = null//useMemo()
+  const startCircularProgress = useCallback(() => {
+    if (!progressMaxValue || !transactionState?.timestamp) return
+    const progressValue = Math.min(progressMaxValue, Date.now()-transactionState?.timestamp)
+    setProgressValue(progressValue)
 
-  console.log('TransactionPending', transactionState)
+    if (progressValue>=progressMaxValue) return
+    setTimeout(startCircularProgress, 100)
+  }, [progressMaxValue, transactionState?.timestamp])
+
+  const startCountDown = useCallback(() => {
+    if (!targetTimestamp) return
+
+    const newRemainingTime = Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000))
+    if (!remainingTime || newRemainingTime > remainingTime) {
+      setRemainingTime(newRemainingTime)
+    }
+
+    if (newRemainingTime<=0) return
+    setTimeout(startCountDown, 1000)
+  }, [remainingTime, targetTimestamp])
+
+  // console.log('TransactionPending', transactionState)
+  useEffect(() => {
+    if (!transactionState?.estimatedTime || !transactionState?.timestamp) return
+    const progressMaxValue = (transactionState?.estimatedTime*1000)
+    const targetTimestamp = +transactionState?.timestamp+(transactionState?.estimatedTime*1000)
+    setTargetTimestamp(targetTimestamp)
+    setProgressMaxValue(progressMaxValue)
+
+    startCountDown()
+    startCircularProgress()
+  }, [transactionState?.estimatedTime, transactionState?.timestamp, startCountDown, startCircularProgress])
 
   return (
     <>
@@ -371,16 +404,20 @@ const TransactionPending: React.FC = () => {
           spacing={4}
         >
           <Translation component={Text} translation={transactionState?.estimatedTime ? "modals.status.estimatedTime" : "modals.status.calculateEstimatedTime"} textStyle={'captionSmaller'} textAlign={'center'} />
-          {
-            !transactionState?.estimatedTime ? (
-              <CircularProgress isIndeterminate size={145} color={'blue.400'} thickness={'5px'} />
-            ) : (
-              <CircularProgress value={0} size={145} color={'green.400'} thickness={'5px'}>
-                <CircularProgressLabel>{remainingTime}</CircularProgressLabel>
-              </CircularProgress>
-            )
-          }
-          <Translation component={Text} translation={`modals.${actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Box
+            width={'125px'}
+            height={'125px'}
+            bg={'card.bgLight'}
+            borderRadius={'50%'}
+            position={'relative'}
+          >
+            <CircularProgress max={progressMaxValue} isIndeterminate={!remainingTime} position={'absolute'} top={'-10px'} left={'-10px'} value={progressValue} size={145} color={!transactionState?.estimatedTime ? 'blue.400' : 'green.400'} trackColor={'card.bgLight'} thickness={'5px'}>
+              {
+                !!remainingTime && <CircularProgressLabel textStyle={['bold', 'h2']}>{remainingTime > 3600 ? `>1h` : ( remainingTime > 1800 ? `>30m` : `${remainingTime}s`)}</CircularProgressLabel>
+              }
+            </CircularProgress>
+          </Box>
+          <Translation component={Text} translation={progressValue>=progressMaxValue ? `modals.status.body.long` : `modals.${actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
         </VStack>
       </Center>
       {
@@ -408,7 +445,7 @@ const TransactionSuccess: React.FC<TransactionStatusProps> = ({ goBack }) => {
 
   return (
     <>
-      <NavBar translation={`modals.status.header.success`} />
+      <NavBar goBack={() => goBack()} translation={`modals.status.header.success`} />
       <Center
         p={14}
         flex={1}
@@ -426,6 +463,7 @@ const TransactionSuccess: React.FC<TransactionStatusProps> = ({ goBack }) => {
             <MdOutlineDone size={50} color={theme.colors.green['400']} />
           </Center>
           <Translation component={Text} translation={`modals.${actionType}.status.success`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Translation component={Button} prefix={`New `} translation={`common.${actionType}`} onClick={() => goBack()} variant={'ctaFull'} />
         </VStack>
       </Center>
     </>
@@ -434,12 +472,14 @@ const TransactionSuccess: React.FC<TransactionStatusProps> = ({ goBack }) => {
 
 const TransactionFailed: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { retry } = useTransactionManager()
+  const { chainId, explorer } = useWalletProvider()
   const { underlyingAsset, theme } = useAssetProvider()
   const { amount, actionType } = useOperativeComponent()
+  const { state: transactionState } = useTransactionManager()
 
   return (
     <>
-      <NavBar translation={`modals.status.header.failed`} />
+      <NavBar goBack={() => goBack()} translation={`modals.status.header.failed`} />
       <Center
         p={14}
         flex={1}
@@ -462,6 +502,17 @@ const TransactionFailed: React.FC<TransactionStatusProps> = ({ goBack }) => {
           <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => goBack()} />
         </VStack>
       </Center>
+      {
+        transactionState?.hash && (
+          <HStack
+            spacing={1}
+            width={'100%'}
+            justifyContent={'center'}
+          >
+            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={['captionSmall', 'link', 'bold']} isExternal href={getExplorerTxUrl(chainId, explorer, transactionState.hash)} />
+          </HStack>
+        )
+      }
     </>
   )
 }
@@ -615,7 +666,7 @@ export const OperativeComponent: React.FC = () => {
               flex={1}
               width={'100%'}
             >
-              {ActionComponent && <ActionComponent itemIndex={0} />}
+              {!!ActionComponent && <ActionComponent itemIndex={0} />}
             </Flex>
           </VStack>
           {
@@ -681,17 +732,6 @@ export const OperativeComponent: React.FC = () => {
                 <TransactionSuccess goBack={() => setActiveItem(state.activeStep) } />
               ) : (
                 <TransactionFailed goBack={() => setActiveItem(state.activeStep) } />
-              )
-            }
-            {
-              transactionState?.hash && (
-                <HStack
-                  spacing={1}
-                  width={'100%'}
-                  justifyContent={'center'}
-                >
-                  <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={['captionSmall', 'link', 'bold']} isExternal href={getExplorerTxUrl(chainId, explorer, transactionState.hash)} />
-                </HStack>
               )
             }
           </VStack>
