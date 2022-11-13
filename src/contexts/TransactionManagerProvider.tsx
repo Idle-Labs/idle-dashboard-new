@@ -45,6 +45,7 @@ type ContextProps = {
   retry: Function
   state: StateProps
   sendTransaction: Function
+  sendTransactionTest: Function
   estimateGasFee: Function
 }
 
@@ -71,6 +72,7 @@ const initialContextState = {
   retry: () => {},
   state: initialState,
   sendTransaction: () => {},
+  sendTransactionTest: () => {},
   estimateGasFee: () => {}
 }
 
@@ -101,6 +103,7 @@ const initialContextState = {
 // }
 
 const reducer = (state: StateProps, action: ReducerActionTypes) => {
+  console.log('dispatch', action.type, action.payload)
   const lastUpdated = Date.now()
   switch (action.type){
     case 'RESET':
@@ -142,7 +145,7 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...state.transaction,
           receipt: action.payload,
-            lastUpdated
+          lastUpdated
         }
       }
     case 'SET_ESTIMATED_TIME':
@@ -151,8 +154,8 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...state.transaction,
           timestamp: lastUpdated,
-            estimatedTime: action.payload,
-            lastUpdated
+          estimatedTime: action.payload,
+          lastUpdated
         }
       }
     case 'SET_HASH':
@@ -161,7 +164,7 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...state.transaction,
           hash: action.payload,
-            lastUpdated
+          lastUpdated
         }
       }
     case 'SET_TRANSACTION':
@@ -170,7 +173,7 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...state.transaction,
           transaction: action.payload,
-            lastUpdated
+          lastUpdated
         }
       }
     case 'SET_STATUS':
@@ -179,7 +182,7 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...state.transaction,
           status: action.payload,
-            lastUpdated
+          lastUpdated
         }
       }
     case 'SET_ERROR':
@@ -188,7 +191,7 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...state.transaction,
           error: action.payload,
-            lastUpdated
+          lastUpdated
         }
       }
     case 'INCREASE_CONFIRMATION_COUNT':
@@ -241,8 +244,16 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [dispatch])
 
   // Get estimated time
+  /*
+  const getEstimatedTime = useCallback( async () => {
+    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
+    const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
+    dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
+  }, [state.transaction, explorer, chainId])
+  */
+
   useEffect(() => {
-    if (!state.transaction?.transaction?.gasPrice || !explorer || !chainId) return
+    if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
       const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
@@ -272,6 +283,59 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     const gasLimit = await estimateGasLimit(contractSendMethod, sendOptions)
     return fixTokenDecimals(BNify(gasLimit).times(BNify(state.gasPrice).times(1e09)), 18)
   }, [account, web3, state.gasPrice, state.tokenPriceUsd])
+
+  // Send transaction
+  const sendTransactionTest = useCallback(
+    async (contractSendMethod: ContractSendMethod) => {
+      if (!account || !web3) return null
+
+      const sendOptions: SendOptions = {
+        from: account?.address
+      }
+      const gas = await estimateGasLimit(contractSendMethod, sendOptions)
+
+      if (gas) {
+        sendOptions.gas = gas
+        sendOptions.gasPrice = (+state.gasPrice+100).toString()
+      }
+
+      dispatch({type: 'CREATE', payload: contractSendMethod})
+
+      setTimeout(() => {
+        const hash = '0x7af6ac0d4f21beca905bca30be1a3d73b7634e8635c13edca5a4e74aa276c9c2'
+        dispatch({type: 'SET_HASH', payload: hash})
+        dispatch({type: 'SET_STATUS', payload: "pending"})
+
+        ;(async() => {
+          const transaction = await web3.eth.getTransaction(hash)
+          if (transaction) {
+            dispatch({type: 'SET_TRANSACTION', payload: transaction})
+
+            setTimeout(() => {
+              ;(async() => {
+                const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)
+                console.log('receipt', receipt)
+                if (receipt) {
+                  dispatch({type: 'SET_RECEIPT', payload: receipt})
+
+                  setTimeout(() => {
+                    // receipt.status = 'success'
+                    console.log('confirmation')
+                    dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
+                    if (receipt.status) {
+                      dispatch({type: 'SET_STATUS', payload: "success"})
+                    } else if (!receipt.status) {
+                      dispatch({type: 'SET_STATUS', payload: "failed"})
+                    }
+                  }, 2000)
+                }
+              })()
+            }, 2000)
+          }
+        })()
+      }, 1000)
+    }
+  , [account, web3, state.gasPrice])
 
   // Send transaction
   const sendTransaction = useCallback(
@@ -334,7 +398,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [sendTransaction, state.transaction.contractSendMethod])
 
   return (
-    <TransactionManagerContext.Provider value={{ state, sendTransaction, retry, estimateGasFee }}>
+    <TransactionManagerContext.Provider value={{ state, sendTransaction, sendTransactionTest, retry, estimateGasFee }}>
       {children}
     </TransactionManagerContext.Provider>
   )

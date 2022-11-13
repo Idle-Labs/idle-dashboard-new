@@ -158,7 +158,7 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
   const { dispatch } = useOperativeComponent()
   const { account, chainToken } = useWalletProvider()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
-  const { sendTransaction, estimateGasFee, state: { tokenPriceUsd } } = useTransactionManager()
+  const { sendTransaction, sendTransactionTest, estimateGasFee, state: { tokenPriceUsd } } = useTransactionManager()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
 
   const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
@@ -193,14 +193,15 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
         const depositParams = vault.getDepositParams(amount)
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         console.log('depositParams', depositParams, depositContractSendMethod)
-        sendTransaction(depositContractSendMethod)
+        // sendTransaction(depositContractSendMethod)
+        sendTransactionTest(depositContractSendMethod)
       } else {
         // Approve amount
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
 
-  }, [account, disabled, amount, vault, underlyingAssetVault, dispatch, sendTransaction])
+  }, [account, disabled, amount, vault, underlyingAssetVault, dispatch, /*sendTransaction, */sendTransactionTest])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -380,11 +381,13 @@ const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
 const TransactionPending: React.FC = () => {
   const { actionType } = useOperativeComponent()
   const { chainId, explorer } = useWalletProvider()
-  const { state: { transaction: transactionState } } = useTransactionManager()
   const [ progressValue, setProgressValue ] = useState<number>(0)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(0)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
+  const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
+  const { state: { transaction: transactionState } } = useTransactionManager()
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
+  const [ progressTimeoutId, setProgressTimeoutId ] = useState<any>(null)
 
   const startCircularProgress = useCallback(() => {
     if (!progressMaxValue || !transactionState?.timestamp) return
@@ -392,7 +395,9 @@ const TransactionPending: React.FC = () => {
     setProgressValue(progressValue)
 
     if (progressValue>=progressMaxValue) return
-    setTimeout(startCircularProgress, 100)
+    const timeoutId = setTimeout(startCircularProgress, 100)
+    setProgressTimeoutId(timeoutId)
+    console.log('PROGRESS!')
   }, [progressMaxValue, transactionState?.timestamp])
 
   const startCountDown = useCallback(() => {
@@ -404,12 +409,22 @@ const TransactionPending: React.FC = () => {
     }
 
     if (newRemainingTime<=0) return
-    setTimeout(startCountDown, 1000)
+    const timeoutId = setTimeout(startCountDown, 1000)
+    setCountTimeoutId(timeoutId)
+    console.log('COUNTDOWN!')
   }, [remainingTime, targetTimestamp])
+
+  // Cancel timeouts
+  useEffect(() => {
+    if (transactionState?.status === 'pending' || !countTimeoutId || !progressTimeoutId) return
+    console.log('CLEAR COUNTDOWN')
+    clearTimeout(countTimeoutId)
+    clearTimeout(progressTimeoutId)
+  }, [transactionState.status, countTimeoutId, progressTimeoutId])
 
   // console.log('TransactionPending', transactionState)
   useEffect(() => {
-    if (!transactionState?.estimatedTime || !transactionState?.timestamp) return
+    if (!transactionState?.estimatedTime || !transactionState?.timestamp || transactionState?.status !== 'pending'/* || countTimeoutId || progressTimeoutId*/) return
     const progressMaxValue = (transactionState?.estimatedTime*1000)
     const targetTimestamp = +transactionState?.timestamp+(transactionState?.estimatedTime*1000)
     setTargetTimestamp(targetTimestamp)
@@ -417,7 +432,8 @@ const TransactionPending: React.FC = () => {
 
     startCountDown()
     startCircularProgress()
-  }, [transactionState?.estimatedTime, transactionState?.timestamp, startCountDown, startCircularProgress])
+    console.log('START COUNTDOWN')
+  }, [transactionState?.estimatedTime, transactionState?.timestamp, transactionState?.status,/* countTimeoutId, progressTimeoutId, */startCountDown, startCircularProgress])
 
   return (
     <>
@@ -624,7 +640,7 @@ export const OperativeComponent: React.FC = () => {
   }, [activeAction, activeStep])
 
   useEffect(() => {
-    console.log('TransactionProcess', transactionState)
+    // console.log('TransactionProcess', transactionState)
     const firstProcessIndex = activeAction.steps.length+1
     switch (transactionState?.status) {
       case 'created':
