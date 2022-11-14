@@ -35,9 +35,10 @@ type TransactionStatus = {
 }
 
 type StateProps = {
-  gasPrice: string | null,
-  gasOracle: GasOracle | null,
-  tokenPriceUsd: BigNumber | null,
+  gasPrice: string | null
+  transactionsCount: number,
+  gasOracle: GasOracle | null
+  tokenPriceUsd: BigNumber | null
   transaction: TransactionStatus
 }
 
@@ -53,6 +54,7 @@ const initialState: StateProps = {
   gasPrice: null,
   gasOracle: null,
   tokenPriceUsd: null,
+  transactionsCount: 0,
   transaction: {
     hash: null,
     error: null,
@@ -112,6 +114,11 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...initialState.transaction
         }
+      }
+    case 'INCREMENT_TRANSACTIONS_COUNT':
+      return {
+        ...state,
+        transactionsCount: state.transactionsCount+1
       }
     case 'SET_GAS_PRICE':
       return {
@@ -214,12 +221,12 @@ export const useTransactionManager = () => useContext(TransactionManagerContext)
 
 export function TransactionManagerProvider({children}: ProviderProps) {
   const { web3 }  = useWeb3Provider()
-  const { account, chainId, explorer } = useWalletProvider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
+  const { account, chainId, walletInitialized, explorer } = useWalletProvider()
 
   // Get chain token price
   useEffect(() => {
-    if (!chainId || !web3) return
+    if (!walletInitialized || !chainId || !web3) return
     ;(async () => {
       const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
       if (!chainToken || !chainToken.address) return
@@ -230,7 +237,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
       // console.log('chainToken', chainToken, chainTokenPriceUsd)
     })()
-  }, [chainId, web3])
+  }, [walletInitialized, chainId, web3])
 
   // Track transaction changed
   useEffect(() => {
@@ -243,15 +250,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     dispatch({type: 'SET_GAS_PRICE', payload: BNify(gasPrice).times(1e9)})
   }, [dispatch])
 
-  // Get estimated time
-  /*
-  const getEstimatedTime = useCallback( async () => {
-    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
-    const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-    dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
-  }, [state.transaction, explorer, chainId])
-  */
-
+  // Set estimated time
   useEffect(() => {
     if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
     ;(async () => {
@@ -263,7 +262,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Get Gas Oracle
   useEffect(() => {
-    if (!explorer || !chainId) return
+    if (!walletInitialized || !explorer || !chainId || state.gasOracle) return
+    console.log('Get Gas Oracle', walletInitialized, explorer, chainId, state.gasOracle)
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
       const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
@@ -275,7 +275,16 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         dispatch({type: 'SET_GAS_PRICE', payload: gasOracle.ProposeGasPrice})
       }
     })()
-  }, [explorer, chainId, setGasPrice])
+  }, [explorer, chainId, walletInitialized, state.gasOracle])
+
+  // Get estimated time
+  /*
+  const getEstimatedTime = useCallback( async () => {
+    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
+    const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
+    dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
+  }, [state.transaction, explorer, chainId])
+  */
 
   // Estimate gas fees
   const estimateGasFee = useCallback( async (contractSendMethod: ContractSendMethod, sendOptions?: SendOptions): Promise<BigNumber | null> => {
@@ -322,18 +331,19 @@ export function TransactionManagerProvider({children}: ProviderProps) {
                     // receipt.status = 'success'
                     console.log('confirmation')
                     dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
-                    if (receipt.status) {
+                    // if (receipt.status) {
+                    //   dispatch({type: 'SET_STATUS', payload: "success"})
+                    // } else if (!receipt.status) {
                       dispatch({type: 'SET_STATUS', payload: "success"})
-                    } else if (!receipt.status) {
-                      dispatch({type: 'SET_STATUS', payload: "failed"})
-                    }
+                      // dispatch({type: 'SET_STATUS', payload: "failed"})
+                    // }
                   }, 2000)
                 }
               })()
-            }, 2000)
+            }, 5000)
           }
         })()
-      }, 1000)
+      }, 2000)
     }
   , [account, web3, state.gasPrice])
 
@@ -378,6 +388,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
           if (receipt.status) {
             dispatch({type: 'SET_STATUS', payload: "success"})
+            dispatch({type: 'INCREMENT_TRANSACTIONS_COUNT', payload: null})
           } else if (!receipt.status) {
             dispatch({type: 'SET_STATUS', payload: "failed"})
           }

@@ -296,7 +296,6 @@ export class TrancheVault {
   }
 
   // Transactions
-
   public getAllowanceOwner() {
     return this.cdoConfig.address
   }

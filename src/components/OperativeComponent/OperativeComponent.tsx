@@ -34,7 +34,7 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount
     if (!selectAssetPriceUsd || !underlyingAsset) return
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
-    console.log('amountUsd', amountUsd)
+    // console.log('amountUsd', amountUsd)
     setAmountUsd(amountUsd)
   }, [underlyingAsset, amount, selectAssetPriceUsd])
 
@@ -237,6 +237,9 @@ const Deposit: React.FC<ActionComponentArgs> = () => {
         from: account?.address
       }
       const estimatedGasFee = await estimateGasFee(depositContractSendMethod, sendOptions)
+
+      console.log('estimatedGasFee', depositParams, estimatedGasFee)
+
       if (!estimatedGasFee) return null
       const estimatedGasFeeUsd = estimatedGasFee.times(tokenPriceUsd)
       setGasFee(estimatedGasFee)
@@ -378,16 +381,21 @@ const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
   )
 }
 
-const TransactionPending: React.FC = () => {
-  const { actionType } = useOperativeComponent()
+type TransactionStatusProps = {
+  goBack: Function
+}
+
+const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { chainId, explorer } = useWalletProvider()
+  const { amount, actionType } = useOperativeComponent()
+  const { underlyingAsset, theme } = useAssetProvider()
   const [ progressValue, setProgressValue ] = useState<number>(0)
+  const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(0)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
-  const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
-  const { state: { transaction: transactionState } } = useTransactionManager()
-  const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
   const [ progressTimeoutId, setProgressTimeoutId ] = useState<any>(null)
+  const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
+  const { state: { transaction: transactionState }, retry } = useTransactionManager()
 
   const startCircularProgress = useCallback(() => {
     if (!progressMaxValue || !transactionState?.timestamp) return
@@ -397,7 +405,7 @@ const TransactionPending: React.FC = () => {
     if (progressValue>=progressMaxValue) return
     const timeoutId = setTimeout(startCircularProgress, 100)
     setProgressTimeoutId(timeoutId)
-    console.log('PROGRESS!')
+    // console.log('PROGRESS!')
   }, [progressMaxValue, transactionState?.timestamp])
 
   const startCountDown = useCallback(() => {
@@ -411,16 +419,18 @@ const TransactionPending: React.FC = () => {
     if (newRemainingTime<=0) return
     const timeoutId = setTimeout(startCountDown, 1000)
     setCountTimeoutId(timeoutId)
-    console.log('COUNTDOWN!')
+    // console.log('COUNTDOWN!')
   }, [remainingTime, targetTimestamp])
 
   // Cancel timeouts
   useEffect(() => {
     if (transactionState?.status === 'pending' || !countTimeoutId || !progressTimeoutId) return
-    console.log('CLEAR COUNTDOWN')
+    // console.log('CLEAR COUNTDOWN')
+    setRemainingTime(0)
+    setProgressValue(progressMaxValue)
     clearTimeout(countTimeoutId)
     clearTimeout(progressTimeoutId)
-  }, [transactionState.status, countTimeoutId, progressTimeoutId])
+  }, [transactionState.status, countTimeoutId, progressTimeoutId, progressMaxValue])
 
   // console.log('TransactionPending', transactionState)
   useEffect(() => {
@@ -432,64 +442,101 @@ const TransactionPending: React.FC = () => {
 
     startCountDown()
     startCircularProgress()
-    console.log('START COUNTDOWN')
-  }, [transactionState?.estimatedTime, transactionState?.timestamp, transactionState?.status,/* countTimeoutId, progressTimeoutId, */startCountDown, startCircularProgress])
+    // console.log('START COUNTDOWN')
+  }, [transactionState,/* countTimeoutId, progressTimeoutId, */startCountDown, startCircularProgress])
 
-  return (
-    <>
-      <NavBar translation={"modals.status.header.pending"} />
-      <Center
-        p={14}
-        flex={1}
-        width={'100%'}
-      >
-        <VStack
-          spacing={4}
-        >
-          <Translation component={Text} translation={transactionState?.estimatedTime ? "modals.status.estimatedTime" : "modals.status.calculateEstimatedTime"} textStyle={'captionSmaller'} textAlign={'center'} />
-          <Box
-            width={'125px'}
-            height={'125px'}
-            bg={'card.bgLight'}
-            borderRadius={'50%'}
-            position={'relative'}
-          >
-            <CircularProgress max={progressMaxValue} isIndeterminate={!remainingTime} position={'absolute'} top={'-10px'} left={'-10px'} value={progressValue} size={145} color={!transactionState?.estimatedTime ? 'blue.400' : 'green.400'} trackColor={'card.bgLight'} thickness={'5px'}>
-              {
-                !!remainingTime && <CircularProgressLabel textStyle={['bold', 'h2']}>{remainingTime > 3600 ? `>1h` : ( remainingTime > 1800 ? `>30m` : `${remainingTime}s`)}</CircularProgressLabel>
-              }
-            </CircularProgress>
-          </Box>
+  const resetAndGoBack = useCallback(() => {
+    if (transactionState?.status === 'pending') return
+
+    setProgressValue(0)
+    setRemainingTime(null)
+    setProgressMaxValue(0)
+    setCountTimeoutId(null)
+    setTargetTimestamp(null)
+    setProgressTimeoutId(null)
+
+    return goBack()
+  }, [transactionState?.status, goBack])
+
+  const body = useMemo(() => {
+    switch (transactionState?.status) {
+      case 'pending':
+        return (
           <Translation component={Text} translation={progressValue>=progressMaxValue ? `modals.status.body.long` : `modals.${actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
-        </VStack>
-      </Center>
-      {
-        transactionState?.hash && (
-          <HStack
-            spacing={1}
-            width={'100%'}
-            justifyContent={'center'}
-          >
-            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={['captionSmall', 'link', 'bold']} isExternal href={getExplorerTxUrl(chainId, explorer, transactionState.hash)} />
-          </HStack>
         )
-      }
-    </>
-  )
-}
+      case 'success':
+        return (
+          <>
+            <Translation component={Text} translation={`modals.${actionType}.status.success`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            <Translation component={Button} prefix={`New `} translation={`common.${actionType}`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
+          </>
+        )
+      case 'failed':
+        return (
+          <>
+            <Translation component={Text} translation={`modals.${actionType}.status.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={'captionSmall'} textAlign={'center'} />
+            <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => retry} variant={'ctaFull'} />
+            <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => resetAndGoBack()} />
+          </>
+        )
+      default:
+        return null
+    }
+  }, [transactionState?.status, progressValue, progressMaxValue, underlyingAsset, amount, actionType, resetAndGoBack, retry])
 
-type TransactionStatusProps = {
-  goBack: Function
-}
+  const circularProgressColor = useMemo(() => {
+    if (!transactionState?.status || !transactionState?.estimatedTime) return 'blue.400'
+    return ['success', 'pending'].includes(transactionState?.status) ? 'green.400' : 'red.400'
+  }, [transactionState?.status, transactionState?.estimatedTime])
 
-const TransactionSuccess: React.FC<TransactionStatusProps> = ({ goBack }) => {
-  const { underlyingAsset, theme } = useAssetProvider()
-  const { amount, actionType } = useOperativeComponent()
+  const circularProgress = useMemo(() => {
+    return (
+      <>
+        <Box
+          height={5}
+        >
+          <Translation component={Text} translation={transactionState?.status === 'pending' ? (transactionState?.estimatedTime ? "modals.status.estimatedTime" : "modals.status.calculateEstimatedTime") : ''} textStyle={'captionSmaller'} textAlign={'center'} />
+        </Box>
+        <Box
+          width={'125px'}
+          height={'125px'}
+          bg={'card.bgLight'}
+          borderRadius={'50%'}
+          position={'relative'}
+        >
+          <CircularProgress max={progressMaxValue} isIndeterminate={!transactionState?.estimatedTime} value={progressValue} size={145} color={circularProgressColor} trackColor={'card.bgLight'} thickness={'5px'} position={'absolute'} top={'-10px'} left={'-10px'} >
+            {
+              transactionState?.status === 'pending' ? 
+                !!remainingTime && <CircularProgressLabel textStyle={['bold', 'h2']}>{remainingTime > 3600 ? `>1h` : ( remainingTime > 1800 ? `>30m` : `${remainingTime}s`)}</CircularProgressLabel>
+              : transactionState?.status === 'success' ? (
+                <CircularProgressLabel
+                  display={'flex'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                >
+                  <MdOutlineDone size={50} color={theme.colors.green['400']} />
+                </CircularProgressLabel>
+              ) : transactionState?.status === 'failed' && (
+                <CircularProgressLabel
+                  display={'flex'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                >
+                  <MdOutlineClose size={50} color={theme.colors.red['400']} />
+                </CircularProgressLabel>
+              )
+            }
+          </CircularProgress>
+        </Box>
+      </>
+    )
+  }, [transactionState?.status, transactionState?.estimatedTime, circularProgressColor, progressMaxValue, remainingTime, progressValue, theme])
 
   return (
     <>
-      <NavBar goBack={() => goBack()} translation={`modals.status.header.success`} />
-      <Center
+      <NavBar goBack={() => resetAndGoBack()} translation={`modals.status.header.${transactionState?.status}`} />
+      <Flex
         p={14}
         flex={1}
         width={'100%'}
@@ -497,54 +544,10 @@ const TransactionSuccess: React.FC<TransactionStatusProps> = ({ goBack }) => {
         <VStack
           spacing={4}
         >
-          <Center
-            width={'120px'}
-            height={'120px'}
-            bg={'card.bgLight'}
-            borderRadius={'120px'}
-          >
-            <MdOutlineDone size={50} color={theme.colors.green['400']} />
-          </Center>
-          <Translation component={Text} translation={`modals.${actionType}.status.success`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
-          <Translation component={Button} prefix={`New `} translation={`common.${actionType}`} onClick={() => goBack()} variant={'ctaFull'} />
+          {circularProgress}
+          {body}
         </VStack>
-      </Center>
-    </>
-  )
-}
-
-const TransactionFailed: React.FC<TransactionStatusProps> = ({ goBack }) => {
-  const { retry } = useTransactionManager()
-  const { chainId, explorer } = useWalletProvider()
-  const { underlyingAsset, theme } = useAssetProvider()
-  const { amount, actionType } = useOperativeComponent()
-  const { state: { transaction: transactionState } } = useTransactionManager()
-
-  return (
-    <>
-      <NavBar goBack={() => goBack()} translation={`modals.status.header.failed`} />
-      <Center
-        p={14}
-        flex={1}
-        width={'100%'}
-      >
-        <VStack
-          spacing={4}
-        >
-          <Center
-            width={'120px'}
-            height={'120px'}
-            bg={'card.bgLight'}
-            borderRadius={'120px'}
-          >
-            <MdOutlineClose size={50} color={theme.colors.red['400']} />
-          </Center>
-          <Translation component={Text} translation={`modals.${actionType}.status.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
-          <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={'captionSmall'} textAlign={'center'} />
-          <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => retry} variant={'ctaFull'} />
-          <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => goBack()} />
-        </VStack>
-      </Center>
+      </Flex>
       {
         transactionState?.hash && (
           <HStack
@@ -655,18 +658,39 @@ export const OperativeComponent: React.FC = () => {
             return setActiveItem(state.activeStep)
           break;
           default:
-            return setActiveItem(firstProcessIndex+2)
+            return setActiveItem(firstProcessIndex+1)
           break;
         }
       break;
       case 'success':
-        setActiveItem(firstProcessIndex+2)
+        setActiveItem(firstProcessIndex+1)
         return onComplete()
       break;
       default:
       break;
     }
   }, [transactionState, onComplete, activeAction, state.activeStep])
+
+  const transationSpeedToggler = useMemo(() => {
+    if (activeItem > activeAction.steps.length) return null
+    return (
+      <Button
+        p={2}
+        right={4}
+        zIndex={10}
+        borderRadius={8}
+        variant={'ctaBlue'}
+        position={'absolute'}
+      >
+        <HStack
+          spacing={1}
+        >
+          <MdOutlineLocalGasStation color={'primary'} size={24} />
+          <Amount abbreviate={false} textStyle={'titleSmall'} color={'primary'} value={gasPrice} />
+        </HStack>
+      </Button>
+    )
+  }, [activeAction, activeItem, gasPrice])
 
   return (
     <OperativeComponentContext.Provider value={{...state, dispatch}}>
@@ -680,25 +704,7 @@ export const OperativeComponent: React.FC = () => {
         alignItems={'flex-start'}
         id={'operative-component'}
       >
-        {
-          (!transactionState?.status || transactionState?.status === 'failed') && (
-            <Button
-              p={2}
-              right={4}
-              zIndex={10}
-              borderRadius={8}
-              variant={'ctaBlue'}
-              position={'absolute'}
-            >
-              <HStack
-                spacing={1}
-              >
-                <MdOutlineLocalGasStation color={'primary'} size={24} />
-                <Amount abbreviate={false} textStyle={'titleSmall'} color={'primary'} value={gasPrice} />
-              </HStack>
-            </Button>
-          )
-        }
+        {transationSpeedToggler}
         <ChakraCarousel
           gap={0}
           activeItem={activeItem}
@@ -767,7 +773,6 @@ export const OperativeComponent: React.FC = () => {
                     <Amount textStyle={'bold'} value={parseFloat(state.amount)} decimals={8} suffix={` ${underlyingAsset?.name}`}></Amount>
                   </HStack>
                 </VStack>
-                {/*<Translation component={Button} translation={"common.cancel"} onClick={() => setActiveItem(activeItem-1)} variant={'ctaFull'} />*/}
               </VStack>
             </Center>
             <HStack
@@ -784,24 +789,9 @@ export const OperativeComponent: React.FC = () => {
             flex={1}
             spacing={0}
             alignItems={'flex-start'}
-            id={'transaction-pending'}
+            id={'transaction-status'}
           >
-            <TransactionPending />
-          </VStack>
-
-          <VStack
-            flex={1}
-            spacing={0}
-            alignItems={'flex-start'}
-            id={'transaction-completed'}
-          >
-            {
-              transactionState?.status === 'success' ? (
-                <TransactionSuccess goBack={() => setActiveItem(state.activeStep) } />
-              ) : (
-                <TransactionFailed goBack={() => setActiveItem(state.activeStep) } />
-              )
-            }
+            <TransactionStatus goBack={() => setActiveItem(state.activeStep) } />
           </VStack>
         </ChakraCarousel>
       </Flex>

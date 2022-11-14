@@ -1,12 +1,15 @@
 import Web3 from 'web3'
-import { ZERO_ADDRESS } from 'constants/'
+import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
+import type { Abi, Number } from 'constants/types'
+import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContract } from 'contracts/GenericContract'
-import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
+import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import { BNify, fixTokenDecimals, normalizeTokenAmount, asyncForEach } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
 export class BestYieldVault {
@@ -27,6 +30,7 @@ export class BestYieldVault {
 
   // Contracts
   public readonly contract: Contract
+  public readonly underlyingContract: Contract | undefined
 
   constructor(web3: Web3, chainId: number, tokenConfig: BestYieldConfig, type: string){
     
@@ -51,6 +55,12 @@ export class BestYieldVault {
 
     // Init idle token contract
     this.contract = new web3.eth.Contract(this.idleConfig.abi, this.idleConfig.address)
+
+    // Init underlying token contract
+    if (this.underlyingToken) {
+      const abi: Abi = this.underlyingToken?.abi || ERC20 as Abi
+      this.underlyingContract = new web3.eth.Contract(abi, this.underlyingToken.address)
+    }
   }
 
   public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[]): Promise<Transaction[]> {
@@ -258,5 +268,33 @@ export class BestYieldVault {
       //   return tokens
       // }, {}))
     }
+  }
+
+  // Transactions
+  public getAllowanceOwner() {
+    return this.id
+  }
+
+  public getAllowanceParams(amount: Number): any[] {
+    const decimals = this.underlyingToken?.decimals || 18
+    const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, decimals)
+    return [this.id, amountToApprove]
+  }
+
+  public getUnlimitedAllowanceParams(): any[] {
+    return this.getAllowanceParams(MAX_ALLOWANCE)
+  }
+
+  public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
+    return this.underlyingContract?.methods.approve(...params)
+  }
+
+  public getDepositParams(amount: Number, _referral: string = ZERO_ADDRESS): any[] {
+    const decimals = this.underlyingToken?.decimals || 18
+    return [normalizeTokenAmount(amount, decimals), true, _referral]
+  }
+
+  public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.contract.methods.mintIdleToken(...params)
   }
 }
