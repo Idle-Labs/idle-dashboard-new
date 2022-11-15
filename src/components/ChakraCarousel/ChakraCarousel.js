@@ -168,13 +168,13 @@ const Slider = ({
     setTrackIsActive(true);
     !(activeItem === positions.length - positions.length) &&
       setActiveItem((prev) => prev - 1);
-  };
+  }
 
   const handleIncrementClick = () => {
     setTrackIsActive(true);
     !(activeItem === positions.length - constraint) &&
       setActiveItem((prev) => prev + 1);
-  };
+  }
 
   return (
     <Flex
@@ -424,7 +424,6 @@ const Item = ({
       _notLast={{
         mr: `${gap}px`
       }}
-      py="4px"
     >
       {children}
     </Flex>

@@ -1,13 +1,13 @@
-import { chains } from 'constants/'
 import BigNumber from 'bignumber.js'
 import { ChainlinkHelper } from 'classes/'
 import { selectUnderlyingToken } from 'selectors/'
+import { chains, TransactionSpeed } from 'constants/'
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { Transaction, TransactionReceipt } from 'web3-core'
-import type { ReducerActionTypes, ErrnoException } from 'constants/types'
 import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
+import type { ReducerActionTypes, ErrnoException } from 'constants/types'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { BNify, estimateGasLimit, makeEtherscanApiRequest, fixTokenDecimals } from 'helpers/'
 
@@ -36,18 +36,21 @@ type TransactionStatus = {
 
 type StateProps = {
   gasPrice: string | null
-  transactionsCount: number,
+  transactionsCount: number
   gasOracle: GasOracle | null
   tokenPriceUsd: BigNumber | null
   transaction: TransactionStatus
+  transactionSpeed: TransactionSpeed
 }
 
 type ContextProps = {
   retry: Function
   state: StateProps
   sendTransaction: Function
-  sendTransactionTest: Function
   estimateGasFee: Function
+  cleanTransaction: Function
+  sendTransactionTest: Function
+  setTransactionSpeed: Function
 }
 
 const initialState: StateProps = {
@@ -55,6 +58,7 @@ const initialState: StateProps = {
   gasOracle: null,
   tokenPriceUsd: null,
   transactionsCount: 0,
+  transactionSpeed: TransactionSpeed.Average,
   transaction: {
     hash: null,
     error: null,
@@ -73,9 +77,11 @@ const initialState: StateProps = {
 const initialContextState = {
   retry: () => {},
   state: initialState,
+  estimateGasFee: () => {},
   sendTransaction: () => {},
+  cleanTransaction: () => {},
   sendTransactionTest: () => {},
-  estimateGasFee: () => {}
+  setTransactionSpeed: () => {}
 }
 
 // const initialStateMock = : StateProps = {
@@ -119,6 +125,11 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
       return {
         ...state,
         transactionsCount: state.transactionsCount+1
+      }
+    case 'SET_TRANSACTION_SPEED':
+      return {
+        ...state,
+        transactionSpeed: action.payload
       }
     case 'SET_GAS_PRICE':
       return {
@@ -347,6 +358,11 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     }
   , [account, web3, state.gasPrice])
 
+  // Reset transaction
+  const cleanTransaction = useCallback(() => {
+    dispatch({type: 'RESET', payload: null})
+  }, [dispatch])
+
   // Send transaction
   const sendTransaction = useCallback(
     async (contractSendMethod: ContractSendMethod) => {
@@ -408,8 +424,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     sendTransaction(state.transaction.contractSendMethod)
   }, [sendTransaction, state.transaction.contractSendMethod])
 
+  const setTransactionSpeed = useCallback((transactionSpeed: TransactionSpeed) => {
+    dispatch({type: 'SET_TRANSACTION_SPEED', payload: transactionSpeed})
+  }, [dispatch])
+
   return (
-    <TransactionManagerContext.Provider value={{ state, sendTransaction, sendTransactionTest, retry, estimateGasFee }}>
+    <TransactionManagerContext.Provider value={{ state, sendTransaction, sendTransactionTest, retry, estimateGasFee, cleanTransaction, setTransactionSpeed }}>
       {children}
     </TransactionManagerContext.Provider>
   )

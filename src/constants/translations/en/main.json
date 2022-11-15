@@ -16,6 +16,7 @@
     "noResultsFound": "No results found.",
     "insufficientFunds": "Insufficient Funds",
     "estimatedGas": "Estimated Gas Fee",
+    "gasFee": "Gas Fee",
     "relayerGasFee": "Relayer Gas Fee",
     "insufficientAmountForGas": "Not enough ETH to cover gas",
     "invalidAddress": "Invalid Address",
@@ -710,6 +711,7 @@
         "slow": "Slow",
         "average": "Average",
         "fast": "Fast",
+        "veryFast": "Very Fast",
         "enterAmount": "Enter Amount"
       }
     },
@@ -796,7 +798,7 @@
       "status": {
         "confirm": "You are approving",
         "pending": "Your transaction has been broadcast and is pending confirmation.",
-        "success": "You have successfully approved",
+        "success": "You have successfully approved %{amount} %{asset}.",
         "failed": "There was an issue with your withdraw."
       },
       "reject": "Reject"

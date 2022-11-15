@@ -65,6 +65,13 @@ export enum HistoryTimeframe {
   ALL = "ALL"
 }
 
+export enum TransactionSpeed {
+  VeryFast = 'veryFast',
+  Fast = 'fast',
+  Average = 'average',
+  Slow = 'slow'
+}
+
 export type EtherscanTransaction = {
   blockHash: string
   blockNumber: string
