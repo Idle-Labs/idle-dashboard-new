@@ -287,15 +287,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     if (!gasLimit && contractSendMethod) {
       gasLimit = await estimateGasLimit(contractSendMethod, sendOptions)
     }
-    console.log('gasLimit', gasLimit)
     return fixTokenDecimals(BNify(gasLimit).times(BNify(state.gasPrice).times(1e09)), 18)
   }, [account, web3, state.gasPrice, state.tokenPriceUsd])
-
-  // Update gas price based on selected transaction speed
-  useEffect(() => {
-    if (!state.gasPrices || !state.transactionSpeed) return
-    dispatch({type: 'SET_GAS_PRICE', payload: state.gasPrices[state.transactionSpeed]})
-  }, [dispatch, state.transactionSpeed, state.gasPrices])
 
   // Track transaction changed
   useEffect(() => {
@@ -364,6 +357,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     })()
   }, [explorer, chainId, walletInitialized, state.gasOracle, state.transactionSpeed, getEstimatedTime])
 
+  // Update gas price based on selected transaction speed
+  useEffect(() => {
+    if (!state.gasPrices || !state.transactionSpeed) return
+    dispatch({type: 'SET_GAS_PRICE', payload: state.gasPrices[state.transactionSpeed]})
+  }, [dispatch, state.transactionSpeed, state.gasPrices])
+
   // Update estimated fees
   useEffect(() => {
     if (!state.gasLimit || !state.gasPrices) return
@@ -376,7 +375,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         [transactionSpeed]: estimatedFee
       }
     }, {} as GasPrices)
-    console.log('estimatedFees', estimatedFees)
     dispatch({type: 'SET_ESTIMATED_FEES', payload: estimatedFees})
 
     if (!state.tokenPriceUsd) return
@@ -390,7 +388,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         [transactionSpeed]: estimatedFeeUsd
       }
     }, {} as GasPrices)
-    console.log('estimatedFeesUsd', estimatedFeesUsd)
     dispatch({type: 'SET_ESTIMATED_FEES_USD', payload: estimatedFeesUsd})
 
   }, [state.gasLimit, state.gasPrices, estimateGasFee, state.tokenPriceUsd])

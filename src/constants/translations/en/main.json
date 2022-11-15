@@ -10,6 +10,7 @@
     "approve": "Approve",
     "confirm": "Confirm",
     "retry": "Retry",
+    "save": "Save",
     "reject": "Reject",
     "connected": "Connected",
     "created": "Created %{date}",

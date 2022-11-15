@@ -121,8 +121,9 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
       alignItems={'flex-start'}
     >
       <NavBar goBack={goBack} translation={"modals.approve.header"} params={{asset: underlyingAsset?.name}} />
-      <Center
+      <Flex
         p={14}
+        pt={20}
         flex={1}
       >
         <VStack
@@ -167,7 +168,7 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
           </VStack>
           <Translation component={Button} translation={"common.approve"} onClick={approve} variant={'ctaFull'} />
         </VStack>
-      </Center>
+      </Flex>
     </VStack>
   )
 }
@@ -641,66 +642,82 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   )
 }
 
-const TransactionSpeedSelector: React.FC = () => {
+type TransactionSpeedSelectorProps = {
+  save: Function
+}
+
+const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ save }) => {
   const { state: { estimatedFeesUsd, estimatedTimes, transactionSpeed: currentTransactionSpeed}, setTransactionSpeed } = useTransactionManager()
   return (
     <VStack
       p={4}
+      flex={1}
       width={'100%'}
+      justifyContent={'space-between'}
     >
       <NavBar height={'auto'} mb={10} translation={'common.transactionSpeed'} />
-      {
-        (Object.keys(TransactionSpeed) as Array<keyof typeof TransactionSpeed>).map( (transactionSpeedKey: keyof typeof TransactionSpeed) => {
-          const transactionSpeed: TransactionSpeed = TransactionSpeed[transactionSpeedKey]
-          const isActive = currentTransactionSpeed === transactionSpeed
-          return (
-            <Card.Outline
-              px={4}
-              py={4}
-              style={{
-                cursor:'pointer'
-              }}
-              width={'100%'}
-              aria-selected={isActive}
-              layerStyle={'cardInteractive'}
-              key={`transactionSpeed_${transactionSpeed}`} 
-              onClick={() => setTransactionSpeed(transactionSpeed)}
-            >
-              <SimpleGrid
-                columns={3}
-                spacing={4}
+      <VStack
+        p={0}
+        flex={1}
+        spacing={2}
+        width={'100%'}
+        justifyContent={'flex-start'}
+      >
+        {
+          (Object.keys(TransactionSpeed) as Array<keyof typeof TransactionSpeed>).map( (transactionSpeedKey: keyof typeof TransactionSpeed) => {
+            const transactionSpeed: TransactionSpeed = TransactionSpeed[transactionSpeedKey]
+            const isActive = currentTransactionSpeed === transactionSpeed
+            return (
+              <Card.Outline
+                px={4}
+                py={4}
+                style={{
+                  cursor:'pointer'
+                }}
                 width={'100%'}
-                alignItems={'center'}
+                aria-selected={isActive}
+                layerStyle={['cardInteractive']}
+                key={`transactionSpeed_${transactionSpeed}`} 
+                bg={isActive ? 'card.bgLight' : 'transparent'}
+                onClick={() => setTransactionSpeed(transactionSpeed)}
               >
-                <HStack
-                  spacing={2}
+                <SimpleGrid
+                  columns={3}
+                  spacing={4}
+                  width={'100%'}
+                  alignItems={'center'}
                 >
-                  <Radio isChecked={isActive}></Radio>
-                  <Translation component={Text} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
-                </HStack>
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
-                  justifyContent={'flex-start'}
-                >
-                  <Translation component={Text} textStyle={'captionSmall'} translation={`common.gasFee`} />
-                  <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
-                </VStack>
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
-                  justifyContent={'flex-start'}
-                >
-                  <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
-                  <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={10}>
-                    <Amount.Int textStyle={['captionSmaller', 'semiBold']} color={'primary'} value={estimatedTimes?.[transactionSpeed]} suffix={'s'} />
-                  </SkeletonText>
-                </VStack>
-              </SimpleGrid>
-            </Card.Outline>
-          )
-        })
-      }
+                  <HStack
+                    spacing={2}
+                  >
+                    <Radio isChecked={isActive}></Radio>
+                    <Translation component={Text} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
+                  </HStack>
+                  <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                    justifyContent={'flex-start'}
+                  >
+                    <Translation component={Text} textStyle={'captionSmall'} translation={`common.gasFee`} />
+                    <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
+                  </VStack>
+                  <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                    justifyContent={'flex-start'}
+                  >
+                    <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
+                    <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={10}>
+                      <Amount.Int textStyle={['captionSmaller', 'semiBold']} color={'primary'} value={estimatedTimes?.[transactionSpeed]} suffix={'s'} />
+                    </SkeletonText>
+                  </VStack>
+                </SimpleGrid>
+              </Card.Outline>
+            )
+          })
+        }
+      </VStack>
+      <Translation component={Button} translation={"common.save"} onClick={() => save()} variant={'ctaFull'} />
     </VStack>
   )
 }
@@ -899,8 +916,9 @@ export const OperativeComponent: React.FC = () => {
               width={'100%'}
               height={'100%'}
               position={'absolute'}
+              id={'transaction-speed-selector'}
             >
-              <TransactionSpeedSelector />
+              <TransactionSpeedSelector save={() => setTransactionSpeedSelectorOpened(false)} />
             </VStack>
           )
         }
