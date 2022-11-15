@@ -30,15 +30,17 @@ export const Card = (props: CardProps) => {
 
 export const Dark = (props: CardProps) => {
   const { children, ...rest } = props
+  const layerStyle: string[] = ['cardDark'].concat(props.layerStyle as string[])
   return (
-    <Card {...rest} layerStyle={'cardDark'}>{children}</Card>
+    <Card {...rest} layerStyle={layerStyle}>{children}</Card>
   )
 }
 
 export const Outline = (props: CardProps) => {
   const { children, ...rest } = props
+  const layerStyle: string[] = ['cardOutline'].concat(props.layerStyle as string[])
   return (
-    <Card {...rest} layerStyle={'cardOutline'}>{children}</Card>
+    <Card {...rest} layerStyle={layerStyle}>{children}</Card>
   )
 }
 

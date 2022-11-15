@@ -20,6 +20,8 @@ type GasOracle = {
   suggestBaseFee: string
 }
 
+type GasPrices = Record<TransactionSpeed, string>
+
 type TransactionStatus = {
   hash: string | null
   status: string | null
@@ -36,10 +38,13 @@ type TransactionStatus = {
 
 type StateProps = {
   gasPrice: string | null
+  gasLimit: string | null
   transactionsCount: number
   gasOracle: GasOracle | null
-  tokenPriceUsd: BigNumber | null
+  gasPrices: GasPrices | null
   transaction: TransactionStatus
+  tokenPriceUsd: BigNumber | null
+  estimatedTimes: GasPrices | null
   transactionSpeed: TransactionSpeed
 }
 
@@ -55,8 +60,11 @@ type ContextProps = {
 
 const initialState: StateProps = {
   gasPrice: null,
+  gasLimit: null,
   gasOracle: null,
+  gasPrices: null,
   tokenPriceUsd: null,
+  estimatedTimes: null,
   transactionsCount: 0,
   transactionSpeed: TransactionSpeed.Average,
   transaction: {
@@ -136,6 +144,16 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         ...state,
         gasPrice: action.payload
       }
+    case 'SET_GAS_LIMIT':
+      return {
+        ...state,
+        gasLimit: action.payload
+      }
+    case 'SET_GAS_PRICES':
+      return {
+        ...state,
+        gasPrices: action.payload
+      }
     case 'SET_GAS_ORACLE':
       return {
         ...state,
@@ -165,6 +183,11 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
           receipt: action.payload,
           lastUpdated
         }
+      }
+    case 'SET_ESTIMATED_TIMES':
+      return {
+        ...state,
+        estimatedTimes : action.payload
       }
     case 'SET_ESTIMATED_TIME':
       return {
@@ -261,6 +284,13 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     dispatch({type: 'SET_GAS_PRICE', payload: BNify(gasPrice).times(1e9)})
   }, [dispatch])
 
+  // Get estimated time
+  const getEstimatedTime = useCallback( async (gasPrice: string): Promise<string | null> => {
+    if (!explorer || !chainId) return null
+    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${BNify(gasPrice).times(1e09).toString()}`
+    return await makeEtherscanApiRequest(endpoint, explorer.keys)
+  }, [explorer, chainId])
+
   // Set estimated time
   useEffect(() => {
     if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
@@ -274,28 +304,39 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   // Get Gas Oracle
   useEffect(() => {
     if (!walletInitialized || !explorer || !chainId || state.gasOracle) return
-    console.log('Get Gas Oracle', walletInitialized, explorer, chainId, state.gasOracle)
+    // console.log('Get Gas Oracle', walletInitialized, explorer, chainId, state.gasOracle)
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
       const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      console.log('gasOracle', gasOracle)
       if (gasOracle) {
+        const gasPrices: GasPrices = {
+          [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+1).toString(),
+          [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
+          [TransactionSpeed.Average]: gasOracle.ProposeGasPrice,
+          [TransactionSpeed.Slow]: gasOracle.SafeGasPrice
+        }
+
+        const estimatedTimes = await (Object.keys(gasPrices) as Array<TransactionSpeed> ).reduce( async (estimatedTimesPromise: Promise<GasPrices>, transactionSpeed: TransactionSpeed): Promise<GasPrices> => {
+          const estimatedTimes = await estimatedTimesPromise
+          const gasPrice = gasPrices[transactionSpeed]
+          const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? 15 : await getEstimatedTime(gasPrice)
+
+          return {
+            ...estimatedTimes,
+            [transactionSpeed]: estimatedTime
+          }
+        }, Promise.resolve({} as GasPrices))
+
+        // console.log('gasPrices', gasPrices)
+        // console.log('estimatedTimes', estimatedTimes)
+
         dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
-        // Set gas price
-        // setGasPrice(gasOracle.ProposeGasPrice)
-        dispatch({type: 'SET_GAS_PRICE', payload: gasOracle.ProposeGasPrice})
+        dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
+        dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
+        dispatch({type: 'SET_GAS_PRICE', payload: gasPrices[state.transactionSpeed as TransactionSpeed]})
       }
     })()
-  }, [explorer, chainId, walletInitialized, state.gasOracle])
-
-  // Get estimated time
-  /*
-  const getEstimatedTime = useCallback( async () => {
-    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
-    const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-    dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
-  }, [state.transaction, explorer, chainId])
-  */
+  }, [explorer, chainId, walletInitialized, state.gasOracle, state.transactionSpeed, getEstimatedTime])
 
   // Estimate gas fees
   const estimateGasFee = useCallback( async (contractSendMethod: ContractSendMethod, sendOptions?: SendOptions): Promise<BigNumber | null> => {

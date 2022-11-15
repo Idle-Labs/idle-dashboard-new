@@ -14,7 +14,7 @@ import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetP
 import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, Text, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
+import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
 type InputAmountArgs = {
   amount?: string
@@ -361,16 +361,18 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 }
 
 type NavBarProps = {
+  height?: string
   goBack?: Function
+  close?: Function
 } & TranslationProps
 
-const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
+const NavBar: React.FC<NavBarProps> = ({ goBack, close, height, ...props }) => {
   return (
     <HStack
-      height={'24px'}
       width={'100%'}
       position={'relative'}
       alignItems={'center'}
+      height={height || '24px'}
       justifyContent={'flex-start'}
     >
       {
@@ -390,11 +392,27 @@ const NavBar: React.FC<NavBarProps> = ({ goBack, ...props }) => {
       <Flex
         zIndex={0}
         width={'100%'}
-        position={'absolute'}
         justifyContent={'center'}
+        position={goBack ? 'absolute' : 'relative'}
       >
         <Translation component={Text} textStyle={'ctaStatic'} aria-selected={true} {...props} />
       </Flex>
+      {
+        close && (
+          <Flex
+            top={0}
+            right={0}
+            zIndex={1}
+            position={'absolute'}
+          >
+            <MdOutlineClose
+              size={24}
+              onClick={() => close()}
+              style={{cursor: 'pointer'}}
+            />
+          </Flex>
+        )
+      }
     </HStack>
   )
 }
@@ -590,26 +608,42 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
 }
 
 const TransactionSpeedSelector: React.FC = () => {
-  const { state: { transactionSpeed } } = useTransactionManager()
+  const { state: {estimatedTimes, transactionSpeed: currentTransactionSpeed}, setTransactionSpeed } = useTransactionManager()
   return (
     <VStack
       p={4}
+      width={'100%'}
     >
+      <NavBar height={'auto'} mb={10} translation={'common.transactionSpeed'} />
       {
-        (Object.keys(TransactionSpeed) as Array<keyof typeof TransactionSpeed>).map( (transactionSpeed: keyof typeof TransactionSpeed) => {
+        (Object.keys(TransactionSpeed) as Array<keyof typeof TransactionSpeed>).map( (transactionSpeedKey: keyof typeof TransactionSpeed) => {
+          const transactionSpeed: TransactionSpeed = TransactionSpeed[transactionSpeedKey]
+          const isActive = currentTransactionSpeed === transactionSpeed
           return (
             <Card.Outline
-              px={8}
+              px={4}
               py={4}
+              style={{
+                cursor:'pointer'
+              }}
+              width={'100%'}
+              aria-selected={isActive}
+              layerStyle={'cardInteractive'}
+              key={`transactionSpeed_${transactionSpeed}`} 
+              onClick={() => setTransactionSpeed(transactionSpeed)}
             >
               <SimpleGrid
                 columns={3}
-                spacing={6}
+                spacing={4}
                 width={'100%'}
                 alignItems={'center'}
-                key={`transactionSpeed_${transactionSpeed}`} 
               >
-                <Translation component={Text} textStyle={['cta', 'primary']} translation={`modals.send.sendForm.${TransactionSpeed[transactionSpeed]}`} />
+                <HStack
+                  spacing={2}
+                >
+                  <Radio isChecked={isActive}></Radio>
+                  <Translation component={Text} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
+                </HStack>
                 <VStack
                   spacing={2}
                   alignItems={'flex-start'}
@@ -624,7 +658,9 @@ const TransactionSpeedSelector: React.FC = () => {
                   justifyContent={'flex-start'}
                 >
                   <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
-                  <Text textStyle={['captionSmaller', 'semiBold']} color={'primary'}>60s</Text>
+                  <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={10}>
+                    <Amount.Int textStyle={['captionSmaller', 'semiBold']} color={'primary'} value={estimatedTimes?.[transactionSpeed]} suffix={'s'} />
+                  </SkeletonText>
                 </VStack>
               </SimpleGrid>
             </Card.Outline>
@@ -703,6 +739,7 @@ export const OperativeComponent: React.FC = () => {
   const [ actionIndex, setActionIndex ] = useState<number>(0)
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { asset, underlyingAsset, translate, theme } = useAssetProvider()
+  const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
   const { state: { gasPrice, gasOracle, transaction: transactionState }, retry } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
@@ -766,14 +803,28 @@ export const OperativeComponent: React.FC = () => {
 
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null
-    return (
+    return transactionSpeedSelectorOpened ? (
+      <Flex
+        top={5}
+        right={8}
+        zIndex={999}
+        position={'absolute'}
+      >
+        <MdOutlineClose
+          size={24}
+          style={{cursor: 'pointer'}}
+          onClick={() => setTransactionSpeedSelectorOpened( prevValue => !prevValue )}
+        />
+      </Flex>
+    ) :  (
       <Button
         p={2}
         right={4}
-        zIndex={10}
+        zIndex={999}
         borderRadius={8}
         variant={'ctaBlue'}
         position={'absolute'}
+        onClick={() => setTransactionSpeedSelectorOpened( prevValue => !prevValue )}
       >
         <HStack
           spacing={1}
@@ -783,7 +834,7 @@ export const OperativeComponent: React.FC = () => {
         </HStack>
       </Button>
     )
-  }, [activeAction, activeItem, gasPrice])
+  }, [activeAction, activeItem, gasPrice, transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened])
 
   const goBack = useCallback((resetStep: boolean = false) => {
     if (resetStep){
@@ -805,18 +856,22 @@ export const OperativeComponent: React.FC = () => {
         id={'operative-component'}
       >
         {transationSpeedToggler}
-        <VStack
-          top={0}
-          left={0}
-          flex={1}
-          zIndex={999}
-          bg={'card.bg'}
-          width={'100%'}
-          height={'100%'}
-          position={'absolute'}
-        >
-          <TransactionSpeedSelector />
-        </VStack>
+        {
+          transactionSpeedSelectorOpened && (
+            <VStack
+              top={0}
+              left={0}
+              flex={1}
+              zIndex={10}
+              bg={'card.bg'}
+              width={'100%'}
+              height={'100%'}
+              position={'absolute'}
+            >
+              <TransactionSpeedSelector />
+            </VStack>
+          )
+        }
         <ChakraCarousel
           gap={0}
           activeItem={activeItem}

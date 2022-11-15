@@ -62,5 +62,15 @@ export const Usd: React.FC<AmountProps> = ({
   )
 }
 
+export const Int: React.FC<AmountProps> = ({
+  value,
+  ...props
+}) => {
+  return (
+    <Amount value={value} decimals={0} {...props} />
+  )
+}
+
 Amount.Usd = Usd
+Amount.Int = Int
 Amount.Percentage = Percentage

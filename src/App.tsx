@@ -231,6 +231,15 @@ const theme = extendTheme({
       borderStyle:'solid',
       backgroundColor:'card.bgDark',
       borderColor:'card.borderColor',
+    },
+    cardInteractive: {
+      opacity: 0.4,
+      _hover: {
+        opacity: 1
+      },
+      _selected: {
+        opacity: 1
+      }
     }
   },
   // Group different text styles
