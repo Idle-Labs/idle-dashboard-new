@@ -300,6 +300,19 @@ export class TrancheVault {
     return this.cdoConfig.address
   }
 
+  public getMethodDefaultGasLimit(methodName: string): number | undefined {
+    switch (methodName){
+      case 'approve':
+        return
+      case 'deposit':
+        return 1185000
+      case 'withdraw':
+        return
+      default:
+        return
+    }
+  }
+
   public getAllowanceParams(amount: Number): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, decimals)

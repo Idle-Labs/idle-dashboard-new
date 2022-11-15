@@ -12,7 +12,7 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
+import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, estimateGasLimit, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
@@ -56,12 +56,13 @@ type ActionComponentArgs = {
 } & BoxProps
 
 const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children }) => {
+  const { account, chainToken } = useWalletProvider()
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
   const { underlyingAsset, vault, translate, theme } = useAssetProvider()
-  const { sendTransaction, sendTransactionTest } = useTransactionManager()
   const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(false)
   const [ amountToApprove, setAmountToApprove ] = useState<string>(defaultAmount)
+  const { sendTransaction, sendTransactionTest, setGasLimit } = useTransactionManager()
 
   useEffect(() => {
     setAmount(defaultAmount)
@@ -70,6 +71,22 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
   // const amountToApprove = useMemo((): string => {
   //   return !allowanceModeExact ? MAX_ALLOWANCE : amount
   // }, [allowanceModeExact, amount])
+  
+  // const getDefaultGasLimit = useCallback(async () => {
+  //   if (!vault || !("getAllowanceContractSendMethod" in vault) || !("getAllowanceParams" in vault)) return
+  //   const defaultGasLimit = vault.getMethodDefaultGasLimit('approve')
+    
+  //   if (!account) return defaultGasLimit
+
+  //   const sendOptions = {
+  //     from: account?.address
+  //   }
+  //   const allowanceParams = vault.getAllowanceParams(MAX_ALLOWANCE)
+  //   const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
+  //   if (!allowanceContractSendMethod) return defaultGasLimit
+
+  //   return await estimateGasLimit(allowanceContractSendMethod, sendOptions) || defaultGasLimit
+  // }, [account, vault])
 
   const approve = useCallback(() => {
     if (!vault || !("getAllowanceContractSendMethod" in vault) || !("getAllowanceParams" in vault)) return
@@ -89,6 +106,14 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
     if (activeItem !== itemIndex) return
     dispatch({type: 'SET_AMOUNT', payload: amountToApprove})
   }, [allowanceModeExact, amount, dispatch, activeItem, itemIndex])
+
+  // Update gas fees
+  // useEffect(() => {
+  //   ;(async () => {
+  //     const defaultGasLimit = await getDefaultGasLimit()
+  //     setGasLimit(defaultGasLimit)
+  //   })()
+  // }, [getDefaultGasLimit, setGasLimit])
 
   return (
     <VStack
@@ -162,14 +187,12 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
-  const [ gasFee, setGasFee ] = useState<Number | null>(null)
-  const [ gasFeeUsd, setGasFeeUsd ] = useState<Number | null>(null)
 
   const { dispatch, activeItem } = useOperativeComponent()
   const { account, chainToken } = useWalletProvider()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate, theme } = useAssetProvider()
-  const { sendTransaction, sendTransactionTest, estimateGasFee, state: { tokenPriceUsd } } = useTransactionManager()
+  const { sendTransaction, sendTransactionTest, estimateGasFee, setGasLimit, state: { transactionSpeed, estimatedFees, estimatedFeesUsd, gasLimit, tokenPriceUsd } } = useTransactionManager()
 
   const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
 
@@ -236,27 +259,28 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, deposit])
 
-  // Set gas fees
-  useEffect(() => {
-    if (!account || !tokenPriceUsd) return
+  const getDefaultGasLimit = useCallback(async () => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
+    if (!account){
+      return defaultGasLimit
+    }
+
+    const sendOptions = {
+      from: account?.address
+    }
+    const depositParams = vault.getDepositParams('0.0000001')
+    const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+    return await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
+  }, [account, vault])
+
+  // Update gas fees
+  useEffect(() => {
     ;(async () => {
-      const depositParams = vault.getDepositParams('1')
-      const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-
-      const sendOptions = {
-        from: account?.address
-      }
-      const estimatedGasFee = await estimateGasFee(depositContractSendMethod, sendOptions)
-
-      console.log('estimatedGasFee', depositParams, estimatedGasFee)
-
-      if (!estimatedGasFee) return null
-      const estimatedGasFeeUsd = estimatedGasFee.times(tokenPriceUsd)
-      setGasFee(estimatedGasFee)
-      setGasFeeUsd(estimatedGasFeeUsd)
+      const defaultGasLimit = await getDefaultGasLimit()
+      setGasLimit(defaultGasLimit)
     })()
-  }, [estimateGasFee, vault, account, tokenPriceUsd])
+  }, [getDefaultGasLimit, setGasLimit])
 
   // Update parent amount
   useEffect(() => {
@@ -264,6 +288,16 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     dispatch({type: 'SET_AMOUNT', payload: amount})
     dispatch({type: 'SET_DEFAULT_AMOUNT', payload: amount})
   }, [amount, activeItem, itemIndex, dispatch])
+
+  const gasFee = useMemo(() => {
+    if (!estimatedFees) return null
+    return estimatedFees[transactionSpeed]
+  }, [estimatedFees, transactionSpeed])
+
+  const gasFeeUsd = useMemo(() => {
+    if (!estimatedFeesUsd) return null
+    return estimatedFeesUsd[transactionSpeed]
+  }, [estimatedFeesUsd, transactionSpeed])
 
   return (
     <AssetProvider
@@ -608,7 +642,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
 }
 
 const TransactionSpeedSelector: React.FC = () => {
-  const { state: {estimatedTimes, transactionSpeed: currentTransactionSpeed}, setTransactionSpeed } = useTransactionManager()
+  const { state: { estimatedFeesUsd, estimatedTimes, transactionSpeed: currentTransactionSpeed}, setTransactionSpeed } = useTransactionManager()
   return (
     <VStack
       p={4}
@@ -650,7 +684,7 @@ const TransactionSpeedSelector: React.FC = () => {
                   justifyContent={'flex-start'}
                 >
                   <Translation component={Text} textStyle={'captionSmall'} translation={`common.gasFee`} />
-                  <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={123}></Amount.Usd>
+                  <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
                 </VStack>
                 <VStack
                   spacing={2}
@@ -714,10 +748,8 @@ const initialState: OperativeComponentContextProps = {
 const reducer = (state: OperativeComponentContextProps, action: ReducerActionTypes) => {
   switch (action.type){
     case 'SET_AMOUNT':
-      console.log('SET_AMOUNT', action.payload)
       return {...state, amount: action.payload}
     case 'SET_DEFAULT_AMOUNT':
-      console.log('SET_DEFAULT_AMOUNT', action.payload)
       return {...state, defaultAmount: action.payload}
     case 'SET_ACTION_TYPE':
       return {...state, actionType: action.payload}

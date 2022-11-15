@@ -275,6 +275,17 @@ export class BestYieldVault {
     return this.id
   }
 
+  public getMethodDefaultGasLimit(methodName: string): number | undefined {
+    switch (methodName){
+      case 'deposit':
+        return
+      case 'withdraw':
+        return
+      default:
+        return
+    }
+  }
+
   public getAllowanceParams(amount: Number): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, decimals)
