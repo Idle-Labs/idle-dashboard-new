@@ -12,7 +12,7 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, estimateGasLimit, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
+import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
@@ -227,8 +227,8 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         const depositParams = vault.getDepositParams(amount)
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         console.log('depositParams', depositParams, depositContractSendMethod)
-        // sendTransaction(depositContractSendMethod)
-        return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+        sendTransaction(depositContractSendMethod)
+        // return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
         // sendTransactionTest(depositContractSendMethod)
       } else {
         // Approve amount
@@ -236,7 +236,7 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       }
     })()
 
-  }, [account, disabled, amount, vault, underlyingAssetVault, dispatch, /*sendTransaction, sendTransactionTest*/])
+  }, [account, disabled, amount, vault, underlyingAssetVault, dispatch, sendTransaction/*, sendTransactionTest*/])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -708,7 +708,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
                     <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={10}>
-                      <Amount.Int textStyle={['captionSmaller', 'semiBold']} color={'primary'} value={estimatedTimes?.[transactionSpeed]} suffix={'s'} />
+                      <Text textStyle={['captionSmaller', 'semiBold']} color={'primary'}>{formatTime(estimatedTimes?.[transactionSpeed])}</Text>
                     </SkeletonText>
                   </VStack>
                 </SimpleGrid>

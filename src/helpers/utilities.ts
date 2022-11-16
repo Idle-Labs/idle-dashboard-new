@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import type { Number } from 'constants/types'
 import dayjs, { ManipulateType } from 'dayjs'
 import { HistoryTimeframe } from 'constants/types'
 
@@ -65,6 +66,28 @@ export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
       output.push(chunk)
   }
   return output
+}
+
+export const formatTime = (seconds: any) => {
+  if (!seconds) return ['0s']
+  const suffixes = ['h', 'm', 's']
+  let timesJoined = (new Date(seconds * 1000).toISOString().substr(11, 8).replace(/:/g, "")).replace(/^0+/g,"")
+  const zerosToPrepend = timesJoined.length % 2
+  if (zerosToPrepend) {
+    timesJoined = `${'0'.repeat(zerosToPrepend)}${timesJoined}`
+  }
+
+  const times = timesJoined.match(/.{1,2}/g);
+  const timesFormatted = times ? times.map( (v, index) => parseInt(v)+suffixes.slice(suffixes.length-times.length)[index] ) : ['0s']
+  return timesFormatted.join(' ')
+  /*
+  const times = new Date(+seconds*1000).toISOString()
+          .substr(11, 8).split(":")
+            .map( (v, index) => parseInt(v) )
+              .filter( v => !!v )
+  console.log('formatTime', seconds, times)
+  return times.map( (v, index) => v+suffixes.slice(suffixes.length-times.length)[index] )
+  */
 }
 
 export const abbreviateNumber = (value: any, decimals: number = 2, maxPrecision: number = 5, minPrecision: number = 0) => {
