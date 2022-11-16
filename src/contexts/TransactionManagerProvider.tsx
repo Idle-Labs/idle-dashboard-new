@@ -125,7 +125,7 @@ const initialContextState = {
 // }
 
 const reducer = (state: StateProps, action: ReducerActionTypes) => {
-  console.log('dispatch', action.type, action.payload)
+  // console.log('dispatch', action.type, action.payload)
   const lastUpdated = Date.now()
   switch (action.type){
     case 'RESET':
@@ -330,10 +330,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
       if (gasOracle) {
         const gasPrices: GasPrices = {
-          [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+1).toString(),
+          [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
           [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
           [TransactionSpeed.Average]: gasOracle.ProposeGasPrice,
-          [TransactionSpeed.Slow]: gasOracle.SafeGasPrice
+          [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice-1).toString()
         }
 
         const estimatedTimes = await (Object.keys(gasPrices) as Array<TransactionSpeed> ).reduce( async (estimatedTimesPromise: Promise<GasPrices>, transactionSpeed: TransactionSpeed): Promise<GasPrices> => {
@@ -517,6 +517,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [dispatch])
 
   const setGasLimit = useCallback((gasLimit: number) => {
+    // console.log('setGasLimit', gasLimit)
     dispatch({type: 'SET_GAS_LIMIT', payload: gasLimit})
   }, [dispatch])
 

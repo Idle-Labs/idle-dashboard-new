@@ -110,6 +110,7 @@ export class UnderlyingToken {
   public getAssetsData(): Assets {
     return {
       [this.id]:{
+        type: this.type,
         underlyingId: this.id,
         token: this.tokenConfig.token,
         color: this.tokenConfig?.colors.hex,

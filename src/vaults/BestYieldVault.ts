@@ -278,9 +278,9 @@ export class BestYieldVault {
   public getMethodDefaultGasLimit(methodName: string): number | undefined {
     switch (methodName){
       case 'deposit':
-        return
+        return 723882
       case 'withdraw':
-        return
+        return 726206
       default:
         return
     }
@@ -307,5 +307,13 @@ export class BestYieldVault {
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
     return this.contract.methods.mintIdleToken(...params)
+  }
+
+  public getWithdrawParams(amount: Number): any[] {
+    return [normalizeTokenAmount(amount, this.idleConfig.decimals)]
+  }
+
+  public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.contract.methods.redeemIdleToken(...params)
   }
 }

@@ -363,8 +363,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:13776954,
         underlyingToken:'stETH',
         CDO:{
-          abi:IdleCDO as Abi,
           decimals:18,
+          abi:IdleCDO as Abi,
           name:'IdleCDO_lido_stETH',
           address:'0x34dcd573c5de4672c8248cd12a99f875ca112ad8'
         },
@@ -1912,6 +1912,7 @@ export type IdleToken = {
   abi: Abi
   token: string
   address: string
+  decimals: number
 }
 
 export type ProtocolFunction = {
@@ -1943,6 +1944,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAI: {
       underlyingToken: 'DAI',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleDAIYield',
         address: '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
@@ -1992,6 +1994,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       underlyingToken: 'USDC',
       enabledEnvs: ['beta'],
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleUSDCBB',
         address: '0xf6954b03d6a94ba9e8c80cbe5824f22a401ee5d2',
@@ -2030,6 +2033,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDC: {
       underlyingToken: 'USDC',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleUSDCYield',
         address: '0x5274891bEC421B39D23760c04A6755eCB444797C',
@@ -2092,6 +2096,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDT: {
       underlyingToken: 'USDT',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleUSDTYield',
         address: '0xF34842d05A1c888Ca02769A633DF37177415C2f8',
@@ -2139,6 +2144,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     SUSD: {
       underlyingToken: 'SUSD',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleSUSDYield',
         address: '0xf52cdcd458bf455aed77751743180ec4a595fd3f',
@@ -2172,6 +2178,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     TUSD: {
       underlyingToken: 'TUSD',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleTUSDYield',
         address: '0xc278041fDD8249FE4c1Aad1193876857EEa3D68c',
@@ -2205,6 +2212,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     WETH: {
       underlyingToken: 'WETH',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleWETHYield',
         address: '0xC8E6CA6E96a326dC448307A5fDE90a0b21fd7f80',
@@ -2241,6 +2249,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     WBTC: {
       underlyingToken: 'WBTC',
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleWBTCYield',
         address: '0x8C81121B15197fA0eEaEE1DC75533419DcfD3151',
@@ -2289,6 +2298,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       underlyingToken: 'RAI',
       enabledEnvs: [],
       idle: {
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleRAIYield',
         address: '0x5C960a3DCC01BE8a0f49c02A8ceBCAcf5D07fABe',
@@ -2312,6 +2322,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAI:{
       underlyingToken:'DAI',
       idle:{
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token:'idleDAIYield',
         address:'0x8a999F5A3546F8243205b2c0eCb0627cC10003ab',
@@ -2333,6 +2344,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDC:{
       underlyingToken:'USDC',
       idle:{
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token:'idleUSDCYield',
         address:'0x1ee6470CD75D5686d0b2b90C0305Fa46fb0C89A1',
@@ -2354,6 +2366,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     WETH:{
       underlyingToken:'WETH',
       idle:{
+        decimals:18,
         abi: IdleTokenV4 as Abi,
         token:'idleWETHYield',
         address:'0xfdA25D931258Df948ffecb66b5518299Df6527C4',

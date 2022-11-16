@@ -302,12 +302,10 @@ export class TrancheVault {
 
   public getMethodDefaultGasLimit(methodName: string): number | undefined {
     switch (methodName){
-      case 'approve':
-        return
       case 'deposit':
         return 1185000
       case 'withdraw':
-        return
+        return 1972478
       default:
         return
     }
@@ -334,5 +332,13 @@ export class TrancheVault {
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
     return this.cdoContract.methods[`deposit${this.type}`](...params)
+  }
+
+  public getWithdrawParams(amount: Number): any[] {
+    return [normalizeTokenAmount(amount, this.cdoConfig.decimals)]
+  }
+
+  public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.cdoContract.methods[`withdraw${this.type}`](...params)
   }
 }
