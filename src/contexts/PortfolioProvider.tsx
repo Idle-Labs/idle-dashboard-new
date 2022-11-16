@@ -11,10 +11,11 @@ import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
+import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty } from 'helpers/'
 import type { GenericContractConfig, UnderlyingTokenProps } from 'constants/'
-import React, { useContext, useEffect, useCallback, useReducer } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
+import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
 import type { ReducerActionTypes, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
@@ -30,11 +31,21 @@ type InitialState = {
   isPortfolioLoaded: boolean
   transactions: Transaction[]
   contracts: GenericContract[]
+  portfolioTimestamp: number | null
   selectors: Record<string, Function>
   vaultsPositions: Record<string, VaultPosition>
   historicalRates: Record<AssetId, HistoryData[]>
   historicalPrices: Record<AssetId, HistoryData[]>
   historicalPricesUsd: Record<AssetId, HistoryData[]>
+}
+
+type VaultsOnchainData = {
+  aprs: Balances
+  balances: Balances
+  assetsData: Assets
+  pricesUsd: Balances
+  vaultsPrices: Balances
+  totalSupplies: Balances
 }
 
 type ContextProps = InitialState
@@ -55,7 +66,8 @@ const initialState: InitialState = {
   historicalRates: {},
   historicalPrices: {},
   historicalPricesUsd: {},
-  isPortfolioLoaded: false
+  isPortfolioLoaded: false,
+  portfolioTimestamp: null
 }
 
 const initialContextState = initialState
@@ -67,8 +79,10 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
   switch (action.type){
     case 'RESET_STATE':
       return {...initialState}
+    case 'SET_PORTFOLIO_TIMESTAMP':
+      return {...state, portfolioTimestamp: action.payload}
     case 'SET_PORTFOLIO_LOADED':
-      return {...state, isPortfolioLoaded: action.payload}
+      return {...state, isPortfolioLoaded: action.payload, portfolioTimestamp: Date.now()}
     case 'SET_SELECTORS':
       return {...state, selectors: action.payload}
     case 'SET_CONTRACTS':
@@ -122,6 +136,7 @@ export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 export function PortfolioProvider({ children }:ProviderProps) {
   const { web3, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
+  const { state: { lastTransaction } } = useTransactionManager()
   const { walletInitialized, connecting, account, chainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd ] = useLocalForge('historicalPricesUsd')
 
@@ -238,9 +253,413 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return Object.keys(state.assetsData).filter( (assetId: AssetId) => vaultsWithBalance.map( (vault: Vault) => vault.id.toLowerCase() ).includes(assetId) ).map( (assetId: AssetId) => state.assetsData[assetId] )
   }, [state.vaults, state.assetsData, selectAssetBalance, selectVaultPosition])
 
+  const vaultFunctionsHelper = useMemo((): VaultFunctionsHelper | null => {
+    if (!chainId || !web3 || !multiCall || !explorer) return null
+    return new VaultFunctionsHelper(chainId, web3, multiCall, explorer)
+  }, [chainId, web3, multiCall, explorer])
+
+  const getVaultsOnchainData = useCallback( async (vaults: Vault[]): Promise<VaultsOnchainData | null> => {
+    if (!multiCall || !vaultFunctionsHelper) return null
+
+    const rawCalls = vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
+
+      const aggregatedRawCalls = [
+        account ? vault.getBalancesCalls([account.address]) : [],
+        ("getPricesCalls" in vault) ? vault.getPricesCalls() : [],
+        ("getPricesUsdCalls" in vault) ? vault.getPricesUsdCalls(state.contracts) : [],
+        ("getAprsCalls" in vault) ? vault.getAprsCalls() : [],
+        ("getTotalSupplyCalls" in vault) ? vault.getTotalSupplyCalls() : [],
+        ("getFeesCalls" in vault) ? vault.getFeesCalls() : [],
+        ("getAprRatioCalls" in vault) ? vault.getAprRatioCalls() : [],
+        ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : [],
+        ("getProtocolsCalls" in vault) ? vault.getProtocolsCalls() : [],
+        // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
+      ]
+
+      aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
+        // Init array index
+        if (rawCalls.length<=index){
+          rawCalls.push([])
+        }
+
+        calls.forEach( (rawCall: ContractRawCall) => {
+          const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
+          if (callData){
+            rawCalls[index].push(callData)
+          }
+        })
+      })
+
+      return rawCalls
+    }, [])
+
+    // Get vaults additional APRs
+    const vaultsAdditionalAprsPromises = vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
+      promises.push(vaultFunctionsHelper.getVaultAdditionalApr(vault))
+      return promises
+    }, [])
+
+    // Get vaults additional base APRs
+    const vaultsAdditionalBaseAprsPromises = vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
+      promises.push(vaultFunctionsHelper.getVaultAdditionalBaseApr(vault))
+      return promises
+    }, [])
+
+    // Get vaults last harvests
+    const vaultsLastHarvestsPromises = vaults.reduce( (promises: Record<AssetId, Promise<CdoLastHarvest> | undefined>, vault: Vault):Record<AssetId, Promise<CdoLastHarvest> | undefined> => {
+      if (!("cdoConfig" in vault) || promises[vault.cdoConfig.address]) return promises
+      return {
+        ...promises,
+        [vault.cdoConfig.address]: vaultFunctionsHelper.getTrancheLastHarvest(vault)
+      }
+    }, {})
+
+    // console.log('vaultsLastHarvestsPromises', vaultsLastHarvestsPromises)
+
+    const [
+      vaultsAdditionalAprs,
+      vaultsAdditionalBaseAprs,
+      vaultsLastHarvests,
+      [
+        balanceCallsResults,
+        vaultsPricesCallsResults,
+        pricesUsdCallsResults,
+        aprsCallsResults,
+        totalSupplyCallsResults,
+        feesCallsResults,
+        aprRatioResults,
+        baseAprResults,
+        protocolsResults
+      ]
+    ] = await Promise.all([
+      Promise.all(vaultsAdditionalAprsPromises),
+      Promise.all(vaultsAdditionalBaseAprsPromises),
+      Promise.all(Object.values(vaultsLastHarvestsPromises)),
+      multiCall.executeMultipleBatches(rawCalls)
+    ])
+
+    // console.log('pricesCallsResults', pricesCallsResults)
+    // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
+    // console.log('balanceCallsResults', balanceCallsResults)
+    // console.log('totalSupplyCallsResults', totalSupplyCallsResults)
+    // console.log('feesCallsResults', feesCallsResults)
+    // console.log('aprRatioResults', aprRatioResults)
+    // console.log('baseAprResults', baseAprResults)
+    // console.log('protocolsResults', protocolsResults)
+    // console.log('vaultsLastHarvests', vaultsLastHarvests)
+
+    const assetsData: Assets = {
+      ...state.assetsData
+    }
+
+    // Process last harvest blocks
+    ;(Object.values(vaultsLastHarvests) as CdoLastHarvest[]).forEach( (lastHarvest: CdoLastHarvest) => {
+      const cdoId = lastHarvest.cdoId
+      const filteredVaults = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
+      filteredVaults.forEach( (vault: Vault) => {
+        const assetId = vault.id
+
+        assetsData[assetId] = {
+          ...assetsData[assetId],
+         lastHarvest: lastHarvest.harvest || null 
+        }
+        // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { lastHarvest: lastHarvest.harvest || null } }})
+      })
+    })
+
+    // Process protocols
+    const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const vault = selectVaultById(assetId)
+        if (vault && ("getAllocationsCalls" in vault)){
+          callResult.data[0].forEach( (protocolAddress: string, index: number) => {
+            calls.push(...vault.getAllocationsCalls(index, { protocolAddress }))
+          })
+        }
+      }
+      return calls
+    }, [])
+
+    const allocationsResults = await multiCall.executeMulticalls(multiCall.getCallsFromRawCalls(lastAllocationsCalls))
+
+    // console.log('allocationsResults', allocationsResults)
+
+    // Process allocations
+    const allocations: Record<AssetId, Balances> = {}
+    allocationsResults?.forEach( (callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const vault = selectVaultById(assetId)
+        if (vault && ("tokenConfig" in vault) && ("protocols" in vault.tokenConfig)){
+          const protocolAddress = callResult.extraData.data?.protocolAddress
+          if (!protocolAddress) return allocations
+
+          const protocolInfo = vault.tokenConfig?.protocols.find( protocolInfo => protocolInfo.address.toLowerCase() === protocolAddress.toLowerCase() )
+          if (!protocolInfo) return allocations
+
+          const protocolName = protocolInfo.name
+          const allocationPercentage = BNify(callResult.data.toString()).div(`1e03`)
+
+          allocations[assetId] = {
+            ...allocations[assetId],
+            [protocolName]: allocationPercentage
+          }
+        }
+      }
+    })
+
+    // console.log('allocations', allocations)
+
+    // Set allocations
+    Object.keys(allocations).forEach( (assetId: AssetId) => {
+      assetsData[assetId] = {
+        ...assetsData[assetId],
+        allocations: allocations[assetId]
+      }
+      // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { allocations: allocations[assetId] } }})
+    })
+
+    // Process Apr Ratio
+    aprRatioResults.forEach( (callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          const trancheAPRSplitRatio = BNify(callResult.data.toString()).div(`1e03`)
+          const aprRatio = asset.type === 'AA' ? trancheAPRSplitRatio : BNify(100).minus(trancheAPRSplitRatio)
+
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            aprRatio
+          }
+
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { aprRatio } }})
+        }
+      }
+    })
+
+    // Process Strategy Aprs
+    baseAprResults.forEach( (callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          let baseApr = BNify(callResult.data.toString()).div(`1e18`)
+
+          // Add additional Apr
+          const vaultAdditionalBaseApr: VaultAdditionalApr = vaultsAdditionalBaseAprs.find( (apr: VaultAdditionalApr) => apr.vaultId === assetId )
+          if (vaultAdditionalBaseApr){
+            baseApr = baseApr.plus(vaultAdditionalBaseApr.apr)
+          }
+
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            baseApr
+          }
+
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { baseApr } }})
+        }
+      }
+    })
+
+    // Process Fees
+    feesCallsResults.forEach( (callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          const fee = BNify(callResult.data.toString()).div(`1e05`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            fee
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { fee } }})
+        }
+      }
+    })
+
+    const balances = balanceCallsResults.reduce( (balances: Balances, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
+          // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            balance: balances[assetId]
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
+        }
+      }
+      return balances
+    }, {})
+
+    const vaultsPrices = vaultsPricesCallsResults.reduce( (vaultsPrices: Balances, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          const decimals = callResult.extraData.decimals || asset.decimals
+          vaultsPrices[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
+          // console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            vaultPrice: vaultsPrices[assetId]
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPrice: vaultsPrices[assetId]} }})
+        }
+      }
+      return vaultsPrices
+    }, {})
+
+    const pricesUsd = pricesUsdCallsResults.reduce( (pricesUsd: Balances, callResult: DecodedResult) => {
+      const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+      const asset = selectAssetById(assetId)
+      if (asset){
+        pricesUsd[assetId] = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
+        // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
+        assetsData[assetId] = {
+          ...assetsData[assetId],
+          priceUsd: pricesUsd[assetId]
+        }
+
+        if (asset.underlyingId){
+          assetsData[asset.underlyingId] = {
+            ...assetsData[asset.underlyingId],
+            priceUsd: pricesUsd[asset.underlyingId]
+          }
+        }
+        // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {priceUsd: pricesUsd[assetId]} }})
+        // dispatch({type: 'SET_ASSET_DATA', payload: { assetId: asset.underlyingId, assetData: {priceUsd: pricesUsd[assetId]} }})
+      }
+      return pricesUsd
+    }, {})
+
+    const aprs = aprsCallsResults.reduce( (aprs: Balances, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          const decimals = callResult.extraData.decimals || 18
+          aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
+
+          // Add additional Apr
+          const vaultAdditionalApr: VaultAdditionalApr = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => apr.vaultId === assetId )
+          if (vaultAdditionalApr){
+            aprs[assetId] = aprs[assetId].plus(vaultAdditionalApr.apr.div(`1e${decimals}`))
+          }
+
+          const apy = apr2apy(aprs[assetId].div(100)).times(100)
+
+          // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            apr: aprs[assetId],
+            apy
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId], apy} }})
+        }
+      }
+      return aprs
+    }, {})
+
+    const totalSupplies = totalSupplyCallsResults.reduce( (totalSupplies: Balances, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          const decimals = callResult.extraData.decimals || asset.decimals
+          totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
+          // console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            totalSupply: totalSupplies[assetId]
+          }
+          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {totalSupply: totalSupplies[assetId]} }})
+        }
+      }
+      return totalSupplies
+    }, {})
+
+    // console.log('assetsData', assetsData)
+    // Set assets data one time instead of updating for every asset
+
+    // console.log('aprs', aprs)
+    // console.log('balances', balances)
+    // console.log('pricesUsd', pricesUsd)
+    // console.log('vaultsPrices', vaultsPrices)
+    // console.log('totalSupplies', totalSupplies)
+
+    return {
+      aprs,
+      balances,
+      pricesUsd,
+      assetsData,
+      vaultsPrices,
+      totalSupplies
+    }
+  }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, vaultFunctionsHelper])
+
   // useEffect(() => {
   //   console.log('accountChanged', account, connecting, walletInitialized)
   // }, [account, connecting, walletInitialized])
+
+  // Update on-chain data of last transaction asset
+  useEffect(() => {
+    if (!lastTransaction || !state.isPortfolioLoaded) return
+    if (!lastTransaction?.lastUpdated || lastTransaction.lastUpdated<state.portfolioTimestamp) return
+
+    console.log('lastTransaction', lastTransaction)
+    const asset = selectAssetById(lastTransaction.assetId as string)
+    const vault = selectVaultById(lastTransaction.assetId as string)
+
+    if (!asset || asset.type === 'underlying' || !vault) return
+
+    const vaults = [vault as Vault]
+    if (("underlyingId" in asset) && asset.underlyingId){
+      const underlyingVault = selectVaultById(asset.underlyingId)
+      vaults.push(underlyingVault as Vault)
+    }
+
+    // console.log('Last Transaction Vault', vault)
+    // console.log('Last Transaction Asset', asset)
+
+    ;(async () => {
+      const vaultsOnChainData = await getVaultsOnchainData(vaults);
+      console.log('Last Transaction Vault Data', vaultsOnChainData)
+      if (!vaultsOnChainData) return
+
+      const {
+        aprs,
+        balances,
+        pricesUsd,
+        assetsData,
+        vaultsPrices,
+        totalSupplies
+      } = vaultsOnChainData
+
+      const newAprs = {...state.aprs, ...aprs}
+      const newBalances = {...state.balances, ...balances}
+      const newPricesUsd = {...state.pricesUsd, ...pricesUsd}
+      const newAssetsData = {...state.assetsData, ...assetsData}
+      const newVaultsPrices = {...state.vaultsPrices, ...vaultsPrices}
+      const newTotalSupplies = {...state.totalSupplies, ...totalSupplies}
+
+      console.log('newBalances', newBalances)
+
+      dispatch({type: 'SET_APRS', payload: newAprs})
+      dispatch({type: 'SET_BALANCES', payload: newBalances})
+      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
+      dispatch({type: 'SET_PRICES_USD', payload: newPricesUsd})
+      dispatch({type: 'SET_VAULTS_PRICES', payload: newVaultsPrices})
+      dispatch({type: 'SET_TOTAL_SUPPLIES', payload: newTotalSupplies})
+      dispatch({type: 'SET_PORTFOLIO_TIMESTAMP', payload: Date.now()})
+    })()
+
+  // eslint-disable-next-line
+  }, [lastTransaction, state.isPortfolioLoaded])
 
   // Init underlying tokens and vaults contracts
   useEffect(() => {
@@ -693,358 +1112,33 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-
-    if (!state.vaults.length || !state.contracts.length || !web3 || !multiCall || !explorer || connecting) return
-
-    const vaultFunctionsHelper: VaultFunctionsHelper = new VaultFunctionsHelper(chainId, web3, multiCall, explorer)
-
+    if (!state.vaults.length || !state.contracts.length || !multiCall || connecting) return
     // console.log('Make chain calls', account, state.vaults, state.contracts, multiCall, walletInitialized)
 
-    const rawCalls = state.vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
-
-      const aggregatedRawCalls = [
-        account ? vault.getBalancesCalls([account.address]) : [],
-        ("getPricesCalls" in vault) ? vault.getPricesCalls() : [],
-        ("getPricesUsdCalls" in vault) ? vault.getPricesUsdCalls(state.contracts) : [],
-        ("getAprsCalls" in vault) ? vault.getAprsCalls() : [],
-        ("getTotalSupplyCalls" in vault) ? vault.getTotalSupplyCalls() : [],
-        ("getFeesCalls" in vault) ? vault.getFeesCalls() : [],
-        ("getAprRatioCalls" in vault) ? vault.getAprRatioCalls() : [],
-        ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : [],
-        ("getProtocolsCalls" in vault) ? vault.getProtocolsCalls() : [],
-        // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
-      ]
-
-      aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
-        // Init array index
-        if (rawCalls.length<=index){
-          rawCalls.push([])
-        }
-
-        calls.forEach( (rawCall: ContractRawCall) => {
-          const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
-          if (callData){
-            rawCalls[index].push(callData)
-          }
-        })
-      })
-
-      return rawCalls
-    }, [])
-
-    // Execute promises with multicall
     ;(async () => {
+      const startTimestamp = Date.now()
 
-      const startTimestamp = Date.now();
+      const vaultsOnChainData = await getVaultsOnchainData(state.vaults)
+      if (!vaultsOnChainData) return
 
-      // Get vaults additional APRs
-      const vaultsAdditionalAprsPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
-        promises.push(vaultFunctionsHelper.getVaultAdditionalApr(vault))
-        return promises
-      }, [])
-
-      // Get vaults additional base APRs
-      const vaultsAdditionalBaseAprsPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
-        promises.push(vaultFunctionsHelper.getVaultAdditionalBaseApr(vault))
-        return promises
-      }, [])
-
-      // Get vaults last harvests
-      const vaultsLastHarvestsPromises = state.vaults.reduce( (promises: Record<AssetId, Promise<CdoLastHarvest> | undefined>, vault: Vault):Record<AssetId, Promise<CdoLastHarvest> | undefined> => {
-        if (!("cdoConfig" in vault) || promises[vault.cdoConfig.address]) return promises
-        return {
-          ...promises,
-          [vault.cdoConfig.address]: vaultFunctionsHelper.getTrancheLastHarvest(vault)
-        }
-      }, {})
-
-      // console.log('vaultsLastHarvestsPromises', vaultsLastHarvestsPromises)
-
-      const [
-        vaultsAdditionalAprs,
-        vaultsAdditionalBaseAprs,
-        vaultsLastHarvests,
-        [
-          balanceCallsResults,
-          vaultsPricesCallsResults,
-          pricesUsdCallsResults,
-          aprsCallsResults,
-          totalSupplyCallsResults,
-          feesCallsResults,
-          aprRatioResults,
-          baseAprResults,
-          protocolsResults
-        ]
-      ] = await Promise.all([
-        Promise.all(vaultsAdditionalAprsPromises),
-        Promise.all(vaultsAdditionalBaseAprsPromises),
-        Promise.all(Object.values<Promise<CdoLastHarvest>>(vaultsLastHarvestsPromises)),
-        multiCall.executeMultipleBatches(rawCalls)
-      ])
-
-      // console.log('pricesCallsResults', pricesCallsResults)
-      // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
-      // console.log('balanceCallsResults', balanceCallsResults)
-      // console.log('totalSupplyCallsResults', totalSupplyCallsResults)
-      // console.log('feesCallsResults', feesCallsResults)
-      // console.log('aprRatioResults', aprRatioResults)
-      // console.log('baseAprResults', baseAprResults)
-      // console.log('protocolsResults', protocolsResults)
-      // console.log('vaultsLastHarvests', vaultsLastHarvests)
-
-      const assetsData: Assets = {
-        ...state.assetsData
-      }
-
-      // Process last harvest blocks
-      Object.values<CdoLastHarvest>(vaultsLastHarvests).forEach( (lastHarvest: CdoLastHarvest) => {
-        const cdoId = lastHarvest.cdoId
-        const vaults = state.vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
-        vaults.forEach( (vault: Vault) => {
-          const assetId = vault.id
-
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-           lastHarvest: lastHarvest.harvest || null 
-          }
-          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { lastHarvest: lastHarvest.harvest || null } }})
-        })
-      })
-
-      // Process protocols
-      const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const vault = selectVaultById(assetId)
-          if (vault && ("getAllocationsCalls" in vault)){
-            callResult.data[0].forEach( (protocolAddress: string, index: number) => {
-              calls.push(...vault.getAllocationsCalls(index, { protocolAddress }))
-            })
-          }
-        }
-        return calls
-      }, [])
-
-      const allocationsResults = await multiCall.executeMulticalls(multiCall.getCallsFromRawCalls(lastAllocationsCalls))
-
-      // console.log('allocationsResults', allocationsResults)
-
-      // Process allocations
-      const allocations: Record<AssetId, Balances> = {}
-      allocationsResults?.forEach( (callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const vault = selectVaultById(assetId)
-          if (vault && ("tokenConfig" in vault) && ("protocols" in vault.tokenConfig)){
-            const protocolAddress = callResult.extraData.data?.protocolAddress
-            if (!protocolAddress) return allocations
-
-            const protocolInfo = vault.tokenConfig?.protocols.find( protocolInfo => protocolInfo.address.toLowerCase() === protocolAddress.toLowerCase() )
-            if (!protocolInfo) return allocations
-
-            const protocolName = protocolInfo.name
-            const allocationPercentage = BNify(callResult.data.toString()).div(`1e03`)
-
-            allocations[assetId] = {
-              ...allocations[assetId],
-              [protocolName]: allocationPercentage
-            }
-          }
-        }
-      })
-
-      // console.log('allocations', allocations)
-
-      // Set allocations
-      Object.keys(allocations).forEach( (assetId: AssetId) => {
-        assetsData[assetId] = {
-          ...assetsData[assetId],
-          allocations: allocations[assetId]
-        }
-        // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { allocations: allocations[assetId] } }})
-      })
-
-      // Process Apr Ratio
-      aprRatioResults.forEach( (callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            const trancheAPRSplitRatio = BNify(callResult.data.toString()).div(`1e03`)
-            const aprRatio = asset.type === 'AA' ? trancheAPRSplitRatio : BNify(100).minus(trancheAPRSplitRatio)
-
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              aprRatio
-            }
-
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { aprRatio } }})
-          }
-        }
-      })
-
-      // Process Strategy Aprs
-      baseAprResults.forEach( (callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            let baseApr = BNify(callResult.data.toString()).div(`1e18`)
-
-            // Add additional Apr
-            const vaultAdditionalBaseApr: VaultAdditionalApr = vaultsAdditionalBaseAprs.find( (apr: VaultAdditionalApr) => apr.vaultId === assetId )
-            if (vaultAdditionalBaseApr){
-              baseApr = baseApr.plus(vaultAdditionalBaseApr.apr)
-            }
-
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              baseApr
-            }
-
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { baseApr } }})
-          }
-        }
-      })
-
-      // Process Fees
-      feesCallsResults.forEach( (callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            const fee = BNify(callResult.data.toString()).div(`1e05`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              fee
-            }
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { fee } }})
-          }
-        }
-      })
-
-      const balances = balanceCallsResults.reduce( (balances: Balances, callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
-            // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              balance: balances[assetId]
-            }
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balance: balances[assetId]} }})
-          }
-        }
-        return balances
-      }, {})
-
-      const vaultsPrices = vaultsPricesCallsResults.reduce( (vaultsPrices: Balances, callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            const decimals = callResult.extraData.decimals || asset.decimals
-            vaultsPrices[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-            // console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              vaultPrice: vaultsPrices[assetId]
-            }
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {vaultPrice: vaultsPrices[assetId]} }})
-          }
-        }
-        return vaultsPrices
-      }, {})
-
-      const pricesUsd = pricesUsdCallsResults.reduce( (pricesUsd: Balances, callResult: DecodedResult) => {
-        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-        const asset = selectAssetById(assetId)
-        if (asset){
-          pricesUsd[assetId] = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
-          // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            priceUsd: pricesUsd[assetId]
-          }
-
-          if (asset.underlyingId){
-            assetsData[asset.underlyingId] = {
-              ...assetsData[asset.underlyingId],
-              priceUsd: pricesUsd[asset.underlyingId]
-            }
-          }
-          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {priceUsd: pricesUsd[assetId]} }})
-          // dispatch({type: 'SET_ASSET_DATA', payload: { assetId: asset.underlyingId, assetData: {priceUsd: pricesUsd[assetId]} }})
-        }
-        return pricesUsd
-      }, {})
-
-      const aprs = aprsCallsResults.reduce( (aprs: Balances, callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            const decimals = callResult.extraData.decimals || 18
-            aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-
-            // Add additional Apr
-            const vaultAdditionalApr: VaultAdditionalApr = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => apr.vaultId === assetId )
-            if (vaultAdditionalApr){
-              aprs[assetId] = aprs[assetId].plus(vaultAdditionalApr.apr.div(`1e${decimals}`))
-            }
-
-            const apy = apr2apy(aprs[assetId].div(100)).times(100)
-
-            // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              apr: aprs[assetId],
-              apy
-            }
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {apr: aprs[assetId], apy} }})
-          }
-        }
-        return aprs
-      }, {})
-
-      const totalSupplies = totalSupplyCallsResults.reduce( (totalSupplies: Balances, callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          if (asset){
-            const decimals = callResult.extraData.decimals || asset.decimals
-            totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-            // console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
-            assetsData[assetId] = {
-              ...assetsData[assetId],
-              totalSupply: totalSupplies[assetId]
-            }
-            // dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {totalSupply: totalSupplies[assetId]} }})
-          }
-        }
-        return totalSupplies
-      }, {})
-
-      // console.log('assetsData', assetsData)
-      // Set assets data one time instead of updating for every asset
-      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
-
-      // console.log('aprs', aprs)
-      // console.log('balances', balances)
-      // console.log('pricesUsd', pricesUsd)
-      // console.log('vaultsPrices', vaultsPrices)
-      // console.log('totalSupplies', totalSupplies)
+      const {
+        aprs,
+        balances,
+        pricesUsd,
+        assetsData,
+        vaultsPrices,
+        totalSupplies
+      } = vaultsOnChainData
 
       dispatch({type: 'SET_APRS', payload: aprs})
       dispatch({type: 'SET_BALANCES', payload: balances})
       dispatch({type: 'SET_PRICES_USD', payload: pricesUsd})
+      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
       dispatch({type: 'SET_VAULTS_PRICES', payload: vaultsPrices})
       dispatch({type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies})
       dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
 
-      console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+      console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
     })()
 
     // Cleanup
@@ -1057,7 +1151,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
     };
   // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts, web3, explorer, multiCall, walletInitialized])
+  }, [account, state.vaults, state.contracts, multiCall, walletInitialized])
   
   // Update balances USD
   useEffect(() => {

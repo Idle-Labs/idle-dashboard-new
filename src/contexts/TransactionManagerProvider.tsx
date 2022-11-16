@@ -7,7 +7,7 @@ import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { Transaction, TransactionReceipt } from 'web3-core'
 import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
-import type { ReducerActionTypes, ErrnoException } from 'constants/types'
+import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { BNify, estimateGasLimit, makeEtherscanApiRequest, fixTokenDecimals } from 'helpers/'
 
@@ -25,6 +25,7 @@ type GasPrices = Record<TransactionSpeed, string>
 type TransactionStatus = {
   hash: string | null
   status: string | null
+  assetId: AssetId | null
   created: number | null
   timestamp: number | null
   confirmationCount: number
@@ -48,6 +49,7 @@ type StateProps = {
   estimatedTimes: GasPrices | null
   estimatedFeesUsd: GasPrices | null
   transactionSpeed: TransactionSpeed
+  lastTransaction: TransactionStatus | null
 }
 
 type ContextProps = {
@@ -70,12 +72,14 @@ const initialState: StateProps = {
   estimatedFees: null,
   estimatedTimes: null,
   transactionsCount: 0,
+  lastTransaction: null,
   estimatedFeesUsd: null,
   transactionSpeed: TransactionSpeed.Average,
   transaction: {
     hash: null,
     error: null,
     status: null,
+    assetId: null,
     receipt: null,
     created: null,
     timestamp: null,
@@ -105,6 +109,20 @@ const initialContextState = {
 //   receipt: null,
 //   created: null,
 //   timestamp: null,
+ //  lastTransaction: {
+ //    hash: '0xe6a53859b5bc3dbbfae8e9d8dc81d7c672d2bd7aff04fb065fd8837741706209',
+ //    error: null,
+ //    status: null,
+ //    assetId: '0x3a52fa30c33caf05faee0f9c5dfe5fd5fe8b3978',
+ //    receipt: null,
+ //    created: null,
+ //    timestamp: null,
+ //    transaction: null,
+ //    lastUpdated: +Date.now()+100000,
+ //    estimatedTime: null,
+ //    confirmationCount: 0,
+ //    contractSendMethod: null,
+ //  },
 //   transaction: {
 //     blockHash: "0x78530138977589b8b3b8aa253126c2691124c56f3c9c52057ffc2269d14ac593",
 //     blockNumber: 15947982,
@@ -134,6 +152,11 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         transaction: {
           ...initialState.transaction
         }
+      }
+    case 'SET_LAST_TRANSACTION':
+      return {
+        ...state,
+        lastTransaction: state.transaction
       }
     case 'INCREMENT_TRANSACTIONS_COUNT':
       return {
@@ -175,7 +198,8 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         ...state,
         transaction: {
           ...initialState.transaction,
-          contractSendMethod: action.payload,
+          assetId: action.payload.assetId,
+          contractSendMethod: action.payload.contractSendMethod,
           status: 'created',
           created: lastUpdated,
           lastUpdated
@@ -453,7 +477,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Send transaction
   const sendTransaction = useCallback(
-    async (contractSendMethod: ContractSendMethod) => {
+    async (assetId: AssetId, contractSendMethod: ContractSendMethod) => {
       if (!account || !web3) return null
 
       const sendOptions: SendOptions = {
@@ -468,7 +492,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
       console.log('sendOptions', sendOptions)
 
-      dispatch({type: 'CREATE', payload: contractSendMethod})
+      dispatch({type: 'CREATE', payload: {
+        assetId,
+        contractSendMethod
+      }})
 
       const transactionHandler = contractSendMethod.send(sendOptions)
         .on("transactionHash", async (hash: string) => {
@@ -487,11 +514,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           console.log('receipt', receipt)
           dispatch({type: 'SET_RECEIPT', payload: receipt})
         })
-        .on("confirmation", (confirmationNumber: number, receipt: TransactionReceipt) => {
+        .once("confirmation", (confirmationNumber: number, receipt: TransactionReceipt) => {
           console.log('confirmation', confirmationNumber, receipt)
           dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
           if (receipt.status) {
             dispatch({type: 'SET_STATUS', payload: "success"})
+            dispatch({type: 'SET_LAST_TRANSACTION', payload: null})
             dispatch({type: 'INCREMENT_TRANSACTIONS_COUNT', payload: null})
           } else if (!receipt.status) {
             dispatch({type: 'SET_STATUS', payload: "failed"})
@@ -509,8 +537,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   const retry = useCallback(() => {
     console.log('retry', state.transaction.contractSendMethod)
     if (!state.transaction.contractSendMethod) return
-    sendTransaction(state.transaction.contractSendMethod)
-  }, [sendTransaction, state.transaction.contractSendMethod])
+    sendTransaction(state.transaction.assetId, state.transaction.contractSendMethod)
+  }, [sendTransaction, state.transaction.assetId, state.transaction.contractSendMethod])
 
   const setTransactionSpeed = useCallback((transactionSpeed: TransactionSpeed) => {
     dispatch({type: 'SET_TRANSACTION_SPEED', payload: transactionSpeed})

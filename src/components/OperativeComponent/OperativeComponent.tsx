@@ -97,9 +97,9 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
     const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
     console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
     if (!allowanceContractSendMethod) return
-    // sendTransaction(allowanceContractSendMethod)
-    sendTransactionTest(allowanceContractSendMethod)
-  }, [amountToApprove, vault, /*sendTransaction, */sendTransactionTest])
+    sendTransaction(vault.id, allowanceContractSendMethod)
+    // sendTransactionTest(allowanceContractSendMethod)
+  }, [amountToApprove, vault, sendTransaction])
 
   // Update amount to approve and parent amount
   useEffect(() => {
@@ -275,7 +275,7 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
 
-        sendTransaction(depositContractSendMethod)
+        sendTransaction(vault.id, depositContractSendMethod)
         // sendTransactionTest(depositContractSendMethod)
       } else {
         // Go to approve section
@@ -461,7 +461,7 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const withdrawParams = vault.getWithdrawParams(amount)
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
       console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
-      sendTransaction(withdrawContractSendMethod)
+      sendTransaction(vault.id, withdrawContractSendMethod)
       // sendTransactionTest(withdrawContractSendMethod)
     })()
   }, [account, disabled, amount, vault, sendTransaction])
@@ -776,10 +776,14 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     }
   }, [transactionState?.status, progressValue, translate, progressMaxValue, underlyingAsset, amount, activeStep, actionType, baseActionType, resetAndGoBack, retry])
 
+  const isLongTransaction = useMemo(() => {
+    return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && progressValue>=progressMaxValue
+  }, [transactionState?.estimatedTime, transactionState?.status, progressValue, progressMaxValue])
+
   const circularProgressColor = useMemo(() => {
-    if (!transactionState?.status || !transactionState?.estimatedTime) return 'blue.400'
+    if (!transactionState?.status || !transactionState?.estimatedTime || isLongTransaction) return 'blue.400'
     return ['success', 'pending'].includes(transactionState?.status) ? 'green.400' : 'red.400'
-  }, [transactionState?.status, transactionState?.estimatedTime])
+  }, [transactionState?.status, transactionState?.estimatedTime, isLongTransaction])
 
   const circularProgress = useMemo(() => {
     return (
@@ -796,7 +800,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           borderRadius={'50%'}
           position={'relative'}
         >
-          <CircularProgress max={progressMaxValue} isIndeterminate={!transactionState?.estimatedTime} value={progressValue} size={145} color={circularProgressColor} trackColor={'card.bgLight'} thickness={'5px'} position={'absolute'} top={'-10px'} left={'-10px'} >
+          <CircularProgress max={progressMaxValue} isIndeterminate={!transactionState?.estimatedTime || isLongTransaction} value={progressValue} size={145} color={circularProgressColor} trackColor={'card.bgLight'} thickness={'5px'} position={'absolute'} top={'-10px'} left={'-10px'} >
             {
               transactionState?.status === 'pending' ? 
                 !!remainingTime && <CircularProgressLabel textStyle={['bold', 'h2']}>{remainingTime > 3600 ? `>1h` : ( remainingTime > 1800 ? `>30m` : `${remainingTime}s`)}</CircularProgressLabel>
@@ -822,7 +826,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
         </Box>
       </>
     )
-  }, [transactionState?.status, transactionState?.estimatedTime, circularProgressColor, progressMaxValue, remainingTime, progressValue, theme])
+  }, [transactionState?.status, transactionState?.estimatedTime, isLongTransaction, circularProgressColor, progressMaxValue, remainingTime, progressValue, theme])
 
   const navBar = useMemo(() => {
     const goBack = transactionState?.status !== 'pending' && resetAndGoBack

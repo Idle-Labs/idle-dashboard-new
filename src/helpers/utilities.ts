@@ -140,6 +140,12 @@ export const getTimestampRange = (startDate: (Date | number | string), endDate: 
   })
 }
 
+export const catchPromise = async (promise: Promise<any>) => {
+  return promise
+    .then(data => data)
+    .catch(err => null)
+}
+
 export const asyncForEach = async (array: any[], callback: Function, async: boolean = true) => {
   let output = [];
   if (async) {
