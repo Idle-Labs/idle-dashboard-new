@@ -98,7 +98,7 @@ export const useBalanceChartData: UseBalanceChartData = args => {
           assetsBalancesByDate[timestamp] = {}
         }
         if (asset.id) {
-          assetsBalancesByDate[timestamp][asset.id] = parseFloat(assetBalancesByDate.byDate[timestamp])
+          assetsBalancesByDate[timestamp][asset.id] = parseFloat(assetBalancesByDate.byDate[timestamp].toFixed(8))
         }
       })
 

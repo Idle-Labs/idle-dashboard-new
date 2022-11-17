@@ -106,6 +106,7 @@
   "dashboard": {
     "portfolio": {
       "rainbowChart": "🌈 Rainbow",
+      "performance": "Performance",
       "assetPerformance": "Asset Performance",
       "totalChart": "Total Funds",
       "addAsset": "Add Asset",
