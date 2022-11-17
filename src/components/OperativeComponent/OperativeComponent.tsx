@@ -673,9 +673,9 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const [ progressValue, setProgressValue ] = useState<number>(0)
   const { underlyingAsset, theme, translate } = useAssetProvider()
   const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
-  const [ progressMaxValue, setProgressMaxValue ] = useState<number>(0)
-  const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
+  const [ progressMaxValue, setProgressMaxValue ] = useState<number>(1)
   const [ progressTimeoutId, setProgressTimeoutId ] = useState<any>(null)
+  const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
   const { amount, actionType, baseActionType, activeStep } = useOperativeComponent()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
@@ -708,16 +708,20 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   // Cancel timeouts
   useEffect(() => {
     if (transactionState?.status === 'pending' || !countTimeoutId || !progressTimeoutId) return
-    // console.log('CLEAR COUNTDOWN')
-    setRemainingTime(0)
-    setProgressValue(progressMaxValue)
     clearTimeout(countTimeoutId)
     clearTimeout(progressTimeoutId)
   }, [transactionState.status, countTimeoutId, progressTimeoutId, progressMaxValue])
 
-  // console.log('TransactionPending', transactionState)
+  // Handle transaction succeded or failed
   useEffect(() => {
-    if (!transactionState?.estimatedTime || !transactionState?.timestamp || transactionState?.status !== 'pending'/* || countTimeoutId || progressTimeoutId*/) return
+    if (!transactionState.status || !['success','failed'].includes(transactionState.status)) return
+    setRemainingTime(0)
+    setProgressValue(progressMaxValue)
+  }, [transactionState?.status, setProgressValue, progressMaxValue])
+
+  // Set progress max value
+  useEffect(() => {
+    if (!transactionState?.estimatedTime || !transactionState?.timestamp || transactionState?.status !== 'pending') return
     const progressMaxValue = (transactionState?.estimatedTime*1000)
     const targetTimestamp = +transactionState?.timestamp+(transactionState?.estimatedTime*1000)
     setTargetTimestamp(targetTimestamp)
@@ -726,19 +730,17 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     startCountDown()
     startCircularProgress()
     // console.log('START COUNTDOWN')
-  }, [transactionState,/* countTimeoutId, progressTimeoutId, */startCountDown, startCircularProgress])
+  }, [transactionState, startCountDown, startCircularProgress])
 
   const resetAndGoBack = useCallback((resetStep: boolean = false) => {
     if (transactionState?.status === 'pending') return
-
     cleanTransaction()
     setProgressValue(0)
     setRemainingTime(null)
-    setProgressMaxValue(0)
+    setProgressMaxValue(1)
     setCountTimeoutId(null)
     setTargetTimestamp(null)
     setProgressTimeoutId(null)
-
     return goBack(resetStep)
   }, [transactionState?.status, cleanTransaction, goBack])
 
@@ -780,10 +782,16 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && progressValue>=progressMaxValue
   }, [transactionState?.estimatedTime, transactionState?.status, progressValue, progressMaxValue])
 
+  const isIndeterminate = useMemo(() => {
+    if (transactionState?.status && ['success', 'failed'].includes(transactionState?.status)) return false
+    return !transactionState?.estimatedTime || isLongTransaction
+  }, [transactionState, isLongTransaction])
+
   const circularProgressColor = useMemo(() => {
-    if (!transactionState?.status || !transactionState?.estimatedTime || isLongTransaction) return 'blue.400'
+    if (!transactionState?.status || isIndeterminate) return 'blue.400'
     return ['success', 'pending'].includes(transactionState?.status) ? 'green.400' : 'red.400'
-  }, [transactionState?.status, transactionState?.estimatedTime, isLongTransaction])
+  }, [transactionState?.status, isIndeterminate])
+
 
   const circularProgress = useMemo(() => {
     return (
@@ -800,7 +808,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           borderRadius={'50%'}
           position={'relative'}
         >
-          <CircularProgress max={progressMaxValue} isIndeterminate={!transactionState?.estimatedTime || isLongTransaction} value={progressValue} size={145} color={circularProgressColor} trackColor={'card.bgLight'} thickness={'5px'} position={'absolute'} top={'-10px'} left={'-10px'} >
+          <CircularProgress max={progressMaxValue} isIndeterminate={isIndeterminate} value={progressValue} size={145} color={circularProgressColor} trackColor={'card.bgLight'} thickness={'5px'} position={'absolute'} top={'-10px'} left={'-10px'} >
             {
               transactionState?.status === 'pending' ? 
                 !!remainingTime && <CircularProgressLabel textStyle={['bold', 'h2']}>{remainingTime > 3600 ? `>1h` : ( remainingTime > 1800 ? `>30m` : `${remainingTime}s`)}</CircularProgressLabel>
@@ -826,7 +834,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
         </Box>
       </>
     )
-  }, [transactionState?.status, transactionState?.estimatedTime, isLongTransaction, circularProgressColor, progressMaxValue, remainingTime, progressValue, theme])
+  }, [transactionState?.status, transactionState?.estimatedTime, isIndeterminate, circularProgressColor, progressMaxValue, remainingTime, progressValue, theme])
 
   const navBar = useMemo(() => {
     const goBack = transactionState?.status !== 'pending' && resetAndGoBack
@@ -1099,7 +1107,7 @@ export const OperativeComponent: React.FC = () => {
       <Flex
         top={5}
         right={8}
-        zIndex={999}
+        zIndex={11}
         position={'absolute'}
       >
         <MdOutlineClose
@@ -1112,7 +1120,7 @@ export const OperativeComponent: React.FC = () => {
       <Button
         p={2}
         right={4}
-        zIndex={999}
+        zIndex={11}
         borderRadius={8}
         variant={'ctaBlue'}
         position={'absolute'}

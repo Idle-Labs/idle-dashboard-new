@@ -11,19 +11,27 @@ type UseCompositionChartDataArgs = {
   strategies?: string[]
 }
 
-type ExtraData = {
-  colors: DonutChartColors
+type Colors = {
+  [key: string]: DonutChartColors
 }
 
-type UseCompositionChartDataReturn = {
-  composition: DonutChartData[]
+type ExtraData = {
+  colors: Colors
+}
+
+export type Compositions = {
+  [key: string]: DonutChartData[]
+}
+
+export type UseCompositionChartDataReturn = {
+  compositions: Compositions
 } & ExtraData
 
 type UseCompositionChartData = (args: UseCompositionChartDataArgs) => UseCompositionChartDataReturn
 
 export const useCompositionChartData: UseCompositionChartData = ({ assetIds, strategies: enabledStrategies }) => {
   const translate = useTranslate()
-  const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectAssetsByIds } } = usePortfolioProvider()
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -42,7 +50,28 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
     }, {})
   }, [assets, enabledStrategies])
 
-  const composition = useMemo((): DonutChartData[] => {
+  const assetsBalances = useMemo(() => {
+    const filteredAssets = assets.filter( (asset: Asset) => asset.type && (!enabledStrategies || enabledStrategies.includes(asset.type)) )
+    return filteredAssets.reduce( (assetsBalances: Balances, asset: Asset) => {
+      if (!asset.underlyingId || !asset.vaultPosition) return assetsBalances
+
+      const underlyingAsset = selectAssetById(asset.underlyingId)
+      if (!underlyingAsset) return assetsBalances
+
+      if (!assetsBalances[underlyingAsset.id]) {
+        assetsBalances[underlyingAsset.id] = BNify(0)
+      }
+      assetsBalances[underlyingAsset.id] = assetsBalances[underlyingAsset.id].plus(asset.vaultPosition.usd.redeemable)
+      return assetsBalances
+    }, {})
+  }, [assets, enabledStrategies, selectAssetById])
+
+  const compositions: Compositions = {
+    assets: [],
+    strategies: []
+  }
+
+  compositions.strategies = useMemo((): DonutChartData[] => {
     return Object.keys(strategiesBalance).map( (strategy: string) => {
       const label = translate(strategies[strategy].label)
       return {
@@ -52,7 +81,29 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
     })
   }, [strategiesBalance, translate])
 
-  const colors = useMemo((): DonutChartColors => {
+  compositions.assets = useMemo((): DonutChartData[] => {
+    return Object.keys(assetsBalances).reduce( (compositionAssets: DonutChartData[], assetId: string) => {
+      const asset = selectAssetById(assetId)
+      if (!asset) return compositionAssets
+      return [
+        ...compositionAssets,
+        {
+          label: asset.name,
+          extraData: {
+            asset
+          },
+          value: parseFloat(assetsBalances[assetId])
+        }
+      ]
+    }, [])
+  }, [assetsBalances, selectAssetById])
+
+  const colors: Colors = {
+    assets: {},
+    strategies: {}
+  }
+
+  colors.strategies = useMemo((): DonutChartColors => {
     return Object.values(strategies).reduce( (colors: DonutChartColors, strategy: StrategyProps) => {
       const label = translate(strategy.label)
       return {
@@ -62,8 +113,20 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
     }, {})
   }, [translate])
 
+  colors.assets = useMemo((): DonutChartColors => {
+    return Object.keys(assetsBalances).reduce( (colors: DonutChartColors, assetId: string) => {
+      const asset = selectAssetById(assetId)
+      if (!asset) return colors
+      const label = asset.name
+      return {
+        ...colors,
+        [label]: asset.color
+      }
+    }, {})
+  }, [assetsBalances, selectAssetById])
+
   return {
     colors,
-    composition
+    compositions
   }
 }

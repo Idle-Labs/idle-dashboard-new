@@ -36,8 +36,6 @@ export function BrowserRouterProvider() {
     return match?.params || {}
   }, [match])
 
-  // console.log('match', match, 'params', params)
-
   const router = useMemo(
     () => ({
       location,

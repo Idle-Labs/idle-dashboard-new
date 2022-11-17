@@ -2,6 +2,7 @@ import { IconType } from 'constants/types'
 import { Icon } from 'components/Icon/Icon'
 import React, { useState, useEffect } from 'react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { MdOutlineNotificationsNone/*, MdWbSunny*/ } from 'react-icons/md'
 import { Menu, MenuGroup, MenuButton, MenuList, MenuItem, IconButton, Text, Flex } from '@chakra-ui/react'
 
@@ -74,7 +75,7 @@ export const NotificationList: React.FC = () => {
       {({ isOpen }) => (
         <>
           <MenuButton as={IconButton} variant={'cta'} aria-label={'Notifications'} icon={<MdOutlineNotificationsNone size={24} />} />
-          <MenuList>
+          <MenuList zIndex={999}>
             <MenuGroup title='Notifications'>
               <Scrollable maxH={240}>
               {

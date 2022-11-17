@@ -31,6 +31,7 @@ type InitialState = {
   isPortfolioLoaded: boolean
   transactions: Transaction[]
   contracts: GenericContract[]
+  isVaultsPositionsLoaded: boolean
   portfolioTimestamp: number | null
   selectors: Record<string, Function>
   vaultsPositions: Record<string, VaultPosition>
@@ -67,7 +68,8 @@ const initialState: InitialState = {
   historicalPrices: {},
   historicalPricesUsd: {},
   isPortfolioLoaded: false,
-  portfolioTimestamp: null
+  portfolioTimestamp: null,
+  isVaultsPositionsLoaded: false,
 }
 
 const initialContextState = initialState
@@ -83,6 +85,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, portfolioTimestamp: action.payload}
     case 'SET_PORTFOLIO_LOADED':
       return {...state, isPortfolioLoaded: action.payload, portfolioTimestamp: Date.now()}
+    case 'SET_VAULTS_POSITIONS_LOADED':
+      return {...state, isVaultsPositionsLoaded: action.payload}
     case 'SET_SELECTORS':
       return {...state, selectors: action.payload}
     case 'SET_CONTRACTS':
@@ -884,6 +888,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('vaultsPositions', account, vaultsPositions)
       // console.log('vaultsTransactions', account, vaultsTransactions)
 
+      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
       dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
 
@@ -894,6 +899,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return () => {
       dispatch({type: 'SET_TRANSACTIONS', payload: []})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
     };
   // eslint-disable-next-line
   }, [account, chainId, explorer, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetPriceUsd, state.isPortfolioLoaded])

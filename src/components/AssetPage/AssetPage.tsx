@@ -1,6 +1,6 @@
 import { BNify } from 'helpers/'
-import React, { useMemo, useState } from 'react'
 import { Card } from 'components/Card/Card'
+import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { HistoryTimeframe } from 'constants/types'
 // import { useWalletProvider } from 'contexts/WalletProvider'

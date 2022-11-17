@@ -9,33 +9,33 @@ type HookMethods = [
 ];
 
 export default function useLocalForge ( key: string, initialValue?: any ): HookMethods {
-  const [storedValue, setStoredValue] = useState(initialValue);
   const [isLoaded, setLoaded] = useState(false);
+  const [storedValue, setStoredValue] = useState(initialValue);
   
   /** Set value */
   const set = useCallback(( value: any ) => {
-    (async function () {
+    ;(async function () {
       try {
         await localforage.setItem(key, value);
         setStoredValue(value);
       } catch (err) {
         return initialValue;
       }
-    })();
-  }, [key, initialValue]);
+    })()
+  }, [key, initialValue])
   
   /** Removes value from local storage */
   const remove = useCallback(() => {
-    (async function () {
+    ;(async function () {
       try {
         await localforage.removeItem(key);
         setStoredValue(null);
       } catch (e) {}
-    })();
-  }, [key]);
+    })()
+  }, [key])
 
   useEffect(() => {
-    (async function () {
+    ;(async function () {
       try {
         const value = await localforage.getItem(key);
         if (!value && initialValue){
@@ -48,8 +48,9 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
       } catch ( err ) {
         return initialValue;
       }
-    })();
-  }, [initialValue, storedValue, key, set]);
+    })()
+  // eslint-disable-next-line
+  }, [])
   
   return [storedValue, set, remove, isLoaded];
 }

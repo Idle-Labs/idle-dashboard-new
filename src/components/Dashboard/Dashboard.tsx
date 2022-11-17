@@ -14,7 +14,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [percentChange, setPercentChange] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
-  const { isPortfolioLoaded, vaultsPositions, selectors: { selectAssetsByIds } } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, vaultsPositions, selectors: { selectAssetsByIds } } = usePortfolioProvider()
 
   const assetIds = useMemo(() => {
     return Object.keys(vaultsPositions)
@@ -49,8 +49,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         direction={['column', 'row']}
       >
         <VStack
+          flex={1}
           spacing={6}
-          width={['100%', 2/3]}
           alignItems={'flex-start'}
         >
           <Translation translation={'dashboard.portfolio.performance'} component={Text} textStyle={['heading', 'h3']} />
@@ -68,7 +68,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 spacing={1}
                 alignItems={'flex-start'}
               >
-                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+                <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
                   <Translation translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
                   <HStack
                     spacing={4}
@@ -98,7 +98,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
         <VStack
           spacing={6}
-          width={['100%', 1/3]}
+          width={['100%', '500px']}
           alignItems={'flex-start'}
         >
           <Translation translation={'dashboard.portfolio.performance'} component={Text} textStyle={['heading', 'h3']} />
@@ -108,7 +108,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             display={'flex'}
             alignItems={'center'}
           >
-            <CompositionChart assetIds={assetIds} />
+            <CompositionChart assetIds={assetIds} type={'assets'} />
           </Card.Dark>
         </VStack>
       </Stack>
