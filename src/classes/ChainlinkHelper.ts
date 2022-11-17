@@ -64,7 +64,7 @@ export class ChainlinkHelper {
     ]
   }
 
-  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds): ContractRawCall[] {
+  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds, maxDays: number = 365): ContractRawCall[] {
 
     const priceFeedContract: GenericContractConfig = {
       address: feedAddress,
@@ -76,8 +76,7 @@ export class ChainlinkHelper {
     const latestRound = +roundBounds.latestRound
     const firstTimestamp = +roundBounds.firstTimestamp
     const latestTimestamp = +roundBounds.latestTimestamp
-
-    const maxDays = 365
+    
     const secondsBetweenInterval = Math.round((latestTimestamp-firstTimestamp)/latestRound)
     const roundsPerDay = Math.max(1, Math.floor(86400/secondsBetweenInterval))
     const maxRounds = roundsPerDay*maxDays
