@@ -14,7 +14,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [percentChange, setPercentChange] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
-  const { isPortfolioLoaded, vaultsPositions } = usePortfolioProvider()
+  const { isPortfolioLoaded, vaultsPositions, selectors: { selectAssetsByIds } } = usePortfolioProvider()
 
   const assetIds = useMemo(() => {
     return Object.keys(vaultsPositions)
@@ -108,7 +108,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             display={'flex'}
             alignItems={'center'}
           >
-            <CompositionChart />
+            <CompositionChart assetIds={assetIds} />
           </Card.Dark>
         </VStack>
       </Stack>

@@ -160,7 +160,7 @@ export const DonutChart = ({
           colors={colors}
           width={parent.width}
           height={parent.height}
-        ></PieChart>
+        />
       )}
     </ParentSize>
   )
