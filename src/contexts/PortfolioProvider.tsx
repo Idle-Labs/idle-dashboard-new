@@ -117,6 +117,12 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, totalSupplies: action.payload}  
     case 'SET_ASSETS_DATA':
       return {...state, assetsData: action.payload}
+    case 'SET_ASSETS_DATA_IF_EMPTY':
+      if (!Object.keys(state.assetsData).length) {
+        return {...state, assetsData: action.payload}
+      } else {
+        return state
+      }
     case 'SET_ASSET_DATA':
       return {
         ...state,
@@ -262,21 +268,133 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return new VaultFunctionsHelper(chainId, web3, multiCall, explorer)
   }, [chainId, web3, multiCall, explorer])
 
-  const getVaultsOnchainData = useCallback( async (vaults: Vault[]): Promise<VaultsOnchainData | null> => {
+  const getVaultsPositions = useCallback( async (vaults: Vault[]) => {
+
+    if (!account?.address || !explorer || !chainId) return
+
+    const startTimestamp = Date.now()
+
+    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
+    const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
+
+    const vaultsTransactions: Record<string, Transaction[]> = await vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
+      const txs = await txsPromise
+      if (!("getTransactions" in vault)) return txs
+      const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
+      return {
+        ...txs,
+        [vault.id]: vaultTransactions
+      }
+    }, Promise.resolve({}))
+
+    const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: AssetId) => {
+      const transactions = vaultsTransactions[assetId]
+
+      if (!transactions || !transactions.length) return vaultsPositions
+
+      let firstDepositTx: any = null
+
+      const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
+        // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
+        switch (transaction.action) {
+          case 'deposit':
+            if (!firstDepositTx) firstDepositTx = transaction
+            depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
+          break;
+          case 'redeem':
+            depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
+            if (depositedAmount.lte(0)) firstDepositTx = null
+          break;
+          default:
+          break;
+        }
+
+        return depositedAmount
+      }, BNify(0))
+
+      if (depositedAmount.lte(0)) return vaultsPositions
+
+      let stakedAmount = BNify(0);
+      const vaultPrice = selectVaultPrice(assetId)
+      let vaultBalance = selectAssetBalance(assetId)
+      const assetPriceUsd = selectAssetPriceUsd(assetId)
+      const depositDuration = firstDepositTx ? Math.round(Date.now() / 1000) - parseInt(firstDepositTx.timeStamp) : 0
+
+      // Add gauge balance to vault balance
+      const gauge = selectVaultGauge(assetId)
+      if (gauge) {
+        stakedAmount = selectAssetBalance(gauge.id)
+        vaultBalance = vaultBalance.plus(stakedAmount)
+      }
+
+      // Wait for balances to be loaded
+      if (vaultBalance.lte(0)) return vaultsPositions
+
+      const redeemableAmount = vaultBalance.times(vaultPrice)
+      const earningsAmount = redeemableAmount.minus(depositedAmount)
+      const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
+      const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
+
+      const underlying = {
+        staked: stakedAmount,
+        earnings: earningsAmount,
+        deposited: depositedAmount,
+        redeemable: redeemableAmount
+      }
+
+      const usd = {
+        staked: stakedAmount.times(assetPriceUsd),
+        earnings: earningsAmount.times(assetPriceUsd),
+        deposited: depositedAmount.times(assetPriceUsd),
+        redeemable: redeemableAmount.times(assetPriceUsd)
+      }
+
+      vaultsPositions[assetId] = {
+        usd,
+        underlying,
+        avgBuyPrice,
+        firstDepositTx,
+        depositDuration,
+        earningsPercentage
+      }
+
+      // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+
+      // console.log(assetId, 'vaultPrice', vaultPrice.toString(), 'depositedAmount', depositedAmount.toString(), 'vaultBalance', vaultBalance.toString(), 'redeemableAmount', redeemableAmount.toString(), 'earningsAmount', earningsAmount.toString(), 'earningsPercentage', earningsPercentage.toString(), 'avgBuyPrice', avgBuyPrice.toString())
+
+      return vaultsPositions
+
+    }, {})
+
+    return {
+      vaultsPositions,
+      vaultsTransactions
+    }
+
+    console.log('VAULTS POSITIONS LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+  }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge])
+
+  const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
     if (!multiCall || !vaultFunctionsHelper) return null
+
+    const checkEnabledCall = (call: string) => {
+      return !enabledCalls.length || enabledCalls.includes(call)
+    }
+
+    console.log('enabledCalls', enabledCalls)
 
     const rawCalls = vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
 
       const aggregatedRawCalls = [
-        account ? vault.getBalancesCalls([account.address]) : [],
-        ("getPricesCalls" in vault) ? vault.getPricesCalls() : [],
-        ("getPricesUsdCalls" in vault) ? vault.getPricesUsdCalls(state.contracts) : [],
-        ("getAprsCalls" in vault) ? vault.getAprsCalls() : [],
-        ("getTotalSupplyCalls" in vault) ? vault.getTotalSupplyCalls() : [],
-        ("getFeesCalls" in vault) ? vault.getFeesCalls() : [],
-        ("getAprRatioCalls" in vault) ? vault.getAprRatioCalls() : [],
-        ("getBaseAprCalls" in vault) ? vault.getBaseAprCalls() : [],
-        ("getProtocolsCalls" in vault) ? vault.getProtocolsCalls() : [],
+        account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
+        ("getPricesCalls" in vault) && checkEnabledCall('vaultsPrices') ? vault.getPricesCalls() : [],
+        ("getPricesUsdCalls" in vault) && checkEnabledCall('pricesUsd') ? vault.getPricesUsdCalls(state.contracts) : [],
+        ("getAprsCalls" in vault) && checkEnabledCall('aprs') ? vault.getAprsCalls() : [],
+        ("getTotalSupplyCalls" in vault) && checkEnabledCall('totalSupplies') ? vault.getTotalSupplyCalls() : [],
+        ("getFeesCalls" in vault) && checkEnabledCall('fees') ? vault.getFeesCalls() : [],
+        ("getAprRatioCalls" in vault) && checkEnabledCall('aprRatio') ? vault.getAprRatioCalls() : [],
+        ("getBaseAprCalls" in vault) && checkEnabledCall('baseApr') ? vault.getBaseAprCalls() : [],
+        ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
         // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
       ]
 
@@ -719,19 +837,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
     
     const assetsData = generateAssetsData(allVaults)
-
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
-    dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
+    dispatch({type: 'SET_ASSETS_DATA_IF_EMPTY', payload: assetsData})
 
     // Cleanup
     return () => {
       // dispatch({type: 'SET_VAULTS', payload: []})
       // dispatch({type: 'SET_CONTRACTS', payload: []})
-      const assetsData = generateAssetsData(allVaults)
-      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
+      // const assetsData = generateAssetsData(allVaults)
+      // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
     };
-
   }, [web3, chainId])
 
   // Set selectors
@@ -779,135 +895,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetHistoricalPriceUsdByTimestamp,
   ])
 
-  // Get user vaults positions
-  useEffect(() => {
-    if (!account?.address || !explorer || !state.isPortfolioLoaded || connecting) return
-
-    ;(async () => {
-
-      const startTimestamp = Date.now()
-
-      const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
-      const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
-
-      const vaultsTransactions = await state.vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
-        const txs = await txsPromise
-        if (!("getTransactions" in vault)) return txs
-        const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
-        return {
-          ...txs,
-          [vault.id]: vaultTransactions
-        }
-      }, Promise.resolve({}))
-
-      const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: AssetId) => {
-        const transactions = vaultsTransactions[assetId]
-
-        if (!transactions || !transactions.length) return vaultsPositions
-
-        let firstDepositTx: any = null
-
-        const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
-          // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
-          switch (transaction.action) {
-            case 'deposit':
-              if (!firstDepositTx) firstDepositTx = transaction
-              depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
-            break;
-            case 'redeem':
-              depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
-              if (depositedAmount.lte(0)) firstDepositTx = null
-            break;
-            default:
-            break;
-          }
-
-          return depositedAmount
-        }, BNify(0))
-
-        if (depositedAmount.lte(0)) return vaultsPositions
-
-        let stakedAmount = BNify(0);
-        const vaultPrice = selectVaultPrice(assetId)
-        let vaultBalance = selectAssetBalance(assetId)
-        const assetPriceUsd = selectAssetPriceUsd(assetId)
-        const depositDuration = firstDepositTx ? Math.round(Date.now() / 1000) - parseInt(firstDepositTx.timeStamp) : 0
-
-        // Add gauge balance to vault balance
-        const gauge = selectVaultGauge(assetId)
-        if (gauge) {
-          stakedAmount = selectAssetBalance(gauge.id)
-          vaultBalance = vaultBalance.plus(stakedAmount)
-        }
-
-        // Wait for balances to be loaded
-        if (vaultBalance.lte(0)) return vaultsPositions
-
-        const redeemableAmount = vaultBalance.times(vaultPrice)
-        const earningsAmount = redeemableAmount.minus(depositedAmount)
-        const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
-        const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
-
-        const underlying = {
-          staked: stakedAmount,
-          earnings: earningsAmount,
-          deposited: depositedAmount,
-          redeemable: redeemableAmount
-        }
-
-        const usd = {
-          staked: stakedAmount.times(assetPriceUsd),
-          earnings: earningsAmount.times(assetPriceUsd),
-          deposited: depositedAmount.times(assetPriceUsd),
-          redeemable: redeemableAmount.times(assetPriceUsd)
-        }
-
-        vaultsPositions[assetId] = {
-          usd,
-          underlying,
-          avgBuyPrice,
-          firstDepositTx,
-          depositDuration,
-          earningsPercentage
-        }
-
-        // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
-
-        // console.log(assetId, 'vaultPrice', vaultPrice.toString(), 'depositedAmount', depositedAmount.toString(), 'vaultBalance', vaultBalance.toString(), 'redeemableAmount', redeemableAmount.toString(), 'earningsAmount', earningsAmount.toString(), 'earningsPercentage', earningsPercentage.toString(), 'avgBuyPrice', avgBuyPrice.toString())
-
-        return vaultsPositions
-
-      }, {})
-
-      // Set asset data with vault position
-      Object.keys(vaultsPositions).forEach( (assetId: AssetId) => {
-        const vaultPosition = vaultsPositions[assetId]
-        dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { vaultPosition } }})
-      })
-
-      // console.log('vaultsPositions', account, vaultsPositions)
-      // console.log('vaultsTransactions', account, vaultsTransactions)
-
-      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
-      dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
-      dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
-
-      console.log('VAULTS POSITIONS LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
-    })()
-
-    // Clean transactions and positions
-    return () => {
-      dispatch({type: 'SET_TRANSACTIONS', payload: []})
-      dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
-      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
-    };
-  // eslint-disable-next-line
-  }, [account, chainId, explorer, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetPriceUsd, state.isPortfolioLoaded])
-
   // Get historical underlying prices from chainlink
   useEffect(() => {
 
-    if (isEmpty(state.vaults) || !web3 || !multiCall || connecting) return
+    if (isEmpty(state.vaults) || !web3 || !multiCall/* || connecting*/) return
 
     // Prices are already stored
     if (storedHistoricalPricesUsd){
@@ -1064,11 +1055,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical vaults data
   useEffect(() => {
 
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !walletInitialized || connecting) return
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !isEmpty(state.historicalRates) /* || !walletInitialized || connecting*/) return
 
     // Get Historical data
     ;(async () => {
-
       const startTimestamp = Date.now();
 
       // Fetch historical data from the first deposit (min 1 year)
@@ -1114,17 +1104,32 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded, walletInitialized, connecting])
+  }, [state.vaults, state.isPortfolioLoaded/*, walletInitialized, connecting*/])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
     if (!state.vaults.length || !state.contracts.length || !multiCall || connecting) return
     // console.log('Make chain calls', account, state.vaults, state.contracts, multiCall, walletInitialized)
 
+    // Avoid refreshing is disconnected
+    if (!isEmpty(state.aprs) && !account?.address) {
+      return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
+    }
+    
+    console.log('Loading Portfolio', account?.address, state.isPortfolioLoaded, state.aprs)
+
+    // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
+
     ;(async () => {
       const startTimestamp = Date.now()
 
-      const vaultsOnChainData = await getVaultsOnchainData(state.vaults)
+      // Update balances only if account changed
+      const enabledCalls = []
+      if (!isEmpty(state.aprs)) {
+        enabledCalls.push('balances')
+      }
+
+      const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
       if (!vaultsOnChainData) return
 
       const {
@@ -1136,28 +1141,92 @@ export function PortfolioProvider({ children }:ProviderProps) {
         totalSupplies
       } = vaultsOnChainData
 
-      dispatch({type: 'SET_APRS', payload: aprs})
-      dispatch({type: 'SET_BALANCES', payload: balances})
-      dispatch({type: 'SET_PRICES_USD', payload: pricesUsd})
-      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
-      dispatch({type: 'SET_VAULTS_PRICES', payload: vaultsPrices})
-      dispatch({type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies})
-      dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
+      // dispatch({type: 'SET_APRS', payload: aprs})
+      // dispatch({type: 'SET_BALANCES', payload: balances})
+      // dispatch({type: 'SET_PRICES_USD', payload: pricesUsd})
+      // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
+      // dispatch({type: 'SET_VAULTS_PRICES', payload: vaultsPrices})
+      // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies})
+      // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
+
+      console.log('vaultsOnChainData', vaultsOnChainData)
+
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        dispatch({type: 'SET_APRS', payload: {...state.aprs, ...aprs}})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('balances')) {
+        dispatch({type: 'SET_BALANCES', payload: {...state.balances, ...balances}})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
+        dispatch({type: 'SET_PRICES_USD', payload: {...state.pricesUsd, ...pricesUsd}})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('vaultsPrices')) {
+        dispatch({type: 'SET_VAULTS_PRICES', payload: {...state.vaultsPrices, ...vaultsPrices}})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('totalSupplies')) {
+        dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {...state.totalSupplies, ...totalSupplies}})
+      }
+
+      // Always update assets data
+      dispatch({type: 'SET_ASSETS_DATA', payload: {...state.assetsData, ...assetsData}})
+
+      // Don't update 
+      // if (!state.isPortfolioLoaded) {
+        dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
+      // }
 
       console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
     })()
 
     // Cleanup
     return () => {
-      dispatch({type: 'SET_APRS', payload: {}})
+      // dispatch({type: 'SET_APRS', payload: {}})
       dispatch({type: 'SET_BALANCES', payload: {}})
-      dispatch({type: 'SET_PRICES_USD', payload: {}})
-      dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
-      dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
+      // dispatch({type: 'SET_PRICES_USD', payload: {}})
+      // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
+      // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
       dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
+      // console.log('RESET PORTFOLIO')
     };
   // eslint-disable-next-line
   }, [account, state.vaults, state.contracts, multiCall, walletInitialized])
+
+  // Get user vaults positions
+  useEffect(() => {
+    if (!account?.address || !state.isPortfolioLoaded || !walletInitialized || connecting) return
+
+    console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
+
+    ;(async () => {
+      const results = await getVaultsPositions(state.vaults)
+      if (!results) return
+
+      const {
+        vaultsPositions,
+        vaultsTransactions
+      } = results
+
+      console.log('vaultsPositions', vaultsPositions)
+
+      // Set asset data with vault position
+      Object.keys(vaultsPositions).forEach( (assetId: AssetId) => {
+        const vaultPosition = vaultsPositions[assetId]
+        dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { vaultPosition } }})
+      })
+
+      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
+      dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
+    })()
+
+    // Clean transactions and positions
+    return () => {
+      dispatch({type: 'SET_TRANSACTIONS', payload: []})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
+    };
+  // eslint-disable-next-line
+  }, [account, state.isPortfolioLoaded, state.portfolioTimestamp, walletInitialized, connecting])
   
   // Update balances USD
   useEffect(() => {

@@ -21,18 +21,15 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
     colors,
   }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds, strategies: enabledStrategies })
 
-  console.log('compositions', compositions)
-
   const getSliceData = (selectedSlice: DonutChartData) => {
     if (!selectedSlice) return null
     switch (type){
       case 'assets':
         const formatFn = (n: any) => `$${abbreviateNumber(n)}`
-        const asset = selectedSlice.extraData.asset
+        const asset = selectedSlice.extraData?.asset
+        if (!asset) return null
         return (
           <>
-            {/*<line x1={'50%'} y1={0} x2={'50%'} y2={'100%'} stroke={'white'} />
-            <line y1={'50%'} x1={0} y2={'50%'} x2={'100%'} stroke={'white'} />*/}
             <image
               y={'36%'}
               x={'46.5%'}
@@ -71,16 +68,42 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
     }
   }
 
-  return compositions && compositions[type] ? (
+  return (
     <Box
       height={350}
       width={'100%'}
     >
-      <DonutChart
-        colors={colors[type]}
-        data={compositions[type]}
-        getSliceData={getSliceData}
-      />
+      {
+        compositions && compositions[type] && compositions[type].length ? (
+          <DonutChart
+            colors={colors[type]}
+            data={compositions[type]}
+            getSliceData={getSliceData}
+          />
+        ) : (
+          <DonutChart
+            colors={{
+              placeholder1:'#4c515d',
+              placeholder2:'#2a3243',
+              placeholder3:'#727680'
+            }}
+            data={[
+              {
+                value:40,
+                label:'placeholder1'
+              },
+              {
+                value:60,
+                label:'placeholder2'
+              },
+              {
+                value:30,
+                label:'placeholder3'
+              }
+            ]}
+          />
+        )
+      }
     </Box>
-  ) : null
+  )
 }

@@ -335,6 +335,11 @@ const theme = extendTheme({
   },
   // Create components styles
   components: {
+    Divider: {
+      baseStyle: {
+        borderColor: 'divider'
+      }
+    },
     Tag: {
       variants: {
       }

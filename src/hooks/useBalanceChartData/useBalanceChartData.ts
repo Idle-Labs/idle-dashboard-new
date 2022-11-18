@@ -193,6 +193,8 @@ export const useBalanceChartData: UseBalanceChartData = args => {
   // eslint-disable-next-line
   }, [assets, timeframeStartTimestamp, selectVaultTransactions, isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
 
+  // console.log('balanceChartData', balanceChartData)
+
   useEffect(() => {
     if (!balanceChartData.rainbow.length) return
     setBalanceChartDataLoading(false)

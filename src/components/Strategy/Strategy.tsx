@@ -166,17 +166,19 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       alignItems={'center'}
                     >
                       <StatArrow type={value.earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                      <Amount prefix={'$ '} value={value.usd.earnings} textStyle={'tableCell'} />
+                      {/*<Amount prefix={'$ '} value={value.usd.earnings} textStyle={'tableCell'} />*/}
+                      <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>
-                  <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'captionSmall'} />
+                  {/*<Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'captionSmall'} />*/}
+                  <Amount prefix={'$ '} value={value.usd.earnings} textStyle={'captionSmall'} />
                 </Stat>
               )
             }
           </SkeletonText>
         )
       },
-      sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.usd.earnings', c)
+      sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage', c)
     },
   ]), [translate, strategy])
 

@@ -116,7 +116,7 @@ export const abbreviateNumber = (value: any, decimals: number = 2, maxPrecision:
     newValue = '-' + newValue;
   }
 
-  const suffix = suffixNum>=suffixes.length ? '' : suffixes[suffixNum];
+  const suffix = suffixNum>=suffixes.length ? '' : suffixes[suffixNum].toLowerCase();
   newValue += suffix;
 
   return newValue;

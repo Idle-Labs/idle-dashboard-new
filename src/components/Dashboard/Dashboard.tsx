@@ -1,19 +1,25 @@
-import { BNify } from 'helpers/'
 import { Card } from 'components/Card/Card'
+import { BNify, getRoutePath } from 'helpers/'
+import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import React, { useState, useMemo } from 'react'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
+import type { DonutChartData } from 'components/DonutChart/DonutChart'
 import { BigNumber, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
-import { ContainerProps, Box, Flex, Text, SkeletonText, Stack, VStack, HStack, Stat, StatArrow, Heading } from '@chakra-ui/react'
+import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
+import { ContainerProps, Box, Flex, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Divider } from '@chakra-ui/react'
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [percentChange, setPercentChange] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
+  const navigate = useNavigate()
+  const { account } = useWalletProvider()
   const { isVaultsPositionsLoaded, vaultsPositions, selectors: { selectAssetsByIds } } = usePortfolioProvider()
 
   const assetIds = useMemo(() => {
@@ -35,6 +41,69 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const earningsPercentage = useMemo(() => {
     return totalFunds.div(totalDeposited).minus(1).times(100)
   }, [totalDeposited, totalFunds])
+
+  const {
+    compositions,
+    colors,
+  }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds })
+
+  const strategiesOverview = useMemo(() => {
+    if (!account) return null
+    return (
+      <SimpleGrid
+        mt={6}
+        spacing={6}
+        width={'100%'}
+        columns={[1, 3]}
+      >
+        {
+          compositions.strategies.map( (strategyComposition: DonutChartData, index: number) => {
+            const strategy = strategyComposition.extraData.strategy
+            const strategyPath = getRoutePath('earn', [strategy.route])
+            return (
+              <Card.Dark
+                p={6}
+                key={`strategy_${index}`}
+              >
+                <HStack
+                  spacing={4}
+                  justifyContent={'space-between'}
+                >
+                  <HStack
+                    spacing={2}
+                    alignItems={'center'}
+                  >
+                    <Text textStyle={'ctaStatic'}>{strategyComposition.label}</Text>
+                    <Box
+                      width={2}
+                      height={2}
+                      bg={strategy.color}
+                      borderRadius={'50%'}
+                    >
+                    </Box>
+                  </HStack>
+                  <Divider orientation={'vertical'} height={4} />
+                  <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
+                    <Amount.Usd value={strategyComposition.value} textStyle={['ctaStatic', 'h3']} />
+                  </SkeletonText>
+                  <HStack
+                    spacing={2}
+                    alignItems={'center'}
+                  >
+                    <Translation translation={'defi.apr'} component={Text} textStyle={'captionSmall'} />
+                    <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
+                      <Amount.Percentage value={0} textStyle={['ctaStatic', 'h3']} />
+                    </SkeletonText>
+                  </HStack>
+                  <Translation component={Button} translation={`common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />
+                </HStack>
+              </Card.Dark>
+            )
+          })
+        }
+      </SimpleGrid>
+    )
+  }, [account, navigate, compositions, isVaultsPositionsLoaded])
 
   return (
     <Box
@@ -101,7 +170,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           width={['100%', '500px']}
           alignItems={'flex-start'}
         >
-          <Translation translation={'dashboard.portfolio.performance'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation translation={'dashboard.portfolio.composition'} component={Text} textStyle={['heading', 'h3']} />
           <Card.Dark
             p={0}
             flex={1}
@@ -112,6 +181,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           </Card.Dark>
         </VStack>
       </Stack>
+
+      {strategiesOverview}
     </Box>
   )
 }

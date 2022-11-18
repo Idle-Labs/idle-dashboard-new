@@ -25,6 +25,7 @@
     "withdraw": "Withdraw",
     "withdrawal": "Withdrawal",
     "claim": "Claim",
+    "enter": "Enter",
     "withdrawAndClaim": "Withdraw & Claim",
     "overview": "Overview",
     "getStarted": "Get Started",
@@ -107,6 +108,7 @@
     "portfolio": {
       "rainbowChart": "🌈 Rainbow",
       "performance": "Performance",
+      "composition": "Composition",
       "assetPerformance": "Asset Performance",
       "totalChart": "Total Funds",
       "addAsset": "Add Asset",

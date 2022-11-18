@@ -38,6 +38,13 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
+  const strategiesInitialBalances = Object.keys(strategies).reduce( (balances: Balances, strategy) => {
+    return {
+      ...balances,
+      [strategy]: BNify(0)
+    }
+  }, {})
+
   const strategiesBalance = useMemo(() => {
     const filteredAssets = assets.filter( (asset: Asset) => asset.type && (!enabledStrategies || enabledStrategies.includes(asset.type)) )
     return filteredAssets.reduce( (strategiesBalances: Balances, asset: Asset) => {
@@ -47,8 +54,8 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
       }
       strategiesBalances[asset.type] = strategiesBalances[asset.type].plus(asset.vaultPosition.usd.redeemable)
       return strategiesBalances
-    }, {})
-  }, [assets, enabledStrategies])
+    }, strategiesInitialBalances)
+  }, [assets, enabledStrategies, strategiesInitialBalances])
 
   const assetsBalances = useMemo(() => {
     const filteredAssets = assets.filter( (asset: Asset) => asset.type && (!enabledStrategies || enabledStrategies.includes(asset.type)) )
@@ -76,6 +83,9 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
       const label = translate(strategies[strategy].label)
       return {
         label,
+        extraData: {
+          strategy: strategies[strategy]
+        },
         value: parseFloat(strategiesBalance[strategy])
       }
     })

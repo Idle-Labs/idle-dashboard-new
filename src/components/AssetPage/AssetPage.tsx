@@ -45,6 +45,10 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return hasBalance ? balanceChartData : performanceChartData
   }, [isPortfolioLoaded, hasBalance, balanceChartData, performanceChartData])
 
+  // if (isPortfolioLoaded){
+    // console.log('AssetPage', isPortfolioLoaded, assetBalance, hasBalance, chartData)
+  // }
+
   // console.log('locaton', location, 'params', params, account)
 
   // const onTabClick = useCallback((row: RowProps) => {
