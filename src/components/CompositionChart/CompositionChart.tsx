@@ -1,4 +1,6 @@
 import { abbreviateNumber } from 'helpers/'
+import { useMemo, useCallback } from 'react'
+import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
 import { useTheme, Box } from '@chakra-ui/react'
 import { DonutChart } from 'components/DonutChart/DonutChart'
@@ -14,30 +16,40 @@ type CompositionChartArgs = {
 
 export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, strategies: enabledStrategies, type }) => {
   const theme = useTheme()
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const translate = useTranslate()
+  const { protocolToken, selectors: { selectAssetById } } = usePortfolioProvider()
 
   const {
     compositions,
     colors,
   }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds, strategies: enabledStrategies })
 
-  const getSliceData = (selectedSlice: DonutChartData) => {
-    if (!selectedSlice) return null
+  const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     switch (type){
       case 'assets':
+        const totalFunds = compositions[type].reduce( (total: number, asset: DonutChartData) => total += asset.value, 0)
         const formatFn = (n: any) => `$${abbreviateNumber(n)}`
-        const asset = selectedSlice.extraData?.asset
-        if (!asset) return null
+        const asset = selectedSlice?.extraData?.asset
+        const icon = asset?.icon || protocolToken?.icon
+        const label = asset?.name || translate('dashboard.portfolio.totalChart')
+        const value = selectedSlice ? formatFn(selectedSlice.value) : formatFn(totalFunds)
+
+        if (selectedSlice && !asset) return null
+
         return (
           <>
-            <image
-              y={'36%'}
-              x={'46.5%'}
-              href={asset.icon}
-              height={"34"}
-              width={"34"}
-              textAnchor={"middle"}
-            />
+            {
+              icon && (
+                <image
+                  y={'35%'}
+                  x={'46.5%'}
+                  href={icon}
+                  height={"34"}
+                  width={"34"}
+                  textAnchor={"middle"}
+                />
+              )
+            }
             <text
               x={'50%'}
               y={'54%'}
@@ -47,7 +59,7 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
               textAnchor={"middle"}
               pointerEvents={"none"}
             >
-              {formatFn(selectedSlice.value)}
+              {value}
             </text>
             <text
               x={'50%'}
@@ -58,7 +70,7 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
               pointerEvents={"none"}
               fill={theme.colors.cta}
             >
-              {asset.name}
+              {label}
             </text>
           </>
         )
@@ -66,7 +78,7 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
       default:
       break;
     }
-  }
+  }, [protocolToken, compositions, theme, translate, type])
 
   return (
     <Box

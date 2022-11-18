@@ -300,6 +300,13 @@ const theme = extendTheme({
         color:'primary'
       }
     },
+    breadcrumb: {
+      color:'cta',
+      fontSize:'md',
+      fontWeight:500,
+      fontFamily: 'body',
+      fontStyle: 'italic'
+    },
     ctaStatic: {
       fontSize:'md',
       fontWeight:700,
@@ -331,6 +338,9 @@ const theme = extendTheme({
     },
     dark: {
       color: '#555B67'
+    },
+    italic: {
+      fontStyle:'italic'
     }
   },
   // Create components styles
@@ -447,11 +457,21 @@ const theme = extendTheme({
       baseStyle: {
         tab: {
           textStyle: 'cta',
+          position:'relative',
           color:'ctaDisabled',
           borderBottom: '2px solid transparent',
           _selected: {
+            _after: {
+              bg:'white',
+              content:'""',
+              width:'100%',
+              height:'5px',
+              bottom:'-5px',
+              borderRadius:8,
+              position:'absolute'
+            },
             color: 'white',
-            borderBottom: '2px solid white',
+            // borderBottom: '2px solid white',
           }
         },
       },
@@ -463,6 +483,9 @@ const theme = extendTheme({
             textStyle:'cta',
             color:'tab.color',
             backgroundColor:'transparent',
+            _after: {
+              display:'none'
+            },
             _selected: {
               borderBottom:0,
               color:'tab.colorSelected',

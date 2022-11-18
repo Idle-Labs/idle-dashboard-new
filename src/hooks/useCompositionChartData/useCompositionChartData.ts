@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { BNify } from 'helpers/'
 import { useTranslate } from 'react-polyglot'
-import type { Asset, AssetId, Balances } from 'constants/types'
 import { strategies, StrategyProps } from 'constants/strategies'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import type { Asset, AssetId, Balances, BigNumber } from 'constants/types'
 import type { DonutChartKey, DonutChartData, DonutChartColors } from 'components/DonutChart/DonutChart'
 
 type UseCompositionChartDataArgs = {
@@ -38,21 +38,24 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
-  const strategiesInitialBalances = Object.keys(strategies).reduce( (balances: Balances, strategy) => {
+  const strategiesInitialBalances = Object.keys(strategies).reduce( (balances: Record<string, Balances>, strategy: string) => {
     return {
       ...balances,
-      [strategy]: BNify(0)
+      [strategy]: {
+        balance:BNify(0),
+        weightedRealizedApy: BNify(0)
+      }
     }
   }, {})
 
-  const strategiesBalance = useMemo(() => {
+  const strategiesBalances = useMemo(() => {
     const filteredAssets = assets.filter( (asset: Asset) => asset.type && (!enabledStrategies || enabledStrategies.includes(asset.type)) )
-    return filteredAssets.reduce( (strategiesBalances: Balances, asset: Asset) => {
+    return filteredAssets.reduce( (strategiesBalances: Record<string, Balances>, asset: Asset) => {
       if (!asset.type || !asset.vaultPosition) return strategiesBalances
-      if (!strategiesBalances[asset.type]) {
-        strategiesBalances[asset.type] = BNify(0)
-      }
-      strategiesBalances[asset.type] = strategiesBalances[asset.type].plus(asset.vaultPosition.usd.redeemable)
+
+      strategiesBalances[asset.type].balance = strategiesBalances[asset.type].balance.plus(asset.vaultPosition.usd.redeemable)
+      strategiesBalances[asset.type].weightedRealizedApy = strategiesBalances[asset.type].weightedRealizedApy.plus(asset.vaultPosition.realizedApy.times(asset.vaultPosition.usd.redeemable))
+
       return strategiesBalances
     }, strategiesInitialBalances)
   }, [assets, enabledStrategies, strategiesInitialBalances])
@@ -79,17 +82,18 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
   }
 
   compositions.strategies = useMemo((): DonutChartData[] => {
-    return Object.keys(strategiesBalance).map( (strategy: string) => {
+    return Object.keys(strategiesBalances).map( (strategy: string) => {
       const label = translate(strategies[strategy].label)
       return {
         label,
         extraData: {
-          strategy: strategies[strategy]
+          strategy: strategies[strategy],
+          avgRealizedApy: parseFloat(strategiesBalances[strategy].weightedRealizedApy.div(strategiesBalances[strategy].balance))
         },
-        value: parseFloat(strategiesBalance[strategy])
+        value: parseFloat(strategiesBalances[strategy].balance)
       }
     })
-  }, [strategiesBalance, translate])
+  }, [strategiesBalances, translate])
 
   compositions.assets = useMemo((): DonutChartData[] => {
     return Object.keys(assetsBalances).reduce( (compositionAssets: DonutChartData[], assetId: string) => {

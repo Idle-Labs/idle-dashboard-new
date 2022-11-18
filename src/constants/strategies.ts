@@ -7,6 +7,7 @@ export type GeneralDataField = {
 
 export type StrategyProps = {
   bg: string
+  type: string,
   color: string
   route: string
   label: string
@@ -18,6 +19,7 @@ export type StrategyProps = {
 
 export const strategies: Record<string, StrategyProps> = {
   BY:{
+    type:'BY',
     color:'#FFD15C',
     route:'best-yield',
     showProtocol: false,
@@ -49,6 +51,7 @@ export const strategies: Record<string, StrategyProps> = {
     ]
   },
   AA:{
+    type:'AA',
     color:'#4DE3B0',
     showProtocol: true,
     route:'protected-yield',
@@ -100,6 +103,7 @@ export const strategies: Record<string, StrategyProps> = {
     ]
   },
   BB:{
+    type:'BB',
     color:'#6AE4FF',
     showProtocol: true,
     route:'boosted-yield',

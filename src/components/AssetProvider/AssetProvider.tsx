@@ -348,12 +348,9 @@ const ApyBoost: React.FC<AmountProps> = (props) => {
 
 const RealizedApy: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-
-  const realizedApy = asset?.vaultPosition?.earningsPercentage && asset?.vaultPosition?.depositDuration ? apr2apy(asset?.vaultPosition?.earningsPercentage.times(31536000).div(asset?.vaultPosition?.depositDuration)).times(100) : BNify(0);
-  // console.log('earningsPercentage', asset?.vaultPosition?.earningsPercentage, 'depositDuration', asset?.vaultPosition?.depositDuration, 'realizedApy', realizedApy.toString())
   
-  return asset?.vaultPosition?.depositDuration ? (
-    <Amount.Percentage value={realizedApy} {...props} />
+  return asset?.vaultPosition?.realizedApy ? (
+    <Amount.Percentage value={asset?.vaultPosition?.realizedApy} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

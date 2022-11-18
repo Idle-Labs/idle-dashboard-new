@@ -107,6 +107,7 @@ export type Transaction = EtherscanTransaction & {
 
 export type VaultPosition = {
   avgBuyPrice: BigNumber
+  realizedApy: BigNumber
   depositDuration: number
   earningsPercentage: BigNumber
   firstDepositTx?: Transaction | null

@@ -44,7 +44,7 @@ export function PieChart({
   const radius = Math.min(innerWidth, innerHeight) / 2;
   const centerY = innerHeight / 2;
   const centerX = innerWidth / 2;
-  const donutThickness = 25;
+  const donutThickness = 30;
 
   const keys = data.map( d => d.label )
   const keysColors = keys.map( key => colors[key] )
@@ -62,9 +62,7 @@ export function PieChart({
   return (
     <svg width={width} height={height}>
       <rect rx={14} width={width} height={height} fill="url('#visx-pie-gradient')" />
-      {
-        selectedSlice && sliceData
-      }
+      {sliceData}
       <Group top={centerY + margin.top} left={centerX + margin.left}>
         <Pie
           padAngle={0}
@@ -82,7 +80,7 @@ export function PieChart({
               onMouseOver={({data}) =>
                 setSelectedSlice(data)
               }
-              // onMouseOut={() => setSelectedSlice(null)}
+              onMouseOut={() => setSelectedSlice(null)}
               getColor={(arc) => getColor(arc.data.label)}
             />
           )}

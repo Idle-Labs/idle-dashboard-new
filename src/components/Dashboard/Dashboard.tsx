@@ -7,6 +7,7 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
+import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
 import { BigNumber, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
@@ -60,6 +61,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           compositions.strategies.map( (strategyComposition: DonutChartData, index: number) => {
             const strategy = strategyComposition.extraData.strategy
             const strategyPath = getRoutePath('earn', [strategy.route])
+            const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
             return (
               <Card.Dark
                 p={6}
@@ -69,19 +71,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   spacing={4}
                   justifyContent={'space-between'}
                 >
-                  <HStack
-                    spacing={2}
-                    alignItems={'center'}
-                  >
-                    <Text textStyle={'ctaStatic'}>{strategyComposition.label}</Text>
-                    <Box
-                      width={2}
-                      height={2}
-                      bg={strategy.color}
-                      borderRadius={'50%'}
-                    >
-                    </Box>
-                  </HStack>
+                  <StrategyLabel strategy={strategy.type} />
                   <Divider orientation={'vertical'} height={4} />
                   <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
                     <Amount.Usd value={strategyComposition.value} textStyle={['ctaStatic', 'h3']} />
@@ -90,9 +80,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     spacing={2}
                     alignItems={'center'}
                   >
-                    <Translation translation={'defi.apr'} component={Text} textStyle={'captionSmall'} />
+                    <Translation translation={'defi.ror'} component={Text} textStyle={'captionSmall'} />
                     <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
-                      <Amount.Percentage value={0} textStyle={['ctaStatic', 'h3']} />
+                      <Amount.Percentage value={avgRealizedApy} textStyle={['ctaStatic', 'h3']} />
                     </SkeletonText>
                   </HStack>
                   <Translation component={Button} translation={`common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />

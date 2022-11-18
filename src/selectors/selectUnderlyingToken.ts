@@ -1,4 +1,4 @@
-import { underlyingTokens, UnderlyingTokenProps } from '../constants'
+import { underlyingTokens, UnderlyingTokenProps } from 'constants/'
 
 export function selectUnderlyingToken(chainId: number, token: string): UnderlyingTokenProps | undefined {
   return underlyingTokens[chainId][token.toUpperCase()];

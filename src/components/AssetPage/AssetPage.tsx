@@ -1,14 +1,14 @@
 import { BNify } from 'helpers/'
+import { strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { HistoryTimeframe } from 'constants/types'
-// import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-// import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { GenericChart } from 'components/GenericChart/GenericChart'
+import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
@@ -20,9 +20,12 @@ import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, Si
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
   // const { account } = useWalletProvider()
-
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const { isPortfolioLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
+
+  const strategy = useMemo(() => {
+    return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
+  }, [params])
 
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(params.asset)
@@ -176,6 +179,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         >
           <Stack
             spacing={10}
+            width={'100%'}
             alignItems={'center'}
             justifyContent={'center'}
             direction={['column', 'row']}
@@ -187,15 +191,24 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
               <AssetProvider.Icon size={'sm'} />
               <AssetProvider.Name textStyle={'h2'} />
             </Stack>
-            <Tabs
-              defaultIndex={0}
-              variant={'unstyled'}
+            <Stack
+              flex={1}
+              direction={'row'}
+              borderBottom={'1px solid'}
+              borderColor={'divider'}
+              justifyContent={'space-between'}
             >
-              <TabList>
-                <Translation component={Tab} translation={'navBar.earn'} />
-                <Translation component={Tab} translation={'navBar.stats'} />
-              </TabList>
-            </Tabs>
+              <Tabs
+                defaultIndex={0}
+                variant={'unstyled'}
+              >
+                <TabList>
+                  <Translation component={Tab} translation={'navBar.earn'} />
+                  <Translation component={Tab} translation={'navBar.stats'} />
+                </TabList>
+              </Tabs>
+              <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />
+            </Stack>
           </Stack>
         </Flex>
         <HStack

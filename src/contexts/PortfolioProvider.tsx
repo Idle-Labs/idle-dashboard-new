@@ -4,6 +4,7 @@ import { GaugeVault } from 'vaults/GaugeVault'
 import useLocalForge from 'hooks/useLocalForge'
 import { useWeb3Provider } from './Web3Provider'
 import { TrancheVault } from 'vaults/TrancheVault'
+import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
@@ -13,10 +14,10 @@ import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty } from 'helpers/'
-import type { GenericContractConfig, UnderlyingTokenProps } from 'constants/'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, ContractRawCall } from 'constants/'
+import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
 type InitialState = {
@@ -29,6 +30,7 @@ type InitialState = {
   vaultsPrices: Balances
   totalSupplies: Balances
   isPortfolioLoaded: boolean
+  protocolToken: Asset | null
   transactions: Transaction[]
   contracts: GenericContract[]
   isVaultsPositionsLoaded: boolean
@@ -63,6 +65,7 @@ const initialState: InitialState = {
   vaultsPrices: {},
   transactions: [],
   totalSupplies: {},
+  protocolToken: null,
   vaultsPositions: {},
   historicalRates: {},
   historicalPrices: {},
@@ -81,6 +84,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
   switch (action.type){
     case 'RESET_STATE':
       return {...initialState}
+    case 'SET_PROTOCOL_TOKEN':
+      return {...state, protocolToken: action.payload}
     case 'SET_PORTFOLIO_TIMESTAMP':
       return {...state, portfolioTimestamp: action.payload}
     case 'SET_PORTFOLIO_LOADED':
@@ -251,6 +256,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return state.balancesUsd[assetId.toLowerCase()] || BNify(0)
   }, [state.balancesUsd])
 
+  const protocolToken = useMemo(() => {
+    if (!selectAssetById) return
+    const underlyingToken = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+    return underlyingToken && selectAssetById(underlyingToken.address)
+  }, [selectAssetById])
+
   const selectVaultsAssetsWithBalance = useCallback( (vaultType: string | null = null, includeStakedAmount: boolean = true): Asset[] | null => {
     const vaultsWithBalance = state.vaults ? state.vaults.filter( (vault: Vault) => {
       const assetBalance = selectAssetBalance(vault.id)
@@ -349,9 +360,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
         redeemable: redeemableAmount.times(assetPriceUsd)
       }
 
+      const realizedApy = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
+
       vaultsPositions[assetId] = {
         usd,
         underlying,
+        realizedApy,
         avgBuyPrice,
         firstDepositTx,
         depositDuration,
@@ -727,6 +741,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // useEffect(() => {
   //   console.log('accountChanged', account, connecting, walletInitialized)
   // }, [account, connecting, walletInitialized])
+
+  useEffect(() => {
+    if (!protocolToken) return
+    dispatch({type:'SET_PROTOCOL_TOKEN', payload: protocolToken})
+  }, [protocolToken])
 
   // Update on-chain data of last transaction asset
   useEffect(() => {
