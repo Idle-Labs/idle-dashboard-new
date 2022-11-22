@@ -1,9 +1,10 @@
 import { IconType } from 'constants/types'
 import { Icon } from 'components/Icon/Icon'
+import { useTranslate } from 'react-polyglot'
 import React, { useState, useEffect } from 'react'
+import { MdOutlineNotificationsNone } from 'react-icons/md'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { MdOutlineNotificationsNone/*, MdWbSunny*/ } from 'react-icons/md'
 import { Menu, MenuGroup, MenuButton, MenuList, MenuItem, IconButton, Text, Flex } from '@chakra-ui/react'
 
 type NotificationType = {
@@ -44,7 +45,7 @@ export const Notification: React.FC<NotificationType> = (props) => {
 }
 
 export const NotificationList: React.FC = () => {
-
+  const translate = useTranslate()
   const [ notifications, setNotifications ] = useState<NotificationType[]>([])
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export const NotificationList: React.FC = () => {
         <>
           <MenuButton as={IconButton} variant={'cta'} aria-label={'Notifications'} icon={<MdOutlineNotificationsNone size={24} />} />
           <MenuList zIndex={999}>
-            <MenuGroup title='Notifications'>
+            <MenuGroup title={translate('navBar.notifications.title')}>
               <Scrollable maxH={240}>
               {
                 notifications && notifications.length ? notifications.map( (notification, index) => (
@@ -89,7 +90,7 @@ export const NotificationList: React.FC = () => {
                     justifyContent={'center'}
                     backgroundColor={'transparent !important'}
                   >
-                    You have no notifications
+                    {translate('navBar.notifications.empty')}
                   </MenuItem>
                 )
               }

@@ -84,11 +84,12 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
   compositions.strategies = useMemo((): DonutChartData[] => {
     return Object.keys(strategiesBalances).map( (strategy: string) => {
       const label = translate(strategies[strategy].label)
+      const avgRealizedApy = strategiesBalances[strategy].balance.gt(0) ? parseFloat(strategiesBalances[strategy].weightedRealizedApy.div(strategiesBalances[strategy].balance)) : 0
       return {
         label,
         extraData: {
+          avgRealizedApy,
           strategy: strategies[strategy],
-          avgRealizedApy: parseFloat(strategiesBalances[strategy].weightedRealizedApy.div(strategiesBalances[strategy].balance))
         },
         value: parseFloat(strategiesBalances[strategy].balance)
       }

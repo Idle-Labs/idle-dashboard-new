@@ -25,23 +25,23 @@ type AssetCellProps = {
 // }
 
 type ContextProps = {
-  assetId: string | null | undefined
+  theme: any
   asset: Asset | null
   vault: Vault | null
-  underlyingAsset: Asset | null
-  underlyingAssetVault: UnderlyingToken | null
   translate: Function
-  theme: any
+  underlyingAsset: Asset | null
+  assetId: string | null | undefined
+  underlyingAssetVault: UnderlyingToken | null
 }
 
 const initialState = {
-  assetId: null,
   asset: null,
+  vault: null,
+  theme: null,
+  assetId: null,
+  translate: () => {},
   underlyingAsset: null,
   underlyingAssetVault: null,
-  vault: null,
-  translate: () => {},
-  theme: null
 }
 
 const AssetContext = createContext<ContextProps>(initialState)

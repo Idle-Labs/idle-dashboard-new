@@ -36,6 +36,14 @@ export const Dark = (props: CardProps) => {
   )
 }
 
+export const Light = (props: CardProps) => {
+  const { children, ...rest } = props
+  const layerStyle: string[] = ['cardLight'].concat(props.layerStyle as string[])
+  return (
+    <Card {...rest} layerStyle={layerStyle}>{children}</Card>
+  )
+}
+
 export const Outline = (props: CardProps) => {
   const { children, ...rest } = props
   const layerStyle: string[] = ['cardOutline'].concat(props.layerStyle as string[])
@@ -45,5 +53,6 @@ export const Outline = (props: CardProps) => {
 }
 
 Card.Dark = Dark
+Card.Light = Light
 Card.Outline = Outline
 Card.Heading = HeadingTitle

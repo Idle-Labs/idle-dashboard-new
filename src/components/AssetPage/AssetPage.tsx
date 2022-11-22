@@ -4,6 +4,7 @@ import { Card } from 'components/Card/Card'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { HistoryTimeframe } from 'constants/types'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -19,9 +20,9 @@ import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, Si
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
-  // const { account } = useWalletProvider()
+  const { account } = useWalletProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
-  const { isPortfolioLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
+  const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -48,12 +49,6 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return hasBalance ? balanceChartData : performanceChartData
   }, [isPortfolioLoaded, hasBalance, balanceChartData, performanceChartData])
 
-  // if (isPortfolioLoaded){
-    // console.log('AssetPage', isPortfolioLoaded, assetBalance, hasBalance, chartData)
-  // }
-
-  // console.log('locaton', location, 'params', params, account)
-
   // const onTabClick = useCallback((row: RowProps) => {
   //   return navigate(`${location?.pathname}/${row.original.id}`)
   // }, [navigate, location])
@@ -62,12 +57,14 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     const earningsPercentage = hasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
     const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
     const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
+
+    const isLoaded = (chartData?.total && chartData.total.length>0) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
     return (
       <VStack
         spacing={1}
         alignItems={'flex-start'}
       >
-        <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+        <SkeletonText noOfLines={2} isLoaded={isLoaded}>
           <Translation translation={ hasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
           <HStack
             spacing={4}
@@ -104,7 +101,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </SkeletonText>
       </VStack>
     )
-  }, [hasBalance, asset, chartData, isPortfolioLoaded])
+  }, [hasBalance, asset, account, isVaultsPositionsLoaded, chartData, isPortfolioLoaded])
 
   const fundsOverview = useMemo(() => {
     if (!asset || !hasBalance) return null

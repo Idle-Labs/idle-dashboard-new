@@ -23,10 +23,10 @@ export type MenuItemType = {
 export const menu: MenuItemType[] = [
   {
     path:'dashboard',
-    label:'Dashboard'
+    label:'navBar.dashboard'
   },
   {
-    label:'Earn',
+    label:'navBar.earn',
     children: Object.values(strategies).map( (strategy: StrategyProps) => ({
       path:`earn/${strategy.route}`,
       label: strategy.label
@@ -34,14 +34,14 @@ export const menu: MenuItemType[] = [
   },
   {
     path:'stats',
-    label:'Stats'
+    label:'navBar.stats'
   },
   {
     path:'stake',
-    label:'Stake & Vote'
+    label:'navBar.stakeGauges'
   },
   {
     path:'governance',
-    label:'Governance'
+    label:'navBar.governance'
   },
 ]

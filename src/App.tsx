@@ -70,6 +70,15 @@ const theme = extendTheme({
       800: '#AE3C3B',
       900: '#923231',
     },
+    BY: {
+      200: '#FFD15C'
+    },
+    BB: {
+      200: '#6AE4FF'
+    },
+    AA: {
+      200: '#4DE3B0'
+    },
     brand: {
       blue: '#0519D3'
     },
@@ -219,10 +228,12 @@ const theme = extendTheme({
     cardLight: {
       p:8,
       borderRadius:8,
-      borderWidth:'1px',
-      borderStyle:'solid',
-      borderColor:'card.borderColor',
       backgroundColor:'card.bgLight',
+      _selected: {
+        borderWidth:'1px',
+        borderStyle:'solid',
+        borderColor:'card.borderColor',
+      }
     },
     cardDark: {
       p:8,
@@ -413,6 +424,15 @@ const theme = extendTheme({
           textStyle:'cta',
           color:'nearBlack'
         },
+        ctaPrimaryOutline:{
+          height:12,
+          width:'auto',
+          color:'primary',
+          textStyle:'cta',
+          borderWidth:'1px',
+          borderStyle:'solid',
+          borderColor:'primary',
+        },
         selector:{
           px:2,
           py:1,
@@ -448,6 +468,23 @@ const theme = extendTheme({
           backgroundColor:'button.bg',
           _hover: {
             color:'button.colorHover',
+            backgroundColor:'button.bgHover',
+          }
+        },
+        filter:{
+          opacity:0.5,
+          border:'1px solid',
+          borderRadius:'80px',
+          borderColor:'primary',
+          _selected: {
+            opacity:1,
+            color:'primary',
+            borderColor:'transparent',
+            backgroundColor:'button.bg',
+          },
+          _hover: {
+            opacity:1,
+            borderColor:'transparent',
             backgroundColor:'button.bgHover',
           }
         }

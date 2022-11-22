@@ -18,6 +18,7 @@
     "insufficientFunds": "Insufficient Funds",
     "estimatedGas": "Estimated Gas Fee",
     "gasFee": "Gas Fee",
+    "noDeposits": "No deposits",
     "relayerGasFee": "Relayer Gas Fee",
     "insufficientAmountForGas": "Not enough ETH to cover gas",
     "invalidAddress": "Invalid Address",
@@ -29,6 +30,7 @@
     "withdrawAndClaim": "Withdraw & Claim",
     "overview": "Overview",
     "getStarted": "Get Started",
+    "discoverMore": "Discover more",
     "connectWallet": "Connect Wallet",
     "connectedWallet": "Connected Wallet",
     "connectedWalletSettings": "Wallet Settings",
@@ -125,6 +127,10 @@
         "cta": "Send yourself some crypto!"
       },
       "stakedInfo": "You cannot send or trade the amount staked"
+    },
+    "productsUpdates": {
+      "title": "Product updates",
+      "empty": "No updates to show at the moment."
     },
     "recentTransactions": {
       "recentTransactions": "Recent Transactions"
@@ -287,6 +293,7 @@
     "unstaking": "Unstaking",
     "available": "Available %{unbondingEnd}",
     "earn": "Earn",
+    "strategies": "Strategies",
     "pool": "Pool",
     "earnings": "Earnings",
     "deposited": "Deposited",
@@ -332,17 +339,28 @@
     "yearn": "Yearn Finance",
     "emptyEarn": "Earn opportunities will appear here.",
     "empty": {
+      "rewards": {
+        "title": "Vaults Rewards",
+        "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
+        "cta": "Explore vaults"
+      },
       "farming": {
         "body": "You are not currently farming anything.",
-        "cta": "View Opportunities"
+        "cta": "Discover more"
       },
-      "stakingVaults": {
-        "body": "Explore opportunities to earn interest on your crypto assets.",
-        "cta": "View Opportunities"
+      "staking": {
+        "title": "Staking Rewards",
+        "body": "Stake your IDLE tokens to start accruing some IDLE rewards.",
+        "cta": "Go to Staking"
+      },
+      "gauges": {
+        "title": "Gauges Rewards",
+        "body": "Stake your Protected Yield tokens to start earnings additional IDLE rewards.",
+        "cta": "Go to Gauges"
       },
       "pools": {
         "body": "You have not deposited into any liquidity pools.",
-        "cta": "View Opportunities"
+        "cta": "Discover more"
       }
     },
     "viewOnChain": "View on chain",
@@ -385,9 +403,18 @@
     "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately.",
     "assetStakingBalance": "%{assetSymbol} Staking Balance"
   },
+  "footer": {
+    "joinCommunity": "Join our community"
+  },
   "navBar": {
     "dashboard": "Dashboard",
+    "governance": "Governance",
+    "notifications": {
+      "title": "Notifications",
+      "empty": "You have no notifications"
+    },
     "assets": "Assets",
+    "stakeGauges": "Stake & Gauges",
     "assetDetails": "Asset Details",
     "accounts": "Accounts",
     "accountAsset": "Account Asset",

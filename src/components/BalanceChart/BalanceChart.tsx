@@ -8,6 +8,7 @@ import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartDa
 type BalanceChartArgs = {
   assetIds: AssetId[]
   accountId?: string
+  strategies?: string[]
   timeframe: HistoryTimeframe
   percentChange: number
   setPercentChange: (percentChange: number) => void
@@ -19,6 +20,7 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
   assetIds,
   accountId,
   timeframe,
+  strategies,
   percentChange,
   isRainbowChart,
   setPercentChange,
@@ -28,6 +30,7 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
     assetIds,
     accountId,
     timeframe,
+    strategies
   })
 
   const { total } = balanceChartData

@@ -26,6 +26,7 @@ type UseBalanceChartDataReturn = {
 type UseBalanceChartDataArgs = {
   assetIds: AssetId[]
   accountId?: string
+  strategies?: string[]
   timeframe?: HistoryTimeframe
 }
 
@@ -33,14 +34,15 @@ type UseBalanceChartData = (args: UseBalanceChartDataArgs) => UseBalanceChartDat
 
 export const useBalanceChartData: UseBalanceChartData = args => {
 
-  const { assetIds, timeframe } = args
+  const { assetIds, strategies, timeframe } = args
   const { isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectors: { selectAssetsByIds, selectVaultTransactions, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp } } = usePortfolioProvider()
   const [balanceChartDataLoading, setBalanceChartDataLoading] = useState<boolean>(true)
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
-    return selectAssetsByIds(assetIds)
-  }, [assetIds, selectAssetsByIds])
+    const assets = selectAssetsByIds(assetIds)
+    return assets.filter( (asset: Asset) => !strategies || !asset.type || strategies.includes(asset.type) )
+  }, [assetIds, strategies, selectAssetsByIds])
 
   const timeframeStartTimestamp = useMemo((): number => {
     if (!timeframe) return 0

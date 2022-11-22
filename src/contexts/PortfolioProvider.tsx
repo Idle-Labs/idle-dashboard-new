@@ -395,8 +395,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return !enabledCalls.length || enabledCalls.includes(call)
     }
 
-    console.log('enabledCalls', enabledCalls)
-
     const rawCalls = vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
 
       const aggregatedRawCalls = [
@@ -1167,8 +1165,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_VAULTS_PRICES', payload: vaultsPrices})
       // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies})
       // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
-
-      console.log('vaultsOnChainData', vaultsOnChainData)
+      
+      // console.log('vaultsOnChainData', vaultsOnChainData)
 
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         dispatch({type: 'SET_APRS', payload: {...state.aprs, ...aprs}})

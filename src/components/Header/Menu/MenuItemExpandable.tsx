@@ -1,14 +1,8 @@
 import React from 'react'
-import {
-  MenuButton,
-  Flex,
-  MenuList,
-  MenuItem,
-  useTheme
-} from '@chakra-ui/react'
+import type { MenuItemType } from 'constants/menu'
 import { MenuNavItem, NavItemText } from './MenuNavItem'
-import type { MenuItemType } from '../../../constants/menu'
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
+import { MenuButton, Flex, MenuList, MenuItem, useTheme } from '@chakra-ui/react'
 
 type MenuItemExpandableProps = {
   isOpen: boolean

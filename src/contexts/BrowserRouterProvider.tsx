@@ -1,6 +1,6 @@
 import { Location } from 'history'
-import { routes } from '../constants/routes'
-import { useQuery } from '../hooks/useQuery'
+import { routes } from 'constants/routes'
+import { useQuery } from 'hooks/useQuery'
 import { useLocation, useRoutes } from 'react-router-dom'
 import React, { useMemo, createContext, useContext } from 'react'
 
