@@ -312,7 +312,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   return (
     <Box
-      mt={14}
+      mt={12}
       width={'100%'}
     >
       <Stack
