@@ -2,8 +2,8 @@ import React from 'react'
 import { IconType } from 'constants/types'
 import { Icon } from 'components/Icon/Icon'
 import { Card } from 'components/Card/Card'
-import { VStack, HStack, Text } from '@chakra-ui/react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { Flex, VStack, HStack, Text } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 
 type ProductUpdateArgs = {
@@ -52,63 +52,22 @@ export const ProductUpdates: React.FC = () => {
     >
       <VStack
         flex={1}
-        spacing={6}
+        spacing={0}
         height={'100%'}
         alignItems={'flex-start'}
         justifyContent={'flex-start'}
       >
-        <Translation component={Card.Heading} translation={'dashboard.productsUpdates.title'} />
-        <Scrollable maxH={'500px'}>
-          <ProductUpdate
-            title={'This is the title'}
-            date={'21/11/2022'}
-            text={'A new product update has been released! Navigate to discover...'}
-          />
-          <ProductUpdate
-            title={'This is the title'}
-            date={'21/11/2022'}
-            text={'A new product update has been released! Navigate to discover...'}
-          />
-          {
-            /*
-            <ProductUpdas
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            <ProductUpdate
-              title={'This is the title'}
-              date={'21/11/2022'}
-              text={'A new product update has been released! Navigate to discover...'}
-            />
-            */
-          }
+        <Translation component={Card.Heading} translation={'dashboard.productUpdates.title'} />
+        <Scrollable maxH={550}>
+          <Flex
+            flex={1}
+            minH={400}
+            width={'100%'}
+            alignItems={'center'}
+            justifyContent={'center'}
+          >
+            <Translation component={Text} translation={'dashboard.productUpdates.empty'} />
+          </Flex>
         </Scrollable>
       </VStack>
     </Card>

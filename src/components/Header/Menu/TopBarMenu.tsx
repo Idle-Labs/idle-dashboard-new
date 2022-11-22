@@ -1,17 +1,17 @@
 import React from 'react'
 import { menu } from 'constants/menu'
 import { MenuNavItem } from './MenuNavItem'
-import { Menu, Flex, Stack } from '@chakra-ui/react'
 import { MenuItemExpandable } from './MenuItemExpandable'
+import { Menu, Flex, HStack, Image } from '@chakra-ui/react'
 
 export const TopBarMenu: React.FC = () => {
   return (
-    <Stack
-      height={'40px'}
-      spacing={'40px'}
-      direction={'row'}
+    <HStack
+      height={10}
+      spacing={10}
       alignItems={'center'}
     >
+      <Image src={'images/icon.svg'} height={10} width={10} />
       <Menu>
         {({ isOpen }) => menu.map( (menuItem, index) => {
           return (
@@ -30,6 +30,6 @@ export const TopBarMenu: React.FC = () => {
         })
       }
       </Menu>
-    </Stack>
+    </HStack>
   )
 }

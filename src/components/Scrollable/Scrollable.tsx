@@ -11,14 +11,16 @@ export const Scrollable: React.FC<ScrollableArgs> = ({parentRef, children, ...pr
   // const dimensions = useDimensions(containerRef)
   // console.log('dimensions', containerRef, dimensions)
   return (
-    <Box
+    <Flex
       flex={1}
       width={'100%'}
       // ref={containerRef}
       overflow={'scroll'}
+      direction={'column'}
+      alignItems={'flex-start'}
       {...props}
     >
       {children}
-    </Box>
+    </Flex>
   )
 }

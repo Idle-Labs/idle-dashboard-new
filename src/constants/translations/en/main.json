@@ -169,9 +169,9 @@
       },
       "stakedInfo": "You cannot send or trade the amount staked"
     },
-    "productsUpdates": {
+    "productUpdates": {
       "title": "Product updates",
-      "empty": "No updates to show at the moment."
+      "empty": "Product updates will appear here."
     },
     "recentTransactions": {
       "recentTransactions": "Recent Transactions"
