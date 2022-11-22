@@ -1,10 +1,9 @@
 import { Stats } from 'components/Stats/Stats'
 import { Template } from 'components/Template/Template'
 import { Strategy } from 'components/Strategy/Strategy'
+import { RouteObject, Navigate } from 'react-router-dom'
 import { Dashboard } from 'components/Dashboard/Dashboard'
 import { AssetPage } from 'components/AssetPage/AssetPage'
-// import { TestConsumer } from 'components/TestConsumer/TestConsumer'
-import { RouteObject, Navigate, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
 
 export const routes: RouteObject[] = [
   {

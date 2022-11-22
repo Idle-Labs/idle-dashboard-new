@@ -1,18 +1,16 @@
-import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
-import { ContractSendMethod } from 'web3-eth-contract'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
-import type { Number, ReducerActionTypes, AssetId } from 'constants/types'
+import type { ReducerActionTypes, AssetId } from 'constants/types'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, isBigNumberNaN, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
+import { BNify, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
@@ -64,13 +62,13 @@ type ActionComponentArgs = {
 } & BoxProps
 
 const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children }) => {
-  const { account, chainToken } = useWalletProvider()
+  const { account } = useWalletProvider()
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
   const { underlyingAsset, vault, translate, theme } = useAssetProvider()
   const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(false)
   const [ amountToApprove, setAmountToApprove ] = useState<string>(defaultAmount)
-  const { sendTransaction, sendTransactionTest, setGasLimit } = useTransactionManager()
+  const { sendTransaction/*, sendTransactionTest*/, setGasLimit } = useTransactionManager()
 
   useEffect(() => {
     setAmount(defaultAmount)
@@ -187,7 +185,7 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
 }
 
 const ConnectWalletButton: React.FC<ButtonProps> = ({...props}) => {
-  const { account, connect, connecting } = useWalletProvider()
+  const { connect, connecting } = useWalletProvider()
   return connecting ? (
     <Button disabled={true} variant={'ctaFull'}>
       <Spinner size={'sm'} />
@@ -235,13 +233,11 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
-  const { account, chainToken } = useWalletProvider()
+  const { account } = useWalletProvider()
+  const { sendTransaction, setGasLimit } = useTransactionManager()
   const { dispatch, activeItem, executeAction } = useOperativeComponent()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
-  const { asset, vault, underlyingAsset, underlyingAssetVault, translate, theme } = useAssetProvider()
-  const { sendTransaction, sendTransactionTest, estimateGasFee, setGasLimit, state: { transactionSpeed, estimatedFees, estimatedFeesUsd, gasLimit, tokenPriceUsd } } = useTransactionManager()
-
-  const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
+  const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
 
   const disabled = useMemo(() => {
     if (BNify(amount).lte(0)) return true
@@ -432,13 +428,11 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
-  const { account, chainToken } = useWalletProvider()
+  const { account } = useWalletProvider()
+  const { sendTransaction, setGasLimit } = useTransactionManager()
   const { dispatch, activeItem, executeAction } = useOperativeComponent()
+  const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance } } = usePortfolioProvider()
-  const { asset, vault, underlyingAsset, underlyingAssetVault, translate, theme } = useAssetProvider()
-  const { sendTransaction, sendTransactionTest, estimateGasFee, setGasLimit, state: { transactionSpeed, estimatedFees, estimatedFeesUsd, gasLimit, tokenPriceUsd } } = useTransactionManager()
-
-  const handleAmountChange = ({target: { value }}: { target: {value: string} }) => setAmount(value)
 
   const disabled = useMemo(() => {
     setError('')
@@ -1036,13 +1030,13 @@ type OperativeComponentArgs = {
 }
 
 export const OperativeComponent: React.FC<OperativeComponentArgs> = ({ assetId }) => {
-  const { chainId, explorer } = useWalletProvider()
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
-  const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { asset, underlyingAsset, translate, theme } = useAssetProvider()
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
-  const { state: { gasPrice, gasOracle, transaction: transactionState }, retry } = useTransactionManager()
+
+  const { underlyingAsset, translate } = useAssetProvider()
+  const [ state, dispatch ] = useReducer(reducer, initialState)
+  const { state: { gasPrice, transaction: transactionState }, retry } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
     setActionIndex(index)

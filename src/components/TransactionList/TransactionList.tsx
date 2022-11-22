@@ -3,22 +3,21 @@ import { Icon } from 'components/Icon/Icon'
 import { Card } from 'components/Card/Card'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
+import { formatDate, sortArrayByKey } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import type { AssetId, Transaction } from 'constants/types'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { formatDate, shortenHash, sortArrayByKey } from 'helpers/'
-import type { AssetId, IconType, Transaction } from 'constants/types'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { VStack, HStack, Flex, Text, Skeleton } from '@chakra-ui/react'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
-import { VStack, HStack, Flex, Link, Text, Skeleton, SkeletonText } from '@chakra-ui/react'
 
 type TransactionItemArgs = {
   transaction: Transaction
 }
 
 const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
-
   return (
     <VStack
       mb={2}
