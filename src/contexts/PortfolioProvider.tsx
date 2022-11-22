@@ -96,7 +96,7 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, selectors: action.payload}
     case 'SET_CONTRACTS':
       return {...state, contracts: action.payload}
-    case 'SET_TRANSACTIONS':
+    case 'SET_VAULTS_TRANSACTIONS':
       return {...state, transactions: action.payload}
     case 'SET_VAULTS_POSITIONS':
       return {...state, vaultsPositions: action.payload}  
@@ -149,7 +149,7 @@ const PortfolioProviderContext = React.createContext<ContextProps>(initialContex
 export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 
 export function PortfolioProvider({ children }:ProviderProps) {
-  const { web3, multiCall } = useWeb3Provider()
+  const { web3, web3Rpc, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
   const { walletInitialized, connecting, account, chainId, explorer } = useWalletProvider()
@@ -283,7 +283,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (!account?.address || !explorer || !chainId) return
 
-    const startTimestamp = Date.now()
+    // const startTimestamp = Date.now()
 
     const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
     const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
@@ -384,8 +384,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPositions,
       vaultsTransactions
     }
-
-    console.log('VAULTS POSITIONS LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
   }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
@@ -750,7 +748,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!lastTransaction || !state.isPortfolioLoaded) return
     if (!lastTransaction?.lastUpdated || lastTransaction.lastUpdated<state.portfolioTimestamp) return
 
-    console.log('lastTransaction', lastTransaction)
+    // console.log('lastTransaction', lastTransaction)
     const asset = selectAssetById(lastTransaction.assetId as string)
     const vault = selectVaultById(lastTransaction.assetId as string)
 
@@ -767,7 +765,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     ;(async () => {
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
-      console.log('Last Transaction Vault Data', vaultsOnChainData)
+      // console.log('Last Transaction Vault Data', vaultsOnChainData)
       if (!vaultsOnChainData) return
 
       const {
@@ -790,8 +788,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       dispatch({type: 'SET_APRS', payload: newAprs})
       dispatch({type: 'SET_BALANCES', payload: newBalances})
-      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
       dispatch({type: 'SET_PRICES_USD', payload: newPricesUsd})
+      dispatch({type: 'SET_ASSETS_DATA', payload: newAssetsData})
       dispatch({type: 'SET_VAULTS_PRICES', payload: newVaultsPrices})
       dispatch({type: 'SET_TOTAL_SUPPLIES', payload: newTotalSupplies})
       dispatch({type: 'SET_PORTFOLIO_TIMESTAMP', payload: Date.now()})
@@ -825,8 +823,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Object.keys(tranches[chainId][protocol]).forEach( token => {
         const vaultConfig = tranches[chainId][protocol][token]
         const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
-        const trancheVaultAA = new TrancheVault(web3, chainId, protocol, vaultConfig, gaugeConfig, 'AA')
-        const trancheVaultBB = new TrancheVault(web3, chainId, protocol, vaultConfig, null, 'BB')
+        const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA'})
+        const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB'})
         vaultsContracts.push(trancheVaultAA)
         vaultsContracts.push(trancheVaultBB)
       })
@@ -836,7 +834,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Init best yield vaults
     const bestYieldVaults = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
       const tokenConfig = bestYield[chainId][token]
-      const trancheVault = new BestYieldVault(web3, chainId, tokenConfig, 'BY')
+      const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY'})
       vaultsContracts.push(trancheVault)
       return vaultsContracts;
     }, [])
@@ -865,7 +863,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // const assetsData = generateAssetsData(allVaults)
       // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
     };
-  }, [web3, chainId])
+  }, [web3, web3Rpc, chainId])
 
   // Set selectors
   useEffect(() => {
@@ -1232,14 +1230,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
       })
 
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
-      dispatch({type: 'SET_TRANSACTIONS', payload: vaultsTransactions})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
+      dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: vaultsTransactions})
     })()
 
     // Clean transactions and positions
     return () => {
-      dispatch({type: 'SET_TRANSACTIONS', payload: []})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+      dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
     };
   // eslint-disable-next-line

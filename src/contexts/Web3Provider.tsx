@@ -3,15 +3,17 @@ import { chains } from 'constants/'
 import { Multicall } from 'classes/'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useMemo } from 'react'
 
 type ContextProps = {
   web3: Web3 | null
+  web3Rpc: Web3 | null
   multiCall: Multicall | null
 }
 
 const initialState: ContextProps = {
   web3: null,
+  web3Rpc: null,
   multiCall: null
 }
 
@@ -24,6 +26,11 @@ export function Web3Provider({ children }: ProviderProps) {
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
   const { wallet, chainId, walletInitialized } = useWalletProvider()
 
+  const web3Rpc = useMemo(() => {
+    if (!chainId) return null
+    return new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl))
+  }, [chainId])
+
   // Update wallet and provider
   useEffect(() => {
     if (!walletInitialized || !chainId) return
@@ -31,9 +38,9 @@ export function Web3Provider({ children }: ProviderProps) {
       // @ts-ignore
       setWeb3(new Web3(wallet.provider))
     } else {
-      setWeb3(new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl)))
+      setWeb3(web3Rpc)
     }
-  }, [wallet?.provider, walletInitialized, chainId])
+  }, [wallet?.provider, walletInitialized, chainId, web3Rpc])
 
   useEffect(() => {
     if (!chainId || !web3) return
@@ -46,7 +53,7 @@ export function Web3Provider({ children }: ProviderProps) {
   }, [web3, chainId])
 
   return (
-    <Web3ProviderContext.Provider value={{web3, multiCall}}>
+    <Web3ProviderContext.Provider value={{web3, web3Rpc, multiCall}}>
       {children}
     </Web3ProviderContext.Provider>
   )

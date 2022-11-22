@@ -11,6 +11,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { TransactionList } from 'components/TransactionList/TransactionList'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
@@ -162,6 +163,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   return (
     <AssetProvider
+      wrapFlex={true}
       assetId={asset?.id}
     >
       <Box
@@ -250,11 +252,13 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             {fundsOverview}
             <AssetGeneralData assetId={asset?.id} />
           </Stack>
-          <Box
+          <VStack
+            spacing={6}
             width={[0, '27em']}
           >
-            <OperativeComponent />
-          </Box>
+            <OperativeComponent assetId={asset?.id} />
+            <TransactionList assetId={asset?.id} />
+          </VStack>
         </HStack>
       </Box>
     </AssetProvider>

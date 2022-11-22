@@ -291,6 +291,8 @@ export class VaultFunctionsHelper {
 
     const results = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
 
+    if (!results) return historicalData
+
     const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
       const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())

@@ -9,8 +9,18 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncForEach, catchPromise } from 'helpers/'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
+
+type ConstructorProps = {
+  web3: Web3
+  type: string
+  web3Rpc?: Web3 | null
+  chainId: number
+  protocol: string
+  vaultConfig: TrancheConfig
+  gaugeConfig?: GaugeConfig | null
+}
 
 export class TrancheVault {
 
@@ -19,6 +29,7 @@ export class TrancheVault {
   readonly web3: Web3
   readonly chainId: number
   readonly protocol: string
+  readonly web3Rpc: Web3 | null | undefined
   readonly vaultFunctionsHelper: VaultFunctionsHelper
 
   // Raw config
@@ -38,11 +49,25 @@ export class TrancheVault {
   public readonly strategyContract: Contract
   public readonly underlyingContract: Contract | undefined
 
-  constructor(web3: Web3, chainId: number, protocol: string, vaultConfig: TrancheConfig, gaugeConfig: GaugeConfig | null | undefined, type: string){
+  // Read only contracts
+  public readonly cdoContractRpc: Contract | undefined // Used for calls on specific blocks
+
+  constructor(props: ConstructorProps){
+
+    const {
+      web3,
+      type,
+      web3Rpc,
+      chainId,
+      protocol,
+      vaultConfig,
+      gaugeConfig
+    } = props
     
     // Init global data
     this.web3 = web3
     this.type = type
+    this.web3Rpc = web3Rpc
     this.chainId = chainId
     this.protocol = protocol
     this.vaultConfig = vaultConfig
@@ -67,6 +92,9 @@ export class TrancheVault {
 
     // Init CDO contract
     this.cdoContract = new web3.eth.Contract(this.cdoConfig.abi, this.cdoConfig.address)
+    if (web3Rpc) {
+      this.cdoContractRpc = new web3Rpc.eth.Contract(this.cdoConfig.abi, this.cdoConfig.address)
+    }
 
     // Init Strategy contract
     this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
@@ -100,7 +128,6 @@ export class TrancheVault {
 
       const internalTxs = transactionsByHash[hash]
 
-      // await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
       for (const tx of internalTxs) {
 
         // Check for right token
@@ -137,8 +164,8 @@ export class TrancheVault {
         if (action) {
 
           // Get idle token tx and underlying token tx
-          const idleTokenToAddress = action === 'redeem' ? ZERO_ADDRESS : account
-          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id/* && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()*/ )
+          const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : ZERO_ADDRESS) : account
+          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
           const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
           
           const underlyingTokenTx = internalTxs.find( iTx => {
@@ -154,11 +181,11 @@ export class TrancheVault {
           if (!underlyingTokenTxAmount){
             const pricesCalls = this.getPricesCalls()
 
-            // @ts-ignore
             // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+            // @ts-ignore
             let tokenPrice = await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
-            console.log(this.id, action, tx.hash, tokenPrice)
             if (!tokenPrice) {
+              // console.log('tokenPrice', this.id, action, tx.blockNumber, internalTxs, underlyingTokenTx, idleTokenTx, pricesCalls)
               tokenPrice = BNify(1)
             }
 
@@ -198,11 +225,12 @@ export class TrancheVault {
   }
 
   public getPricesCalls(): any[] {
+    const contract = this.cdoContractRpc || this.cdoContract
     return [
       {
-        assetId:this.id,
-        decimals:this.underlyingToken?.decimals || 18,
-        call:this.cdoContract.methods.virtualPrice(this.trancheConfig.address)
+        assetId: this.id,
+        decimals: this.underlyingToken?.decimals || 18,
+        call: contract.methods.virtualPrice(this.trancheConfig.address)
       },
     ]
   }
@@ -233,12 +261,12 @@ export class TrancheVault {
   }
 
   public getAprsCalls(): ContractRawCall[] {
-
+    const contract = this.cdoContractRpc || this.cdoContract
     return [
       {
-        decimals:18,
-        assetId:this.id,
-        call:this.cdoContract.methods.getApr(this.trancheConfig.address)
+        decimals: 18,
+        assetId: this.id,
+        call: contract.methods.getApr(this.trancheConfig.address)
       },
     ]
   }

@@ -475,6 +475,8 @@
     "explore": "Explore"
   },
   "transactionRow": {
+    "deposit": "Deposit",
+    "redeem": "Withdraw",
     "send": "Sent",
     "receive": "Received",
     "moreDetails": "More Details",

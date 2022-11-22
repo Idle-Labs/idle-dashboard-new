@@ -9,8 +9,16 @@ import { GenericContract } from 'contracts/GenericContract'
 import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { BNify, fixTokenDecimals, normalizeTokenAmount, asyncForEach, catchPromise } from 'helpers/'
+import { BNify, fixTokenDecimals, normalizeTokenAmount, catchPromise } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
+
+type ConstructorProps = {
+  web3: Web3
+  type: string
+  web3Rpc?: Web3 | null
+  chainId: number
+  tokenConfig: BestYieldConfig
+}
 
 export class BestYieldVault {
 
@@ -32,7 +40,18 @@ export class BestYieldVault {
   public readonly contract: Contract
   public readonly underlyingContract: Contract | undefined
 
-  constructor(web3: Web3, chainId: number, tokenConfig: BestYieldConfig, type: string){
+  // Read only contracts
+  public readonly contractRpc: Contract | undefined // Used for calls on specific blocks
+
+  constructor(props: ConstructorProps){
+
+    const {
+      web3,
+      type,
+      web3Rpc,
+      chainId,
+      tokenConfig
+    } = props
     
     // Init global data
     this.web3 = web3
@@ -55,6 +74,9 @@ export class BestYieldVault {
 
     // Init idle token contract
     this.contract = new web3.eth.Contract(this.idleConfig.abi, this.idleConfig.address)
+    if (web3Rpc) {
+      this.contractRpc = new web3Rpc.eth.Contract(this.idleConfig.abi, this.idleConfig.address)
+    }
 
     // Init underlying token contract
     if (this.underlyingToken) {
@@ -82,7 +104,6 @@ export class BestYieldVault {
 
       const internalTxs = transactionsByHash[hash]
 
-      // await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
       for (const tx of internalTxs) {
 
         // Check for right token
@@ -111,8 +132,8 @@ export class BestYieldVault {
         if (action) {
 
           // Get idle token tx and underlying token tx
-          const idleTokenToAddress = action === 'redeem' ? ZERO_ADDRESS : account
-          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase() )
+          const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : ZERO_ADDRESS) : account
+          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
           const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
           
           const underlyingTokenTx = internalTxs.find( iTx => {
@@ -160,20 +181,22 @@ export class BestYieldVault {
   }
 
   public getBalancesCalls(params: any[] = []): any[] {
+    const contract = this.contractRpc || this.contract
     return [
       {
         assetId:this.id,
-        call:this.contract.methods.balanceOf(...params),
+        call:contract.methods.balanceOf(...params),
       },
     ]
   }
 
   public getPricesCalls(): ContractRawCall[] {
+    const contract = this.contractRpc || this.contract
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.tokenPrice(),
-        decimals:this.underlyingToken?.decimals || 18,
+        assetId: this.id,
+        call: contract.methods.tokenPrice(),
+        decimals: this.underlyingToken?.decimals || 18,
       },
     ]
   }

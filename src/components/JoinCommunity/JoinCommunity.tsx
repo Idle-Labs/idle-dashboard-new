@@ -24,16 +24,16 @@ export const JoinCommunity: React.FC = () => {
           spacing={4}
           columns={4}
         >
-          <Link href={"https://medium.com/idle-finance"} isExternal>
+          <Link href={"https://medium.com/idle-finance"} isExternal textDecoration={'none !important'}>
             <Button width={'100%'} height={14} variant={'cta'} leftIcon={<SiMedium size={24} />}><AiOutlineMediumWorkmark size={72} /></Button>
           </Link>
-          <Link href={"https://twitter.com/idlefinance"} isExternal>
+          <Link href={"https://twitter.com/idlefinance"} isExternal textDecoration={'none !important'}>
             <Button width={'100%'} height={14} variant={'cta'} leftIcon={<SiTwitter size={24} />}>@idlefinance</Button>
           </Link>
-          <Link href={"https://discord.gg/mpySAJp"} isExternal>
+          <Link href={"https://discord.gg/mpySAJp"} isExternal textDecoration={'none !important'}>
             <Button width={'100%'} height={14} variant={'cta'} leftIcon={<SiDiscord size={24} />}>IdleDAO Server</Button>
           </Link>
-          <Link href={"https://gov.idle.finance/"} isExternal>
+          <Link href={"https://gov.idle.finance/"} isExternal textDecoration={'none !important'}>
             <Button width={'100%'} height={14} variant={'cta'} leftIcon={<HiChatAlt2 size={24} />}>Governance Forum</Button>
           </Link>
         </SimpleGrid>

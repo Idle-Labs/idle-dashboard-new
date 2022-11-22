@@ -15,6 +15,6 @@ export const chains: Record<number, Chain> = {
     id: '0x89',
     token: 'MATIC',
     label: 'Matic(Polygon) Mainnet',
-    rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
+    rpcUrl: `https://polygon-mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
   }
 }

@@ -17,6 +17,7 @@ import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } f
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 
 type AssetCellProps = {
+  wrapFlex?: boolean,
   assetId: string | undefined
 } & FlexProps & ThemingProps
 
@@ -41,14 +42,14 @@ const initialState = {
   assetId: null,
   translate: () => {},
   underlyingAsset: null,
-  underlyingAssetVault: null,
+  underlyingAssetVault: null
 }
 
 const AssetContext = createContext<ContextProps>(initialState)
 
 export const useAssetProvider = () => useContext(AssetContext)
 
-export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
+export const AssetProvider = ({assetId, wrapFlex = true, children, ...flexProps}: AssetCellProps) => {
   const theme = useTheme()
   const translate = useTranslate()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
@@ -73,11 +74,17 @@ export const AssetProvider = ({assetId, children, ...rest}: AssetCellProps) => {
     return selectVaultById(asset.underlyingId)
   }, [asset, selectVaultById])
 
-  return (
-    <AssetContext.Provider value={{asset, vault, underlyingAsset, underlyingAssetVault, assetId, translate, theme}}>
-      <Flex {...rest}>
+  const wrappedChildren = useMemo(() => {
+    return wrapFlex ? (
+      <Flex {...flexProps}>
         {children}
       </Flex>
+    ) : children
+  }, [children, flexProps, wrapFlex])
+
+  return (
+    <AssetContext.Provider value={{asset, vault, underlyingAsset, underlyingAssetVault, assetId, translate, theme}}>
+      {wrappedChildren}
     </AssetContext.Provider>
   )
 }
@@ -258,9 +265,10 @@ const Rewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
 
 const Balance: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
+  const { isPortfolioLoaded } = usePortfolioProvider()
   
-  return asset?.balance ? (
-    <Amount value={asset.balance} {...props} />
+  return isPortfolioLoaded ? (
+    <Amount value={asset?.balance} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

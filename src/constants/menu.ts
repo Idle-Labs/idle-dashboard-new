@@ -32,16 +32,16 @@ export const menu: MenuItemType[] = [
       label: strategy.label
     }))
   },
-  {
-    path:'stats',
-    label:'navBar.stats'
-  },
-  {
-    path:'stake',
-    label:'navBar.stakeGauges'
-  },
-  {
-    path:'governance',
-    label:'navBar.governance'
-  },
+  // {
+  //   path:'stats',
+  //   label:'navBar.stats'
+  // },
+  // {
+  //   path:'stake',
+  //   label:'navBar.stakeGauges'
+  // },
+  // {
+  //   path:'governance',
+  //   label:'navBar.governance'
+  // },
 ]

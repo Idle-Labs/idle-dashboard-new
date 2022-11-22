@@ -1,12 +1,12 @@
 import React from 'react'
-import { Heading, Box, BoxProps, ThemingProps } from '@chakra-ui/react'
+import { Heading, Flex, Box, FlexProps, BoxProps, ThemingProps } from '@chakra-ui/react'
 
 // type HeadingProps = {
 //   title:string
 //   [x: string]: any
 // }
 
-export type CardProps = BoxProps & ThemingProps
+export type CardProps = BoxProps & ThemingProps 
 
 const HeadingTitle = (props: CardProps) => {
   const { children, ...rest } = props
@@ -25,6 +25,19 @@ export const Card = (props: CardProps) => {
     >
       {children}
     </Box>
+  )
+}
+
+export const CardFlex = (props: CardProps & FlexProps) => {
+  const { children, layerStyle, ...rest } = props
+  return (
+    <Flex
+      width={'100%'}
+      layerStyle={layerStyle || 'card'}
+      {...rest}
+    >
+      {children}
+    </Flex>
   )
 }
 
@@ -54,5 +67,6 @@ export const Outline = (props: CardProps) => {
 
 Card.Dark = Dark
 Card.Light = Light
+Card.Flex = CardFlex
 Card.Outline = Outline
 Card.Heading = HeadingTitle

@@ -88,6 +88,7 @@ const theme = extendTheme({
     },
     cta:'#CDD0D6',
     ctaDisabled:'#555B67',
+    link:'#6AE4FF',
     white:'#FFFFFF',
     menu: {
       bg:'#202A3E',
@@ -139,6 +140,7 @@ const theme = extendTheme({
     tertiary:'#2272C8',
     secondary:'#0C48A4',
     nearBlack:'#1B1E27',
+    primaryHover:'#ECEEF2'
   },
   fontSizes: {
     xxs:'11px',
@@ -413,16 +415,19 @@ const theme = extendTheme({
           textStyle:'cta',
           color:'nearBlack',
           bg:'primary !important',
-          // _hover: {
-          //   bg:'primary !important',
-          // }
+          _hover: {
+            bg:'primaryHover !important',
+          }
         },
         ctaPrimary:{
           height:12,
           bg:'primary',
           width:'auto',
           textStyle:'cta',
-          color:'nearBlack'
+          color:'nearBlack',
+          _hover: {
+            bg:'primaryHover',
+          }
         },
         ctaPrimaryOutline:{
           height:12,
@@ -472,7 +477,7 @@ const theme = extendTheme({
           }
         },
         filter:{
-          opacity:0.5,
+          opacity:0.3,
           border:'1px solid',
           borderRadius:'80px',
           borderColor:'primary',

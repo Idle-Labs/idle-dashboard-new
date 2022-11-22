@@ -6,16 +6,6 @@ import { AssetPage } from 'components/AssetPage/AssetPage'
 // import { TestConsumer } from 'components/TestConsumer/TestConsumer'
 import { RouteObject, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
 
-const ComponentWithProps = (props:any) => {
-  const location = useLocation()
-  return (
-    <>
-      <p>Props: {JSON.stringify(props)}</p>
-      <Outlet context={location} />
-    </>
-  )
-}
-
 export const routes: RouteObject[] = [
   {
     path: "/",
@@ -29,10 +19,10 @@ export const routes: RouteObject[] = [
       {
         path:'earn',
         children:[
-          {
-            index: true,
-            element:<ComponentWithProps state={{section:'earn'}} />,
-          },
+          // {
+          //   index: true,
+          //   element:<ComponentWithProps state={{section:'earn'}} />,
+          // },
           {
             path:':strategy',
             children:[
@@ -57,23 +47,23 @@ export const routes: RouteObject[] = [
       {
         path:'stats',
         children:[
-          {
-            index: true,
-            element:<ComponentWithProps state={{section:'stats'}} />,
-          },
-          {
-            path:':asset',
-            element:<ComponentWithProps state={{section:'stats/asset'}} />,
-          }
+          // {
+          //   index: true,
+          //   element:<ComponentWithProps state={{section:'stats'}} />,
+          // },
+          // {
+          //   path:':asset',
+          //   element:<ComponentWithProps state={{section:'stats/asset'}} />,
+          // }
         ]
       },
       {
         path:'stake',
-        element:<ComponentWithProps state={{section:'stake'}} />,
+        // element:<ComponentWithProps state={{section:'stake'}} />,
         children: [
           {
             path:'vote',
-            element:<ComponentWithProps state={{section:'vote'}} />,
+            // element:<ComponentWithProps state={{section:'vote'}} />,
           },
         ]
       },

@@ -2,56 +2,14 @@ import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
 import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
-import { translations } from 'constants/translations'
-import type { WalletState } from '@web3-onboard/core';
-import injectedModule from '@web3-onboard/injected-wallets'
+import { onboardInitParams } from './configs/onboard'
+import type { WalletState } from '@web3-onboard/core'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
 
-const injected = injectedModule()
-
-// initialize Onboard
-init({
-  wallets: [injected],
-  chains: Object.values(chains),
-  accountCenter: {
-    desktop: {
-      enabled: false
-    },
-    mobile: {
-      enabled: false
-    }
-  },
-  i18n: {
-    en: translations.en.onboard
-  },
-  appMetadata:{
-    explore: 'explore',
-    name: 'Idle Finance',
-    icon: '/images/icon.svg',
-    logo: '/images/logo.svg',
-    description: 'Idle Finance',
-    recommendedInjectedWallets: [
-      { name: 'Coinbase', url: 'https://wallet.coinbase.com/' },
-      { name: 'MetaMask', url: 'https://metamask.io' }
-    ]
-  },
-  notify: {
-   enabled: true,
-   position: 'bottomRight',
-   transactionHandler: transaction => {
-     // console.log('transaction', transaction)
-     if (transaction.eventCode === 'txPool') {
-       return {
-         autoDismiss: 0,
-         onClick: () =>
-          window.open(`https://etherscan.io/tx/${transaction.hash}`)
-       }
-     }
-   }
-  }
-})
+// @ts-ignore
+init(onboardInitParams)
 
 type ContextProps = {
   account: Account | null

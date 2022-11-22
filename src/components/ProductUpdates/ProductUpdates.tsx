@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { IconType } from 'constants/types'
 import { Icon } from 'components/Icon/Icon'
 import { Card } from 'components/Card/Card'

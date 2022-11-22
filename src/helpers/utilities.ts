@@ -55,8 +55,12 @@ export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {
   return dayjs().subtract(value, period).startOf('day').valueOf()
 }
 
-export const dateToLocale =(timestamp: number, locale: string) => {
+export const dateToLocale = (timestamp: number, locale: string) => {
   return dayjs(timestamp).locale(locale).format('LLL')
+}
+
+export const formatDate = (timestamp: number | string, format: string = 'YYYY/MM/DD') => {
+  return dayjs(+timestamp).format(format)
 }
 
 export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
@@ -158,6 +162,12 @@ export const asyncForEach = async (array: any[], callback: Function, async: bool
     }
   }
   return output;
+}
+
+export const sortArrayByKey = (array: any[], key: string, order: string = 'asc') => {
+  const val1 = order === 'asc' ? -1 : 1
+  const val2 = order === 'asc' ? 1 : -1
+  return array.sort((a, b) => (parseInt(a[key]) < parseInt(b[key]) ? val1 : val2));
 }
 
 export const shortenHash = (hash: string, startLen: number = 7, endLen: number = 4) => {
