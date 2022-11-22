@@ -140,7 +140,7 @@ const theme = extendTheme({
     tertiary:'#2272C8',
     secondary:'#0C48A4',
     nearBlack:'#1B1E27',
-    primaryHover:'#ECEEF2'
+    primaryHover:'#c7c7c7'
   },
   fontSizes: {
     xxs:'11px',
@@ -437,6 +437,9 @@ const theme = extendTheme({
           borderWidth:'1px',
           borderStyle:'solid',
           borderColor:'primary',
+          _hover: {
+            bg:'rgba(255, 255, 255, 0.05)',
+          }
         },
         selector:{
           px:2,

@@ -4,7 +4,7 @@ import { Strategy } from 'components/Strategy/Strategy'
 import { Dashboard } from 'components/Dashboard/Dashboard'
 import { AssetPage } from 'components/AssetPage/AssetPage'
 // import { TestConsumer } from 'components/TestConsumer/TestConsumer'
-import { RouteObject, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
+import { RouteObject, Navigate, Outlet/*, useParams*/, useLocation } from 'react-router-dom'
 
 export const routes: RouteObject[] = [
   {
@@ -66,6 +66,10 @@ export const routes: RouteObject[] = [
             // element:<ComponentWithProps state={{section:'vote'}} />,
           },
         ]
+      },
+      {
+        index: true,
+        element:<Navigate to="/dashboard" replace />
       },
     ]
   },

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { Icon } from 'components/Icon/Icon'
 import { Card } from 'components/Card/Card'
+import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
@@ -40,7 +41,7 @@ const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
           {/*<Icon IconComponent={transaction.icon} width={24} height={24} size={24} />*/}
           <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
         </HStack>
-        <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000)}</Text>
+        <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>
       </HStack>
       <HStack
         width={'100%'}
@@ -78,7 +79,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
     return selectVaultTransactions(assetId)
   }, [account, assetId, selectVaultTransactions])
 
-  console.log('transactions', assetId, transactions)
+  // console.log('transactions', assetId, transactions)
 
   const isLoaded = useMemo(() => {
     return isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
@@ -129,7 +130,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
           justifyContent={'flex-start'}
         >
           <Translation component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
-          <Scrollable maxH={500}>
+          <Scrollable maxH={400}>
             {transactionsList}
           </Scrollable>
         </VStack>

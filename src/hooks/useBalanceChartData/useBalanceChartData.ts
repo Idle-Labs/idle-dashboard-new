@@ -104,7 +104,7 @@ export const useBalanceChartData: UseBalanceChartData = args => {
         }
       })
 
-      // console.log('vaultTransactions', asset.id, asset, vaultTransactions, assetBalancesByDate)
+      // console.log(asset.id, transaction.action, assetBalancesByDate)
 
       return assetsBalancesByDate
     }, {})

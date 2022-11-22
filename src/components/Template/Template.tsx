@@ -1,13 +1,11 @@
 import React from 'react'
-import { Header } from '../Header/Header'
-import { Outlet } from 'react-router-dom'
+import { Header } from 'components/Header/Header'
+import { Outlet, redirect } from 'react-router-dom'
 import { ContainerProps, Box } from '@chakra-ui/react'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 
 export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
-  
-  const { location } = useBrowserRouter()
-
+  const { location, match } = useBrowserRouter()
   const className = location?.pathname.replace(/\//g,'-').replace(/^-/,'')
 
   return (

@@ -167,7 +167,7 @@ export const asyncForEach = async (array: any[], callback: Function, async: bool
 export const sortArrayByKey = (array: any[], key: string, order: string = 'asc') => {
   const val1 = order === 'asc' ? -1 : 1
   const val2 = order === 'asc' ? 1 : -1
-  return array.sort((a, b) => (parseInt(a[key]) < parseInt(b[key]) ? val1 : val2));
+  return [...array].sort((a, b) => (parseInt(a[key]) < parseInt(b[key]) ? val1 : val2));
 }
 
 export const shortenHash = (hash: string, startLen: number = 7, endLen: number = 4) => {
