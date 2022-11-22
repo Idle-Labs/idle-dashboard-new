@@ -2,6 +2,7 @@ import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
 import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
+import { translations } from 'constants/translations'
 import type { WalletState } from '@web3-onboard/core';
 import injectedModule from '@web3-onboard/injected-wallets'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
@@ -21,6 +22,20 @@ init({
     mobile: {
       enabled: false
     }
+  },
+  i18n: {
+    en: translations.en.onboard
+  },
+  appMetadata:{
+    explore: 'explore',
+    name: 'Idle Finance',
+    icon: '/images/icon.svg',
+    logo: '/images/logo.svg',
+    description: 'Idle Finance',
+    recommendedInjectedWallets: [
+      { name: 'Coinbase', url: 'https://wallet.coinbase.com/' },
+      { name: 'MetaMask', url: 'https://metamask.io' }
+    ]
   },
   notify: {
    enabled: true,

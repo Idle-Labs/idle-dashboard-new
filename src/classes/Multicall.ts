@@ -203,7 +203,7 @@ export class  Multicall {
         from: contractAddress
       });
     } catch (err) {
-      // console.log('Multicall Error:', calls, err)
+      console.log('Multicall Error:', calls, err)
 
       if (!singleCallsEnabled) return null
 

@@ -9,7 +9,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { BNify, fixTokenDecimals, normalizeTokenAmount, asyncForEach } from 'helpers/'
+import { BNify, fixTokenDecimals, normalizeTokenAmount, asyncForEach, catchPromise } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
 export class BestYieldVault {
@@ -82,7 +82,8 @@ export class BestYieldVault {
 
       const internalTxs = transactionsByHash[hash]
 
-      await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
+      // await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
+      for (const tx of internalTxs) {
 
         // Check for right token
         const isRightToken = internalTxs.length > 1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase()).length > 0;
@@ -127,8 +128,12 @@ export class BestYieldVault {
           if (!underlyingTokenTxAmount){
             const pricesCalls = this.getPricesCalls()
 
+            // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
             // @ts-ignore
-            const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+            let tokenPrice = await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            if (!tokenPrice) {
+              tokenPrice = BNify(1)
+            }
 
             idlePrice = fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals)
             underlyingAmount = idlePrice.times(idleAmount)
@@ -146,7 +151,7 @@ export class BestYieldVault {
             underlyingAmount
           })
         }
-      })
+      }
 
       return transactions;
     }, Promise.resolve([] as Transaction[]))

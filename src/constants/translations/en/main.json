@@ -76,6 +76,47 @@
     "loadingText": "Loading...",
     "txId": "Tx ID"
   },
+  "onboard": {
+    "connect": {
+      "selectingWallet": {
+        "header": "Available Wallets",
+        "sidebar": {
+          "heading": "Get Started",
+          "subheading": "",
+          "paragraph": "Connecting your wallet is like “logging in” to Web3. Select your wallet from the options to get started."
+        },
+        "recommendedWalletsPart1": "{app} only supports",
+        "recommendedWalletsPart2": "on this platform. Please use or install one of the supported wallets to continue",
+        "installWallet": "You do not have any wallets installed that {app} supports, please use a supported wallet",
+        "agreement": {
+          "agree": "I agree to the",
+          "terms": "Terms & Conditions",
+          "and": "and",
+          "privacy": "Privacy Policy"
+        }
+      },
+      "connectingWallet": {
+        "header": "{connectionRejected, select, false {Connecting to {wallet}...} other {Connection Rejected}}",
+        "sidebar": {
+          "subheading": "Approve Connection",
+          "paragraph": "Please approve the connection in your wallet and authorize access to continue."
+        },
+        "mainText": "Connecting...",
+        "paragraph": "Make sure to select all accounts that you want to grant access to.",
+        "rejectedText": "Connection Rejected!",
+        "rejectedCTA": "Click here to try again",
+        "primaryButton": "Back to wallets"
+      },
+      "connectedWallet": {
+        "header": "Connection Successful",
+        "sidebar": {
+          "subheading": "Connection Successful!",
+          "paragraph": "Your wallet is now connected to {app}"
+        },
+        "mainText": "Connected"
+      }
+    }
+  },
   "updateToast": {
     "body": "A new version of the app is available",
     "cta": "Reload App",

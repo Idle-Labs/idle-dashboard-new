@@ -1,8 +1,8 @@
 import { I18n } from 'react-polyglot'
 import React, { useContext } from 'react'
-import { getObjectPath } from '../helpers'
-import useLocalForge from '../hooks/useLocalForge'
-import { translations } from '../constants/translations'
+import { getObjectPath } from 'helpers/'
+import useLocalForge from 'hooks/useLocalForge'
+import { translations } from 'constants/translations'
 import { InterpolationOptions, transformPhrase } from 'node-polyglot'
 
 const defaultLocale = 'en'

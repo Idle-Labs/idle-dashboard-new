@@ -9,7 +9,7 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncForEach } from 'helpers/'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncForEach, catchPromise } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 export class TrancheVault {
@@ -100,7 +100,8 @@ export class TrancheVault {
 
       const internalTxs = transactionsByHash[hash]
 
-      await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
+      // await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
+      for (const tx of internalTxs) {
 
         // Check for right token
         const isRightToken = internalTxs.length > 1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase()).length > 0;
@@ -137,7 +138,7 @@ export class TrancheVault {
 
           // Get idle token tx and underlying token tx
           const idleTokenToAddress = action === 'redeem' ? ZERO_ADDRESS : account
-          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase() )
+          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id/* && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()*/ )
           const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
           
           const underlyingTokenTx = internalTxs.find( iTx => {
@@ -154,7 +155,12 @@ export class TrancheVault {
             const pricesCalls = this.getPricesCalls()
 
             // @ts-ignore
-            const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+            // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+            let tokenPrice = await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            console.log(this.id, action, tx.hash, tokenPrice)
+            if (!tokenPrice) {
+              tokenPrice = BNify(1)
+            }
 
             idlePrice = fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals)
             underlyingAmount = idlePrice.times(idleAmount)
@@ -163,7 +169,7 @@ export class TrancheVault {
             underlyingAmount = underlyingTokenTxAmount
           }
 
-          // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString())
+          // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), tx)
 
           transactions.push({
             ...tx,
@@ -174,7 +180,7 @@ export class TrancheVault {
             underlyingAmount
           })
         }
-      })
+      }
 
       return transactions;
     }, Promise.resolve([] as Transaction[]))

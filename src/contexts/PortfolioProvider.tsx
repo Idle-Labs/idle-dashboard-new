@@ -306,7 +306,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       let firstDepositTx: any = null
 
       const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
-        // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
+        // console.log(assetId, transaction.action, transaction.hash, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
         switch (transaction.action) {
           case 'deposit':
             if (!firstDepositTx) firstDepositTx = transaction
