@@ -94,6 +94,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
         <Flex
           flex={1}
           minH={250}
+          width={'100%'}
           alignItems={'center'}
           justifyContent={'center'}
         >
