@@ -245,6 +245,12 @@ const theme = extendTheme({
       backgroundColor:'card.bgDark',
       borderColor:'card.borderColor',
     },
+    overlay: {
+      zIndex:10,
+      width:'100%',
+      height:'100%',
+      position:'absolute'
+    },
     cardInteractive: {
       opacity: 0.4,
       _hover: {

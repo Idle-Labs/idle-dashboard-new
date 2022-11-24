@@ -169,6 +169,12 @@
       },
       "stakedInfo": "You cannot send or trade the amount staked"
     },
+    "performanceChart": {
+      "empty": "The performances of your portfolio will appear here."
+    },
+    "compositionChart": {
+      "empty": "The composition of your portfolio will appear here."
+    },
     "productUpdates": {
       "title": "Product updates",
       "empty": "Product updates will appear here."

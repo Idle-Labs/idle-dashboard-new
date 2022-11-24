@@ -20,6 +20,7 @@ export const Card = (props: CardProps) => {
   return (
     <Box
       width={'100%'}
+      position={'relative'}
       layerStyle={layerStyle || 'card'}
       {...rest}
     >

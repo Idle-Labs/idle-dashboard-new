@@ -38,7 +38,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
     ;(async function () {
       try {
         const value = await localforage.getItem(key);
-        if (!value && initialValue){
+        if ((value === null || value === undefined) && initialValue){
           set(initialValue);
           setStoredValue(initialValue);
         } else {

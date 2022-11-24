@@ -296,6 +296,14 @@ const BalanceUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const Redeemable: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+  
+  return asset?.vaultPosition?.underlying.redeemable ? (
+    <Amount suffix={` ${asset?.name}`} value={asset?.vaultPosition?.underlying.redeemable} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const EarningsPerc: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
@@ -610,6 +618,7 @@ AssetProvider.PoolUsd = PoolUsd
 AssetProvider.Earnings = Earnings
 AssetProvider.ApyRatio = ApyRatio
 AssetProvider.Deposited = Deposited
+AssetProvider.Redeemable = Redeemable
 AssetProvider.Allocation = Allocation
 AssetProvider.BalanceUsd = BalanceUsd
 AssetProvider.GeneralData = GeneralData

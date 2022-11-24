@@ -12,6 +12,7 @@ type GenericChartArgs = {
   data?: BalanceChartData
   timeframe: HistoryTimeframe
   percentChange: number
+  formatFn?: Function
   setPercentChange: (percentChange: number) => void
   isRainbowChart: boolean
   margins?: { top: number; right: number; bottom: number; left: number }
@@ -25,6 +26,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   percentChange,
   isRainbowChart,
   setPercentChange,
+  formatFn = (n: any) => `$${abbreviateNumber(n)}`,
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
   const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
@@ -41,8 +43,6 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
     }
     return defaultColor
   }, [assets])
-
-  const formatFn = (n: any) => `$${abbreviateNumber(n)}`
 
   const chartData = useMemo((): BalanceChartData => {
     return data || {

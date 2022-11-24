@@ -326,6 +326,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
       const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
+      console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
       dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
     })()
   }, [state.transaction, explorer, chainId])

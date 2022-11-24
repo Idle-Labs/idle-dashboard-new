@@ -70,6 +70,10 @@ export const routes: RouteObject[] = [
         index: true,
         element:<Navigate to="/dashboard" replace />
       },
+      {
+        path: '*',
+        element:<Navigate to="/dashboard" replace />
+      },
     ]
   },
 ]

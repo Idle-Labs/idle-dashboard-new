@@ -1,9 +1,10 @@
-import { BNify } from 'helpers/'
 import { strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
+import useLocalForge from 'hooks/useLocalForge'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { HistoryTimeframe } from 'constants/types'
+import { BNify, abbreviateNumber } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
@@ -17,12 +18,13 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, StatArrow, SkeletonText } from '@chakra-ui/react'
+import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch, StatArrow, SkeletonText } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
+  const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
@@ -42,7 +44,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return assetBalance && assetBalance.gt(0)
   }, [assetBalance])
 
-  const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe })
+  const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
   const { performanceChartData } = usePerformanceChartData({ assetIds: [asset?.id], timeframe })
 
   const chartData = useMemo(() => {
@@ -72,7 +74,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           >
             {
               hasBalance ? (
-                <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} />
+                useDollarConversion ? <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} /> : <AssetProvider.Redeemable textStyle={['heading', 'h2']} />
               ) : (
                 <Amount.Percentage value={earningsPercentage} textStyle={['heading', 'h2']} />
               )
@@ -102,7 +104,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </SkeletonText>
       </VStack>
     )
-  }, [hasBalance, asset, account, isVaultsPositionsLoaded, chartData, isPortfolioLoaded])
+  }, [hasBalance, asset, account, useDollarConversion, isVaultsPositionsLoaded, chartData, isPortfolioLoaded])
 
   const fundsOverview = useMemo(() => {
     if (!asset || !hasBalance) return null
@@ -220,11 +222,26 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             width={['100%', 14/20]}
           >
             <Box>
-              <Flex mb={6}>
+              <HStack
+                mb={6}
+                spacing={6}
+                alignItems={'center'}
+              >
                 <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
                   <Translation component={Heading} as={'h3'} size={'md'} translation={hasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
                 </SkeletonText>
-              </Flex>
+                {
+                  asset && (
+                    <HStack
+                      spacing={2}
+                    >
+                      <AssetProvider.Name />
+                      <Switch size={'md'} isChecked={useDollarConversion} onChange={ (e) => setUseDollarConversion(e.target.checked) } />
+                      <Text>USD</Text>
+                    </HStack>
+                  )
+                }
+              </HStack>
               <Card.Dark
                 p={0}
               >
@@ -246,6 +263,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   assetIds={[params.asset]}
                   setPercentChange={() => {}}
                   margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+                  formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                 />
               </Card.Dark>
             </Box>

@@ -20,7 +20,7 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Divider } from '@chakra-ui/react'
+import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center, Divider } from '@chakra-ui/react'
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [ percentChange, setPercentChange ] = useState(0)
@@ -342,6 +342,16 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             p={0}
             overflow={'hidden'}
           >
+            {
+              (!account || (isVaultsPositionsLoaded && totalFunds.lte(0))) && (
+                <Center
+                  layerStyle={'overlay'}
+                  bg={'rgba(0, 0, 0, 0.4)'}
+                >
+                  <Translation translation={'dashboard.performanceChart.empty'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                </Center>
+              )
+            }
             <Stack
               mt={8}
               mx={8}
@@ -400,6 +410,16 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             display={'flex'}
             alignItems={'center'}
           >
+            {
+              (!account || (isVaultsPositionsLoaded && totalFunds.lte(0))) && (
+                <Center
+                  layerStyle={'overlay'}
+                  bg={'rgba(0, 0, 0, 0.4)'}
+                >
+                  <Translation translation={'dashboard.compositionChart.empty'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                </Center>
+              )
+            }
             <CompositionChart assetIds={assetIds} strategies={selectedStrategies} type={'assets'} />
           </Card.Dark>
         </VStack>

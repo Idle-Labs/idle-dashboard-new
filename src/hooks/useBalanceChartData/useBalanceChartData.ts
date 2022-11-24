@@ -28,14 +28,31 @@ type UseBalanceChartDataArgs = {
   accountId?: string
   strategies?: string[]
   timeframe?: HistoryTimeframe
+  useDollarConversion?: boolean
 }
 
 type UseBalanceChartData = (args: UseBalanceChartDataArgs) => UseBalanceChartDataReturn
 
-export const useBalanceChartData: UseBalanceChartData = args => {
+export const useBalanceChartData: UseBalanceChartData = ({
+  assetIds,
+  accountId,
+  strategies,
+  timeframe,
+  useDollarConversion = true
+}) => {
 
-  const { assetIds, strategies, timeframe } = args
-  const { isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectors: { selectAssetsByIds, selectVaultTransactions, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp } } = usePortfolioProvider()
+  const {
+    isPortfolioLoaded,
+    historicalPrices,
+    historicalPricesUsd,
+    selectors: {
+      selectAssetsByIds,
+      selectVaultTransactions,
+      selectAssetHistoricalPriceByTimestamp,
+      selectAssetHistoricalPriceUsdByTimestamp
+    }
+  } = usePortfolioProvider()
+
   const [balanceChartDataLoading, setBalanceChartDataLoading] = useState<boolean>(true)
 
   const assets = useMemo(() => {
@@ -156,11 +173,13 @@ export const useBalanceChartData: UseBalanceChartData = args => {
           prevVaultPriceInfo[assetId] = vaultPriceInfo
         }
 
-        const vaultPriceInfoUsd: HistoryData | null = selectAssetHistoricalPriceUsdByTimestamp(underlyingId, timestamp) || prevVaultPriceInfoUsd[assetId]
-        // console.log('vaultPriceInfoUsd', assetId, underlyingId, timestamp, prevVaultPriceInfoUsd[assetId], vaultPriceInfoUsd, assetsBalances[assetId]);
-        if (vaultPriceInfoUsd) {
-          assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfoUsd.value)).toFixed(8))
-          prevVaultPriceInfoUsd[assetId] = vaultPriceInfoUsd
+        if (useDollarConversion) {
+          const vaultPriceInfoUsd: HistoryData | null = selectAssetHistoricalPriceUsdByTimestamp(underlyingId, timestamp) || prevVaultPriceInfoUsd[assetId]
+          // console.log('vaultPriceInfoUsd', assetId, underlyingId, timestamp, prevVaultPriceInfoUsd[assetId], vaultPriceInfoUsd, assetsBalances[assetId]);
+          if (vaultPriceInfoUsd) {
+            assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfoUsd.value)).toFixed(8))
+            prevVaultPriceInfoUsd[assetId] = vaultPriceInfoUsd
+          }
         }
       })
 
@@ -193,7 +212,7 @@ export const useBalanceChartData: UseBalanceChartData = args => {
     
     return chartData
   // eslint-disable-next-line
-  }, [assets, timeframeStartTimestamp, selectVaultTransactions, isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
+  }, [assets, useDollarConversion, timeframeStartTimestamp, selectVaultTransactions, isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
 
   // console.log('balanceChartData', balanceChartData)
 

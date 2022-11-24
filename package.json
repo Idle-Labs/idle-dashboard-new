@@ -56,7 +56,8 @@
     "test": "react-app-rewired test",
     "clean": "rimraf node_modules",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "build-storybook -s public",
+    "deploy": "echo 'app-new.idle.finance\nwww.app-new.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin"
   },
   "eslintConfig": {
     "extends": "react-app",

@@ -700,17 +700,20 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   }, [remainingTime, targetTimestamp])
 
   // Cancel timeouts
-  useEffect(() => {
-    if (transactionState?.status === 'pending' || !countTimeoutId || !progressTimeoutId) return
-    clearTimeout(countTimeoutId)
-    clearTimeout(progressTimeoutId)
-  }, [transactionState.status, countTimeoutId, progressTimeoutId, progressMaxValue])
+  // useEffect(() => {
+  //   if (transactionState?.status === 'pending' || !countTimeoutId || !progressTimeoutId) return
+  //   clearTimeout(countTimeoutId)
+  //   clearTimeout(progressTimeoutId)
+  // }, [transactionState.status, countTimeoutId, progressTimeoutId, progressMaxValue])
 
   // Handle transaction succeded or failed
   useEffect(() => {
     if (!transactionState.status || !['success','failed'].includes(transactionState.status)) return
+    clearTimeout(countTimeoutId)
+    clearTimeout(progressTimeoutId)
     setRemainingTime(0)
     setProgressValue(progressMaxValue)
+  // eslint-disable-next-line
   }, [transactionState?.status, setProgressValue, progressMaxValue])
 
   // Set progress max value

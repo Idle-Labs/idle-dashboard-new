@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import dayjs, { ManipulateType } from 'dayjs'
+import dayOfYear from 'dayjs/plugin/dayOfYear'
 import { HistoryTimeframe } from 'constants/types'
 
 type BNifyInput = any
@@ -52,6 +53,15 @@ export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {
   const value = parseInt(timeframe.substr(0, 1))
   const period = periods[timeframe.substr(1)]
   return dayjs().subtract(value, period).startOf('day').valueOf()
+}
+
+export const dayDiff = (t1: number, t2: number) => {
+  dayjs.extend(dayOfYear)
+  return Math.abs(dayjs(t1).dayOfYear()-dayjs(t2).dayOfYear())
+}
+
+export const dateDiff = (t1: number, t2: number, unit: any = 'ms', returnDecimals: boolean = false) => {
+  return dayjs(t1).diff(t2, unit, returnDecimals)
 }
 
 export const dateToLocale = (timestamp: number, locale: string) => {
