@@ -1,8 +1,14 @@
-import { strategiesFolder } from 'constants/folders'
+import { strategiesCarouselFolder, strategiesFolder } from 'constants/folders'
 
 export type GeneralDataField = {
   field: string
   label: string
+}
+
+export type StrategyCarouselItem = {
+  image: string
+  title: string
+  description: string
 }
 
 export type StrategyProps = {
@@ -15,6 +21,7 @@ export type StrategyProps = {
   description: string
   showProtocol: boolean
   generalDataFields: GeneralDataField[]
+  carouselItems?: StrategyCarouselItem[]
 }
 
 export const strategies: Record<string, StrategyProps> = {
@@ -27,6 +34,23 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.best.description',
     image: `${strategiesFolder}best-yield.png`,
     bg: `${strategiesFolder}best-yield-bg.svg`,
+    carouselItems: [
+      {
+        image:`${strategiesCarouselFolder}BY-pooled-funds.gif`,
+        title:'strategies.best.carousel.pooledDeposits.title',
+        description:'strategies.best.carousel.pooledDeposits.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}BY-yield-monitoring.gif`,
+        title:'strategies.best.carousel.yieldMonitoring.title',
+        description:'strategies.best.carousel.yieldMonitoring.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}BY-dynamic-rebalance.gif`,
+        title:'strategies.best.carousel.dynamicRebalance.title',
+        description:'strategies.best.carousel.dynamicRebalance.description'
+      }
+    ],
     generalDataFields:[
       {
         field: 'protocol',

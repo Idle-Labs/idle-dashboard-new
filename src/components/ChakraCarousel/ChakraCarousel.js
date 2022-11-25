@@ -36,7 +36,12 @@ const transitionProps = {
   mass: 3
 };
 
-export const ChakraCarousel = ({ children, gap, activeItem: defaultActiveItem = 0 }) => {
+export const ChakraCarousel = ({
+  children,
+  gap,
+  activeItem: defaultActiveItem = 0,
+  enableDragging = false
+}) => {
 
   const [trackIsActive, setTrackIsActive] = useState(false);
   const [multiplier, setMultiplier] = useState(0.35);
@@ -107,6 +112,7 @@ export const ChakraCarousel = ({ children, gap, activeItem: defaultActiveItem = 
 
   const trackProps = {
     setTrackIsActive,
+    enableDragging,
     trackIsActive,
     setActiveItem,
     sliderWidth,
@@ -256,6 +262,7 @@ const Slider = ({
 
 const Track = ({
   setTrackIsActive,
+  enableDragging,
   trackIsActive,
   setActiveItem,
   activeItem,
@@ -362,6 +369,14 @@ const Track = ({
     // };
   }, [handleClick, handleResize, handleKeyDown, positions]);
 
+  const dragProps = enableDragging ? {
+    drag:"x",
+    cursor:"grab",
+    onDragStart:handleDragStart,
+    onDragEnd:handleDragEnd,
+    _active:{cursor: "grabbing"},
+  } : {}
+
   return (
     <>
       {itemWidth && (
@@ -369,15 +384,11 @@ const Track = ({
           <MotionFlex
             flex={1}
             dragConstraints={node}
-            // onDragStart={handleDragStart}
-            // onDragEnd={handleDragEnd}
             animate={controls}
             style={{ x }}
-            // drag="x"
-            // _active={{ cursor: "grabbing" }}
             minWidth="min-content"
             flexWrap="nowrap"
-            // cursor="grab"
+            {...dragProps}
           >
             {children}
           </MotionFlex>

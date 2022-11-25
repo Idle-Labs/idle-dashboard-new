@@ -275,6 +275,11 @@ const theme = extendTheme({
     h3: {
       fontSize:'lg',
     },
+    caption: {
+      color:'cta',
+      fontWeight:400,
+      fontSize:'md',
+    },
     captionSmall: {
       color:'cta',
       fontWeight:400,

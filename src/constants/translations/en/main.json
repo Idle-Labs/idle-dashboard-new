@@ -136,7 +136,21 @@
   "strategies": {
     "best": {
       "title": "Best Yield",
-      "description": "The flagship yield automation strategy. Funds optimized across multiple DeFi protocols"
+      "description": "The flagship yield automation strategy. Funds optimized across multiple DeFi protocols",
+      "carousel": {
+        "pooledDeposits":{
+          "title": "Pooled deposits",
+          "description": "Deposits are pooled together and deployed according to the last optimal allocation. Yield is compounded at every block."
+        },
+        "yieldMonitoring":{
+          "title": "Automatic yield monitoring",
+          "description": "Vault scans yields every 1h to check if the current allocation is optimal across different DeFi protocols."
+        },
+        "dynamicRebalance":{
+          "title": "Algorithmic and dynamic rebalance",
+          "description": "If the vault finds new opportunities, it performs a dynamic capital reallocation across different DeFi protocols to maximize yield for the liquidity present in the pool."
+        }
+      }
     },
     "protected": {
       "title": "Protected Yield",

@@ -300,7 +300,7 @@ const Redeemable: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
   return asset?.vaultPosition?.underlying.redeemable ? (
-    <Amount suffix={` ${asset?.name}`} value={asset?.vaultPosition?.underlying.redeemable} {...props} />
+    <Amount value={asset?.vaultPosition?.underlying.redeemable} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

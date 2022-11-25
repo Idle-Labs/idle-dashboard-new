@@ -18,11 +18,12 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch, StatArrow, SkeletonText } from '@chakra-ui/react'
+import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
+import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch, StatArrow, SkeletonText, Image } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
-  const { account } = useWalletProvider()
+  const { account, walletInitialized } = useWalletProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
@@ -40,7 +41,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return selectAssetBalanceUsd && selectAssetBalanceUsd(asset.id)
   }, [asset, selectAssetBalanceUsd])
 
-  const hasBalance = useMemo(() => {
+  const userHasBalance = useMemo(() => {
     return assetBalance && assetBalance.gt(0)
   }, [assetBalance])
 
@@ -49,15 +50,15 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const chartData = useMemo(() => {
     if (!isPortfolioLoaded) return
-    return hasBalance ? balanceChartData : performanceChartData
-  }, [isPortfolioLoaded, hasBalance, balanceChartData, performanceChartData])
+    return userHasBalance ? balanceChartData : performanceChartData
+  }, [isPortfolioLoaded, userHasBalance, balanceChartData, performanceChartData])
 
   // const onTabClick = useCallback((row: RowProps) => {
   //   return navigate(`${location?.pathname}/${row.original.id}`)
   // }, [navigate, location])
 
   const chartHeading = useMemo(() => {
-    const earningsPercentage = hasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
+    const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
     const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
     const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
 
@@ -68,13 +69,14 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         alignItems={'flex-start'}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ hasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} />
           <HStack
-            spacing={4}
+            spacing={3}
+            alignItems={'center'}
           >
             {
-              hasBalance ? (
-                useDollarConversion ? <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} /> : <AssetProvider.Redeemable textStyle={['heading', 'h2']} />
+              userHasBalance ? (
+                useDollarConversion ? <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} /> : <AssetProvider.Redeemable textStyle={['heading', 'h2']} suffix={` ${asset?.name}`} />
               ) : (
                 <Amount.Percentage value={earningsPercentage} textStyle={['heading', 'h2']} />
               )
@@ -82,21 +84,22 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             <Stat>
               <HStack spacing={2}>
                 {
-                  hasBalance ? (
-                    <AssetProvider.EarningsPerc textStyle={'captionSmall'} />
+                  userHasBalance ? (
+                    <AssetProvider.RealizedApy suffix={' APY'} textStyle={'caption'} />
                   ) : apy.gt(0) && (
                     <HStack
                       spacing={1}
                     >
-                      <Amount.Percentage value={apy} textStyle={'captionSmall'} />
-                      <Text textStyle={'captionSmall'}>APY</Text>
+                      <Amount.Percentage value={apy} suffix={' APY'} textStyle={'caption'} />
                     </HStack>
                   )
                 }
                 {
+                  /*
                   earningsPercentage && (
                     <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
                   )
+                  */
                 }
               </HStack>
             </Stat>
@@ -104,10 +107,10 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </SkeletonText>
       </VStack>
     )
-  }, [hasBalance, asset, account, useDollarConversion, isVaultsPositionsLoaded, chartData, isPortfolioLoaded])
+  }, [userHasBalance, asset, account, useDollarConversion, isVaultsPositionsLoaded, chartData, isPortfolioLoaded])
 
   const fundsOverview = useMemo(() => {
-    if (!asset || !hasBalance) return null
+    if (!asset || !userHasBalance) return null
     return (
       <SimpleGrid
         spacing={14}
@@ -161,7 +164,16 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </VStack>
       </SimpleGrid>
     )
-  }, [asset, hasBalance])
+  }, [asset, userHasBalance])
+
+  const strategyDescriptionCarousel = useMemo(() => {
+    if (!strategy || !walletInitialized || !isPortfolioLoaded) return null
+    const strategyProps = strategies[strategy]
+    if (!strategyProps?.carouselItems) return null
+    return (
+      <StrategyDescriptionCarousel color={asset?.color} strategy={strategy} />
+    )
+  }, [asset, strategy, walletInitialized, isPortfolioLoaded])
 
   return (
     <AssetProvider
@@ -221,6 +233,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             spacing={10}
             width={['100%', 14/20]}
           >
+            {!userHasBalance && strategyDescriptionCarousel}
             <Box>
               <HStack
                 mb={6}
@@ -228,7 +241,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 alignItems={'center'}
               >
                 <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-                  <Translation component={Heading} as={'h3'} size={'md'} translation={hasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
+                  <Translation component={Heading} as={'h3'} size={'md'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
                 </SkeletonText>
                 {
                   asset && (
@@ -269,6 +282,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             </Box>
             {fundsOverview}
             <AssetGeneralData assetId={asset?.id} />
+            {userHasBalance && strategyDescriptionCarousel}
           </Stack>
           <VStack
             spacing={6}
