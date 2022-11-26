@@ -3,12 +3,20 @@ import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
-import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
+import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
 import type { Harvest, BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string
   harvest: Harvest | null
+}
+
+type VaultFunctionsHelperProps = {
+  chainId: number,
+  web3: Web3,
+  multiCall?: Multicall,
+  explorer?: Explorer,
+  checkAndCache?: Function
 }
 
 export class VaultFunctionsHelper {
@@ -17,12 +25,14 @@ export class VaultFunctionsHelper {
   readonly chainId: number
   readonly explorer: Explorer | undefined
   readonly multiCall: Multicall | undefined
+  readonly checkAndCache: Function | undefined
 
-  constructor(chainId: number, web3: Web3, multiCall?: Multicall, explorer?: Explorer) {
-    this.web3 = web3
-    this.chainId = chainId
-    this.explorer = explorer
-    this.multiCall = multiCall
+  constructor(props: VaultFunctionsHelperProps) {
+    this.web3 = props.web3
+    this.chainId = props.chainId
+    this.explorer = props.explorer
+    this.multiCall = props.multiCall
+    this.checkAndCache = props.checkAndCache
   }
 
   public async getTrancheLastHarvest(trancheVault: TrancheVault): Promise<CdoLastHarvest> {
@@ -56,6 +66,8 @@ export class VaultFunctionsHelper {
     ] = multicallResults.map( r => BNify(r.data) )
     const lastHarvestBlock = this.web3.utils.hexToNumber(lastHarvestBlockHex)
 
+    if (!lastHarvestBlock) return lastHarvest
+
     const tranchePoolAA = BNify(trancheNAVAA).div(`1e${trancheVault.underlyingToken?.decimals}`)
     const tranchePoolBB = BNify(trancheNAVBB).div(`1e${trancheVault.underlyingToken?.decimals}`)
 
@@ -64,7 +76,8 @@ export class VaultFunctionsHelper {
 
     try {
       const endpoint = `${this.explorer.endpoints[this.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
-      const harvestTxs = await makeEtherscanApiRequest(endpoint, this.explorer.keys)
+      const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
+      const harvestTxs = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
 
       if (!harvestTxs) return lastHarvest
 
@@ -100,54 +113,16 @@ export class VaultFunctionsHelper {
   }
 
   public async getTrancheHarvestApy(trancheVault: TrancheVault, trancheType: string): Promise<BigNumber> {
-
-    if (!this.multiCall || !this.explorer) return BNify(0)
-
-    const rawCalls: CallData[] = [
-      this.multiCall.getCallData(trancheVault.cdoContract, `lastNAV${trancheType}`),
-      this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio'),
-    ].filter( (call): call is CallData => !!call )
-
-    const [
-      multicallResults,
-      lastHarvestBlockHex
-    ] = await Promise.all([
-      this.multiCall.executeMulticalls(rawCalls),
-      this.web3.eth.getStorageAt(trancheVault.cdoConfig.address, 204)
-    ]);
-
-    if (!multicallResults) return BNify(0)
-
-    const [trancheNAV, trancheAPRSplitRatio] = multicallResults.map( r => BNify(r.data) )
-    const lastHarvestBlock = this.web3.utils.hexToNumber(lastHarvestBlockHex)
-
-    const tranchePool = BNify(trancheNAV).div(`1e${trancheVault.underlyingToken?.decimals}`)
-    const trancheAprRatio = trancheType === 'AA' ? BNify(trancheAPRSplitRatio).div(1000) : BNify(100).minus(BNify(trancheAPRSplitRatio).div(1000))
-
-    try {
-      const endpoint = `${this.explorer.endpoints[this.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
-      const harvestTxs = await makeEtherscanApiRequest(endpoint, this.explorer.keys)
-
-      if (!harvestTxs) return BNify(0)
-
-      const harvestTx = harvestTxs.find( (tx: EtherscanTransaction) => tx.contractAddress.toLowerCase() === trancheVault.underlyingToken?.address?.toLowerCase() && tx.to.toLowerCase() === trancheVault.cdoConfig.address.toLowerCase() )
-
-      if (!harvestTx) return BNify(0)
-
-      const harvestedValue = BNify(harvestTx.value).div(`1e${trancheVault.underlyingToken?.decimals}`).times(trancheAprRatio.div(100));
-      const tokenApr = harvestedValue.div(tranchePool).times(52.1429);
-      
-      // console.log('getTrancheHarvestApy', harvestedValue.toString(), tranchePool.toString(), trancheAprRatio.toString(), tokenApr.toString(), apr2apy(tokenApr).toString())
-      
-      return tokenApr;
-    } catch (err) {
-      // console.log('err', err)
-      return BNify(0)
-    }
+    const trancheLastHarvest = await this.getTrancheLastHarvest(trancheVault)
+    if (!trancheLastHarvest?.harvest) return BNify(0)
+    return trancheLastHarvest.harvest.aprs[trancheVault.type]
   }
 
   public async getMaticTrancheStrategyApr(): Promise<BigNumber> {
-    const apr = await callPlatformApis(this.chainId, 'lido', 'rates');
+    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'lido', 'rates')
+    const callback = async () => (await callPlatformApis(this.chainId, 'lido', 'rates'))
+    const apr = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
+
     if (!BNify(apr).isNaN()){
       return BNify(apr).div(100);
     }
@@ -247,7 +222,9 @@ export class VaultFunctionsHelper {
 
   public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
 
-    const results = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
+    const endpoint = `subgraph_${this.chainId}_${vault.id}_${filters?.start}_${filters?.end}`
+    const callback = async () => (await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end))
+    const results = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
 
     const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       
@@ -289,7 +266,9 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalData
 
-    const results = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
+    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
+    const callback = async () => ( await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) )
+    const results = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     if (!results) return historicalData
 
@@ -327,7 +306,9 @@ export class VaultFunctionsHelper {
       prices: []
     }
 
-    const infos = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
+    const endpoint = `subgraph_${this.chainId}_${vault.id}_${filters?.start}_${filters?.end}`
+    const callback = async () => (await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end))
+    const infos = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
     
     historicalPrices.prices = infos.map( (result: any) => {
       const date = +result.timeStamp*1000
@@ -348,7 +329,9 @@ export class VaultFunctionsHelper {
       rates: []
     }
 
-    const rates = await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end);
+    const endpoint = `subgraph_${this.chainId}_${vault.id}_${filters?.start}_${filters?.end}`
+    const callback = async () => (await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end))
+    const rates = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
 
     historicalRates.rates = rates.map( (result: any) => {
       const date = +result.timeStamp*1000
@@ -371,7 +354,9 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalPrices
 
-    const infos = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
+    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
+    const callback = async() => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
+    const infos = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     historicalPrices.prices = infos.map( (result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
@@ -395,7 +380,9 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalRates
 
-    const rates = await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters);
+    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
+    const callback = async () => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
+    const rates = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     historicalRates.rates = rates.map( (result: any) => {
       const date = +result.timestamp*1000

@@ -26,7 +26,7 @@ export const makePostRequest = async (endpoint: string, postData: any = {}, erro
   return data?.data;
 }
 
-export const callPlatformApis = async (chainId: number, protocol: string, api: string, endpointSuffix?: string, filters?: PlatformApiFilters): Promise<any> => {
+export const getPlatformApisEndpoint = (chainId: number, protocol: string, api: string, endpointSuffix?: string, filters?: PlatformApiFilters): string | null => {
   const protocolApis = protocols[protocol]
   if (!protocolApis || !protocolApis.apis) return null
   
@@ -41,12 +41,20 @@ export const callPlatformApis = async (chainId: number, protocol: string, api: s
     return applyFilters
   }, [])
 
-  const endpoint = `${apiConfig.endpoint[chainId]}${endpointSuffix||''}`+(queryStringParams ? `?${queryStringParams.join('&')}` : '')
+  return `${apiConfig.endpoint[chainId]}${endpointSuffix||''}`+(queryStringParams ? `?${queryStringParams.join('&')}` : '')
+}
 
-  // console.log('callPlatformApis', filters, protocolFilters, queryStringParams, endpoint)
+export const callPlatformApis = async (chainId: number, protocol: string, api: string, endpointSuffix?: string, filters?: PlatformApiFilters): Promise<any> => {
+  const endpoint = getPlatformApisEndpoint(chainId, protocol, api, endpointSuffix, filters)
+  if (!endpoint) return null
+
+  const protocolApis = protocols[protocol]
+  if (!protocolApis || !protocolApis.apis) return null
+  
+  const apiConfig = protocolApis.apis[api]
+  if (!apiConfig || !apiConfig.endpoint[chainId]) return null
 
   const results = await makeRequest(endpoint, apiConfig.config)
-
   return apiConfig.path ? getObjectPath(results, apiConfig.path) : results
 }
 

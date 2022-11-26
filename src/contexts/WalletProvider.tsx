@@ -108,13 +108,13 @@ export function WalletProvider({ children }: ProviderProps) {
       setAccount(wallet.accounts[0])
 
       // Set custom wallet
-      // setAccount({
-      //   address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
-      //   ens: null,
-      //   balance: {
-      //     ETH: "0.838159899709204532"
-      //   }
-      // })
+      setAccount({
+        address: "0xe4e69ef860d3018b61a25134d60678be8628f780",
+        ens: null,
+        balance: {
+          ETH: "0.838159899709204532"
+        }
+      })
     }
   }, [wallet, connecting, setWalletProvider])
 

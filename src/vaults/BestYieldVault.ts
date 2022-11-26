@@ -17,7 +17,9 @@ type ConstructorProps = {
   type: string
   web3Rpc?: Web3 | null
   chainId: number
+  checkAndCache?: Function
   tokenConfig: BestYieldConfig
+  vaultFunctionsHelper?: VaultFunctionsHelper | null
 }
 
 export class BestYieldVault {
@@ -50,7 +52,9 @@ export class BestYieldVault {
       type,
       web3Rpc,
       chainId,
-      tokenConfig
+      tokenConfig,
+      checkAndCache,
+      vaultFunctionsHelper
     } = props
     
     // Init global data
@@ -61,7 +65,7 @@ export class BestYieldVault {
     this.tokenConfig = tokenConfig
     this.idleConfig = tokenConfig.idle
     this.id = this.idleConfig.address.toLowerCase()
-    this.vaultFunctionsHelper = new VaultFunctionsHelper(chainId, web3)
+    this.vaultFunctionsHelper = vaultFunctionsHelper || new VaultFunctionsHelper({chainId, web3, checkAndCache})
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
 
     this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
@@ -178,6 +182,10 @@ export class BestYieldVault {
     }, Promise.resolve([] as Transaction[]))
 
     return transactions
+  }
+
+  public getBlockNumber(): number {
+    return this.tokenConfig.blockNumber
   }
 
   public getBalancesCalls(params: any[] = []): any[] {

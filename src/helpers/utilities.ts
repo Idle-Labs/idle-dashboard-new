@@ -81,6 +81,13 @@ export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
   return output
 }
 
+export const hashCode = (s: string): string => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++)
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h).toString();
+}
+
 export const formatTime = (seconds: any) => {
   if (!seconds) return ['0s']
   const suffixes = ['h', 'm', 's']

@@ -4,6 +4,7 @@ import { HashRouter } from "react-router-dom"
 import { strategies } from 'constants/strategies'
 import { Web3Provider } from 'contexts/Web3Provider'
 import { I18nProvider } from 'contexts/I18nProvider'
+import { CacheProvider } from 'contexts/CacheProvider'
 // import { ColorModeSwitcher } from "./ColorModeSwitcher"
 import { WalletProvider } from 'contexts/WalletProvider'
 import { ChakraProvider, extendTheme } from "@chakra-ui/react"
@@ -626,15 +627,17 @@ export const App = () => (
   <HashRouter>
     <ChakraProvider theme={theme}>
       <I18nProvider>
-        <WalletProvider>
-          <Web3Provider>
-            <TransactionManagerProvider>
-              <PortfolioProvider>
-                <BrowserRouterProvider />
-              </PortfolioProvider>
-            </TransactionManagerProvider>
-          </Web3Provider>
-        </WalletProvider>
+        <CacheProvider TTL={300}>
+          <WalletProvider>
+            <Web3Provider>
+              <TransactionManagerProvider>
+                <PortfolioProvider>
+                  <BrowserRouterProvider />
+                </PortfolioProvider>
+              </TransactionManagerProvider>
+            </Web3Provider>
+          </WalletProvider>
+        </CacheProvider>
       </I18nProvider>
     </ChakraProvider>
   </HashRouter>

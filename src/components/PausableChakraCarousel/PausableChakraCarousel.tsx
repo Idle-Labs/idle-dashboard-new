@@ -126,15 +126,19 @@ export function PausableChakraCarouselProvider({ children, delay }: PausableChak
     if (itemIndex>=0 && itemIndex<=itemsLength-1){
       return setActiveItem(itemIndex)
     }
+    return true
   }, [setActiveItem, itemsLength])
 
   const goBack = useCallback(() => {
+    if (!activeItem) return false
     setActiveItem( (prevActiveItem: number) => {
       return Math.max(0, activeItem-1)
     })
+    return true
   }, [setActiveItem, activeItem])
 
   const goNext = useCallback(() => {
+    if (activeItem===itemsLength-1) return false
     setActiveItem( (prevActiveItem: number) => {
       return Math.min(itemsLength-1, activeItem+1)
     })

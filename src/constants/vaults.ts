@@ -1765,6 +1765,7 @@ export type IdleTokenProtocol = {
 export type BestYieldConfig = {
   idle: IdleToken
   proxies?: string[]
+  blockNumber: number
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
@@ -1774,6 +1775,7 @@ export type BestYieldConfig = {
 export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   1: { // Mainnet
     DAI: {
+      blockNumber: 10595640,
       underlyingToken: 'DAI',
       idle: {
         decimals:18,
@@ -1823,6 +1825,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDCBB: {
+      blockNumber: 15919570,
       underlyingToken: 'USDC',
       enabledEnvs: ['beta'],
       idle: {
@@ -1863,6 +1866,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDC: {
+      blockNumber: 10618515,
       underlyingToken: 'USDC',
       idle: {
         decimals:18,
@@ -1926,6 +1930,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDT: {
+      blockNumber: 10627792,
       underlyingToken: 'USDT',
       idle: {
         decimals:18,
@@ -1974,6 +1979,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     SUSD: {
+      blockNumber: 10628446,
       underlyingToken: 'SUSD',
       idle: {
         decimals:18,
@@ -2008,6 +2014,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     TUSD: {
+      blockNumber: 10628641,
       underlyingToken: 'TUSD',
       idle: {
         decimals:18,
@@ -2042,6 +2049,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     WETH: {
+      blockNumber: 11815164,
       underlyingToken: 'WETH',
       idle: {
         decimals:18,
@@ -2079,6 +2087,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     WBTC: {
+      blockNumber: 10627962,
       underlyingToken: 'WBTC',
       idle: {
         decimals:18,
@@ -2127,6 +2136,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     RAI: {
+      blockNumber: 12317005,
       underlyingToken: 'RAI',
       enabledEnvs: [],
       idle: {
@@ -2152,6 +2162,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   },
   137:{ // Matic Mainnet
     DAI:{
+      blockNumber: 15152893,
       underlyingToken:'DAI',
       idle:{
         decimals:18,
@@ -2174,6 +2185,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDC:{
+      blockNumber: 15451334,
       underlyingToken:'USDC',
       idle:{
         decimals:18,
@@ -2196,6 +2208,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     WETH:{
+      blockNumber: 15473520,
       underlyingToken:'WETH',
       idle:{
         decimals:18,

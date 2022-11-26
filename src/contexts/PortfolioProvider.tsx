@@ -9,6 +9,7 @@ import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
+import { useCacheProvider } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
@@ -149,6 +150,7 @@ const PortfolioProviderContext = React.createContext<ContextProps>(initialContex
 export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 
 export function PortfolioProvider({ children }:ProviderProps) {
+  const { checkAndCache } = useCacheProvider()
   const { web3, web3Rpc, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
@@ -276,8 +278,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const vaultFunctionsHelper = useMemo((): VaultFunctionsHelper | null => {
     if (!chainId || !web3 || !multiCall || !explorer) return null
-    return new VaultFunctionsHelper(chainId, web3, multiCall, explorer)
-  }, [chainId, web3, multiCall, explorer])
+    return new VaultFunctionsHelper({chainId, web3, multiCall, explorer, checkAndCache})
+  }, [chainId, web3, multiCall, explorer, checkAndCache])
 
   const getVaultsPositions = useCallback( async (vaults: Vault[]) => {
 
@@ -285,8 +287,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // const startTimestamp = Date.now()
 
-    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=0&endblock=latest&sort=asc`
-    const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
+    const startBlock = vaults.reduce( (startBlock: number, vault: Vault) => {
+      if (!("getBlockNumber" in vault)) return startBlock
+      const vaultBlockNumber = vault.getBlockNumber()
+      if (!startBlock) return vaultBlockNumber
+      return Math.min(startBlock, vaultBlockNumber)
+    }, 0)
+
+    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=latest&sort=asc`
+    const etherscanTransactions = await checkAndCache(endpoint, async() => await makeEtherscanApiRequest(endpoint, explorer.keys))
+    // console.log('etherscanTransactions', endpoint, etherscanTransactions)
 
     const vaultsTransactions: Record<string, Transaction[]> = await vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
       const txs = await txsPromise
@@ -384,7 +394,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPositions,
       vaultsTransactions
     }
-  }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge])
+  }, [account, explorer, chainId, checkAndCache, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
     if (!multiCall || !vaultFunctionsHelper) return null
@@ -823,8 +833,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Object.keys(tranches[chainId][protocol]).forEach( token => {
         const vaultConfig = tranches[chainId][protocol][token]
         const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
-        const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA'})
-        const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB'})
+        const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', checkAndCache})
+        const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', checkAndCache})
         vaultsContracts.push(trancheVaultAA)
         vaultsContracts.push(trancheVaultBB)
       })
@@ -834,7 +844,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Init best yield vaults
     const bestYieldVaults = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
       const tokenConfig = bestYield[chainId][token]
-      const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY'})
+      const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', checkAndCache})
       vaultsContracts.push(trancheVault)
       return vaultsContracts;
     }, [])
@@ -863,6 +873,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // const assetsData = generateAssetsData(allVaults)
       // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
     };
+
+  // eslint-disable-next-line
   }, [web3, web3Rpc, chainId])
 
   // Set selectors

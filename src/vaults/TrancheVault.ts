@@ -18,8 +18,10 @@ type ConstructorProps = {
   web3Rpc?: Web3 | null
   chainId: number
   protocol: string
+  checkAndCache?: Function
   vaultConfig: TrancheConfig
   gaugeConfig?: GaugeConfig | null
+  vaultFunctionsHelper?: VaultFunctionsHelper | null
 }
 
 export class TrancheVault {
@@ -61,7 +63,9 @@ export class TrancheVault {
       chainId,
       protocol,
       vaultConfig,
-      gaugeConfig
+      gaugeConfig,
+      checkAndCache,
+      vaultFunctionsHelper,
     } = props
     
     // Init global data
@@ -73,7 +77,7 @@ export class TrancheVault {
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
     this.trancheConfig = vaultConfig.Tranches[type]
-    this.vaultFunctionsHelper = new VaultFunctionsHelper(chainId, web3)
+    this.vaultFunctionsHelper = vaultFunctionsHelper || new VaultFunctionsHelper({chainId, web3, checkAndCache})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
     this.rewardTokens = vaultConfig.autoFarming ? vaultConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
@@ -213,6 +217,10 @@ export class TrancheVault {
     }, Promise.resolve([] as Transaction[]))
 
     return transactions
+  }
+
+  public getBlockNumber(): number {
+    return this.vaultConfig.blockNumber
   }
 
   public getBalancesCalls(params: any[] = []): any[] {
