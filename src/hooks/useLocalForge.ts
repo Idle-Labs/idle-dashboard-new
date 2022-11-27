@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 type HookMethods = [
   any,
@@ -13,11 +13,32 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
   const [isLoaded, setLoaded] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [storedValue, setStoredValue] = useState(initialValue)
+
+  const processingRef = useRef(processing)
+
+  useEffect(() => {
+    processingRef.current = processing
+  }, [processing])
+
+  const waitUntilProcessed = async () => {
+    // Save cached requests
+    await (new Promise(async (resolve, reject) => {
+      const checkProcessing = () => {
+        if (processingRef.current){
+          setTimeout(checkProcessing, 50)
+        } else {
+          resolve(true)
+        }
+      }
+      checkProcessing()
+    }))
+  }
   
   /** Set value */
   const set = useCallback(( value: any ) => {
-    setProcessing(true)
     ;(async function () {
+      await waitUntilProcessed()
+      setProcessing(true)
       try {
         await localforage.setItem(key, value)
         setProcessing(false)

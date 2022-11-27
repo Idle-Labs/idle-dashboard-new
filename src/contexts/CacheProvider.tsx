@@ -1,7 +1,7 @@
 import { hashCode } from 'helpers/'
 import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
-import React, { useContext, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useContext, useCallback, useEffect, useMemo } from 'react'
 
 export type CacheContextProps = {
   fetchUrl: Function
@@ -31,55 +31,21 @@ type CacheProviderProps = {
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
   const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge('cachedRequests', {})
 
-  const processingRef = useRef(processing)
-  const cachedRequestsRef = useRef(cachedRequests)
-
   const requestQueue = useMemo(() => new Map(), [])
-
-  const waitUntilProcessed = async () => {
-    // Save cached requests
-    await (new Promise(async (resolve, reject) => {
-      const checkProcessing = () => {
-        // console.log('CHECK processing', processingRef.current)
-        if (processingRef.current){
-          setTimeout(checkProcessing, 10)
-        } else {
-          resolve(true)
-        }
-      }
-      checkProcessing()
-    }))
-  }
 
   const processQueue = useCallback(async () => {
     if (!requestQueue.size) return
 
-    await waitUntilProcessed()
-
     const newEntries = Object.fromEntries(requestQueue)
     const processedKeys = Object.keys(newEntries)
 
-    const newCachedRequests = {
-      ...cachedRequestsRef.current,
+    const cachedRequestsMap = new Map(Object.entries({
+      ...cachedRequests,
       ...newEntries
-    }
+    }))
 
-    setCachedRequests(newCachedRequests)
-
-    // console.log('processing_2', processing)
-
-    processedKeys.forEach( key => {
-      requestQueue.delete(key)
-    })
-
-    // console.log('processQueue', newEntries, newCachedRequests)
-  }, [requestQueue, setCachedRequests])
-
-  useEffect(() => {
-    // console.log('SET processing', processing)
-    processingRef.current = processing
-    cachedRequestsRef.current = cachedRequests
-  }, [processing, cachedRequests])
+    setCachedRequests(Object.fromEntries(cachedRequestsMap))
+  }, [requestQueue, setCachedRequests, cachedRequests])
 
   const getUrlHash = (url: string) => hashCode(url.toLowerCase())
 
