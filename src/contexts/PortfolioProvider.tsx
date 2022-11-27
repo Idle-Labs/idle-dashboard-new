@@ -18,7 +18,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff } from 'helpers/'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, PROTOCOL_TOKEN } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
 type InitialState = {
@@ -150,12 +150,12 @@ const PortfolioProviderContext = React.createContext<ContextProps>(initialContex
 export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 
 export function PortfolioProvider({ children }:ProviderProps) {
-  const { checkAndCache } = useCacheProvider()
+  const cacheProvider = useCacheProvider()
   const { web3, web3Rpc, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
   const { walletInitialized, connecting, account, chainId, explorer } = useWalletProvider()
-  const [ storedHistoricalPricesUsd, setHistoricalPricesUsd ] = useLocalForge('historicalPricesUsd', {})
+  const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', {})
 
   const generateAssetsData = (vaults: Vault[]) => {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
@@ -278,8 +278,37 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const vaultFunctionsHelper = useMemo((): VaultFunctionsHelper | null => {
     if (!chainId || !web3 || !multiCall || !explorer) return null
-    return new VaultFunctionsHelper({chainId, web3, multiCall, explorer, checkAndCache})
-  }, [chainId, web3, multiCall, explorer, checkAndCache])
+    return new VaultFunctionsHelper({chainId, web3, multiCall, explorer, cacheProvider})
+  }, [chainId, web3, multiCall, explorer, cacheProvider])
+
+  const getUserTransactions = useCallback( async (startBlock: number): Promise<EtherscanTransaction[]> => {
+    if (!account?.address || !explorer || !chainId) return []
+    const cacheKey = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}`
+    const cachedData = cacheProvider && cacheProvider.getCachedUrl(cacheKey)
+
+    startBlock = cachedData ? cachedData.data.reduce( (t: number, r: any) => Math.max(t, +r.blockNumber), 0)+1 : startBlock
+
+    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=latest&sort=asc`
+    const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
+
+    const dataToCache = new Set()
+    if (cachedData){
+      for (let tx of cachedData.data) {
+        dataToCache.add(tx)
+      }
+    }
+    for (let tx of etherscanTransactions) {
+      dataToCache.add(tx)
+    }
+      
+    if (cacheProvider){
+      cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
+    }
+
+    console.log('getUserTransactions', startBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
+
+    return Array.from(dataToCache.values()) as EtherscanTransaction[]
+  }, [account?.address, explorer, chainId, cacheProvider])
 
   const getVaultsPositions = useCallback( async (vaults: Vault[]) => {
 
@@ -287,15 +316,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // const startTimestamp = Date.now()
 
-    const startBlock = vaults.reduce( (startBlock: number, vault: Vault) => {
+    const startBlock = vaults.reduce( (startBlock: number, vault: Vault): number => {
       if (!("getBlockNumber" in vault)) return startBlock
       const vaultBlockNumber = vault.getBlockNumber()
       if (!startBlock) return vaultBlockNumber
       return Math.min(startBlock, vaultBlockNumber)
     }, 0)
-
-    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=latest&sort=asc`
-    const etherscanTransactions = await checkAndCache(endpoint, async() => await makeEtherscanApiRequest(endpoint, explorer.keys))
+    
+    const etherscanTransactions = await getUserTransactions(startBlock)
     // console.log('etherscanTransactions', endpoint, etherscanTransactions)
 
     const vaultsTransactions: Record<string, Transaction[]> = await vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
@@ -394,7 +422,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPositions,
       vaultsTransactions
     }
-  }, [account, explorer, chainId, checkAndCache, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge])
+  }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
     if (!multiCall || !vaultFunctionsHelper) return null
@@ -811,7 +839,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Init underlying tokens and vaults contracts
   useEffect(() => {
 
-    if (!web3 || !chainId) return
+    if (!web3 || !chainId || !cacheProvider?.isLoaded) return
 
     // Init global contracts
     const contracts = globalContracts[chainId].map( (contract: GenericContractConfig) => {
@@ -833,8 +861,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Object.keys(tranches[chainId][protocol]).forEach( token => {
         const vaultConfig = tranches[chainId][protocol][token]
         const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
-        const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', checkAndCache})
-        const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', checkAndCache})
+        const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
+        const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
         vaultsContracts.push(trancheVaultAA)
         vaultsContracts.push(trancheVaultBB)
       })
@@ -844,7 +872,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Init best yield vaults
     const bestYieldVaults = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
       const tokenConfig = bestYield[chainId][token]
-      const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', checkAndCache})
+      const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', cacheProvider})
       vaultsContracts.push(trancheVault)
       return vaultsContracts;
     }, [])
@@ -875,7 +903,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     };
 
   // eslint-disable-next-line
-  }, [web3, web3Rpc, chainId])
+  }, [web3, web3Rpc, chainId, cacheProvider?.isLoaded])
 
   // Set selectors
   useEffect(() => {
@@ -1061,7 +1089,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical underlying prices from chainlink
   useEffect(() => {
 
-    if (isEmpty(state.vaults) || !isEmpty(state.historicalPricesUsd) || !web3 || !multiCall) return
+    if (isEmpty(state.vaults) || !isEmpty(state.historicalPricesUsd) || !web3 || !multiCall || !storedHistoricalPricesUsdLoaded) return
 
     // Load 1 year by default
     let maxDays = 365
@@ -1069,6 +1097,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Prices are already stored
     if (!isEmpty(storedHistoricalPricesUsd)){
       const daysDiff = dayDiff(Date.now(), storedHistoricalPricesUsd.timestamp)
+      console.log('storedHistoricalPricesUsd', Date.now(), storedHistoricalPricesUsd.timestamp, daysDiff)
       if (!daysDiff){
         // console.log('storedHistoricalPricesUsd', storedHistoricalPricesUsd, daysDiff)
         return dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: storedHistoricalPricesUsd.historicalPricesUsd})
@@ -1081,7 +1110,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Get Historical data
     ;(async () => {
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
-      console.log('historicalPricesUsd', historicalPricesUsd)
+      console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
       if (!historicalPricesUsd) return
 
       // Merge new with stored prices
@@ -1100,11 +1129,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
             ...mergedHistoricalPricesUsd[assetId],
             ...newAssetPricesUSd
           ]
-          console.log('Chainlink Prices (MERGE)', assetId, newAssetPricesUSd, mergedHistoricalPricesUsd)
+          // console.log('Chainlink Prices (MERGE)', assetId, newAssetPricesUSd, mergedHistoricalPricesUsd)
         // Store all the prices
         } else {
           mergedHistoricalPricesUsd[assetId] = [...assetPricesUsd]
-          console.log('Chainlink Prices (SET)', assetId,  assetPricesUsd, mergedHistoricalPricesUsd)
+          // console.log('Chainlink Prices (SET)', assetId,  assetPricesUsd, mergedHistoricalPricesUsd)
         }
       })
 
@@ -1122,7 +1151,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: mergedHistoricalPricesUsd})
     })()
   // eslint-disable-next-line
-  }, [state.vaults, web3, multiCall, getChainlinkHistoricalPrices])
+  }, [state.vaults, web3, multiCall, storedHistoricalPricesUsdLoaded, getChainlinkHistoricalPrices])
   
   // Get historical vaults data
   useEffect(() => {

@@ -61,7 +61,7 @@ export const dayDiff = (t1: number, t2: number) => {
 }
 
 export const dateDiff = (t1: number, t2: number, unit: any = 'ms', returnDecimals: boolean = false) => {
-  return dayjs(t1).diff(t2, unit, returnDecimals)
+  return Math.abs(dayjs(t1).diff(t2, unit, returnDecimals))
 }
 
 export const dateToLocale = (timestamp: number, locale: string) => {

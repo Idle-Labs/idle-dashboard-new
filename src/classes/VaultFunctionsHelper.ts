@@ -3,7 +3,8 @@ import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
-import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo } from 'helpers/'
+import { CacheContextProps } from 'contexts/CacheProvider'
+import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff } from 'helpers/'
 import type { Harvest, BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
@@ -11,12 +12,12 @@ export interface CdoLastHarvest {
   harvest: Harvest | null
 }
 
-type VaultFunctionsHelperProps = {
+type ConstructorProps = {
   chainId: number,
   web3: Web3,
   multiCall?: Multicall,
   explorer?: Explorer,
-  checkAndCache?: Function
+  cacheProvider?: CacheContextProps
 }
 
 export class VaultFunctionsHelper {
@@ -25,14 +26,14 @@ export class VaultFunctionsHelper {
   readonly chainId: number
   readonly explorer: Explorer | undefined
   readonly multiCall: Multicall | undefined
-  readonly checkAndCache: Function | undefined
+  readonly cacheProvider: CacheContextProps | undefined
 
-  constructor(props: VaultFunctionsHelperProps) {
+  constructor(props: ConstructorProps) {
     this.web3 = props.web3
     this.chainId = props.chainId
     this.explorer = props.explorer
     this.multiCall = props.multiCall
-    this.checkAndCache = props.checkAndCache
+    this.cacheProvider = props.cacheProvider
   }
 
   public async getTrancheLastHarvest(trancheVault: TrancheVault): Promise<CdoLastHarvest> {
@@ -76,8 +77,9 @@ export class VaultFunctionsHelper {
 
     try {
       const endpoint = `${this.explorer.endpoints[this.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
+      // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlock, this.cacheProvider?.isLoaded, this.cacheProvider?.getCachedUrl(endpoint))
       const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
-      const harvestTxs = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
+      const harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
 
       if (!harvestTxs) return lastHarvest
 
@@ -121,7 +123,7 @@ export class VaultFunctionsHelper {
   public async getMaticTrancheStrategyApr(): Promise<BigNumber> {
     const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'lido', 'rates')
     const callback = async () => (await callPlatformApis(this.chainId, 'lido', 'rates'))
-    const apr = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
+    const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     if (!BNify(apr).isNaN()){
       return BNify(apr).div(100);
@@ -220,11 +222,76 @@ export class VaultFunctionsHelper {
     }
   }
 
-  public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
+  private async getSubgraphData(vault: Vault, filters?: PlatformApiFilters) {
+    const currTime = Math.ceil(Date.now()/1000)
 
-    const endpoint = `subgraph_${this.chainId}_${vault.id}_${filters?.start}_${filters?.end}`
-    const callback = async () => (await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end))
-    const results = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
+    const cacheKey = `subgraph_${this.chainId}_${vault.id}`
+    const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
+    const lastFetchTimestamp = cachedData && cachedData.timestamp
+    const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timeStamp), 0)
+
+    if (filters) {
+      // Replace start timestamp with latest cached timestamp
+      if (latestTimestamp){
+        filters.start = latestTimestamp+1
+      }
+
+      // End timestamp cannot be after current time
+      if (filters.end){
+        filters.end = Math.min(currTime, +filters.end)
+      }
+    }
+
+    // Retrieve new data if the latest cached is more than 1 day and 1 hour old
+    const daysDiff = latestTimestamp && dayDiff(latestTimestamp*1000, currTime*1000)
+    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp*1000, currTime*1000, 'h', true)
+    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
+
+    const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
+    const results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
+
+    // console.log('getSubgraphData', cacheKey, cachedData, latestTimestamp, daysDiff, hoursDiff, fetchData, results)
+
+    // Save fetched data
+    if (fetchData) {
+      const dataToCache = new Map()
+
+      if (cachedData){
+        for (let result of cachedData.data) {
+          const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
+          dataToCache.set(date, result)
+        }
+      }
+
+      for (let result of results) {
+        const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
+        dataToCache.set(date, result)
+      }
+
+      if (this.cacheProvider){
+        // console.log('dataToCache', cacheKey, dataToCache)
+        this.cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
+      }
+    }
+
+    return {
+      filters,
+      results,
+      cacheKey,
+      daysDiff,
+      fetchData,
+      cachedData,
+      latestTimestamp
+    }
+  }
+
+  public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
+    
+    const {
+      results
+    } = await this.getSubgraphData(vault, filters)
+
+    // console.log('getVaultHistoricalDataFromSubgraph', latestTimestamp, filters, daysDiff, results)
 
     const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       
@@ -256,6 +323,122 @@ export class VaultFunctionsHelper {
     }
   }
 
+  public async getVaultPricesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
+    const historicalPrices: VaultHistoricalPrices = {
+      vaultId: vault.id,
+      prices: []
+    }
+
+    const {
+      results
+    } = await this.getSubgraphData(vault, filters)
+    
+    historicalPrices.prices = results.map( (result: any) => {
+      const date = +result.timeStamp*1000
+      const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
+      const value = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
+
+      return {
+        date,
+        value
+      }
+    })
+
+    return historicalPrices
+  }
+
+  public async getVaultRatesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
+    const historicalRates: VaultHistoricalRates = {
+      vaultId: vault.id,
+      rates: []
+    }
+
+    const {
+      results
+    } = await this.getSubgraphData(vault, filters)
+
+    historicalRates.rates = results.map( (result: any) => {
+      const date = +result.timeStamp*1000
+      const value = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
+      return {
+        date,
+        value
+      }
+    })
+
+    return historicalRates
+  }
+
+  private async getIdleRatesData(vault: Vault, filters?: PlatformApiFilters) {
+
+    if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) {
+      return {
+        results: null
+      }
+    }
+
+    const currTime = Math.ceil(Date.now()/1000)
+    const cacheKey = `idleRates_${this.chainId}_${vault.underlyingToken?.address}`
+    const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
+    
+    const lastFetchTimestamp = cachedData && cachedData.timestamp
+    const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timestamp), 0)
+
+    if (filters) {
+      // Replace start timestamp with latest cached timestamp
+      if (latestTimestamp){
+        filters.start = latestTimestamp+1
+      }
+
+      // End timestamp cannot be after current time
+      if (filters.end){
+        filters.end = Math.min(currTime, +filters.end)
+      }
+    }
+
+    // Retrieve new data if the latest cached is more than 1 day and 1 hour old
+    const daysDiff = latestTimestamp && dayDiff(latestTimestamp*1000, currTime*1000)
+    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp*1000, currTime*1000, 'h', true)
+    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
+
+    const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
+    const results = fetchData ? await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) : cachedData.data
+
+    // console.log('getIdleRatesData', cacheKey, cachedData, latestTimestamp, daysDiff, hoursDiff, fetchData, results)
+
+    // Save fetched data
+    if (fetchData) {
+      const dataToCache = new Map()
+
+      if (cachedData){
+        for (let result of cachedData.data) {
+          const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
+          dataToCache.set(date, result)
+        }
+      }
+
+      for (let result of results) {
+        const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
+        dataToCache.set(date, result)
+      }
+
+      if (this.cacheProvider){
+        // console.log('dataToCache', cacheKey, dataToCache)
+        this.cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
+      }
+    }
+
+    return {
+      filters,
+      results,
+      cacheKey,
+      daysDiff,
+      fetchData,
+      cachedData,
+      latestTimestamp
+    }
+  }
+
   public async getVaultHistoricalDataFromIdleApi(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
 
     const historicalData: VaultHistoricalData = {
@@ -266,11 +449,17 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalData
 
-    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
-    const callback = async () => ( await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) )
-    const results = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
+    // const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
+    // const callback = async () => ( await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) )
+    // const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
+
+    const {
+      results
+    } = await this.getIdleRatesData(vault, filters)
 
     if (!results) return historicalData
+
+    // console.log('getVaultHistoricalDataFromIdleApi', vault.id, results)
 
     const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
@@ -300,51 +489,6 @@ export class VaultFunctionsHelper {
     return historicalData
   }
 
-  public async getVaultPricesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
-    const historicalPrices: VaultHistoricalPrices = {
-      vaultId: vault.id,
-      prices: []
-    }
-
-    const endpoint = `subgraph_${this.chainId}_${vault.id}_${filters?.start}_${filters?.end}`
-    const callback = async () => (await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end))
-    const infos = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
-    
-    historicalPrices.prices = infos.map( (result: any) => {
-      const date = +result.timeStamp*1000
-      const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
-      const value = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
-      return {
-        date,
-        value
-      }
-    })
-
-    return historicalPrices
-  }
-
-  public async getVaultRatesFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalRates> {
-    const historicalRates: VaultHistoricalRates = {
-      vaultId: vault.id,
-      rates: []
-    }
-
-    const endpoint = `subgraph_${this.chainId}_${vault.id}_${filters?.start}_${filters?.end}`
-    const callback = async () => (await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end))
-    const rates = this.checkAndCache ? await this.checkAndCache(endpoint, callback) : await callback()
-
-    historicalRates.rates = rates.map( (result: any) => {
-      const date = +result.timeStamp*1000
-      const value = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
-      return {
-        date,
-        value
-      }
-    })
-
-    return historicalRates
-  }
-
   public async getVaultPricesFromIdleApi(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalPrices> {
 
     const historicalPrices = {
@@ -354,11 +498,15 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalPrices
 
-    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
-    const callback = async() => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
-    const infos = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
+    // const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
+    // const callback = async() => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
+    // const infos = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
-    historicalPrices.prices = infos.map( (result: any) => {
+    const {
+      results
+    } = await this.getIdleRatesData(vault, filters)
+
+    historicalPrices.prices = results.map( (result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
       const date = +result.timestamp*1000
       const value = parseFloat(fixTokenDecimals(result.idlePrice, decimals).toFixed(8))
@@ -380,11 +528,15 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalRates
 
-    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
-    const callback = async () => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
-    const rates = this.checkAndCache ? await this.checkAndCache(platformApiEndpoint, callback) : await callback()
+    // const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
+    // const callback = async () => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
+    // const rates = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
-    historicalRates.rates = rates.map( (result: any) => {
+    const {
+      results
+    } = await this.getIdleRatesData(vault, filters)
+
+    historicalRates.rates = results.map( (result: any) => {
       const date = +result.timestamp*1000
       const value = parseFloat(fixTokenDecimals(result.idleRate, 18).toFixed(8))
       return {

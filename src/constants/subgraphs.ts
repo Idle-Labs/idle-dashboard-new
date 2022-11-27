@@ -8,10 +8,10 @@ export const subgraphs = {
         'id',
         'apr',
         'timeStamp',
-        'blockNumber',
-        'totalSupply',
+        // 'blockNumber',
+        // 'totalSupply',
         'virtualPrice',
-        'contractValue',
+        // 'contractValue',
       ]
     }
   },

@@ -6,6 +6,7 @@ import { tokensFolder } from 'constants/folders'
 import type { Abi, Number } from 'constants/types'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
+import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
@@ -18,10 +19,9 @@ type ConstructorProps = {
   web3Rpc?: Web3 | null
   chainId: number
   protocol: string
-  checkAndCache?: Function
   vaultConfig: TrancheConfig
   gaugeConfig?: GaugeConfig | null
-  vaultFunctionsHelper?: VaultFunctionsHelper | null
+  cacheProvider?: CacheContextProps
 }
 
 export class TrancheVault {
@@ -64,8 +64,7 @@ export class TrancheVault {
       protocol,
       vaultConfig,
       gaugeConfig,
-      checkAndCache,
-      vaultFunctionsHelper,
+      cacheProvider
     } = props
     
     // Init global data
@@ -77,7 +76,7 @@ export class TrancheVault {
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
     this.trancheConfig = vaultConfig.Tranches[type]
-    this.vaultFunctionsHelper = vaultFunctionsHelper || new VaultFunctionsHelper({chainId, web3, checkAndCache})
+    this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
     this.rewardTokens = vaultConfig.autoFarming ? vaultConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {

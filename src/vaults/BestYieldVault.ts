@@ -5,6 +5,7 @@ import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import type { Abi, Number } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
+import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
@@ -17,9 +18,8 @@ type ConstructorProps = {
   type: string
   web3Rpc?: Web3 | null
   chainId: number
-  checkAndCache?: Function
   tokenConfig: BestYieldConfig
-  vaultFunctionsHelper?: VaultFunctionsHelper | null
+  cacheProvider?: CacheContextProps
 }
 
 export class BestYieldVault {
@@ -53,8 +53,7 @@ export class BestYieldVault {
       web3Rpc,
       chainId,
       tokenConfig,
-      checkAndCache,
-      vaultFunctionsHelper
+      cacheProvider
     } = props
     
     // Init global data
@@ -65,7 +64,7 @@ export class BestYieldVault {
     this.tokenConfig = tokenConfig
     this.idleConfig = tokenConfig.idle
     this.id = this.idleConfig.address.toLowerCase()
-    this.vaultFunctionsHelper = vaultFunctionsHelper || new VaultFunctionsHelper({chainId, web3, checkAndCache})
+    this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
 
     this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
