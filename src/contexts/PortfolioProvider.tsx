@@ -1095,7 +1095,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     let maxDays = 365
 
     // Prices are already stored
-    if (!isEmpty(storedHistoricalPricesUsd)){
+    if (!isEmpty(storedHistoricalPricesUsd) && storedHistoricalPricesUsd.timestamp){
       const daysDiff = dayDiff(Date.now(), storedHistoricalPricesUsd.timestamp)
       console.log('storedHistoricalPricesUsd', Date.now(), storedHistoricalPricesUsd.timestamp, daysDiff)
       if (!daysDiff){
