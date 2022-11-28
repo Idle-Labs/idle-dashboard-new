@@ -8,6 +8,7 @@ import { useTheme, Button, Box, Progress, Flex, HStack, Image, VStack, Text } fr
 import { usePausableChakraCarouselProvider, PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 
 type StrategyDescriptionCarouselArgs = {
+  delay: number
   color?: string
   strategy: string
 }
@@ -43,7 +44,7 @@ const CarouselNav: React.FC = () => {
   )
 }
 
-export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselArgs> = ({ color, strategy }) => {
+export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselArgs> = ({ color, strategy, delay }) => {
   const strategyProps = strategies[strategy]
 
   const carouselItems = useMemo(() => {
@@ -52,7 +53,7 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
 
   if (!strategyProps.carouselItems) return null
   return (
-    <PausableChakraCarouselProvider delay={2000}>
+    <PausableChakraCarouselProvider delay={delay}>
       <VStack
         spacing={4}
       >

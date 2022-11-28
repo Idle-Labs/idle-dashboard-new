@@ -92,6 +92,7 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
   }, [requestQueue, processQueue, defaultTTL])
 
   const checkAndCache = useCallback( async (url: string, asyncFunc?: Function, TTL: number = defaultTTL): Promise<any> => {
+
     // Get cached data
     const cachedData = getCachedUrl(url)
     if (cachedData){

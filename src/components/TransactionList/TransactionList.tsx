@@ -55,7 +55,7 @@ const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
             spacing={1}
             alignItems={'center'}
           >
-            <Amount value={transaction.underlyingAmount} decimals={4} textStyle={'tableCell'} />
+            <Amount value={transaction.underlyingAmount} textStyle={'tableCell'} />
             <AssetProvider.Name textStyle={'tableCell'} />
           </HStack>
         </HStack>

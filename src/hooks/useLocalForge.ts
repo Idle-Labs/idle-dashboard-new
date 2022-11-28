@@ -25,7 +25,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
     await (new Promise(async (resolve, reject) => {
       const checkProcessing = () => {
         if (processingRef.current){
-          setTimeout(checkProcessing, 50)
+          setTimeout(checkProcessing, 10)
         } else {
           resolve(true)
         }

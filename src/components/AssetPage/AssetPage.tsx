@@ -171,7 +171,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     const strategyProps = strategies[strategy]
     if (!strategyProps?.carouselItems) return null
     return (
-      <StrategyDescriptionCarousel color={asset?.color} strategy={strategy} />
+      <StrategyDescriptionCarousel color={asset?.color} strategy={strategy} delay={10000} />
     )
   }, [asset, strategy, walletInitialized, isPortfolioLoaded])
 

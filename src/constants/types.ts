@@ -17,6 +17,7 @@ export type Number = string | number | BigNumber
 export type VaultAdditionalApr = {
   vaultId: string
   apr: BigNumber
+  cdoId?: string
 }
 
 export interface ErrnoException extends Error {
@@ -97,6 +98,12 @@ export type EtherscanTransaction = {
 export type AssetId = string
 export type Balances = Record<string, BigNumber>
 
+export type Reward = {
+  assets: AssetId[]
+  amount: BigNumber
+}
+export type Rewards = Record<string, Reward>
+
 export type Transaction = EtherscanTransaction & {
   action: string,
   assetId: AssetId
@@ -158,6 +165,7 @@ export type Asset = {
   totalSupply?: BigNumber
   tvl?: BigNumber
   tvlUsd?: BigNumber
+  rewards?: Balances
   rates?: HistoryData[]
   prices?: HistoryData[]
   pricesUsd?: HistoryData[]

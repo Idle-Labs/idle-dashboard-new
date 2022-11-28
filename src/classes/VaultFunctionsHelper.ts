@@ -182,12 +182,14 @@ export class VaultFunctionsHelper {
         case 'IdleCDO_lido_MATIC':
           return {
             vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
             apr: await this.getMaticTrancheApy(vault)
           }
         default:
           return {
+            apr: BNify(0),
             vaultId: vault.id,
-            apr: BNify(0)
+            cdoId: vault.cdoConfig.address,
           }
       }
     }
@@ -205,13 +207,15 @@ export class VaultFunctionsHelper {
           const maticTrancheBaseApr = await this.getMaticTrancheStrategyApr()
           const apr = maticTrancheBaseApr ? BNify(maticTrancheBaseApr).times(100) : BNify(0)
           return {
+            apr,
             vaultId: vault.id,
-            apr
+            cdoId: vault.cdoConfig.address
           }
         default:
           return {
+            apr: BNify(0),
             vaultId: vault.id,
-            apr: BNify(0)
+            cdoId: vault.cdoConfig.address
           }
       }
     }
@@ -380,7 +384,7 @@ export class VaultFunctionsHelper {
     const currTime = Math.ceil(Date.now()/1000)
     const cacheKey = `idleRates_${this.chainId}_${vault.underlyingToken?.address}`
     const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
-    
+
     const lastFetchTimestamp = cachedData && cachedData.timestamp
     const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timestamp), 0)
 

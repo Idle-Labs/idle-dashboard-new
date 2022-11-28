@@ -14,10 +14,11 @@ import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
+import { RewardOverview } from 'components/RewardOverview/RewardOverview'
 import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
-import { BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
+import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
 import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center, Divider } from '@chakra-ui/react'
@@ -29,7 +30,13 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { isVaultsPositionsLoaded, vaultsPositions, selectors: { selectAssetsByIds } } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, vaultsPositions, selectors: { selectAssetsByIds }, rewards } = usePortfolioProvider()
+
+  const accountAndPortfolioLoaded = useMemo(() => {
+    return !walletInitialized || (account && !isVaultsPositionsLoaded)
+  }, [walletInitialized, account, isVaultsPositionsLoaded])
+
+  console.log('rewards', rewards)
 
   const assetIds = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -183,6 +190,42 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     )
   }, [navigate])
 
+  const vaultsRewards = useMemo(() => {
+    if (!rewards) {
+      return (
+        <Card
+          width={'100%'}
+        >
+          <HStack
+            justifyContent={'space-between'}
+          >
+            <Translation translation={'defi.empty.rewards.body'} component={Text} />
+            <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+          </HStack>
+        </Card>
+      )
+    }
+    
+    return (
+      <SimpleGrid
+        spacing={5}
+        width={'100%'}
+        columns={[1, 3]}
+      >
+        {
+          Object.keys(rewards).map( (assetId: AssetId) =>
+            <RewardOverview
+              key={`reward_${assetId}`}
+              assetId={assetId}
+              {...rewards[assetId]}
+            />
+          )
+        }
+      </SimpleGrid>
+    )
+    
+  }, [rewards])
+
   const strategiesRewards = useMemo(() => {
     return (
       <VStack
@@ -196,16 +239,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'flex-start'}
         >
           <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
-          <Card
-            width={'100%'}
-          >
-            <HStack
-              justifyContent={'space-between'}
-            >
-              <Translation translation={'defi.empty.rewards.body'} component={Text} />
-              <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
-            </HStack>
-          </Card>
+          {vaultsRewards}
         </VStack>
 
         <VStack
@@ -247,10 +281,10 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </VStack>
       </VStack>
     )
-  }, [])
+  }, [vaultsRewards])
 
   const leftSideContent = useMemo(() => {
-    if (!walletInitialized || (account && !isVaultsPositionsLoaded)) {
+    if (accountAndPortfolioLoaded) {
       return (
         <VStack
           spacing={6}
@@ -275,7 +309,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       return products
     }
     
-  }, [isVaultsPositionsLoaded, account, walletInitialized, totalFunds, products, strategiesRewards])
+  }, [accountAndPortfolioLoaded, totalFunds, products, strategiesRewards])
 
   const strategiesFilters = useMemo(() => {
     if (!account) return null

@@ -271,6 +271,24 @@ export class BestYieldVault {
     ]
   }
 
+  public getRewardTokensCalls(data?: any): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.contract.methods.getGovTokens()
+      }
+    ]
+  }
+
+  public getRewardTokensAmounts(account: string, data?: any): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.contract.methods.getGovTokensAmounts(account)
+      }
+    ]
+  }
+
   public async getHistoricalData(filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
     return await this.vaultFunctionsHelper.getVaultHistoricalDataFromIdleApi(this, filters)
   }
