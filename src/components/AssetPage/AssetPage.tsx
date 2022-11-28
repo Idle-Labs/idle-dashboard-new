@@ -9,6 +9,7 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -175,6 +176,21 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     )
   }, [asset, strategy, walletInitialized, isPortfolioLoaded])
 
+  const vaultRewards = useMemo(() => {
+    if (!asset) return null
+    return (
+      <VStack
+        spacing={6}
+        width={'100%'}
+        id={'vault-rewards'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={['heading', 'h3']} />
+        <VaultRewards assetId={asset?.id} />
+      </VStack>
+    )
+  }, [asset])
+
   return (
     <AssetProvider
       wrapFlex={true}
@@ -283,6 +299,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             {fundsOverview}
             <AssetGeneralData assetId={asset?.id} />
             {userHasBalance && strategyDescriptionCarousel}
+            {vaultRewards}
           </Stack>
           <VStack
             spacing={6}

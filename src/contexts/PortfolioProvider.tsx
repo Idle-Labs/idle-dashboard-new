@@ -17,20 +17,20 @@ import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
+import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals } from 'helpers/'
-import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall, Rewards } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
-import type { ReducerActionTypes, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
 type InitialState = {
   aprs: Balances
   vaults: Vault[]
-  rewards: Rewards
   balances: Balances
   assetsData: Assets
   pricesUsd: Balances
   balancesUsd: Balances
   vaultsPrices: Balances
+  rewards: VaultsRewards
   totalSupplies: Balances
   isPortfolioLoaded: boolean
   protocolToken: Asset | null
@@ -47,10 +47,10 @@ type InitialState = {
 
 type VaultsOnchainData = {
   aprs: Balances
-  rewards: Rewards
   balances: Balances
   assetsData: Assets
   pricesUsd: Balances
+  rewards: VaultsRewards
   vaultsPrices: Balances
   totalSupplies: Balances
 }
@@ -621,7 +621,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })
 
     // Process Rewards
-    const rewards = rewardTokensAmountsResults.reduce( (rewards: Rewards, callResult: DecodedResult): Rewards => {
+    const rewards = rewardTokensAmountsResults.reduce( (rewards: VaultsRewards, callResult: DecodedResult): VaultsRewards => {
       if (callResult.data) {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
         const asset = selectAssetById(assetId)
@@ -1285,7 +1285,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Update balances only if account changed
       const enabledCalls = []
       if (!isEmpty(state.aprs)) {
-        enabledCalls.push('balances', 'rewardTokensAmounts')
+        enabledCalls.push('balances', 'rewards')
       }
 
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)

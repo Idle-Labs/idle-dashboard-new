@@ -46,7 +46,7 @@ const PausableChakraCarousel: React.FC<PausableChakraCarouselArgs> = ({ children
     activeItem,
     itemsLength,
     pausableTimer,
-    setItemsLength,
+    setItemsLength
   } = usePausableChakraCarouselProvider()
   
   const carouselItems = React.Children.count(children)

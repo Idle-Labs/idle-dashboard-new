@@ -1,16 +1,17 @@
 import React from 'react'
 import { Card } from 'components/Card/Card'
 import { Amount } from 'components/Amount/Amount'
-import type { Reward, AssetId } from 'constants/types'
+import type { VaultRewards, AssetId } from 'constants/types'
+import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { VStack, HStack, Text, SimpleGrid } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type RewardProps = {
   assetId: AssetId
-} & Reward
+} & VaultRewards
 
-export const RewardOverview: React.FC<RewardProps> = ({
+export const VaultRewardOverview: React.FC<RewardProps> = ({
   assetId,
   assets,
   amount
@@ -27,13 +28,7 @@ export const RewardOverview: React.FC<RewardProps> = ({
           spacing={5}
           alignItems={'flex-start'}
         >
-          <HStack
-            alignItems={'center'}
-            justifyContent={'flex-start'}
-          >
-            <AssetProvider.Icon size={'sm'} />
-            <AssetProvider.Name textStyle={'h3'} />
-          </HStack>
+          <AssetLabel assetId={assetId} />
           <HStack
             width={'100%'}
             justifyContent={'space-between'}
@@ -42,7 +37,7 @@ export const RewardOverview: React.FC<RewardProps> = ({
               spacing={1}
               alignItems={'flex-start'}
             >
-              <Translation component={Text} translation={'defi.pools'} textStyle={'captionSmall'} />
+              <Translation component={Text} translation={'defi.vaults'} textStyle={'captionSmall'} />
               <HStack
                 spacing={0}
               >

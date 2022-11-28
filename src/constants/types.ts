@@ -98,11 +98,12 @@ export type EtherscanTransaction = {
 export type AssetId = string
 export type Balances = Record<string, BigNumber>
 
-export type Reward = {
+export type VaultRewards = {
   assets: AssetId[]
   amount: BigNumber
 }
-export type Rewards = Record<string, Reward>
+
+export type VaultsRewards = Record<AssetId, VaultRewards>
 
 export type Transaction = EtherscanTransaction & {
   action: string,

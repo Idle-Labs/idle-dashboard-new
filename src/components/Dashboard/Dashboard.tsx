@@ -14,10 +14,10 @@ import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
-import { RewardOverview } from 'components/RewardOverview/RewardOverview'
 import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
@@ -35,8 +35,6 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const accountAndPortfolioLoaded = useMemo(() => {
     return !walletInitialized || (account && !isVaultsPositionsLoaded)
   }, [walletInitialized, account, isVaultsPositionsLoaded])
-
-  console.log('rewards', rewards)
 
   const assetIds = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -208,13 +206,13 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     
     return (
       <SimpleGrid
-        spacing={5}
+        spacing={6}
         width={'100%'}
         columns={[1, 3]}
       >
         {
           Object.keys(rewards).map( (assetId: AssetId) =>
-            <RewardOverview
+            <VaultRewardOverview
               key={`reward_${assetId}`}
               assetId={assetId}
               {...rewards[assetId]}

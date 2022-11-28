@@ -7,9 +7,9 @@ import { I18nProvider } from 'contexts/I18nProvider'
 import { CacheProvider } from 'contexts/CacheProvider'
 // import { ColorModeSwitcher } from "./ColorModeSwitcher"
 import { WalletProvider } from 'contexts/WalletProvider'
-import { ChakraProvider, extendTheme } from "@chakra-ui/react"
 import { PortfolioProvider } from 'contexts/PortfolioProvider'
 import { BrowserRouterProvider } from 'contexts/BrowserRouterProvider'
+import { cssVar, ChakraProvider, extendTheme } from "@chakra-ui/react"
 import { TransactionManagerProvider } from 'contexts/TransactionManagerProvider'
 
 const theme = extendTheme({
@@ -413,7 +413,8 @@ const theme = extendTheme({
         color:'primary',
         fontWeight: 500,
         bg:'table.header',
-        fontFamily:'body'
+        fontFamily:'body',
+        '--popper-arrow-bg':'colors.table.header'
       },
       defaultProps:{
         placement:'top'
