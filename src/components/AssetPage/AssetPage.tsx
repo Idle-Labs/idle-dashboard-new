@@ -4,7 +4,7 @@ import useLocalForge from 'hooks/useLocalForge'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { HistoryTimeframe } from 'constants/types'
-import { BNify, abbreviateNumber } from 'helpers/'
+import { BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
@@ -177,7 +177,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [asset, strategy, walletInitialized, isPortfolioLoaded])
 
   const vaultRewards = useMemo(() => {
-    if (!asset) return null
+    if (!asset || isEmpty(asset.rewards)) return null
     return (
       <VStack
         spacing={6}

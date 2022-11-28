@@ -1,11 +1,13 @@
 import { hashCode } from 'helpers/'
 import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
+import { preCachedRequests } from 'constants/historicalData'
 import React, { useContext, useCallback, useEffect, useMemo } from 'react'
 
 export type CacheContextProps = {
   fetchUrl: Function
   saveData: Function
+  getUrlHash: Function
   getCachedUrl: Function
   checkAndCache: Function
   isLoaded: boolean
@@ -17,8 +19,9 @@ const initialState = {
   processing: false,
   fetchUrl: () => {},
   saveData: () => {},
+  getUrlHash: () => {},
   getCachedUrl: () => {},
-  checkAndCache: () => {},
+  checkAndCache: () => {}
 }
 
 const CacheContext = React.createContext<CacheContextProps>(initialState)
@@ -29,7 +32,7 @@ type CacheProviderProps = {
 } & ProviderProps
 
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
-  const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge('cachedRequests', {})
+  const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge('cachedRequests', preCachedRequests)
 
   const requestQueue = useMemo(() => new Map(), [])
 
@@ -79,12 +82,12 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
       expirationDate
     })
 
-    console.log('saveData', url, urlHash, {
-      data,
-      timestamp,
-      extraData,
-      expirationDate
-    })
+    // console.log('saveData', url, urlHash, {
+    //   data,
+    //   timestamp,
+    //   extraData,
+    //   expirationDate
+    // })
 
     processQueue()
 
@@ -96,7 +99,6 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     // Get cached data
     const cachedData = getCachedUrl(url)
     if (cachedData){
-      // console.log('checkAndCache - CACHED', url, cachedData)
       return cachedData.data
     }
 
@@ -104,12 +106,9 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
 
     const data = await asyncFunc()
     if (data){
-      // console.log('checkAndCache - Fetch & Save', url, data)
       return saveData(url, data, TTL);
     }
-
     return null
-
   }, [getCachedUrl, saveData, defaultTTL])
 
   const fetchUrl = useCallback( (url: string, TTL: number = defaultTTL) => {
@@ -125,7 +124,7 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
   }, [getCachedUrl, saveData, defaultTTL])
 
   return (
-    <CacheContext.Provider value={{ fetchUrl, saveData, getCachedUrl, checkAndCache, isLoaded, processing }}>
+    <CacheContext.Provider value={{ fetchUrl, saveData, getUrlHash, getCachedUrl, checkAndCache, isLoaded, processing }}>
       {children}
     </CacheContext.Provider>
   )

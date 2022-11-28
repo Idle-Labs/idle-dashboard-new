@@ -1,11 +1,12 @@
 import { Menu, Spinner } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { MenuItemExpandable } from './Menu/MenuItemExpandable'
 import { chains, networks, MenuItemType, MenuListType } from 'constants/'
 
 export const NetworkSelector: React.FC = () => {
-
+  const { screenSize } = useThemeProvider()
   const { chainId, setChainId } = useWalletProvider()
   const [ menuItem, setMenuItem ] = useState<MenuItemType | null>(null)
 
@@ -31,7 +32,7 @@ export const NetworkSelector: React.FC = () => {
     <Menu>
       {({ isOpen }) => (
         <>
-          <MenuItemExpandable isOpen={isOpen} menuItem={menuItem} />
+          <MenuItemExpandable isMobile={screenSize==='sm'} isOpen={isOpen} menuItem={menuItem} />
         </>
       )}
     </Menu>

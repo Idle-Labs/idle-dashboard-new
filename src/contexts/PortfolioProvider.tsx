@@ -29,8 +29,8 @@ type InitialState = {
   assetsData: Assets
   pricesUsd: Balances
   balancesUsd: Balances
-  vaultsPrices: Balances
   rewards: VaultsRewards
+  vaultsPrices: Balances
   totalSupplies: Balances
   isPortfolioLoaded: boolean
   protocolToken: Asset | null

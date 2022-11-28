@@ -2,12 +2,13 @@ import { shortenHash } from 'helpers'
 import { MenuItemType } from 'constants/menu'
 import React, { useState, useEffect } from 'react'
 import { Menu, Spinner, Button } from '@chakra-ui/react'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { MenuItemExpandable } from './Menu/MenuItemExpandable'
 import { MdOutlineChangeCircle, MdClose } from 'react-icons/md'
 
 export const AccountSelector: React.FC = () => {
-
+  const { screenSize } = useThemeProvider()
   const [ menuItem, setMenuItem ] = useState<MenuItemType | null>(null)
   const { wallet, account, connecting, connect, disconnect } = useWalletProvider()
 
@@ -54,7 +55,7 @@ export const AccountSelector: React.FC = () => {
     <Menu>
       {({ isOpen }) => (
         <>
-          <MenuItemExpandable isOpen={isOpen} menuItem={menuItem} />
+          <MenuItemExpandable isMobile={screenSize==='sm'} isOpen={isOpen} menuItem={menuItem} />
         </>
       )}
     </Menu>

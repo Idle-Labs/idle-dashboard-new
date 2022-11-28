@@ -17,8 +17,8 @@ export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
       className={className}
     >
       <Box
-        my={10}
-        mx={20}
+        my={[4, 10]}
+        mx={[4, 20]}
       >
         <Header />
         <Outlet />

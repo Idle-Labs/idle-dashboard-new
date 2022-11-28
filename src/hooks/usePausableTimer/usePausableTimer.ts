@@ -31,7 +31,6 @@ export function usePausableTimer (func: Function, delay: number): PausableTimerR
   }, [clear])
 
   const start = useCallback( (interval: number = delay, restartStartTime: boolean = true) => {
-    // console.log('PausableTimer - START')
     clear()
     setStatus('running')
     
@@ -53,7 +52,7 @@ export function usePausableTimer (func: Function, delay: number): PausableTimerR
     const newRemainingTime = (remainingTime || delay)-elapsedTime
     setRemainingTime(newRemainingTime)
     setStatus('paused')
-    console.log('pause', delay, startTime, elapsedTime, newRemainingTime)
+    // console.log('pause', delay, startTime, elapsedTime, newRemainingTime)
     return newRemainingTime
   }, [status, startTime, clear, delay, remainingTime])
 

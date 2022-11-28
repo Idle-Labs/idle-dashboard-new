@@ -1,16 +1,17 @@
 import React from 'react'
-import { HStack, Text } from '@chakra-ui/react'
 import { HistoryTimeframe } from 'constants/types'
+import { HStack, Text, StackProps } from '@chakra-ui/react'
 
 type TimeframeSelectorArgs = {
   timeframe: HistoryTimeframe
   setTimeframe: Function
-}
+} & StackProps
 
-export const TimeframeSelector: React.FC<TimeframeSelectorArgs> = ({ timeframe: selectedTimeframe, setTimeframe }) => {
+export const TimeframeSelector: React.FC<TimeframeSelectorArgs> = ({ timeframe: selectedTimeframe, setTimeframe, ...props }) => {
   return (
     <HStack
       spacing={[6, 10]}
+      {...props}
     >
       {
         Object.values(HistoryTimeframe).map( timeframe => {

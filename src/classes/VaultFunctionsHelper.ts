@@ -254,7 +254,7 @@ export class VaultFunctionsHelper {
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
     const results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
 
-    // console.log('getSubgraphData', cacheKey, cachedData, latestTimestamp, daysDiff, hoursDiff, fetchData, results)
+    // console.log('getSubgraphData', this.cacheProvider.getUrlHash(cacheKey), results)
 
     // Save fetched data
     if (fetchData) {

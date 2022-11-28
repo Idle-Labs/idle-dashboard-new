@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import React, { useState, useMemo, useCallback } from 'react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
@@ -24,6 +25,7 @@ import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/us
 import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center, Divider } from '@chakra-ui/react'
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
+  const { screenSize } = useThemeProvider()
   const [ percentChange, setPercentChange ] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
@@ -102,7 +104,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   <HStack
                     spacing={4}
                   >
-                    <StrategyLabel strategy={strategy.type} />
+                    <StrategyLabel strategy={strategy.type} sx={{whiteSpace:'nowrap'}} />
                     <Divider orientation={'vertical'} height={4} />
                     <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
                       {
@@ -129,7 +131,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       </SkeletonText>
                     </HStack>
                   </HStack>
-                  <Translation component={Button} translation={`common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />
+                  <Translation display={['none', 'block']} component={Button} translation={`common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />
                 </HStack>
               </Card.Dark>
             )
@@ -310,7 +312,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [accountAndPortfolioLoaded, totalFunds, products, strategiesRewards])
 
   const strategiesFilters = useMemo(() => {
-    if (!account) return null
+    if (!account || screenSize==='sm') return null
     return (
       <Stack
         py={4}
@@ -340,7 +342,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </Stack>
     )
-  }, [account, toggleStrategy, selectedStrategies])
+  }, [account, screenSize, toggleStrategy, selectedStrategies])
 
   return (
     <Box
@@ -351,7 +353,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         mb={10}
         spacing={10}
         width={'100%'}
-        alignItems={'center'}
+        alignItems={['flex-start','center']}
         justifyContent={'flex-start'}
         direction={['column', 'row']}
       >
@@ -369,7 +371,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           spacing={6}
           alignItems={'flex-start'}
         >
-          <Translation translation={'dashboard.portfolio.performance'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation display={['none', 'block']} translation={'dashboard.portfolio.performance'} component={Text} textStyle={['heading', 'h3']} />
           <Card.Dark
             p={0}
             overflow={'hidden'}
@@ -385,22 +387,24 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               )
             }
             <Stack
-              mt={8}
-              mx={8}
+              mt={[6, 8]}
+              mx={[6, 8]}
               alignItems={'flex-start'}
               direction={['column', 'row']}
               justifyContent={['center', 'space-between']}
             >
               <VStack
-                spacing={1}
-                alignItems={'flex-start'}
+                width={'100%'}
+                spacing={[5, 1]}
+                alignItems={['center', 'flex-start']}
               >
                 <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
-                  <Translation translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                  <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
                   <HStack
                     spacing={4}
+                    alignItems={'baseline'}
                   >
-                    <Amount.Usd value={totalFunds} textStyle={['heading', 'h2']} />
+                    <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />
                     {
                       totalFunds.gt(0) && (
                         <Stat>
@@ -415,7 +419,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 </SkeletonText>
               </VStack>
               {
-                isVaultsPositionsLoaded && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} />
+                isVaultsPositionsLoaded && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
               }
             </Stack>
             <BalanceChart
@@ -439,6 +443,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Card.Dark
             p={0}
             flex={1}
+            px={[6, 0]}
             display={'flex'}
             alignItems={'center'}
           >
