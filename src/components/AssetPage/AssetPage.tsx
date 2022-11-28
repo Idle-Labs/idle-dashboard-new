@@ -73,7 +73,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} />
           <HStack
             spacing={3}
-            alignItems={'center'}
+            alignItems={'baseline'}
           >
             {
               userHasBalance ? (
