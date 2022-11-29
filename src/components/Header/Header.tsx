@@ -4,12 +4,14 @@ import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
 import { NotificationList } from './NotificationList'
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { ContainerProps, Flex, Stack } from '@chakra-ui/react'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
-
+  const { screenSize } = useThemeProvider()
+  const isMobile = screenSize === 'sm'
   const { chainId, account } = useWalletProvider()
 
   const assetBalance = useMemo(() => {
@@ -22,11 +24,11 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'center'}
         >
           <AssetProvider.Icon size={'xs'} mr={2} />
-          <AssetProvider.Balance textStyle={'cta'} />
+          <AssetProvider.Balance decimals={isMobile ? 0 : 2} textStyle={'cta'} />
         </Flex>
       </AssetProvider>
     )
-  }, [account, chainId])
+  }, [account, chainId, isMobile])
 
   return (
     <Flex

@@ -529,8 +529,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('baseAprResults', baseAprResults)
     // console.log('protocolsResults', protocolsResults)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
-    console.log('rewardTokens', rewardTokensResults)
-    console.log('rewardTokensAmounts', rewardTokensAmountsResults)
+    // console.log('rewardTokens', rewardTokensResults)
+    // console.log('rewardTokensAmounts', rewardTokensAmountsResults)
 
     const assetsData: Assets = {
       ...state.assetsData

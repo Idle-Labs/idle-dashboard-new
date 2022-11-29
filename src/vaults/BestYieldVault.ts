@@ -31,6 +31,9 @@ export class BestYieldVault {
   readonly protocol: string
   readonly vaultFunctionsHelper: VaultFunctionsHelper
 
+  // Private attributes
+  private readonly cacheProvider: CacheContextProps | undefined
+
   // Raw config
   public readonly type: string
   public readonly idleConfig: IdleToken
@@ -62,6 +65,7 @@ export class BestYieldVault {
     this.chainId = chainId
     this.protocol = 'idle'
     this.tokenConfig = tokenConfig
+    this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
     this.id = this.idleConfig.address.toLowerCase()
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
@@ -152,9 +156,10 @@ export class BestYieldVault {
           if (!underlyingTokenTxAmount){
             const pricesCalls = this.getPricesCalls()
 
-            // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+            const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
             // @ts-ignore
-            let tokenPrice = await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            let tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
             if (!tokenPrice) {
               tokenPrice = BNify(1)
             }

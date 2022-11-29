@@ -14,6 +14,7 @@ export type MenuItemType = {
   path?: string
   label: string
   icon?: IconType
+  color?: string
   onClick?: Function
   children?: MenuListType[]
   iconProps?: Record<string, any>
@@ -29,7 +30,8 @@ export const menu: MenuItemType[] = [
     label:'navBar.earn',
     children: Object.values(strategies).map( (strategy: StrategyProps) => ({
       path:`earn/${strategy.route}`,
-      label: strategy.label
+      label: strategy.label,
+      color: strategy.color
     }))
   },
   // {

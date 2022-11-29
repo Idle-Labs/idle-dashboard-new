@@ -34,6 +34,9 @@ export class TrancheVault {
   readonly web3Rpc: Web3 | null | undefined
   readonly vaultFunctionsHelper: VaultFunctionsHelper
 
+  // Private attributes
+  private readonly cacheProvider: CacheContextProps | undefined
+
   // Raw config
   public readonly type: string
   public readonly cdoConfig: CDO
@@ -75,6 +78,7 @@ export class TrancheVault {
     this.protocol = protocol
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
+    this.cacheProvider = cacheProvider
     this.trancheConfig = vaultConfig.Tranches[type]
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
@@ -185,8 +189,13 @@ export class TrancheVault {
             const pricesCalls = this.getPricesCalls()
 
             // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+
+
+            const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
             // @ts-ignore
-            let tokenPrice = await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            let tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+
             if (!tokenPrice) {
               // console.log('tokenPrice', this.id, action, tx.blockNumber, internalTxs, underlyingTokenTx, idleTokenTx, pricesCalls)
               tokenPrice = BNify(1)

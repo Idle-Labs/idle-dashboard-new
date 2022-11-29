@@ -236,9 +236,12 @@ export const theme = extendTheme({
       borderColor:'card.borderColor',
     },
     overlay: {
+      top:0,
+      left:0,
       zIndex:10,
       width:'100%',
       height:'100%',
+      m:'0 !important',
       position:'absolute'
     },
     cardInteractive: {

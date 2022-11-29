@@ -1,5 +1,7 @@
-import React from 'react'
 import { menu } from 'constants/menu'
+import React, { useState } from 'react'
+import { MdMenu } from 'react-icons/md'
+import { MobileMenu } from './MobileMenu'
 import { MenuNavItem } from './MenuNavItem'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MenuItemExpandable } from './MenuItemExpandable'
@@ -7,15 +9,22 @@ import { Menu, Flex, HStack, Image } from '@chakra-ui/react'
 
 export const TopBarMenu: React.FC = () => {
   const { screenSize } = useThemeProvider()
+  const isMobile = screenSize === 'sm'
+  const [ mobileMenuOpened, setMobileMenuOpened ] = useState<boolean>(true)
   return (
     <HStack
       height={10}
-      spacing={10}
       alignItems={'center'}
+      spacing={isMobile ? 4 :10}
     >
+      {
+        isMobile && (
+          <MdMenu onClick={() => setMobileMenuOpened(true)} size={32} />
+        )
+      }
       <Image src={'images/icon.svg'} height={[8, 10]} width={[8, 10]} />
       {
-        screenSize !== 'sm' && (
+        !isMobile ? (
           <Menu>
             {({ isOpen }) => menu.map( (menuItem, index) => {
               return (
@@ -34,6 +43,8 @@ export const TopBarMenu: React.FC = () => {
             })
           }
           </Menu>
+        ) : (
+          <MobileMenu isOpen={mobileMenuOpened} close={() => setMobileMenuOpened(false)} />
         )
       }
     </HStack>

@@ -1,9 +1,9 @@
 import { Card } from 'components/Card/Card'
-import { BNify, getRoutePath } from 'helpers/'
 import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
+import { BNify, getRoutePath, isEmpty } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import React, { useState, useMemo, useCallback } from 'react'
@@ -191,7 +191,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [navigate])
 
   const vaultsRewards = useMemo(() => {
-    if (!rewards) {
+    if (isEmpty(rewards)) {
+      const strategyProps = strategies.BY
+      const strategyPath = getRoutePath('earn', [strategyProps.route])
       return (
         <Card
           width={'100%'}
@@ -200,7 +202,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             justifyContent={'space-between'}
           >
             <Translation translation={'defi.empty.rewards.body'} component={Text} />
-            <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+            <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => navigate(strategyPath as string)} variant={['ctaPrimaryOutline']} px={10} py={2} />
           </HStack>
         </Card>
       )
@@ -224,7 +226,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </SimpleGrid>
     )
     
-  }, [rewards])
+  }, [rewards, navigate])
 
   const strategiesRewards = useMemo(() => {
     return (
