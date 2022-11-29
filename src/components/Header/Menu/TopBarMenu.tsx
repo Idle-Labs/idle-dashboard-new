@@ -1,16 +1,30 @@
 import { menu } from 'constants/menu'
-import React, { useState } from 'react'
 import { MdMenu } from 'react-icons/md'
 import { MobileMenu } from './MobileMenu'
 import { MenuNavItem } from './MenuNavItem'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MenuItemExpandable } from './MenuItemExpandable'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Menu, Flex, HStack, Image } from '@chakra-ui/react'
+import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 
 export const TopBarMenu: React.FC = () => {
-  const { screenSize } = useThemeProvider()
-  const isMobile = screenSize === 'sm'
+  const { location } = useBrowserRouter()
+  const { screenSize, setScrollLocked } = useThemeProvider()
   const [ mobileMenuOpened, setMobileMenuOpened ] = useState<boolean>(true)
+
+  const isMobile = useMemo(() => screenSize === 'sm', [screenSize])
+
+  // Automatically close mobile menu on location change
+  useEffect(() => {
+    setMobileMenuOpened(false)
+  }, [location])
+
+  // Lock scroll if mobile menu opened
+  useEffect(() => {
+    setScrollLocked(isMobile && mobileMenuOpened)
+  }, [mobileMenuOpened, isMobile, setScrollLocked])
+
   return (
     <HStack
       height={10}

@@ -23,9 +23,8 @@ const BrowserRouterContext = createContext<BrowserRouterContextProps>(initialSta
 export const useBrowserRouter = () => useContext(BrowserRouterContext)
 
 export function BrowserRouterProvider() {
-  const location = useLocation()
   const query = useQuery()
-
+  const location = useLocation()
   const renderedRoutes = useRoutes(routes);
   
   const match = useMemo(() => {
