@@ -198,12 +198,14 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <Card
           width={'100%'}
         >
-          <HStack
+          <Stack
+            spacing={[10, 0]}
+            direction={['column', 'row']}
             justifyContent={'space-between'}
           >
-            <Translation translation={'defi.empty.rewards.body'} component={Text} />
+            <Translation translation={'defi.empty.rewards.body'} component={Text} textAlign={['center', 'left']} />
             <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => navigate(strategyPath as string)} variant={['ctaPrimaryOutline']} px={10} py={2} />
-          </HStack>
+          </Stack>
         </Card>
       )
     }
@@ -231,8 +233,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const strategiesRewards = useMemo(() => {
     return (
       <VStack
-        spacing={20}
         width={'100%'}
+        spacing={[10, 20]}
       >
         <VStack
           spacing={6}
@@ -254,12 +256,14 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Card
             width={'100%'}
           >
-            <HStack
+            <Stack
+              spacing={[10, 0]}
+              direction={['column', 'row']}
               justifyContent={'space-between'}
             >
-              <Translation translation={'defi.empty.staking.body'} component={Text} />
+              <Translation translation={'defi.empty.staking.body'} component={Text} textAlign={['center', 'left']} />
               <Translation component={Button} translation={`defi.empty.staking.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
-            </HStack>
+            </Stack>
           </Card>
         </VStack>
 
@@ -273,12 +277,14 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Card
             width={'100%'}
           >
-            <HStack
+            <Stack
+              spacing={[10, 0]}
+              direction={['column', 'row']}
               justifyContent={'space-between'}
             >
-              <Translation translation={'defi.empty.gauges.body'} component={Text} />
+              <Translation translation={'defi.empty.gauges.body'} component={Text} textAlign={['center', 'left']} />
               <Translation component={Button} translation={`defi.empty.gauges.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
-            </HStack>
+            </Stack>
           </Card>
         </VStack>
       </VStack>

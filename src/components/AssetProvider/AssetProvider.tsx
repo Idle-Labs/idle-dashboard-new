@@ -230,7 +230,11 @@ const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props})
   )
 }
 
-const Rewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
+type RewardsProps = {
+ iconMargin?: number
+} & AvatarProps & BoxProps
+
+const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
   const {vault} = useAssetProvider();
   const { selectors: { selectVaultById } } = usePortfolioProvider()
   
@@ -249,12 +253,12 @@ const Rewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
       if (!rewardToken.address) return null
       return (
         <AssetProvider key={`asset_${rewardToken.address}`} assetId={rewardToken.address}>
-          <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
+          <AssetProvider.Icon {...props} ml={index ? iconMargin !== undefined ? iconMargin : -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
     }).filter( (reward: any) => !!reward )
     return rewards.length ? rewards : children
-  }, [children, vault, props, selectVaultById])
+  }, [children, vault, props, selectVaultById, iconMargin])
 
   return (
     <Flex>

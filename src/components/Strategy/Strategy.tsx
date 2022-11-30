@@ -6,14 +6,16 @@ import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { BNify, getObjectPath } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
+import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Asset, AssetId, VaultPosition } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { ContainerProps, Flex, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { ContainerProps, Flex, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 const sortNumeric = (a: any, b: any, field: any, c: any): number => {
   const n1 = BNify(getObjectPath(a.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(a.original, field))
@@ -28,19 +30,103 @@ const sortAlpha = (a: any, b: any, field: any): number => {
 
 type RowProps = Row<Asset>
 
+type VaultCardProps = {
+  assetId: AssetId
+}
+
+const VaultCard: React.FC<VaultCardProps> = ({ assetId }) => {
+  const navigate = useNavigate()
+  const { location } = useBrowserRouter()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    if (!selectAssetById) return
+    return selectAssetById(assetId)
+  }, [assetId, selectAssetById])
+
+  const depositedOrRewards = useMemo(() => {
+    return asset?.vaultPosition?.usd.deposited ? (
+      <VStack
+        spacing={1}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.deposited'} textStyle={'captionSmall'} />
+        <AssetProvider.DepositedUsd textStyle={'tableCell'} />
+      </VStack>
+    ) : (
+      <VStack
+        spacing={1}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.rewards'} textStyle={'captionSmall'} />
+        <AssetProvider.Rewards iconMargin={-3} size={'sm'} />
+      </VStack>
+    )
+  }, [asset])
+
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={assetId}
+    >
+      <Card
+        p={4}
+        onClick={() => navigate(`${location?.pathname}/${assetId}`)}
+      >
+        <VStack
+          spacing={3}
+          alignItems={'flex-start'}
+        >
+          <AssetLabel assetId={assetId} />
+          <SimpleGrid
+            pt={3}
+            pl={4}
+            columns={3}
+            width={'100%'}
+            borderTop={'1px solid'}
+            borderTopColor={'divider'}
+          >
+            <VStack
+              spacing={1}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.pool'} textStyle={'captionSmall'} />
+              <AssetProvider.PoolUsd textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={1}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
+              <AssetProvider.Apy textStyle={'tableCell'} />
+            </VStack>
+
+            {depositedOrRewards}
+          </SimpleGrid>
+        </VStack>
+      </Card>
+    </AssetProvider>
+  )
+}
+
 export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const translate = useTranslate()
+  const { screenSize } = useThemeProvider()
   const { location, params } = useBrowserRouter()
+
   const { isPortfolioLoaded, selectors: {
     selectVaultsByType,
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
     selectVaultsAssetsWithBalance
   } } = usePortfolioProvider()
-  const [ depositedAssetsData, setDepositedAssetsData ] = useState([])
-  const [ availableAssetsData, setAvailableAssetsData ] = useState([])
+  // const [ depositedAssetsData, setDepositedAssetsData ] = useState([])
+  // const [ availableAssetsData, setAvailableAssetsData ] = useState([])
+
+  const isMobile = useMemo(() => screenSize==='sm', [screenSize])
 
   const strategy = useMemo(() => (
     Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -330,27 +416,29 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     },
   ]), [translate, strategy])
 
-  useEffect(() => {
-    if (!selectVaultsByType || !isPortfolioLoaded) return;
-    // const vaults = selectVaultsByType(params.strategy)
-    // console.log('vaults', vaults)
+  const depositedAssetsData = useMemo(() => {
+    if (!selectVaultsWithBalance || !isPortfolioLoaded) return []
+    return selectVaultsAssetsWithBalance(strategy)
+  }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
 
+  const availableAssetsData = useMemo(() => {
+    if (!selectVaultsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    // console.log('vaultsAssets', vaultsAssets)
-
-    const availableAssetsData = vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
-    setAvailableAssetsData(availableAssetsData)
-
+    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
   }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
-  useEffect(() => {
-    if (!selectVaultsWithBalance || !isPortfolioLoaded) return;
+  // useEffect(() => {
+  //   if (!selectVaultsByType || !isPortfolioLoaded) return;
+  //   const vaultsAssets = selectVaultsAssetsByType(strategy)
+  //   const availableAssetsData = vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
+  //   setAvailableAssetsData(availableAssetsData)
+  // }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
-    const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(strategy)
-    // console.log('vaultsAssetsWithBalance', vaultsAssetsWithBalance)
-    setDepositedAssetsData(vaultsAssetsWithBalance)
-
-  }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
+  // useEffect(() => {
+  //   if (!selectVaultsWithBalance || !isPortfolioLoaded) return;
+  //   const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(strategy)
+  //   setDepositedAssetsData(vaultsAssetsWithBalance)
+  // }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
 
   const depositedAssets = useMemo(() => {
     if (!depositedAssetsData.length) return null
@@ -364,13 +452,31 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       ]
     }
 
-    return (
+    return isMobile ? (
+      <VStack
+        mt={20}
+        spacing={6}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.depositedAssets'} component={Heading} as={'h2'} fontSize={'lg'} />
+        <VStack
+          spacing={2}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+          {
+            depositedAssetsData.map( (asset: Asset) => asset.id && <VaultCard assetId={asset.id} />)
+          }
+        </VStack>
+      </VStack>
+    ) : (
       <Card mt={10}>
-        <Card.Heading>Deposited assets</Card.Heading>
+        <Translation translation={'defi.depositedAssets'} component={Card.Heading} />
         <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={onRowClick} />
       </Card>
     )
-  }, [depositedAssetsColumns, depositedAssetsData, onRowClick])
+  }, [isMobile, depositedAssetsColumns, depositedAssetsData, onRowClick])
 
   const availableAssets = useMemo(() => {
     if (isPortfolioLoaded && !availableAssetsData.length) return null
@@ -384,9 +490,27 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       ]
     }
 
-    return (
+    return isMobile ? (
+      <VStack
+        mt={20}
+        spacing={6}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.availableAssets'} component={Heading} as={'h2'} fontSize={'lg'} />
+        <VStack
+          spacing={2}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+          {
+            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard assetId={asset.id} />)
+          }
+        </VStack>
+      </VStack>
+    ) : (
       <Card mt={10}>
-        <Card.Heading>Available assets</Card.Heading>
+        <Translation translation={'defi.availableAssets'} component={Card.Heading} />
         {
           !availableAssetsData.length ? (
             <Stack
@@ -400,28 +524,40 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </Card>
     )
-  }, [isPortfolioLoaded, availableAssetsColumns, availableAssetsData, onRowClick])
+  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableAssetsData, onRowClick])
 
   const heading = useMemo(() => {
     if (!strategy) return null
     return (
-      <Flex
-        direction={'row'}
+      <Stack
+        spacing={[10, 0]}
+        direction={['column', 'row']}
+        alignItems={['center', 'flex-start']}
         width={['100%', '100%', '100%', '80%', '55%']}
       >
-        <Flex
-          pr={14}
-          pt={20}
-          width={['100%', '65%']}
+        <VStack
+          pr={[0, 14]}
+          pt={[0, 20]}
           direction={'column'}
+          width={['100%', '65%']}
+          alignItems={['center', 'flex-start']}
         >
           <Translation translation={strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
-          <Translation mt={10} translation={strategies[strategy].description} />
-        </Flex>
-        <Image width={'35%'} src={strategies[strategy].image} />
-      </Flex>
+          {
+            !isMobile && (
+              <Translation mt={10} translation={strategies[strategy].description} textAlign={['center', 'left']} />
+            )
+          }
+        </VStack>
+        <Image width={['70%', '35%']} src={strategies[strategy].image} />
+        {
+          isMobile && (
+            <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+          )
+        }
+      </Stack>
     )
-  }, [strategy])
+  }, [strategy, isMobile])
 
   return (
     <Flex

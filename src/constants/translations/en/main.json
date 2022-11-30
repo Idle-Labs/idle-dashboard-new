@@ -360,6 +360,8 @@
     "vaults": "Vaults",
     "earnings": "Earnings",
     "deposited": "Deposited",
+    "depositedAssets": "Deposited assets",
+    "availableAssets": "Available assets",
     "claimable": "Claimable",
     "fees": "Fees",
     "performanceFee": "Performance Fee",

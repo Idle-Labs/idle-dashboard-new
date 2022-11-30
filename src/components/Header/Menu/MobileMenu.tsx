@@ -78,6 +78,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                           <HStack
                             spacing={2}
                             alignItems={'center'}
+                            key={`menuChildItem_${index}`}
                           >
                             <MenuNavItem
                               {...menuChildItem}
