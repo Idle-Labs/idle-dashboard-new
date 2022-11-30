@@ -6,13 +6,14 @@ import { abbreviateNumber, calculatePercentChange } from 'helpers/'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 type BalanceChartArgs = {
-  assetIds: AssetId[]
+  color?: string
   accountId?: string
+  assetIds: AssetId[]
   strategies?: string[]
-  timeframe: HistoryTimeframe
   percentChange: number
-  setPercentChange: (percentChange: number) => void
   isRainbowChart: boolean
+  timeframe: HistoryTimeframe
+  setPercentChange: (percentChange: number) => void
   margins?: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -24,6 +25,7 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
   percentChange,
   isRainbowChart,
   setPercentChange,
+  color = 'chart.stroke',
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
   const { assets, balanceChartData, balanceChartDataLoading } = useBalanceChartData({
@@ -37,13 +39,13 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
 
   useEffect(() => setPercentChange(calculatePercentChange(total)), [total, setPercentChange])
 
-  const color = useMemo(() => {
-    const defaultColor = 'chart.stroke'
-    if (assets?.length === 1){
-      return assets[0]?.color || defaultColor
-    }
-    return defaultColor
-  }, [assets])
+  // const color = useMemo(() => {
+  //   const defaultColor = 'chart.stroke'
+  //   if (assets?.length === 1){
+  //     return assets[0]?.color || defaultColor
+  //   }
+  //   return defaultColor
+  // }, [assets])
 
   const formatFn = (n: any) => `$${abbreviateNumber(n)}`
 

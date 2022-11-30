@@ -164,6 +164,7 @@ export type Asset = {
   balanceUsd?: BigNumber
   vaultPrice?: BigNumber
   totalSupply?: BigNumber
+  additionalAprs?: Balances
   tvl?: BigNumber
   tvlUsd?: BigNumber
   rewards?: Balances

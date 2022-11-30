@@ -10,12 +10,12 @@ import { PrimaryChart } from './PrimaryChart'
 import { RainbowChart } from './RainbowChart'
 
 type GraphProps = {
-  data: BalanceChartData
+  color: string
   isLoaded?: boolean
   loading?: boolean
-  color: string
   formatFn?: Function
   axisEnabled?: boolean
+  data: BalanceChartData
   maxMinEnabled?: boolean
   isRainbowChart?: boolean
   margins?: { top: number; right: number; bottom: number; left: number }

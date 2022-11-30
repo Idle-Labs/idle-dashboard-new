@@ -20,7 +20,7 @@ import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartDa
 import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
-import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch, StatArrow, SkeletonText, Image } from '@chakra-ui/react'
+import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch/*, StatArrow*/, SkeletonText } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
@@ -85,9 +85,9 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             <Stat>
               <HStack spacing={2}>
                 {
-                  userHasBalance ? (
+                  userHasBalance ? null/*(
                     <AssetProvider.RealizedApy suffix={' APY'} textStyle={'caption'} />
-                  ) : apy.gt(0) && (
+                  )*/ : apy.gt(0) && (
                     <HStack
                       spacing={1}
                     >
@@ -249,7 +249,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             spacing={10}
             width={['100%', 14/20]}
           >
-            {!userHasBalance && strategyDescriptionCarousel}
+            {/*!userHasBalance && strategyDescriptionCarousel*/}
             <Box>
               <HStack
                 mb={6}
@@ -297,6 +297,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
               </Card.Dark>
             </Box>
             {fundsOverview}
+            {!userHasBalance && strategyDescriptionCarousel}
             <AssetGeneralData assetId={asset?.id} />
             {userHasBalance && strategyDescriptionCarousel}
             {vaultRewards}

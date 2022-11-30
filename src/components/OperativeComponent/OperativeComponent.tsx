@@ -1071,20 +1071,15 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({ assetId }
     switch (transactionState?.status) {
       case 'created':
         return setActiveItem(firstProcessIndex)
-      break;
       case 'pending':
         return setActiveItem(firstProcessIndex+1)
-      break;
       case 'failed':
         switch (transactionState.error?.code) {
           case 4001:
             return setActiveItem(state.activeStep)
-          break;
           default:
             return setActiveItem(firstProcessIndex+1)
-          break;
         }
-      break;
       case 'success':
         setActiveItem(firstProcessIndex+1)
         // If internal step is active return to step 0

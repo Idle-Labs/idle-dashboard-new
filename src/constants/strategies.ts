@@ -11,6 +11,13 @@ export type StrategyCarouselItem = {
   description: string
 }
 
+export type StrategyColumn = {
+  id?: any
+  title?: any
+  accessor: any
+  sortType?: 'alpha' | 'numeric'
+}
+
 export type StrategyProps = {
   bg: string
   type: string,
@@ -20,6 +27,7 @@ export type StrategyProps = {
   image: string
   description: string
   showProtocol: boolean
+  columns: StrategyColumn[]
   generalDataFields: GeneralDataField[]
   carouselItems?: StrategyCarouselItem[]
 }
@@ -49,6 +57,28 @@ export const strategies: Record<string, StrategyProps> = {
         image:`${strategiesCarouselFolder}BY-dynamic-rebalance.gif`,
         title:'strategies.best.carousel.dynamicRebalance.title',
         description:'strategies.best.carousel.dynamicRebalance.description'
+      }
+    ],
+    columns: [
+      {
+        id:'asset',
+        accessor:'name',
+        sortType:'alpha',
+        title:'defi.asset'
+      },
+      {
+        id:'tvl',
+        accessor:'tvlUsd',
+        sortType: 'numeric'
+      },
+      {
+        id:'apy',
+        accessor:'apy',
+        sortType: 'numeric'
+      },
+      {
+        id:'protocols',
+        accessor:'id'
       }
     ],
     generalDataFields:[
@@ -83,6 +113,32 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
+    columns: [
+      {
+        id:'protocol',
+        accessor:'id',
+        sortType:'alpha'
+      },
+      {
+        id:'asset',
+        accessor:'name',
+        sortType:'alpha'
+      },
+      {
+        id:'tvl',
+        accessor:'tvlUsd',
+        sortType: 'numeric'
+      },
+      {
+        id:'apy',
+        accessor:'apy',
+        sortType: 'numeric'
+      },
+      {
+        id:'protocols',
+        accessor:'id'
+      }
+    ],
     generalDataFields:[
       {
         field: 'protocol',
@@ -135,6 +191,32 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
+    columns: [
+      {
+        id:'protocol',
+        accessor:'id',
+        sortType:'alpha'
+      },
+      {
+        id:'asset',
+        accessor:'name',
+        sortType:'alpha'
+      },
+      {
+        id:'tvl',
+        accessor:'tvlUsd',
+        sortType: 'numeric'
+      },
+      {
+        id:'apy',
+        accessor:'apy',
+        sortType: 'numeric'
+      },
+      {
+        id:'protocols',
+        accessor:'id'
+      }
+    ],
     generalDataFields:[
       {
         field: 'protocol',

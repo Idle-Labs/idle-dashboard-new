@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { Multicall } from 'classes/'
-import { BNify, fixTokenDecimals } from 'helpers/'
+import { fixTokenDecimals } from 'helpers/'
 import { GenericContract } from 'contracts/GenericContract'
 import ChainlinkFeedRegistry from 'abis/chainlink/ChainlinkFeedRegistry.json'
 import ChainlinkAggregatorV3 from 'abis/chainlink/ChainlinkAggregatorV3.json'

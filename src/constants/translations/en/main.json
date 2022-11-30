@@ -27,6 +27,7 @@
     "withdrawal": "Withdrawal",
     "claim": "Claim",
     "enter": "Enter",
+    "manage": "Manage",
     "withdrawAndClaim": "Withdraw & Claim",
     "overview": "Overview",
     "getStarted": "Get Started",
@@ -182,6 +183,27 @@
         "cta": "Send yourself some crypto!"
       },
       "stakedInfo": "You cannot send or trade the amount staked"
+    },
+    "rewards": {
+      "strategy": {
+        "title": "%{strategy} rewards",
+        "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
+        "cta": "Explore vaults"
+      },
+      "staking": {
+        "title": "Staking Rewards",
+        "empty" : {
+          "body": "Stake your IDLE tokens to start accruing some IDLE rewards.",
+          "cta": "Go to Staking"
+        }
+      },
+      "gauges": {
+        "title": "Gauges Rewards",
+        "empty" : {
+          "body": "Stake your Protected Yield tokens to start earnings additional IDLE rewards.",
+          "cta": "Go to Gauges"
+        }
+      }
     },
     "performanceChart": {
       "empty": "The performances of your portfolio will appear here."
@@ -343,6 +365,7 @@
     "assetStaking": "%{assetName} Staking",
     "stake": "Stake",
     "protocol": "Protocol",
+    "protocols": "Protocols",
     "unstake": "Unstake",
     "stakeAsset": "Stake %{assetSymbol}",
     "unstakeAsset": "Unstake %{assetSymbol}",

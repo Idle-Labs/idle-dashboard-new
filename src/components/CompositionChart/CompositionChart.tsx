@@ -1,5 +1,5 @@
+import { useCallback } from 'react'
 import { abbreviateNumber } from 'helpers/'
-import { useMemo, useCallback } from 'react'
 import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
 import { useTheme, Box } from '@chakra-ui/react'
@@ -17,7 +17,7 @@ type CompositionChartArgs = {
 export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, strategies: enabledStrategies, type }) => {
   const theme = useTheme()
   const translate = useTranslate()
-  const { protocolToken, selectors: { selectAssetById } } = usePortfolioProvider()
+  const { protocolToken } = usePortfolioProvider()
 
   const {
     compositions,
@@ -74,7 +74,6 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
             </text>
           </>
         )
-      break;
       default:
       break;
     }

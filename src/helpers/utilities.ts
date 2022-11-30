@@ -210,3 +210,13 @@ export const getObjectPath = (object: any, path: string, fallback: any = null): 
   
   return getObjectPath(object[path.substr(0, dot)], path.substr(dot + 1), fallback);
 }
+
+export const sortNumeric = (a: any, b: any, field: any, c: any): number => {
+  const n1 = BNify(getObjectPath(a.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(a.original, field))
+  const n2 = BNify(getObjectPath(b.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(b.original, field))
+  return n1.gt(n2) ? -1 : 1
+}
+
+export const sortAlpha = (a: any, b: any, field: any): number => {
+  return getObjectPath(a.original, field).localeCompare(getObjectPath(b.original, field))
+}

@@ -61,10 +61,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return totalFunds.div(totalDeposited).minus(1).times(100)
   }, [totalDeposited, totalFunds])
 
-  const {
-    compositions,
-    colors,
-  }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions) })
+  const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions) })
 
   const toggleStrategy = useCallback((strategy: string) => {
     if (!selectedStrategies.includes(strategy)){
@@ -131,7 +128,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       </SkeletonText>
                     </HStack>
                   </HStack>
-                  <Translation display={['none', 'block']} component={Button} translation={`common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />
+                  <Translation display={['none', 'block']} component={Button} translation={strategyComposition.value>0 ? 'common.manage' : `common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />
                 </HStack>
               </Card.Dark>
             )
@@ -200,6 +197,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         >
           <Stack
             spacing={[10, 0]}
+            alignItems={'center'}
             direction={['column', 'row']}
             justifyContent={'space-between'}
           >
@@ -239,30 +237,21 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <VStack
           spacing={6}
           width={'100%'}
-          id={'best-yield-rewards'}
-          alignItems={'flex-start'}
-        >
-          <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
-          {vaultsRewards}
-        </VStack>
-
-        <VStack
-          spacing={6}
-          width={'100%'}
           id={'staking-rewards'}
           alignItems={'flex-start'}
         >
-          <Translation translation={'defi.empty.staking.title'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation translation={'dashboard.rewards.staking.title'} component={Text} textStyle={['heading', 'h3']} />
           <Card
             width={'100%'}
           >
             <Stack
               spacing={[10, 0]}
+              alignItems={'center'}
               direction={['column', 'row']}
               justifyContent={'space-between'}
             >
-              <Translation translation={'defi.empty.staking.body'} component={Text} textAlign={['center', 'left']} />
-              <Translation component={Button} translation={`defi.empty.staking.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+              <Translation translation={'dashboard.rewards.staking.empty.body'} component={Text} textAlign={['center', 'left']} />
+              <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
             </Stack>
           </Card>
         </VStack>
@@ -273,19 +262,30 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           id={'gauges-rewards'}
           alignItems={'flex-start'}
         >
-          <Translation translation={'defi.empty.gauges.title'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation translation={'dashboard.rewards.gauges.title'} component={Text} textStyle={['heading', 'h3']} />
           <Card
             width={'100%'}
           >
             <Stack
               spacing={[10, 0]}
+              alignItems={'center'}
               direction={['column', 'row']}
               justifyContent={'space-between'}
             >
-              <Translation translation={'defi.empty.gauges.body'} component={Text} textAlign={['center', 'left']} />
-              <Translation component={Button} translation={`defi.empty.gauges.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+              <Translation translation={'dashboard.rewards.gauges.empty.body'} component={Text} textAlign={['center', 'left']} />
+              <Translation component={Button} translation={`dashboard.rewards.gauges.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
             </Stack>
           </Card>
+        </VStack>
+
+        <VStack
+          spacing={6}
+          width={'100%'}
+          id={'best-yield-rewards'}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
+          {vaultsRewards}
         </VStack>
       </VStack>
     )
@@ -351,6 +351,13 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </Stack>
     )
   }, [account, screenSize, toggleStrategy, selectedStrategies])
+
+  const chartColor = useMemo(() => {
+    if (selectedStrategies.length===1){
+      return strategies[selectedStrategies[0]].color
+    }
+    return undefined
+  }, [selectedStrategies])
 
   return (
     <Box
@@ -432,11 +439,12 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             </Stack>
             <BalanceChart
               percentChange={0}
+              color={chartColor}
               assetIds={assetIds}
               timeframe={timeframe}
               isRainbowChart={false}
-              setPercentChange={() => {}}
               strategies={selectedStrategies}
+              setPercentChange={setPercentChange}
               margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
             />
           </Card.Dark>

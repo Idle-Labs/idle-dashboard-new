@@ -1,11 +1,11 @@
-import { strategies } from 'constants/'
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
-import { BNify, getObjectPath } from 'helpers/'
+import { sortNumeric, sortAlpha } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
+import React, { useMemo, useCallback } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -13,20 +13,9 @@ import { Asset, AssetId, VaultPosition } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { ContainerProps, Flex, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
-
-const sortNumeric = (a: any, b: any, field: any, c: any): number => {
-  const n1 = BNify(getObjectPath(a.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(a.original, field))
-  const n2 = BNify(getObjectPath(b.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(b.original, field))
-
-  return n1.gt(n2) ? -1 : 1
-}
-
-const sortAlpha = (a: any, b: any, field: any): number => {
-  return getObjectPath(a.original, field).localeCompare(getObjectPath(b.original, field))
-}
 
 type RowProps = Row<Asset>
 
@@ -110,6 +99,66 @@ const VaultCard: React.FC<VaultCardProps> = ({ assetId }) => {
   )
 }
 
+type TableFieldProps = {
+  row: RowProps
+  field: string
+  value: any
+}
+
+export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => {
+  const assetId = row.original.id
+  switch (field) {
+    case 'protocol':
+      return (
+        <SkeletonText noOfLines={2} isLoaded={!!value}>
+          <AssetProvider assetId={assetId}>
+            <Flex
+              width={'100%'}
+              alignItems={'center'}
+            >
+              <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
+              <AssetProvider.ProtocolName textStyle={'tableCell'} />
+            </Flex>
+          </AssetProvider>
+        </SkeletonText>
+      )
+    case 'asset':
+      return (
+        <AssetProvider assetId={assetId}>
+          <Flex
+            width={'100%'}
+            alignItems={'center'}
+          >
+            <AssetProvider.Icon size={'sm'} mr={2} />
+            <AssetProvider.Name textStyle={'tableCell'} />
+          </Flex>
+        </AssetProvider>
+      )
+    case 'tvl':
+      return (
+        <Skeleton isLoaded={!!value}>
+          <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+        </Skeleton>
+      )
+    case 'apy':
+      return (
+        <SkeletonText noOfLines={2} isLoaded={!!value}>
+          <Amount.Percentage value={value} textStyle={'tableCell'} />
+        </SkeletonText>
+      )
+    case 'protocols':
+      return (
+        <SkeletonText noOfLines={2} isLoaded={!!value}>
+          <AssetProvider assetId={assetId}>
+            <AssetProvider.Rewards size={'sm'} />
+          </AssetProvider>
+        </SkeletonText>
+      )
+    default:
+      return null
+  }
+}
+
 export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
@@ -123,8 +172,6 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     selectVaultsAssetsByType,
     selectVaultsAssetsWithBalance
   } } = usePortfolioProvider()
-  // const [ depositedAssetsData, setDepositedAssetsData ] = useState([])
-  // const [ availableAssetsData, setAvailableAssetsData ] = useState([])
 
   const isMobile = useMemo(() => screenSize==='sm', [screenSize])
 
@@ -136,95 +183,38 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return navigate(`${location?.pathname}/${row.original.id}`)
   }, [navigate, location])
 
+
+  const strategyColumns: Column<Asset>[] = useMemo(() => {
+    if (!strategy) return []
+    return strategies[strategy].columns.map( (column: StrategyColumn) => {
+      const { id, accessor, sortType } = column
+      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      return {
+        id,
+        accessor,
+        disableSortBy: !sortTypeFn,
+        defaultCanSort: !!sortTypeFn,
+        Header: translate(`defi.${id}`),
+        sortType: sortTypeFn ? (a: any, b: any, field: any, c: any) => sortTypeFn(a, b, accessor, c) : undefined,
+        Cell: ({ value, row }: { value: any; row: RowProps }) => {
+          return (
+            <TableField field={id} value={value} row={row} />
+          )
+        }
+      }
+    })
+  }, [strategy, translate])
+
+  // console.log('strategyColumns', strategyColumns)
+
   const depositedAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {
       Header: '#',
       accessor: 'id',
       display: 'none'
     },
+    ...strategyColumns,
     {
-      id: 'protocol',
-      accessor: 'id',
-      title: 'Protocol',
-      Header: translate('defi.protocol'),
-      display: strategy && strategies[strategy].showProtocol ? 'table-cell' : 'none',
-      Cell: ({ value }: { value: string | undefined }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <Flex
-                width={'100%'}
-                alignItems={'center'}
-              >
-                <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
-                <AssetProvider.ProtocolName textStyle={'tableCell'} />
-              </Flex>
-            </AssetProvider>
-          </SkeletonText>
-        )
-      },
-    },
-    {
-      id:'name',
-      accessor:'id',
-      Header:translate('defi.asset'),
-      Cell: ({ value }: { value: string | undefined }) => {
-        return (
-          <AssetProvider assetId={value}>
-            <Flex
-              width={'100%'}
-              alignItems={'center'}
-            >
-              <AssetProvider.Icon size={'sm'} mr={2} />
-              <AssetProvider.Name textStyle={'tableCell'} />
-            </Flex>
-          </AssetProvider>
-        )
-      },
-      sortType: sortAlpha
-    },
-    {
-      id:'tvlUsd',
-      accessor:'tvlUsd',
-      Header:translate('defi.pool'),
-      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
-        return (
-          <Skeleton isLoaded={!!value}>
-            <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
-          </Skeleton>
-        )
-      },
-      sortType: sortNumeric
-    },
-    {
-      // id:'apy',
-      accessor:'apr',
-      Header:translate('defi.apy'),
-      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <Amount.Percentage value={value} textStyle={'tableCell'} />
-          </SkeletonText>
-        )
-      },
-      sortType: sortNumeric
-    },
-    {
-      id:'rewards',
-      accessor:'id',
-      Header:translate('defi.rewards'),
-      Cell: ({ value, row }: { value: string | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <AssetProvider.Rewards size={'sm'} />
-            </AssetProvider>
-          </SkeletonText>
-        )
-      }
-    },
-    {
-      // id:'deposited',
       accessor:'balanceUsd',
       Header:translate('defi.balance'),
       Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
@@ -237,7 +227,6 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       sortType: sortNumeric
     },
     {
-      // id:'earnings',
       accessor:'vaultPosition',
       Header:translate('defi.earnings'),
       Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
@@ -266,7 +255,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       },
       sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage', c)
     },
-  ]), [translate, strategy])
+  ]), [translate, strategyColumns])
 
   const availableAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {
@@ -274,129 +263,8 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       accessor: 'id',
       display: 'none'
     },
-    {
-      id: 'protocol',
-      accessor: 'id',
-      title: 'Protocol',
-      Header: translate('defi.protocol'),
-      display: strategy && strategies[strategy].showProtocol ? 'table-cell' : 'none',
-      Cell: ({ value }: { value: string | undefined }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <Flex
-                width={'100%'}
-                alignItems={'center'}
-              >
-                <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
-                <AssetProvider.ProtocolName textStyle={'tableCell'} />
-              </Flex>
-            </AssetProvider>
-          </SkeletonText>
-        )
-      },
-    },
-    {
-      id:'name',
-      accessor:'id',
-      Header: translate('defi.asset'),
-      Cell: ({ value }: { value: string | undefined }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <Flex
-                width={'100%'}
-                alignItems={'center'}
-              >
-                <AssetProvider.Icon size={'sm'} mr={2} />
-                <AssetProvider.Name textStyle={'tableCell'} />
-              </Flex>
-            </AssetProvider>
-          </SkeletonText>
-        )
-      },
-      sortType: sortAlpha
-    },
-    {
-      id:'tvlUsd',
-      accessor:'tvlUsd',
-      Header: translate('defi.pool'),
-      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
-          </SkeletonText>
-        )
-      },
-      sortType: sortNumeric
-    },
-    /*
-    {
-      accessor: 'id',
-      canSort: false,
-      disableSortBy: true,
-      id: 'allocationChart',
-      defaultCanSort: false,
-      display: strategy === 'BY' ? 'table-cell' : 'none',
-      Header: translate('assets.assetDetails.generalData.allocation'),
-      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <AssetProvider.Allocation />
-            </AssetProvider>
-          </SkeletonText>
-        )
-      }
-    },
-    */
-    {
-      accessor:'apr',
-      Header:translate('defi.apy'),
-      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <Amount.Percentage value={value} textStyle={'tableCell'} />
-          </SkeletonText>
-        )
-      },
-      sortType: sortNumeric
-    },
-    {
-      id:'rewards',
-      accessor:'id',
-      Header:translate('defi.rewards'),
-      Cell: ({ value, row }: { value: string | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <AssetProvider.Rewards size={'sm'} />
-            </AssetProvider>
-          </SkeletonText>
-        )
-      }
-    },
-    /*
-    {
-      accessor: 'id',
-      canSort: false,
-      id: 'apyRatioChart',
-      disableSortBy: true,
-      defaultCanSort: false,
-      display: strategy !== 'BY' ? 'table-cell' : 'none',
-      Header: translate('assets.assetDetails.generalData.apyRatio'),
-      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <AssetProvider.ApyRatioChart />
-            </AssetProvider>
-          </SkeletonText>
-        )
-      }
-    },
-    */
-    {
+    ...strategyColumns
+    /*{
       accessor: 'id',
       canSort: false,
       id: 'aprLastWeek',
@@ -413,8 +281,8 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
           </SkeletonText>
         )
       }
-    },
-  ]), [translate, strategy])
+    },*/
+  ]), [strategyColumns])
 
   const depositedAssetsData = useMemo(() => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return []
@@ -426,19 +294,6 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     const vaultsAssets = selectVaultsAssetsByType(strategy)
     return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
   }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
-
-  // useEffect(() => {
-  //   if (!selectVaultsByType || !isPortfolioLoaded) return;
-  //   const vaultsAssets = selectVaultsAssetsByType(strategy)
-  //   const availableAssetsData = vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
-  //   setAvailableAssetsData(availableAssetsData)
-  // }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
-
-  // useEffect(() => {
-  //   if (!selectVaultsWithBalance || !isPortfolioLoaded) return;
-  //   const vaultsAssetsWithBalance = selectVaultsAssetsWithBalance(strategy)
-  //   setDepositedAssetsData(vaultsAssetsWithBalance)
-  // }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
 
   const depositedAssets = useMemo(() => {
     if (!depositedAssetsData.length) return null

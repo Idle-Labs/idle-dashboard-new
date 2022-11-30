@@ -12,11 +12,11 @@ import React, {
 import {
   // useMediaQuery,
   // useTheme,
-  Progress,
+  // Progress,
   VStack,
-  Button,
+  // Button,
   Flex,
-  Box
+  // Box
 } from "@chakra-ui/react";
 
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect";
@@ -25,9 +25,9 @@ import { motion, useAnimation, useMotionValue } from "framer-motion";
 
 const MotionFlex = motion(Flex);
 
-function percentage(x, y) {
-  return 100 / (y / x)
-}
+// function percentage(x, y) {
+//   return 100 / (y / x)
+// }
 
 const transitionProps = {
   stiffness: 400,
@@ -151,13 +151,13 @@ export const ChakraCarousel = ({
 };
 
 const Slider = ({
-  setTrackIsActive,
+  // setTrackIsActive,
   initSliderWidth,
-  setActiveItem,
-  activeItem,
-  constraint,
-  itemWidth,
-  positions,
+  // setActiveItem,
+  // activeItem,
+  // constraint,
+  // itemWidth,
+  // positions,
   children,
   gap
 }) => {
@@ -168,19 +168,19 @@ const Slider = ({
     initSliderWidth
   ]);
 
-  const handleFocus = () => setTrackIsActive(true);
+  // const handleFocus = () => setTrackIsActive(true);
 
-  const handleDecrementClick = () => {
-    setTrackIsActive(true);
-    !(activeItem === positions.length - positions.length) &&
-      setActiveItem((prev) => prev - 1);
-  }
+  // const handleDecrementClick = () => {
+  //   setTrackIsActive(true);
+  //   !(activeItem === positions.length - positions.length) &&
+  //     setActiveItem((prev) => prev - 1);
+  // }
 
-  const handleIncrementClick = () => {
-    setTrackIsActive(true);
-    !(activeItem === positions.length - constraint) &&
-      setActiveItem((prev) => prev + 1);
-  }
+  // const handleIncrementClick = () => {
+  //   setTrackIsActive(true);
+  //   !(activeItem === positions.length - constraint) &&
+  //     setActiveItem((prev) => prev + 1);
+  // }
 
   return (
     <Flex
@@ -280,7 +280,7 @@ const Track = ({
   const handleDragStart = () => setDragStartPosition(positions[activeItem]);
 
   const handleDragEnd = (_, info) => {
-    console.log(info);
+    // console.log(info);
     const distance = info.offset.x;
     const velocity = info.velocity.x * multiplier;
     const direction = velocity < 0 || distance < 0 ? 1 : -1;

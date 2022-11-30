@@ -4,7 +4,7 @@ import { useTranslate } from 'react-polyglot'
 import React, { useState, useEffect } from 'react'
 import { MdOutlineNotificationsNone } from 'react-icons/md'
 import { Scrollable } from 'components/Scrollable/Scrollable'
-import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+// import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { Menu, MenuGroup, MenuButton, MenuList, MenuItem, IconButton, Text, Flex } from '@chakra-ui/react'
 
 type NotificationType = {
