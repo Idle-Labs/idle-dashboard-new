@@ -75,26 +75,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                       >
                       {
                         menuItem.children.map( (menuChildItem: MenuItemType, index: number) => (
-                          <HStack
-                            spacing={2}
-                            alignItems={'center'}
+                          <MenuNavItem
                             key={`menuChildItem_${index}`}
-                          >
-                            <MenuNavItem
-                              {...menuChildItem}
-                            />
-                            {
-                              menuChildItem.color && (
-                                <Box
-                                  width={2}
-                                  height={2}
-                                  borderRadius={'50%'}
-                                  bg={menuChildItem.color}
-                                >
-                                </Box>
-                              )
-                            }
-                          </HStack>
+                            {...menuChildItem}
+                          />
                         ))
                       }
                       </VStack>
