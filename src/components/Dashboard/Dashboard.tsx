@@ -404,6 +404,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             <Stack
               mt={[6, 8]}
               mx={[6, 8]}
+              mb={[4, 0]}
               alignItems={'flex-start'}
               direction={['column', 'row']}
               justifyContent={['center', 'space-between']}
@@ -416,7 +417,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
                   <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
                   <HStack
-                    spacing={4}
+                    spacing={[2, 4]}
                     alignItems={'baseline'}
                   >
                     <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />

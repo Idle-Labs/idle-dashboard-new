@@ -4,8 +4,10 @@ import useLocalForge from 'hooks/useLocalForge'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { HistoryTimeframe } from 'constants/types'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -20,14 +22,18 @@ import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartDa
 import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
-import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch/*, StatArrow*/, SkeletonText } from '@chakra-ui/react'
+import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch/*, StatArrow*/, SkeletonText, Button } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
+  const { screenSize } = useThemeProvider()
   const { account, walletInitialized } = useWalletProvider()
+  const [ showDeposit, setShowDeposit ] = useState<boolean>(false)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
+
+  const isMobile = useMemo(() => screenSize==='sm', [screenSize])
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -67,19 +73,21 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return (
       <VStack
         spacing={1}
-        alignItems={'flex-start'}
+        width={['100%','auto']}
+        alignItems={['center','flex-start']}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} />
+          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
           <HStack
             spacing={3}
+            width={['100%','auto']}
             alignItems={'baseline'}
           >
             {
               userHasBalance ? (
-                useDollarConversion ? <AssetProvider.BalanceUsd textStyle={['heading', 'h2']} /> : <AssetProvider.Redeemable textStyle={['heading', 'h2']} suffix={` ${asset?.name}`} />
+                useDollarConversion ? <AssetProvider.BalanceUsd textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} /> : <AssetProvider.Redeemable textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} suffix={` ${asset?.name}`} />
               ) : (
-                <Amount.Percentage value={earningsPercentage} textStyle={['heading', 'h2']} />
+                <Amount.Percentage value={earningsPercentage} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
               )
             }
             <Stat>
@@ -114,9 +122,9 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     if (!asset || !userHasBalance) return null
     return (
       <SimpleGrid
-        spacing={14}
         width={'100%'}
         columns={[2, 4]}
+        spacing={[10, 14]}
         alignItems={'flex-start'}
       >
         <VStack
@@ -124,7 +132,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
-          <AssetProvider.DepositedUsd textStyle={['heading', 'h3']} />
+          <AssetProvider.DepositedUsd textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
@@ -136,7 +144,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.earnings'} textStyle={'titleSmall'} />
-          <AssetProvider.EarningsUsd textStyle={['heading', 'h3']} />
+          <AssetProvider.EarningsUsd textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.Earnings decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
@@ -148,7 +156,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
-          <AssetProvider.FeesUsd textStyle={['heading', 'h3']} />
+          <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
@@ -160,7 +168,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.realizedApy'} textStyle={'titleSmall'} />
-          <AssetProvider.RealizedApy textStyle={['heading', 'h3']} />
+          <AssetProvider.RealizedApy textStyle={'heading'} fontSize={'h3'} />
           <Text textStyle={'captionSmaller'}></Text>
         </VStack>
       </SimpleGrid>
@@ -185,7 +193,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         id={'vault-rewards'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={['heading', 'h3']} />
+        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
         <VaultRewards assetId={asset?.id} />
       </VStack>
     )
@@ -200,29 +208,24 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         width={'100%'}
       >
         <Flex
-          my={14}
+          my={[10, 14]}
           width={'100%'}
           id={'asset-top-header'}
           direction={['column', 'row']}
           justifyContent={['center', 'space-between']}
         >
           <Stack
-            spacing={10}
             width={'100%'}
+            spacing={[7, 10]}
             alignItems={'center'}
             justifyContent={'center'}
             direction={['column', 'row']}
           >
-            <Stack
-              direction={'row'}
-              alignItems={'center'}
-            >
-              <AssetProvider.Icon size={'sm'} />
-              <AssetProvider.Name textStyle={'h2'} />
-            </Stack>
+            <AssetLabel assetId={asset?.id} fontSize={'h2'} />
             <Stack
               flex={1}
               direction={'row'}
+              width={['100%', 'auto']}
               borderBottom={'1px solid'}
               borderColor={'divider'}
               justifyContent={'space-between'}
@@ -230,22 +233,28 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
               <Tabs
                 defaultIndex={0}
                 variant={'unstyled'}
+                width={['100%', 'auto']}
               >
                 <TabList>
-                  <Translation component={Tab} translation={'navBar.earn'} />
-                  <Translation component={Tab} translation={'navBar.stats'} />
+                  <Translation component={Tab} width={['50%', 'auto']} translation={'navBar.earn'} />
+                  <Translation component={Tab} width={['50%', 'auto']} translation={'navBar.stats'} />
                 </TabList>
               </Tabs>
-              <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />
+              {
+                !isMobile && (
+                  <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />
+                )
+              }
             </Stack>
           </Stack>
         </Flex>
         <HStack
-          spacing={10}
+          spacing={[0, 10]}
           alignItems={'space-between'}
         >
           <Stack
             flex={1}
+            mb={[14, 0]}
             spacing={10}
             width={['100%', 14/20]}
           >
@@ -282,7 +291,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   justifyContent={['center', 'space-between']}
                 >
                   {chartHeading}
-                  <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} />
+                  <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
                 </Stack>
                 <GenericChart
                   data={chartData}
@@ -291,6 +300,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   isRainbowChart={false}
                   assetIds={[params.asset]}
                   setPercentChange={() => {}}
+                  height={isMobile ? '300px' : '350px'}
                   margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
                   formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                 />
@@ -301,13 +311,44 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             <AssetGeneralData assetId={asset?.id} />
             {userHasBalance && strategyDescriptionCarousel}
             {vaultRewards}
+
+            {
+              isMobile && (
+                <Flex
+                  px={4}
+                  pb={2}
+                  left={0}
+                  bottom={0}
+                  width={'100%'}
+                  position={'fixed'}
+                >
+                  <Translation component={Button} translation={'common.deposit'} variant={'ctaFull'} onClick={() => setShowDeposit(true)} />
+                </Flex>
+              )
+            }
           </Stack>
           <VStack
-            spacing={6}
-            width={[0, '27em']}
+            left={0}
+            zIndex={99999}
+            spacing={[0, 6]}
+            id={'right-side'}
+            width={['100vw', '27em']}
+            height={['100vh', 'auto']}
+            position={['fixed', 'relative']}
+            top={[showDeposit ? 0 : '100vh', 0]}
+            bg={isMobile ? 'rgba(0, 0, 0, 0.5)' : undefined}
+            sx={isMobile ? {transition:'top 0.3s ease-in-out'} : {}}
           >
-            <OperativeComponent assetId={asset?.id} />
-            <TransactionList assetId={asset?.id} />
+            {
+              (!isMobile || showDeposit) && (
+                <OperativeComponent minHeight={isMobile ? '80vh' : undefined} position={['fixed', 'relative']} bottom={0} assetId={asset?.id} />
+              )
+            }
+            {
+              !isMobile && (
+                <TransactionList assetId={asset?.id} />
+              )
+            }
           </VStack>
         </HStack>
       </Box>

@@ -1,12 +1,12 @@
-import { HStack } from '@chakra-ui/react'
 import type { AssetId } from 'constants/types'
+import { HStack, TextProps } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type AssetLabelProps = {
   assetId: AssetId
-}
+} & TextProps
 
-export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId }) => {
+export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, ...textProps }) => {
   return (
     <AssetProvider
       wrapFlex={false}
@@ -17,7 +17,7 @@ export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId }) => {
         justifyContent={'flex-start'}
       >
         <AssetProvider.Icon size={'sm'} />
-        <AssetProvider.Name textStyle={['heading','h3']} />
+        <AssetProvider.Name textStyle={'heading'} fontSize={'h3'} {...textProps} />
       </HStack>
     </AssetProvider>
   )

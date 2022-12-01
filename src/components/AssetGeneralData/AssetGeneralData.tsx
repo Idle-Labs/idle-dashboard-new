@@ -25,6 +25,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
     >
       <Card.Dark>
         <SimpleGrid
+          spacing={[6, 0]}
           columns={[2, 5]}
         >
           {
@@ -32,9 +33,9 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
               return (
                 <VStack
                   spacing={2}
-                  key={`field_${generalData.field}`}
                   alignItems={'flex-start'}
                   justifyContent={'flex-start'}
+                  key={`field_${generalData.field}`}
                 >
                   <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
                   <AssetProvider.GeneralData field={generalData.field} />
@@ -48,6 +49,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
             <SimpleGrid
               pt={6}
               mt={6}
+              spacing={[6, 0]}
               columns={[2, 5]}
               borderTop={'1px solid'}
               borderTopColor={'divider'}
@@ -57,9 +59,9 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                   return (
                     <VStack
                       spacing={2}
-                      key={`field_${generalData.field}`}
                       alignItems={'flex-start'}
                       justifyContent={'flex-start'}
+                      key={`field_${generalData.field}`}
                     >
                       <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
                       <AssetProvider.GeneralData field={generalData.field} />

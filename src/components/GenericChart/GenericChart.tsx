@@ -7,6 +7,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 type GenericChartArgs = {
+  height?: string
   assetIds: AssetId[]
   accountId?: string
   data?: BalanceChartData
@@ -25,6 +26,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   timeframe,
   percentChange,
   isRainbowChart,
+  height = '350px',
   setPercentChange,
   formatFn = (n: any) => `$${abbreviateNumber(n)}`,
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
@@ -56,7 +58,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   }, [chartData])
 
   return (
-    <Box p={0} height={'350px'}>
+    <Box p={0} height={height}>
       <Graph
         color={color}
         data={chartData}

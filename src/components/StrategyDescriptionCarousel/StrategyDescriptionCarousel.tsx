@@ -4,7 +4,7 @@ import { StrategyCarouselItem, strategies } from 'constants/'
 import { Translation } from 'components/Translation/Translation'
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md'
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { useTheme, Button, Box, Progress, Flex, HStack, Image, VStack, Text } from '@chakra-ui/react'
+import { useTheme, Button, Box, Progress, Flex, Stack, HStack, Image, VStack, Text } from '@chakra-ui/react'
 import { usePausableChakraCarouselProvider, PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 
 type StrategyDescriptionCarouselArgs = {
@@ -55,7 +55,7 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
   return (
     <PausableChakraCarouselProvider delay={delay}>
       <VStack
-        spacing={4}
+        spacing={[3, 4]}
       >
         <Card.Dark
           p={0}
@@ -68,24 +68,27 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
             {
               carouselItems.map( (carouselItem: StrategyCarouselItem, index: number) => {
                 return (
-                  <HStack
-                    pr={4}
-                    spacing={4}
+                  <Stack
+                    pr={[0, 4]}
                     width={'100%'}
+                    spacing={4}
                     key={`carousel_${index}`}
-                    justifyContent={'space-between'}
+                    direction={['column', 'row']}
+                    justifyContent={['flex-start', 'space-between']}
                   >
-                    <Image src={`${carouselItem.image}`} width={'55%'} />
+                    <Image src={`${carouselItem.image}`} width={['100%','55%']} />
                     <VStack
+                      pb={[4, 0]}
+                      px={[6, 0]}
                       spacing={1}
-                      width={'50%'}
+                      width={['100%','50%']}
                       justifyContent={'center'}
                       alignItems={'flex-start'}
                     >
                       <Translation component={Text} translation={carouselItem.title} textStyle={'ctaStatic'} />
                       <Translation component={Text} translation={carouselItem.description} textStyle={'caption'} />
                     </VStack>
-                  </HStack>
+                  </Stack>
                 )
               })
             }

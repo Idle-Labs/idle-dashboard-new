@@ -321,7 +321,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'flex-start'}
         >
           {
-            depositedAssetsData.map( (asset: Asset) => asset.id && <VaultCard assetId={asset.id} />)
+            depositedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>
@@ -359,7 +359,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'flex-start'}
         >
           {
-            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard assetId={asset.id} />)
+            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>

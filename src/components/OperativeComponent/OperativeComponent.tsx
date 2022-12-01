@@ -1,7 +1,7 @@
-import { Card } from 'components/Card/Card'
 import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
+import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
@@ -1030,9 +1030,12 @@ const useOperativeComponent = () => useContext(OperativeComponentContext)
 
 type OperativeComponentArgs = {
   assetId?: AssetId
-}
+} & CardProps
 
-export const OperativeComponent: React.FC<OperativeComponentArgs> = ({ assetId }) => {
+export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
+  assetId,
+  ...cardProps
+}) => {
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
@@ -1153,6 +1156,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({ assetId }
           position={'relative'}
           alignItems={'flex-start'}
           id={'operative-component'}
+          {...cardProps}
         >
           {transationSpeedToggler}
           {
