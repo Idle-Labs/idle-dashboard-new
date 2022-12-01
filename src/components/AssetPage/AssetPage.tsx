@@ -3,11 +3,12 @@ import { Card } from 'components/Card/Card'
 import useLocalForge from 'hooks/useLocalForge'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
-import { HistoryTimeframe } from 'constants/types'
+import { MdKeyboardArrowLeft } from 'react-icons/md'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { HistoryTimeframe, BigNumber } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -22,13 +23,14 @@ import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartDa
 import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
-import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch/*, StatArrow*/, SkeletonText, Button } from '@chakra-ui/react'
+import { ContainerProps, Heading, Box, Flex, Stack, Text, Tabs, Tab, TabList, SimpleGrid, HStack, VStack, Stat, Switch/*, StatArrow*/, SkeletonText, Button, IconButton, IconButtonProps } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
   const { screenSize } = useThemeProvider()
   const { account, walletInitialized } = useWalletProvider()
   const [ showDeposit, setShowDeposit ] = useState<boolean>(false)
+  const [ showTransactions, setShowTransactions ] = useState<boolean>(false)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
@@ -38,6 +40,10 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
   }, [params])
+
+  const strategyColor = useMemo(() => {
+    return strategy && strategies[strategy].color
+  }, [strategy])
 
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(params.asset)
@@ -87,31 +93,33 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
               userHasBalance ? (
                 useDollarConversion ? <AssetProvider.BalanceUsd textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} /> : <AssetProvider.Redeemable textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} suffix={` ${asset?.name}`} />
               ) : (
-                <Amount.Percentage value={earningsPercentage} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
+                <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
               )
             }
-            <Stat>
-              <HStack spacing={2}>
-                {
-                  userHasBalance ? null/*(
-                    <AssetProvider.RealizedApy suffix={' APY'} textStyle={'caption'} />
-                  )*/ : apy.gt(0) && (
-                    <HStack
-                      spacing={1}
-                    >
-                      <Amount.Percentage value={apy} suffix={' APY'} textStyle={'caption'} />
-                    </HStack>
-                  )
-                }
-                {
-                  /*
-                  earningsPercentage && (
-                    <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                  )
-                  */
-                }
-              </HStack>
-            </Stat>
+            {
+              /*
+                <Stat>
+                  <HStack spacing={2}>
+                    {
+                      userHasBalance ? (
+                        <AssetProvider.RealizedApy suffix={' APY'} textStyle={'caption'} />
+                      ) : apy.gt(0) && (
+                        <HStack
+                          spacing={1}
+                        >
+                          <Amount.Percentage value={apy} suffix={' APY'} textStyle={'caption'} />
+                        </HStack>
+                      )
+                    }
+                    {
+                      earningsPercentage && (
+                        <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
+                      )
+                    }
+                  </HStack>
+                </Stat>
+              */
+            }
           </HStack>
         </SkeletonText>
       </VStack>
@@ -123,7 +131,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return (
       <SimpleGrid
         width={'100%'}
-        columns={[2, 4]}
+        columns={[2, 3]}
         spacing={[10, 14]}
         alignItems={'flex-start'}
       >
@@ -151,17 +159,21 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           </HStack>
         </VStack>
 
-        <VStack
-          spacing={2}
-          justifyContent={'center'}
-        >
-          <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
-          <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
-          <HStack spacing={1}>
-            <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
-            <AssetProvider.Name textStyle={'captionSmaller'} />
-          </HStack>
-        </VStack>
+        {
+          /*
+          <VStack
+            spacing={2}
+            justifyContent={'center'}
+          >
+            <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
+            <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
+            <HStack spacing={1}>
+              <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
+              <AssetProvider.Name textStyle={'captionSmaller'} />
+            </HStack>
+          </VStack>
+          */
+        }
 
         <VStack
           spacing={2}
@@ -180,13 +192,14 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     const strategyProps = strategies[strategy]
     if (!strategyProps?.carouselItems) return null
     return (
-      <StrategyDescriptionCarousel color={asset?.color} strategy={strategy} delay={10000} />
+      <StrategyDescriptionCarousel color={strategyColor} strategy={strategy} delay={10000} />
     )
-  }, [asset, strategy, walletInitialized, isPortfolioLoaded])
+  }, [strategy, strategyColor, walletInitialized, isPortfolioLoaded])
 
   const vaultRewards = useMemo(() => {
     if (!asset || isEmpty(asset.rewards)) return null
-    return (
+    const totalRewards = (Object.values(asset.rewards) as BigNumber[]).reduce( (totalRewards: BigNumber, amount: BigNumber) => totalRewards.plus(amount), BNify(0) )
+    return totalRewards.gt(0) ? (
       <VStack
         spacing={6}
         width={'100%'}
@@ -196,7 +209,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
         <VaultRewards assetId={asset?.id} />
       </VStack>
-    )
+    ) : null
   }, [asset])
 
   return (
@@ -254,7 +267,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         >
           <Stack
             flex={1}
-            mb={[14, 0]}
+            mb={[20, 0]}
             spacing={10}
             width={['100%', 14/20]}
           >
@@ -296,6 +309,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 <GenericChart
                   data={chartData}
                   percentChange={0}
+                  color={strategyColor}
                   timeframe={timeframe}
                   isRainbowChart={false}
                   assetIds={[params.asset]}
@@ -315,14 +329,15 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             {
               isMobile && (
                 <Flex
-                  px={4}
-                  pb={2}
+                  p={4}
                   left={0}
                   bottom={0}
+                  border={0}
                   width={'100%'}
+                  bg={'card.bgDark'}
                   position={'fixed'}
                 >
-                  <Translation component={Button} translation={'common.deposit'} variant={'ctaFull'} onClick={() => setShowDeposit(true)} />
+                  <Translation component={Button} translation={['common.start', 'common.deposit']} variant={'ctaFull'} onClick={() => setShowDeposit(true)} />
                 </Flex>
               )
             }
@@ -339,16 +354,60 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
             bg={isMobile ? 'rgba(0, 0, 0, 0.5)' : undefined}
             sx={isMobile ? {transition:'top 0.3s ease-in-out'} : {}}
           >
-            {
-              (!isMobile || showDeposit) && (
-                <OperativeComponent minHeight={isMobile ? '80vh' : undefined} position={['fixed', 'relative']} bottom={0} assetId={asset?.id} />
-              )
-            }
-            {
-              !isMobile && (
-                <TransactionList assetId={asset?.id} />
-              )
-            }
+            <VStack
+              bottom={0}
+              spacing={0}
+              width={'100%'}
+              height={['100vh', 'auto']}
+              position={['fixed', 'relative']}
+              top={[showDeposit ? 0 : '100vh', 0]}
+              sx={isMobile ? {transition:'top 0.3s ease-in-out'} : {}}
+            >
+              {
+                isMobile && (
+                  <HStack
+                    px={4}
+                    py={2}
+                    bg={'card.bg'}
+                    width={'100%'}
+                    borderBottom={'1px solid'}
+                    borderBottomColor={'divider'}
+                    justifyContent={'space-between'}
+                  >
+                    <Translation alignItems={'center'} display={'flex'} variant={'unstyled'} translation={'common.exit'} component={Button} leftIcon={<MdKeyboardArrowLeft size={24} />} onClick={() => setShowDeposit(false)} />
+                    <Translation alignItems={'center'} display={'flex'} variant={'unstyled'} translation={['common.show', 'navBar.transactions']} component={Button} onClick={() => setShowTransactions(true)} />
+                  </HStack>
+                )
+              }
+              <OperativeComponent flex={1} minHeight={isMobile ? 'auto' : '590px'} borderRadius={isMobile ? 0 : undefined} assetId={asset?.id} />
+            </VStack>
+            <VStack
+              bottom={0}
+              spacing={0}
+              width={'100%'}
+              height={['100vh', 'auto']}
+              position={['fixed', 'relative']}
+              top={[showTransactions ? 0 : '100vh', 0]}
+              sx={isMobile ? {transition:'top 0.3s ease-in-out'} : {}}
+            >
+              {
+                isMobile && (
+                  <HStack
+                    px={4}
+                    py={2}
+                    bg={'card.bg'}
+                    width={'100%'}
+                    borderBottom={'1px solid'}
+                    borderBottomColor={'divider'}
+                    justifyContent={'space-between'}
+                  >
+                    <Translation alignItems={'center'} display={'flex'} variant={'unstyled'} translation={'common.back'} component={Button} leftIcon={<MdKeyboardArrowLeft size={24} />} onClick={() => setShowTransactions(false)} />
+                    <Translation textStyle={'ctaStatic'} translation={'assets.assetDetails.assetHistory.transactionHistory'} component={Text} />
+                  </HStack>
+                )
+              }
+              <TransactionList assetId={asset?.id} />
+            </VStack>
           </VStack>
         </HStack>
       </Box>

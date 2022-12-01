@@ -404,18 +404,22 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           id={'footer'}
           alignItems={'flex-start'}
         >
-          <Card.Outline px={4} py={2}>
-            <HStack
-              spacing={1}
-            >
-              <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-              <AssetProvider
-                assetId={asset?.id}
+          {
+            /*
+            <Card.Outline px={4} py={2}>
+              <HStack
+                spacing={1}
               >
-                <AssetProvider.PerformanceFee textStyle={['captionSmaller', 'semiBold']} color={'primary'} />
-              </AssetProvider>
-            </HStack>
-          </Card.Outline>
+                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                <AssetProvider
+                  assetId={asset?.id}
+                >
+                  <AssetProvider.PerformanceFee textStyle={['captionSmaller', 'semiBold']} color={'primary'} />
+                </AssetProvider>
+              </HStack>
+            </Card.Outline>
+            */
+          }
           <EstimatedGasFees />
           {depositButton}
         </VStack>

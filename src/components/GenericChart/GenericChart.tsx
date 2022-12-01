@@ -7,15 +7,16 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 type GenericChartArgs = {
+  color?: string
   height?: string
-  assetIds: AssetId[]
   accountId?: string
+  assetIds: AssetId[]
+  formatFn?: Function
+  percentChange: number
+  isRainbowChart: boolean
   data?: BalanceChartData
   timeframe: HistoryTimeframe
-  percentChange: number
-  formatFn?: Function
   setPercentChange: (percentChange: number) => void
-  isRainbowChart: boolean
   margins?: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -28,6 +29,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   isRainbowChart,
   height = '350px',
   setPercentChange,
+  color = 'chart.stroke',
   formatFn = (n: any) => `$${abbreviateNumber(n)}`,
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
@@ -38,13 +40,13 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
-  const color = useMemo(() => {
-    const defaultColor = 'chart.stroke'
-    if (assets?.length === 1){
-      return assets[0]?.color || defaultColor
-    }
-    return defaultColor
-  }, [assets])
+  // const color = useMemo(() => {
+  //   const defaultColor = 'chart.stroke'
+  //   if (assets?.length === 1){
+  //     return assets[0]?.color || defaultColor
+  //   }
+  //   return defaultColor
+  // }, [assets])
 
   const chartData = useMemo((): BalanceChartData => {
     return data || {

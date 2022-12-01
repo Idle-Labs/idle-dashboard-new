@@ -105,13 +105,13 @@ export type VaultRewards = {
 
 export type VaultsRewards = Record<AssetId, VaultRewards>
 
-export type Transaction = EtherscanTransaction & {
+export type Transaction = {
   action: string,
   assetId: AssetId
-  idleAmount: BigNumber
   idlePrice: BigNumber
+  idleAmount: BigNumber
   underlyingAmount: BigNumber
-}
+} & EtherscanTransaction
 
 export type VaultPosition = {
   avgBuyPrice: BigNumber

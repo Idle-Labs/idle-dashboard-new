@@ -47,8 +47,11 @@ const VaultCard: React.FC<VaultCardProps> = ({ assetId }) => {
         spacing={1}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.rewards'} textStyle={'captionSmall'} />
-        <AssetProvider.Rewards iconMargin={-3} size={'sm'} />
+        <Translation translation={'defi.protocols'} textStyle={'captionSmall'} />
+        {/*<AssetProvider.Rewards iconMargin={-3} size={'sm'} />*/}
+        {/*<AssetProvider assetId={assetId}>*/}
+        <AssetProvider.Protocols iconMargin={-3} size={'sm'} />
+        {/*</AssetProvider>*/}
       </VStack>
     )
   }, [asset])
@@ -146,11 +149,19 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
           <Amount.Percentage value={value} textStyle={'tableCell'} />
         </SkeletonText>
       )
-    case 'protocols':
+    case 'rewards':
       return (
         <SkeletonText noOfLines={2} isLoaded={!!value}>
           <AssetProvider assetId={assetId}>
             <AssetProvider.Rewards size={'sm'} />
+          </AssetProvider>
+        </SkeletonText>
+      )
+    case 'protocols':
+      return (
+        <SkeletonText noOfLines={2} isLoaded={!!value}>
+          <AssetProvider assetId={assetId}>
+            <AssetProvider.Protocols size={'sm'} />
           </AssetProvider>
         </SkeletonText>
       )
@@ -204,8 +215,6 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       }
     })
   }, [strategy, translate])
-
-  // console.log('strategyColumns', strategyColumns)
 
   const depositedAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {

@@ -5,6 +5,8 @@ import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
 import { BNify, abbreviateNumber } from 'helpers/'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
+import { selectProtocol } from 'selectors/selectProtocol'
+import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -263,6 +265,55 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
   return (
     <Flex>
       {rewardTokens}
+    </Flex>
+  )
+}
+
+type ProtocolsProps = {
+ iconMargin?: number
+} & AvatarProps & BoxProps
+
+const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) => {
+  const { vault } = useAssetProvider();
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
+  
+  const protocols = useMemo(() => {
+    if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return children
+
+    const protocolIcons = vault.tokenConfig.protocols.reduce( (protocols: JSX.Element[], protocolConfig: IdleTokenProtocol, index: number) => {
+      const protocol = selectProtocol(protocolConfig.name)
+      if (!protocol) return protocols
+      protocols.push(
+        <Tooltip
+          hasArrow
+          placement={'top'}
+          key={`icon_${index}`}
+          label={protocol.label}
+        >
+          <Avatar
+            p={1}
+            bg={'white'}
+            src={protocol.icon}
+            icon={<BsQuestion size={24} />}
+            sx={{
+              "> img": {
+                'object-fit': 'contain'
+              }
+            }}
+            ml={protocols.length>0 ? iconMargin !== undefined ? iconMargin : -1 : 0}
+            {...props}
+          />
+        </Tooltip>
+      )
+      return protocols
+    }, [])
+
+    return protocolIcons.length ? protocolIcons : children
+  }, [children, vault, props, iconMargin])
+
+  return (
+    <Flex>
+      {protocols}
     </Flex>
   )
 }
@@ -621,6 +672,7 @@ AssetProvider.FeesUsd = FeesUsd
 AssetProvider.PoolUsd = PoolUsd
 AssetProvider.Earnings = Earnings
 AssetProvider.ApyRatio = ApyRatio
+AssetProvider.Protocols = Protocols
 AssetProvider.Deposited = Deposited
 AssetProvider.Redeemable = Redeemable
 AssetProvider.Allocation = Allocation

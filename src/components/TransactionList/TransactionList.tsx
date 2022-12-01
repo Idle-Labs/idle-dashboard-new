@@ -129,7 +129,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
           alignItems={'flex-start'}
           justifyContent={'flex-start'}
         >
-          <Translation component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
+          <Translation display={['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
           <Scrollable maxH={400}>
             {transactionsList}
           </Scrollable>

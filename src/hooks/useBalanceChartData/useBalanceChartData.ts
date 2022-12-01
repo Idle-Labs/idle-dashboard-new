@@ -96,9 +96,11 @@ export const useBalanceChartData: UseBalanceChartData = ({
         switch (transaction.action) {
           case 'deposit':
             balances.total = balances.total.plus(transaction.idleAmount)
+            // console.log('Deposit', dayjs(timestamp).format('YYYY-MM-DD'), asset.name, transaction.idleAmount.toString(), balances.total.toString())
           break;
           case 'redeem':
             balances.total = BigNumber.maximum(0, balances.total.minus(transaction.idleAmount))
+            // console.log('Redeem', dayjs(timestamp).format('YYYY-MM-DD'), asset.name, transaction.idleAmount.toString(), balances.total.toString())
           break;
           default:
           break;
@@ -164,7 +166,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
       // Multiply balance by vault price
       Object.keys(assetsBalances).forEach( (assetId: AssetId) => {
         const asset = assets.find( (asset: Asset) => asset.id === assetId )
-        const underlyingId: AssetId = asset?.underlyingId
+        const underlyingId: AssetId | undefined = asset?.underlyingId
 
         const vaultPriceInfo: HistoryData | null = selectAssetHistoricalPriceByTimestamp(assetId, timestamp) || prevVaultPriceInfo[assetId]
         // console.log('vaultPriceInfo', assetId, timestamp, vaultPriceInfo, assetsBalances[assetId])

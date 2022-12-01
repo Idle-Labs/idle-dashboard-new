@@ -83,10 +83,6 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     generalDataFields:[
       {
-        field: 'protocol',
-        label: 'assets.assetDetails.generalData.protocol'
-      },
-      {
         field:'pool',
         label:'assets.assetDetails.generalData.pool'
       },
@@ -97,6 +93,10 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field:'rewards',
         label:'assets.assetDetails.generalData.rewards'
+      },
+      {
+        field:'performanceFee',
+        label:'assets.assetDetails.generalData.performanceFee'
       },
       {
         field:'allocation',
@@ -135,7 +135,7 @@ export const strategies: Record<string, StrategyProps> = {
         sortType: 'numeric'
       },
       {
-        id:'protocols',
+        id:'rewards',
         accessor:'id'
       }
     ],
@@ -213,7 +213,7 @@ export const strategies: Record<string, StrategyProps> = {
         sortType: 'numeric'
       },
       {
-        id:'protocols',
+        id:'rewards',
         accessor:'id'
       }
     ],

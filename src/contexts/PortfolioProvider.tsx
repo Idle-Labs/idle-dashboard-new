@@ -348,29 +348,73 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!transactions || !transactions.length) return vaultsPositions
 
       let firstDepositTx: any = null
+      const vaultPrice = selectVaultPrice(assetId)
 
-      const depositedAmount = transactions.reduce( (depositedAmount: BigNumber, transaction: Transaction) => {
-        // console.log(assetId, transaction.action, transaction.hash, transaction.underlyingAmount.toString(), transaction.idlePrice.toString())
+      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber}, transaction: Transaction, index: number) => {
         switch (transaction.action) {
           case 'deposit':
-            if (!firstDepositTx) firstDepositTx = transaction
-            depositedAmount = depositedAmount.plus(transaction.underlyingAmount)
+            if (!firstDepositTx){
+              firstDepositTx = transaction
+            }
+            depositsInfo.depositedAmount = depositsInfo.depositedAmount.plus(transaction.underlyingAmount)
           break;
           case 'redeem':
-            depositedAmount = BigNumber.maximum(0, depositedAmount.minus(transaction.underlyingAmount))
-            if (depositedAmount.lte(0)) firstDepositTx = null
+            depositsInfo.depositedAmount = BigNumber.maximum(0, depositsInfo.depositedAmount.minus(transaction.underlyingAmount))
+            if (depositsInfo.depositedAmount.lte(0)){
+              firstDepositTx = null
+              depositsInfo.balancePeriods = []
+            }
           break;
           default:
           break;
         }
 
-        return depositedAmount
-      }, BNify(0))
+        // Update last period
+        if (depositsInfo.balancePeriods.length>0){
+          const lastBalancePeriod = depositsInfo.balancePeriods[depositsInfo.balancePeriods.length-1]
+
+          lastBalancePeriod.duration = +transaction.timeStamp-lastBalancePeriod.timeStamp
+          lastBalancePeriod.earningsPercentage = transaction.idlePrice.div(lastBalancePeriod.idlePrice).minus(1)
+          lastBalancePeriod.realizedApr = lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration)
+          lastBalancePeriod.realizedApy = apr2apy(lastBalancePeriod.realizedApr).times(100)
+
+          // console.log('Balance Period', assetId, dayjs(+lastBalancePeriod.timeStamp*1000).format('YYYY-MM-DD'), dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString())
+        }
+
+        // Add period
+        if (depositsInfo.depositedAmount.gt(0)){
+          // Update period for last transactions
+          const duration = index === transactions.length-1 ? Math.floor(Date.now()/1000)-(+transaction.timeStamp) : 0
+          const earningsPercentage = duration ? vaultPrice.div(transaction.idlePrice).minus(1) : BNify(0)
+          const realizedApr = duration ? earningsPercentage.times(31536000).div(duration) : BNify(0)
+          const realizedApy = realizedApr ? apr2apy(realizedApr).times(100) : BNify(0)
+
+          depositsInfo.balancePeriods.push({
+            duration,
+            realizedApy,
+            realizedApr,
+            earningsPercentage,
+            idlePrice: transaction.idlePrice,
+            timeStamp: +transaction.timeStamp,
+            balance: depositsInfo.depositedAmount
+          })
+
+          // if (index === transactions.length-1) {
+          //   console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString())
+          // }
+        }
+
+        return depositsInfo
+      }, {
+        balancePeriods:[],
+        depositedAmount: BNify(0)
+      })
+
+      const { balancePeriods, depositedAmount } = depositsInfo
 
       if (depositedAmount.lte(0)) return vaultsPositions
 
       let stakedAmount = BNify(0);
-      const vaultPrice = selectVaultPrice(assetId)
       let vaultBalance = selectAssetBalance(assetId)
       const assetPriceUsd = selectAssetPriceUsd(assetId)
       const depositDuration = firstDepositTx ? Math.round(Date.now() / 1000) - parseInt(firstDepositTx.timeStamp) : 0
@@ -385,10 +429,48 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Wait for balances to be loaded
       if (vaultBalance.lte(0)) return vaultsPositions
 
+      const realizedEarningsParams = balancePeriods.reduce( (realizedEarningsParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
+        const denom = balancePeriod.balance
+        realizedEarningsParams.weight = realizedEarningsParams.weight.plus(balancePeriod.earningsPercentage.times(denom))
+        realizedEarningsParams.sumAmount = realizedEarningsParams.sumAmount.plus(denom)
+        return realizedEarningsParams
+      }, {
+        weight: BNify(0),
+        sumAmount: BNify(0)
+      })
+
+      const realizedAprParams = balancePeriods.reduce( (realizedAprParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
+        const denom = balancePeriod.balance
+        realizedAprParams.weight = realizedAprParams.weight.plus(balancePeriod.realizedApr.times(denom))
+        realizedAprParams.sumAmount = realizedAprParams.sumAmount.plus(denom)
+        return realizedAprParams
+      }, {
+        weight: BNify(0),
+        sumAmount: BNify(0)
+      })
+
+      const realizedApyParams = balancePeriods.reduce( (realizedApyParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
+        const denom = balancePeriod.balance
+        realizedApyParams.weight = realizedApyParams.weight.plus(balancePeriod.realizedApy.times(denom))
+        realizedApyParams.sumAmount = realizedApyParams.sumAmount.plus(denom)
+        return realizedApyParams
+      }, {
+        weight: BNify(0),
+        sumAmount: BNify(0)
+      })
+
+      const realizedApr = realizedAprParams.weight.div(realizedAprParams.sumAmount)
+      // const realizedApy = realizedApyParams.weight.div(realizedApyParams.sumAmount)
+      const realizedApy = apr2apy(realizedApr).times(100)
+      const realizedEarnings = realizedEarningsParams.weight.div(realizedEarningsParams.sumAmount)
+
       const redeemableAmount = vaultBalance.times(vaultPrice)
       const earningsAmount = redeemableAmount.minus(depositedAmount)
       const earningsPercentage = redeemableAmount.div(depositedAmount).minus(1)
       const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
+
+      // const realizedApy2 = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
+      // console.log('realizedApy', assetId, realizedApyParams.weight.toString(), realizedApyParams.sumAmount.toString(), realizedEarnings.toString(), realizedApr.toString(), realizedApy.toString(), realizedApy2.toString())
 
       const underlying = {
         staked: stakedAmount,
@@ -404,8 +486,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         redeemable: redeemableAmount.times(assetPriceUsd)
       }
 
-      const realizedApy = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
-
       vaultsPositions[assetId] = {
         usd,
         underlying,
@@ -417,6 +497,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
 
       // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
+      // const realizedApy = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
 
       // console.log(assetId, 'vaultPrice', vaultPrice.toString(), 'depositedAmount', depositedAmount.toString(), 'vaultBalance', vaultBalance.toString(), 'redeemableAmount', redeemableAmount.toString(), 'earningsAmount', earningsAmount.toString(), 'earningsPercentage', earningsPercentage.toString(), 'avgBuyPrice', avgBuyPrice.toString())
 
@@ -1344,6 +1425,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Cleanup
     return () => {
       // dispatch({type: 'SET_APRS', payload: {}})
+      dispatch({type: 'SET_REWARDS', payload: {}})
       dispatch({type: 'SET_BALANCES', payload: {}})
       // dispatch({type: 'SET_PRICES_USD', payload: {}})
       // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
