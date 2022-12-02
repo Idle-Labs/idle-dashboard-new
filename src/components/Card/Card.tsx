@@ -1,10 +1,4 @@
-import React from 'react'
 import { Heading, Flex, Box, FlexProps, BoxProps, ThemingProps } from '@chakra-ui/react'
-
-// type HeadingProps = {
-//   title:string
-//   [x: string]: any
-// }
 
 export type CardProps = BoxProps & ThemingProps 
 

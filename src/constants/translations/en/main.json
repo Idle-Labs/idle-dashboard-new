@@ -187,6 +187,9 @@
       },
       "stakedInfo": "You cannot send or trade the amount staked"
     },
+    "strategies": {
+      "bestPerforming": "Best performing vaults"
+    },
     "rewards": {
       "strategy": {
         "title": "%{strategy} rewards",

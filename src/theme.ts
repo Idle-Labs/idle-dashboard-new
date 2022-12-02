@@ -212,6 +212,12 @@ export const theme = extendTheme({
       borderRadius:8,
       backgroundColor:'card.bg'
     },
+    cardHover:{
+      cursor:'pointer',
+      _hover:{
+        backgroundColor:'card.bgLight',
+      }
+    },
     cardOutline: {
       p:8,
       borderRadius:8,
@@ -247,6 +253,7 @@ export const theme = extendTheme({
       position:'absolute'
     },
     cardInteractive: {
+      cursor:'pointer',
       opacity: 0.4,
       _hover: {
         opacity: 1

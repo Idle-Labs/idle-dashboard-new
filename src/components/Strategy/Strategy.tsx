@@ -7,6 +7,7 @@ import { sortNumeric, sortAlpha } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
 import React, { useMemo, useCallback } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { VaultCard } from 'components/VaultCard/VaultCard'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Asset, AssetId, VaultPosition } from 'constants/types'
@@ -15,92 +16,9 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { ContainerProps, Flex, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { ContainerProps, Flex, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
-
-type VaultCardProps = {
-  assetId: AssetId
-}
-
-const VaultCard: React.FC<VaultCardProps> = ({ assetId }) => {
-  const navigate = useNavigate()
-  const { location } = useBrowserRouter()
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
-
-  const asset = useMemo(() => {
-    if (!selectAssetById) return
-    return selectAssetById(assetId)
-  }, [assetId, selectAssetById])
-
-  const depositedOrRewards = useMemo(() => {
-    return asset?.vaultPosition?.usd.deposited ? (
-      <VStack
-        spacing={1}
-        alignItems={'flex-start'}
-      >
-        <Translation translation={'defi.deposited'} textStyle={'captionSmall'} />
-        <AssetProvider.DepositedUsd textStyle={'tableCell'} />
-      </VStack>
-    ) : (
-      <VStack
-        spacing={1}
-        alignItems={'flex-start'}
-      >
-        <Translation translation={'defi.protocols'} textStyle={'captionSmall'} />
-        {/*<AssetProvider.Rewards iconMargin={-3} size={'sm'} />*/}
-        {/*<AssetProvider assetId={assetId}>*/}
-        <AssetProvider.Protocols iconMargin={-3} size={'sm'} />
-        {/*</AssetProvider>*/}
-      </VStack>
-    )
-  }, [asset])
-
-  return (
-    <AssetProvider
-      wrapFlex={false}
-      assetId={assetId}
-    >
-      <Card
-        p={4}
-        onClick={() => navigate(`${location?.pathname}/${assetId}`)}
-      >
-        <VStack
-          spacing={3}
-          alignItems={'flex-start'}
-        >
-          <AssetLabel assetId={assetId} />
-          <SimpleGrid
-            pt={3}
-            pl={4}
-            columns={3}
-            width={'100%'}
-            borderTop={'1px solid'}
-            borderTopColor={'divider'}
-          >
-            <VStack
-              spacing={1}
-              alignItems={'flex-start'}
-            >
-              <Translation translation={'defi.pool'} textStyle={'captionSmall'} />
-              <AssetProvider.PoolUsd textStyle={'tableCell'} />
-            </VStack>
-
-            <VStack
-              spacing={1}
-              alignItems={'flex-start'}
-            >
-              <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
-              <AssetProvider.Apy textStyle={'tableCell'} />
-            </VStack>
-
-            {depositedOrRewards}
-          </SimpleGrid>
-        </VStack>
-      </Card>
-    </AssetProvider>
-  )
-}
 
 type TableFieldProps = {
   row: RowProps
@@ -110,6 +28,15 @@ type TableFieldProps = {
 
 export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => {
   const assetId = row.original.id
+  return (
+    <SkeletonText noOfLines={2} isLoaded={!!value}>
+      <AssetProvider assetId={assetId}>
+        <AssetProvider.GeneralData field={field} size={'sm'} />
+      </AssetProvider>
+    </SkeletonText>
+  )
+
+  /*
   switch (field) {
     case 'protocol':
       return (
@@ -168,6 +95,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
     default:
       return null
   }
+  */
 }
 
 export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
@@ -348,7 +276,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     const initialState = {
       sortBy: [
         {
-          id: 'tvlUsd',
+          id: 'tvl',
           desc: false
         }
       ]

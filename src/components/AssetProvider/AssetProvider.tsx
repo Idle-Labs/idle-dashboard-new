@@ -127,6 +127,7 @@ const Icon: React.FC<IconProps> = ({
 
   const avatar = useMemo(() => (
     <Avatar
+      id={asset?.id}
       src={asset?.icon}
       icon={<BsQuestion size={24} />}
       {...props}
@@ -605,7 +606,6 @@ type GeneralDataProps = {
 } & TextProps & AvatarProps & BoxProps & ThemingProps
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
-
   switch (field) {
     case 'protocol':
       return (
@@ -614,30 +614,51 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
           alignItems={'center'}
         >
           <ProtocolIcon size={'xs'} />
-          <ProtocolName textStyle={'tableCell'} />
+          <ProtocolName textStyle={'tableCell'} {...props} />
         </HStack>
       )
+    case 'asset':
+      return (
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+        >
+          <Icon size={'sm'} />
+          <Name textStyle={'tableCell'} {...props} />
+        </HStack>
+      )
+    case 'tvl':
     case 'pool':
-      return (<PoolUsd textStyle={'tableCell'} />)
+      return (<PoolUsd textStyle={'tableCell'} {...props} />)
     case 'apy':
-      return (<Apy textStyle={'tableCell'} />)
+      return (<Apy textStyle={'tableCell'} {...props} />)
     // case 'apyRatio':
-    //   return (<ApyRatio textStyle={'tableCell'} />)  
+    //   return (<ApyRatio textStyle={'tableCell'} {...props} />)  
     case 'apyRatio':
       return <ApyRatioChart width={'100%'} />
     case 'apyBoost':
-      return (<ApyBoost textStyle={'tableCell'} />)  
+      return (<ApyBoost textStyle={'tableCell'} {...props} />)  
     case 'coverage':
-      return (<Coverage textStyle={'tableCell'} />)  
+      return (<Coverage textStyle={'tableCell'} {...props} />)  
     case 'performanceFee':
-      return (<PerformanceFee textStyle={'tableCell'} />)  
+      return (<PerformanceFee textStyle={'tableCell'} {...props} />)  
     case 'lastHarvest':
-      return (<LastHarvest textStyle={'tableCell'} />)  
+      return (<LastHarvest textStyle={'tableCell'} {...props} />)  
+    case 'balanceUsd':
+      return (<BalanceUsd textStyle={'tableCell'} {...props} />)  
+    case 'realizedApy':
+      return (<RealizedApy textStyle={'tableCell'} {...props} />)  
     case 'rewards':
       return (
-        <Rewards size={'xs'}>
-          <Text textStyle={'tableCell'}>-</Text>
+        <Rewards size={'xs'} {...props}>
+          <Text textStyle={'tableCell'} {...props}>-</Text>
         </Rewards>
+      )
+    case 'protocols':
+      return (
+        <Protocols size={'xs'} {...props}>
+          <Text textStyle={'tableCell'} {...props}>-</Text>
+        </Protocols>
       )
     case 'status':
       return (<Status size={'md'}></Status>)
@@ -646,13 +667,13 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
     case 'stakingRewards':
       return (
         <StakingRewards size={'xs'}>
-          <Text textStyle={'tableCell'}>-</Text>
+          <Text textStyle={'tableCell'} {...props}>-</Text>
         </StakingRewards>
       )
     case 'autoCompounding':
       return (
         <Autocompounding size={'xs'}>
-          <Text textStyle={'tableCell'}>-</Text>
+          <Text textStyle={'tableCell'} {...props}>-</Text>
         </Autocompounding>
       )
     default:
