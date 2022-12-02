@@ -136,9 +136,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       label: 'FRAX3CRV',
       token: 'FRAX3CRV',
       colors: {
-        hex: '#333',
-        rgb: [51, 51, 51],
-        hsl: ['0, 0%, 20%']
+        hex: '#ffffff',
+        rgb: [255, 255, 255],
+        hsl: ['0, 0%, 100%']
       },
       address: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B'
     },

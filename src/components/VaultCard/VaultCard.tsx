@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { AssetId } from 'constants/types'
-import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
+import { CardProps, Card } from 'components/Card/Card'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
@@ -21,9 +21,9 @@ type VaultCardField = {
 export type VaultCardInlineProps = {
   fields: VaultCardField[]
   onClick?: Function
-} & VaultCardProps
+} & VaultCardProps & CardProps
 
-const Inline = ({ assetId, fields, onClick }: VaultCardInlineProps) => {
+const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps) => {
   return (
     <AssetProvider
       wrapFlex={false}
@@ -33,7 +33,8 @@ const Inline = ({ assetId, fields, onClick }: VaultCardInlineProps) => {
         py={2}
         px={6}
         layerStyle={['card', 'cardHover']}
-        onClick={() => onClick && onClick()}
+        onClick={onClick}
+        {...cardProps}
       >
         <HStack
           width={'100%'}

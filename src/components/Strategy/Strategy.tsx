@@ -165,7 +165,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     },
     {
       accessor:'vaultPosition',
-      Header:translate('defi.earnings'),
+      Header:translate('defi.realizedApy'),
       Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -177,13 +177,11 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       direction={'row'}
                       alignItems={'center'}
                     >
-                      <StatArrow type={value.earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                      {/*<Amount prefix={'$ '} value={value.usd.earnings} textStyle={'tableCell'} />*/}
-                      <Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'tableCell'} />
+                      <StatArrow type={'increase'} />
+                      <Amount.Percentage value={value.realizedApy} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>
-                  {/*<Amount.Percentage value={value.earningsPercentage.times(100)} textStyle={'captionSmall'} />*/}
-                  <Amount prefix={'$ '} value={value.usd.earnings} textStyle={'captionSmall'} />
+                  {/*<Amount prefix={'$ '} value={value.usd.earnings} textStyle={'captionSmall'} />*/}
                 </Stat>
               )
             }

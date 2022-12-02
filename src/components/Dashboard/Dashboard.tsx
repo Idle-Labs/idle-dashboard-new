@@ -96,11 +96,11 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             const strategy = strategyComposition.extraData.strategy
             const strategyPath = getRoutePath('earn', [strategy.route])
             const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
-            const strategyAssets = selectVaultsAssetsByType(strategy.type)
-            const strategyPositions = Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
+            const strategyAssets = selectVaultsAssetsByType(strategy.type).filter( (asset: Asset) => asset.tvlUsd?.gt(100000) )
+            const strategyPositions = userHasFunds ? Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
               const asset = selectAssetById(assetId)
               return asset?.type === strategy.type
-            })
+            }) : []
             return (
               <Card.Dark
                 py={4}
@@ -119,10 +119,10 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     justifyContent={'space-between'}
                   >
                     <StrategyLabel strategy={strategy.type} fontSize={'h3'} />
-                    <Translation display={['none', 'block']} component={Button} translation={strategyComposition.value>0 ? 'common.manage' : `common.enter`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} py={2} height={'auto'} />
+                    <Translation display={['none', 'block']} component={Button} translation={strategyComposition.value>0 ? 'common.manage' : `common.enter`} onClick={() => navigate(`${strategyPath}`)} variant={'ctaPrimary'} py={2} height={'auto'} />
                   </HStack>
                   {
-                    userHasFunds ? (
+                    strategyPositions.length>0 ? (
                       <HStack
                         width={'100%'}
                         justifyContent={'space-between'}
@@ -174,9 +174,11 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       width={'100%'}
                     >
                     {
-                      userHasFunds ?
+                      strategyPositions.length>0 ?
                         strategyPositions.sort((a: AssetId, b: AssetId) => vaultsPositions[a].usd?.redeemable && vaultsPositions[b].usd?.redeemable ? (vaultsPositions[a].usd.redeemable.gt(vaultsPositions[b].usd.redeemable.toString()) ? -1 : 1) : 1 ).map( (assetId: AssetId) => (
                           <VaultCard.Inline
+                            bg={'card.bgLight'}
+                            key={`vault_${assetId}`}
                             onClick={() => navigate(`${strategyPath}/${assetId}`)}
                             assetId={assetId}
                             fields={[
@@ -193,8 +195,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                         ))
                       : strategyAssets.sort((a: Asset, b: Asset) => a.apy && b.apy ? (a.apy.gt(b.apy.toString()) ? -1 : 1) : 1 ).map( (asset: Asset) => (
                         <VaultCard.Inline
+                          key={`vault_${asset.id}`}
                           onClick={() => navigate(`${strategyPath}/${asset.id}`)}
-                          assetId={asset.id as string}
+                          assetId={`${asset.id}`}
                           fields={[
                             {
                               label:'defi.tvl',
@@ -256,7 +259,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       width={'170px'}
                       justifyContent={'flex-end'}
                     >
-                      <Translation component={Button} translation={`common.deposit`} onClick={() => navigate(strategyPath as string)} variant={'ctaPrimary'} px={10} py={2} />
+                      <Translation component={Button} translation={`common.deposit`} onClick={() => navigate(`${strategyPath}`)} variant={'ctaPrimary'} px={10} py={2} />
                     </Flex>
                   </Flex>
                 </Card.Dark>
@@ -283,7 +286,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             justifyContent={'space-between'}
           >
             <Translation translation={'defi.empty.rewards.body'} component={Text} textAlign={['center', 'left']} />
-            <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => navigate(strategyPath as string)} variant={['ctaPrimaryOutline']} px={10} py={2} />
+            <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
           </Stack>
         </Card>
       )

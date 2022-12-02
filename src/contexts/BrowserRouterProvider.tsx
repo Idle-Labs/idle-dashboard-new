@@ -2,7 +2,7 @@ import { Location } from 'history'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
 import { useLocation, useRoutes } from 'react-router-dom'
-import React, { useMemo, createContext, useContext } from 'react'
+import React, { useMemo, createContext, useContext, useEffect } from 'react'
 
 export type BrowserRouterContextProps = {
   location: Location | null
@@ -44,6 +44,10 @@ export function BrowserRouterProvider() {
     }),
     [location, params, query, match],
   )
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
 
   return (
     <BrowserRouterContext.Provider value={router}>

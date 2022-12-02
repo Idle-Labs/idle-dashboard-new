@@ -80,6 +80,7 @@ export const theme = extendTheme({
     ctaDisabled:'#555B67',
     link:'#6AE4FF',
     white:'#FFFFFF',
+    itemHover:'#404F6A',
     menu: {
       bg:'#202A3E',
       item: {
@@ -215,7 +216,7 @@ export const theme = extendTheme({
     cardHover:{
       cursor:'pointer',
       _hover:{
-        backgroundColor:'card.bgLight',
+        backgroundColor:'itemHover',
       }
     },
     cardOutline: {
