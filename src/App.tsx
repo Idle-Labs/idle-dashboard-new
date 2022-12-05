@@ -13,7 +13,6 @@ import { PortfolioProvider } from 'contexts/PortfolioProvider'
 import { BrowserRouterProvider } from 'contexts/BrowserRouterProvider'
 import { TransactionManagerProvider } from 'contexts/TransactionManagerProvider'
 
-
 export const App = () => (
   <HashRouter>
     <ChakraProvider theme={theme}>

@@ -105,16 +105,16 @@ export function WalletProvider({ children }: ProviderProps) {
       setWalletProvider(wallet.label)
         
       // console.log('setAccount', wallet.accounts[0])
-      // setAccount(wallet.accounts[0])
+      setAccount(wallet.accounts[0])
 
       // Set custom wallet
-      setAccount({
-        address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
-        ens: null,
-        balance: {
-          ETH: "0.838159899709204532"
-        }
-      })
+      // setAccount({
+      //   address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
+      //   ens: null,
+      //   balance: {
+      //     ETH: "0.838159899709204532"
+      //   }
+      // })
     }
   }, [wallet, connecting, setWalletProvider])
 
