@@ -10,10 +10,8 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import React, { useState, useMemo, useCallback } from 'react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { Translation } from 'components/Translation/Translation'
-import { Notification } from 'components/Header/NotificationList'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
@@ -24,7 +22,7 @@ import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardO
 import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center, Divider } from '@chakra-ui/react'
+import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { screenSize } = useThemeProvider()
@@ -228,7 +226,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </SimpleGrid>
     )
   }, [userHasFunds, account, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
-
+  
+  /*
   const products = useMemo(() => {
     return (
       <VStack
@@ -277,6 +276,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </VStack>
     )
   }, [navigate])
+  */
 
   const vaultsRewards = useMemo(() => {
     if (isEmpty(rewards)) {
@@ -402,13 +402,15 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       )
     }
 
+    return strategiesRewards
+    /*
     if (totalFunds?.gt(0)){
       return strategiesRewards
     } else {
       return products
     }
-    
-  }, [accountAndPortfolioLoaded, totalFunds, products, strategiesRewards])
+    */
+  }, [accountAndPortfolioLoaded, strategiesRewards])
 
   const strategiesFilters = useMemo(() => {
     if (!account || screenSize==='sm') return null
@@ -572,26 +574,30 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       
       {strategiesOverview}
 
-      <Stack
-        mt={20}
-        spacing={6}
-        width={'100%'}
-        direction={['column', 'row']}
-      >
-        <VStack
-          flex={1}
-          alignItems={'flex-start'}
-        >
-          {leftSideContent}
-        </VStack>
-        <VStack
-          spacing={6}
-          width={['100%', '500px']}
-          alignItems={'flex-start'}
-        >
-          <ProductUpdates />
-        </VStack>
-      </Stack>
+      {
+        account && (
+          <Stack
+            mt={20}
+            spacing={6}
+            width={'100%'}
+            direction={['column', 'row']}
+          >
+            <VStack
+              flex={1}
+              alignItems={'flex-start'}
+            >
+              {leftSideContent}
+            </VStack>
+            <VStack
+              spacing={6}
+              width={['100%', '500px']}
+              alignItems={'flex-start'}
+            >
+              <ProductUpdates />
+            </VStack>
+          </Stack>
+        )
+      }
 
       <JoinCommunity />
     </Box>

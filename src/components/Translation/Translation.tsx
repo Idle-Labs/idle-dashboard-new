@@ -1,4 +1,3 @@
-import Polyglot from 'node-polyglot'
 import { useTranslate } from 'react-polyglot'
 import { TextProps, HeadingProps, Text } from '@chakra-ui/react'
 
