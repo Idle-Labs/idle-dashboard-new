@@ -153,6 +153,22 @@
         "dynamicRebalance":{
           "title": "Algorithmic and dynamic rebalance",
           "description": "If the vault finds new opportunities, it performs a dynamic capital reallocation across different DeFi protocols to maximize yield for the liquidity present in the pool."
+        },
+        "depositsProtection":{
+          "title": "Built-in deposit protection",
+          "description": "Senior Tranches are protected by a novel risk tranching model: any loss of capital is first absorbed by Junior Tranches, letting Senior Tranches generate yield more safely."
+        },
+        "gauges":{
+          "title": "Participate in Gauges",
+          "description": "Users who provide liquidity get the possibility to receive ownership of the protocol with $IDLE tokens via Gauges. Check out the Stake tab to learn more about it."
+        },
+        "boostedYield":{
+          "title": "Boosted yield",
+          "description": "Junior Tranches allow advanced users to provide first-loss capital to specific strategies. Because they get the losses first, they also get a proportionally bigger share of the profits."
+        },
+        "defaultManagement":{
+          "title": "Automatic default management",
+          "description": "Default events are automatically mitigated: as soon as a vault signals a loss, funds get locked and redistributed to Senior first, and then to Junior Tranches."
         }
       }
     },
@@ -389,6 +405,7 @@
     "vaults": "Vaults",
     "earnings": "Earnings",
     "deposited": "Deposited",
+    "redeemable": "Redeemable",
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",
     "claimable": "Claimable",
@@ -643,7 +660,10 @@
       },
       "withdraw": {
         "confirm": "You are withdrawing",
-        "confirmed": "You have withdrawed"
+        "confirmed": "You have withdrawed",
+        "messages": {
+          "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC."
+        }
       }
     },
     "tooltip": {

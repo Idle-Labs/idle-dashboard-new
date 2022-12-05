@@ -76,7 +76,7 @@ export const NotificationList: React.FC = () => {
       {({ isOpen }) => (
         <>
           <MenuButton as={IconButton} variant={'cta'} aria-label={'Notifications'} icon={<MdOutlineNotificationsNone size={24} />} />
-          <MenuList zIndex={999}>
+          <MenuList zIndex={9999999}>
             <MenuGroup title={translate('navBar.notifications.title')}>
               <Scrollable maxH={240}>
               {

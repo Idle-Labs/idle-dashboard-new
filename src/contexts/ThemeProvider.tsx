@@ -1,6 +1,6 @@
 import type { ProviderProps } from './common/types'
+import React, { useContext, useState } from 'react'
 import { useTheme, useMediaQuery } from "@chakra-ui/react"
-import React, { useContext, useEffect, useState } from 'react'
 
 type ContextProps = {
   scrollLocked: boolean

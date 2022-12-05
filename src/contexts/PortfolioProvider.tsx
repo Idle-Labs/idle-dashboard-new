@@ -18,7 +18,7 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals } from 'helpers/'
+import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
@@ -311,7 +311,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
     }
 
-    console.log('getUserTransactions', startBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
+    // console.log('getUserTransactions', startBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
 
     return Array.from(dataToCache.values()) as EtherscanTransaction[]
   }, [account?.address, explorer, chainId, cacheProvider])
@@ -332,15 +332,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const etherscanTransactions = await getUserTransactions(startBlock)
     // console.log('etherscanTransactions', endpoint, etherscanTransactions)
 
-    const vaultsTransactions: Record<string, Transaction[]> = await vaults.reduce( async (txsPromise: Promise<Record<string, Transaction[]>>, vault: Vault): Promise<Record<string, Transaction[]>> => {
-      const txs = await txsPromise
-      if (!("getTransactions" in vault)) return txs
-      const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
-      return {
-        ...txs,
-        [vault.id]: vaultTransactions
-      }
-    }, Promise.resolve({}))
+    const vaultsTransactions: Record<string, Transaction[]> = await asyncReduce<Vault, Record<string, Transaction[]>>(
+      vaults,
+      async (vault: Vault) => {
+        if (!("getTransactions" in vault)) return {}
+        const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
+        return {
+          [vault.id]: vaultTransactions
+        }
+      },
+      (acc, value) => ({...acc, ...value}),
+      {}
+    )
+    // console.log('vaultsTransactions', vaultsTransactions)
 
     const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: AssetId) => {
       const transactions = vaultsTransactions[assetId]
@@ -375,10 +379,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
           lastBalancePeriod.duration = +transaction.timeStamp-lastBalancePeriod.timeStamp
           lastBalancePeriod.earningsPercentage = transaction.idlePrice.div(lastBalancePeriod.idlePrice).minus(1)
-          lastBalancePeriod.realizedApr = lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration)
+          lastBalancePeriod.realizedApr = BigNumber.maximum(0, lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration))
           lastBalancePeriod.realizedApy = apr2apy(lastBalancePeriod.realizedApr).times(100)
 
-          // console.log('Balance Period', assetId, dayjs(+lastBalancePeriod.timeStamp*1000).format('YYYY-MM-DD'), dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString())
+          // console.log('Balance Period', assetId, dayjs(+lastBalancePeriod.timeStamp*1000).format('YYYY-MM-DD'), dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.duration, lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString())
         }
 
         // Add period
@@ -386,7 +390,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           // Update period for last transactions
           const duration = index === transactions.length-1 ? Math.floor(Date.now()/1000)-(+transaction.timeStamp) : 0
           const earningsPercentage = duration ? vaultPrice.div(transaction.idlePrice).minus(1) : BNify(0)
-          const realizedApr = duration ? earningsPercentage.times(31536000).div(duration) : BNify(0)
+          const realizedApr = duration ? BigNumber.maximum(0, earningsPercentage.times(31536000).div(duration)) : BNify(0)
           const realizedApy = realizedApr ? apr2apy(realizedApr).times(100) : BNify(0)
 
           depositsInfo.balancePeriods.push({
@@ -399,9 +403,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
             balance: depositsInfo.depositedAmount
           })
 
-          // if (index === transactions.length-1) {
-          //   console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString())
-          // }
+          if (index === transactions.length-1) {
+            // console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), duration, transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString())
+          }
         }
 
         return depositsInfo
@@ -1246,7 +1250,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const startTimestamp = Date.now()
 
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
-      console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
+      // console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
       if (!historicalPricesUsd) return
 
       // Merge new with stored prices
@@ -1285,7 +1289,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         historicalPricesUsd: mergedHistoricalPricesUsd
       })
 
-      console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, mergedHistoricalPricesUsd)
+      // console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, mergedHistoricalPricesUsd)
 
       dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: mergedHistoricalPricesUsd})
     })()
@@ -1440,7 +1444,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     if (!account?.address || !state.isPortfolioLoaded || !walletInitialized || connecting) return
 
-    console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
+    // console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
 
     ;(async () => {
       const results = await getVaultsPositions(state.vaults)

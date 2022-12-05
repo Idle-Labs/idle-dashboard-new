@@ -39,7 +39,7 @@ export interface Pool {
   address?: string
 }
 
-interface Messages {
+export interface VaultMessages {
   withdraw?: string
   buyInstructions?: string
 }
@@ -87,7 +87,7 @@ export interface TrancheConfig {
   Pool?: Pool
   Strategy: Strategy
   description?: string
-  messages?: Messages
+  messages?: VaultMessages
   Tranches: Record<string, Tranche>
 }
 
@@ -318,7 +318,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         },
         messages:{
           // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
-          withdraw:'By withdrawing you will receive an NFT representing your redeemed funds, then you need to claim your funds directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a>'
+          withdraw:'trade.actions.withdraw.messages.maticNFT'
         },
         Tranches: {
           AA:{

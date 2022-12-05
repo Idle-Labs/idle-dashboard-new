@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { BNify } from 'helpers/'
 import { useTranslate } from 'react-polyglot'
+import type { Asset, AssetId, Balances } from 'constants/types'
 import { strategies, StrategyProps } from 'constants/strategies'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import type { Asset, AssetId, Balances, BigNumber } from 'constants/types'
-import type { DonutChartKey, DonutChartData, DonutChartColors } from 'components/DonutChart/DonutChart'
+import type { DonutChartData, DonutChartColors } from 'components/DonutChart/DonutChart'
 
 type UseCompositionChartDataArgs = {
   assetIds: AssetId[]

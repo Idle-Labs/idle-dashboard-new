@@ -9,7 +9,7 @@ import type { Transaction, TransactionReceipt } from 'web3-core'
 import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { BNify, estimateGasLimit, makeEtherscanApiRequest, fixTokenDecimals } from 'helpers/'
+import { BNify, estimateGasLimit, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
   FastGasPrice: string
@@ -361,16 +361,20 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice-1).toString()
         }
 
-        const estimatedTimes = await (Object.keys(gasPrices) as Array<TransactionSpeed> ).reduce( async (estimatedTimesPromise: Promise<GasPrices>, transactionSpeed: TransactionSpeed): Promise<GasPrices> => {
-          const estimatedTimes = await estimatedTimesPromise
-          const gasPrice = gasPrices[transactionSpeed]
-          const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? 15 : await getEstimatedTime(gasPrice)
-
-          return {
-            ...estimatedTimes,
-            [transactionSpeed]: estimatedTime
-          }
-        }, Promise.resolve({} as GasPrices))
+        const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
+        const defaultEstimatedTimes = Object.keys(gasPrices).reduce( (gasPrices: Record<string, string>, transactionSpeed) => ({ ...gasPrices, [transactionSpeed]: '60' }), {}) as GasPrices
+        const estimatedTimes = await asyncReduce<TransactionSpeed, GasPrices>(
+          transactionSpeeds,
+          async (transactionSpeed: TransactionSpeed): Promise<any> => {
+            const gasPrice = gasPrices[transactionSpeed]
+            const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? '15' : await getEstimatedTime(gasPrice)
+            return {
+              [transactionSpeed]: estimatedTime
+            }
+          },
+          (acc, val) => ({...acc, ...val}),
+          defaultEstimatedTimes
+        )
 
         // console.log('gasPrices', gasPrices)
         // console.log('estimatedTimes', estimatedTimes)

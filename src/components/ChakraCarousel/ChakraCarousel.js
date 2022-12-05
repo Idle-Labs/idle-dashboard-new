@@ -379,7 +379,7 @@ const Track = ({
 
   return (
     <>
-      {itemWidth && (
+      {itemWidth ? (
         <VStack ref={node} spacing={5} alignItems="stretch">
           <MotionFlex
             flex={1}
@@ -393,7 +393,7 @@ const Track = ({
             {children}
           </MotionFlex>
         </VStack>
-      )}
+      ) : null}
     </>
   );
 };

@@ -34,7 +34,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { isVaultsPositionsLoaded, vaultsPositions, rewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, rewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
 
   const accountAndPortfolioLoaded = useMemo(() => {
     return !walletInitialized || (account && !isVaultsPositionsLoaded)
@@ -167,50 +167,57 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     )
                   }
                   <Scrollable
-                    maxHeight={'160px'}
+                    minH={40}
+                    maxH={40}
                   >
                     <VStack
                       spacing={2}
                       width={'100%'}
                     >
-                    {
-                      strategyPositions.length>0 ?
-                        strategyPositions.sort((a: AssetId, b: AssetId) => vaultsPositions[a].usd?.redeemable && vaultsPositions[b].usd?.redeemable ? (vaultsPositions[a].usd.redeemable.gt(vaultsPositions[b].usd.redeemable.toString()) ? -1 : 1) : 1 ).map( (assetId: AssetId) => (
+                      {
+                        !isPortfolioLoaded || (account && !isVaultsPositionsLoaded) ? (
+                          <>
+                            <Skeleton width={'100%'} height={10} />
+                            <Skeleton width={'100%'} height={10} />
+                            <Skeleton width={'100%'} height={10} />
+                          </>
+                        ) : strategyPositions.length>0 ?
+                          strategyPositions.sort((a: AssetId, b: AssetId) => vaultsPositions[a].usd?.redeemable && vaultsPositions[b].usd?.redeemable ? (vaultsPositions[a].usd.redeemable.gt(vaultsPositions[b].usd.redeemable.toString()) ? -1 : 1) : 1 ).map( (assetId: AssetId) => (
+                            <VaultCard.Inline
+                              bg={'card.bgLight'}
+                              key={`vault_${assetId}`}
+                              onClick={() => navigate(`${strategyPath}/${assetId}`)}
+                              assetId={assetId}
+                              fields={[
+                                {
+                                  label:'defi.balance',
+                                  field:'balanceUsd'
+                                },
+                                {
+                                  label:'defi.apy',
+                                  field:'realizedApy'
+                                }
+                              ]}
+                            />
+                          ))
+                        : strategyAssets.sort((a: Asset, b: Asset) => a.apy && b.apy ? (a.apy.gt(b.apy.toString()) ? -1 : 1) : 1 ).map( (asset: Asset) => (
                           <VaultCard.Inline
-                            bg={'card.bgLight'}
-                            key={`vault_${assetId}`}
-                            onClick={() => navigate(`${strategyPath}/${assetId}`)}
-                            assetId={assetId}
+                            key={`vault_${asset.id}`}
+                            onClick={() => navigate(`${strategyPath}/${asset.id}`)}
+                            assetId={`${asset.id}`}
                             fields={[
                               {
-                                label:'defi.balance',
-                                field:'balanceUsd'
+                                label:'defi.tvl',
+                                field:'tvl'
                               },
                               {
                                 label:'defi.apy',
-                                field:'realizedApy'
+                                field:'apy'
                               }
                             ]}
                           />
                         ))
-                      : strategyAssets.sort((a: Asset, b: Asset) => a.apy && b.apy ? (a.apy.gt(b.apy.toString()) ? -1 : 1) : 1 ).map( (asset: Asset) => (
-                        <VaultCard.Inline
-                          key={`vault_${asset.id}`}
-                          onClick={() => navigate(`${strategyPath}/${asset.id}`)}
-                          assetId={`${asset.id}`}
-                          fields={[
-                            {
-                              label:'defi.tvl',
-                              field:'tvl'
-                            },
-                            {
-                              label:'defi.apy',
-                              field:'apy'
-                            }
-                          ]}
-                        />
-                      ))
-                    }
+                      }
                     </VStack>
                   </Scrollable>
                 </VStack>
@@ -220,7 +227,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </SimpleGrid>
     )
-  }, [userHasFunds, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
+  }, [userHasFunds, account, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
 
   const products = useMemo(() => {
     return (

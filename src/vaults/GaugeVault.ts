@@ -1,10 +1,10 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
-import { selectUnderlyingToken } from '../selectors'
-import { TrancheVault } from '../vaults/TrancheVault'
-import { GenericContract } from '../contracts/GenericContract'
-import { BNify, fixTokenDecimals, asyncForEach } from 'helpers/'
-import { GenericContractsHelper } from '../classes/GenericContractsHelper'
+import { TrancheVault } from 'vaults/TrancheVault'
+import { selectUnderlyingToken } from 'selectors/'
+import { GenericContract } from 'contracts/GenericContract'
+import { BNify, fixTokenDecimals, asyncReduce } from 'helpers/'
+import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
 
 export class GaugeVault {
@@ -61,68 +61,69 @@ export class GaugeVault {
       return transactions
     },{})
 
-    const transactions = await Object.keys(transactionsByHash).reduce( async (transactionsPromise, hash: string): Promise<Transaction[]> => {
+    const transactions: Transaction[] = await asyncReduce<Transaction[], Transaction[]>(
+      (Object.values(transactionsByHash) as Transaction[][]),
+      async (internalTxs: Transaction[]) => {
+        const transactions = []
 
-      const transactions = await transactionsPromise
+        for (const tx of internalTxs) {
+          // Check for right token
+          const isRightToken = internalTxs.length > 1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase()).length > 0;
 
-      const internalTxs = transactionsByHash[hash]
+          const isDepositInternalTx = isRightToken && internalTxs.find(iTx => iTx.from.toLowerCase() === account.toLowerCase() && (iTx.to.toLowerCase() === this.id));
+          const isRedeemInternalTx = isRightToken && internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === this.id).length && iTx.to.toLowerCase() === account.toLowerCase());
 
-      await asyncForEach(internalTxs, async (tx: EtherscanTransaction) => {
+          const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
+          const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
 
-        // Check for right token
-        const isRightToken = internalTxs.length > 1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase()).length > 0;
+          const isDepositTx = isRightToken && tx.from.toLowerCase() === account.toLowerCase() && (tx.to.toLowerCase() === this.id);
+          const isRedeemTx = isRightToken && !isDepositInternalTx && tx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.id).length && tx.to.toLowerCase() === account.toLowerCase();
 
-        const isDepositInternalTx = isRightToken && internalTxs.find(iTx => iTx.from.toLowerCase() === account.toLowerCase() && (iTx.to.toLowerCase() === this.id));
-        const isRedeemInternalTx = isRightToken && internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === this.id).length && iTx.to.toLowerCase() === account.toLowerCase());
+          const isSwapOutTx = !isSendTransferTx && !isRedeemInternalTx && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
+          const isSwapTx = !isReceiveTransferTx && !isDepositInternalTx && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
 
-        const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
-        const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
+          // Get action by positive condition
+          const actions: Record<string, boolean> = {
+            deposit: !!(isReceiveTransferTx || isDepositTx || isSwapTx),
+            redeem: !!(isSendTransferTx || isRedeemTx || isSwapOutTx)
+          }
 
-        const isDepositTx = isRightToken && tx.from.toLowerCase() === account.toLowerCase() && (tx.to.toLowerCase() === this.id);
-        const isRedeemTx = isRightToken && !isDepositInternalTx && tx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.id).length && tx.to.toLowerCase() === account.toLowerCase();
+          const action = Object.keys(actions).find( (action: string) => !!actions[action] )
 
-        const isSwapOutTx = !isSendTransferTx && !isRedeemInternalTx && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
-        const isSwapTx = !isReceiveTransferTx && !isDepositInternalTx && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
+          if (action) {
 
-        // Get action by positive condition
-        const actions: Record<string, boolean> = {
-          deposit: !!(isReceiveTransferTx || isDepositTx || isSwapTx),
-          redeem: !!(isSendTransferTx || isRedeemTx || isSwapOutTx)
+            // Get idle token tx and underlying token tx
+            const idleTokenToAddress = action === 'redeem' ? ZERO_ADDRESS : account
+            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase() )
+            const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
+            
+            const underlyingTokenTx = internalTxs.find( iTx => {
+              const underlyingTokenDirectionAddress = action === 'redeem' ? iTx.to : iTx.from
+              const underlyingAmount = fixTokenDecimals(iTx.value, this.underlyingToken?.decimals)
+              return iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && underlyingTokenDirectionAddress.toLowerCase() === account.toLowerCase() && underlyingAmount.gte(idleAmount)
+            })
+
+            const underlyingAmount = underlyingTokenTx ? fixTokenDecimals(underlyingTokenTx.value, this.underlyingToken?.decimals) : BNify(0)
+            const idlePrice = underlyingAmount?.gt(0) ? underlyingAmount.div(idleAmount) : BNify(0)
+
+            // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString())
+
+            transactions.push({
+              ...tx,
+              action,
+              idlePrice,
+              idleAmount,
+              assetId:this.id,
+              underlyingAmount
+            })
+          }
         }
 
-        const action = Object.keys(actions).find( (action: string) => !!actions[action] )
-
-        if (action) {
-
-          // Get idle token tx and underlying token tx
-          const idleTokenToAddress = action === 'redeem' ? ZERO_ADDRESS : account
-          const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase() )
-          const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
-          
-          const underlyingTokenTx = internalTxs.find( iTx => {
-            const underlyingTokenDirectionAddress = action === 'redeem' ? iTx.to : iTx.from
-            const underlyingAmount = fixTokenDecimals(iTx.value, this.underlyingToken?.decimals)
-            return iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && underlyingTokenDirectionAddress.toLowerCase() === account.toLowerCase() && underlyingAmount.gte(idleAmount)
-          })
-
-          const underlyingAmount = underlyingTokenTx ? fixTokenDecimals(underlyingTokenTx.value, this.underlyingToken?.decimals) : BNify(0)
-          const idlePrice = underlyingAmount?.gt(0) ? underlyingAmount.div(idleAmount) : BNify(0)
-
-          // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString())
-
-          transactions.push({
-            ...tx,
-            action,
-            idlePrice,
-            idleAmount,
-            assetId:this.id,
-            underlyingAmount
-          })
-        }
-      })
-
-      return transactions;
-    }, Promise.resolve([] as Transaction[]))
+        return transactions
+      },
+      (acc, val) => ([...acc, ...val]),
+      []
+    )
 
     return transactions
   }

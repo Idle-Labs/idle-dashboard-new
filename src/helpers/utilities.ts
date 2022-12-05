@@ -166,9 +166,21 @@ export const catchPromise = async (promise: Promise<any>) => {
     .catch(err => null)
 }
 
-export const asyncForEach = async (array: any[], callback: Function, async: boolean = true) => {
+export const asyncReduce = async <T, U>(
+  array: T[],
+  callback: (currentValue: T, currentIndex: number) => Promise<any>,
+  aggregateFunction: (acc: U, currentValue: U) => U,
+  initialValue: U,
+): Promise<U> => {
+  const promises = array.map(async (currentValue, currentIndex) => {
+    return callback(currentValue, currentIndex)
+  });
+  return Promise.all(promises).then(results => results.reduce((accumulator, currentValue) => aggregateFunction(accumulator, currentValue), initialValue))
+}
+
+export const asyncForEach = async (array: any[], callback: Function, asyncEnabled: boolean = true) => {
   let output = [];
-  if (async) {
+  if (asyncEnabled) {
     output = await Promise.all(array.map((c, index) => {
       return callback(c, index, array);
     }));

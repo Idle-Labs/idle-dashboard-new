@@ -1,6 +1,8 @@
 import Web3 from 'web3'
+import type { Abi } from 'constants/types'
 import { ContractRawCall } from 'constants/'
 import { splitArrayIntoChunks } from 'helpers/'
+import Multicall3 from 'abis/multicall/Multicall3.json'
 import { Contract, ContractSendMethod } from 'web3-eth-contract'
 
 type Param = any
@@ -29,6 +31,7 @@ export class  Multicall {
   readonly web3: Web3
   readonly chainId: number
   readonly maxBatchSize: number
+  readonly multicallContract: Contract
   readonly networksContracts: Record<number, string>
 
   constructor(chainId: number, web3: Web3) {
@@ -43,6 +46,7 @@ export class  Multicall {
     this.web3 = web3
     this.chainId = chainId
     this.maxBatchSize = 600
+    this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networksContracts[chainId])
   }
 
   getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
@@ -95,6 +99,31 @@ export class  Multicall {
       method:methodName+'('+inputTypes.join(',')+')',
       rawCall:contract.methods[methodName](...params)
     };
+  }
+
+  getMethodSignature(method: any): string {
+    const methodName = method.name;
+    const methodInputs = method.inputs.map( (i: any) => i.type )
+    return methodName+'('+methodInputs.join(',')+')'
+  }
+
+  getEncodedData = (contract: any, methodName: string, values: any[]) => {
+    // get the method signature
+    const methodSignature = this.web3.eth.abi.encodeFunctionSignature(methodName);
+
+    // get the encoded data
+    const encodedData = contract.methods[methodName](...values).encodeABI();
+
+    console.log('getEncodedData', methodName, values, encodedData)
+
+    return encodedData;
+  }
+
+  async aggregate3(batch: any[]): Promise<any> {
+    return await this.multicallContract.methods.aggregate3(batch).call();
+  }
+  async blockAndAggregate(batch: any[]): Promise<any> {
+    return await this.multicallContract.methods.blockAndAggregate(batch).call();
   }
 
   prepareMulticallData(calls: CallData[]): string | null {

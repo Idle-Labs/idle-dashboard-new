@@ -1,5 +1,6 @@
 import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
+import type { VaultMessages } from 'constants/vaults'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -346,14 +347,15 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       assetId={asset?.underlyingId}
     >
       <VStack
+        pt={8}
         flex={1}
+        spacing={6}
         height={'100%'}
         id={'deposit-container'}
         alignItems={'space-between'}
         justifyContent={'flex-start'}
       >
         <HStack
-          mt={10}
           flex={1}
           spacing={4}
           alignItems={'flex-start'}
@@ -521,20 +523,35 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, withdraw])
 
+  const vaultMessages = useMemo((): VaultMessages | undefined => {
+    return vault && ("messages" in vault) ? vault.messages : undefined
+  }, [vault])
+
   return (
     <AssetProvider
       flex={1}
       assetId={asset?.id}
     >
       <VStack
+        pt={8}
         flex={1}
+        spacing={6}
         height={'100%'}
         id={'withdraw-container'}
         alignItems={'space-between'}
         justifyContent={'flex-start'}
       >
+        {
+          vaultMessages?.withdraw ? (
+            <Card.Dark
+              p={2}
+              border={0}
+            >
+              <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} textAlign={'center'} />
+            </Card.Dark>
+          ) : null
+        }
         <HStack
-          mt={10}
           flex={1}
           spacing={4}
           alignItems={'flex-start'}
@@ -585,18 +602,22 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           id={'footer'}
           alignItems={'flex-start'}
         >
-          <Card.Outline px={4} py={2}>
-            <HStack
-              spacing={1}
-            >
-              <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-              <AssetProvider
-                assetId={asset?.id}
+          {
+            /*
+            <Card.Outline px={4} py={2}>
+              <HStack
+                spacing={1}
               >
-                <AssetProvider.PerformanceFee textStyle={['captionSmaller', 'semiBold']} color={'primary'} />
-              </AssetProvider>
-            </HStack>
-          </Card.Outline>
+                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                <AssetProvider
+                  assetId={asset?.id}
+                >
+                  <AssetProvider.PerformanceFee textStyle={['captionSmaller', 'semiBold']} color={'primary'} />
+                </AssetProvider>
+              </HStack>
+            </Card.Outline>
+            */
+          }
           <EstimatedGasFees />
           {withdrawButton}
         </VStack>

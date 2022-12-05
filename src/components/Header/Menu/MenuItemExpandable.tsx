@@ -28,23 +28,27 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
           alignItems={'center'}
         > 
           <NavItemText isActive={isOpen} {...menuItem} />
-          <Flex
-            width={'24px'}
-          >
           {
-            isOpen ? (
-              <MdKeyboardArrowUp
-                size={24}
-                color={theme.colors.cta}
-              />
-            ) : (
-              <MdKeyboardArrowDown
-                size={24}
-                color={theme.colors.cta}
-              />
+            menuItem.children && menuItem.children.length>0 && (
+              <Flex
+                width={'24px'}
+              >
+              {
+                isOpen ? (
+                  <MdKeyboardArrowUp
+                    size={24}
+                    color={theme.colors.cta}
+                  />
+                ) : (
+                  <MdKeyboardArrowDown
+                    size={24}
+                    color={theme.colors.cta}
+                  />
+                )
+              }
+              </Flex>
             )
           }
-          </Flex>
         </Flex>
       </MenuButton>
     )
@@ -54,7 +58,7 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
     <>
       {menuButton}
       {
-        menuItem.children && (
+        menuItem.children && menuItem.children.length>0 && (
           <MenuList>
             {
               menuItem.children.map( (menuItem, index) => (

@@ -113,6 +113,28 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
+    carouselItems: [
+      {
+        image:`${strategiesCarouselFolder}AA-pooled-funds.gif`,
+        title:'strategies.best.carousel.pooledDeposits.title',
+        description:'strategies.best.carousel.pooledDeposits.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}AA-deposits-protection.gif`,
+        title:'strategies.best.carousel.depositsProtection.title',
+        description:'strategies.best.carousel.depositsProtection.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}AA-gauges.gif`,
+        title:'strategies.best.carousel.gauges.title',
+        description:'strategies.best.carousel.gauges.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}AA-default-management.gif`,
+        title:'strategies.best.carousel.defaultManagement.title',
+        description:'strategies.best.carousel.defaultManagement.description'
+      }
+    ],
     columns: [
       {
         id:'protocol',
@@ -191,6 +213,23 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
+    carouselItems: [
+      {
+        image:`${strategiesCarouselFolder}BB-pooled-funds.gif`,
+        title:'strategies.best.carousel.pooledDeposits.title',
+        description:'strategies.best.carousel.pooledDeposits.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}BB-boosted-yield.gif`,
+        title:'strategies.best.carousel.boostedYield.title',
+        description:'strategies.best.carousel.boostedYield.description'
+      },
+      {
+        image:`${strategiesCarouselFolder}BB-default-management.gif`,
+        title:'strategies.best.carousel.defaultManagement.title',
+        description:'strategies.best.carousel.defaultManagement.description'
+      }
+    ],
     columns: [
       {
         id:'protocol',

@@ -48,8 +48,8 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
             <AssetProvider.Icon size={'xs'} />
             {/*<AssetProvider.Name textStyle={'tableCell'} />*/}
             {
-              fields.map( fieldInfo => (
-                <>
+              fields.map( (fieldInfo, index) => (
+                <React.Fragment key={`field_${index}`}>
                   <Box
                     width={1}
                     height={1}
@@ -57,12 +57,12 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
                     borderRadius={'50%'}
                   />
                   <HStack
-                    spacing={1}
+                    spacing={2}
                   >
                     <Translation translation={fieldInfo.label} component={Text} textStyle={'captionSmall'} />
                     <AssetProvider.GeneralData field={fieldInfo.field} textStyle={'tableCell'} />
                   </HStack>
-                </>
+                </React.Fragment>
               ))
             }
           </HStack>

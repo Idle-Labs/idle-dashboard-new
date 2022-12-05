@@ -58,24 +58,28 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return assetBalance && assetBalance.gt(0)
   }, [assetBalance])
 
-  const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
+  // const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
   const { performanceChartData } = usePerformanceChartData({ assetIds: [asset?.id], timeframe })
 
-  const chartData = useMemo(() => {
-    if (!isPortfolioLoaded) return
-    return userHasBalance ? balanceChartData : performanceChartData
-  }, [isPortfolioLoaded, userHasBalance, balanceChartData, performanceChartData])
+  // const chartData = useMemo(() => {
+  //   if (!isPortfolioLoaded) return
+  //   return userHasBalance ? balanceChartData : performanceChartData
+  // }, [isPortfolioLoaded, userHasBalance, balanceChartData, performanceChartData])
 
   // const onTabClick = useCallback((row: RowProps) => {
   //   return navigate(`${location?.pathname}/${row.original.id}`)
   // }, [navigate, location])
 
   const chartHeading = useMemo(() => {
-    const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
-    const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
-    const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
+    // const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
+    // const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
+    // const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
 
-    const isLoaded = (chartData?.total && chartData.total.length>0) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
+    const earningsPercentage = performanceChartData?.total?.length && BNify(performanceChartData.total[performanceChartData.total.length-1].value).div(performanceChartData.total[0].value).minus(1).times(100)
+    const earningsDays = performanceChartData?.total?.length ? BNify(performanceChartData.total[performanceChartData.total.length-1].date).minus(performanceChartData.total[0].date).div(1000).div(86400) : BNify(0)
+    const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)    
+
+    const isLoaded = (performanceChartData?.total && performanceChartData.total.length>0) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
     return (
       <VStack
         spacing={1}
@@ -83,18 +87,22 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         alignItems={['center','flex-start']}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
+          {/*<Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />*/}
+          <Translation translation={'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
           <HStack
             spacing={3}
             width={['100%','auto']}
             alignItems={'baseline'}
           >
+            <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
             {
+              /*
               userHasBalance ? (
                 useDollarConversion ? <AssetProvider.BalanceUsd textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} /> : <AssetProvider.Redeemable textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} suffix={` ${asset?.name}`} />
               ) : (
                 <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
               )
+              */
             }
             {
               /*
@@ -124,14 +132,14 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </SkeletonText>
       </VStack>
     )
-  }, [userHasBalance, asset, account, useDollarConversion, isVaultsPositionsLoaded, chartData, isPortfolioLoaded])
+  }, [account, isVaultsPositionsLoaded, performanceChartData, isPortfolioLoaded])
 
   const fundsOverview = useMemo(() => {
     if (!asset || !userHasBalance) return null
     return (
       <SimpleGrid
         width={'100%'}
-        columns={[2, 3]}
+        columns={[2, 4]}
         spacing={[10, 14]}
         alignItems={'flex-start'}
       >
@@ -143,6 +151,18 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <AssetProvider.DepositedUsd textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
+            <AssetProvider.Name textStyle={'captionSmaller'} />
+          </HStack>
+        </VStack>
+
+        <VStack
+          spacing={2}
+          justifyContent={'center'}
+        >
+          <Translation component={Text} translation={'defi.redeemable'} textStyle={'titleSmall'} />
+          <AssetProvider.BalanceUsd textStyle={'heading'} fontSize={'h3'} />
+          <HStack spacing={1}>
+            <AssetProvider.Redeemable decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
@@ -249,8 +269,8 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 width={['100%', 'auto']}
               >
                 <TabList>
-                  <Translation component={Tab} width={['50%', 'auto']} translation={'navBar.earn'} />
-                  <Translation component={Tab} width={['50%', 'auto']} translation={'navBar.stats'} />
+                  <Translation component={Tab} width={['100%', 'auto']} translation={'navBar.earn'} />
+                  {/*<Translation component={Tab} width={['50%', 'auto']} translation={'navBar.stats'} />*/}
                 </TabList>
               </Tabs>
               {
@@ -282,6 +302,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   <Translation component={Heading} as={'h3'} size={'md'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
                 </SkeletonText>
                 {
+                  /*
                   asset && (
                     <HStack
                       spacing={2}
@@ -291,6 +312,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                       <Text>USD</Text>
                     </HStack>
                   )
+                  */
                 }
               </HStack>
               <Card.Dark
@@ -307,25 +329,24 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
                 </Stack>
                 <GenericChart
-                  data={chartData}
                   percentChange={0}
                   color={strategyColor}
                   timeframe={timeframe}
                   isRainbowChart={false}
                   assetIds={[params.asset]}
+                  data={performanceChartData}
                   setPercentChange={() => {}}
                   height={isMobile ? '300px' : '350px'}
                   margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-                  formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
+                  // formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
+                  formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
                 />
               </Card.Dark>
             </Box>
             {fundsOverview}
-            {!userHasBalance && strategyDescriptionCarousel}
+            {strategyDescriptionCarousel}
             <AssetGeneralData assetId={asset?.id} />
-            {userHasBalance && strategyDescriptionCarousel}
             {vaultRewards}
-
             {
               isMobile && (
                 <Flex
@@ -344,7 +365,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           </Stack>
           <VStack
             left={0}
-            zIndex={99999}
+            zIndex={20}
             spacing={[0, 6]}
             id={'right-side'}
             width={['100vw', '27em']}

@@ -1,11 +1,12 @@
 import Web3 from 'web3'
 import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
+import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff } from 'helpers/'
-import type { Harvest, BigNumber, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import type { Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -252,7 +253,7 @@ export class VaultFunctionsHelper {
     const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
 
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
-    const results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
+    let results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
 
     // console.log('getSubgraphData', this.cacheProvider.getUrlHash(cacheKey), results)
 
@@ -272,9 +273,9 @@ export class VaultFunctionsHelper {
         dataToCache.set(date, result)
       }
 
+      results = Array.from(dataToCache.values())
       if (this.cacheProvider){
-        // console.log('dataToCache', cacheKey, dataToCache)
-        this.cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
+        this.cacheProvider.saveData(cacheKey, results, 0)
       }
     }
 
@@ -406,29 +407,41 @@ export class VaultFunctionsHelper {
     const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
 
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
-    const results = fetchData ? await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) : cachedData.data
+    let results = fetchData ? await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) : cachedData.data
 
     // console.log('getIdleRatesData', cacheKey, cachedData, latestTimestamp, daysDiff, hoursDiff, fetchData, results)
+
+    // Replace if not valid
+    results = results || []
 
     // Save fetched data
     if (fetchData) {
       const dataToCache = new Map()
 
+      let latestIdlePrice = BNify(0)
       if (cachedData){
-        for (let result of cachedData.data) {
+        for (const result of cachedData.data) {
           const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
           dataToCache.set(date, result)
+          latestIdlePrice = BigNumber.maximum(latestIdlePrice, BNify(result.idlePrice))
         }
       }
 
-      for (let result of results) {
+      for (const result of results) {
+        latestIdlePrice = BigNumber.maximum(latestIdlePrice, BNify(result.idlePrice))
+        result.idlePrice = BigNumber.maximum(BNify(result.idlePrice), latestIdlePrice).toString()
+        // console.log(`REPLACE idlePrice: ${result.idlePrice}<${latestIdlePrice}`)
         const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
         dataToCache.set(date, result)
+        
       }
+
+      // Replace results with cached data
+      results = Array.from(dataToCache.values())
 
       if (this.cacheProvider){
         // console.log('dataToCache', cacheKey, dataToCache)
-        this.cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
+        this.cacheProvider.saveData(cacheKey, results, 0)
       }
     }
 
