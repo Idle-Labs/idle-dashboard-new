@@ -3,7 +3,8 @@ import { Card } from 'components/Card/Card'
 import type { AssetId } from 'constants/types'
 import { VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
-import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
+// import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
+import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, GeneralDataField } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
@@ -12,12 +13,16 @@ type AssetGeneralDataArgs = {
 }
 
 export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) => {
-  const { params } = useBrowserRouter()
+  // const { params } = useBrowserRouter()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    return selectAssetById && selectAssetById(assetId)
+  }, [selectAssetById, assetId])
 
   const strategy = useMemo(() => {
-    const foundStrategy = Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
-    return foundStrategy ? strategies[foundStrategy] : null
-  }, [params])
+    return asset?.type && strategies[asset.type]
+  }, [asset])
 
   return (
     <AssetProvider
@@ -26,7 +31,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
       <Card.Dark>
         <SimpleGrid
           spacing={[6, 0]}
-          columns={[2, 5]}
+          columns={[2, Math.min(strategy?.generalDataFields.length, 5)]}
         >
           {
             strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => {
@@ -50,7 +55,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
               pt={6}
               mt={6}
               spacing={[6, 0]}
-              columns={[2, 5]}
+              columns={[2, Math.min(strategy?.generalDataFields.length, 5)]}
               borderTop={'1px solid'}
               borderTopColor={'divider'}
             >

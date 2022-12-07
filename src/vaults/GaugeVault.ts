@@ -1,11 +1,24 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
+import type { Number } from 'constants/types'
+import { MAX_ALLOWANCE } from 'constants/vars'
+import { tokensFolder } from 'constants/folders'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { selectUnderlyingToken } from 'selectors/'
+import { ContractSendMethod } from 'web3-eth-contract'
+import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
-import { BNify, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncReduce, catchPromise } from 'helpers/'
 import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
+
+type ConstructorProps = {
+  web3: Web3
+  chainId: number
+  gaugeConfig: GaugeConfig
+  trancheVault: TrancheVault
+  cacheProvider?: CacheContextProps
+}
 
 export class GaugeVault {
 
@@ -15,9 +28,12 @@ export class GaugeVault {
   readonly chainId: number
   public readonly type: string
 
+  // Private attributes
+  private readonly cacheProvider: CacheContextProps | undefined
+
   // Raw config
   public readonly gaugeConfig: GaugeConfig
-  public readonly trancheVault: TrancheVault | undefined
+  public readonly trancheVault: TrancheVault
   public readonly trancheToken: TrancheToken
   public readonly rewardTokens: UnderlyingTokenProps[]
   public readonly underlyingToken: UnderlyingTokenProps | undefined
@@ -25,14 +41,24 @@ export class GaugeVault {
   // Contracts
   public readonly contract: Contract
 
-  constructor(web3: Web3, chainId: number, gaugeConfig: GaugeConfig, trancheVault: TrancheVault | undefined){
+  // constructor(web3: Web3, chainId: number, gaugeConfig: GaugeConfig, trancheVault: TrancheVault | undefined){
+  constructor(props: ConstructorProps){
+
+    const {
+      web3,
+      chainId,
+      trancheVault,
+      gaugeConfig,
+      cacheProvider
+    } = props
     
     // Init global data
     this.web3 = web3
-    this.type = 'gauge'
+    this.type = 'GG'
     this.chainId = chainId
     this.gaugeConfig = gaugeConfig
     this.trancheVault = trancheVault
+    this.cacheProvider = cacheProvider
     this.trancheToken = gaugeConfig.trancheToken
     this.id = this.gaugeConfig.address.toLowerCase()
     this.underlyingToken = selectUnderlyingToken(chainId, gaugeConfig.underlyingToken)
@@ -93,20 +119,22 @@ export class GaugeVault {
           if (action) {
 
             // Get idle token tx and underlying token tx
-            const idleTokenToAddress = action === 'redeem' ? ZERO_ADDRESS : account
-            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase() )
+            const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : this.trancheVault.cdoConfig.address) : account
+            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
             const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
-            
-            const underlyingTokenTx = internalTxs.find( iTx => {
-              const underlyingTokenDirectionAddress = action === 'redeem' ? iTx.to : iTx.from
-              const underlyingAmount = fixTokenDecimals(iTx.value, this.underlyingToken?.decimals)
-              return iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && underlyingTokenDirectionAddress.toLowerCase() === account.toLowerCase() && underlyingAmount.gte(idleAmount)
-            })
 
-            const underlyingAmount = underlyingTokenTx ? fixTokenDecimals(underlyingTokenTx.value, this.underlyingToken?.decimals) : BNify(0)
-            const idlePrice = underlyingAmount?.gt(0) ? underlyingAmount.div(idleAmount) : BNify(0)
+            const pricesCalls = this.trancheVault.getPricesCalls()
 
-            // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString())
+            const cacheKey = `tokenPrice_${this.chainId}_${this.trancheVault.id}_${tx.blockNumber}`
+            // @ts-ignore
+            const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+            const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+            const idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+
+            const underlyingAmount = idlePrice.times(idleAmount)
+              // console.log('tokenPrice', this.id, tx.blockNumber, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
+
+            // console.log(this.id, action, tx.hash, tokenPrice?.toString(), idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), tx)
 
             transactions.push({
               ...tx,
@@ -125,6 +153,8 @@ export class GaugeVault {
       []
     )
 
+    // console.log('Gauge transactions', this.id, transactions)
+
     return transactions
   }
 
@@ -137,13 +167,11 @@ export class GaugeVault {
     ]
   }
 
-  public getPricesCalls(): any[] {
-    if (!this.trancheVault) return []
+  public getRewardContractCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        decimals:this.underlyingToken?.decimals || 18,
-        call:this.trancheVault.cdoContract.methods.tranchePrice(this.trancheToken.address)
+        assetId: this.id,
+        call: this.contract.methods.reward_contract()
       }
     ]
   }
@@ -151,7 +179,7 @@ export class GaugeVault {
   public getPricesUsdCalls(contracts: GenericContract[]): any[] {
     if (!this.underlyingToken) return []
     
-    const genericContractsHelper = new GenericContractsHelper(this.chainId, this.web3, contracts)
+    const genericContractsHelper = new GenericContractsHelper({chainId: this.chainId, web3: this.web3, contracts})
     const conversionRateParams = genericContractsHelper.getConversionRateParams(this.underlyingToken)
     if (!conversionRateParams) return []
 
@@ -200,15 +228,67 @@ export class GaugeVault {
   }
 
   public getAssetsData(): Assets {
+    const trancheAssetData = Object.values(this.trancheVault.getAssetsData())[0]
     return {
       [this.id]:{
         decimals: 18,
         type: this.type,
-        name: this.gaugeConfig.name,
-        token: this.gaugeConfig.token,
+        name: trancheAssetData.name,
+        token: trancheAssetData.token,
         color: this.underlyingToken?.colors.hex,
-        underlyingId: this.underlyingToken?.address?.toLowerCase(),
+        underlyingId: this.trancheToken.address.toLowerCase(),
+        icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
       }
     }
+  }
+
+  // Transactions
+  public getAllowanceOwner() {
+    return this.gaugeConfig.address
+  }
+
+  public getMethodDefaultGasLimit(methodName: string): number | undefined {
+    switch (methodName){
+      case 'deposit':
+        return 583082
+      case 'withdraw':
+        return 567990
+      default:
+        return
+    }
+  }
+
+  public getAllowanceParams(amount: Number): any[] {
+    const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, 18)
+    return [this.getAllowanceOwner(), amountToApprove]
+  }
+
+  public getUnlimitedAllowanceParams(): any[] {
+    return this.getAllowanceParams(MAX_ALLOWANCE)
+  }
+
+  public getAllowanceContract(): Contract | undefined {
+    return this.trancheVault.trancheContract
+  }
+
+  public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
+    const allowanceContract = this.getAllowanceContract()
+    return allowanceContract?.methods.approve(...params)
+  }
+
+  public getDepositParams(amount: Number): any[] {
+    return [normalizeTokenAmount(amount, 18)]
+  }
+
+  public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.contract.methods[`deposit`](...params)
+  }
+
+  public getWithdrawParams(amount: Number): any[] {
+    return [normalizeTokenAmount(amount, 18)]
+  }
+
+  public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.contract.methods[`withdraw`](...params)
   }
 }

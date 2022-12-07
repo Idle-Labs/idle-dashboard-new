@@ -76,10 +76,10 @@ export function PieChart({
             <AnimatedPie<DonutChartData>
               {...pie}
               animate={animate}
-              getKey={(arc) => arc.data.label}
               onMouseOver={({data}) =>
                 setSelectedSlice(data)
               }
+              getKey={(arc) => arc.data.label}
               onMouseOut={() => setSelectedSlice(null)}
               getColor={(arc) => getColor(arc.data.label)}
             />
@@ -137,7 +137,7 @@ function AnimatedPie<Datum>({
     // const hasSpaceForLabel = arc.endAngle - arc.startAngle >= 0.1;
 
     return (
-      <g key={key}>
+      <g key={Math.random()}>
         <animated.path
           // compute interpolated path d attribute from intermediate angle values
           d={interpolate([props.startAngle, props.endAngle], (startAngle, endAngle) =>

@@ -58,7 +58,7 @@ export class UnderlyingToken {
     if (!this.contract) return []
     if (!this.tokenConfig.conversionRate) return []
     
-    const genericContractsHelper = new GenericContractsHelper(this.chainId, this.web3, contracts)
+    const genericContractsHelper = new GenericContractsHelper({chainId: this.chainId, web3: this.web3, contracts})
     const conversionRateParams = genericContractsHelper.getConversionRateParams(this.tokenConfig)
     if (!conversionRateParams) return []
 

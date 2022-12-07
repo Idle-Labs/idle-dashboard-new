@@ -9,6 +9,8 @@ export type AmountProps = {
   suffix?: string | React.ReactElement
   decimals?: number
   abbreviate?: boolean
+  maxPrecision?: number
+  minPrecision?: number
   abbreviateThresold?: number
 } & TextProps
 
@@ -21,12 +23,14 @@ export const Amount = ({
   prefix = '',
   suffix = '',
   decimals,
+  maxPrecision,
+  minPrecision,
   abbreviate = true,
   abbreviateThresold,
   ...props
 }: AmountProps) => {
   const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) &&  value>=abbreviateThresold)
-  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals) : (decimals ? BNify(value).toFixed(decimals) : value)))
+  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals, maxPrecision, minPrecision) : (decimals ? BNify(value).toFixed(decimals) : value)))
   // console.log('parsedValue', typeof value, decimals, parsedValue)
 
   const showPrefixSuffix = parsedValue.toString().length>0 && parsedValue !== '-'

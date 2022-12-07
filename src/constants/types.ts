@@ -113,6 +113,20 @@ export type Transaction = {
   underlyingAmount: BigNumber
 } & EtherscanTransaction
 
+// export type GaugeReward = {
+//   apy: BigNumber
+//   assetId: AssetId
+//   distributionRate: BigNumber
+// }
+
+export type GaugeData = {
+  weight: BigNumber
+  rewards: Balances
+  nextWeight: BigNumber
+  totalSupply: BigNumber
+  distributionRate: BigNumber
+}
+
 export type VaultPosition = {
   avgBuyPrice: BigNumber
   realizedApy: BigNumber
@@ -171,6 +185,7 @@ export type Asset = {
   rates?: HistoryData[]
   prices?: HistoryData[]
   pricesUsd?: HistoryData[]
+  gaugeData?: GaugeData
   allocations?: Balances
   vaultPosition?: VaultPosition
 }

@@ -65,7 +65,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return account && isVaultsPositionsLoaded && totalFunds.gt(0)
   }, [account, isVaultsPositionsLoaded, totalFunds])
 
-  const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions) })
+  const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
+
+  const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 
   const toggleStrategy = useCallback((strategy: string) => {
     if (!selectedStrategies.includes(strategy)){
@@ -90,7 +92,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         columns={[1, 3]}
       >
         {
-          compositions.strategies.map( (strategyComposition: DonutChartData, index: number) => {
+          compositions.strategies.filter( (strategyComposition: DonutChartData) => enabledStrategies.includes(strategyComposition.extraData.strategy.type) ).map( (strategyComposition: DonutChartData, index: number) => {
             const strategy = strategyComposition.extraData.strategy
             const strategyPath = getRoutePath('earn', [strategy.route])
             const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
@@ -225,7 +227,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </SimpleGrid>
     )
-  }, [userHasFunds, account, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
+  }, [userHasFunds, enabledStrategies, account, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
   
   /*
   const products = useMemo(() => {
@@ -281,7 +283,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const vaultsRewards = useMemo(() => {
     if (isEmpty(rewards)) {
       const strategyProps = strategies.BY
-      const strategyPath = getRoutePath('earn', [strategyProps.route])
+      const strategyPath = getRoutePath('earn', [strategyProps.route as string])
       return (
         <Card
           width={'100%'}
@@ -424,7 +426,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         borderColor={'divider'}
       >
         {
-          Object.keys(strategies).map( (strategy: string) => {
+          Object.keys(strategies).filter( strategy => strategies[strategy].visible ).map( (strategy: string) => {
             return (
               <Button
                 minW={'180px'}

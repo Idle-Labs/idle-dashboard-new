@@ -87,7 +87,9 @@ const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children })
     const allowanceParams = vault.getAllowanceParams(MAX_ALLOWANCE)
     const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
     if (!allowanceContractSendMethod) return
-    return await estimateGasLimit(allowanceContractSendMethod, sendOptions)
+    const estimatedGasLimit = await estimateGasLimit(allowanceContractSendMethod, sendOptions)
+    // console.log('APPROVE - estimatedGasLimit', estimatedGasLimit)
+    return estimatedGasLimit
   }, [account, vault])
 
   const approve = useCallback(() => {
@@ -240,29 +242,36 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
 
+  const assetBalance = useMemo(() => {
+    if (!selectAssetBalance) return BNify(0)
+    return selectAssetBalance(underlyingAsset?.id)
+  }, [selectAssetBalance, underlyingAsset?.id])
+
   const disabled = useMemo(() => {
-    if (BNify(amount).lte(0)) return true
-    if (selectAssetBalance){
-      const assetBalance = selectAssetBalance(underlyingAsset?.id)
-      if (BNify(amount).gt(assetBalance)){
-        setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
-        return true
-      }
-    }
     setError('')
+    if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
+    if (BNify(assetBalance).lte(0)) return false
+    if (BNify(amount).gt(assetBalance)){
+      setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
+      return true
+    }
     return false
-  }, [amount, selectAssetBalance, underlyingAsset, translate])
+  }, [amount, assetBalance, underlyingAsset, translate])
 
   // Deposit
   const deposit = useCallback((checkAllowance: boolean = true) => {
     if (!account || disabled) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
-    if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
+    if (!vault || !("getAllowanceContract" in vault)) return
+    // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
     ;(async() => {
-      if (!underlyingAssetVault.contract) return
+      // if (!underlyingAssetVault.contract) return
+      const allowanceContract = vault.getAllowanceContract()
+      if (!allowanceContract) return
+
       const vaultOwner = getVaultAllowanceOwner(vault)
-      const allowance = checkAllowance ? await getAllowance(underlyingAssetVault.contract, account.address, vaultOwner) : BNify(amount)
+      const allowance = checkAllowance ? await getAllowance(allowanceContract, account.address, vaultOwner) : BNify(amount)
       
       console.log('allowance', vaultOwner, account.address, allowance)
 
@@ -279,7 +288,7 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, vault, underlyingAssetVault, dispatch, sendTransaction/*, sendTransactionTest*/])
+  }, [account, disabled, amount, vault, dispatch, sendTransaction/*, sendTransactionTest*/])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -298,17 +307,22 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const getDefaultGasLimit = useCallback(async () => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
-    if (!account){
+
+    // console.log('getDefaultGasLimit', underlyingAsset, assetBalance.toFixed())
+    if (!account || assetBalance.lte(0)){
       return defaultGasLimit
     }
 
     const sendOptions = {
       from: account?.address
     }
-    const depositParams = vault.getDepositParams('0.0000001')
+    const depositParams = vault.getDepositParams(assetBalance.toFixed())
     const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-    return await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
-  }, [account, vault])
+
+    const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
+    // console.log('DEPOSIT - estimatedGasLimit', assetBalance.toFixed(), depositParams, estimatedGasLimit)
+    return estimatedGasLimit
+  }, [account, vault, assetBalance])
 
   // Update gas fees
   useEffect(() => {
@@ -440,17 +454,21 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance } } = usePortfolioProvider()
 
+  const assetBalance = useMemo(() => {
+    if (!selectAssetBalance) return BNify(0)
+    return selectAssetBalance(vault?.id)
+  }, [selectAssetBalance, vault?.id])
+
   const disabled = useMemo(() => {
     setError('')
-    if (BNify(amount).lte(0)) return true
-    if (!selectAssetBalance) return
-    const assetBalance = selectAssetBalance(vault?.id)
+    if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
+    if (BNify(assetBalance).lte(0)) return false
     if (BNify(amount).gt(assetBalance)){
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
     }
     return false
-  }, [amount, selectAssetBalance, vault, underlyingAsset, translate])
+  }, [amount, assetBalance, underlyingAsset, translate])
 
   // Withdraw
   const withdraw = useCallback(() => {
@@ -485,18 +503,20 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault)) return
     
     const defaultGasLimit = vault.getMethodDefaultGasLimit('withdraw')
-    if (!account){
+    if (!account || assetBalance.lte(0)){
       return defaultGasLimit
     }
 
     const sendOptions = {
       from: account?.address
     }
-    const withdrawParams = vault.getWithdrawParams('0.0000001')
+    const withdrawParams = vault.getWithdrawParams(assetBalance.toFixed())
     const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
 
-    return await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
-  }, [account, vault])
+    const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
+    // console.log('WITHDRAW - estimatedGasLimit', assetBalance.toFixed(), estimatedGasLimit)
+    return estimatedGasLimit
+  }, [account, assetBalance, vault])
 
   // Update gas fees
   useEffect(() => {
@@ -699,17 +719,6 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { amount, actionType, baseActionType, activeStep } = useOperativeComponent()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
 
-  const startCircularProgress = useCallback(() => {
-    if (!progressMaxValue || !transactionState?.timestamp) return
-    const progressValue = Math.min(progressMaxValue, Date.now()-transactionState?.timestamp)
-    setProgressValue(progressValue)
-
-    if (progressValue>=progressMaxValue) return
-    const timeoutId = setTimeout(startCircularProgress, 100)
-    setProgressTimeoutId(timeoutId)
-    // console.log('PROGRESS!')
-  }, [progressMaxValue, transactionState?.timestamp])
-
   const startCountDown = useCallback(() => {
     if (!targetTimestamp) return
 
@@ -724,15 +733,9 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     // console.log('COUNTDOWN!')
   }, [remainingTime, targetTimestamp])
 
-  // Cancel timeouts
-  // useEffect(() => {
-  //   if (transactionState?.status === 'pending' || !countTimeoutId || !progressTimeoutId) return
-  //   clearTimeout(countTimeoutId)
-  //   clearTimeout(progressTimeoutId)
-  // }, [transactionState.status, countTimeoutId, progressTimeoutId, progressMaxValue])
-
   // Handle transaction succeded or failed
   useEffect(() => {
+    // console.log('transactionState.status', transactionState.status, progressValue, progressMaxValue)
     if (!transactionState.status || !['success','failed'].includes(transactionState.status)) return
     clearTimeout(countTimeoutId)
     clearTimeout(progressTimeoutId)
@@ -749,10 +752,13 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     setTargetTimestamp(targetTimestamp)
     setProgressMaxValue(progressMaxValue)
 
+    // This will start the circular progress
+    setProgressValue(progressMaxValue)
+
     startCountDown()
-    startCircularProgress()
+    // startCircularProgress()
     // console.log('START COUNTDOWN')
-  }, [transactionState, startCountDown, startCircularProgress])
+  }, [transactionState, startCountDown/*, startCircularProgress*/])
 
   const resetAndGoBack = useCallback((resetStep: boolean = false) => {
     if (transactionState?.status === 'pending') return
@@ -770,7 +776,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     switch (transactionState?.status) {
       case 'pending':
         return (
-          <Translation component={Text} translation={progressValue>=progressMaxValue ? `modals.status.body.long` : `modals.${actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Translation component={Text} translation={remainingTime===0 ? `modals.status.body.long` : `modals.${actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
         )
       case 'success':
         const amountToDisplay = amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8)
@@ -781,7 +787,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
               activeStep ? (
                 <Translation component={Button} translation={`common.${baseActionType}`} onClick={() => resetAndGoBack(true)} variant={'ctaFull'} />
               ) : (
-                <Translation component={Button} prefix={`New `} translation={`common.${actionType}`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
+                <Translation component={Button} translation={`trade.actions.${actionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
               )
             }
           </>
@@ -798,11 +804,11 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       default:
         return null
     }
-  }, [transactionState?.status, progressValue, translate, progressMaxValue, underlyingAsset, amount, activeStep, actionType, baseActionType, resetAndGoBack, retry])
+  }, [transactionState?.status, remainingTime, translate, underlyingAsset, amount, activeStep, actionType, baseActionType, resetAndGoBack, retry])
 
   const isLongTransaction = useMemo(() => {
-    return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && progressValue>=progressMaxValue
-  }, [transactionState?.estimatedTime, transactionState?.status, progressValue, progressMaxValue])
+    return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0
+  }, [transactionState?.estimatedTime, transactionState?.status, remainingTime])
 
   const isIndeterminate = useMemo(() => {
     if (transactionState?.status && ['success', 'failed'].includes(transactionState?.status)) return false
@@ -830,7 +836,25 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           borderRadius={'50%'}
           position={'relative'}
         >
-          <CircularProgress max={progressMaxValue} isIndeterminate={isIndeterminate} value={progressValue} size={145} color={circularProgressColor} trackColor={'card.bgLight'} thickness={'5px'} position={'absolute'} top={'-10px'} left={'-10px'} >
+          <CircularProgress
+            top={'-10px'}
+            left={'-10px'}
+            size={145}
+            thickness={'5px'}
+            position={'absolute'}
+            value={progressValue}
+            max={progressMaxValue}
+            trackColor={'card.bgLight'}
+            color={circularProgressColor}
+            isIndeterminate={isIndeterminate}
+            sx={{
+              ".chakra-progress__indicator": {
+                transitionTimingFunction: 'ease',
+                transitionProperty: 'stroke-dasharray',
+                transitionDuration: transactionState?.status === 'pending' && transactionState?.estimatedTime ? `${transactionState?.estimatedTime}s` : '0.6s'
+              }
+            }}
+          >
             {
               transactionState?.status === 'pending' ? 
                 !!remainingTime && <CircularProgressLabel textStyle={['bold', 'h2']}>{remainingTime > 3600 ? `>1h` : ( remainingTime > 1800 ? `>30m` : `${remainingTime}s`)}</CircularProgressLabel>
@@ -1035,7 +1059,7 @@ const reducer = (state: OperativeComponentContextProps, action: ReducerActionTyp
     case 'SET_AMOUNT':
       return {...state, amount: action.payload}
     case 'SET_EXECUTE_ACTION':
-      console.log('SET_EXECUTE_ACTION', action.payload)
+      // console.log('SET_EXECUTE_ACTION', action.payload)
       return {...state, executeAction: action.payload}
     case 'SET_DEFAULT_AMOUNT':
       return {...state, defaultAmount: action.payload}
@@ -1266,7 +1290,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   >
                     <Translation component={Text} translation={`modals.${state.actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
                     <HStack>
-                      <Amount textStyle={'bold'} value={amountToDisplay} decimals={8} suffix={` ${underlyingAsset?.name}`}></Amount>
+                      <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${underlyingAsset?.name}`}></Amount>
                     </HStack>
                   </VStack>
                 </VStack>

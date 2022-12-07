@@ -207,20 +207,21 @@ export const shortenHash = (hash: string, startLen: number = 7, endLen: number =
 }
 
 export const getObjectPath = (object: any, path: string, fallback: any = null): any => {
-  const dot = path.indexOf('.');
+  if (!path) return undefined
+  const dotIndex = path ? path.indexOf('.') : -1;
   
   if (!object || object === undefined) {
     return fallback || undefined;
   }
   
-  if (dot === -1) {
+  if (dotIndex === -1) {
     if (path.length && path in object) {
       return object[path];
     }
     return fallback || undefined;
   }
   
-  return getObjectPath(object[path.substr(0, dot)], path.substr(dot + 1), fallback);
+  return getObjectPath(object[path.substr(0, dotIndex)], path.substr(dotIndex + 1), fallback);
 }
 
 export const sortNumeric = (a: any, b: any, field: any, c: any): number => {

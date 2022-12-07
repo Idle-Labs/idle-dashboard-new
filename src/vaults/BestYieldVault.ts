@@ -160,12 +160,9 @@ export class BestYieldVault {
               const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
               // @ts-ignore
               const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
-              let tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
-              if (!tokenPrice) {
-                tokenPrice = BNify(1)
-              }
+              const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+              const idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
 
-              idlePrice = fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals)
               underlyingAmount = idlePrice.times(idleAmount)
               // console.log('tokenPrice', this.id, tx.blockNumber, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
             } else {
@@ -220,7 +217,7 @@ export class BestYieldVault {
   public getPricesUsdCalls(contracts: GenericContract[]): any[] {
     if (!this.underlyingToken) return []
     
-    const genericContractsHelper = new GenericContractsHelper(this.chainId, this.web3, contracts)
+    const genericContractsHelper = new GenericContractsHelper({chainId: this.chainId, web3: this.web3, contracts})
     const conversionRateParams = genericContractsHelper.getConversionRateParams(this.underlyingToken)
     if (!conversionRateParams) return []
 
@@ -358,8 +355,13 @@ export class BestYieldVault {
     return this.getAllowanceParams(MAX_ALLOWANCE)
   }
 
+  public getAllowanceContract(): Contract | undefined {
+    return this.underlyingContract
+  }
+
   public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
-    return this.underlyingContract?.methods.approve(...params)
+    const allowanceContract = this.getAllowanceContract()
+    return allowanceContract?.methods.approve(...params)
   }
 
   public getDepositParams(amount: Number, _referral: string = ZERO_ADDRESS): any[] {

@@ -134,13 +134,18 @@ export class  Multicall {
 
     const values = [
       calls.map(({ target, method, args, returnTypes }) => {
+
+        let decodedResult = ''
+        try {
+          decodedResult = (args && args.length > 0 ? strip0x(this.web3.eth.abi.encodeParameters(args.map(a => a[1]), args.map(a => a[0]))) : '')
+        } catch (err) {
+          console.log('prepareMulticallData - ERROR', method, args, err)
+        }
+
         return [
           target,
           1,
-          this.web3.utils.keccak256(method).substr(0, 10) +
-            (args && args.length > 0
-              ? strip0x(this.web3.eth.abi.encodeParameters(args.map(a => a[1]), args.map(a => a[0])))
-              : '')
+          this.web3.utils.keccak256(method).substr(0, 10) + decodedResult
         ];
       })
     ];

@@ -358,7 +358,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
           [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
           [TransactionSpeed.Average]: gasOracle.ProposeGasPrice,
-          [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice-1).toString()
+          [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice).toString()
         }
 
         const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
@@ -376,8 +376,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           defaultEstimatedTimes
         )
 
-        // console.log('gasPrices', gasPrices)
-        // console.log('estimatedTimes', estimatedTimes)
+        console.log('gasPrices', gasPrices)
+        console.log('estimatedTimes', estimatedTimes)
 
         dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
         dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
@@ -492,7 +492,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
       if (gas) {
         sendOptions.gas = gas
-        sendOptions.gasPrice = (+state.gasPrice+100).toString()
+        // @ts-ignore
+        sendOptions.maxFeePerGas = BNify(state.gasPrice).times(1e09).toFixed()
       }
 
       console.log('sendOptions', sendOptions)

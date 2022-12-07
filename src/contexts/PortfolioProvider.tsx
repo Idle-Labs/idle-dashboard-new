@@ -15,11 +15,11 @@ import { historicalPricesUsd } from 'constants/historicalData'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds } from 'classes/'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
+import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
+import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
 
 type InitialState = {
@@ -230,7 +230,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const selectVaultGauge = useCallback( (vaultId: string): Vault | null => {
     const vault = selectVaultById(vaultId)
-    if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig) return null
+    if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig || vault.type === 'GG') return null
     return selectVaultById(vault.gaugeConfig?.address)
   }, [selectVaultById])
 
@@ -286,6 +286,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!chainId || !web3 || !multiCall || !explorer) return null
     return new VaultFunctionsHelper({chainId, web3, multiCall, explorer, cacheProvider})
   }, [chainId, web3, multiCall, explorer, cacheProvider])
+
+  const genericContractsHelper = useMemo((): GenericContractsHelper | null => {
+    if (!chainId || !web3 || !multiCall || !state.contracts.length) return null
+    return new GenericContractsHelper({chainId, web3, multiCall, contracts: state.contracts})
+  }, [chainId, web3, multiCall, state.contracts])
 
   const getUserTransactions = useCallback( async (startBlock: number): Promise<EtherscanTransaction[]> => {
     if (!account?.address || !explorer || !chainId) return []
@@ -502,7 +507,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // const tokenPrice = await pricesCalls[0].call.call({}, parseInt(tx.blockNumber))
       // const realizedApy = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
-
       // console.log(assetId, 'vaultPrice', vaultPrice.toString(), 'depositedAmount', depositedAmount.toString(), 'vaultBalance', vaultBalance.toString(), 'redeemableAmount', redeemableAmount.toString(), 'earningsAmount', earningsAmount.toString(), 'earningsPercentage', earningsPercentage.toString(), 'avgBuyPrice', avgBuyPrice.toString())
 
       return vaultsPositions
@@ -515,15 +519,58 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
   }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
+  // const getGaugesWeightsCalls = useCallback(async (vaults: Vault[]): Promise<Record<AssetId, BigNumber> | undefined> => {
+  const getGaugesCalls = useCallback((vaults: Vault[]): CallData[][] | undefined => {
+    if (!web3 || !chainId || !multiCall || !state.contracts.length) return
+    const GaugeControllerContract = state.contracts.find( (Contract: GenericContract) => Contract.name === 'GaugeController')
+    if (!GaugeControllerContract) return
+
+    const gaugesVaults = vaults.filter(vault => vault instanceof GaugeVault)
+
+    const gaugeCalls = gaugesVaults.reduce( (calls: CallData[][], vault: Vault): CallData[][] => {
+      const rawCall1 = GaugeControllerContract.getRawCall('get_gauge_weight', [vault.id], vault.id)
+      const callData1 = rawCall1 && multiCall.getDataFromRawCall(rawCall1.call, rawCall1)
+      if (callData1){
+        calls[0].push(callData1)
+      }
+
+      const rawCall2 = GaugeControllerContract.getRawCall('time_weight', [vault.id], vault.id)
+      const callData2 = rawCall2 && multiCall.getDataFromRawCall(rawCall2.call, rawCall2)
+      if (callData2){
+        calls[1].push(callData2)
+      }
+
+      const rawCall3 = GaugeControllerContract.getRawCall('get_total_weight', [], vault.id)
+      const callData3 = rawCall3 && multiCall.getDataFromRawCall(rawCall3.call, rawCall3)
+      if (callData3){
+        calls[2].push(callData3)
+      }
+
+      return calls
+    }, [[],[],[]])
+
+    // Add GaugeDistribution rate
+    const GaugeDistributorContract = state.contracts.find( (Contract: GenericContract) => Contract.name === 'GaugeDistributor')
+    if (GaugeDistributorContract){
+      const rawCall = GaugeDistributorContract.getRawCall('rate', [])
+      const callData = rawCall && multiCall.getDataFromRawCall(rawCall.call, rawCall)
+      if (callData){
+        gaugeCalls.push([callData])
+      }
+    }
+
+    return gaugeCalls
+
+  }, [web3, chainId, multiCall, state.contracts])
+
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
-    if (!multiCall || !vaultFunctionsHelper) return null
+    if (!multiCall || !vaultFunctionsHelper || !genericContractsHelper) return null
 
     const checkEnabledCall = (call: string) => {
       return !enabledCalls.length || enabledCalls.includes(call)
     }
-
+    
     const rawCalls = vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
-
       const aggregatedRawCalls = [
         account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
         ("getPricesCalls" in vault) && checkEnabledCall('vaultsPrices') ? vault.getPricesCalls() : [],
@@ -536,6 +583,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
         ("getRewardTokensCalls" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensCalls() : [],
         account && ("getRewardTokensAmounts" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensAmounts(account.address) : [],
+        ("getRewardContractCalls" in vault) && checkEnabledCall('gauges') ? vault.getRewardContractCalls() : [],
         // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
       ]
 
@@ -580,6 +628,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, new Map())
 
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
+    
+    // Add gauges calls
+    const gaugesWeightsCalls = getGaugesCalls(vaults)
+    if (gaugesWeightsCalls){
+      gaugesWeightsCalls.map( (calls: CallData[]) => rawCalls.push(calls) )
+    }
 
     const [
       vaultsAdditionalAprs,
@@ -596,7 +650,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
         baseAprResults,
         protocolsResults,
         rewardTokensResults,
-        rewardTokensAmountsResults
+        rewardTokensAmountsResults,
+        gaugeRewardContracts,
+        gaugesTimeWeights,
+        gaugesWeights,
+        gaugeTotalWeights,
+        gaugesDistributionRate
       ]
     ] = await Promise.all([
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
@@ -604,6 +663,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
       multiCall.executeMultipleBatches(rawCalls)
     ])
+
+    // console.log('gaugeRewardContracts', gaugeRewardContracts)
+    // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
+    // console.log('gaugesDistributionRate', gaugesDistributionRate)
+    // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
 
     // console.log('pricesCallsResults', pricesCallsResults)
     // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
@@ -616,6 +680,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
     // console.log('rewardTokens', rewardTokensResults)
     // console.log('rewardTokensAmounts', rewardTokensAmountsResults)
+    // console.log('gaugesTimeWeights', gaugesTimeWeights)
+    // console.log('gaugesWeights', gaugesWeights)
+
+
 
     const assetsData: Assets = {
       ...state.assetsData
@@ -874,7 +942,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         if (asset){
           const decimals = callResult.extraData.decimals || asset.decimals
           totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-          // console.log(`Total Supply ${asset.name} ${assetId}: ${totalSupplies[assetId].toString()} ${decimals}`)
           assetsData[assetId] = {
             ...assetsData[assetId],
             totalSupply: totalSupplies[assetId]
@@ -883,6 +950,40 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
       return totalSupplies
     }, {})
+
+    // Process Gauges data
+    const gaugesRelativeWeights: Record<string, DecodedResult[]> | null = gaugesTimeWeights ? await genericContractsHelper.getGaugesRelativeWeights(gaugesTimeWeights) : {}
+    if (gaugesRelativeWeights){
+      const gaugesData = gaugesRelativeWeights.weights.reduce( (gaugesData: Record<AssetId, GaugeData>, callResult: DecodedResult) => {
+        const gaugeId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const weight = fixTokenDecimals(callResult.data, 18)
+        const nextWeightResult = gaugesRelativeWeights.nextWeights.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+        const nextWeight = nextWeightResult ? fixTokenDecimals(nextWeightResult.data, 18) : weight
+        const totalSupply = totalSupplies[gaugeId] ? BNify(totalSupplies[gaugeId]) : BNify(0)
+        const distributionRate = fixTokenDecimals(gaugesDistributionRate[0].data, 18).times(86400).times(weight)
+
+        const gaugeData = {
+          weight,
+          rewards:{},
+          nextWeight,
+          totalSupply,
+          distributionRate
+        }
+
+        assetsData[gaugeId] = {
+          ...assetsData[gaugeId],
+          gaugeData
+        }
+
+        return {
+          ...gaugesData,
+          [gaugeId]: gaugeData
+        }
+      }, {})
+
+      console.log('gaugesData', gaugesData)
+      console.log('totalSupplies', totalSupplies)
+    }
 
     // console.log('assetsData', assetsData)
     // Set assets data one time instead of updating for every asset
@@ -902,7 +1003,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPrices,
       totalSupplies
     }
-  }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, vaultFunctionsHelper])
+  }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls])
 
   // useEffect(() => {
   //   console.log('accountChanged', account, connecting, walletInitialized)
@@ -988,7 +1089,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const underlyingToken = new UnderlyingToken(web3, chainId, tokenConfig)
         vaultsContracts.push(underlyingToken)
       }
-      return vaultsContracts;
+      return vaultsContracts
     }, [])
 
     // Init tranches vaults
@@ -1001,7 +1102,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsContracts.push(trancheVaultAA)
         vaultsContracts.push(trancheVaultBB)
       })
-      return vaultsContracts;
+      return vaultsContracts
     }, [])
 
     // Init best yield vaults
@@ -1009,17 +1110,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const tokenConfig = bestYield[chainId][token]
       const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', cacheProvider})
       vaultsContracts.push(trancheVault)
-      return vaultsContracts;
+      return vaultsContracts
     }, [])
 
     // Init gauges vaults
     const gaugesVaults = Object.keys(gauges).reduce( (vaultsContracts: GaugeVault[], token) => {
       const gaugeConfig = gauges[token]
       const trancheVault = trancheVaults.find( tranche => tranche.trancheConfig.address.toLowerCase() === gaugeConfig.trancheToken.address.toLowerCase() )
-
-      const gaugeVault = new GaugeVault(web3, chainId, gaugeConfig, trancheVault)
+      if (!trancheVault) return vaultsContracts
+      const gaugeVault = new GaugeVault({web3, chainId, gaugeConfig, trancheVault, cacheProvider})
       vaultsContracts.push(gaugeVault)
-      return vaultsContracts;
+      return vaultsContracts
     }, [])
 
     const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
@@ -1385,6 +1486,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsPrices,
         totalSupplies
       } = vaultsOnChainData
+
+      // const gaugeWeights = await getGaugesWeights(state.vaults)
 
       // dispatch({type: 'SET_APRS', payload: aprs})
       // dispatch({type: 'SET_BALANCES', payload: balances})

@@ -125,7 +125,9 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const strategyColumns: Column<Asset>[] = useMemo(() => {
     if (!strategy) return []
-    return strategies[strategy].columns.map( (column: StrategyColumn) => {
+    const columns = strategies[strategy].columns
+    if (!columns) return []
+    return columns.map( (column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
       return {

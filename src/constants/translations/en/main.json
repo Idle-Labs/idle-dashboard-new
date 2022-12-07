@@ -138,6 +138,9 @@
     }
   },
   "strategies": {
+    "gauge": {
+      "title": "Gauge"
+    },
     "best": {
       "title": "Best Yield",
       "description": "The flagship yield automation strategy. Funds optimized across multiple DeFi protocols",
@@ -657,13 +660,23 @@
       },
       "deposit": {
         "confirm": "You are depositing",
-        "confirmed": "You have deposited"
+        "confirmed": "You have deposited",
+        "status": {
+          "success": {
+            "button": "New Deposit"
+          }
+        }
       },
       "withdraw": {
         "confirm": "You are withdrawing",
         "confirmed": "You have withdrawed",
         "messages": {
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC."
+        },
+        "status": {
+          "success": {
+            "button": "Back"
+          }
         }
       }
     },
@@ -1415,6 +1428,7 @@
         "rewards":"Rewards",
         "allocation":"Allocation",
         "stakingRewards":"Staking Rewards",
+        "gaugeRewards":"Gauge Rewards",
         "autoCompounding":"Auto Compounding",
         "performanceFee":"Performance Fee",
         "claimableRewards":"Claimable Rewards",
@@ -1424,6 +1438,9 @@
         "apyRatio":"APY Ratio",
         "apyBoost":"APY Boost",
         "coverage":"Coverage",
+        "weight":"Weight",
+        "nextWeight":"Next weight",
+        "totalSupply":"Total supply",
         "lastHarvest":"Last Harvest"
       },
       "assetHeader": {

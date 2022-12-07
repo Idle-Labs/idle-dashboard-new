@@ -194,7 +194,7 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
     const rewards = gaugeVault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
-        <AssetProvider key={`asset_${rewardToken.address}`} assetId={rewardToken.address}>
+        <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
           <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
@@ -210,7 +210,7 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
 }
 
 const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
-  const {vault} = useAssetProvider();
+  const { vault } = useAssetProvider();
   
   const rewardTokens = useMemo(() => {
     if (!vault || !("rewardTokens" in vault)) return children
@@ -218,7 +218,7 @@ const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props})
     const rewards = vault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
-        <AssetProvider key={`asset_${rewardToken.address}`} assetId={rewardToken.address}>
+        <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
           <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
@@ -238,7 +238,7 @@ type RewardsProps = {
 } & AvatarProps & BoxProps
 
 const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
-  const {vault} = useAssetProvider();
+  const { vault } = useAssetProvider();
   const { selectors: { selectVaultById } } = usePortfolioProvider()
   
   const rewardTokens = useMemo(() => {
@@ -249,13 +249,17 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
     // Add Gauge rewards
     const rewardTokens = [...vault.rewardTokens]
     if (gaugeVault){
-      rewardTokens.push(...gaugeVault.rewardTokens)
+      for (const rewardToken of gaugeVault.rewardTokens){
+        if (!rewardTokens.includes(rewardToken)){
+          rewardTokens.push(rewardToken)
+        }
+      }
     }
 
     const rewards = rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
-        <AssetProvider key={`asset_${rewardToken.address}`} assetId={rewardToken.address}>
+        <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
           <AssetProvider.Icon {...props} ml={index ? iconMargin !== undefined ? iconMargin : -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
@@ -423,6 +427,30 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
   
   return asset?.vaultPosition?.realizedApy ? (
     <Amount.Percentage value={asset?.vaultPosition?.realizedApy} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const GaugeWeight: React.FC<PercentageProps> = (props) => {
+  const { asset } = useAssetProvider()
+  
+  return asset?.gaugeData?.weight ? (
+    <Amount.Percentage value={asset?.gaugeData?.weight.times(100)} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const GaugeNextWeight: React.FC<PercentageProps> = (props) => {
+  const { asset } = useAssetProvider()
+  
+  return asset?.gaugeData?.nextWeight ? (
+    <Amount.Percentage value={asset?.gaugeData?.nextWeight.times(100)} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const GaugeTotalSupply: React.FC<PercentageProps> = (props) => {
+  const { asset } = useAssetProvider()
+  
+  return asset?.gaugeData?.totalSupply ? (
+    <Amount suffix={` ${asset?.token}`} value={asset?.gaugeData?.totalSupply} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -633,21 +661,27 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
     case 'apy':
       return (<Apy textStyle={'tableCell'} {...props} />)
     // case 'apyRatio':
-    //   return (<ApyRatio textStyle={'tableCell'} {...props} />)  
+    //   return (<ApyRatio textStyle={'tableCell'} {...props} />)
     case 'apyRatio':
       return <ApyRatioChart width={'100%'} />
     case 'apyBoost':
-      return (<ApyBoost textStyle={'tableCell'} {...props} />)  
+      return (<ApyBoost textStyle={'tableCell'} {...props} />)
     case 'coverage':
-      return (<Coverage textStyle={'tableCell'} {...props} />)  
+      return (<Coverage textStyle={'tableCell'} {...props} />)
     case 'performanceFee':
-      return (<PerformanceFee textStyle={'tableCell'} {...props} />)  
+      return (<PerformanceFee textStyle={'tableCell'} {...props} />)
     case 'lastHarvest':
-      return (<LastHarvest textStyle={'tableCell'} {...props} />)  
+      return (<LastHarvest textStyle={'tableCell'} {...props} />)
     case 'balanceUsd':
-      return (<BalanceUsd textStyle={'tableCell'} {...props} />)  
+      return (<BalanceUsd textStyle={'tableCell'} {...props} />)
     case 'realizedApy':
-      return (<RealizedApy textStyle={'tableCell'} {...props} />)  
+      return (<RealizedApy textStyle={'tableCell'} {...props} />)
+    case 'weight':
+      return (<GaugeWeight textStyle={'tableCell'} {...props} />)
+    case 'nextWeight':
+      return (<GaugeNextWeight textStyle={'tableCell'} {...props} />)
+    case 'gaugeTotalSupply':
+      return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
     case 'rewards':
       return (
         <Rewards size={'xs'} {...props}>

@@ -79,6 +79,8 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
     }
   }, [protocolToken, compositions, theme, translate, type])
 
+  // console.log('compositions', compositions)
+
   return (
     <Box
       height={350}

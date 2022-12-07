@@ -99,7 +99,7 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
   compositions.assets = useMemo((): DonutChartData[] => {
     return Object.keys(assetsBalances).reduce( (compositionAssets: DonutChartData[], assetId: string) => {
       const asset = selectAssetById(assetId)
-      if (!asset) return compositionAssets
+      if (!asset || (asset.type && (!enabledStrategies || enabledStrategies.includes(asset.type)))) return compositionAssets
       return [
         ...compositionAssets,
         {
@@ -111,7 +111,7 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
         }
       ]
     }, [])
-  }, [assetsBalances, selectAssetById])
+  }, [assetsBalances, selectAssetById, enabledStrategies])
 
   const colors: Colors = {
     assets: {},

@@ -28,10 +28,10 @@ export const menu: MenuItemType[] = [
   },
   {
     label:'navBar.earn',
-    children: Object.values(strategies).map( (strategy: StrategyProps) => ({
+    children: Object.values(strategies).filter( (strategy: StrategyProps) => strategy.route ).map( (strategy: StrategyProps) => ({
       path:`earn/${strategy.route}`,
-      label: strategy.label,
-      color: strategy.color
+      label: strategy.label as string,
+      color: strategy.color as string
     }))
   },
   // {

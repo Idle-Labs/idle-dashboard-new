@@ -194,14 +194,9 @@ export class TrancheVault {
               const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
               // @ts-ignore
               const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
-              let tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+              const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+              const idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
 
-              if (!tokenPrice) {
-                // console.log('tokenPrice', this.id, action, tx.blockNumber, internalTxs, underlyingTokenTx, idleTokenTx, pricesCalls)
-                tokenPrice = BNify(1)
-              }
-
-              idlePrice = fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals)
               underlyingAmount = idlePrice.times(idleAmount)
               // console.log('tokenPrice', this.id, tx.blockNumber, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
             } else {
@@ -260,7 +255,7 @@ export class TrancheVault {
   public getPricesUsdCalls(contracts: GenericContract[]): any[] {
     if (!this.underlyingToken) return []
     
-    const genericContractsHelper = new GenericContractsHelper(this.chainId, this.web3, contracts)
+    const genericContractsHelper = new GenericContractsHelper({chainId: this.chainId, web3: this.web3, contracts})
     const conversionRateParams = genericContractsHelper.getConversionRateParams(this.underlyingToken)
     if (!conversionRateParams) return []
 
@@ -377,8 +372,13 @@ export class TrancheVault {
     return this.getAllowanceParams(MAX_ALLOWANCE)
   }
 
+  public getAllowanceContract(): Contract | undefined {
+    return this.underlyingContract
+  }
+
   public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
-    return this.underlyingContract?.methods.approve(...params)
+    const allowanceContract = this.getAllowanceContract()
+    return allowanceContract?.methods.approve(...params)
   }
 
   public getDepositParams(amount: Number): any[] {

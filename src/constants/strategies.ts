@@ -19,25 +19,48 @@ export type StrategyColumn = {
 }
 
 export type StrategyProps = {
-  bg: string
-  type: string,
-  color: string
-  route: string
-  label: string
-  image: string
-  description: string
-  showProtocol: boolean
-  columns: StrategyColumn[]
+  bg?: string
+  type?: string,
+  color?: string
+  route?: string
+  label?: string
+  image?: string
+  visible: boolean
+  description?: string
+  columns?: StrategyColumn[]
   generalDataFields: GeneralDataField[]
   carouselItems?: StrategyCarouselItem[]
 }
 
 export const strategies: Record<string, StrategyProps> = {
+  GG:{
+    type:'GG',
+    visible: false,
+    label:'strategies.gauge.title',
+    generalDataFields:[
+      {
+        field:'weight',
+        label:'assets.assetDetails.generalData.weight'
+      },
+      {
+        field:'nextWeight',
+        label:'assets.assetDetails.generalData.nextWeight'
+      },
+      {
+        field:'gaugeTotalSupply',
+        label:'assets.assetDetails.generalData.totalSupply'
+      },
+      {
+        field:'rewards',
+        label:'assets.assetDetails.generalData.gaugeRewards'
+      }
+    ]
+  },
   BY:{
     type:'BY',
+    visible: true,
     color:'#FFD15C',
     route:'best-yield',
-    showProtocol: false,
     label:'strategies.best.title',
     description:'strategies.best.description',
     image: `${strategiesFolder}best-yield.png`,
@@ -106,8 +129,8 @@ export const strategies: Record<string, StrategyProps> = {
   },
   AA:{
     type:'AA',
+    visible: true,
     color:'#4DE3B0',
-    showProtocol: true,
     route:'protected-yield',
     label:'strategies.protected.title',
     description:'strategies.protected.description',
@@ -206,8 +229,8 @@ export const strategies: Record<string, StrategyProps> = {
   },
   BB:{
     type:'BB',
+    visible: true,
     color:'#6AE4FF',
-    showProtocol: true,
     route:'boosted-yield',
     label:'strategies.boosted.title',
     description:'strategies.boosted.description',

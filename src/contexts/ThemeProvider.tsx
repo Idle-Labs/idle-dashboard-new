@@ -6,9 +6,11 @@ type ContextProps = {
   scrollLocked: boolean
   screenSize: string | null
   setScrollLocked: Function
+  isMobile: boolean
 }
 
 const initialState: ContextProps = {
+  isMobile: false,
   screenSize: null,
   scrollLocked: false,
   setScrollLocked: () => {}
@@ -27,9 +29,10 @@ export function ThemeProvider({ children }: ProviderProps) {
   const [isExtraLarge] = useMediaQuery(`(min-width: ${breakpoints.lg})`)
 
   const screenSize = isSmall ? 'sm' : (isMedium ? 'md' : (isLarge ? 'lg' : (isExtraLarge ? 'xl' : 'xxl')))
+  const isMobile = screenSize === 'sm'
 
   return (
-    <ThemeProviderContext.Provider value={{screenSize, scrollLocked, setScrollLocked}}>
+    <ThemeProviderContext.Provider value={{screenSize, scrollLocked, setScrollLocked, isMobile}}>
       {children}
     </ThemeProviderContext.Provider>
   )

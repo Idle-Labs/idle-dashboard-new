@@ -17,7 +17,7 @@ export const VaultRewards: React.FC<RewardProps> = ({ assetId }) => {
     return asset?.rewards
   }, [selectAssetById, assetId])
 
-  console.log('VaultRewards', assetId, rewards)
+  // console.log('VaultRewards', assetId, rewards)
 
   return (
     <SimpleGrid

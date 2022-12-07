@@ -14,10 +14,10 @@ export interface CdoLastHarvest {
 }
 
 type ConstructorProps = {
-  chainId: number,
-  web3: Web3,
-  multiCall?: Multicall,
-  explorer?: Explorer,
+  chainId: number
+  web3: Web3
+  explorer?: Explorer
+  multiCall?: Multicall
   cacheProvider?: CacheContextProps
 }
 
