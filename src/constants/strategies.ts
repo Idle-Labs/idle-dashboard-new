@@ -54,6 +54,13 @@ export const strategies: Record<string, StrategyProps> = {
         field:'rewards',
         label:'assets.assetDetails.generalData.gaugeRewards'
       }
+    ],
+    carouselItems: [
+      {
+        image:`${strategiesCarouselFolder}AA-gauges.gif`,
+        title:'strategies.best.carousel.gauges.title',
+        description:'strategies.best.carousel.gauges.description'
+      }
     ]
   },
   BY:{

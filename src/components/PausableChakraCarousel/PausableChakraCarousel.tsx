@@ -65,7 +65,7 @@ const PausableChakraCarousel: React.FC<PausableChakraCarouselArgs> = ({ children
   // console.log('RENDER', timeoutStatus, pausableTimer)
 
   useEffect(() => {
-    if (!itemsLength) return
+    if (itemsLength<=1) return
     start()
     return () => {
       stop()

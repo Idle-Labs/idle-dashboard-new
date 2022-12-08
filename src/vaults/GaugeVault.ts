@@ -1,6 +1,6 @@
 import Web3 from 'web3'
+import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
-import type { Number } from 'constants/types'
 import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { TrancheVault } from 'vaults/TrancheVault'
@@ -8,6 +8,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
+import type { Number, GaugeRewardData } from 'constants/types'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncReduce, catchPromise } from 'helpers/'
 import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
@@ -36,10 +37,13 @@ export class GaugeVault {
   public readonly trancheVault: TrancheVault
   public readonly trancheToken: TrancheToken
   public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly rewardToken: UnderlyingTokenProps | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
+  public readonly multiRewardsTokens: UnderlyingTokenProps[] | undefined
 
   // Contracts
   public readonly contract: Contract
+  public readonly multiRewardsContract: Contract | undefined
 
   // constructor(web3: Web3, chainId: number, gaugeConfig: GaugeConfig, trancheVault: TrancheVault | undefined){
   constructor(props: ConstructorProps){
@@ -63,16 +67,28 @@ export class GaugeVault {
     this.id = this.gaugeConfig.address.toLowerCase()
     this.underlyingToken = selectUnderlyingToken(chainId, gaugeConfig.underlyingToken)
 
-    this.rewardTokens = gaugeConfig.rewardTokens ? gaugeConfig.rewardTokens.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
+    // const gaugeRewards = [...gaugeConfig.rewardTokens, ...(gaugeConfig.multiRewards?.rewardTokens || [])]
+
+    this.rewardToken = selectUnderlyingToken(chainId, gaugeConfig.rewardToken)
+
+    this.multiRewardsTokens = gaugeConfig.multiRewards?.rewardTokens.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
       const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
       if (underlyingToken){
         rewards.push(underlyingToken)
       }
       return rewards
-    },[]) : []
+    },[])
+
+    this.rewardTokens = [...(this.multiRewardsTokens || [])]
+    if (this.rewardToken){
+      this.rewardTokens.push(this.rewardToken)
+    }
 
     // Init idle token contract
     this.contract = new web3.eth.Contract(this.gaugeConfig.abi, this.gaugeConfig.address)
+    if (this.gaugeConfig.multiRewards){
+      this.multiRewardsContract = new web3.eth.Contract(this.gaugeConfig.multiRewards.abi, this.gaugeConfig.multiRewards.address)
+    }
   }
 
   public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[]): Promise<Transaction[]> {
@@ -94,16 +110,16 @@ export class GaugeVault {
 
         for (const tx of internalTxs) {
           // Check for right token
-          const isRightToken = internalTxs.length > 1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase()).length > 0;
+          const isRightToken = internalTxs.length > 1 && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.trancheToken.address?.toLowerCase()).length > 0;
 
           const isDepositInternalTx = isRightToken && internalTxs.find(iTx => iTx.from.toLowerCase() === account.toLowerCase() && (iTx.to.toLowerCase() === this.id));
-          const isRedeemInternalTx = isRightToken && internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === this.id).length && iTx.to.toLowerCase() === account.toLowerCase());
+          const isRedeemInternalTx = isRightToken && internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.trancheToken.address?.toLowerCase() && internalTxs.filter(iTx2 => iTx2.contractAddress.toLowerCase() === this.id).length && iTx.to.toLowerCase() === account.toLowerCase());
 
           const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
           const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
 
           const isDepositTx = isRightToken && tx.from.toLowerCase() === account.toLowerCase() && (tx.to.toLowerCase() === this.id);
-          const isRedeemTx = isRightToken && !isDepositInternalTx && tx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.id).length && tx.to.toLowerCase() === account.toLowerCase();
+          const isRedeemTx = isRightToken && !isDepositInternalTx && tx.contractAddress.toLowerCase() === this.trancheToken.address?.toLowerCase() && internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.id).length && tx.to.toLowerCase() === account.toLowerCase();
 
           const isSwapOutTx = !isSendTransferTx && !isRedeemInternalTx && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
           const isSwapTx = !isReceiveTransferTx && !isDepositInternalTx && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
@@ -131,7 +147,8 @@ export class GaugeVault {
             const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
             const idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
 
-            const underlyingAmount = idlePrice.times(idleAmount)
+            // const underlyingAmount = idlePrice.times(idleAmount)
+            const underlyingAmount = idleAmount
               // console.log('tokenPrice', this.id, tx.blockNumber, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
 
             // console.log(this.id, action, tx.hash, tokenPrice?.toString(), idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), tx)
@@ -158,6 +175,20 @@ export class GaugeVault {
     return transactions
   }
 
+  public getGaugeRewardData(rewardAddress: string, rewardTokenBalance: BigNumber, rewardRate?: BigNumber): GaugeRewardData | undefined {
+    const rewardToken = this.rewardTokens.find( (rewardToken: UnderlyingTokenProps) => rewardToken.address?.toLowerCase() === rewardAddress.toLowerCase() )
+    if (!rewardToken) return
+
+    const tokensPerSecond = rewardRate ? fixTokenDecimals(rewardRate, 18) : BNify(0)
+    const balance = !rewardTokenBalance.isNaN() ? fixTokenDecimals(rewardTokenBalance, rewardToken.decimals) : BNify(0)
+
+    return {
+      balance,
+      apr: null,
+      rate: tokensPerSecond.times(86400),
+    };
+  }
+
   public getBalancesCalls(params: any[] = []): any[] {
     return [
       {
@@ -174,6 +205,41 @@ export class GaugeVault {
         call: this.contract.methods.reward_contract()
       }
     ]
+  }
+
+  public getClaimableRewardsCalls(account: string): ContractRawCall[] {
+    return [
+      {
+        assetId: this.id,
+        call: this.contract.methods.claimable_tokens(account)
+      }
+    ]
+  }
+
+  public getMultiRewardsDataCalls(): ContractRawCall[] {
+    if (!this.multiRewardsTokens) return []
+    return this.multiRewardsTokens.reduce( (calls: ContractRawCall[], rewardTokenAddress: UnderlyingTokenProps) => {
+      if (this.multiRewardsContract){
+        calls.push(
+          {
+            assetId: this.id,
+            call: this.multiRewardsContract.methods.rewardData(rewardTokenAddress.address)
+          }
+        )
+      }
+      return calls
+    }, [])
+  }
+
+  public getClaimableMultiRewardsCalls(account: string): ContractRawCall[] {
+    if (!this.multiRewardsTokens) return []
+    return this.multiRewardsTokens.reduce( (calls: ContractRawCall[], rewardTokenAddress: UnderlyingTokenProps) => {
+      calls.push({
+        assetId: this.id,
+        call: this.contract.methods.claimable_reward_write(account, rewardTokenAddress.address)
+      })
+      return calls
+    }, [])
   }
 
   public getPricesUsdCalls(contracts: GenericContract[]): any[] {

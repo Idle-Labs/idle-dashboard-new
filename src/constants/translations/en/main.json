@@ -412,6 +412,7 @@
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",
     "claimable": "Claimable",
+    "dailyDistribution": "Daily distribution",
     "fees": "Fees",
     "performanceFee": "Performance Fee",
     "asset": "Asset",

@@ -119,9 +119,16 @@ export type Transaction = {
 //   distributionRate: BigNumber
 // }
 
+export type GaugeRewardData = {
+  balance: BigNumber | null
+  rate: BigNumber | null
+  apr: Number | null
+}
+export type GaugeRewards = Record<AssetId, GaugeRewardData>
+
 export type GaugeData = {
   weight: BigNumber
-  rewards: Balances
+  rewards: GaugeRewards
   nextWeight: BigNumber
   totalSupply: BigNumber
   distributionRate: BigNumber
@@ -133,6 +140,12 @@ export type VaultPosition = {
   depositDuration: number
   earningsPercentage: BigNumber
   firstDepositTx?: Transaction | null
+  idle: {
+    staked: BigNumber
+    earnings: BigNumber
+    deposited: BigNumber
+    redeemable: BigNumber
+  },
   underlying: {
     staked: BigNumber
     earnings: BigNumber

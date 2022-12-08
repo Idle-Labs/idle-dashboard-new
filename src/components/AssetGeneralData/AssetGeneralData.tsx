@@ -26,6 +26,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
 
   return (
     <AssetProvider
+      wrapFlex={false}
       assetId={assetId}
     >
       <Card.Dark>

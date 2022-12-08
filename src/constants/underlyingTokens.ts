@@ -104,6 +104,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [246, 153, 136],
         hsl: ['9', '86%', '75%']
       },
+      conversionRate: {
+        field: "LDO"
+      },
       address: '0x5a98fcbea516cf06857215779fd812ca3bef1b32'
     },
     MTA: {

@@ -9,6 +9,7 @@ import RibbonPool from 'abis/ribbon/RibbonPool.json';
 import IdleStrategy from 'abis/idle/IdleStrategy.json';
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json';
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json';
+import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json';
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json';
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json';
 
@@ -2234,6 +2235,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
 };
 
 export type MultiReward = {
+  abi: Abi
   name: string
   address: string
   rewardTokens: string[]
@@ -2251,7 +2253,7 @@ export type GaugeConfig = {
   token: string
   address:string
   protocol:string
-  rewardTokens:string[]
+  rewardToken:string
   underlyingToken:string
   multiRewards?:MultiReward
   trancheToken:TrancheToken
@@ -2260,14 +2262,15 @@ export type GaugeConfig = {
 export const gauges: Record<string, GaugeConfig> = {
   stETH:{
     protocol:'lido',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'stETH',
     name: "LiquidityGauge_aa_lido_steth",
     token: "LiquidityGauge_aa_lido_steth",
     address:'0x675eC042325535F6e176638Dd2d4994F645502B9',
     multiRewards:{
       rewardTokens:['LDO'],
+      abi:GaugeMultiRewards as Abi,
       name:'multiRewards_aa_lido_stETH',
       address:'0xA357AF9430e4504419A7A05e217D4A490Ecec6FA',
     },
@@ -2279,8 +2282,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   ALUSD3CRV:{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'ALUSD3CRV',
     name: "LiquidityGauge_aa_convex_alusd3crv",
     token: "LiquidityGauge_aa_convex_alusd3crv",
@@ -2293,8 +2296,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   FRAX3CRV:{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'FRAX3CRV',
     name: "LiquidityGauge_aa_convex_frax3crv",
     token: "LiquidityGauge_aa_convex_frax3crv",
@@ -2307,8 +2310,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   MIM3CRV:{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'MIM3CRV',
     name: "LiquidityGauge_aa_convex_mim3crv",
     token: "LiquidityGauge_aa_convex_mim3crv",
@@ -2321,8 +2324,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   "3EUR":{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'3EUR',
     name: "LiquidityGauge_aa_convex_3eur",
     token: "LiquidityGauge_aa_convex_3eur",
@@ -2335,8 +2338,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   steCRV:{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'steCRV',
     name: "LiquidityGauge_aa_convex_steCRV",
     token: "LiquidityGauge_aa_convex_steCRV",
@@ -2349,14 +2352,15 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   MUSD3CRV:{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'MUSD3CRV',
     name: "LiquidityGauge_aa_convex_musd3crv",
     token: "LiquidityGauge_aa_convex_musd3crv",
     address:'0xAbd5e3888ffB552946Fc61cF4C816A73feAee42E',
     multiRewards:{
       rewardTokens:['MUSD'],
+      abi:GaugeMultiRewards as Abi,
       name:'multiRewards_aa_convex_musd3crv',
       address:'0x7f366a2b4c4380fd9746cf10b4ded562c890b0b1',
     },
@@ -2368,14 +2372,15 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   PBTCCRV:{
     protocol:'convex',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'PBTCCRV',
     name: "LiquidityGauge_aa_convex_pbtccrv",
     token: "LiquidityGauge_aa_convex_pbtccrv",
     address:'0x2bea05307b42707be6cce7a16d700a06ff93a29d',
     multiRewards:{
       rewardTokens:['PNT'],
+      abi:GaugeMultiRewards as Abi,
       name:'multiRewards_aa_convex_pbtccrv',
       address:'0x7d4091D8b28d09b4135905213DE105C45d7F459d',
     },
@@ -2387,8 +2392,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   AGEUR:{
     protocol:'euler',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'AGEUR',
     name: "LiquidityGauge_aa_euler_ageur",
     token: "LiquidityGauge_aa_euler_ageur",
@@ -2401,8 +2406,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   USDC:{
     protocol:'euler',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'USDC',
     name: "LiquidityGauge_aa_euler_usdc",
     token: "LiquidityGauge_aa_euler_usdc",
@@ -2415,8 +2420,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   DAI:{
     protocol:'euler',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'DAI',
     name: "LiquidityGauge_aa_euler_dai",
     token: "LiquidityGauge_aa_euler_dai",
@@ -2429,8 +2434,8 @@ export const gauges: Record<string, GaugeConfig> = {
   },
   USDT:{
     protocol:'euler',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     underlyingToken:'USDT',
     name: "LiquidityGauge_aa_euler_usdt",
     token: "LiquidityGauge_aa_euler_usdt",
@@ -2444,8 +2449,8 @@ export const gauges: Record<string, GaugeConfig> = {
   /*
   mUSD:{
     protocol:'mstable',
+    rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
-    rewardTokens:['IDLE'],
     name: "LiquidityGauge_aa_mstable_musd",
     token: "LiquidityGauge_aa_mstable_musd",
     address:'0x41653c7AF834F895Db778B1A31EF4F68Be48c37c',

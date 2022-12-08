@@ -651,7 +651,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
           spacing={2}
           alignItems={'center'}
         >
-          <Icon size={'sm'} />
+          <Icon size={'sm'} {...props} />
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )

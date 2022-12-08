@@ -16,7 +16,7 @@ type StrategyDescriptionCarouselArgs = {
 const CarouselNav: React.FC = () => {
   const theme = useTheme()
   const { activeItem, itemsLength, pausableTimer: { stop }, goBack, goNext } = usePausableChakraCarouselProvider()
-  if (!itemsLength) return null
+  if (itemsLength<=1) return null
   return (
     <Flex
       width={'100%'}
@@ -55,6 +55,7 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
   return (
     <PausableChakraCarouselProvider delay={delay}>
       <VStack
+        width={'100%'}
         spacing={[3, 4]}
       >
         <Card.Dark

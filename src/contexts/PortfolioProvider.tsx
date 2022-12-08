@@ -20,7 +20,7 @@ import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } fro
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards } from 'constants/types'
 
 type InitialState = {
   aprs: Balances
@@ -250,8 +250,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [state.pricesUsd])
 
   const selectAssetTotalSupply = useCallback( (assetId: AssetId | undefined): BigNumber => {
-    if (!state.totalSupplies || !assetId) return BNify(1)
-    return state.totalSupplies[assetId.toLowerCase()] || BNify(1)
+    if (!state.totalSupplies || !assetId) return BNify(0)
+    return state.totalSupplies[assetId.toLowerCase()] || BNify(0)
   }, [state.totalSupplies])
 
   const selectAssetBalance = useCallback( (assetId: AssetId | undefined): BigNumber => {
@@ -359,16 +359,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
       let firstDepositTx: any = null
       const vaultPrice = selectVaultPrice(assetId)
 
-      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber}, transaction: Transaction, index: number) => {
+      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber}, transaction: Transaction, index: number) => {
         switch (transaction.action) {
           case 'deposit':
             if (!firstDepositTx){
               firstDepositTx = transaction
             }
             depositsInfo.depositedAmount = depositsInfo.depositedAmount.plus(transaction.underlyingAmount)
+            depositsInfo.depositedIdleAmount = depositsInfo.depositedIdleAmount.plus(transaction.idleAmount)
           break;
           case 'redeem':
             depositsInfo.depositedAmount = BigNumber.maximum(0, depositsInfo.depositedAmount.minus(transaction.underlyingAmount))
+            depositsInfo.depositedIdleAmount = BigNumber.maximum(0, depositsInfo.depositedIdleAmount.minus(transaction.idleAmount))
             if (depositsInfo.depositedAmount.lte(0)){
               firstDepositTx = null
               depositsInfo.balancePeriods = []
@@ -416,10 +418,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
         return depositsInfo
       }, {
         balancePeriods:[],
-        depositedAmount: BNify(0)
+        depositedAmount: BNify(0),
+        depositedIdleAmount: BNify(0)
       })
 
-      const { balancePeriods, depositedAmount } = depositsInfo
+      const { balancePeriods, depositedAmount, depositedIdleAmount } = depositsInfo
 
       if (depositedAmount.lte(0)) return vaultsPositions
 
@@ -430,7 +433,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // Add gauge balance to vault balance
       const gauge = selectVaultGauge(assetId)
-      if (gauge) {
+      if (gauge){
         stakedAmount = selectAssetBalance(gauge.id)
         vaultBalance = vaultBalance.plus(stakedAmount)
       }
@@ -481,6 +484,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // const realizedApy2 = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
       // console.log('realizedApy', assetId, realizedApyParams.weight.toString(), realizedApyParams.sumAmount.toString(), realizedEarnings.toString(), realizedApr.toString(), realizedApy.toString(), realizedApy2.toString())
 
+      const idle = {
+        staked: BNify(0),
+        earnings: BNify(0),
+        deposited: depositedIdleAmount,
+        redeemable: depositedIdleAmount
+      }
+
       const underlying = {
         staked: stakedAmount,
         earnings: earningsAmount,
@@ -497,6 +507,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       vaultsPositions[assetId] = {
         usd,
+        idle,
         underlying,
         realizedApy,
         avgBuyPrice,
@@ -583,7 +594,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
         ("getRewardTokensCalls" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensCalls() : [],
         account && ("getRewardTokensAmounts" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensAmounts(account.address) : [],
-        ("getRewardContractCalls" in vault) && checkEnabledCall('gauges') ? vault.getRewardContractCalls() : [],
+        ("getMultiRewardsDataCalls" in vault) && checkEnabledCall('rewards') ? vault.getMultiRewardsDataCalls() : [],
+        ("getClaimableMultiRewardsCalls" in vault) && account && checkEnabledCall('balances') ? vault.getClaimableMultiRewardsCalls(account.address) : [],
+        ("getClaimableRewardsCalls" in vault) && account && checkEnabledCall('balances') ? vault.getClaimableRewardsCalls(account.address) : [],
         // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
       ]
 
@@ -635,6 +648,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       gaugesWeightsCalls.map( (calls: CallData[]) => rawCalls.push(calls) )
     }
 
+    // console.log('rawCalls', enabledCalls, rawCalls)
+
     const [
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
@@ -651,7 +666,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         protocolsResults,
         rewardTokensResults,
         rewardTokensAmountsResults,
-        gaugeRewardContracts,
+        gaugeMultiRewardsData,
+        gaugeClaimableMultiRewards,
+        gaugeClaimableRewards,
         gaugesTimeWeights,
         gaugesWeights,
         gaugeTotalWeights,
@@ -668,6 +685,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
     // console.log('gaugesDistributionRate', gaugesDistributionRate)
     // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
+    // console.log('gaugeMultiRewardsData', gaugeMultiRewardsData)
+    // console.log('gaugeClaimableRewards', gaugeClaimableRewards)
+    // console.log('gaugeClaimableMultiRewards', gaugeClaimableMultiRewards)
 
     // console.log('pricesCallsResults', pricesCallsResults)
     // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
@@ -682,8 +702,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('rewardTokensAmounts', rewardTokensAmountsResults)
     // console.log('gaugesTimeWeights', gaugesTimeWeights)
     // console.log('gaugesWeights', gaugesWeights)
-
-
 
     const assetsData: Assets = {
       ...state.assetsData
@@ -953,18 +971,66 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Process Gauges data
     const gaugesRelativeWeights: Record<string, DecodedResult[]> | null = gaugesTimeWeights ? await genericContractsHelper.getGaugesRelativeWeights(gaugesTimeWeights) : {}
+    
     if (gaugesRelativeWeights){
       const gaugesData = gaugesRelativeWeights.weights.reduce( (gaugesData: Record<AssetId, GaugeData>, callResult: DecodedResult) => {
         const gaugeId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const gaugeVault = selectVaultById(gaugeId)
+        if (!gaugeVault || !("getGaugeRewardData" in gaugeVault)) return gaugesData
+
         const weight = fixTokenDecimals(callResult.data, 18)
         const nextWeightResult = gaugesRelativeWeights.nextWeights.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
         const nextWeight = nextWeightResult ? fixTokenDecimals(nextWeightResult.data, 18) : weight
-        const totalSupply = totalSupplies[gaugeId] ? BNify(totalSupplies[gaugeId]) : BNify(0)
+        const totalSupply = totalSupplies[gaugeId] || selectAssetTotalSupply(gaugeId)
         const distributionRate = fixTokenDecimals(gaugesDistributionRate[0].data, 18).times(86400).times(weight)
+
+        const tranchePrice = vaultsPrices[gaugeVault.trancheToken.address] || selectVaultPrice(gaugeVault.trancheToken.address)
+        const tranchePriceUsd = pricesUsd[gaugeVault.trancheToken.address] || selectAssetPriceUsd(gaugeVault.trancheToken.address)
+
+        const gaugePoolUsd = totalSupply.times(tranchePrice).times(tranchePriceUsd)
+
+        const claimableRewards = gaugeClaimableRewards.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+        const multiRewardsData = gaugeMultiRewardsData.filter( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+        const claimableMultiRewards = gaugeClaimableMultiRewards.filter( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+
+        const rewards: GaugeRewards = {}
+
+        if (claimableRewards && gaugeVault.rewardToken?.address){
+          const rewardData = gaugeVault.getGaugeRewardData(gaugeVault.rewardToken.address, BNify(claimableRewards.data))
+          if (rewardData){
+            rewards[gaugeVault.rewardToken.address] = {
+              ...rewardData,
+              rate: distributionRate
+            }
+          }
+        }
+
+        if (multiRewardsData){
+          for (const callResult of multiRewardsData) {
+            const rewardDistributionData = callResult.data
+            const rewardTokenAddress = callResult.callData.args[0][0].toLowerCase()
+            const rewardClaimableBalance = claimableMultiRewards?.find( (claimableMultiReward: DecodedResult) => claimableMultiReward.callData.args[1][0].toLowerCase() === rewardTokenAddress )
+            const rewardData = gaugeVault.getGaugeRewardData(rewardTokenAddress, BNify(rewardClaimableBalance), rewardDistributionData.rewardRate)
+            if (rewardData){
+              const rewardTokenPriceUsd = pricesUsd[rewardTokenAddress] || selectAssetPriceUsd(rewardTokenAddress)
+              const yearRewardsUsd = rewardTokenPriceUsd && rewardData.rate ? rewardData.rate.times(rewardTokenPriceUsd).times(365) : BNify(0)
+              const apr = yearRewardsUsd.div(gaugePoolUsd).times(100)
+              // console.log('Reward token APR', rewardTokenAddress, rewardData.rate.toString(), rewardTokenPriceUsd, yearRewardsUsd.toFixed(), gaugePoolUsd.toFixed(), rewardTokenAPR.toFixed())
+              rewards[rewardTokenAddress] = {
+                ...rewardData,
+                apr
+              }
+            }
+          }
+        }
+
+        // console.log('gaugeRewards', gaugeId, rewards)
+
+        // const rewards = gaugeVault.getGaugeRewardsData(claimableRewards, claimableMultiRewards, multiRewardsData)
 
         const gaugeData = {
           weight,
-          rewards:{},
+          rewards,
           nextWeight,
           totalSupply,
           distributionRate
@@ -981,8 +1047,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }, {})
 
-      console.log('gaugesData', gaugesData)
-      console.log('totalSupplies', totalSupplies)
+      // console.log('gaugesData', gaugesData)
+      // console.log('totalSupplies', totalSupplies)
     }
 
     // console.log('assetsData', assetsData)
@@ -1003,7 +1069,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPrices,
       totalSupplies
     }
-  }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls])
+  }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   // useEffect(() => {
   //   console.log('accountChanged', account, connecting, walletInitialized)
