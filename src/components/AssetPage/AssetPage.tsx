@@ -98,7 +98,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
                 <TabList>
                   {
                     tabs.map( (tab, index) => (
-                      <Translation key={`tab_${index}`} component={Tab} width={[1/tabs.length, 'auto']} translation={tab.label} onClick={() => setSelectedTabIndex(index)} aria-selected={selectedTabIndex === index} />
+                      <Translation key={`tab_${index}`} component={Tab} width={[`${100/tabs.length}%`, 'auto']} translation={tab.label} onClick={() => setSelectedTabIndex(index)} aria-selected={selectedTabIndex === index} />
                     ))
                   }
                 </TabList>
