@@ -1,6 +1,7 @@
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
+import { VAULTS_MIN_TVL } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { BNify, getRoutePath, isEmpty } from 'helpers/'
@@ -98,7 +99,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             const strategy = strategyComposition.extraData.strategy
             const strategyPath = getRoutePath('earn', [strategy.route])
             const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
-            const strategyAssets = selectVaultsAssetsByType(strategy.type).filter( (asset: Asset) => asset.tvlUsd?.gt(100000) )
+            const strategyAssets = selectVaultsAssetsByType(strategy.type).filter( (asset: Asset) => asset.tvlUsd?.gt(VAULTS_MIN_TVL) )
             const strategyPositions = userHasFunds ? Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
               const asset = selectAssetById(assetId)
               return asset?.type === strategy.type
@@ -399,7 +400,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                         justifyContent={'flex-start'}
                       >
                         <Translation component={Text} translation={'defi.apr'} textStyle={'captionSmall'} />
-                        <Amount.Percentage textStyle={'tableCell'} value={rewardData.apr} />
+                        <Amount.Percentage textStyle={'tableCell'} value={BNify(rewardData.apr).gt(0) ? rewardData.apr : null} />
                       </VStack>
 
                       <VStack

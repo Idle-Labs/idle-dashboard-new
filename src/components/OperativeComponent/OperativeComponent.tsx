@@ -1200,6 +1200,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
         <Card.Flex
           p={4}
           width={'100%'}
+          overflow={'hidden'}
           minHeight={'590px'}
           direction={'column'}
           position={'relative'}

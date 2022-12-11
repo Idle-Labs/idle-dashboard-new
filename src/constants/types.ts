@@ -138,6 +138,7 @@ export type GaugeData = {
   rewards: GaugeRewards
   nextWeight: BigNumber
   totalSupply: BigNumber
+  gaugePoolUsd: BigNumber
   distributionRate: BigNumber
 }
 

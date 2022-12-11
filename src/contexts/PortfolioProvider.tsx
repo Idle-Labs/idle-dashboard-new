@@ -692,7 +692,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
     // console.log('gaugeMultiRewardsData', gaugeMultiRewardsData)
     // console.log('gaugeClaimableRewards', gaugeClaimableRewards)
-    console.log('gaugeClaimableMultiRewards', gaugeClaimableMultiRewards)
+    // console.log('gaugeClaimableMultiRewards', gaugeClaimableMultiRewards)
 
     // console.log('pricesCallsResults', pricesCallsResults)
     // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
@@ -1034,6 +1034,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         rewards,
         nextWeight,
         totalSupply,
+        gaugePoolUsd,
         distributionRate
       }
 
@@ -1394,7 +1395,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (isEmpty(state.vaults) || !isEmpty(state.historicalPricesUsd) || !web3 || !multiCall || !storedHistoricalPricesUsdLoaded) return
 
-    console.log('Check historicalPricesUsd', storedHistoricalPricesUsdLoaded, storedHistoricalPricesUsd)
+    // console.log('Check historicalPricesUsd', storedHistoricalPricesUsdLoaded, storedHistoricalPricesUsd)
 
     // Load 1 year by default
     let maxDays = 365
@@ -1402,9 +1403,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Prices are already stored
     if (!isEmpty(storedHistoricalPricesUsd) && storedHistoricalPricesUsd.timestamp){
       const daysDiff = dayDiff(Date.now(), storedHistoricalPricesUsd.timestamp)
-      console.log('storedHistoricalPricesUsd', Date.now(), storedHistoricalPricesUsd.timestamp, daysDiff)
+      // console.log('storedHistoricalPricesUsd', Date.now(), storedHistoricalPricesUsd.timestamp, daysDiff)
       if (!daysDiff){
-        console.log('storedHistoricalPricesUsd', storedHistoricalPricesUsd.historicalPricesUsd)
+        // console.log('storedHistoricalPricesUsd', storedHistoricalPricesUsd.historicalPricesUsd)
         return dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: storedHistoricalPricesUsd.historicalPricesUsd})
       } else {
         // Load missing days
@@ -1528,7 +1529,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
     }
     
-    console.log('Loading Portfolio', account?.address, state.isPortfolioLoaded, state.aprs)
+    // console.log('Loading Portfolio', account?.address, state.isPortfolioLoaded, state.aprs)
 
     // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
 
@@ -1625,7 +1626,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsTransactions
       } = results
 
-      console.log('vaultsPositions', vaultsPositions)
+      // console.log('vaultsPositions', vaultsPositions)
 
       // Set asset data with vault position
       Object.keys(vaultsPositions).forEach( (assetId: AssetId) => {

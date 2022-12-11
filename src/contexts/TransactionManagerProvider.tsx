@@ -315,10 +315,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [account, web3, state.gasPrice, state.tokenPriceUsd])
 
   // Track transaction changed
-  useEffect(() => {
-    if (!state.transaction) return
-    console.log('Transaction CHANGED', state.transaction)
-  }, [state.transaction])
+  // useEffect(() => {
+  //   if (!state.transaction) return
+  //   console.log('Transaction CHANGED', state.transaction)
+  // }, [state.transaction])
 
   // Set estimated time
   useEffect(() => {
@@ -376,8 +376,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           defaultEstimatedTimes
         )
 
-        console.log('gasPrices', gasPrices)
-        console.log('estimatedTimes', estimatedTimes)
+        // console.log('gasPrices', gasPrices)
+        // console.log('estimatedTimes', estimatedTimes)
 
         dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
         dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})

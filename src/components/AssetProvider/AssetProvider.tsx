@@ -459,8 +459,8 @@ const GaugeNextWeight: React.FC<PercentageProps> = (props) => {
 const GaugeTotalSupply: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
-  return asset?.gaugeData?.totalSupply ? (
-    <Amount suffix={` ${asset?.token}`} value={asset?.gaugeData?.totalSupply} {...props} />
+  return asset?.gaugeData?.gaugePoolUsd ? (
+    <Amount.Usd value={asset?.gaugeData?.gaugePoolUsd} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
