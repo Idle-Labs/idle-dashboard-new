@@ -20,7 +20,7 @@ import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } fro
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData } from 'constants/types'
 
 type InitialState = {
   aprs: Balances
@@ -36,6 +36,7 @@ type InitialState = {
   protocolToken: Asset | null
   transactions: Transaction[]
   contracts: GenericContract[]
+  gaugesRewards: GaugesRewards
   isVaultsPositionsLoaded: boolean
   portfolioTimestamp: number | null
   selectors: Record<string, Function>
@@ -50,6 +51,7 @@ type VaultsOnchainData = {
   balances: Balances
   assetsData: Assets
   pricesUsd: Balances
+  gaugesData: GaugesData
   rewards: VaultsRewards
   vaultsPrices: Balances
   totalSupplies: Balances
@@ -70,6 +72,7 @@ const initialState: InitialState = {
   vaultsPrices: {},
   transactions: [],
   totalSupplies: {},
+  gaugesRewards: {},
   protocolToken: null,
   vaultsPositions: {},
   historicalRates: {},
@@ -119,6 +122,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, balances: action.payload}
     case 'SET_REWARDS':
       return {...state, rewards: action.payload}
+    case 'SET_GAUGES_REWARDS':
+      return {...state, gaugesRewards: action.payload}
     case 'SET_BALANCES_USD':
       return {...state, balancesUsd: action.payload}
     case 'SET_VAULTS_PRICES':
@@ -687,7 +692,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
     // console.log('gaugeMultiRewardsData', gaugeMultiRewardsData)
     // console.log('gaugeClaimableRewards', gaugeClaimableRewards)
-    // console.log('gaugeClaimableMultiRewards', gaugeClaimableMultiRewards)
+    console.log('gaugeClaimableMultiRewards', gaugeClaimableMultiRewards)
 
     // console.log('pricesCallsResults', pricesCallsResults)
     // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
@@ -972,84 +977,79 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Process Gauges data
     const gaugesRelativeWeights: Record<string, DecodedResult[]> | null = gaugesTimeWeights ? await genericContractsHelper.getGaugesRelativeWeights(gaugesTimeWeights) : {}
     
-    if (gaugesRelativeWeights){
-      const gaugesData = gaugesRelativeWeights.weights.reduce( (gaugesData: Record<AssetId, GaugeData>, callResult: DecodedResult) => {
-        const gaugeId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-        const gaugeVault = selectVaultById(gaugeId)
-        if (!gaugeVault || !("getGaugeRewardData" in gaugeVault)) return gaugesData
+    const gaugesData = gaugesRelativeWeights ? gaugesRelativeWeights.weights.reduce( (gaugesData: GaugesData, callResult: DecodedResult) => {
+      const gaugeId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+      const gaugeVault = selectVaultById(gaugeId)
+      if (!gaugeVault || !("getGaugeRewardData" in gaugeVault)) return gaugesData
 
-        const weight = fixTokenDecimals(callResult.data, 18)
-        const nextWeightResult = gaugesRelativeWeights.nextWeights.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
-        const nextWeight = nextWeightResult ? fixTokenDecimals(nextWeightResult.data, 18) : weight
-        const totalSupply = totalSupplies[gaugeId] || selectAssetTotalSupply(gaugeId)
-        const distributionRate = fixTokenDecimals(gaugesDistributionRate[0].data, 18).times(86400).times(weight)
+      const weight = fixTokenDecimals(callResult.data, 18)
+      const nextWeightResult = gaugesRelativeWeights.nextWeights.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+      const nextWeight = nextWeightResult ? fixTokenDecimals(nextWeightResult.data, 18) : weight
+      const totalSupply = totalSupplies[gaugeId] || selectAssetTotalSupply(gaugeId)
+      const distributionRate = fixTokenDecimals(gaugesDistributionRate[0].data, 18).times(86400).times(weight)
 
-        const tranchePrice = vaultsPrices[gaugeVault.trancheToken.address] || selectVaultPrice(gaugeVault.trancheToken.address)
-        const tranchePriceUsd = pricesUsd[gaugeVault.trancheToken.address] || selectAssetPriceUsd(gaugeVault.trancheToken.address)
+      const tranchePrice = vaultsPrices[gaugeVault.trancheToken.address] || selectVaultPrice(gaugeVault.trancheToken.address)
+      const tranchePriceUsd = pricesUsd[gaugeVault.trancheToken.address] || selectAssetPriceUsd(gaugeVault.trancheToken.address)
 
-        const gaugePoolUsd = totalSupply.times(tranchePrice).times(tranchePriceUsd)
+      const gaugePoolUsd = totalSupply.times(tranchePrice).times(tranchePriceUsd)
 
-        const claimableRewards = gaugeClaimableRewards.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
-        const multiRewardsData = gaugeMultiRewardsData.filter( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
-        const claimableMultiRewards = gaugeClaimableMultiRewards.filter( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+      const claimableRewards = gaugeClaimableRewards.find( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+      const multiRewardsData = gaugeMultiRewardsData.filter( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
+      const claimableMultiRewards = gaugeClaimableMultiRewards.filter( (callResult: DecodedResult) => callResult.extraData.assetId?.toString() === gaugeId )
 
-        const rewards: GaugeRewards = {}
+      const rewards: GaugeRewards = {}
 
-        if (claimableRewards && gaugeVault.rewardToken?.address){
-          const rewardData = gaugeVault.getGaugeRewardData(gaugeVault.rewardToken.address, BNify(claimableRewards.data))
+      if (claimableRewards && gaugeVault.rewardToken?.address){
+        const rewardData = gaugeVault.getGaugeRewardData(gaugeVault.rewardToken.address, BNify(claimableRewards.data))
+        if (rewardData){
+          rewards[gaugeVault.rewardToken.address] = {
+            ...rewardData,
+            rate: distributionRate
+          }
+        }
+      }
+
+      if (multiRewardsData){
+        for (const callResult of multiRewardsData) {
+          const rewardDistributionData = callResult.data
+          const rewardTokenAddress = callResult.callData.args[0][0].toLowerCase()
+          const rewardClaimableBalance = claimableMultiRewards?.find( (claimableMultiReward: DecodedResult) => claimableMultiReward.callData.args[1][0].toLowerCase() === rewardTokenAddress )
+          const rewardData = gaugeVault.getGaugeRewardData(rewardTokenAddress, BNify(rewardClaimableBalance?.data), rewardDistributionData.rewardRate)
+          // console.log('multireward token', rewardTokenAddress, claimableMultiRewards, rewardClaimableBalance, rewardData)
           if (rewardData){
-            rewards[gaugeVault.rewardToken.address] = {
+            const rewardTokenPriceUsd = pricesUsd[rewardTokenAddress] || selectAssetPriceUsd(rewardTokenAddress)
+            const yearRewardsUsd = rewardTokenPriceUsd && rewardData.rate ? rewardData.rate.times(rewardTokenPriceUsd).times(365) : BNify(0)
+            const apr = yearRewardsUsd.div(gaugePoolUsd).times(100)
+            // console.log('Reward token APR', rewardTokenAddress, rewardData.rate.toString(), rewardTokenPriceUsd, yearRewardsUsd.toFixed(), gaugePoolUsd.toFixed(), rewardTokenAPR.toFixed())
+            rewards[rewardTokenAddress] = {
               ...rewardData,
-              rate: distributionRate
+              apr
             }
           }
         }
+      }
 
-        if (multiRewardsData){
-          for (const callResult of multiRewardsData) {
-            const rewardDistributionData = callResult.data
-            const rewardTokenAddress = callResult.callData.args[0][0].toLowerCase()
-            const rewardClaimableBalance = claimableMultiRewards?.find( (claimableMultiReward: DecodedResult) => claimableMultiReward.callData.args[1][0].toLowerCase() === rewardTokenAddress )
-            const rewardData = gaugeVault.getGaugeRewardData(rewardTokenAddress, BNify(rewardClaimableBalance), rewardDistributionData.rewardRate)
-            if (rewardData){
-              const rewardTokenPriceUsd = pricesUsd[rewardTokenAddress] || selectAssetPriceUsd(rewardTokenAddress)
-              const yearRewardsUsd = rewardTokenPriceUsd && rewardData.rate ? rewardData.rate.times(rewardTokenPriceUsd).times(365) : BNify(0)
-              const apr = yearRewardsUsd.div(gaugePoolUsd).times(100)
-              // console.log('Reward token APR', rewardTokenAddress, rewardData.rate.toString(), rewardTokenPriceUsd, yearRewardsUsd.toFixed(), gaugePoolUsd.toFixed(), rewardTokenAPR.toFixed())
-              rewards[rewardTokenAddress] = {
-                ...rewardData,
-                apr
-              }
-            }
-          }
-        }
+      const gaugeData = {
+        weight,
+        rewards,
+        nextWeight,
+        totalSupply,
+        distributionRate
+      }
 
-        // console.log('gaugeRewards', gaugeId, rewards)
+      assetsData[gaugeId] = {
+        ...assetsData[gaugeId],
+        gaugeData
+      }
 
-        // const rewards = gaugeVault.getGaugeRewardsData(claimableRewards, claimableMultiRewards, multiRewardsData)
+      return {
+        ...gaugesData,
+        [gaugeId]: gaugeData
+      }
+    }, {}) : {}
 
-        const gaugeData = {
-          weight,
-          rewards,
-          nextWeight,
-          totalSupply,
-          distributionRate
-        }
-
-        assetsData[gaugeId] = {
-          ...assetsData[gaugeId],
-          gaugeData
-        }
-
-        return {
-          ...gaugesData,
-          [gaugeId]: gaugeData
-        }
-      }, {})
-
-      // console.log('gaugesData', gaugesData)
-      // console.log('totalSupplies', totalSupplies)
-    }
+    // console.log('gaugesData', gaugesData)
+    // console.log('totalSupplies', totalSupplies)
 
     // console.log('assetsData', assetsData)
     // Set assets data one time instead of updating for every asset
@@ -1066,6 +1066,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       balances,
       pricesUsd,
       assetsData,
+      gaugesData,
       vaultsPrices,
       totalSupplies
     }
@@ -1648,8 +1649,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   
   // Update balances USD
   useEffect(() => {
-
-    if (!Object.values(state.balances).length || !Object.values(state.vaultsPositions).length) return
+    if (isEmpty(state.balances) || isEmpty(state.vaultsPositions)) return
 
     const startTimestamp = Date.now();
 
@@ -1689,6 +1689,64 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // eslint-disable-next-line
   }, [state.balances, state.vaultsPositions, selectVaultPosition, selectAssetPriceUsd, selectAssetBalance, selectVaultPrice])
+
+  // Set Gauges Rewards
+  useEffect(() => {
+    if (!state.isPortfolioLoaded || !state.isVaultsPositionsLoaded || isEmpty(state.vaultsPositions)) return
+
+    const gaugesVaultsAssets = selectVaultsAssetsByType('GG')
+    if (!gaugesVaultsAssets) return
+
+    const gaugesRewards = gaugesVaultsAssets.reduce( (gaugesRewards: GaugesRewards, gauge: Asset) => {
+      const gaugeData = gauge.gaugeData
+      const gaugeVaultPosition = gauge.vaultPosition
+      if (!gaugeData || !gaugeVaultPosition) return gaugesRewards
+
+      for (const rewardId in gaugeData.rewards) {
+
+        const gaugeRewardData = gaugeData.rewards[rewardId]
+        const gaugeShare = gauge.totalSupply ? BNify(gaugeVaultPosition.underlying.redeemable).div(gauge.totalSupply) : BNify(0)
+
+        if (BNify(gaugeRewardData.balance).gt(0)){
+          if (!gaugesRewards[rewardId]){
+            gaugesRewards[rewardId] = {
+              deposited: BNify(0),
+              balance: BNify(0),
+              rate: BNify(0),
+              apr: BNify(0),
+              gauges: []
+            }
+          }
+
+          gaugesRewards[rewardId].gauges.push(gauge.id as string)
+          gaugesRewards[rewardId].deposited = BNify(gaugesRewards[rewardId].deposited).plus(gaugeVaultPosition.usd.deposited)
+
+          if (gaugeRewardData.rate) {
+            gaugesRewards[rewardId].rate = BNify(gaugesRewards[rewardId].rate).plus(BNify(gaugeRewardData.rate).times(gaugeShare))
+          }
+          if (gaugeRewardData.balance){
+            gaugesRewards[rewardId].balance = BNify(gaugesRewards[rewardId].balance).plus(gaugeRewardData.balance)
+          }
+          if (gaugeRewardData.apr) {
+            gaugesRewards[rewardId].apr = BNify(gaugesRewards[rewardId].apr).plus(BNify(gaugeRewardData.apr).times(gaugeVaultPosition.usd.deposited))
+          }
+        }
+      }
+
+      return gaugesRewards
+    }, {})
+
+    for (const rewardId in gaugesRewards){
+      gaugesRewards[rewardId].apr = BNify(gaugesRewards[rewardId].apr).div(gaugesRewards[rewardId].deposited)
+    }
+
+    dispatch({type: 'SET_GAUGES_REWARDS', payload: gaugesRewards})
+
+    return () => {
+      dispatch({type: 'SET_GAUGES_REWARDS', payload: {}})
+    }
+
+  }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType])
 
   // Update TVLs
   useEffect(() => {

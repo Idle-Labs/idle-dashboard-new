@@ -9,9 +9,11 @@ import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import React, { useState, useMemo, useCallback } from 'react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
@@ -32,7 +34,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, rewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, rewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
 
   const accountAndPortfolioLoaded = useMemo(() => {
     return !walletInitialized || (account && !isVaultsPositionsLoaded)
@@ -321,12 +323,153 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     
   }, [rewards, navigate])
 
+  const gaugeRewards = useMemo(() => {
+    if (isEmpty(gaugesRewards)) {
+      const strategyProps = strategies.BY
+      const strategyPath = getRoutePath('earn', [strategyProps.route as string])
+      return (
+        <Card
+          width={'100%'}
+        >
+          <Stack
+            spacing={[10, 0]}
+            alignItems={'center'}
+            direction={['column', 'row']}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={'dashboard.rewards.gauges.empty.body'} component={Text} textAlign={['center', 'left']} />
+            <Translation component={Button} translation={`dashboard.rewards.gauges.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+          </Stack>
+        </Card>
+      )
+    }
+    
+    return (
+      <VStack
+        spacing={4}
+        width={'100%'}
+      >
+        {
+          Object.keys(gaugesRewards).map( rewardId => {
+            const rewardData = gaugesRewards[rewardId]
+            return (
+              <AssetProvider
+                wrapFlex={false}
+                assetId={rewardId}
+                key={`reward_${rewardId}`}
+              >
+                <Card
+                  p={6}
+                  px={8}
+                  width={'100%'}
+                >
+                  <Stack
+                    spacing={0}
+                    width={'100%'}
+                    alignItems={'center'}
+                    direction={['column', 'row']}
+                    justifyContent={'space-between'}
+                  >
+                    <SimpleGrid
+                      width={'100%'}
+                      spacing={[6, 0]}
+                      columns={[2, 5]}
+                    >
+                      <VStack
+                        spacing={2}
+                        alignItems={'flex-start'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.asset'} textStyle={'captionSmall'} />
+                        <AssetProvider.GeneralData size={'xs'} field={'asset'} />
+                      </VStack>
+
+                      <VStack
+                        spacing={2}
+                        alignItems={'flex-start'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.gauges'} textStyle={'captionSmall'} />
+                        <AssetsIcons size={'xs'} assetIds={rewardData.gauges} showTooltip={true} />
+                      </VStack>
+
+                      <VStack
+                        spacing={2}
+                        alignItems={'flex-start'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.apr'} textStyle={'captionSmall'} />
+                        <Amount.Percentage textStyle={'tableCell'} value={rewardData.apr} />
+                      </VStack>
+
+                      <VStack
+                        spacing={2}
+                        alignItems={'flex-start'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.dailyDistribution'} textStyle={'captionSmall'} />
+                        <HStack
+                          spacing={1}
+                          width={'100%'}
+                        >
+                          <Amount textStyle={'tableCell'} value={rewardData.rate} decimals={4} />
+                          <AssetProvider.Symbol textStyle={'tableCell'} />
+                        </HStack>
+                      </VStack>
+
+                      <VStack
+                        spacing={2}
+                        alignItems={'flex-start'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+                        <HStack
+                          spacing={1}
+                          width={'100%'}
+                        >
+                          <Amount textStyle={'tableCell'} value={rewardData.balance} decimals={4} />
+                          <AssetProvider.Symbol textStyle={'tableCell'} />
+                        </HStack>
+                      </VStack>
+                    </SimpleGrid>
+                    {/*<Translation component={Button} translation={`defi.claim`} onClick={() => {}} variant={['ctaPrimaryOutline']} disabled={rewardData.balance.lte(0)} px={10} py={2} />*/}
+                  </Stack>
+                </Card>
+              </AssetProvider>
+            )
+          })
+        }
+      </VStack>
+    )
+    
+  }, [gaugesRewards])
+
   const strategiesRewards = useMemo(() => {
     return (
       <VStack
         width={'100%'}
         spacing={[10, 20]}
       >
+        <VStack
+          spacing={6}
+          width={'100%'}
+          id={'gauges-rewards'}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'dashboard.rewards.gauges.title'} component={Text} textStyle={['heading', 'h3']} />
+          {gaugeRewards}
+        </VStack>
+
+        <VStack
+          spacing={6}
+          width={'100%'}
+          id={'best-yield-rewards'}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
+          {vaultsRewards}
+        </VStack>
+
         <VStack
           spacing={6}
           width={'100%'}
@@ -348,41 +491,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             </Stack>
           </Card>
         </VStack>
-
-        <VStack
-          spacing={6}
-          width={'100%'}
-          id={'gauges-rewards'}
-          alignItems={'flex-start'}
-        >
-          <Translation translation={'dashboard.rewards.gauges.title'} component={Text} textStyle={['heading', 'h3']} />
-          <Card
-            width={'100%'}
-          >
-            <Stack
-              spacing={[10, 0]}
-              alignItems={'center'}
-              direction={['column', 'row']}
-              justifyContent={'space-between'}
-            >
-              <Translation translation={'dashboard.rewards.gauges.empty.body'} component={Text} textAlign={['center', 'left']} />
-              <Translation component={Button} translation={`dashboard.rewards.gauges.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
-            </Stack>
-          </Card>
-        </VStack>
-
-        <VStack
-          spacing={6}
-          width={'100%'}
-          id={'best-yield-rewards'}
-          alignItems={'flex-start'}
-        >
-          <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
-          {vaultsRewards}
-        </VStack>
       </VStack>
     )
-  }, [vaultsRewards])
+  }, [vaultsRewards, gaugeRewards])
 
   const leftSideContent = useMemo(() => {
     if (accountAndPortfolioLoaded) {

@@ -233,7 +233,7 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
             <Translation component={Heading} as={'h3'} size={'md'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
           </SkeletonText>
           {
-            asset && (
+            userHasBalance && (
               <HStack
                 spacing={2}
               >

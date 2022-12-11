@@ -101,6 +101,7 @@ const Name: React.FC<AssetFieldProps> = (props) => {
     <Text {...props}>{asset?.name}</Text>
   )
 }
+
 const Symbol: React.FC<AssetFieldProps> = (props) => {
   const { asset } = useAssetProvider()
   return (
@@ -115,7 +116,7 @@ const ProtocolName: React.FC<AssetFieldProps> = (props) => {
   )
 }
 
-type IconProps = {
+export type IconProps = {
   showTooltip?: boolean
 } & AvatarProps
 
@@ -388,6 +389,15 @@ const Deposited: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const GaugeShare: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+
+  const share = asset && asset.totalSupply && BNify(asset?.vaultPosition?.underlying.redeemable).div(asset.totalSupply)
+  return share ? (
+    <Amount.Percentage value={share} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const Apr: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
@@ -652,7 +662,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
           alignItems={'center'}
         >
           <Icon size={'sm'} {...props} />
-          <Name textStyle={'tableCell'} {...props} />
+          <Symbol textStyle={'tableCell'} {...props} />
         </HStack>
       )
     case 'tvl':
@@ -729,6 +739,7 @@ AssetProvider.Earnings = Earnings
 AssetProvider.ApyRatio = ApyRatio
 AssetProvider.Protocols = Protocols
 AssetProvider.Deposited = Deposited
+AssetProvider.GaugeShare = GaugeShare
 AssetProvider.Redeemable = Redeemable
 AssetProvider.Allocation = Allocation
 AssetProvider.BalanceUsd = BalanceUsd

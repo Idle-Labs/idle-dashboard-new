@@ -389,6 +389,8 @@
     "amountStaked": "Amount Staked",
     "assetStaking": "%{assetName} Staking",
     "stake": "Stake",
+    "share": "Share",
+    "gauges": "Gauges",
     "protocol": "Protocol",
     "protocols": "Protocols",
     "unstake": "Unstake",

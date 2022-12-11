@@ -52,29 +52,33 @@ export const GaugeStaking: React.FC = () => {
       width={'100%'}
     >
       <AssetGeneralData assetId={vaultGauge?.id} />
-      {
-        /*
-        <AssetProvider
-          wrapFlex={false}
-          assetId={vaultGauge.id}
+      <AssetProvider
+        wrapFlex={false}
+        assetId={vaultGauge.id}
+      >
+        <SimpleGrid
+          width={'100%'}
+          columns={[2, 4]}
+          spacing={[10, 14]}
+          alignItems={'flex-start'}
         >
-          <SimpleGrid
-            width={'100%'}
-            columns={[2, 4]}
-            spacing={[10, 14]}
-            alignItems={'flex-start'}
+          <VStack
+            spacing={2}
+            justifyContent={'center'}
           >
-            <VStack
-              spacing={2}
-              justifyContent={'center'}
-            >
-              <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
-              <AssetProvider.Deposited textStyle={'heading'} fontSize={'h3'} />
-            </VStack>
-          </SimpleGrid>
-        </AssetProvider>
-        */
-      }
+            <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
+            <AssetProvider.Deposited textStyle={'heading'} fontSize={'h3'} />
+          </VStack>
+
+          <VStack
+            spacing={2}
+            justifyContent={'center'}
+          >
+            <Translation component={Text} translation={'defi.share'} textStyle={'titleSmall'} />
+            <AssetProvider.GaugeShare textStyle={'heading'} fontSize={'h3'} />
+          </VStack>
+        </SimpleGrid>
+      </AssetProvider>
       <VStack
         spacing={6}
         width={'100%'}

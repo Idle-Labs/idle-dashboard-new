@@ -126,6 +126,13 @@ export type GaugeRewardData = {
 }
 export type GaugeRewards = Record<AssetId, GaugeRewardData>
 
+export type GaugesReward = {
+  gauges: AssetId[]
+  deposited: BigNumber
+} & GaugeRewardData
+
+export type GaugesRewards = Record<AssetId, GaugesReward>
+
 export type GaugeData = {
   weight: BigNumber
   rewards: GaugeRewards
@@ -133,6 +140,8 @@ export type GaugeData = {
   totalSupply: BigNumber
   distributionRate: BigNumber
 }
+
+export type GaugesData = Record<AssetId, GaugeData>
 
 export type VaultPosition = {
   avgBuyPrice: BigNumber
