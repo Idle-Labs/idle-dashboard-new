@@ -1181,12 +1181,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return vaultsContracts
     }, [])
 
+    const gaugeDistributorProxy = contracts.find( c => c.name === 'GaugeDistributorProxy' )
+
     // Init gauges vaults
     const gaugesVaults = Object.keys(gauges).reduce( (vaultsContracts: GaugeVault[], token) => {
       const gaugeConfig = gauges[token]
       const trancheVault = trancheVaults.find( tranche => tranche.trancheConfig.address.toLowerCase() === gaugeConfig.trancheToken.address.toLowerCase() )
       if (!trancheVault) return vaultsContracts
-      const gaugeVault = new GaugeVault({web3, chainId, gaugeConfig, trancheVault, cacheProvider})
+      const gaugeVault = new GaugeVault({web3, chainId, gaugeConfig, trancheVault, cacheProvider, gaugeDistributorProxy})
       vaultsContracts.push(gaugeVault)
       return vaultsContracts
     }, [])
@@ -1619,6 +1621,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     ;(async () => {
       const results = await getVaultsPositions(state.vaults)
+
+      // console.log('getVaultsPositions', results)
+
       if (!results) return
 
       const {
@@ -1644,6 +1649,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
       dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
+
+      // Reset all vaults positions
+      const assetsData: Assets = {
+        ...state.assetsData
+      }
+      for (const assetId in assetsData){
+        delete assetsData[assetId].vaultPosition
+      }
+      dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
     };
   // eslint-disable-next-line
   }, [account, state.isPortfolioLoaded, state.portfolioTimestamp, walletInitialized, connecting])

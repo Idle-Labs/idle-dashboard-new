@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { strategies } from 'constants/'
+import { BNify, isEmpty } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { Amount } from 'components/Amount/Amount'
 import { Translation } from 'components/Translation/Translation'
@@ -7,6 +8,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
+import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { VStack, Heading, Text, Stack, HStack, Button, SimpleGrid } from '@chakra-ui/react'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 
@@ -43,6 +45,10 @@ export const GaugeStaking: React.FC = () => {
     )
   }, [vaultGauge, strategyColor])
 
+  const userShare = useMemo(() => {
+    return assetGauge?.vaultPosition && BNify(assetGauge?.vaultPosition?.underlying.redeemable).div(assetGauge.totalSupply)
+  }, [assetGauge])
+
   // console.log('vaultGauge', vaultGauge)
   // console.log('assetGauge', assetGauge)
 
@@ -52,33 +58,74 @@ export const GaugeStaking: React.FC = () => {
       width={'100%'}
     >
       <AssetGeneralData assetId={vaultGauge?.id} />
-      <AssetProvider
-        wrapFlex={false}
-        assetId={vaultGauge.id}
-      >
-        <SimpleGrid
-          width={'100%'}
-          columns={[2, 4]}
-          spacing={[10, 14]}
-          alignItems={'flex-start'}
-        >
-          <VStack
-            spacing={2}
-            justifyContent={'center'}
+      {
+        assetGauge.vaultPosition && (
+          <AssetProvider
+            wrapFlex={false}
+            assetId={vaultGauge.id}
           >
-            <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
-            <AssetProvider.Deposited textStyle={'heading'} fontSize={'h3'} />
-          </VStack>
+            <SimpleGrid
+              width={'100%'}
+              columns={[2, 4]}
+              spacing={[10, 14]}
+              alignItems={'flex-start'}
+            >
+              <VStack
+                spacing={2}
+                justifyContent={'center'}
+              >
+                <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
+                <AssetProvider.Deposited textStyle={'heading'} fontSize={'h3'} />
+              </VStack>
 
-          <VStack
-            spacing={2}
-            justifyContent={'center'}
-          >
-            <Translation component={Text} translation={'defi.share'} textStyle={'titleSmall'} />
-            <AssetProvider.GaugeShare textStyle={'heading'} fontSize={'h3'} />
-          </VStack>
-        </SimpleGrid>
-      </AssetProvider>
+              <VStack
+                spacing={2}
+                justifyContent={'center'}
+              >
+                <Translation component={Text} translation={'defi.share'} textStyle={'titleSmall'} />
+                <AssetProvider.GaugeShare textStyle={'heading'} fontSize={'h3'} />
+              </VStack>
+
+              <VStack
+                spacing={2}
+                justifyContent={'center'}
+              >
+                <Translation component={Text} translation={'defi.dailyDistribution'} textStyle={'titleSmall'} />
+                <AssetProvider.GaugeUserDistribution suffix={` ${vaultGauge.rewardToken?.token}`} textStyle={'heading'} fontSize={'h3'} />
+              </VStack>
+
+              <VStack
+                spacing={2}
+                justifyContent={'center'}
+              >
+                <Translation component={Text} translation={'defi.additionalRewards'} textStyle={'titleSmall'} />
+                <VStack
+                  spacing={2}
+                >
+                  {
+                    vaultGauge.multiRewardsTokens?.length>0 ? Object.keys(assetGauge.gaugeData?.rewards).map( rewardId => {
+                      const rewardData = assetGauge.gaugeData.rewards[rewardId]
+                      if (rewardId === vaultGauge.rewardToken.address) return null
+                      const rewardAsset = selectAssetById(rewardId)
+                      return (
+                        <HStack
+                          spacing={1}
+                          alignItems={'baseline'}
+                        >
+                          <Amount key={`reward_${rewardId}`} value={rewardData.rate.times(userShare)} suffix={` ${rewardAsset.token}`} textStyle={'heading'} fontSize={'h3'} />
+                          <Translation component={Text} translation={['/','common.day']} textStyle={'captionSmall'} textTransform={'lowercase'} />
+                        </HStack>
+                      )
+                    }) : (
+                      <Text textStyle={'heading'} fontSize={'h3'}>-</Text>
+                    )
+                  }
+                </VStack>
+              </VStack>
+            </SimpleGrid>
+          </AssetProvider>
+        )
+      }
       <VStack
         spacing={6}
         width={'100%'}
@@ -90,9 +137,9 @@ export const GaugeStaking: React.FC = () => {
           width={'100%'}
         >
           {
-            Object.keys(assetGauge.gaugeData?.rewards).map( rewardId => {
+            !isEmpty(assetGauge.gaugeData?.rewards) ? Object.keys(assetGauge.gaugeData?.rewards).map( rewardId => {
               const rewardData = assetGauge.gaugeData.rewards[rewardId]
-              // console.log('rewardData', rewardId, rewardData)
+              const contractSendMethod = vaultGauge.getClaimRewardsContractSendMethod(rewardId)
               return (
                 <AssetProvider
                   wrapFlex={false}
@@ -105,8 +152,8 @@ export const GaugeStaking: React.FC = () => {
                     width={'100%'}
                   >
                     <Stack
-                      spacing={0}
                       width={'100%'}
+                      spacing={[4, 0]}
                       alignItems={'center'}
                       direction={['column', 'row']}
                       justifyContent={'space-between'}
@@ -164,12 +211,12 @@ export const GaugeStaking: React.FC = () => {
                           </HStack>
                         </VStack>
                       </SimpleGrid>
-                      <Translation component={Button} translation={`defi.claim`} onClick={() => {}} variant={['ctaPrimaryOutline']} disabled={rewardData.balance.lte(0)} px={10} py={2} />
+                      <TransactionButton text={'defi.claim'} assetId={asset.id} contractSendMethod={contractSendMethod} width={['100%', '150px']} disabled={rewardData.balance.lte(0)} />
                     </Stack>
                   </Card>
                 </AssetProvider>
               )
-            })
+            }) : null
           }
         </VStack>
       </VStack>

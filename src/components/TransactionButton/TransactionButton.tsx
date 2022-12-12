@@ -1,0 +1,187 @@
+import './progress.css'
+import type { AssetId } from 'constants/types'
+import { ContractSendMethod } from 'web3-eth-contract'
+import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
+import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
+import React, { useRef, useCallback, useMemo, useEffect } from 'react'
+import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { TranslationProps, Translation } from 'components/Translation/Translation'
+import { useTheme, ButtonProps, Button, Box, Flex, Spinner, Text, TextProps } from '@chakra-ui/react'
+
+type TransactionButtonProps = {
+  text: string
+  assetId: AssetId
+  contractSendMethod: ContractSendMethod
+}
+
+export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps> = ({
+  text,
+  assetId,
+  contractSendMethod,
+  ...props
+}) => {
+  const theme = useTheme()
+  const { state: { transaction }, cleanTransaction } = useTransactionManager()
+
+  // @ts-ignore
+  const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
+
+  const transactionStarted = useMemo(() => {
+    return isRightTransaction && transaction.status && ['pending', 'success', 'failed'].includes(transaction.status) && transaction.estimatedTime
+  }, [transaction, isRightTransaction])
+
+  const transitionDuration = useMemo(() => {
+    return transactionStarted && transaction.status === 'pending' ? transaction.estimatedTime : 0.5
+  }, [transactionStarted, transaction])
+
+  useEffect(() => {
+    if (transaction.status === 'success' || transaction.status === 'failed'){
+      setTimeout(() => {
+        cleanTransaction()
+      }, 3000)
+    }
+  }, [transaction.status, cleanTransaction])
+  
+  const textComponent = useMemo(() => {
+    if (isRightTransaction){
+      switch (transaction?.status){
+        case 'created':
+          return (
+            <Spinner size={'sm'} />
+          )
+        case 'pending':
+          if (!transaction.timestamp || !transaction.estimatedTime){
+            return (
+              <Spinner size={'sm'} />
+            )
+          }
+          const targetTimestamp = +transaction.timestamp+(transaction.estimatedTime*1000)
+          const remainingTime = Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000))
+          // Return spinner if long transaction
+          if (!remainingTime){
+            return (
+              <Spinner size={'sm'} />
+            )
+          }
+          return (
+            <Text textStyle={'ctaStatic'}>{remainingTime}s</Text>
+          )
+        case 'success':
+          return (
+            <Flex
+              {...props}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <MdOutlineDone size={24} color={theme.colors.green['400']} />
+            </Flex>
+          )
+        case 'failed':
+          return (
+            <Flex
+              {...props}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <MdOutlineClose size={24} color={theme.colors.red['400']} />
+            </Flex>
+          )
+        default:
+        break;
+      }
+    }
+    return (
+      <Translation translation={text} textStyle={'ctaStatic'} />
+    )
+  }, [isRightTransaction, transaction, text, theme, props])
+
+  const progressBg = useMemo(() => {
+    switch (transaction.status){
+      case 'success':
+      case 'failed':
+        return 'transparent'
+      default:
+        return 'primary'
+    }
+  }, [transaction])
+
+  return (
+    <>
+      <Flex
+        top={0}
+        left={0}
+        bottom={0}
+        bg={progressBg}
+        overflow={'hidden'}
+        position={'absolute'}
+        alignItems={'center'}
+        transition={'background 0.5s ease-in-out'}
+        sx={{
+          animationIterationCount: 1,
+          animationFillMode: 'forwards',
+          animationTimingFunction: 'ease-in-out',
+          animationDuration: `${transitionDuration}s`,
+          animationName: transactionStarted ? 'progress' : 'none',
+          animationPlayState: transactionStarted ? 'running' : 'stopped',
+          '> *':{
+            width: props.width,
+            position: 'absolute',
+            color:'black !important',
+          }
+        }}
+      >
+        {textComponent}
+      </Flex>
+      {textComponent}
+    </>
+  )
+}
+
+export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> = ({
+  text,
+  assetId,
+  contractSendMethod,
+  ...props
+}) => {
+  // @ts-ignore
+  const [ref, { width }] = useBoundingRect()
+  const { sendTransaction, state: { transaction } } = useTransactionManager()
+
+  // @ts-ignore
+  const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
+
+  const onClick = useCallback(() => {
+    if (transaction.status === 'created' || transaction.status === 'pending') return
+    console.log('onClick', assetId, contractSendMethod)
+    return sendTransaction(assetId, contractSendMethod)
+  }, [transaction, assetId, contractSendMethod, sendTransaction])
+
+  const borderColor = useMemo(() => {
+    if (!isRightTransaction) return 'primary'
+    switch (transaction.status){
+      case 'success':
+        return 'green.400'
+      case 'failed':
+        return 'red.400'
+      default:
+        return 'primary'
+    }
+  }, [isRightTransaction, transaction])
+
+  return (
+    <Button
+      py={2}
+      px={10}
+      overflow={'hidden'}
+      position={'relative'}
+      borderColor={borderColor}
+      onClick={() => onClick()}
+      ref={ref as typeof useRef}
+      variant={'ctaPrimaryOutline'}
+      transition={'border 0.5s ease-in-out'}
+      {...props}
+    >
+      <TransactionButtonValue text={text} assetId={assetId} contractSendMethod={contractSendMethod} width={width} />
+    </Button>
+  )
+}

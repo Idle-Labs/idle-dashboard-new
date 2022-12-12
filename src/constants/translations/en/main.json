@@ -60,6 +60,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "days": "Days",
+    "day": "Day",
     "copied": "Copied to clipboard.",
     "copyFailed": "Failed to copy to clipboard",
     "copyFailedDescription": "Please copy manually",
@@ -415,6 +416,7 @@
     "availableAssets": "Available assets",
     "claimable": "Claimable",
     "dailyDistribution": "Daily distribution",
+    "additionalRewards": "Additional rewards",
     "fees": "Fees",
     "performanceFee": "Performance Fee",
     "asset": "Asset",
@@ -540,6 +542,7 @@
     "earn": "Earn",
     "stats": "Stats",
     "stake": "Stake",
+    "gauge": "Gauge",
     "defi": "DeFi",
     "transactionHistory": "Transaction History",
     "overview": "Overview",
@@ -912,7 +915,13 @@
       }
     },
     "claim": {
-      "claimFrom": "Claim From %{opportunity}"
+      "claimFrom": "Claim From %{opportunity}",
+      "status": {
+        "confirm": "You are claiming",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully claimed %{amount} %{asset}.",
+        "failed": "There was an issue with your claim."
+      }
     },
     "stake": {
       "amountToStake": "Amount To Stake",

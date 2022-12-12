@@ -42,7 +42,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
       tabs.push(
         {
           id:'stake',
-          label:'navBar.stake',
+          label:'navBar.gauge',
           component: GaugeStaking
         }
       )

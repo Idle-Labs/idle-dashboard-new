@@ -8,8 +8,8 @@ import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
-import type { Number, GaugeRewardData } from 'constants/types'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import type { Number, GaugeRewardData, AssetId } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncReduce, catchPromise } from 'helpers/'
 import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
 
@@ -19,6 +19,7 @@ type ConstructorProps = {
   gaugeConfig: GaugeConfig
   trancheVault: TrancheVault
   cacheProvider?: CacheContextProps
+  gaugeDistributorProxy?: GenericContract
 }
 
 export class GaugeVault {
@@ -44,6 +45,7 @@ export class GaugeVault {
   // Contracts
   public readonly contract: Contract
   public readonly multiRewardsContract: Contract | undefined
+  public readonly gaugeDistributorProxy: GenericContract | undefined
 
   // constructor(web3: Web3, chainId: number, gaugeConfig: GaugeConfig, trancheVault: TrancheVault | undefined){
   constructor(props: ConstructorProps){
@@ -53,7 +55,8 @@ export class GaugeVault {
       chainId,
       trancheVault,
       gaugeConfig,
-      cacheProvider
+      cacheProvider,
+      gaugeDistributorProxy
     } = props
     
     // Init global data
@@ -65,6 +68,7 @@ export class GaugeVault {
     this.cacheProvider = cacheProvider
     this.trancheToken = gaugeConfig.trancheToken
     this.id = this.gaugeConfig.address.toLowerCase()
+    this.gaugeDistributorProxy = gaugeDistributorProxy
     this.underlyingToken = selectUnderlyingToken(chainId, gaugeConfig.underlyingToken)
 
     // const gaugeRewards = [...gaugeConfig.rewardTokens, ...(gaugeConfig.multiRewards?.rewardTokens || [])]
@@ -344,6 +348,15 @@ export class GaugeVault {
 
   public getDepositParams(amount: Number): any[] {
     return [normalizeTokenAmount(amount, 18)]
+  }
+
+  public getClaimRewardsContractSendMethod(assetId: AssetId): ContractSendMethod | undefined {
+    if (assetId.toLowerCase() === this.rewardToken?.address?.toLowerCase()){
+      const distributeRawCall = this.gaugeDistributorProxy?.getRawCall('distribute', [this.id])
+      return distributeRawCall?.call
+    } else {
+      return this.contract.methods.claim_rewards()
+    }
   }
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {

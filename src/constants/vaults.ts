@@ -2263,8 +2263,8 @@ export const gauges: Record<string, GaugeConfig> = {
   stETH:{
     protocol:'lido',
     rewardToken:'IDLE',
-    abi:LiquidityGauge as Abi,
     underlyingToken:'stETH',
+    abi:LiquidityGauge as Abi,
     name: "LiquidityGauge_aa_lido_steth",
     token: "LiquidityGauge_aa_lido_steth",
     address:'0x675eC042325535F6e176638Dd2d4994F645502B9',

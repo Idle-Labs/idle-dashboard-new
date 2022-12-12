@@ -398,6 +398,16 @@ const GaugeShare: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const GaugeUserDistribution: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+
+  const share = asset?.totalSupply && BNify(asset?.vaultPosition?.underlying.redeemable).div(asset.totalSupply)
+  const userDistributionRate = share && asset?.gaugeData?.distributionRate && BNify(asset.gaugeData.distributionRate).times(share)
+  return userDistributionRate ? (
+    <Amount value={userDistributionRate} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const Apr: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
   
@@ -662,7 +672,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
           alignItems={'center'}
         >
           <Icon size={'sm'} {...props} />
-          <Symbol textStyle={'tableCell'} {...props} />
+          <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )
     case 'tvl':
@@ -754,3 +764,4 @@ AssetProvider.ApyRatioChart = ApyRatioChart
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
+AssetProvider.GaugeUserDistribution = GaugeUserDistribution

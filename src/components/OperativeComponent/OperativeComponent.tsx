@@ -5,8 +5,8 @@ import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import type { ReducerActionTypes, AssetId } from 'constants/types'
+import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -716,7 +716,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const [ progressTimeoutId, setProgressTimeoutId ] = useState<any>(null)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
-  const { amount, actionType, baseActionType, activeStep } = useOperativeComponent()
+  const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
 
   const startCountDown = useCallback(() => {
@@ -771,6 +771,14 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     setProgressTimeoutId(null)
     return goBack(resetStep)
   }, [transactionState?.status, cleanTransaction, goBack])
+
+  // Handle transaction reset from another component
+  useEffect(() => {
+    // console.log('goBackAndReset?', activeItem, transactionState?.status, !transactionState?.status)
+    if (!transactionState?.status && activeItem){
+      resetAndGoBack(false)
+    }
+  }, [transactionState?.status, activeItem, resetAndGoBack])
 
   const body = useMemo(() => {
     switch (transactionState?.status) {

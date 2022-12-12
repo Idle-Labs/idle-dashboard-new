@@ -423,7 +423,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Send transaction
   const sendTransactionTest = useCallback(
-    async (contractSendMethod: ContractSendMethod) => {
+    async (assetId: AssetId, contractSendMethod: ContractSendMethod) => {
       if (!account || !web3) return null
 
       const sendOptions: SendOptions = {
@@ -436,7 +436,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         sendOptions.gasPrice = (+state.gasPrice+100).toString()
       }
 
-      dispatch({type: 'CREATE', payload: contractSendMethod})
+      dispatch({type: 'CREATE', payload: {
+        assetId,
+        contractSendMethod
+      }})
 
       setTimeout(() => {
         const hash = '0x7af6ac0d4f21beca905bca30be1a3d73b7634e8635c13edca5a4e74aa276c9c2'
@@ -445,30 +448,32 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
         ;(async() => {
           const transaction = await web3.eth.getTransaction(hash)
+          console.log('Test tx: transaction', transaction)
           if (transaction) {
             dispatch({type: 'SET_TRANSACTION', payload: transaction})
 
             setTimeout(() => {
               ;(async() => {
                 const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)
-                console.log('receipt', receipt)
+                console.log('Test tx: receipt', receipt)
                 if (receipt) {
                   dispatch({type: 'SET_RECEIPT', payload: receipt})
 
                   setTimeout(() => {
                     // receipt.status = 'success'
-                    console.log('confirmation')
+                    console.log('Test tx: confirmation')
                     dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
+                    dispatch({type: 'SET_LAST_TRANSACTION', payload: null})
                     // if (receipt.status) {
                     //   dispatch({type: 'SET_STATUS', payload: "success"})
                     // } else if (!receipt.status) {
                       dispatch({type: 'SET_STATUS', payload: "success"})
                       // dispatch({type: 'SET_STATUS', payload: "failed"})
                     // }
-                  }, 2000)
+                  }, 1000)
                 }
               })()
-            }, 5000)
+            }, 7000)
           }
         })()
       }, 2000)
