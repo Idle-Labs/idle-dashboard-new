@@ -37,6 +37,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { account, walletInitialized } = useWalletProvider()
   const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, rewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
 
+  const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
+
   const accountAndPortfolioLoaded = useMemo(() => {
     return !walletInitialized || (account && !isVaultsPositionsLoaded)
   }, [walletInitialized, account, isVaultsPositionsLoaded])
@@ -45,8 +47,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     if (!selectAssetsByIds) return []
     const assetIds = Object.keys(vaultsPositions)
     const assets = selectAssetsByIds(assetIds)
-    return assets.filter( (asset: Asset) => !selectedStrategies || !asset.type || selectedStrategies.includes(asset.type) ).map( (asset: Asset) => asset.id )
-  }, [vaultsPositions, selectedStrategies, selectAssetsByIds])
+    return assets.filter( (asset: Asset) => !selectedStrategies || !asset.type || (selectedStrategies.includes(asset.type) && enabledStrategies.includes(asset.type)) ).map( (asset: Asset) => asset.id )
+  }, [vaultsPositions, selectedStrategies, enabledStrategies, selectAssetsByIds])
 
   const totalDeposited = useMemo(() => {
     return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (amount: BigNumber, vaultPosition: VaultPosition) => {
@@ -60,6 +62,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     }, BNify(0))
   }, [assetIds, vaultsPositions])
 
+  // console.log('totalFunds', vaultsPositions, totalFunds.toString())
+
   const earningsPercentage = useMemo(() => {
     return totalFunds.div(totalDeposited).minus(1).times(100)
   }, [totalDeposited, totalFunds])
@@ -67,8 +71,6 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const userHasFunds = useMemo(() => {
     return account && isVaultsPositionsLoaded && totalFunds.gt(0)
   }, [account, isVaultsPositionsLoaded, totalFunds])
-
-  const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
 
   const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 

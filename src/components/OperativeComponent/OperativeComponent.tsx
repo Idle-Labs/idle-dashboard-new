@@ -10,7 +10,7 @@ import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import React, { useState, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { BNify, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
@@ -62,7 +62,7 @@ type ActionComponentArgs = {
   goBack?: Function
 } & BoxProps
 
-const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children }) => {
+export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children }) => {
   const { account } = useWalletProvider()
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
@@ -231,7 +231,7 @@ const EstimatedGasFees: React.FC = () => {
   )
 }
 
-const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
+export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
@@ -443,7 +443,7 @@ const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     </AssetProvider>
   )
 }
-const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
+export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
@@ -581,7 +581,7 @@ const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             alignItems={'center'}
           >
             <AssetProvider.Icon size={'sm'} />
-            <AssetProvider.Name textStyle={['heading','h3']} />
+            <AssetProvider.Name textStyle={['heading','h3']} whiteSpace={'nowrap'} />
           </HStack>
           <VStack
             spacing={1}
@@ -708,19 +708,20 @@ type TransactionStatusProps = {
 }
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
+  const countTimeoutId = useRef<any>(null)
   const { chainId, explorer } = useWalletProvider()
   const [ progressValue, setProgressValue ] = useState<number>(0)
   const { underlyingAsset, theme, translate } = useAssetProvider()
-  const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
+  // const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(1)
-  const [ progressTimeoutId, setProgressTimeoutId ] = useState<any>(null)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
   const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
 
-  const startCountDown = useCallback(() => {
-    if (!targetTimestamp) return
+  const startCountDown = useCallback((targetTimestamp: number) => {
+    // console.log('TransactionStatus - startCountDown', targetTimestamp, transactionState.status, transactionState)
+    if (!targetTimestamp || !transactionState.status || transactionState.status!=='pending') return
 
     const newRemainingTime = Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000))
     if (!remainingTime || newRemainingTime > remainingTime) {
@@ -728,37 +729,40 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     }
 
     if (newRemainingTime<=0) return
-    const timeoutId = setTimeout(startCountDown, 1000)
-    setCountTimeoutId(timeoutId)
-    // console.log('COUNTDOWN!')
-  }, [remainingTime, targetTimestamp])
+    countTimeoutId.current = setTimeout(() => {
+      startCountDown(targetTimestamp)
+    }, 1000)
+    // setCountTimeoutId(timeoutId)
+  }, [remainingTime, transactionState])
 
   // Handle transaction succeded or failed
   useEffect(() => {
     // console.log('transactionState.status', transactionState.status, progressValue, progressMaxValue)
     if (!transactionState.status || !['success','failed'].includes(transactionState.status)) return
-    clearTimeout(countTimeoutId)
-    clearTimeout(progressTimeoutId)
+    if (countTimeoutId.current) {
+      clearTimeout(countTimeoutId.current)
+    }
     setRemainingTime(0)
+    countTimeoutId.current = null
     setProgressValue(progressMaxValue)
   // eslint-disable-next-line
   }, [transactionState?.status, setProgressValue, progressMaxValue])
 
   // Set progress max value
   useEffect(() => {
-    if (!transactionState?.estimatedTime || !transactionState?.timestamp || transactionState?.status !== 'pending') return
+    if (!transactionState?.estimatedTime || !transactionState?.timestamp || transactionState?.status !== 'pending' || targetTimestamp) return
+
     const progressMaxValue = (transactionState?.estimatedTime*1000)
-    const targetTimestamp = +transactionState?.timestamp+(transactionState?.estimatedTime*1000)
-    setTargetTimestamp(targetTimestamp)
+    const newTargetTimestamp = +transactionState?.timestamp+(transactionState?.estimatedTime*1000)
+    setTargetTimestamp(newTargetTimestamp)
     setProgressMaxValue(progressMaxValue)
 
     // This will start the circular progress
     setProgressValue(progressMaxValue)
 
-    startCountDown()
-    // startCircularProgress()
-    // console.log('START COUNTDOWN')
-  }, [transactionState, startCountDown/*, startCircularProgress*/])
+    startCountDown(newTargetTimestamp)
+    // console.log('START COUNTDOWN', newTargetTimestamp, transactionState)
+  }, [transactionState, targetTimestamp, startCountDown])
 
   const resetAndGoBack = useCallback((resetStep: boolean = false) => {
     if (transactionState?.status === 'pending') return
@@ -766,9 +770,14 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     setProgressValue(0)
     setRemainingTime(null)
     setProgressMaxValue(1)
-    setCountTimeoutId(null)
+    // setCountTimeoutId(null)
     setTargetTimestamp(null)
-    setProgressTimeoutId(null)
+
+    if (countTimeoutId.current) {
+      clearTimeout(countTimeoutId.current)
+    }
+    countTimeoutId.current = null
+
     return goBack(resetStep)
   }, [transactionState?.status, cleanTransaction, goBack])
 
@@ -827,7 +836,6 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     if (!transactionState?.status || isIndeterminate) return 'blue.400'
     return ['success', 'pending'].includes(transactionState?.status) ? 'green.400' : 'red.400'
   }, [transactionState?.status, isIndeterminate])
-
 
   const circularProgress = useMemo(() => {
     return (
@@ -1009,16 +1017,17 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
   )
 }
 
-type ActionStep = {
+export type ActionStep = {
   type: string
   label: string
   component: any
 }
 
-type OperativeComponentAction = ActionStep & {
+export type OperativeComponentAction = ActionStep & {
   steps: ActionStep[]
 }
 
+/*
 const actions: OperativeComponentAction[] = [
   {
     type: 'deposit',
@@ -1039,6 +1048,7 @@ const actions: OperativeComponentAction[] = [
     steps: []
   }
 ]
+*/
 
 interface OperativeComponentContextProps {
   amount: string
@@ -1087,10 +1097,12 @@ const useOperativeComponent = () => useContext(OperativeComponentContext)
 
 type OperativeComponentArgs = {
   assetId?: AssetId
+  actions: OperativeComponentAction[]
 } & CardProps
 
 export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   assetId,
+  actions,
   ...cardProps
 }) => {
   const [ activeItem, setActiveItem ] = useState<number>(0)
@@ -1105,9 +1117,9 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     setActionIndex(index)
   }
 
-  const activeAction = useMemo(() => actions[actionIndex], [actionIndex])
+  const activeAction = useMemo(() => actions[actionIndex], [actions, actionIndex])
   const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep-1], [activeAction, state.activeStep])
-  const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actionIndex])
+  const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actions, actionIndex])
 
   // console.log('actionIndex', actionIndex)
 

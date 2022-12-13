@@ -19,49 +19,54 @@ type TransactionItemArgs = {
 
 const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
   return (
-    <VStack
-      mb={2}
-      pb={4}
-      spacing={4}
-      width={'100%'}
-      alignItems={'flex-start'}
-      borderBottomWidth={'1px'}
-      borderBottomColor={'divider'}
+    <AssetProvider
+      wrapFlex={false}
+      assetId={transaction.assetId}
     >
-      <HStack
+      <VStack
+        mb={2}
+        pb={4}
+        spacing={4}
         width={'100%'}
-        justifyContent={'space-between'}
+        alignItems={'flex-start'}
+        borderBottomWidth={'1px'}
+        borderBottomColor={'divider'}
       >
         <HStack
-          spacing={3}
-          direction={'row'}
-          alignItems={'center'}
+          width={'100%'}
+          justifyContent={'space-between'}
         >
-          {/*<Icon IconComponent={transaction.icon} width={24} height={24} size={24} />*/}
-          <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
-        </HStack>
-        <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>
-      </HStack>
-      <HStack
-        width={'100%'}
-        justifyContent={'space-between'}
-      >
-        <HStack
-          spacing={2}
-          alignItems={'center'}
-        >
-          <AssetProvider.Icon size={'xs'} />
           <HStack
-            spacing={1}
+            spacing={3}
+            direction={'row'}
             alignItems={'center'}
           >
-            <Amount value={transaction.underlyingAmount} textStyle={'tableCell'} />
-            <AssetProvider.Name textStyle={'tableCell'} />
+            {/*<Icon IconComponent={transaction.icon} width={24} height={24} size={24} />*/}
+            <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
           </HStack>
+          <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>
         </HStack>
-        <TransactionLink hash={transaction.hash} />
-      </HStack>
-    </VStack>
+        <HStack
+          width={'100%'}
+          justifyContent={'space-between'}
+        >
+          <HStack
+            spacing={2}
+            alignItems={'center'}
+          >
+            <AssetProvider.Icon size={'xs'} />
+            <HStack
+              spacing={1}
+              alignItems={'center'}
+            >
+              <Amount value={transaction.underlyingAmount} decimals={4} textStyle={'tableCell'} />
+              <AssetProvider.Name textStyle={'tableCell'} />
+            </HStack>
+          </HStack>
+          <TransactionLink hash={transaction.hash} />
+        </HStack>
+      </VStack>
+    </AssetProvider>
   )
 }
 
@@ -71,12 +76,21 @@ type TransactionListArgs = {
 
 export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
   const { account } = useWalletProvider()
-  const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectVaultTransactions } } = usePortfolioProvider()
+  const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectVaultTransactions, selectVaultGauge } } = usePortfolioProvider()
 
   const transactions: Transaction[] = useMemo(() => {
-    if (!account || !assetId || !selectVaultTransactions) return
-    return selectVaultTransactions(assetId)
-  }, [account, assetId, selectVaultTransactions])
+    if (!account || !assetId || !selectVaultTransactions || !selectVaultGauge) return []
+    const gaugeVault = selectVaultGauge(assetId)
+    const vaultTransactions: Transaction[] = selectVaultTransactions(assetId)
+    const gaugeTransactions: Transaction[] = gaugeVault ? selectVaultTransactions(gaugeVault.id) : []
+
+    // console.log('vaultTransactions', vaultTransactions)
+    // console.log('gaugeTransactions', gaugeTransactions)
+    return [
+      ...vaultTransactions,
+      ...gaugeTransactions
+    ]
+  }, [account, assetId, selectVaultTransactions, selectVaultGauge])
 
   // console.log('transactions', assetId, transactions)
 
@@ -86,7 +100,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
 
   const transactionsList = useMemo(() => {
     return isLoaded ?
-      transactions && transactions.length>0 ? 
+      transactions.length>0 ? 
         sortArrayByKey(transactions, 'timeStamp', 'desc').map( (transaction: Transaction) => (
           <TransactionItem key={`tx_${transaction.hash}`} transaction={transaction} />
         ))
@@ -115,26 +129,21 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
   }, [isLoaded, transactions])
 
   return (
-    <AssetProvider
-      wrapFlex={false}
-      assetId={assetId}
+    <Card
+      flex={1}
     >
-      <Card
+      <VStack
         flex={1}
+        spacing={0}
+        height={'100%'}
+        alignItems={'flex-start'}
+        justifyContent={'flex-start'}
       >
-        <VStack
-          flex={1}
-          spacing={0}
-          height={'100%'}
-          alignItems={'flex-start'}
-          justifyContent={'flex-start'}
-        >
-          <Translation display={['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
-          <Scrollable maxH={400}>
-            {transactionsList}
-          </Scrollable>
-        </VStack>
-      </Card>
-    </AssetProvider>
+        <Translation display={['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
+        <Scrollable maxH={400}>
+          {transactionsList}
+        </Scrollable>
+      </VStack>
+    </Card>
   )
 }

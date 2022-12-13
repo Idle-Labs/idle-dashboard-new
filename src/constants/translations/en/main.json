@@ -23,6 +23,8 @@
     "insufficientAmountForGas": "Not enough ETH to cover gas",
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
+    "stake": "Stake",
+    "unstake": "Unstake",
     "withdraw": "Withdraw",
     "withdrawal": "Withdrawal",
     "claim": "Claim",
@@ -559,6 +561,8 @@
     "deposit": "Deposit",
     "redeem": "Withdraw",
     "send": "Sent",
+    "stake": "Stake",
+    "unstake": "Unstake",
     "receive": "Received",
     "moreDetails": "More Details",
     "date": "Date",
@@ -670,6 +674,24 @@
         "status": {
           "success": {
             "button": "New Deposit"
+          }
+        }
+      },
+      "stake": {
+        "confirm": "You are staking",
+        "confirmed": "You have staked",
+        "status": {
+          "success": {
+            "button": "New Stake"
+          }
+        }
+      },
+      "unstake": {
+        "confirm": "You are unstaking",
+        "confirmed": "You have unstaked",
+        "status": {
+          "success": {
+            "button": "Back"
           }
         }
       },
@@ -931,9 +953,24 @@
       "footerDisclaimer": "By continuing you agree to our ",
       "footerDisclaimerLink": "terms of service.",
       "status": {
+        "confirm": "You are staking",
         "pending": "Your transaction has been broadcast and is pending confirmation.",
         "success": "You have successfully staked %{amount} %{asset}.",
         "failed": "There was an issue with your staking transaction."
+      }
+    },
+    "unstake": {
+      "amountToStake": "Amount To Unstake",
+      "stakeYour": "Unstake your %{opportunity}",
+      "estimatedReturns": "Estimated Yearly Returns*",
+      "estimateDisclaimer": "*Estimates fluctuate with market conditions.",
+      "footerDisclaimer": "By continuing you agree to our ",
+      "footerDisclaimerLink": "terms of service.",
+      "status": {
+        "confirm": "You are unstaking",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully unstaked %{amount} %{asset}.",
+        "failed": "There was an issue with your unstaking transaction."
       }
     },
     "withdraw": {

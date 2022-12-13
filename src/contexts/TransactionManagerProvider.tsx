@@ -315,10 +315,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [account, web3, state.gasPrice, state.tokenPriceUsd])
 
   // Track transaction changed
-  // useEffect(() => {
-  //   if (!state.transaction) return
-  //   console.log('Transaction CHANGED', state.transaction)
-  // }, [state.transaction])
+  useEffect(() => {
+    if (!state.transaction) return
+    console.log('Transaction CHANGED', state.transaction)
+  }, [state.transaction])
 
   // Set estimated time
   useEffect(() => {
@@ -449,9 +449,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         ;(async() => {
           const transaction = await web3.eth.getTransaction(hash)
           console.log('Test tx: transaction', transaction)
-          if (transaction) {
+          if (transaction){
             dispatch({type: 'SET_TRANSACTION', payload: transaction})
-
             setTimeout(() => {
               ;(async() => {
                 const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)

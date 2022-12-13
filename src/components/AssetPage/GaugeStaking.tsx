@@ -57,7 +57,6 @@ export const GaugeStaking: React.FC = () => {
       spacing={10}
       width={'100%'}
     >
-      <AssetGeneralData assetId={vaultGauge?.id} />
       {
         assetGauge.vaultPosition && (
           <AssetProvider
@@ -75,7 +74,13 @@ export const GaugeStaking: React.FC = () => {
                 justifyContent={'center'}
               >
                 <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
-                <AssetProvider.Deposited textStyle={'heading'} fontSize={'h3'} />
+                <HStack
+                  spacing={1}
+                  alignItems={'baseline'}
+                >
+                  <AssetProvider.Deposited textStyle={'heading'} fontSize={'h3'} />
+                  <AssetProvider.Name textStyle={'heading'} fontSize={'h3'} />
+                </HStack>
               </VStack>
 
               <VStack
@@ -111,8 +116,9 @@ export const GaugeStaking: React.FC = () => {
                         <HStack
                           spacing={1}
                           alignItems={'baseline'}
+                          key={`reward_${rewardId}`}
                         >
-                          <Amount key={`reward_${rewardId}`} value={rewardData.rate.times(userShare)} suffix={` ${rewardAsset.token}`} textStyle={'heading'} fontSize={'h3'} />
+                          <Amount value={rewardData.rate.times(userShare)} suffix={` ${rewardAsset.token}`} textStyle={'heading'} fontSize={'h3'} />
                           <Translation component={Text} translation={['/','common.day']} textStyle={'captionSmall'} textTransform={'lowercase'} />
                         </HStack>
                       )
@@ -220,6 +226,7 @@ export const GaugeStaking: React.FC = () => {
           }
         </VStack>
       </VStack>
+      <AssetGeneralData assetId={vaultGauge?.id} />
       {strategyDescriptionCarousel}
     </VStack>
   )

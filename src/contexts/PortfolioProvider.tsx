@@ -195,8 +195,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
   }, [state.assetsData])
 
-  const selectVaultTransactions = useCallback( (vaultId: AssetId | undefined): Transaction[] | null => {
-    return vaultId && state.transactions ? state.transactions[vaultId.toLowerCase()] : null
+  const selectVaultTransactions = useCallback( (vaultId: AssetId | undefined): Transaction[] => {
+    return vaultId && state.transactions ? state.transactions[vaultId.toLowerCase()] || [] : []
   }, [state.transactions])
 
   const selectAssetHistoricalPriceByTimestamp = useCallback( (assetId: AssetId | undefined, timestamp: string | number): HistoryData | null => {
@@ -367,6 +367,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber}, transaction: Transaction, index: number) => {
         switch (transaction.action) {
           case 'deposit':
+          case 'stake':
             if (!firstDepositTx){
               firstDepositTx = transaction
             }
@@ -374,6 +375,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             depositsInfo.depositedIdleAmount = depositsInfo.depositedIdleAmount.plus(transaction.idleAmount)
           break;
           case 'redeem':
+          case 'unstake':
             depositsInfo.depositedAmount = BigNumber.maximum(0, depositsInfo.depositedAmount.minus(transaction.underlyingAmount))
             depositsInfo.depositedIdleAmount = BigNumber.maximum(0, depositsInfo.depositedIdleAmount.minus(transaction.idleAmount))
             if (depositsInfo.depositedAmount.lte(0)){
@@ -624,7 +626,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Get vaults additional APRs
     const vaultsAdditionalAprsPromises = vaults.reduce( (promises: Map<AssetId, Promise<VaultAdditionalApr>>, vault: Vault): Map<AssetId, Promise<VaultAdditionalApr>> => {
-      const assetKey = ("cdoConfig" in vault) ? vault.cdoConfig.address : vault.id
+      const assetKey = vault.id
       if (promises.has(assetKey)) return promises
       promises.set(assetKey, vaultFunctionsHelper.getVaultAdditionalApr(vault))
       return promises
@@ -940,7 +942,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
 
           // Add additional Apr
-          const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId || (vault && "cdoConfig" in vault && apr.cdoId === vault.cdoConfig?.address)) )
+          const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId) )
           if (vaultAdditionalApr){
             aprs[assetId] = aprs[assetId].plus(vaultAdditionalApr.apr.div(`1e${decimals}`))
           }
@@ -1622,7 +1624,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     ;(async () => {
       const results = await getVaultsPositions(state.vaults)
 
-      // console.log('getVaultsPositions', results)
+      console.log('getVaultsPositions', results)
 
       if (!results) return
 

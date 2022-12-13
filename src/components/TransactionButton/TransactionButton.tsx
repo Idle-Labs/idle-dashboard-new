@@ -3,8 +3,8 @@ import type { AssetId } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import React, { useRef, useCallback, useMemo, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { useTheme, ButtonProps, Button, Box, Flex, Spinner, Text, TextProps } from '@chakra-ui/react'
 
@@ -21,6 +21,8 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
   ...props
 }) => {
   const theme = useTheme()
+  const intervalId = useRef<any>(null)
+  const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const { state: { transaction }, cleanTransaction } = useTransactionManager()
 
   // @ts-ignore
@@ -34,13 +36,35 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
     return transactionStarted && transaction.status === 'pending' ? transaction.estimatedTime : 0.5
   }, [transactionStarted, transaction])
 
+  const startCountdown = useCallback(() => {
+    // console.log('getRemainingTime', transaction)
+    if (!transaction.timestamp || !transaction.estimatedTime) return null
+    const targetTimestamp = +transaction.timestamp+(transaction.estimatedTime*1000)
+    // console.log('getRemainingTime - targetTimestamp', targetTimestamp, Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000)))
+    const remainingTime = Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000))
+
+    setRemainingTime(remainingTime)
+    if (!remainingTime) return
+    // console.log('TransactionButton - startCountdown')
+    intervalId.current = setTimeout(() => {
+      startCountdown()
+    }, 1000)
+  }, [transaction])
+
   useEffect(() => {
     if (transaction.status === 'success' || transaction.status === 'failed'){
+      // console.log('Clear Interval', intervalId.current)
+      if (intervalId.current){
+        clearInterval(intervalId.current)
+        intervalId.current = null
+      }
       setTimeout(() => {
         cleanTransaction()
       }, 3000)
+    } else if (transaction.status === 'pending' && !intervalId.current){
+      startCountdown()
     }
-  }, [transaction.status, cleanTransaction])
+  }, [transaction.status, startCountdown, cleanTransaction])
   
   const textComponent = useMemo(() => {
     if (isRightTransaction){
@@ -55,8 +79,8 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
               <Spinner size={'sm'} />
             )
           }
-          const targetTimestamp = +transaction.timestamp+(transaction.estimatedTime*1000)
-          const remainingTime = Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000))
+          // const targetTimestamp = +transaction.timestamp+(transaction.estimatedTime*1000)
+          // const remainingTime = Math.max(0, Math.ceil((targetTimestamp-Date.now())/1000))
           // Return spinner if long transaction
           if (!remainingTime){
             return (
@@ -93,7 +117,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
     return (
       <Translation translation={text} textStyle={'ctaStatic'} />
     )
-  }, [isRightTransaction, transaction, text, theme, props])
+  }, [isRightTransaction, remainingTime, transaction, text, theme, props])
 
   const progressBg = useMemo(() => {
     switch (transaction.status){
@@ -145,7 +169,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
 }) => {
   // @ts-ignore
   const [ref, { width }] = useBoundingRect()
-  const { sendTransaction, state: { transaction } } = useTransactionManager()
+  const { sendTransaction, sendTransactionTest, state: { transaction } } = useTransactionManager()
 
   // @ts-ignore
   const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
@@ -153,8 +177,8 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
     console.log('onClick', assetId, contractSendMethod)
-    return sendTransaction(assetId, contractSendMethod)
-  }, [transaction, assetId, contractSendMethod, sendTransaction])
+    return sendTransactionTest(assetId, contractSendMethod)
+  }, [transaction, assetId, contractSendMethod, sendTransactionTest])
 
   const borderColor = useMemo(() => {
     if (!isRightTransaction) return 'primary'

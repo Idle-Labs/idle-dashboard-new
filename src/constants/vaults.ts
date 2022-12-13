@@ -2275,8 +2275,8 @@ export const gauges: Record<string, GaugeConfig> = {
       address:'0xA357AF9430e4504419A7A05e217D4A490Ecec6FA',
     },
     trancheToken:{
-      name: 'AA_lido_stETH',
-      token: 'AA_lido_stETH',
+      name: 'stETH-AA',
+      token: 'stETH-AA',
       address: '0x2688fc68c4eac90d9e5e1b94776cf14eade8d877'
     }
   },
@@ -2289,8 +2289,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_convex_alusd3crv",
     address:'0x21dDA17dFF89eF635964cd3910d167d562112f57',
     trancheToken:{
-      name: 'AA_convex_alusd3crv',
-      token: 'AA_convex_alusd3crv',
+      name: 'ALUSD3CRV-AA',
+      token: 'ALUSD3CRV-AA',
       address: '0x790E38D85a364DD03F682f5EcdC88f8FF7299908'
     }
   },
@@ -2303,8 +2303,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_convex_frax3crv",
     address:'0x7ca919Cf060D95B3A51178d9B1BCb1F324c8b693',
     trancheToken:{
-      name: 'AA_convex_frax3crv',
-      token: 'AA_convex_frax3crv',
+      name: 'FRAX3CRV-AA',
+      token: 'FRAX3CRV-AA',
       address: '0x15794da4dcf34e674c18bbfaf4a67ff6189690f5'
     }
   },
@@ -2317,8 +2317,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_convex_mim3crv",
     address:'0x8cC001dd6C9f8370dB99c1e098e13215377Ecb95',
     trancheToken:{
-      name: 'AA_convex_mim3crv',
-      token: 'AA_convex_mim3crv',
+      name: 'MIM3CRV-AA',
+      token: 'MIM3CRV-AA',
       address: '0xFC96989b3Df087C96C806318436B16e44c697102'
     }
   },
@@ -2331,8 +2331,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_convex_3eur",
     address:'0xDfB27F2fd160166dbeb57AEB022B9EB85EA4611C',
     trancheToken:{
-      name: 'AA_convex_3eur',
-      token: 'AA_convex_3eur',
+      name: '3EUR-AA',
+      token: '3EUR-AA',
       address: '0x158e04225777BBEa34D2762b5Df9eBD695C158D2'
     }
   },
@@ -2345,8 +2345,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_convex_steCRV",
     address:'0x30a047d720f735Ad27ad384Ec77C36A4084dF63E',
     trancheToken:{
-      name: 'AA_convex_steCRV',
-      token: 'AA_convex_steCRV',
+      name: 'steCRV-AA',
+      token: 'steCRV-AA',
       address: '0x060a53BCfdc0452F35eBd2196c6914e0152379A6'
     }
   },
@@ -2365,8 +2365,8 @@ export const gauges: Record<string, GaugeConfig> = {
       address:'0x7f366a2b4c4380fd9746cf10b4ded562c890b0b1',
     },
     trancheToken:{
-      name: 'AA_convex_musd3crv',
-      token: 'AA_convex_musd3crv',
+      name: 'MUSD3CRV-AA',
+      token: 'MUSD3CRV-AA',
       address: '0x4585F56B06D098D4EDBFc5e438b8897105991c6A'
     }
   },
@@ -2385,8 +2385,8 @@ export const gauges: Record<string, GaugeConfig> = {
       address:'0x7d4091D8b28d09b4135905213DE105C45d7F459d',
     },
     trancheToken:{
-      name: 'AA_convex_pbtccrv',
-      token: 'AA_convex_pbtccrv',
+      name: 'PBTCCRV-AA',
+      token: 'PBTCCRV-AA',
       address: '0x4657B96D587c4d46666C244B40216BEeEA437D0d'
     }
   },
@@ -2399,8 +2399,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_euler_ageur",
     address:'0x8f195979f7af6c500b4688e492d07036c730c1b2',
     trancheToken:{
-      name: 'AA_euler_AGEUR',
-      token: 'AA_euler_AGEUR',
+      name: 'AGEUR-AA',
+      token: 'AGEUR-AA',
       address: '0x624DfE05202b66d871B8b7C0e14AB29fc3a5120c'
     }
   },
@@ -2413,8 +2413,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_euler_usdc",
     address:'0x1cd24f833af78ae877f90569eaec3174d6769995',
     trancheToken:{
-      name: 'AA_euler_USDC',
-      token: 'AA_euler_USDC',
+      name: 'USDC-AA',
+      token: 'USDC-AA',
       address: '0x1e095cbF663491f15cC1bDb5919E701b27dDE90C'
     }
   },
@@ -2427,8 +2427,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_euler_dai",
     address:'0x57d59d4bbb0e2432f1698f33d4a47b3c7a9754f3',
     trancheToken:{
-      name: 'AA_euler_DAI',
-      token: 'AA_euler_DAI',
+      name: 'DAI-AA',
+      token: 'DAI-AA',
       address: '0x852c4d2823E98930388b5cE1ed106310b942bD5a'
     }
   },
@@ -2441,8 +2441,8 @@ export const gauges: Record<string, GaugeConfig> = {
     token: "LiquidityGauge_aa_euler_usdt",
     address:'0x0c3310b0b57b86d376040b755f94a925f39c4320',
     trancheToken:{
-      name: 'AA_euler_USDT',
-      token: 'AA_euler_USDT',
+      name: 'USDT-AA',
+      token: 'USDT-AA',
       address: '0xE0f126236d2a5b13f26e72cBb1D1ff5f297dDa07'
     }
   },

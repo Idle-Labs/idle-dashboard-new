@@ -87,7 +87,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
 
       const vaultTransactions = selectVaultTransactions(assetId)
 
-      if (!vaultTransactions) return assetsBalancesByDate
+      if (!vaultTransactions.length) return assetsBalancesByDate
 
       // Loop through asset transactions
       const assetBalancesByDate = vaultTransactions.reduce( (balances: Record<string, any>, transaction: Transaction) => {

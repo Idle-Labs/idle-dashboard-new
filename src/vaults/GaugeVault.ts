@@ -130,8 +130,8 @@ export class GaugeVault {
 
           // Get action by positive condition
           const actions: Record<string, boolean> = {
-            deposit: !!(isReceiveTransferTx || isDepositTx || isSwapTx),
-            redeem: !!(isSendTransferTx || isRedeemTx || isSwapOutTx)
+            stake: !!(isReceiveTransferTx || isDepositTx || isSwapTx),
+            unstake: !!(isSendTransferTx || isRedeemTx || isSwapOutTx)
           }
 
           const action = Object.keys(actions).find( (action: string) => !!actions[action] )
@@ -139,8 +139,8 @@ export class GaugeVault {
           if (action) {
 
             // Get idle token tx and underlying token tx
-            const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : this.trancheVault.cdoConfig.address) : account
-            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
+            const idleTokenToAddress = action === 'unstake' ? (isSendTransferTx ? null : account) : this.gaugeConfig.address
+            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.trancheToken.address?.toLowerCase() && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
             const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
 
             const pricesCalls = this.trancheVault.getPricesCalls()
@@ -155,7 +155,7 @@ export class GaugeVault {
             const underlyingAmount = idleAmount
               // console.log('tokenPrice', this.id, tx.blockNumber, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
 
-            // console.log(this.id, action, tx.hash, tokenPrice?.toString(), idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), tx)
+            // console.log(this.id, action, tx.hash, tokenPrice?.toString(), idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), idleTokenToAddress, tx)
 
             transactions.push({
               ...tx,
@@ -303,7 +303,7 @@ export class GaugeVault {
       [this.id]:{
         decimals: 18,
         type: this.type,
-        name: trancheAssetData.name,
+        name: this.trancheToken.name,
         token: trancheAssetData.token,
         color: this.underlyingToken?.colors.hex,
         underlyingId: this.trancheToken.address.toLowerCase(),

@@ -172,13 +172,14 @@ export class VaultFunctionsHelper {
       apr = apr.plus(harvestApy)
     }
 
-    // console.log('getMaticTrancheApy', FULL_ALLOC.toString(), currentAARatio.toString(), trancheAPRSplitRatio.toString(), harvestApy.toString(), apr.toString())
+    // console.log('getMaticTrancheApy', trancheVault.type, FULL_ALLOC.toString(), currentAARatio.toString(), trancheAPRSplitRatio.toString(), harvestApy.toString(), apr.toString())
 
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
   }
 
   public async getVaultAdditionalApr(vault: Vault): Promise<VaultAdditionalApr> {
     if (vault instanceof TrancheVault) {
+      // console.log('getVaultAdditionalApr', vault.cdoConfig.name, vault.type)
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_lido_MATIC':
           return {

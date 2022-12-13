@@ -10,6 +10,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
+import { Approve, Deposit, Withdraw } from 'components/OperativeComponent/OperativeComponent'
 import { ContainerProps, Box, Flex, Stack, HStack, VStack, Tabs, Tab, TabList } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
@@ -35,7 +36,27 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
       {
         id:'earn',
         label:'navBar.earn',
-        component: Earn
+        component: Earn,
+        actions: [
+          {
+            type: 'deposit',
+            component: Deposit,
+            label: 'common.deposit',
+            steps: [
+              {
+                type: 'approve',
+                component: Approve,
+                label:'modals.approve.header',
+              }
+            ]
+          },
+          {
+            type: 'withdraw',
+            label: 'common.withdraw',
+            component: Withdraw,
+            steps: []
+          }
+        ]
       },
     ]
     if (vaultGauge){
@@ -43,7 +64,27 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
         {
           id:'stake',
           label:'navBar.gauge',
-          component: GaugeStaking
+          component: GaugeStaking,
+          actions: [
+            {
+              type: 'stake',
+              component: Deposit,
+              label: 'common.stake',
+              steps: [
+                {
+                  type: 'approve',
+                  component: Approve,
+                  label:'modals.approve.header',
+                }
+              ]
+            },
+            {
+              type: 'unstake',
+              label: 'common.unstake',
+              component: Withdraw,
+              steps: []
+            }
+          ]
         }
       )
     }
@@ -124,7 +165,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
           >
             <TabComponent />
           </Stack>
-          <InteractiveComponent vaultId={asset?.id} assetId={vaultId} />
+          <InteractiveComponent vaultId={asset?.id} assetId={vaultId} actions={tabs[selectedTabIndex].actions} />
         </HStack>
       </Box>
     </AssetProvider>

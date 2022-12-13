@@ -6,14 +6,15 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { HStack, VStack, Button, Flex, Text } from '@chakra-ui/react'
 import { TransactionList } from 'components/TransactionList/TransactionList'
-import { OperativeComponent } from 'components/OperativeComponent/OperativeComponent'
+import { OperativeComponent, OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
 
 type InteractiveComponentArgs = {
   vaultId?: AssetId
   assetId?: AssetId
+  actions: OperativeComponentAction[]
 }
 
-export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ assetId, vaultId }) => {
+export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ assetId, vaultId, actions }) => {
   const { isMobile } = useThemeProvider()
   const [ showDeposit, setShowDeposit ] = useState<boolean>(false)
   const { selectors: { selectAssetById } } = usePortfolioProvider()
@@ -58,9 +59,10 @@ export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ asset
               </HStack>
             )
           }
-          <OperativeComponent flex={1} minHeight={isMobile ? 'auto' : '590px'} borderRadius={isMobile ? 0 : undefined} assetId={assetId} />
+          <OperativeComponent flex={1} minHeight={isMobile ? 'auto' : '590px'} borderRadius={isMobile ? 0 : undefined} assetId={assetId} actions={actions} />
         </VStack>
         <VStack
+          flex={1}
           bottom={0}
           spacing={0}
           width={'100%'}
