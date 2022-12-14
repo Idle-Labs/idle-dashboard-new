@@ -1,10 +1,10 @@
 import { requestTimeout } from 'helpers/'
 import { useState, useCallback, useLayoutEffect } from "react";
 
-let timeoutId: any = null;
 // let timeoutRequest: any = null;
 
 const debounce = (delay: number = 0, callback: Function) => {
+  let timeoutId: any = null;
   return (...args: any[]) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
