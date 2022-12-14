@@ -343,16 +343,19 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return selectAssetBalance(underlyingAsset?.id)
   }, [selectAssetBalance, underlyingAsset?.id])
 
+
   const disabled = useMemo(() => {
     setError('')
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
-    if (BNify(assetBalance).lte(0)) return false
+    // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
     }
     return false
   }, [amount, assetBalance, underlyingAsset, translate])
+
+  // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
   // Deposit
   const deposit = useCallback((checkAllowance: boolean = true) => {
@@ -579,7 +582,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const disabled = useMemo(() => {
     setError('')
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
-    if (BNify(assetBalance).lte(0)) return false
+    // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
