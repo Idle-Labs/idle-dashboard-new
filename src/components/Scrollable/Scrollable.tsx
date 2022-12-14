@@ -10,7 +10,8 @@ export const Scrollable: React.FC<ScrollableArgs> = ({parentRef, children, ...fl
     <Flex
       flex={1}
       width={'100%'}
-      overflow={'scroll'}
+      overflowY={'auto'}
+      overflowX={'hidden'}
       direction={'column'}
       alignItems={'flex-start'}
       {...flexProps}

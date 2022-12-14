@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react'
 import { strategies } from 'constants/'
 import { BNify, isEmpty } from 'helpers/'
 import { Card } from 'components/Card/Card'
+import React, { useMemo, useEffect } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -14,18 +14,22 @@ import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarou
 
 export const GaugeStaking: React.FC = () => {
   const { params } = useBrowserRouter()
-  const { selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
+  const { assetsData, selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
-    return selectAssetById && selectAssetById(params.asset)
+    const asset = selectAssetById && selectAssetById(params.asset)
+    // console.log('GaugeStaking - useMemo - asset', asset)
+    return asset
   }, [selectAssetById, params.asset])
 
   const vaultGauge = useMemo(() => {
-    return selectVaultGauge && selectVaultGauge(params.asset)
-  }, [selectVaultGauge, params.asset])
+    return asset && selectVaultGauge && selectVaultGauge(asset.id)
+  }, [selectVaultGauge, asset])
 
   const assetGauge = useMemo(() => {
-    return selectAssetById && vaultGauge && selectAssetById(vaultGauge.id)
+    const asset = selectAssetById && vaultGauge && selectAssetById(vaultGauge.id)
+    // console.log('GaugeStaking - useMemo - assetGauge', asset)
+    return asset
   }, [vaultGauge, selectAssetById])
 
   const strategy = useMemo(() => {

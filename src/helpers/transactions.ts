@@ -1,3 +1,4 @@
+import Web3 from 'web3'
 import { BNify } from 'helpers/'
 import type { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
@@ -18,4 +19,10 @@ export const estimateGasLimit = async (contractSendMethod: ContractSendMethod, c
   const gas = await contractSendMethod.estimateGas(callOptions).catch( err => null );
   if (!gas) return
   return BigNumber.maximum(BNify(gas), minGasLimit).integerValue(BigNumber.ROUND_FLOOR).toNumber()
+}
+
+export const getBlockBaseFeePerGas = async (web3: Web3, blockNumber: string | number = 'latest'): Promise<number | null> => {
+  const block = await web3.eth.getBlock(blockNumber)
+  if (!block) return null
+  return block.baseFeePerGas ? +block.baseFeePerGas : null
 }

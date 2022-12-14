@@ -3,10 +3,11 @@ import { HStack, TextProps } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type AssetLabelProps = {
-  assetId: AssetId
+  size?: string
+  assetId: AssetId | undefined
 } & TextProps
 
-export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, ...textProps }) => {
+export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, size = 'sm', ...textProps }) => {
   return (
     <AssetProvider
       wrapFlex={false}
@@ -16,7 +17,7 @@ export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, ...textProps })
         alignItems={'center'}
         justifyContent={'flex-start'}
       >
-        <AssetProvider.Icon size={'sm'} />
+        <AssetProvider.Icon size={size} />
         <AssetProvider.Name textStyle={'heading'} fontSize={'h3'} whiteSpace={'nowrap'} {...textProps} />
       </HStack>
     </AssetProvider>

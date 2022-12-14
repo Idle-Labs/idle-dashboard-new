@@ -43,14 +43,15 @@ export function Web3Provider({ children }: ProviderProps) {
   }, [wallet?.provider, walletInitialized, chainId, web3Rpc])
 
   useEffect(() => {
-    if (!chainId || !web3) return
+    if (!chainId || !web3 || !web3Rpc) return
 
     // @ts-ignore // TO REMOVE
     window.web3 = web3
 
+    // const multiCall = new Multicall(chainId, web3Rpc)
     const multiCall = new Multicall(chainId, web3)
     setMultiCall(multiCall)
-  }, [web3, chainId])
+  }, [web3, web3Rpc, chainId])
 
   return (
     <Web3ProviderContext.Provider value={{web3, web3Rpc, multiCall}}>

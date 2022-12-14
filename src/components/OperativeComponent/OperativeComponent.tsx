@@ -1,19 +1,22 @@
+import BigNumber from 'bignumber.js'
 import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
+import { strategies } from 'constants/strategies'
 import type { VaultMessages } from 'constants/vaults'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import type { ReducerActionTypes, AssetId } from 'constants/types'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
+import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
+import { BNify, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
+import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
 type InputAmountArgs = {
   amount?: string
@@ -231,14 +234,107 @@ const EstimatedGasFees: React.FC = () => {
   )
 }
 
+type DynamicActionFieldsProps = {
+  action: string
+  amount: string
+  amountUsd: number
+  assetId: AssetId | undefined
+}
+
+type DynamicActionFieldProps = {
+  field: string
+} & TextProps & DynamicActionFieldsProps
+
+export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, action, amount, amountUsd, ...textProps }) => {
+  const { helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    return assetId && selectAssetById && selectAssetById(assetId)
+  }, [assetId, selectAssetById])
+
+  const vault = useMemo(() => {
+    return assetId && selectVaultById && selectVaultById(assetId)
+  }, [assetId, selectVaultById])
+
+
+  const newTrancheTvl = useMemo(() => BNify(asset.tvl).plus(amount), [asset, amount])
+  const newApr = useMemo(() => vaultFunctionsHelper?.getVaultNewApr(asset, vault, BNify(amount)) || asset?.apr, [asset, vault, amount, vaultFunctionsHelper])
+  const newApy = useMemo(() => apr2apy(BNify(newApr).div(100)).times(100), [newApr])
+  // console.log('newApy', amount, newApr.toString(), newApy.toString())
+
+  const amountIsValid = BNify(amountUsd).gt(0)
+
+  switch (field){
+    case 'boost':
+      const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
+      return <Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.toFixed(2)}x</Text>
+    case 'overperformance':
+      const basePerformance = BNify(amountUsd).times(BNify(asset?.baseApr).div(100))
+      const tranchePerformance = BNify(amountUsd).times(BNify(asset?.apy).div(100))
+      const overperformance = amountIsValid ? tranchePerformance.minus(basePerformance) : null
+      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />
+    case 'newApy':
+      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={amountIsValid ? newApy : null} />
+    case 'coverage':
+      const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+      const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
+      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={amountIsValid ? coverageAmount : null} />
+    default:
+      return null
+  }
+}
+
+export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) => {
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+
+  const { assetId, action, amount, amountUsd } = props
+
+  const vault = useMemo(() => {
+    return assetId && selectVaultById && selectVaultById(assetId)
+  }, [assetId, selectVaultById])
+
+  const strategy = useMemo(() => {
+    return vault?.type && strategies[vault.type]
+  }, [vault])
+
+  if (!strategy?.dynamicActionFields?.[action]) return null
+
+  const dynamicActionFields = strategy?.dynamicActionFields[action]
+
+  return (
+    <VStack
+      spacing={2}
+      width={'100%'}
+    >
+      {
+        dynamicActionFields.map( (dynamicField: string) => (
+          <HStack
+            pb={2}
+            px={4}
+            width={'100%'}
+            alignItems={'center'}
+            borderBottom={`1px solid`}
+            borderBottomColor={'divider'}
+            justifyContent={'space-between'}
+            key={`dynamicField_${dynamicField}`}
+          >
+            <Translation component={Text} translation={`dynamicActionFields.${dynamicField}`} textStyle={'captionSmall'} />
+            <DynamicActionField {...props} field={dynamicField} />
+          </HStack>
+        ))
+      }
+    </VStack>
+  )
+}
+
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
-  const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
+  const [ amount, setAmount ] = useState<string>('0')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
-  const { sendTransaction, setGasLimit } = useTransactionManager()
   const { dispatch, activeItem, executeAction } = useOperativeComponent()
+  const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
 
@@ -298,6 +394,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     setAmountUsd(amountUsd)
   }, [underlyingAsset, amount, selectAssetPriceUsd, dispatch])
 
+  // Reset amount on transaction succeeded
+  useEffect(() => {
+    if (transaction.status === 'success'){
+      setAmount('')
+    }
+  }, [transaction.status])
+
   // Set max balance function
   const setMaxBalance = useCallback(() => {
     if (!underlyingAsset?.balance) return
@@ -338,6 +441,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (activeItem !== itemIndex) return
     dispatch({type: 'SET_AMOUNT', payload: amount})
     dispatch({type: 'SET_DEFAULT_AMOUNT', payload: amount})
+    dispatch({type: 'SET_ASSET', payload: underlyingAsset})
 
     // console.log('executeAction', executeAction)
     if (executeAction) {
@@ -345,7 +449,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
     }
 
-  }, [amount, activeItem, itemIndex, dispatch, executeAction, deposit])
+  }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
 
   const depositButton = useMemo(() => {
     return account ? (
@@ -369,52 +473,58 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         alignItems={'space-between'}
         justifyContent={'flex-start'}
       >
-        <HStack
+        <VStack
           flex={1}
-          spacing={4}
+          spacing={8}
+          width={'100%'}
           alignItems={'flex-start'}
         >
           <HStack
-            pt={8}
-            alignItems={'center'}
-          >
-            <AssetProvider.Icon size={'sm'} />
-            <AssetProvider.Name textStyle={['heading','h3']} />
-          </HStack>
-          <VStack
-            spacing={1}
+            spacing={4}
             width={'100%'}
             alignItems={'flex-start'}
           >
-            <Card
-              px={4}
-              py={2}
-              layerStyle={'cardLight'}
+            <Box
+              pt={8}
             >
-              <VStack
-                spacing={2}
-                alignItems={'flex-start'}
+              <AssetLabel assetId={asset?.id} />
+            </Box>
+            <VStack
+              spacing={1}
+              width={'100%'}
+              alignItems={'flex-start'}
+            >
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
               >
-                <InputAmount amount={amount} setAmount={setAmount} />
-                <HStack
-                  width={'100%'}
-                  justifyContent={'space-between'}
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
                 >
+                  <InputAmount amount={amount} setAmount={setAmount} />
                   <HStack
-                    spacing={1}
+                    width={'100%'}
+                    justifyContent={'space-between'}
                   >
-                    <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                    <AssetProvider.Balance abbreviate={false} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    <HStack
+                      spacing={1}
+                    >
+                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                      <AssetProvider.Balance abbreviate={false} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    </HStack>
+                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
                   </HStack>
-                  <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
-                </HStack>
-              </VStack>
-            </Card>
-            {
-              error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-            }
-          </VStack>
-        </HStack>
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+              }
+            </VStack>
+          </HStack>
+          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+        </VStack>
         <VStack
           spacing={4}
           id={'footer'}
@@ -449,15 +559,22 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
-  const { sendTransaction, setGasLimit } = useTransactionManager()
   const { dispatch, activeItem, executeAction } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
+  const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance } } = usePortfolioProvider()
 
-  const assetBalance = useMemo(() => {
+  const vaultBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(vault?.id)
   }, [selectAssetBalance, vault?.id])
+
+  const assetBalance = useMemo(() => {
+    if (!selectAssetBalance) return BNify(0)
+    const balance = selectAssetBalance(vault?.id)
+    const vaultPrice = selectVaultPrice(vault?.id)
+    return balance.times(vaultPrice)
+  }, [selectAssetBalance, selectVaultPrice, vault?.id])
 
   const disabled = useMemo(() => {
     setError('')
@@ -476,13 +593,22 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault)) return
 
     ;(async() => {
-      const withdrawParams = vault.getWithdrawParams(amount)
+      const vaultPrice = selectVaultPrice(vault.id)
+      const amountToWithdraw = BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice))
+      const withdrawParams = vault.getWithdrawParams(amountToWithdraw)
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
       console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
       sendTransaction(vault.id, withdrawContractSendMethod)
       // sendTransactionTest(withdrawContractSendMethod)
     })()
-  }, [account, disabled, amount, vault, sendTransaction])
+  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
+
+  // Reset amount on transaction succeeded
+  useEffect(() => {
+    if (transaction.status === 'success'){
+      setAmount('')
+    }
+  }, [transaction.status])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -495,28 +621,28 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
-    if (!asset?.balance) return
-    setAmount(asset.balance.toString())
-  }, [asset])
+    if (!assetBalance) return
+    setAmount(assetBalance.toString())
+  }, [assetBalance])
 
   const getDefaultGasLimit = useCallback(async () => {
     if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault)) return
     
     const defaultGasLimit = vault.getMethodDefaultGasLimit('withdraw')
-    if (!account || assetBalance.lte(0)){
+    if (!account || vaultBalance.lte(0)){
       return defaultGasLimit
     }
 
     const sendOptions = {
       from: account?.address
     }
-    const withdrawParams = vault.getWithdrawParams(assetBalance.toFixed())
+    const withdrawParams = vault.getWithdrawParams(vaultBalance.toFixed())
     const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
 
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('WITHDRAW - estimatedGasLimit', assetBalance.toFixed(), estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, assetBalance, vault])
+  }, [account, vaultBalance, vault])
 
   // Update gas fees
   useEffect(() => {
@@ -529,11 +655,14 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // Update parent amount
   useEffect(() => {
-    if (activeItem !== itemIndex || !selectVaultPrice || !vault) return
+    if (activeItem !== itemIndex) return
+    dispatch({type: 'SET_ASSET', payload: asset})
+
+    if (!selectVaultPrice || !vault) return
     const vaultPrice = selectVaultPrice(vault.id)
-    dispatch({type: 'SET_AMOUNT', payload: BNify(amount).times(vaultPrice).toString()})
-    dispatch({type: 'SET_DEFAULT_AMOUNT', payload: BNify(amount).times(vaultPrice).toString()})
-  }, [vault, amount, selectVaultPrice, activeItem, itemIndex, dispatch, executeAction, withdraw])
+    dispatch({type: 'SET_AMOUNT', payload: BNify(amount).toString()})
+    dispatch({type: 'SET_DEFAULT_AMOUNT', payload: BNify(amount).toString()})
+  }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, executeAction, withdraw])
 
   const withdrawButton = useMemo(() => {
     return account ? (
@@ -556,6 +685,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         pt={8}
         flex={1}
         spacing={6}
+        width={'100%'}
         height={'100%'}
         id={'withdraw-container'}
         alignItems={'space-between'}
@@ -574,15 +704,14 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         <HStack
           flex={1}
           spacing={4}
+          width={'100%'}
           alignItems={'flex-start'}
         >
-          <HStack
+          <Box
             pt={8}
-            alignItems={'center'}
           >
-            <AssetProvider.Icon size={'sm'} />
-            <AssetProvider.Name textStyle={['heading','h3']} whiteSpace={'nowrap'} />
-          </HStack>
+            <AssetLabel assetId={asset?.id} />
+          </Box>
           <VStack
             spacing={1}
             width={'100%'}
@@ -606,7 +735,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                     spacing={1}
                   >
                     <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                    <AssetProvider.Balance abbreviate={false} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    <AssetProvider.VaultBalance abbreviate={false} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
                   </HStack>
                   <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
                 </HStack>
@@ -1056,6 +1185,7 @@ interface OperativeComponentContextProps {
   dispatch: Function
   actionType: string
   activeItem: number
+  asset: Asset | null
   defaultAmount: string
   executeAction: boolean
   baseActionType: string
@@ -1063,6 +1193,7 @@ interface OperativeComponentContextProps {
 
 const initialState: OperativeComponentContextProps = {
   amount: '',
+  asset: null,
   activeStep: 0,
   activeItem: 0,
   actionType: '',
@@ -1076,6 +1207,8 @@ const reducer = (state: OperativeComponentContextProps, action: ReducerActionTyp
   switch (action.type){
     case 'SET_AMOUNT':
       return {...state, amount: action.payload}
+    case 'SET_ASSET':
+      return {...state, asset: action.payload}
     case 'SET_EXECUTE_ACTION':
       // console.log('SET_EXECUTE_ACTION', action.payload)
       return {...state, executeAction: action.payload}
@@ -1252,6 +1385,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
           >
             <Flex
               flex={1}
+              width={'100%'}
               direction={'column'}
               alignItems={'flex-start'}
             >
@@ -1311,7 +1445,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   >
                     <Translation component={Text} translation={`modals.${state.actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
                     <HStack>
-                      <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${underlyingAsset?.name}`}></Amount>
+                      <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${state.asset?.name}`}></Amount>
                     </HStack>
                   </VStack>
                 </VStack>

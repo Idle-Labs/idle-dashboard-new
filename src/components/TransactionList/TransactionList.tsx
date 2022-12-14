@@ -1,14 +1,15 @@
-import React, { useMemo } from 'react'
 import { Icon } from 'components/Icon/Icon'
-import { Card } from 'components/Card/Card'
+import React, { useMemo, useRef } from 'react'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { formatDate, sortArrayByKey } from 'helpers/'
+import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { AssetId, Transaction } from 'constants/types'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { VStack, HStack, Flex, Text, Skeleton } from '@chakra-ui/react'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
@@ -71,28 +72,30 @@ const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
 }
 
 type TransactionListArgs = {
-  assetId?: AssetId
-}
+  assetIds?: AssetId[]
+  showTitleOnMobile?: boolean
+} & CardProps
 
-export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
+export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showTitleOnMobile = false, ...cardProps }) => {
   const { account } = useWalletProvider()
+  const [ ref, dimensions ] = useBoundingRect()
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectVaultTransactions, selectVaultGauge } } = usePortfolioProvider()
 
   const transactions: Transaction[] = useMemo(() => {
-    if (!account || !assetId || !selectVaultTransactions || !selectVaultGauge) return []
-    const gaugeVault = selectVaultGauge(assetId)
-    const vaultTransactions: Transaction[] = selectVaultTransactions(assetId)
-    const gaugeTransactions: Transaction[] = gaugeVault ? selectVaultTransactions(gaugeVault.id) : []
+    if (!account || !assetIds || !selectVaultTransactions || !selectVaultGauge) return []
 
-    // console.log('vaultTransactions', vaultTransactions)
-    // console.log('gaugeTransactions', gaugeTransactions)
-    return [
-      ...vaultTransactions,
-      ...gaugeTransactions
-    ]
-  }, [account, assetId, selectVaultTransactions, selectVaultGauge])
+    return assetIds.reduce( (transactions: Transaction[], assetId: AssetId) => {
+      const gaugeVault = selectVaultGauge(assetId)
+      const vaultTransactions: Transaction[] = selectVaultTransactions(assetId)
+      const gaugeTransactions: Transaction[] = gaugeVault ? selectVaultTransactions(gaugeVault.id) : []
+      return [
+        ...transactions,
+        ...vaultTransactions,
+        ...gaugeTransactions
+      ]
+    }, [])
 
-  // console.log('transactions', assetId, transactions)
+  }, [account, assetIds, selectVaultTransactions, selectVaultGauge])
 
   const isLoaded = useMemo(() => {
     return isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
@@ -131,16 +134,18 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetId }) => {
   return (
     <Card
       flex={1}
+      {...cardProps}
     >
       <VStack
         flex={1}
         spacing={0}
         height={'100%'}
         alignItems={'flex-start'}
+        ref={ref as typeof useRef}
         justifyContent={'flex-start'}
       >
-        <Translation display={['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
-        <Scrollable maxH={400}>
+        <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
+        <Scrollable maxH={Math.max(dimensions?.height || 400)}>
           {transactionsList}
         </Scrollable>
       </VStack>

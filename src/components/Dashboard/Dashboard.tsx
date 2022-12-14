@@ -8,17 +8,19 @@ import { BNify, getRoutePath, isEmpty } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import React, { useState, useMemo, useCallback } from 'react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
+import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
+import React, { useRef, useState, useMemo, useCallback } from 'react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
 import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
+import { TransactionList } from 'components/TransactionList/TransactionList'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
@@ -29,6 +31,7 @@ import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, St
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { screenSize } = useThemeProvider()
+  const [ ref, dimensions ] = useBoundingRect()
   const [ percentChange, setPercentChange ] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
@@ -102,6 +105,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             const strategyPath = getRoutePath('earn', [strategy.route])
             const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
             const strategyAssets = selectVaultsAssetsByType(strategy.type).filter( (asset: Asset) => asset.tvlUsd?.gt(VAULTS_MIN_TVL) )
+            // const strategyAssets = selectVaultsAssetsByType(strategy.type)
             const strategyPositions = userHasFunds ? Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
               const asset = selectAssetById(assetId)
               return asset?.type === strategy.type
@@ -205,7 +209,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                               ]}
                             />
                           ))
-                        : strategyAssets.sort((a: Asset, b: Asset) => a.apy && b.apy ? (a.apy.gt(b.apy.toString()) ? -1 : 1) : 1 ).map( (asset: Asset) => (
+                        : strategyAssets.sort((a: Asset, b: Asset) => a.apy && b.apy ? (a.apy.gt(b.apy.toString()) ? -1 : 1) : 1 ).slice(0, 4).map( (asset: Asset) => (
                           <VaultCard.Inline
                             key={`vault_${asset.id}`}
                             onClick={() => navigate(`${strategyPath}/${asset.id}`)}
@@ -701,6 +705,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             <VStack
               flex={1}
               alignItems={'flex-start'}
+              ref={ref as typeof useRef}
             >
               {leftSideContent}
             </VStack>
@@ -709,7 +714,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               width={['100%', '500px']}
               alignItems={'flex-start'}
             >
-              <ProductUpdates />
+              <TransactionList assetIds={assetIds} maxH={Math.max(400, dimensions?.height)} showTitleOnMobile={true} />
             </VStack>
           </Stack>
         )

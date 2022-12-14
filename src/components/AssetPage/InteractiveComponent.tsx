@@ -87,7 +87,7 @@ export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ asset
               </HStack>
             )
           }
-          <TransactionList assetId={vaultId} />
+          <TransactionList assetIds={[vaultId as AssetId]} />
         </VStack>
       </VStack>
       {

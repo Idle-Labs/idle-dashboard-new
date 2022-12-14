@@ -333,6 +333,17 @@ const Balance: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const VaultBalance: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+  const { isPortfolioLoaded } = usePortfolioProvider()
+
+  const vaultBalance = asset?.balance && asset?.vaultPrice ? BNify(asset.balance).times(asset.vaultPrice) : BNify(0)
+  
+  return isPortfolioLoaded ? (
+    <Amount value={vaultBalance} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const Earnings: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
@@ -756,6 +767,7 @@ AssetProvider.BalanceUsd = BalanceUsd
 AssetProvider.GeneralData = GeneralData
 AssetProvider.RealizedApy = RealizedApy
 AssetProvider.EarningsUsd = EarningsUsd
+AssetProvider.VaultBalance = VaultBalance
 AssetProvider.EarningsPerc = EarningsPerc
 AssetProvider.DepositedUsd = DepositedUsd
 AssetProvider.ProtocolName = ProtocolName

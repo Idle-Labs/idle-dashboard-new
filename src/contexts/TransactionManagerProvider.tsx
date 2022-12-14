@@ -9,7 +9,7 @@ import type { Transaction, TransactionReceipt } from 'web3-core'
 import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { BNify, estimateGasLimit, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
+import { BNify, estimateGasLimit, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
   FastGasPrice: string
@@ -492,14 +492,21 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       const sendOptions: SendOptions = {
         from: account?.address
       }
-      const gas = await estimateGasLimit(contractSendMethod, sendOptions)
+      const [
+        gas,
+        baseFeePerGas
+      ] = await Promise.all([
+        estimateGasLimit(contractSendMethod, sendOptions),
+        getBlockBaseFeePerGas(web3)
+      ])
 
       if (gas) {
         sendOptions.gas = gas
         // @ts-ignore
-        sendOptions.maxFeePerGas = BNify(state.gasPrice).times(1e09).toFixed()
+        sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
       }
 
+      console.log('baseFeePerGas', baseFeePerGas)
       console.log('sendOptions', sendOptions)
 
       dispatch({type: 'CREATE', payload: {

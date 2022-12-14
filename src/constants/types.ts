@@ -96,7 +96,7 @@ export type EtherscanTransaction = {
 }
 
 export type AssetId = string
-export type Balances = Record<string, BigNumber>
+export type Balances = Record<AssetId, BigNumber>
 
 export type VaultRewards = {
   assets: AssetId[]
@@ -205,6 +205,7 @@ export type Asset = {
   tvl?: BigNumber
   tvlUsd?: BigNumber
   rewards?: Balances
+  totalTvl?: BigNumber
   rates?: HistoryData[]
   prices?: HistoryData[]
   pricesUsd?: HistoryData[]

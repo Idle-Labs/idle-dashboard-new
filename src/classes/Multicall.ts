@@ -215,7 +215,7 @@ export class  Multicall {
     }, [])
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled: boolean = false): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled: boolean = true): Promise<DecodedResult[] | null> {
 
     if (calls.length > this.maxBatchSize) {
       return await this.executeMulticallsChunks(calls, singleCallsEnabled)
@@ -243,6 +243,8 @@ export class  Multicall {
 
       const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
       const decodedCalls = await Promise.all(callPromises);
+
+      console.log('SingleCalls - decodedCalls', decodedCalls)
 
       return decodedCalls.reduce( (decodedResults, decodedCall, i) => {
         const output = {

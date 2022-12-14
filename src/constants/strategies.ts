@@ -18,6 +18,8 @@ export type StrategyColumn = {
   sortType?: 'alpha' | 'numeric'
 }
 
+export type DynamicActionFields = Record<string, string[]>
+
 export type StrategyProps = {
   bg?: string
   type?: string,
@@ -30,6 +32,7 @@ export type StrategyProps = {
   columns?: StrategyColumn[]
   generalDataFields: GeneralDataField[]
   carouselItems?: StrategyCarouselItem[]
+  dynamicActionFields?: DynamicActionFields
 }
 
 export const strategies: Record<string, StrategyProps> = {
@@ -143,6 +146,9 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
+    dynamicActionFields:{
+      deposit:['coverage' ,'newApy']
+    },
     carouselItems: [
       {
         image:`${strategiesCarouselFolder}AA-pooled-funds.gif`,
@@ -243,6 +249,9 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
+    dynamicActionFields:{
+      deposit:['boost', 'overperformance', 'newApy']
+    },
     carouselItems: [
       {
         image:`${strategiesCarouselFolder}BB-pooled-funds.gif`,

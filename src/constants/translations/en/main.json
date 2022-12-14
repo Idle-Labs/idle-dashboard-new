@@ -634,6 +634,12 @@
     "waitTimeValue": "~5-10 minutes",
     "noSupportedAssets": "No supported assets in portfolio."
   },
+  "dynamicActionFields": {
+    "boost": "The base strategy APY is boosted by",
+    "overperformance": "Overperformance on base strategy",
+    "newApy": "New APY (after deposit)",
+    "coverage": "Coverage"
+  },
   "trade": {
     "trade": "Trade",
     "allowance": "Allowance",
@@ -1022,6 +1028,12 @@
       },
       "approve": {
         "header": "Confirm Approve"
+      },
+      "stake": {
+        "header": "Confirm Stake"
+      },
+      "unstake": {
+        "header": "Confirm Unstake"
       },
       "deposit": {
         "header": "Confirm Deposit",

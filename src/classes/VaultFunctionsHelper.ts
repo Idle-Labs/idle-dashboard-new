@@ -5,8 +5,8 @@ import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
-import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff } from 'helpers/'
-import type { Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN } from 'helpers/'
+import type { Asset, Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -200,6 +200,51 @@ export class VaultFunctionsHelper {
       vaultId: vault.id,
       apr: BNify(0)
     }
+  }
+
+  private calcNewAPRSplit(ratio: BigNumber): BigNumber {
+
+    const FULL_ALLOC = 100
+    const AA_RATIO_LIM_UP = 99
+    const AA_RATIO_LIM_DOWN = 50
+
+    let aux = BNify(0)
+    if (ratio.gte(AA_RATIO_LIM_UP)){
+      aux = BNify(AA_RATIO_LIM_UP)
+    } else if (ratio.gt(AA_RATIO_LIM_DOWN)){
+      aux = BNify(ratio)
+    } else {
+      aux = BNify(AA_RATIO_LIM_DOWN)
+    }
+
+    return BNify(aux).times(ratio).div(FULL_ALLOC)
+  }
+
+  public getVaultNewApr(asset: Asset, vault: Vault, liqToAdd: BigNumber): BigNumber {
+    if (!liqToAdd || isBigNumberNaN(liqToAdd)){
+      return BNify(asset.apr)
+    }
+    if (vault instanceof TrancheVault) {
+      const FULL_ALLOC = 100
+      const newTotalTvl = BNify(asset.totalTvl).plus(liqToAdd)
+      switch (vault.type){
+        case 'AA':
+          const newTvlRatioAA = BNify(BNify(asset.tvl).plus(liqToAdd)).times(FULL_ALLOC).div(newTotalTvl)
+          const newAprSplitAA = this.calcNewAPRSplit(newTvlRatioAA)
+          // console.log('calcNewAPRSplit - AA', BNify(asset.tvl).plus(liqToAdd).toString(), newTotalTvl.toString(), newTvlRatioAA.toString(), newAprSplitAA.toString(), newAprSplitAA.div(newTvlRatioAA).toString())
+          return BNify(asset.baseApr).times(newAprSplitAA.div(newTvlRatioAA))
+        break
+        case 'BB':
+          const newTvlRatioBB = BNify(FULL_ALLOC).minus(BNify(BNify(asset.tvl).plus(liqToAdd)).times(FULL_ALLOC).div(newTotalTvl))
+          const newAprSplitBB = this.calcNewAPRSplit(newTvlRatioBB)
+          // console.log('calcNewAPRSplit - BB', newTvlRatioBB.toString(), BNify(FULL_ALLOC).minus(newAprSplitBB).toString(), BNify(FULL_ALLOC).minus(newAprSplitBB).div(BNify(FULL_ALLOC).minus(newTvlRatioBB)).toString())
+          return BNify(asset.baseApr).times(BNify(FULL_ALLOC).minus(newAprSplitBB).div(BNify(FULL_ALLOC).minus(newTvlRatioBB)))
+        break;
+        default:
+        break;
+      }
+    }
+    return BNify(asset.apr)
   }
 
   public async getVaultAdditionalBaseApr(vault: Vault): Promise<VaultAdditionalApr> {

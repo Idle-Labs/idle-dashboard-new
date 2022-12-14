@@ -18,17 +18,17 @@ export const App = () => (
     <ChakraProvider theme={theme}>
       <ThemeProvider>
         <I18nProvider>
-          <CacheProvider TTL={300}>
-            <WalletProvider>
-              <Web3Provider>
+          <WalletProvider>
+            <Web3Provider>
+              <CacheProvider TTL={300}>
                 <TransactionManagerProvider>
                   <PortfolioProvider>
                     <BrowserRouterProvider />
                   </PortfolioProvider>
                 </TransactionManagerProvider>
-              </Web3Provider>
-            </WalletProvider>
-          </CacheProvider>
+              </CacheProvider>
+            </Web3Provider>
+          </WalletProvider>
         </I18nProvider>
       </ThemeProvider>
     </ChakraProvider>

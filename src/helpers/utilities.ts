@@ -142,6 +142,51 @@ export const abbreviateNumber = (value: any, decimals: number = 2, maxPrecision:
   return newValue;
 }
 
+export function requestTimeout(callback: Function, delay: number) {
+  // Create an object to store the timeout id and state
+  const timeout: {id: number | null, stopped: boolean} = {
+    id: null,
+    stopped: false
+  };
+
+  const clear = () => {
+    timeout.stopped = true
+    if (timeout.id){
+      cancelAnimationFrame(timeout.id)
+    }
+  }
+
+  // Record the start time
+  const start = performance.now();
+
+  // Start the animation
+  function animate() {
+    // If the timeout is stopped, do not continue
+    if (timeout.stopped) return;
+
+    // Calculate the elapsed time
+    const elapsed = performance.now() - start;
+
+    // If the specified delay has passed, execute the callback
+    if (elapsed >= delay) {
+      callback();
+    } else {
+      // Schedule the next frame
+      timeout.id = requestAnimationFrame(animate);
+    }
+  }
+
+  // Start the animation and store the timeout id
+  timeout.id = requestAnimationFrame(animate);
+
+  // Return the timeout object
+  return {
+    id: timeout.id,
+    clear
+  }
+}
+
+
 export const isEmpty = (object: any) => {
   return !object || !Object.keys(object).length
 }

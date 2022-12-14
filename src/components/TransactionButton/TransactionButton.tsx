@@ -147,14 +147,22 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
           animationDuration: `${transitionDuration}s`,
           animationName: transactionStarted ? 'progress' : 'none',
           animationPlayState: transactionStarted ? 'running' : 'stopped',
-          '> *':{
-            width: props.width,
-            position: 'absolute',
-            color:'black !important',
-          }
         }}
       >
-        {textComponent}
+        <Flex
+          width={props.width}
+          alignItems={'center'}
+          position={'absolute'}
+          justifyContent={'center'}
+          sx={{
+            '> *':{
+              color:'black !important',
+              borderColor:'black !important',
+            }
+          }}
+        >
+          {textComponent}
+        </Flex>
       </Flex>
       {textComponent}
     </>
@@ -177,8 +185,8 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
     console.log('onClick', assetId, contractSendMethod)
-    return sendTransactionTest(assetId, contractSendMethod)
-  }, [transaction, assetId, contractSendMethod, sendTransactionTest])
+    return sendTransaction(assetId, contractSendMethod)
+  }, [transaction, assetId, contractSendMethod, sendTransaction])
 
   const borderColor = useMemo(() => {
     if (!isRightTransaction) return 'primary'
