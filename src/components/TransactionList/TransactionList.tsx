@@ -145,7 +145,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
         justifyContent={'flex-start'}
       >
         <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
-        <Scrollable maxH={Math.max(dimensions?.height || 400)}>
+        <Scrollable maxH={[280, Math.max(dimensions?.height || 400)]}>
           {transactionsList}
         </Scrollable>
       </VStack>

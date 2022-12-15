@@ -78,7 +78,7 @@ const initialState: StateProps = {
   transactionsCount: 0,
   lastTransaction: null,
   estimatedFeesUsd: null,
-  transactionSpeed: TransactionSpeed.Average,
+  transactionSpeed: TransactionSpeed.Fast,
   transaction: {
     hash: null,
     error: null,

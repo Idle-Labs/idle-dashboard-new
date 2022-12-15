@@ -1,6 +1,6 @@
 export const TILDE: string = "~"
 export const PROTOCOL_TOKEN: string = 'IDLE'
-export const VAULTS_MIN_TVL: number = 100000
+export const VAULTS_MIN_TVL: number = 1000
 export const DATE_FORMAT: string = 'YYYY/MM/DD'
 export const DATETIME_FORMAT: string = 'YYYY/MM/DD HH:mm'
 export const ZERO_ADDRESS: string = "0x0000000000000000000000000000000000000000"

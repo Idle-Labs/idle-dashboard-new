@@ -712,61 +712,67 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         alignItems={'space-between'}
         justifyContent={'flex-start'}
       >
-        {
-          vaultMessages?.withdraw ? (
-            <Card.Dark
-              p={2}
-              border={0}
-            >
-              <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} textAlign={'center'} />
-            </Card.Dark>
-          ) : null
-        }
-        <HStack
+        <VStack
           flex={1}
-          spacing={4}
+          spacing={8}
           width={'100%'}
           alignItems={'flex-start'}
         >
-          <Box
-            pt={8}
-          >
-            <AssetLabel assetId={asset?.id} />
-          </Box>
-          <VStack
-            spacing={1}
+          <HStack
+            spacing={4}
             width={'100%'}
             alignItems={'flex-start'}
           >
-            <Card
-              px={4}
-              py={2}
-              layerStyle={'cardLight'}
+            <Box
+              pt={8}
             >
-              <VStack
-                spacing={2}
-                alignItems={'flex-start'}
+              <AssetLabel assetId={asset?.id} />
+            </Box>
+            <VStack
+              spacing={1}
+              width={'100%'}
+              alignItems={'flex-start'}
+            >
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
               >
-                <InputAmount amount={amount} setAmount={setAmount} />
-                <HStack
-                  width={'100%'}
-                  justifyContent={'space-between'}
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
                 >
+                  <InputAmount amount={amount} setAmount={setAmount} />
                   <HStack
-                    spacing={1}
+                    width={'100%'}
+                    justifyContent={'space-between'}
                   >
-                    <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                    <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    <HStack
+                      spacing={1}
+                    >
+                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                      <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    </HStack>
+                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
                   </HStack>
-                  <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
-                </HStack>
-              </VStack>
-            </Card>
-            {
-              error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-            }
-          </VStack>
-        </HStack>
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+              }
+            </VStack>
+          </HStack>
+          {
+            vaultMessages?.withdraw ? (
+              <Card.Dark
+                p={2}
+                border={0}
+              >
+                <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} textAlign={'center'} />
+              </Card.Dark>
+            ) : null
+          }
+        </VStack>
         <VStack
           spacing={4}
           id={'footer'}
@@ -1286,6 +1292,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   actions,
   ...cardProps
 }) => {
+  const intervalId = useRef<any>(null)
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
   const [ state, dispatch ] = useReducer(reducer, initialState)
@@ -1310,15 +1317,21 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   }, [state.activeStep])
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
+
+    if (intervalId.current){
+      clearInterval(intervalId.current)
+      intervalId.current = null
+    }
+
+    intervalId.current = setInterval(() => {
       updateGasPrices()
     }, 20000)
 
-    console.log('updateGasPrices', intervalId)
-
     return () => {
-      console.log('updateGasPrices - CLEAR')
-      clearInterval(intervalId)
+      if (intervalId.current){
+      clearInterval(intervalId.current)
+      intervalId.current = null
+    }
     }
   }, [updateGasPrices])
 

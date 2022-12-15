@@ -43,8 +43,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
 
   const accountAndPortfolioLoaded = useMemo(() => {
-    return !walletInitialized || (account && !isVaultsPositionsLoaded)
-  }, [walletInitialized, account, isVaultsPositionsLoaded])
+    return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
+    // return !walletInitialized || (account && !isVaultsPositionsLoaded)
+  }, [walletInitialized, account, isPortfolioLoaded, isVaultsPositionsLoaded])
 
   const assetIds = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -503,7 +504,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [vaultsRewards, gaugeRewards])
 
   const leftSideContent = useMemo(() => {
-    if (accountAndPortfolioLoaded) {
+    if (!accountAndPortfolioLoaded) {
       return (
         <VStack
           spacing={6}
@@ -603,64 +604,78 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Card.Dark
             p={0}
             overflow={'hidden'}
+            minH={['auto', 400]}
+            alignItems={'flex-end'}
           >
-            {
-              !userHasFunds && (
-                <Center
-                  layerStyle={'overlay'}
-                  bg={'rgba(0, 0, 0, 0.4)'}
-                >
-                  <Translation translation={'dashboard.performanceChart.empty'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
-                </Center>
-              )
-            }
-            <Stack
-              mt={[6, 8]}
-              mx={[6, 8]}
-              mb={[4, 0]}
-              alignItems={'flex-start'}
-              direction={['column', 'row']}
-              justifyContent={['center', 'space-between']}
+            <VStack
+              spacing={0}
+              width={'100%'}
+              height={'100%'}
+              justifyContent={'flex-end'}
             >
-              <VStack
-                width={'100%'}
-                spacing={[5, 1]}
-                alignItems={['center', 'flex-start']}
-              >
-                <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
-                  <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
-                  <HStack
-                    spacing={[2, 4]}
-                    alignItems={'baseline'}
-                  >
-                    <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />
-                    {
-                      totalFunds.gt(0) && (
-                        <Stat>
-                          <HStack spacing={2}>
-                            <Amount.Percentage value={earningsPercentage} textStyle={'captionSmall'} />
-                            <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                          </HStack>
-                        </Stat>
-                      )
-                    }
-                  </HStack>
-                </SkeletonText>
-              </VStack>
               {
-                isVaultsPositionsLoaded && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                !userHasFunds && (
+                  <Center
+                    layerStyle={'overlay'}
+                    bg={'rgba(0, 0, 0, 0.4)'}
+                  >
+                    <Translation translation={'dashboard.performanceChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                  </Center>
+                )
               }
-            </Stack>
-            <BalanceChart
-              percentChange={0}
-              color={chartColor}
-              assetIds={assetIds}
-              timeframe={timeframe}
-              isRainbowChart={false}
-              strategies={selectedStrategies}
-              setPercentChange={setPercentChange}
-              margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            />
+              <Stack
+                pt={[6, 8]}
+                px={[6, 8]}
+                pb={[4, 0]}
+                width={'100%'}
+                alignItems={'flex-start'}
+                direction={['column', 'row']}
+                justifyContent={['center', 'space-between']}
+              >
+                {
+                  userHasFunds && (
+                    <VStack
+                      width={'100%'}
+                      spacing={[5, 1]}
+                      alignItems={['center', 'flex-start']}
+                    >
+                      <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
+                        <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                        <HStack
+                          spacing={[2, 4]}
+                          alignItems={'baseline'}
+                        >
+                          <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />
+                          {
+                            totalFunds.gt(0) && (
+                              <Stat>
+                                <HStack spacing={2}>
+                                  <Amount.Percentage value={earningsPercentage} textStyle={'captionSmall'} />
+                                  <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
+                                </HStack>
+                              </Stat>
+                            )
+                          }
+                        </HStack>
+                      </SkeletonText>
+                    </VStack>
+                  )
+                }
+                {
+                  isVaultsPositionsLoaded && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                }
+              </Stack>
+              <BalanceChart
+                percentChange={0}
+                color={chartColor}
+                assetIds={assetIds}
+                timeframe={timeframe}
+                isRainbowChart={false}
+                strategies={selectedStrategies}
+                setPercentChange={setPercentChange}
+                margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+              />
+            </VStack>
           </Card.Dark>
         </VStack>
 
@@ -683,7 +698,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   layerStyle={'overlay'}
                   bg={'rgba(0, 0, 0, 0.4)'}
                 >
-                  <Translation translation={'dashboard.compositionChart.empty'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                  <Translation translation={'dashboard.compositionChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
                 </Center>
               )
             }
@@ -714,7 +729,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               width={['100%', '500px']}
               alignItems={'flex-start'}
             >
-              <TransactionList assetIds={assetIds} maxH={Math.max(400, dimensions?.height)} showTitleOnMobile={true} />
+              <TransactionList assetIds={assetIds} maxH={[400, Math.max(400, dimensions?.height)]} showTitleOnMobile={true} />
             </VStack>
           </Stack>
         )
