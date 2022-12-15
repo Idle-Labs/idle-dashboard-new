@@ -1293,7 +1293,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
 
   const { underlyingAsset, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
-  const { state: { gasPrice, transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
+  const { state: { gasPrice, transaction: transactionState }, retry, cleanTransaction, updateGasPrices } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
     setActionIndex(index)
@@ -1308,6 +1308,19 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   useEffect(() => {
     setActiveItem(state.activeStep)
   }, [state.activeStep])
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      updateGasPrices()
+    }, 20000)
+
+    console.log('updateGasPrices', intervalId)
+
+    return () => {
+      console.log('updateGasPrices - CLEAR')
+      clearInterval(intervalId)
+    }
+  }, [updateGasPrices])
 
   useEffect(() => {
     const actionType = activeStep ? activeStep.type : activeAction.type

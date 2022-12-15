@@ -146,7 +146,7 @@
     },
     "best": {
       "title": "Best Yield",
-      "description": "The flagship yield automation strategy. Funds optimized across multiple DeFi protocols",
+      "description": "Best Yield vaults are pools designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
       "carousel": {
         "pooledDeposits":{
           "title": "Pooled deposits",
@@ -180,11 +180,11 @@
     },
     "protected": {
       "title": "Protected Yield",
-      "description": "Senior Tranches provide a shielded access to optimized DeFi yields, thanks to an integrated funds' coverage given by Junior Tranches"
+      "description": "Senior Tranches provide a shielded access to any DeFi yield sources. The default coverage is provided by Junior Tranches and automatically enforced by design. This makes them perfect for high-profile users that want to access DeFi yields witouth compromising their risk profile."
     },
     "boosted": {
       "title": "Boosted Yield",
-      "description": "Senior Tranches provide a shielded access to optimized DeFi yields, thanks to an integrated funds' coverage given by Junior Tranches"
+      "description": "Junior Tranches are designed to overperform any DeFi yield source. In exchange for taking on potential losses for Senior Tranches, they get a proportionally larger share of yield. This makes them perfect for advanced users that can assess risks and take them in exchange of higher returns."
     }
   },
   "dashboard": {
@@ -234,14 +234,14 @@
       }
     },
     "performanceChart": {
-      "empty": "The performances of your portfolio will appear here."
+      "empty": "The performances of your portfolio will appear here"
     },
     "compositionChart": {
-      "empty": "The composition of your portfolio will appear here."
+      "empty": "The composition of your portfolio will appear here"
     },
     "productUpdates": {
       "title": "Product updates",
-      "empty": "Product updates will appear here."
+      "empty": "Product updates will appear here"
     },
     "recentTransactions": {
       "recentTransactions": "Recent Transactions"
@@ -1546,7 +1546,7 @@
       "assetHistory": {
         "transactionHistory": "Transaction History",
         "recentTransactions": "Recent Transactions",
-        "emptyTransactions": "Transactions will appear here."
+        "emptyTransactions": "Transactions will appear here"
       },
       "assetAccounts": {
         "account": "Account",

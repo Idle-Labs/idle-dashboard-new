@@ -405,7 +405,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                         alignItems={'flex-start'}
                         justifyContent={'flex-start'}
                       >
-                        <Translation component={Text} translation={'defi.apr'} textStyle={'captionSmall'} />
+                        <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
                         <Amount.Percentage textStyle={'tableCell'} value={BNify(rewardData.apr).gt(0) ? rewardData.apr : null} />
                       </VStack>
 
@@ -434,7 +434,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                           spacing={1}
                           width={'100%'}
                         >
-                          <Amount textStyle={'tableCell'} value={rewardData.balance} decimals={4} />
+                          <Amount textStyle={'tableCell'} value={rewardData.balance} decimals={BNify(rewardData.balance).lt(1) ? 4 : 2} />
                           <AssetProvider.Symbol textStyle={'tableCell'} />
                         </HStack>
                       </VStack>

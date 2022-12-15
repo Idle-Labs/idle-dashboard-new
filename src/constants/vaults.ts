@@ -461,84 +461,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
-      MIM3CRV:{
-        protocol:'convex',
-        blockNumber:13848124,
-        curveApyPath:['apy','day','mim'],
-        autoFarming:['CVX','CRV','SPELL'],
-        underlyingToken:'MIM3CRV',
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_convex_mim3crv',
-          address:'0x151e89e117728ac6c93aae94c621358b0ebd1866'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_convex_mim3crv',
-          address:'0x35168324dC1981aDDc3bC915788e200BeDF77865'
-        },
-        description:'This strategy accrue interest only after an harvest is done. The returns from an harvest are linearly released in 24 hours, so you should wait 24 hours after an harvest to see all the interests you are eligible for.',
-        messages:{
-          // withdraw:'The returns from an harvest are linearly released in 24 hours, so you should wait 24 hours after an harvest to see all the interests you are eligible for.',
-          buyInstructions:'To get MIM3CRV token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://curve.fi/mim/deposit">MIM Curve Pool</a>.',
-        },
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              stakedBalance:'usersStakes',
-              rewards:'expectedUserReward'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_convex_mim3crv_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:13848124,
-            name:'AA_convex_mim3crv',
-            token:'AA_convex_mim3crv',
-            label:'convex mim3crv AA',
-            address:'0xFC96989b3Df087C96C806318436B16e44c697102'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_convex_mim3crv_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:13848124,
-            name:'BB_convex_mim3crv',
-            token:'BB_convex_mim3crv',
-            label:'convex mim3crv BB',
-            address:'0x5346217536852CD30A5266647ccBB6f73449Cbd1'
-          }
-        }
-      },
       steCRV:{
         protocol:'convex',
         blockNumber:14182975,
@@ -691,160 +613,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_convex_alusd3crv',
             label:'convex alusd3crv BB',
             address:'0xa0E8C9088afb3Fa0F40eCDf8B551071C34AA1aa4'
-          }
-        }
-      },
-      "3EUR":{
-        protocol:'convex',
-        blockNumber:14177892,
-        autoFarming:['CVX','CRV','ANGLE'],
-        underlyingToken:'3EUR',
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_convex_3eur',
-          address:'0x858F5A3a5C767F8965cF7b77C51FD178C4A92F05'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_convex_3eur',
-          address:'0x4Ae60BC9A3eFc160AE2EbA70947a9b47Ad2b9094'
-        },
-        description:'This strategy accrue interest only after an harvest is done. The returns from an harvest are linearly released in 24 hours, so you should wait 24 hours after an harvest to see all the interests you are eligible for.',
-        messages:{
-          // withdraw:'The returns from an harvest are linearly released in 24 hours, so you should wait 24 hours after an harvest to see all the interests you are eligible for.',
-          buyInstructions:'To get 3EUR token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://curve.fi/factory/66/deposit">3EUR Curve Pool</a>.',
-        },
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              stakedBalance:'usersStakes',
-              rewards:'expectedUserReward'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_convex_3eur_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:14177892,
-            name:'AA_convex_3eur',
-            token:'AA_convex_3eur',
-            label:'convex 3eur AA',
-            address:'0x158e04225777BBEa34D2762b5Df9eBD695C158D2'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_convex_3eur_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:14177892,
-            name:'BB_convex_3eur',
-            token:'BB_convex_3eur',
-            label:'convex 3eur BB',
-            address:'0x3061C652b49Ae901BBeCF622624cc9f633d01bbd'
-          }
-        }
-      },
-      MUSD3CRV:{
-        protocol:'convex',
-        blockNumber:14177794,
-        autoFarming:['CVX','CRV'],
-        underlyingToken:'MUSD3CRV',
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_convex_musd3crv',
-          address:'0x16d88C635e1B439D8678e7BAc689ac60376fBfA6'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_convex_musd3crv',
-          address:'0x271cE5dED4cCbD28833bddF8a8093517299920f0'
-        },
-        description:'This strategy accrue interest only after an harvest is done. The returns from an harvest are linearly released in 24 hours, so you should wait 24 hours after an harvest to see all the interests you are eligible for.',
-        messages:{
-          // withdraw:'The returns from an harvest are linearly released in 24 hours, so you should wait 24 hours after an harvest to see all the interests you are eligible for.',
-          buyInstructions:'To get MUSD3CRV token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://curve.fi/musd/deposit">MUSD Curve Pool</a>.',
-        },
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              stakedBalance:'usersStakes',
-              rewards:'expectedUserReward'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_convex_musd3crv_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:14177794,
-            name:'AA_convex_musd3crv',
-            token:'AA_convex_musd3crv',
-            label:'convex musd3crv AA',
-            address:'0x4585F56B06D098D4EDBFc5e438b8897105991c6A'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_convex_musd3crv_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:14177794,
-            name:'BB_convex_musd3crv',
-            token:'BB_convex_musd3crv',
-            label:'convex musd3crv BB',
-            address:'0xFb08404617B6afab0b19f6cEb2Ef9E07058D043C'
           }
         }
       },
@@ -1001,82 +769,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_euler_USDC',
             label:'euler USDC BB',
             address:'0xe11679CDb4587FeE907d69e9eC4a7d3F0c2bcf3B'
-          }
-        }
-      },
-      levUSDC:{
-        autoFarming:[],
-        protocol:'euler',
-        blockNumber:15445762,
-        enabledEnvs: ['beta'],
-        underlyingToken:'USDC',
-        adaptiveYieldSplitEnabled:true,
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_euler_levUSDC',
-          address:'0xcb2bd49d4b7874e6597dedfaa3e7b4e01831c5af'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_euler_levUSDC',
-          address:'0xee5ec95ce2c8700a2d152db3249fa13b163f0073'
-        },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              unstake:'exit',
-              rewards:'earned',
-              claim:'getReward',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              rewardsRate:'rewardRate',
-              stakedBalance:'balanceOf'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:false,
-              abi:TrancheStakingRewards as Abi,
-              name:'TrancheStakingRewards_euler_levUSDC_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15445762,
-            label:'euler USDC AA',
-            name:'AA_euler_levUSDC',
-            token:'AA_euler_levUSDC',
-            address:'0x9F94fa97cC2d48315015040708D12aB855283164'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_euler_levUSDC_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15445762,
-            label:'euler USDC BB',
-            name:'BB_euler_levUSDC',
-            token:'BB_euler_levUSDC',
-            address:'0x617648B846512E2F49dC21Bf27e4505C285E6977'
           }
         }
       },
@@ -1380,102 +1072,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_clearpool_USDC',
             label:'clearpool USDC BB',
             address:'0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d'
-          }
-        }
-      }
-    },
-    truefi:{
-      USDC:{
-        enabledEnvs:[],
-        protocol:'truefi',
-        autoFarming:['TRU'],
-        blockNumber:15326147,
-        multiCallDisabled:true,
-        // adaptiveYieldSplitEnabled:true,
-        underlyingToken:'USDC',
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_truefi_USDC',
-          address:'0x1f5A97fB665e295303D2F7215bA2160cc5313c8E'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_truefi_USDC',
-          address:'0x62B17c9083Db5941197E83BD385985B8878B58Fb'
-        },
-        Pool:{
-          abi:TruefiPool as Abi,
-          name:'Pool_truefi_USDC',
-          address:'0xA991356d261fbaF194463aF6DF8f0464F8f1c742'
-        },
-        modal:{
-          enabled:true,
-          buttonText:'Continue',
-          title:'Truefi exit fee',
-          id:'modal_truefi_usdc_exit_fee',
-          text:'This strategy is subject to an exit fee between 0.05% and 10% depending on the utilization ratio of the Truefi pool, in addition to the performance fee. Read more at <a href="https://docs.truefi.io/faq/dao-managed-pools/pool#what-is-liquid-exit" class="link" rel="nofollow noopener noreferrer" target="_blank">https://docs.truefi.io/faq/dao-managed-pools/pool#what-is-liquid-exit</a>'
-        },
-        messages:{
-          withdraw:'This strategy is subject to an exit fee between 0.05% and 10% depending on the utilization ratio of the Truefi pool.',
-        },
-        description:'This strategy deploys funds in the <a href="https://app.truefi.io/pools/0xA991356d261fbaF194463aF6DF8f0464F8f1c742" class="link" rel="nofollow noopener noreferrer" target="_blank">Truefi USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              unstake:'exit',
-              rewards:'earned',
-              claim:'getReward',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              rewardsRate:'rewardRate',
-              stakedBalance:'balanceOf',
-              penaltyFee:'liquidExitPenalty'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:false,
-              abi:TrancheStakingRewards as Abi,
-              name:'TrancheStakingRewards_truefi_USDC_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15044679,
-            name:'AA_truefi_USDC',
-            token:'AA_truefi_USDC',
-            label:'truefi USDC AA',
-            address:'0x868bb78fb045576162B510ba33358C9f93e7959e'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes',
-              penaltyFee:'liquidExitPenalty'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_truefi_USDC_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15044679,
-            name:'BB_truefi_USDC',
-            token:'BB_truefi_USDC',
-            label:'truefi USDC BB',
-            address:'0x6EdE2522347E6a5A0420F41f42e021246e97B540'
           }
         }
       }
@@ -1803,17 +1399,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
         {
           abi: aToken as Abi,
-          name: 'aave',
-          enabled: true,
-          address: '0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d',
-          token: 'aDAI',
-          decimals: 18,
-          functions: {
-
-          }
-        },
-        {
-          abi: aToken as Abi,
           name: 'aavev2',
           enabled: true,
           address: '0x028171bCA77440897B824Ca71D1c56caC55b68A3',
@@ -1893,17 +1478,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           },
         },
         {
-          name: 'aave',
-          enabled: true,
-          abi: aToken as Abi,
-          address: '0x9bA00D6856a4eDF4665BcA2C2309936572473B7E',
-          token: 'aUSDC',
-          decimals: 18,
-          functions: {
-
-          }
-        },
-        {
           abi: aToken as Abi,
           decimals: 18,
           enabled: true,
@@ -1956,17 +1530,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           },
         },
         {
-          name: 'aave',
-          enabled: true,
-          abi: aToken as Abi,
-          address: '0x71fc860F7D3A592A4a98740e39dB31d25db65ae8',
-          token: 'aUSDT',
-          decimals: 18,
-          functions: {
-
-          }
-        },
-        {
           abi: aToken as Abi,
           decimals: 18,
           name: 'aavev2',
@@ -1991,17 +1554,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       autoFarming:['IDLE'],
       protocols: [
         {
-          name: 'aave',
-          enabled: true,
-          abi: aToken as Abi,
-          address: '0x625aE63000f46200499120B906716420bd059240',
-          token: 'aSUSD',
-          decimals: 18,
-          functions: {
-
-          }
-        },
-        {
           name: 'aavev2',
           enabled: true,
           abi: aToken as Abi,
@@ -2025,17 +1577,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       },
       autoFarming:['IDLE'],
       protocols: [
-        {
-          name: 'aave',
-          enabled: true,
-          abi: aToken as Abi,
-          address: '0x4da9b813057d04baef4e5800e36083717b4a0341',
-          token: 'aTUSD',
-          decimals: 18,
-          functions: {
-
-          }
-        },
         {
           abi: aToken as Abi,
           enabled: true,
@@ -2111,17 +1652,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
               params: []
             }
           },
-        },
-        {
-          abi: aToken as Abi,
-          name: 'aave',
-          enabled: true,
-          token: 'aWBTC',
-          address: '0xfc4b8ed459e00e5400be803a9bb3954234fd50e3',
-          decimals: 18,
-          functions: {
-
-          }
         },
         {
           abi: aToken as Abi,

@@ -91,13 +91,21 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
         <Translation translation={'defi.deposited'} textStyle={'captionSmall'} />
         <AssetProvider.DepositedUsd textStyle={'tableCell'} />
       </VStack>
-    ) : (
+    ) : asset?.type === 'BY' ? (
       <VStack
         spacing={1}
         alignItems={'flex-start'}
       >
         <Translation translation={'defi.protocols'} textStyle={'captionSmall'} />
-        <AssetProvider.Protocols iconMargin={-3} size={'sm'} />
+        <AssetProvider.Protocols iconMargin={-1} size={'xs'} />
+      </VStack>
+    ) : (
+      <VStack
+        spacing={1}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.rewards'} textStyle={'captionSmall'} />
+        <AssetProvider.Rewards iconMargin={-1} size={'xs'} />
       </VStack>
     )
   }, [asset])
@@ -115,7 +123,7 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
           spacing={3}
           alignItems={'flex-start'}
         >
-          <AssetLabel assetId={assetId} />
+          <AssetLabel assetId={assetId} size={'sm'} />
           <SimpleGrid
             pt={3}
             pl={4}
@@ -139,7 +147,6 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
               <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
               <AssetProvider.Apy textStyle={'tableCell'} />
             </VStack>
-
             {depositedOrRewards}
           </SimpleGrid>
         </VStack>

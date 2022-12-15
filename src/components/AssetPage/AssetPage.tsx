@@ -1,8 +1,9 @@
 import { Earn } from './Earn'
 import { strategies } from 'constants/'
 import { GaugeStaking } from './GaugeStaking'
-import React, { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import React, { useMemo, useState, useEffect } from 'react'
 import { InteractiveComponent } from './InteractiveComponent'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
@@ -14,10 +15,11 @@ import { Approve, Deposit, Withdraw } from 'components/OperativeComponent/Operat
 import { ContainerProps, Box, Flex, Stack, HStack, VStack, Tabs, Tab, TabList } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
-  const { params } = useBrowserRouter()
+  const navigate = useNavigate()
+  const { params, location } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
-  const { selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
+  const { isPortfolioLoaded, selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -30,6 +32,14 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const vaultGauge = useMemo(() => {
     return selectVaultGauge && selectVaultGauge(params.asset)
   }, [selectVaultGauge, params.asset])
+
+  // Check asset exists
+  useEffect(() => {
+    if (!isPortfolioLoaded || !selectAssetById || !location) return
+    if (!asset){
+      return navigate(location.pathname.replace(`/${params.asset}`, ''))
+    }
+  }, [isPortfolioLoaded, selectAssetById, asset, params.asset, location, navigate])
 
   const tabs = useMemo(() => {
     const tabs = [

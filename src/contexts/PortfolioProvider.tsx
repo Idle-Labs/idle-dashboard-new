@@ -216,7 +216,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }
 
   const selectVaultById = useCallback( (vaultId: string): Vault | null => {
-    return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId.toLowerCase()) || null : null
+    return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
   }, [state.vaults])
 
   const selectAssetById = useCallback( (assetId: AssetId | undefined): Asset | null => {

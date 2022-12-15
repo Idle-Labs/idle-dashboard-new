@@ -25,7 +25,7 @@ export const useBrowserRouter = () => useContext(BrowserRouterContext)
 export function BrowserRouterProvider() {
   const query = useQuery()
   const location = useLocation()
-  const renderedRoutes = useRoutes(routes);
+  const renderedRoutes = useRoutes(routes)
   
   const match = useMemo(() => {
     return renderedRoutes?.props.match
@@ -35,15 +35,12 @@ export function BrowserRouterProvider() {
     return match?.params || {}
   }, [match])
 
-  const router = useMemo(
-    () => ({
-      location,
-      params,
-      query,
-      match
-    }),
-    [location, params, query, match],
-  )
+  const router = useMemo(() => ({
+    location,
+    params,
+    query,
+    match
+  }), [location, params, query, match])
 
   useEffect(() => {
     window.scrollTo(0, 0)

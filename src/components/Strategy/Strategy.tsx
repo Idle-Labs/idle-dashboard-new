@@ -119,7 +119,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
   ), [params])
 
   const onRowClick = useCallback((row: RowProps) => {
-    return navigate(`${location?.pathname}/${row.original.id}`)
+    return navigate(`${location?.pathname.replace(/\/$/, '')}/${row.original.id}`)
   }, [navigate, location])
 
 
@@ -330,6 +330,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <VStack
           pr={[0, 14]}
           pt={[0, 20]}
+          spacing={10}
           direction={'column'}
           width={['100%', '65%']}
           alignItems={['center', 'flex-start']}
@@ -337,7 +338,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Translation translation={strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
           {
             !isMobile && (
-              <Translation mt={10} translation={strategies[strategy].description} textAlign={['center', 'left']} />
+              <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
             )
           }
         </VStack>

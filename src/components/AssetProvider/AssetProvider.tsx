@@ -482,7 +482,7 @@ const Apy: React.FC<PercentageProps> = (props) => {
       label={tooltipLabel}
     >
       <TooltipContent>
-        <Amount.Percentage value={asset?.apy} {...props} />
+        <Amount.Percentage value={asset?.apy} {...props} borderBottom={'1px dashed'} borderBottomColor={'cta'} />
       </TooltipContent>
     </Tooltip>
   ) : <Spinner size={'sm'} />

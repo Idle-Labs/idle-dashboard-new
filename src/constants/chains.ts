@@ -9,8 +9,8 @@ export const chains: Record<number, Chain> = {
     id: '0x1',
     token: 'ETH',
     label: 'Ethereum Mainnet',
-    // rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
-    rpcUrl: `https://eth-mainnet.alchemyapi.io/v2/${env.REACT_APP_ALCHEMY_KEY}`
+    rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
+    // rpcUrl: `https://eth-mainnet.alchemyapi.io/v2/${env.REACT_APP_ALCHEMY_KEY}`
   },
   // 137: {
   //   id: '0x89',

@@ -60,6 +60,7 @@ type ContextProps = {
   state: StateProps
   setGasLimit: Function
   sendTransaction: Function
+  updateGasPrices: Function
   estimateGasFee: Function
   cleanTransaction: Function
   sendTransactionTest: Function
@@ -102,10 +103,11 @@ const initialContextState = {
   state: initialState,
   setGasLimit: () => {},
   estimateGasFee: () => {},
+  updateGasPrices: () => {},
   sendTransaction: () => {},
   cleanTransaction: () => {},
   sendTransactionTest: () => {},
-  setTransactionSpeed: () => {}
+  setTransactionSpeed: () => {},
 }
 
 // const initialStateMock = : StateProps = {
@@ -353,10 +355,48 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     })()
   }, [walletInitialized, chainId, web3])
 
+  const updateGasPrices = useCallback( async () => {
+    if (!walletInitialized || !explorer || !chainId) return
+    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
+    const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
+    if (gasOracle) {
+      const gasPrices: GasPrices = {
+        [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
+        [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
+        [TransactionSpeed.Average]: (+gasOracle.SafeGasPrice+1).toString(),
+        [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice).toString()
+      }
+
+      const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
+      const defaultEstimatedTimes = Object.keys(gasPrices).reduce( (gasPrices: Record<string, string>, transactionSpeed) => ({ ...gasPrices, [transactionSpeed]: '60' }), {}) as GasPrices
+      const estimatedTimes = await asyncReduce<TransactionSpeed, GasPrices>(
+        transactionSpeeds,
+        async (transactionSpeed: TransactionSpeed): Promise<any> => {
+          const gasPrice = gasPrices[transactionSpeed]
+          const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? '15' : await getEstimatedTime(gasPrice)
+          return {
+            [transactionSpeed]: estimatedTime
+          }
+        },
+        (acc, val) => ({...acc, ...val}),
+        defaultEstimatedTimes
+      )
+
+      console.log('updateGasPrices', gasOracle, gasPrices, estimatedTimes)
+
+      dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
+      dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
+      dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
+    }
+  }, [explorer, chainId, walletInitialized, getEstimatedTime])
+
   // Get Gas Oracle
   useEffect(() => {
     if (!walletInitialized || !explorer || !chainId || state.gasOracle) return
+
+    updateGasPrices()
     // console.log('Get Gas Oracle', walletInitialized, explorer, chainId, state.gasOracle)
+    /*
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
       const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
@@ -383,15 +423,13 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           defaultEstimatedTimes
         )
 
-        // console.log('gasPrices', gasPrices)
-        // console.log('estimatedTimes', estimatedTimes)
-
         dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
         dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
         dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
       }
     })()
-  }, [explorer, chainId, walletInitialized, state.gasOracle, state.transactionSpeed, getEstimatedTime])
+    */
+  }, [explorer, chainId, walletInitialized, state.gasOracle, updateGasPrices/*, state.transactionSpeed, getEstimatedTime*/])
 
   // Update gas price based on selected transaction speed
   useEffect(() => {
@@ -579,7 +617,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [dispatch])
 
   return (
-    <TransactionManagerContext.Provider value={{ state, sendTransaction, sendTransactionTest, retry, estimateGasFee, cleanTransaction, setTransactionSpeed, setGasLimit }}>
+    <TransactionManagerContext.Provider value={{ state, sendTransaction, sendTransactionTest, retry, estimateGasFee, cleanTransaction, setTransactionSpeed, setGasLimit, updateGasPrices }}>
       {children}
     </TransactionManagerContext.Provider>
   )
