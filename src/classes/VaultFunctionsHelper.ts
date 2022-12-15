@@ -88,10 +88,12 @@ export class VaultFunctionsHelper {
 
       if (!harvestTx) return lastHarvest
 
-      const harvestedValueAA = BNify(harvestTx.value).div(`1e${trancheVault.underlyingToken?.decimals}`).times(aprRatioAA.div(100));
-      const harvestedValueBB = BNify(harvestTx.value).div(`1e${trancheVault.underlyingToken?.decimals}`).times(aprRatioBB.div(100));
-      const tokenAprAA = harvestedValueAA.div(tranchePoolAA).times(52.1429);
-      const tokenAprBB = harvestedValueBB.div(tranchePoolBB).times(52.1429);
+      const totalValue = BNify(harvestTx.value).div(`1e${trancheVault.underlyingToken?.decimals}`)
+
+      const harvestedValueAA = totalValue.times(aprRatioAA.div(100))
+      const harvestedValueBB = totalValue.times(aprRatioBB.div(100))
+      const tokenAprAA = harvestedValueAA.div(tranchePoolAA).times(52.1429)
+      const tokenAprBB = harvestedValueBB.div(tranchePoolBB).times(52.1429)
       
       // console.log('getTrancheHarvestApy', harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString())
 
@@ -104,6 +106,8 @@ export class VaultFunctionsHelper {
           AA: harvestedValueAA,
           BB: harvestedValueBB,
         },
+        totalValue,
+        hash: harvestTx.hash,
         timestamp: +harvestTx.timeStamp,
         blockNumber: +harvestTx.blockNumber,
         tokenAddress: harvestTx.contractAddress,
@@ -168,11 +172,9 @@ export class VaultFunctionsHelper {
 
     let apr = isAATranche ? BNify(stratApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(stratApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
     
-    if (!BNify(harvestApy).isNaN()){
-      apr = apr.plus(harvestApy)
-    }
-
-    // console.log('getMaticTrancheApy', trancheVault.type, FULL_ALLOC.toString(), currentAARatio.toString(), trancheAPRSplitRatio.toString(), harvestApy.toString(), apr.toString())
+    // if (!BNify(harvestApy).isNaN()){
+    //   apr = apr.plus(harvestApy)
+    // }
 
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
   }
@@ -222,8 +224,9 @@ export class VaultFunctionsHelper {
 
   public getVaultNewApr(asset: Asset, vault: Vault, liqToAdd: BigNumber): BigNumber {
     if (!liqToAdd || isBigNumberNaN(liqToAdd)){
-      return BNify(asset.apr)
+      return BNify(0)
     }
+
     if (vault instanceof TrancheVault) {
       const FULL_ALLOC = 100
       const newTotalTvl = BNify(asset.totalTvl).plus(liqToAdd)
@@ -244,7 +247,8 @@ export class VaultFunctionsHelper {
         break;
       }
     }
-    return BNify(asset.apr)
+
+    return BNify(0)
   }
 
   public async getVaultAdditionalBaseApr(vault: Vault): Promise<VaultAdditionalApr> {

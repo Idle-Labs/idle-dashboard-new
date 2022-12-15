@@ -16,42 +16,11 @@ import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
-import type { GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
+import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData } from 'constants/types'
-
-type InitialState = {
-  aprs: Balances
-  fees: Balances
-  vaults: Vault[]
-  balances: Balances
-  assetsData: Assets
-  baseAprs: Balances
-  pricesUsd: Balances
-  aprRatios: Balances
-  balancesUsd: Balances
-  rewards: VaultsRewards
-  gaugesData: GaugesData
-  vaultsPrices: Balances
-  totalSupplies: Balances
-  helpers: Record<any, any>
-  isPortfolioLoaded: boolean
-  protocolToken: Asset | null
-  transactions: Transaction[]
-  contracts: GenericContract[]
-  gaugesRewards: GaugesRewards
-  isVaultsPositionsLoaded: boolean
-  portfolioTimestamp: number | null
-  selectors: Record<string, Function>
-  allocations: Record<AssetId, Balances>
-  vaultsPositions: Record<string, VaultPosition>
-  historicalRates: Record<AssetId, HistoryData[]>
-  historicalPrices: Record<AssetId, HistoryData[]>
-  historicalPricesUsd: Record<AssetId, HistoryData[]>
-  lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
-}
 
 type VaultsOnchainData = {
   fees: Balances
@@ -65,9 +34,29 @@ type VaultsOnchainData = {
   rewards: VaultsRewards
   vaultsPrices: Balances
   totalSupplies: Balances
+  additionalAprs: Balances
   allocations: Record<AssetId, Balances>
+  aprsBreakdown: Record<AssetId, Balances>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
 }
+
+type InitialState = {
+  vaults: Vault[]
+  balancesUsd: Balances
+  helpers: Record<any, any>
+  isPortfolioLoaded: boolean
+  protocolToken: Asset | null
+  transactions: Transaction[]
+  contracts: GenericContract[]
+  gaugesRewards: GaugesRewards
+  isVaultsPositionsLoaded: boolean
+  portfolioTimestamp: number | null
+  selectors: Record<string, Function>
+  vaultsPositions: Record<string, VaultPosition>
+  historicalRates: Record<AssetId, HistoryData[]>
+  historicalPrices: Record<AssetId, HistoryData[]>
+  historicalPricesUsd: Record<AssetId, HistoryData[]>
+} & VaultsOnchainData
 
 type ContextProps = InitialState
 
@@ -92,6 +81,8 @@ const initialState: InitialState = {
   transactions: [],
   totalSupplies: {},
   gaugesRewards: {},
+  aprsBreakdown: {},
+  additionalAprs: {},
   protocolToken: null,
   vaultsPositions: {},
   historicalRates: {},
@@ -145,6 +136,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, lastHarvests: action.payload}
     case 'SET_HISTORICAL_RATES':
       return {...state, historicalRates: action.payload}
+    case 'SET_ADDITIONAL_APRS':
+      return {...state, additionalAprs: action.payload}
     case 'SET_HISTORICAL_PRICES':
       return {...state, historicalPrices: action.payload}
     case 'SET_HISTORICAL_PRICES_USD':
@@ -165,6 +158,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, pricesUsd: action.payload}
     case 'SET_TOTAL_SUPPLIES':
       return {...state, totalSupplies: action.payload}  
+    case 'SET_APRS_BREAKDOWN':
+      return {...state, aprsBreakdown: action.payload}  
     case 'SET_ASSETS_DATA':
       return {...state, assetsData: action.payload}
     case 'SET_ASSETS_DATA_IF_EMPTY':
@@ -747,24 +742,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       ...state.assetsData
     }
 
-    // Process last harvest blocks
-    const lastHarvests = (Object.values(vaultsLastHarvests) as CdoLastHarvest[]).reduce( (lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>, lastHarvest: CdoLastHarvest) => {
-      const cdoId = lastHarvest.cdoId
-      const filteredVaults = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
-      filteredVaults.forEach( (vault: Vault) => {
-        const assetId = vault.id
-
-        assetsData[assetId] = {
-          ...assetsData[assetId],
-         lastHarvest: lastHarvest.harvest || null 
-        }
-
-        lastHarvests[assetId] = lastHarvest.harvest || null
-      })
-
-      return lastHarvests
-    }, {})
-
     // Process protocols
     const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
       if (callResult.data) {
@@ -890,6 +867,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const vaultAdditionalBaseApr: VaultAdditionalApr | undefined = vaultsAdditionalBaseAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId || (vault && "cdoConfig" in vault && apr.cdoId === vault.cdoConfig?.address)) )
           if (vaultAdditionalBaseApr){
             baseApr = baseApr.plus(vaultAdditionalBaseApr.apr)
+            // console.log(`Base Apr ${asset.name}: ${vaultAdditionalBaseApr.apr.toString()} = ${baseApr.toString()}`)
           }
 
           assetsData[assetId] = {
@@ -902,6 +880,71 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
 
       return baseAprs
+    }, {})
+
+    // Process last harvest blocks
+    const additionalAprs: Balances = {}
+    const lastHarvests = (Object.values(vaultsLastHarvests) as CdoLastHarvest[]).reduce( (lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>, lastHarvest: CdoLastHarvest) => {
+      const cdoId = lastHarvest.cdoId
+      const filteredVaults = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
+      filteredVaults.forEach( (vault: Vault) => {
+        const assetId = vault.id
+
+        assetsData[assetId] = {
+          ...assetsData[assetId],
+         lastHarvest: lastHarvest.harvest || null 
+        }
+
+        lastHarvests[assetId] = lastHarvest.harvest || null
+      })
+
+      return lastHarvests
+    }, {})
+
+    const aprsBreakdown: Record<AssetId, Balances> = {}
+
+    const aprs = aprsCallsResults.reduce( (aprs: Balances, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        const vault = selectVaultById(assetId)
+        if (asset && vault){
+          const decimals = callResult.extraData.decimals || 18
+          aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
+
+          // Add additional Apr
+          const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId) )
+          if (vaultAdditionalApr){
+            const additionalApr = vaultAdditionalApr.apr.div(`1e${decimals}`)
+            // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalApr.toString()} = ${aprs[assetId].plus(additionalApr).toString()}`)
+            aprs[assetId] = aprs[assetId].plus(additionalApr)
+          }
+
+          aprsBreakdown[assetId] = {
+            base: aprs[assetId]
+          }
+
+          additionalAprs[assetId] = BNify(0)
+
+          // Add harvest apr
+          if (lastHarvests[assetId]) {
+            additionalAprs[assetId] = additionalAprs[assetId].plus(BNify(lastHarvests[assetId]?.aprs[vault.type]).times(100))
+            // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalAprs[assetId].toString()} = ${aprs[assetId].plus(additionalAprs[assetId]).toString()}`)
+            aprs[assetId] = aprs[assetId].plus(additionalAprs[assetId])
+            aprsBreakdown[assetId].harvest = additionalAprs[assetId]
+          }
+
+          const apy = apr2apy(aprs[assetId].div(100)).times(100)
+
+          // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
+          assetsData[assetId] = {
+            ...assetsData[assetId],
+            apr: aprs[assetId],
+            apy
+          }
+        }
+      }
+      return aprs
     }, {})
 
     // Process Fees
@@ -974,34 +1017,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }
       return pricesUsd
-    }, {})
-
-    const aprs = aprsCallsResults.reduce( (aprs: Balances, callResult: DecodedResult) => {
-      if (callResult.data) {
-        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-        const asset = selectAssetById(assetId)
-        if (asset){
-          const vault = selectVaultById(assetId)
-          const decimals = callResult.extraData.decimals || 18
-          aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-
-          // Add additional Apr
-          const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId) )
-          if (vaultAdditionalApr){
-            aprs[assetId] = aprs[assetId].plus(vaultAdditionalApr.apr.div(`1e${decimals}`))
-          }
-
-          const apy = apr2apy(aprs[assetId].div(100)).times(100)
-
-          // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            apr: aprs[assetId],
-            apy
-          }
-        }
-      }
-      return aprs
     }, {})
 
     const totalSupplies = totalSupplyCallsResults.reduce( (totalSupplies: Balances, callResult: DecodedResult) => {
@@ -1122,7 +1137,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       allocations,
       lastHarvests,
       vaultsPrices,
-      totalSupplies
+      totalSupplies,
+      aprsBreakdown,
+      additionalAprs
     }
   }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
@@ -1141,8 +1158,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!lastTransaction?.lastUpdated || lastTransaction.lastUpdated<state.portfolioTimestamp) return
 
     // console.log('lastTransaction', lastTransaction)
-    const asset = selectAssetById(lastTransaction.assetId as string)
-    const vault = selectVaultById(lastTransaction.assetId as string)
+    const asset = selectAssetById(lastTransaction.vaultId as string)
+    const vault = selectVaultById(lastTransaction.vaultId as string)
 
     if (!asset || asset.type === 'underlying' || !vault) return
 
@@ -1171,9 +1188,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('Last Transaction Asset', asset)
 
     ;(async () => {
+      console.log('Update vaults after transaction', vaults)
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
       if (!vaultsOnChainData) return
-      console.log('Last Transaction Vaults Data', vaults, vaultsOnChainData)
+      console.log('getVaultsOnchainData', vaultsOnChainData)
 
       const {
         fees,
@@ -1188,7 +1206,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         allocations,
         lastHarvests,
         vaultsPrices,
-        totalSupplies
+        totalSupplies,
+        aprsBreakdown,
+        additionalAprs
       } = vaultsOnChainData
 
       const newAprs = {...state.aprs, ...aprs}
@@ -1203,6 +1223,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const newLastHarvests = {...state.lastHarvests, ...lastHarvests}
       const newVaultsPrices = {...state.vaultsPrices, ...vaultsPrices}
       const newTotalSupplies = {...state.totalSupplies, ...totalSupplies}
+      const newAprsBreakdown = {...state.aprsBreakdown, ...aprsBreakdown}
+      const newAdditionalAprs = {...state.additionalAprs, ...additionalAprs}
 
       // Save assets data first
       // dispatch({type: 'SET_ASSETS_DATA', payload: newAssetsData})
@@ -1217,7 +1239,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_ALLOCATIONS', payload: newAllocations})
       dispatch({type: 'SET_LAST_HARVESTS', payload: newLastHarvests})
       dispatch({type: 'SET_VAULTS_PRICES', payload: newVaultsPrices})
+      dispatch({type: 'SET_APRS_BREAKDOWN', payload: newAprsBreakdown})
       dispatch({type: 'SET_TOTAL_SUPPLIES', payload: newTotalSupplies})
+      dispatch({type: 'SET_ADDITIONAL_APRS', payload: newAdditionalAprs})
       dispatch({type: 'SET_PORTFOLIO_TIMESTAMP', payload: Date.now()})
     })()
 
@@ -1665,7 +1689,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         allocations,
         lastHarvests,
         vaultsPrices,
-        totalSupplies
+        aprsBreakdown,
+        totalSupplies,
+        additionalAprs
       } = vaultsOnChainData
 
       // const gaugeWeights = await getGaugesWeights(state.vaults)
@@ -1690,6 +1716,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         dispatch({type: 'SET_APRS', payload: {...state.aprs, ...aprs}})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        dispatch({type: 'SET_ADDITIONAL_APRS', payload: {...state.additionalAprs, ...additionalAprs}})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        dispatch({type: 'SET_APRS_BREAKDOWN', payload: {...state.aprsBreakdown, ...aprsBreakdown}})
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         dispatch({type: 'SET_REWARDS', payload: {...state.rewards, ...rewards}})
@@ -1860,7 +1892,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const gaugeRewardData = gaugeData.rewards[rewardId]
         const gaugeShare = gauge.totalSupply ? BNify(gaugeVaultPosition.underlying.redeemable).div(gauge.totalSupply) : BNify(0)
 
-        if (BNify(gaugeRewardData.balance).gt(0)){
+        if (gaugeShare.gt(0)){
           if (!gaugesRewards[rewardId]){
             gaugesRewards[rewardId] = {
               deposited: BNify(0),
@@ -1908,10 +1940,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const assetsData = generateAssetsData(state.vaults)
     for (const vault of state.vaults){
       assetsData[vault.id].fee = state.fees[vault.id]
-      assetsData[vault.id].apr =  state.aprs[vault.id]
-      if (assetsData[vault.id].apr){
-        assetsData[vault.id].apy =  apr2apy(BNify(assetsData[vault.id].apr).div(100)).times(100)
-      }
       assetsData[vault.id].rewards =  state.rewards[vault.id]
       assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
       assetsData[vault.id].balance =  state.balances[vault.id] || BNify(0)
@@ -1925,9 +1953,47 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].totalSupply =  state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
+      assetsData[vault.id].additionalApr =  state.additionalAprs[vault.id] || BNify(0)
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
+
+      assetsData[vault.id].aprBreakdown =  state.aprsBreakdown[vault.id] || {}
+
+      // Add gauge to vault apr breakdown
+      if (vault.type==='GG' && ("trancheVault" in vault)){
+        const trancheVault = vault.trancheVault
+        if (trancheVault) {
+          if (assetsData[vault.id].gaugeData?.rewards){
+            const gaugeRewards = assetsData[vault.id].gaugeData?.rewards || []
+            const aprBreakdown = assetsData[trancheVault.id].aprBreakdown || {}
+            aprBreakdown.gauge = (Object.values(gaugeRewards) as GaugeRewardData[])
+              .reduce( (total: BigNumber, rewardData: GaugeRewardData) => {
+                if (!rewardData.apr) return total
+                return total.plus(BNify(rewardData.apr))
+              }, BNify(0))
+
+            assetsData[trancheVault.id].aprBreakdown = aprBreakdown
+          }
+        }
+      }
+
+      if (assetsData[vault.id].aprBreakdown){
+        assetsData[vault.id].apyBreakdown = Object.keys(assetsData[vault.id].aprBreakdown || {}).reduce( (apyBreakdown: Balances, type: string): Balances => {
+          const apr = assetsData[vault.id].aprBreakdown?.[type]
+          if (apr){
+            apyBreakdown[type] = apr2apy(BNify(apr).div(100)).times(100)
+          }
+          return apyBreakdown
+        }, {})
+      }
+
+      // Calculate APR and APY using the breakdowns
+      assetsData[vault.id].apr = assetsData[vault.id].aprBreakdown ? (Object.values(assetsData[vault.id].aprBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apr: BigNumber) => total.plus(apr), BNify(0)) : BNify(0)
+      assetsData[vault.id].apy = assetsData[vault.id].apyBreakdown ? (Object.values(assetsData[vault.id].apyBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apy: BigNumber) => total.plus(apy), BNify(0)) : BNify(0)
+
+
+      // console.log('aprBreakdown', vault.id, assetsData[vault.id].aprBreakdown)
 
       if (!BNify(assetsData[vault.id].totalSupply).isNaN() && !BNify(assetsData[vault.id].vaultPrice).isNaN() && !BNify(assetsData[vault.id].priceUsd).isNaN()){
         assetsData[vault.id].tvl = BNify(assetsData[vault.id].totalSupply).times(BNify(assetsData[vault.id].vaultPrice))
@@ -1966,6 +2032,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.totalSupplies,
     state.allocations,
     state.lastHarvests,
+    state.aprsBreakdown,
+    state.additionalAprs,
     state.vaultsPositions,
     state.historicalPricesUsd
   ])

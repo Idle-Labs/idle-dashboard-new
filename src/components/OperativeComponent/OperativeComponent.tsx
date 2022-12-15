@@ -14,7 +14,7 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy } from 'helpers/'
+import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
@@ -101,9 +101,9 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
     const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
     console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
     if (!allowanceContractSendMethod) return
-    sendTransaction(vault.id, allowanceContractSendMethod)
+    sendTransaction(vault.id, underlyingAsset?.id, allowanceContractSendMethod)
     // sendTransactionTest(allowanceContractSendMethod)
-  }, [amountToApprove, vault, sendTransaction])
+  }, [amountToApprove, vault, underlyingAsset, sendTransaction])
 
   // Update amount to approve and parent amount
   useEffect(() => {
@@ -134,6 +134,7 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
   return (
     <VStack
       flex={1}
+      width={'100%'}
       alignItems={'flex-start'}
     >
       <NavBar goBack={goBack} translation={"modals.approve.header"} params={{asset: underlyingAsset?.name}} />
@@ -224,10 +225,10 @@ const EstimatedGasFees: React.FC = () => {
     >
       <MdOutlineLocalGasStation color={theme.colors.ctaDisabled} size={24} />
       <Translation translation={'trade.estimatedGasFee'} suffix={':'} textStyle={'captionSmaller'} />
-      <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={gasFeeUsd}></Amount.Usd>
+      <Amount.Usd textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} prefix={TILDE} value={gasFeeUsd}></Amount.Usd>
       {
         gasFeeUsd && (
-          <Amount textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={`(`} suffix={`${chainToken?.symbol})`} value={gasFee} decimals={4}></Amount>
+          <Amount textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} prefix={`(`} suffix={`${chainToken?.symbol})`} value={gasFee} decimals={4}></Amount>
         )
       }
     </HStack>
@@ -257,28 +258,43 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
   }, [assetId, selectVaultById])
 
 
-  const newTrancheTvl = useMemo(() => BNify(asset.tvl).plus(amount), [asset, amount])
-  const newApr = useMemo(() => vaultFunctionsHelper?.getVaultNewApr(asset, vault, BNify(amount)) || asset?.apr, [asset, vault, amount, vaultFunctionsHelper])
-  const newApy = useMemo(() => apr2apy(BNify(newApr).div(100)).times(100), [newApr])
-  // console.log('newApy', amount, newApr.toString(), newApy.toString())
+  const newTrancheTvl = useMemo(() => BNify(asset.tvl).plus(bnOrZero(amount)), [asset, amount])
+  
+  const newApr = useMemo(() => {
+    return vaultFunctionsHelper?.getVaultNewApr(asset, vault, BNify(amount))
+  }, [asset, vault, amount, vaultFunctionsHelper])
 
-  const amountIsValid = BNify(amountUsd).gt(0)
+  // Calculate the new APY using the apy breakdown
+  const newApy = useMemo(() => {
+    if (bnOrZero(newApr).gt(0)){
+        const newApy = apr2apy(bnOrZero(newApr).div(100)).times(100)
+        const additionalApy = asset.apyBreakdown ? (Object.keys(asset.apyBreakdown || {}) as string[]).filter( (type: string) => type !== 'base' ).reduce( (total: BigNumber, type: string) => total.plus(asset.apyBreakdown[type]), BNify(0)) : BNify(0)
+        return BNify(newApy).plus(additionalApy)
+    } else {
+      return bnOrZero(asset?.apy)
+    }
+
+  }, [asset, newApr])
+  
+  // console.log('newApy', amount, asset, newApr.toString(), BNify(asset.additionalApr).toString(), newApy.toString())
+
+  const amountIsValid = bnOrZero(amountUsd).gt(0)
 
   switch (field){
     case 'boost':
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
       return <Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.toFixed(2)}x</Text>
     case 'overperformance':
-      const basePerformance = BNify(amountUsd).times(BNify(asset?.baseApr).div(100))
-      const tranchePerformance = BNify(amountUsd).times(BNify(asset?.apy).div(100))
+      const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
+      const tranchePerformance = bnOrZero(amountUsd).times(BNify(asset?.apy).div(100))
       const overperformance = amountIsValid ? tranchePerformance.minus(basePerformance) : null
       return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />
     case 'newApy':
-      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={amountIsValid ? newApy : null} />
+      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />
     case 'coverage':
       const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
       const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
-      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={amountIsValid ? coverageAmount : null} />
+      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={coverageAmount} />
     default:
       return null
   }
@@ -380,14 +396,14 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
 
-        sendTransaction(vault.id, depositContractSendMethod)
+        sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
         // sendTransactionTest(depositContractSendMethod)
       } else {
         // Go to approve section
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, vault, dispatch, sendTransaction/*, sendTransactionTest*/])
+  }, [account, disabled, amount, vault, underlyingAsset, dispatch, sendTransaction/*, sendTransactionTest*/])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -465,6 +481,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   return (
     <AssetProvider
       flex={1}
+      width={'100%'}
       assetId={asset?.underlyingId}
     >
       <VStack
@@ -515,7 +532,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                       spacing={1}
                     >
                       <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                      <AssetProvider.Balance abbreviate={false} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                      <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
                     </HStack>
                     <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
                   </HStack>
@@ -543,7 +560,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                 <AssetProvider
                   assetId={asset?.id}
                 >
-                  <AssetProvider.PerformanceFee textStyle={['captionSmaller', 'semiBold']} color={'primary'} />
+                  <AssetProvider.PerformanceFee textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} />
                 </AssetProvider>
               </HStack>
             </Card.Outline>
@@ -601,7 +618,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const withdrawParams = vault.getWithdrawParams(amountToWithdraw)
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
       console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
-      sendTransaction(vault.id, withdrawContractSendMethod)
+      sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
       // sendTransactionTest(withdrawContractSendMethod)
     })()
   }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
@@ -682,6 +699,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   return (
     <AssetProvider
       flex={1}
+      width={'100%'}
       assetId={asset?.id}
     >
       <VStack
@@ -738,7 +756,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                     spacing={1}
                   >
                     <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                    <AssetProvider.VaultBalance abbreviate={false} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
                   </HStack>
                   <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
                 </HStack>
@@ -764,7 +782,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                 <AssetProvider
                   assetId={asset?.id}
                 >
-                  <AssetProvider.PerformanceFee textStyle={['captionSmaller', 'semiBold']} color={'primary'} />
+                  <AssetProvider.PerformanceFee textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} />
                 </AssetProvider>
               </HStack>
             </Card.Outline>
@@ -844,6 +862,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { chainId, explorer } = useWalletProvider()
   const [ progressValue, setProgressValue ] = useState<number>(0)
   const { underlyingAsset, theme, translate } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
   // const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(1)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
@@ -921,22 +940,36 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     }
   }, [transactionState?.status, activeItem, resetAndGoBack])
 
+  const txActionType = useMemo(() => {
+    return transactionState.actionType || actionType
+  }, [actionType, transactionState.actionType])
+
+  const amountToDisplay = useMemo(() => {
+    return transactionState.amount ? abbreviateNumber(transactionState.amount, 8) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8))
+  }, [amount, translate, transactionState.amount])
+
+  const assetToDisplay = useMemo(() => {
+    if (!selectAssetById) return underlyingAsset?.name
+    const asset = selectAssetById(transactionState.assetId)
+    return asset?.name || underlyingAsset?.name
+  }, [selectAssetById, underlyingAsset?.name, transactionState.assetId])
+
   const body = useMemo(() => {
     switch (transactionState?.status) {
       case 'pending':
         return (
-          <Translation component={Text} translation={remainingTime===0 ? `modals.status.body.long` : `modals.${actionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Translation component={Text} translation={remainingTime===0 ? `modals.status.body.long` : `modals.${txActionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
         )
       case 'success':
-        const amountToDisplay = amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8)
+        // const amountToDisplay = amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8)
         return (
           <>
-            <Translation component={Text} translation={`modals.${actionType}.status.success`} params={{asset: underlyingAsset?.name, amount: amountToDisplay }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={['heading', 'h3']} textAlign={'center'} />
             {
               activeStep ? (
                 <Translation component={Button} translation={`common.${baseActionType}`} onClick={() => resetAndGoBack(true)} variant={'ctaFull'} />
               ) : (
-                <Translation component={Button} translation={`trade.actions.${actionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
+                <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
               )
             }
           </>
@@ -944,8 +977,8 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       case 'failed':
         return (
           <>
-            <Translation component={Text} translation={`modals.${actionType}.status.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={['heading', 'h3']} textAlign={'center'} />
-            <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: underlyingAsset?.name, amount: abbreviateNumber(amount, 8) }} textStyle={'captionSmall'} textAlign={'center'} />
+            <Translation component={Text} translation={`modals.${txActionType}.status.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'captionSmall'} textAlign={'center'} />
             <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => retry} variant={'ctaFull'} />
             <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => resetAndGoBack()} />
           </>
@@ -953,7 +986,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       default:
         return null
     }
-  }, [transactionState?.status, remainingTime, translate, underlyingAsset, amount, activeStep, actionType, baseActionType, resetAndGoBack, retry])
+  }, [transactionState?.status, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry])
 
   const isLongTransaction = useMemo(() => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0
@@ -1072,7 +1105,7 @@ type TransactionSpeedSelectorProps = {
 }
 
 const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ save }) => {
-  const { state: { estimatedFeesUsd, estimatedTimes, transactionSpeed: currentTransactionSpeed}, setTransactionSpeed } = useTransactionManager()
+  const { state: { estimatedFeesUsd, estimatedTimes, gasPrices, transactionSpeed: currentTransactionSpeed}, setTransactionSpeed } = useTransactionManager()
   return (
     <VStack
       p={4}
@@ -1106,39 +1139,51 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                 bg={isActive ? 'card.bgLight' : 'transparent'}
                 onClick={() => setTransactionSpeed(transactionSpeed)}
               >
-                <SimpleGrid
-                  columns={3}
+                <HStack
                   spacing={4}
                   width={'100%'}
                   alignItems={'center'}
                 >
                   <HStack
                     spacing={2}
+                    width={'40%'}
+                    alignItems={'center'}
                   >
                     <Radio colorScheme={'blue'} isChecked={isActive}></Radio>
-                    <Translation component={Text} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
+                    <HStack
+                      flex={1}
+                      spacing={1}
+                      alignItems={'center'}
+                    >
+                      <Translation component={Text} whiteSpace={'nowrap'} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
+                      <SkeletonText noOfLines={1} isLoaded={!!gasPrices} width={'100%'}>
+                        <Amount prefix={'('} suffix={')'} decimals={0} textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} value={gasPrices?.[transactionSpeed]}></Amount>
+                      </SkeletonText>
+                    </HStack>
                   </HStack>
                   <VStack
                     spacing={2}
+                    width={'25%'}
                     alignItems={'flex-start'}
                     justifyContent={'flex-start'}
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`common.gasFee`} />
                     <SkeletonText noOfLines={1} isLoaded={!!estimatedFeesUsd} width={'100%'}>
-                      <Amount.Usd textStyle={['captionSmaller', 'semiBold']} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
+                      <Amount.Usd textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
                     </SkeletonText>
                   </VStack>
                   <VStack
                     spacing={2}
+                    width={'35%'}
                     alignItems={'flex-start'}
                     justifyContent={'flex-start'}
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
                     <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={'100%'}>
-                      <Text textStyle={['captionSmaller', 'semiBold']} color={'primary'}>{formatTime(estimatedTimes?.[transactionSpeed])}</Text>
+                      <Text textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'}>{formatTime(estimatedTimes?.[transactionSpeed])}</Text>
                     </SkeletonText>
                   </VStack>
-                </SimpleGrid>
+                </HStack>
               </Card.Outline>
             )
           })
@@ -1243,11 +1288,12 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
 }) => {
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
+  const [ state, dispatch ] = useReducer(reducer, initialState)
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
 
   const { underlyingAsset, translate } = useAssetProvider()
-  const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { state: { gasPrice, transaction: transactionState }, retry } = useTransactionManager()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const { state: { gasPrice, transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
     setActionIndex(index)
@@ -1269,9 +1315,19 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     dispatch({type:'SET_BASE_ACTION_TYPE', payload: activeAction.type})
   }, [activeAction, activeStep])
 
+  const actionType = useMemo(() => {
+    return transactionState.actionType || state.actionType
+  }, [state.actionType, transactionState.actionType])
+
   const amountToDisplay = useMemo(() => {
-    return state.amount === MAX_ALLOWANCE ? translate('trade.unlimited') : parseFloat(state.amount)
-  }, [state.amount, translate])
+    return transactionState.amount ? transactionState.amount : (state.amount === MAX_ALLOWANCE ? translate('trade.unlimited') : parseFloat(state.amount))
+  }, [state.amount, translate, transactionState.amount])
+
+  const assetToDisplay = useMemo(() => {
+    if (!selectAssetById) return state.asset?.name
+    const asset = selectAssetById(transactionState.assetId)
+    return asset?.name || state.asset?.name
+  }, [selectAssetById, state.asset, transactionState.assetId])
 
   useEffect(() => {
     // console.log('TransactionProcess', transactionState)
@@ -1284,9 +1340,11 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       case 'failed':
         switch (transactionState.error?.code) {
           case 4001:
+            cleanTransaction()
             return setActiveItem(state.activeStep)
           default:
             return setActiveItem(firstProcessIndex+1)
+          break
         }
       case 'success':
         setActiveItem(firstProcessIndex+1)
@@ -1303,7 +1361,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       default:
       break;
     }
-  }, [transactionState, activeAction, state.activeStep])
+  }, [transactionState, cleanTransaction, activeAction, state.activeStep])
 
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null
@@ -1432,7 +1490,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
               id={'confirm-on-wallet'}
               alignItems={'flex-start'}
             >
-              <NavBar goBack={() => setActiveItem(state.activeStep) } translation={`modals.confirm.${state.actionType}.header`} />
+              <NavBar goBack={() => setActiveItem(state.activeStep) } translation={`modals.confirm.${actionType}.header`} />
               <Center
                 p={14}
                 flex={1}
@@ -1446,9 +1504,9 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   <VStack
                     spacing={1}
                   >
-                    <Translation component={Text} translation={`modals.${state.actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
+                    <Translation component={Text} translation={`modals.${actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
                     <HStack>
-                      <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${state.asset?.name}`}></Amount>
+                      <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
                     </HStack>
                   </VStack>
                 </VStack>

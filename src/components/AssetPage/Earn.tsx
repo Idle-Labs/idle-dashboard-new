@@ -24,7 +24,7 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
   const { account, walletInitialized } = useWalletProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
 

@@ -12,9 +12,10 @@ import { RateChart } from 'components/RateChart/RateChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
+import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
-import { useTheme, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
+import { useTheme, Box, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 
@@ -427,12 +428,65 @@ const Apr: React.FC<PercentageProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+type TooltipContentProps = {
+  children: React.ReactNode;
+} & BoxProps
+
+const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(({ children, ...rest }, ref) => (
+  <Box
+    ref={ref}
+    {...rest}
+  >
+    {children}
+  </Box>
+));
+
 const Apy: React.FC<PercentageProps> = (props) => {
-  const { asset } = useAssetProvider()
+  const { asset, translate } = useAssetProvider()
   
+  // return asset?.apy ? (
+  //   <Amount.Percentage value={asset?.apy} {...props} />
+  // ) : <Spinner size={'sm'} />
+
+  const tooltipLabel = asset?.apyBreakdown ? (
+    <VStack
+      py={1}
+      spacing={1}
+    >
+      {
+        Object.keys(asset.apyBreakdown).map( (type: string) => {
+          const translatedType = translate(`assets.assetDetails.apyBreakdown.${type}`)
+          const apr = BNify(asset?.apyBreakdown?.[type])
+          // labels.push(`${translatedType}: ${apr.toFixed(2)}%`)
+          return (
+            <HStack
+              spacing={3}
+              width={'100%'}
+              key={`apr_${type}`}
+              alignItems={'baseline'}
+              justifyContent={'space-between'}
+            >
+              <Text>{translatedType}</Text>
+              <Amount.Percentage value={apr} {...props} />
+            </HStack>
+          )
+        })
+      }
+    </VStack>
+  ) : null
+
   return asset?.apy ? (
-    <Amount.Percentage value={asset?.apy} {...props} />
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={tooltipLabel}
+    >
+      <TooltipContent>
+        <Amount.Percentage value={asset?.apy} {...props} />
+      </TooltipContent>
+    </Tooltip>
   ) : <Spinner size={'sm'} />
+  
 }
 
 const ApyRatio: React.FC<PercentageProps> = (props) => {
@@ -510,21 +564,24 @@ const LastHarvest: React.FC<TextProps> = (props) => {
 
   if (!vault || !selectAssetById) return null
 
-  const harvestedAsset = selectAssetById(asset?.lastHarvest?.tokenAddress)
+  const lastHarvest = asset?.lastHarvest
+  const harvestedAsset = selectAssetById(lastHarvest?.tokenAddress)
 
-  const harvestAPY = asset?.lastHarvest?.aprs[vault.type]
-  const harvestValue = asset?.lastHarvest?.value[vault.type]
+  // const harvestAPY = asset?.lastHarvest?.aprs[vault.type]
+  // const harvestValue = asset?.lastHarvest?.value[vault.type]
   // const harvestDate = dayjs(+asset.lastHarvest.timestamp*1000).format('YYYY/MM/DD HH:mm')
   
-  return asset?.lastHarvest === null ? (
+  return lastHarvest === null ? (
     <Text {...props}>-</Text>
-  ) : asset?.lastHarvest ? (
+  ) : lastHarvest ? (
     <VStack
       spacing={0}
       alignItems={'flex-start'}
     >
-      <Text {...props}>{harvestValue?.toFixed(4)} {harvestedAsset?.token}</Text>
-      <Amount.Percentage textStyle={'captionSmaller'} lineHeight={'normal'} prefix={'(+'} suffix={' APY)'} value={harvestAPY?.times(100)} />
+      {/*<Text {...props}>+{harvestValue?.toFixed(4)} {harvestedAsset?.token}</Text>*/}
+      <Text {...props}>{lastHarvest?.totalValue.toFixed(4)} {harvestedAsset?.token}</Text>
+      <TransactionLink hash={lastHarvest.hash} fontSize={'xs'} />
+      {/*<Amount.Percentage textStyle={'captionSmaller'} lineHeight={'normal'} prefix={'(+'} suffix={' APY)'} value={harvestAPY?.times(100)} />*/}
     </VStack>
   ) : <Spinner size={'sm'} />
 }

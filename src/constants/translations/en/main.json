@@ -683,6 +683,15 @@
           }
         }
       },
+      "claim": {
+        "confirm": "You are claiming",
+        "confirmed": "You have claimed",
+        "status": {
+          "success": {
+            "button": "Back"
+          }
+        }
+      },
       "stake": {
         "confirm": "You are staking",
         "confirmed": "You have staked",
@@ -1034,6 +1043,9 @@
       },
       "unstake": {
         "header": "Confirm Unstake"
+      },
+      "claim": {
+        "header": "Confirm Claim"
       },
       "deposit": {
         "header": "Confirm Deposit",
@@ -1503,6 +1515,11 @@
         "nextWeight":"Next weight",
         "totalSupply":"Total supply",
         "lastHarvest":"Last Harvest"
+      },
+      "apyBreakdown": {
+        "base": "Base APY",
+        "harvest": "Harvest APY",
+        "gauge": "Gauge APY"
       },
       "assetHeader": {
         "balance": "Balance",

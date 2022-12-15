@@ -171,11 +171,13 @@ export type VaultPosition = {
 }
 
 export type Harvest ={
+  hash: string
   aprs: Balances
   value: Balances
   timestamp: number
   blockNumber: number
   tokenAddress: string
+  totalValue: BigNumber
 }
 
 export type Asset = {
@@ -201,7 +203,9 @@ export type Asset = {
   balanceUsd?: BigNumber
   vaultPrice?: BigNumber
   totalSupply?: BigNumber
-  additionalAprs?: Balances
+  additionalApr?: BigNumber
+  aprBreakdown?: Balances
+  apyBreakdown?: Balances
   tvl?: BigNumber
   tvlUsd?: BigNumber
   rewards?: Balances

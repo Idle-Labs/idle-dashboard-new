@@ -10,13 +10,19 @@ import { useTheme, ButtonProps, Button, Box, Flex, Spinner, Text, TextProps } fr
 
 type TransactionButtonProps = {
   text: string
+  amount?: string
   assetId: AssetId
+  vaultId: AssetId
+  actionType?: string
   contractSendMethod: ContractSendMethod
 }
 
 export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps> = ({
   text,
+  amount,
   assetId,
+  vaultId,
+  actionType,
   contractSendMethod,
   ...props
 }) => {
@@ -58,13 +64,16 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
         clearInterval(intervalId.current)
         intervalId.current = null
       }
-      setTimeout(() => {
-        cleanTransaction()
-      }, 3000)
+      // Clean transaction if success or failed
+      if (transaction.status === 'success' || transaction.error?.code !== 4001){
+        setTimeout(() => {
+          cleanTransaction()
+        }, 5000)
+      }
     } else if (transaction.status === 'pending' && !intervalId.current){
       startCountdown()
     }
-  }, [transaction.status, startCountdown, cleanTransaction])
+  }, [transaction.status, startCountdown, cleanTransaction, transaction.error?.code])
   
   const textComponent = useMemo(() => {
     if (isRightTransaction){
@@ -101,17 +110,20 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
             </Flex>
           )
         case 'failed':
-          return (
-            <Flex
-              {...props}
-              alignItems={'center'}
-              justifyContent={'center'}
-            >
-              <MdOutlineClose size={24} color={theme.colors.red['400']} />
-            </Flex>
-          )
+          if (transaction.error?.code !== 4001){
+            return (
+              <Flex
+                {...props}
+                alignItems={'center'}
+                justifyContent={'center'}
+              >
+                <MdOutlineClose size={24} color={theme.colors.red['400']} />
+              </Flex>
+            )
+          }
+        break
         default:
-        break;
+        break
       }
     }
     return (
@@ -171,7 +183,10 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
 
 export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> = ({
   text,
+  amount,
   assetId,
+  vaultId,
+  actionType,
   contractSendMethod,
   ...props
 }) => {
@@ -184,9 +199,9 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
 
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
-    console.log('onClick', assetId, contractSendMethod)
-    return sendTransaction(assetId, contractSendMethod)
-  }, [transaction, assetId, contractSendMethod, sendTransaction])
+    console.log('onClick', vaultId, assetId, contractSendMethod)
+    return sendTransaction(vaultId, assetId, contractSendMethod, actionType, amount)
+  }, [transaction, vaultId, assetId, contractSendMethod, actionType, amount, sendTransaction])
 
   const borderColor = useMemo(() => {
     if (!isRightTransaction) return 'primary'
@@ -213,7 +228,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
       transition={'border 0.5s ease-in-out'}
       {...props}
     >
-      <TransactionButtonValue text={text} assetId={assetId} contractSendMethod={contractSendMethod} width={width} />
+      <TransactionButtonValue text={text} vaultId={vaultId} assetId={assetId} contractSendMethod={contractSendMethod} width={width} />
     </Button>
   )
 }

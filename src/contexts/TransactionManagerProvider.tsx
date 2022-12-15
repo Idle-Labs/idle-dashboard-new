@@ -25,9 +25,12 @@ type GasPrices = Record<TransactionSpeed, string>
 type TransactionStatus = {
   hash: string | null
   status: string | null
+  amount: string | null
   assetId: AssetId | null
+  vaultId: AssetId | null
   created: number | null
   timestamp: number | null
+  actionType: string | null
   confirmationCount: number
   lastUpdated: number | null
   estimatedTime: number | null
@@ -79,10 +82,13 @@ const initialState: StateProps = {
     hash: null,
     error: null,
     status: null,
+    amount: null,
     assetId: null,
+    vaultId: null,
     receipt: null,
     created: null,
     timestamp: null,
+    actionType: null,
     transaction: null,
     lastUpdated: null,
     estimatedTime: null,
@@ -198,11 +204,12 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         ...state,
         transaction: {
           ...initialState.transaction,
-          assetId: action.payload.assetId,
-          contractSendMethod: action.payload.contractSendMethod,
+          // assetId: action.payload.assetId,
+          // contractSendMethod: action.payload.contractSendMethod,
           status: 'created',
           created: lastUpdated,
-          lastUpdated
+          lastUpdated,
+          ...action.payload
         }
       }
     case 'SET_RECEIPT':
@@ -357,7 +364,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         const gasPrices: GasPrices = {
           [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
           [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
-          [TransactionSpeed.Average]: gasOracle.ProposeGasPrice,
+          [TransactionSpeed.Average]: (+gasOracle.SafeGasPrice+1).toString(),
           [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice).toString()
         }
 
@@ -423,7 +430,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Send transaction
   const sendTransactionTest = useCallback(
-    async (assetId: AssetId, contractSendMethod: ContractSendMethod) => {
+    async (vaultId: AssetId, assetId: AssetId, contractSendMethod: ContractSendMethod, actionType?: string, amount?: string) => {
       if (!account || !web3) return null
 
       const sendOptions: SendOptions = {
@@ -437,7 +444,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       }
 
       dispatch({type: 'CREATE', payload: {
+        amount,
         assetId,
+        vaultId,
+        actionType,
         contractSendMethod
       }})
 
@@ -486,7 +496,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Send transaction
   const sendTransaction = useCallback(
-    async (assetId: AssetId, contractSendMethod: ContractSendMethod) => {
+    async (vaultId: AssetId, assetId: AssetId, contractSendMethod: ContractSendMethod, actionType?: string, amount?: string) => {
       if (!account || !web3) return null
 
       const sendOptions: SendOptions = {
@@ -506,11 +516,13 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
       }
 
-      console.log('baseFeePerGas', baseFeePerGas)
-      console.log('sendOptions', sendOptions)
+      console.log('sendOptions', contractSendMethod, sendOptions)
 
       dispatch({type: 'CREATE', payload: {
+        amount,
         assetId,
+        vaultId,
+        actionType,
         contractSendMethod
       }})
 
@@ -554,8 +566,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   const retry = useCallback(() => {
     console.log('retry', state.transaction.contractSendMethod)
     if (!state.transaction.contractSendMethod) return
-    sendTransaction(state.transaction.assetId, state.transaction.contractSendMethod)
-  }, [sendTransaction, state.transaction.assetId, state.transaction.contractSendMethod])
+    sendTransaction(state.transaction.vaultId, state.transaction.assetId, state.transaction.contractSendMethod, state.transaction.actionType, state.transaction.amount)
+  }, [sendTransaction, state.transaction.vaultId, state.transaction.assetId, state.transaction.contractSendMethod, state.transaction.actionType, state.transaction.amount])
 
   const setTransactionSpeed = useCallback((transactionSpeed: TransactionSpeed) => {
     dispatch({type: 'SET_TRANSACTION_SPEED', payload: transactionSpeed})

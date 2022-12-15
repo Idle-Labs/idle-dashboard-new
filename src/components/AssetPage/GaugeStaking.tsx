@@ -221,7 +221,7 @@ export const GaugeStaking: React.FC = () => {
                           </HStack>
                         </VStack>
                       </SimpleGrid>
-                      <TransactionButton text={'defi.claim'} assetId={asset.id} contractSendMethod={contractSendMethod} width={['100%', '150px']} disabled={rewardData.balance.lte(0)} />
+                      <TransactionButton text={'defi.claim'} vaultId={asset.id} assetId={rewardId} contractSendMethod={contractSendMethod} actionType={'claim'} amount={rewardData.balance.toString()} width={['100%', '150px']} disabled={rewardData.balance.lte(0)} />
                     </Stack>
                   </Card>
                 </AssetProvider>
