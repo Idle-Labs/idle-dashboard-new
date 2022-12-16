@@ -3,6 +3,7 @@ import { strategiesCarouselFolder, strategiesFolder } from 'constants/folders'
 export type GeneralDataField = {
   field: string
   label: string
+  tooltip?: string
 }
 
 export type StrategyCarouselItem = {
@@ -209,10 +210,12 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'stakingRewards',
+        tooltip:'assets.assetDetails.tooltips.gaugeRewards',
         label:'assets.assetDetails.generalData.stakingRewards'
       },
       {
         field:'autoCompounding',
+        tooltip:'assets.assetDetails.tooltips.autoCompounding',
         label:'assets.assetDetails.generalData.autoCompounding'
       },
       {
@@ -229,18 +232,22 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'apy',
-        label:'assets.assetDetails.generalData.apy'
+        label:'assets.assetDetails.generalData.apy',
+        tooltip:'assets.assetDetails.tooltips.seniorTrancheApy'
       },
       {
         field:'coverage',
+        tooltip:'assets.assetDetails.tooltips.coverage',
         label:'assets.assetDetails.generalData.coverage'
       },
       {
         field:'lastHarvest',
+        tooltip:'assets.assetDetails.tooltips.lastHarvest',
         label:'assets.assetDetails.generalData.lastHarvest'
       },
       {
         field:'apyRatio',
+        tooltip:'assets.assetDetails.tooltips.apyRatio',
         label:'assets.assetDetails.generalData.apyRatio'
       },
     ]
@@ -312,6 +319,7 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'autoCompounding',
+        tooltip:'assets.assetDetails.tooltips.autoCompounding',
         label:'assets.assetDetails.generalData.autoCompounding'
       },
       {
@@ -328,18 +336,22 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'apy',
-        label:'assets.assetDetails.generalData.apy'
+        label:'assets.assetDetails.generalData.apy',
+        tooltip:'assets.assetDetails.tooltips.juniorTrancheApy'
       },
       {
         field:'apyBoost',
-        label:'assets.assetDetails.generalData.apyBoost'
+        label:'assets.assetDetails.generalData.apyBoost',
+        tooltip:'assets.assetDetails.tooltips.apyBoost',
       },
       {
         field:'lastHarvest',
-        label:'assets.assetDetails.generalData.lastHarvest'
+        label:'assets.assetDetails.generalData.lastHarvest',
+        tooltip:'assets.assetDetails.tooltips.lastHarvest',
       },
       {
         field:'apyRatio',
+        tooltip:'assets.assetDetails.tooltips.apyRatio',
         label:'assets.assetDetails.generalData.apyRatio'
       },
     ]

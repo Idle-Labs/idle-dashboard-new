@@ -411,6 +411,8 @@ export const theme = extendTheme({
     },
     Tooltip:{
       baseStyle:{
+        py:2,
+        px:3,
         borderRadius:4,
         color:'primary',
         fontWeight: 500,

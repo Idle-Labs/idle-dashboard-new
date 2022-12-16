@@ -11,6 +11,7 @@ import type { IdleTokenProtocol } from 'constants/vaults'
 import { RateChart } from 'components/RateChart/RateChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
+import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
@@ -439,19 +440,6 @@ const Apr: React.FC<PercentageProps> = (props) => {
     <Amount.Percentage value={asset?.apr} {...props} />
   ) : <Spinner size={'sm'} />
 }
-
-type TooltipContentProps = {
-  children: React.ReactNode;
-} & BoxProps
-
-const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(({ children, ...rest }, ref) => (
-  <Box
-    ref={ref}
-    {...rest}
-  >
-    {children}
-  </Box>
-));
 
 const Apy: React.FC<PercentageProps> = (props) => {
   const { asset, translate } = useAssetProvider()

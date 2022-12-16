@@ -1,15 +1,46 @@
 import React, { useMemo } from 'react'
+import { MdInfo } from 'react-icons/md'
 import { Card } from 'components/Card/Card'
+import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
-import { VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 // import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, GeneralDataField } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { TooltipContent } from 'components/TooltipContent/TooltipContent'
+import { useTheme, HStack, VStack, SimpleGrid, Text, Tooltip } from '@chakra-ui/react'
 
 type AssetGeneralDataArgs = {
   assetId?: AssetId
+}
+
+type LabelProps = {
+  generalData: GeneralDataField
+}
+
+const Label: React.FC<LabelProps> = ({generalData}) => {
+  const theme = useTheme()
+  const translate = useTranslate()
+  return generalData.tooltip ? (
+    <HStack
+      spacing={1}
+      alignItems={'center'}
+    >
+      <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        label={translate(generalData.tooltip)}
+      >
+        <TooltipContent>
+          <MdInfo color={theme.colors.cta} size={18} />
+        </TooltipContent>
+      </Tooltip>
+    </HStack>
+  ) : (
+    <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+  )
 }
 
 export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) => {
@@ -43,7 +74,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                   justifyContent={'flex-start'}
                   key={`field_${generalData.field}`}
                 >
-                  <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+                  <Label generalData={generalData} />
                   <AssetProvider.GeneralData field={generalData.field} />
                 </VStack>
               )
@@ -69,7 +100,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                       justifyContent={'flex-start'}
                       key={`field_${generalData.field}`}
                     >
-                      <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+                      <Label generalData={generalData} />
                       <AssetProvider.GeneralData field={generalData.field} />
                     </VStack>
                   )

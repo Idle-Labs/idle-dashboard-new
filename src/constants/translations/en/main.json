@@ -1519,6 +1519,16 @@
         "totalSupply":"Total supply",
         "lastHarvest":"Last Harvest"
       },
+      "tooltips": {
+        "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
+        "autoCompounding": "These rewards are automatically re-invested in the strategy",
+        "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
+        "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",
+        "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",
+        "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy",
+        "apyRatio": "The base strategy yield is split across the senior and junior tranches with a specific ratio",
+        "apyBoost": "This value indicates how many times this vault performs better than the base strategy"
+      },
       "apyBreakdown": {
         "base": "Base APY",
         "harvest": "Harvest APY",
