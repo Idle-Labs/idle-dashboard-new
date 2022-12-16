@@ -219,7 +219,7 @@
         "cta": "Explore vaults"
       },
       "staking": {
-        "title": "Staking Rewards",
+        "title": "IDLE Staking",
         "empty" : {
           "body": "Stake your IDLE tokens to start accruing some IDLE rewards.",
           "cta": "Go to Staking"
@@ -638,7 +638,10 @@
     "boost": "The base strategy APY is boosted by",
     "overperformance": "Overperformance on base strategy",
     "newApy": "New APY (after deposit)",
-    "coverage": "Coverage"
+    "coverage": "Coverage",
+    "gain": "Gain",
+    "fee": "Fee",
+    "netGain": "Net gain"
   },
   "trade": {
     "trade": "Trade",

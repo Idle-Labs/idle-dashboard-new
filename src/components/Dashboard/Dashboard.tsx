@@ -38,7 +38,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, rewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
 
   const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
 
@@ -106,7 +106,6 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             const strategyPath = getRoutePath('earn', [strategy.route])
             const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
             const strategyAssets = selectVaultsAssetsByType(strategy.type).filter( (asset: Asset) => asset.tvlUsd?.gt(VAULTS_MIN_TVL) )
-            // const strategyAssets = selectVaultsAssetsByType(strategy.type)
             const strategyPositions = userHasFunds ? Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
               const asset = selectAssetById(assetId)
               return asset?.type === strategy.type
@@ -290,8 +289,15 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [navigate])
   */
 
-  const vaultsRewards = useMemo(() => {
-    if (isEmpty(rewards)) {
+  const vaultsRewardsOverview = useMemo(() => {
+
+    if (!accountAndPortfolioLoaded){
+      return (
+        <Skeleton width={'100%'} height={'100px'} />
+      )
+    }
+
+    if (isEmpty(vaultsRewards)) {
       const strategyProps = strategies.BY
       const strategyPath = getRoutePath('earn', [strategyProps.route as string])
       return (
@@ -310,6 +316,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </Card>
       )
     }
+
+    // console.log('vaultsRewardsOverview', vaultsRewards)
     
     return (
       <SimpleGrid
@@ -318,20 +326,26 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         columns={[1, 3]}
       >
         {
-          Object.keys(rewards).map( (assetId: AssetId) =>
+          Object.keys(vaultsRewards).map( (assetId: AssetId) =>
             <VaultRewardOverview
               key={`reward_${assetId}`}
               assetId={assetId}
-              {...rewards[assetId]}
+              {...vaultsRewards[assetId]}
             />
           )
         }
       </SimpleGrid>
     )
     
-  }, [rewards, navigate])
+  }, [vaultsRewards, navigate, accountAndPortfolioLoaded])
 
   const gaugeRewards = useMemo(() => {
+    if (!accountAndPortfolioLoaded){
+      return (
+        <Skeleton width={'100%'} height={'100px'} />
+      )
+    }
+
     if (isEmpty(gaugesRewards)) {
       const strategyProps = strategies.BY
       const strategyPath = getRoutePath('earn', [strategyProps.route as string])
@@ -450,7 +464,31 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </VStack>
     )
     
-  }, [gaugesRewards])
+  }, [gaugesRewards, accountAndPortfolioLoaded])
+
+  const stakingRewards = useMemo(() => {
+    if (!accountAndPortfolioLoaded){
+      return (
+        <Skeleton width={'100%'} height={'100px'} />
+      )
+    }
+
+    return (
+      <Card
+        width={'100%'}
+      >
+        <Stack
+          spacing={[10, 0]}
+          alignItems={'center'}
+          direction={['column', 'row']}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'dashboard.rewards.staking.empty.body'} component={Text} textAlign={['center', 'left']} />
+          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+        </Stack>
+      </Card>
+    )
+  }, [accountAndPortfolioLoaded])
 
   const strategiesRewards = useMemo(() => {
     return (
@@ -475,7 +513,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'flex-start'}
         >
           <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
-          {vaultsRewards}
+          {vaultsRewardsOverview}
         </VStack>
 
         <VStack
@@ -485,56 +523,37 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'flex-start'}
         >
           <Translation translation={'dashboard.rewards.staking.title'} component={Text} textStyle={['heading', 'h3']} />
-          <Card
-            width={'100%'}
-          >
-            <Stack
-              spacing={[10, 0]}
-              alignItems={'center'}
-              direction={['column', 'row']}
-              justifyContent={'space-between'}
-            >
-              <Translation translation={'dashboard.rewards.staking.empty.body'} component={Text} textAlign={['center', 'left']} />
-              <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
-            </Stack>
-          </Card>
+          {stakingRewards}
         </VStack>
       </VStack>
     )
-  }, [vaultsRewards, gaugeRewards])
+  }, [vaultsRewardsOverview, gaugeRewards, stakingRewards])
 
-  const leftSideContent = useMemo(() => {
-    if (!accountAndPortfolioLoaded) {
-      return (
-        <VStack
-          spacing={6}
-          width={'100%'}
-          alignItems={'flex-start'}
-        >
-          <SkeletonText
-            noOfLines={2}
-            minW={'150px'}
-          >
-          </SkeletonText>
-          <Skeleton width={'100%'} height='20px' />
-          <Skeleton width={'100%'} height='20px' />
-          <Skeleton width={'100%'} height='20px' />
-        </VStack>
-      )
-    }
+  // const leftSideContent = useMemo(() => {
+  //   if (!accountAndPortfolioLoaded) {
+  //     return (
+  //       <VStack
+  //         spacing={6}
+  //         width={'100%'}
+  //         alignItems={'flex-start'}
+  //       >
+  //         <SkeletonText
+  //           noOfLines={2}
+  //           minW={'150px'}
+  //         >
+  //         </SkeletonText>
+  //         <Skeleton width={'100%'} height='20px' />
+  //         <Skeleton width={'100%'} height='20px' />
+  //         <Skeleton width={'100%'} height='20px' />
+  //       </VStack>
+  //     )
+  //   }
 
-    return strategiesRewards
-    /*
-    if (totalFunds?.gt(0)){
-      return strategiesRewards
-    } else {
-      return products
-    }
-    */
-  }, [accountAndPortfolioLoaded, strategiesRewards])
+  //   return strategiesRewards
+  // }, [accountAndPortfolioLoaded, strategiesRewards])
 
   const strategiesFilters = useMemo(() => {
-    if (!account || screenSize==='sm') return null
+    if (!account || screenSize==='sm' || !userHasFunds) return null
     return (
       <Stack
         py={4}
@@ -564,7 +583,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </Stack>
     )
-  }, [account, screenSize, toggleStrategy, selectedStrategies])
+  }, [account, userHasFunds, screenSize, toggleStrategy, selectedStrategies])
 
   const chartColor = useMemo(() => {
     if (selectedStrategies.length===1){
@@ -604,14 +623,14 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Card.Dark
             p={0}
             overflow={'hidden'}
-            minH={['auto', 400]}
+            minH={['auto', 460]}
             alignItems={'flex-end'}
           >
             <VStack
               spacing={0}
               width={'100%'}
               height={'100%'}
-              justifyContent={'flex-end'}
+              justifyContent={'space-between'}
             >
               {
                 !userHasFunds && (
@@ -662,7 +681,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   )
                 }
                 {
-                  isVaultsPositionsLoaded && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                  userHasFunds && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
                 }
               </Stack>
               <BalanceChart
@@ -722,7 +741,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               alignItems={'flex-start'}
               ref={ref as typeof useRef}
             >
-              {leftSideContent}
+              {strategiesRewards}
             </VStack>
             <VStack
               spacing={6}

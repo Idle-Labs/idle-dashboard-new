@@ -9,8 +9,8 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
-import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import type { Asset, ReducerActionTypes, AssetId, Number } from 'constants/types'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
@@ -19,33 +19,34 @@ import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArro
 import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
 
 type InputAmountArgs = {
-  amount?: string
+  amount?: Number
+  amountUsd?: Number
   setAmount: Function
   inputHeight?: number
 }
 
-const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount }) => {
+const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd, setAmount }) => {
   const { asset, underlyingAsset } = useAssetProvider()
-  const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  // const [ amountUsd, setAmountUsd ] = useState<number>(0)
   const { selectors: { selectAssetPriceUsd, selectVaultPrice } } = usePortfolioProvider()
   
   const handleAmountChange = ({target: { value }}: { target: {value: string} }) => {
     setAmount(Math.max(0, parseFloat(value)).toString())
   }
 
-  useEffect(() => {
-    if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
-    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
-    const vaultPrice = selectVaultPrice(asset.id)
+  // useEffect(() => {
+  //   if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
+  //   const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+  //   const vaultPrice = selectVaultPrice(asset.id)
 
-    if (asset.type === 'underlying') {
-      const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
-      setAmountUsd(amountUsd)
-    } else {
-      const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
-      setAmountUsd(amountUsd)
-    }
-  }, [asset, underlyingAsset, amount, selectVaultPrice, selectAssetPriceUsd])
+  //   if (asset.type === 'underlying') {
+  //     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+  //     setAmountUsd(amountUsd)
+  //   } else {
+  //     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
+  //     setAmountUsd(amountUsd)
+  //   }
+  // }, [asset, underlyingAsset, amount, selectVaultPrice, selectAssetPriceUsd])
 
   // console.log('InputAmount', asset)
 
@@ -54,8 +55,8 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, setAmount
       width={'100%'}
       justifyContent={'space-between'}
     >
-      <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={amount} onChange={handleAmountChange} />
-      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={amountUsd} />
+      <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} />
+      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={BNify(amountUsd).toString()} />
     </HStack>
   )
 }
@@ -280,6 +281,18 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
 
   const amountIsValid = bnOrZero(amountUsd).gt(0)
 
+  const redeemable = bnOrZero(asset?.vaultPosition?.underlying.redeemable)
+  const redeemableUsd = bnOrZero(asset?.vaultPosition?.usd.redeemable)
+  const totalGain = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings))
+  const earningsPerc = bnOrZero(asset?.vaultPosition?.earningsPercentage)
+  const redeemablePercentage = BigNumber.minimum(1, bnOrZero(amountUsd).div(redeemableUsd))
+  const gain = BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain))
+  const maxFees = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings).times(asset?.fee))
+  const fees = BigNumber.minimum(maxFees, bnOrZero(gain).times(asset?.fee))
+
+  const redeemableAmountIsValid = amountIsValid && bnOrZero(amount).lte(redeemable)
+  // console.log('redeemableAmountIsValid', bnOrZero(amountUsd).toString(), redeemable.toString(), redeemableAmountIsValid)
+
   switch (field){
     case 'boost':
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
@@ -291,6 +304,13 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
       return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />
     case 'newApy':
       return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />
+    case 'gain':
+      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? gain : null} />
+    case 'fee':
+      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? fees : null} />
+    case 'netGain':
+      const netGain = BigNumber.minimum(totalGain.minus(fees), bnOrZero(gain).minus(fees))
+      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? netGain : null} />
     case 'coverage':
       const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
       const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
@@ -523,7 +543,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   spacing={2}
                   alignItems={'flex-start'}
                 >
-                  <InputAmount amount={amount} setAmount={setAmount} />
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
                   <HStack
                     width={'100%'}
                     justifyContent={'space-between'}
@@ -635,7 +655,8 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !vault) return
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
     const vaultPrice = selectVaultPrice(vault.id)
-    const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
+    const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+    // console.log('withdraw', BNify(amount).toString(), BNify(assetPriceUsd).toString(), BNify(vaultPrice).toString(), amountUsd.toString())
     setAmountUsd(amountUsd)
   }, [underlyingAsset, vault, amount, selectVaultPrice, selectAssetPriceUsd, dispatch])
 
@@ -714,7 +735,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       >
         <VStack
           flex={1}
-          spacing={8}
+          spacing={6}
           width={'100%'}
           alignItems={'flex-start'}
         >
@@ -742,7 +763,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   spacing={2}
                   alignItems={'flex-start'}
                 >
-                  <InputAmount amount={amount} setAmount={setAmount} />
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
                   <HStack
                     width={'100%'}
                     justifyContent={'space-between'}
@@ -771,6 +792,11 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                 <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} textAlign={'center'} />
               </Card.Dark>
             ) : null
+          }
+          {
+            assetBalance.gt(0) && (
+              <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
+            )
           }
         </VStack>
         <VStack

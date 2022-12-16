@@ -26,36 +26,24 @@ export const VaultReward: React.FC<RewardProps> = ({
       <Card
         p={6}
       >
-        <VStack
-          spacing={5}
-          alignItems={'flex-start'}
+        <HStack
+          width={'100%'}
+          justifyContent={'space-between'}
         >
           <AssetLabel assetId={assetId} />
-          <HStack
-            width={'100%'}
-            justifyContent={'space-between'}
+          <VStack
+            spacing={1}
+            alignItems={'flex-end'}
           >
-            <VStack
+            <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+            <HStack
               spacing={1}
-              alignItems={'flex-start'}
             >
-              <Translation component={Button} translation={'common.claim'} textStyle={'cta'} />
-            </VStack>
-
-            <VStack
-              spacing={1}
-              alignItems={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-              <HStack
-                spacing={1}
-              >
-                <Amount value={amount} decimals={8} textStyle={'tableCell'} />
-                <AssetProvider.Name textStyle={'tableCell'} />
-              </HStack>
-            </VStack>
-          </HStack>
-        </VStack>
+              <Amount value={amount} decimals={8} textStyle={'tableCell'} />
+              <AssetProvider.Name textStyle={'tableCell'} />
+            </HStack>
+          </VStack>
+        </HStack>
       </Card>
     </AssetProvider>
   )

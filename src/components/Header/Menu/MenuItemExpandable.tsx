@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { Icon } from 'components/Icon/Icon'
+import { useNavigate } from 'react-router-dom'
 import type { MenuItemType } from 'constants/menu'
 import { MenuNavItem, NavItemText } from './MenuNavItem'
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
@@ -17,6 +18,7 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
   menuItem
 }) => {
   const theme = useTheme()
+  const navigate = useNavigate()
 
   const menuButton = useMemo(() => {
     return isMobile ? (
@@ -64,7 +66,8 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
               menuItem.children.map( (menuItem, index) => (
                 <MenuItem
                   key={`menuItem_${index}`}
-                  onClick={ () => { menuItem.onClick && menuItem.onClick() } }
+                  // onClick={ () => { menuItem.onClick && menuItem.onClick() } }
+                  onClick={ () => { menuItem.onClick ? menuItem.onClick() : (menuItem.path && navigate(menuItem.path))} }
                 >
                   <MenuNavItem {...menuItem} />
                 </MenuItem>

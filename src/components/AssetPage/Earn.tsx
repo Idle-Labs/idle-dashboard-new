@@ -206,18 +206,11 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [strategy, strategyColor, walletInitialized, isPortfolioLoaded])
 
   const vaultRewards = useMemo(() => {
+    // console.log('vaultRewards', asset)
     if (!asset || isEmpty(asset.rewards)) return null
     const totalRewards = (Object.values(asset.rewards) as BigNumber[]).reduce( (totalRewards: BigNumber, amount: BigNumber) => totalRewards.plus(amount), BNify(0) )
     return totalRewards.gt(0) ? (
-      <VStack
-        spacing={6}
-        width={'100%'}
-        id={'vault-rewards'}
-        alignItems={'flex-start'}
-      >
-        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
-        <VaultRewards assetId={asset?.id} />
-      </VStack>
+      <VaultRewards assetId={asset?.id} />
     ) : null
   }, [asset])
 

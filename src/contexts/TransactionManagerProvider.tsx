@@ -382,7 +382,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         defaultEstimatedTimes
       )
 
-      console.log('updateGasPrices', gasOracle, gasPrices, estimatedTimes)
+      // console.log('updateGasPrices', gasOracle, gasPrices, estimatedTimes)
 
       dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
       dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})

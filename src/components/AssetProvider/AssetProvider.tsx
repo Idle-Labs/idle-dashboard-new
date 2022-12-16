@@ -15,9 +15,9 @@ import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
-import { useTheme, Box, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
-import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
+import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
+import { useTheme, SkeletonText, Box, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -99,7 +99,9 @@ type AssetFieldProps = {
 const Name: React.FC<AssetFieldProps> = (props) => {
   const { asset } = useAssetProvider()
   return (
-    <Text {...props}>{asset?.name}</Text>
+    <SkeletonText minW={'50px'} noOfLines={2} isLoaded={!!asset}>
+      <Text {...props}>{asset?.name}</Text>
+    </SkeletonText>
   )
 }
 
@@ -146,7 +148,7 @@ const Icon: React.FC<IconProps> = ({
     </Tooltip>
   ), [avatar, asset])
 
-  if (!asset) return null
+  if (!asset) return <Spinner size={props.size || 'sm'} />
 
   return showTooltip ? tooltip : avatar
 }
@@ -358,6 +360,16 @@ const EarningsUsd: React.FC<AmountProps> = (props) => {
   
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount.Usd value={asset?.vaultPosition?.usd.earnings} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const NetEarningsUsd: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+
+  const netEarnings = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset?.vaultPosition?.usd.earnings).minus(BNify(asset.vaultPosition.usd.earnings).times(asset.fee)) : BNify(0)
+  
+  return asset?.vaultPosition?.usd.earnings ? (
+    <Amount.Usd value={netEarnings} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -830,6 +842,7 @@ AssetProvider.DepositedUsd = DepositedUsd
 AssetProvider.ProtocolName = ProtocolName
 AssetProvider.ProtocolIcon = ProtocolIcon
 AssetProvider.ApyRatioChart = ApyRatioChart
+AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates

@@ -31,10 +31,11 @@ type VaultsOnchainData = {
   aprRatios: Balances
   pricesUsd: Balances
   gaugesData: GaugesData
-  rewards: VaultsRewards
   vaultsPrices: Balances
   totalSupplies: Balances
   additionalAprs: Balances
+  vaultsRewards: VaultsRewards
+  rewards: Record<AssetId, Balances>
   allocations: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
@@ -80,6 +81,7 @@ const initialState: InitialState = {
   vaultsPrices: {},
   transactions: [],
   totalSupplies: {},
+  vaultsRewards: {},
   gaugesRewards: {},
   aprsBreakdown: {},
   additionalAprs: {},
@@ -148,6 +150,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, gaugesData: action.payload}
     case 'SET_REWARDS':
       return {...state, rewards: action.payload}
+    case 'SET_VAULTS_REWARDS':
+      return {...state, vaultsRewards: action.payload}
     case 'SET_GAUGES_REWARDS':
       return {...state, gaugesRewards: action.payload}
     case 'SET_BALANCES_USD':
@@ -358,7 +362,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (!account?.address || !explorer || !chainId) return
 
-    // const startTimestamp = Date.now()
+    const startTimestamp = Date.now()
 
     const startBlock = vaults.reduce( (startBlock: number, vault: Vault): number => {
       if (!("getBlockNumber" in vault)) return startBlock
@@ -424,7 +428,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           lastBalancePeriod.realizedApr = BigNumber.maximum(0, lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration))
           lastBalancePeriod.realizedApy = apr2apy(lastBalancePeriod.realizedApr).times(100)
 
-          // console.log('Balance Period', assetId, dayjs(+lastBalancePeriod.timeStamp*1000).format('YYYY-MM-DD'), dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.duration, lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString())
+          // console.log('Balance Period', assetId, dayjs(+lastBalancePeriod.timeStamp*1000).format('YYYY-MM-DD'), dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.duration, lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString(), transaction)
         }
 
         // Add period
@@ -445,9 +449,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
             balance: depositsInfo.depositedAmount
           })
 
-          if (index === transactions.length-1) {
+          // if (index === transactions.length-1) {
             // console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), duration, transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString())
-          }
+          // }
         }
 
         return depositsInfo
@@ -558,6 +562,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return vaultsPositions
 
     }, {})
+
+    console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return {
       vaultsPositions,
@@ -812,8 +818,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return aprRatios
     }, {})
 
+    const vaultsRewards: VaultsRewards = {}
+
     // Process Rewards
-    const rewards = rewardTokensAmountsResults.reduce( (rewards: VaultsRewards, callResult: DecodedResult): VaultsRewards => {
+    const rewards = rewardTokensAmountsResults.reduce( (rewards: Record<AssetId, Balances>, callResult: DecodedResult): Record<AssetId, Balances> => {
       if (callResult.data) {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
         const asset = selectAssetById(assetId)
@@ -829,14 +837,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
             // Init rewards and add reward amount
             if (rewardAmount.gt(0)){
-              if (!rewards[rewardId]){
-                rewards[rewardId] = {
+              if (!vaultsRewards[rewardId]){
+                vaultsRewards[rewardId] = {
                   assets: [],
                   amount: BNify(0)
                 }
               }
-              rewards[rewardId].assets.push(assetId)
-              rewards[rewardId].amount = rewards[rewardId].amount.plus(rewardAmount)
+              vaultsRewards[rewardId].assets.push(assetId)
+              vaultsRewards[rewardId].amount = vaultsRewards[rewardId].amount.plus(rewardAmount)
             }
 
             return {
@@ -845,14 +853,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
             }
           }, {})
 
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            rewards: assetRewards
-          }
+          rewards[assetId] = assetRewards
         }
       }
       return rewards
     }, {})
+
+    // console.log('vaultsRewards', vaultsRewards)
 
     // Process Strategy Aprs
     const baseAprs = baseAprResults.reduce( (baseAprs: Balances, callResult: DecodedResult) => {
@@ -1139,6 +1146,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPrices,
       totalSupplies,
       aprsBreakdown,
+      vaultsRewards,
       additionalAprs
     }
   }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
@@ -1208,23 +1216,191 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsPrices,
         totalSupplies,
         aprsBreakdown,
+        vaultsRewards,
         additionalAprs
       } = vaultsOnChainData
 
-      const newAprs = {...state.aprs, ...aprs}
-      const newFees = {...state.fees, ...fees}
-      const newRewards = {...state.rewards, ...rewards}
-      const newBaseAprs = {...state.baseAprs, ...baseAprs}
-      const newBalances = {...state.balances, ...balances}
-      const newAprRatios = {...state.aprRatios, ...aprRatios}
-      const newPricesUsd = {...state.pricesUsd, ...pricesUsd}
+      const newAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprs: Balances, vaultId: AssetId) => {
+        if (!aprs[vaultId]){
+          newAprs[vaultId]=BNify(0)
+          return newAprs
+        }
+        return {
+          ...newAprs,
+          [vaultId]: aprs[vaultId]
+        }
+      }, {...state.aprs})
+
+      const newFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newFees: Balances, vaultId: AssetId) => {
+        if (!fees[vaultId]){
+          newFees[vaultId]=BNify(0)
+          return newFees
+        }
+        return {
+          ...newFees,
+          [vaultId]: fees[vaultId]
+        }
+      }, {...state.fees})
+
+      const newRewards = vaults.map( (vault: Vault) => vault.id ).reduce( (newRewards: Record<AssetId, Balances>, vaultId: AssetId) => {
+        if (!rewards[vaultId]){
+          delete newRewards[vaultId]
+          return newRewards
+        }
+        return {
+          ...newRewards,
+          [vaultId]: rewards[vaultId]
+        }
+      }, {...state.rewards})
+
+      // Generate newVaultsRewards from new rewards
+      const newVaultsRewards = (Object.keys(newRewards) as AssetId[]).reduce( (vaultsRewards: VaultsRewards, vaultId: AssetId) => {
+        const vaultRewards = newRewards[vaultId]
+        for (const rewardId in vaultRewards){
+          const rewardAmount = BNify(vaultRewards[rewardId])
+
+          // Init rewards and add reward amount
+          if (rewardAmount.gt(0)){
+            if (!vaultsRewards[rewardId]){
+              vaultsRewards[rewardId] = {
+                assets: [],
+                amount: BNify(0)
+              }
+            }
+            vaultsRewards[rewardId].assets.push(vaultId)
+            vaultsRewards[rewardId].amount = vaultsRewards[rewardId].amount.plus(rewardAmount)
+          }
+        }
+        return vaultsRewards
+      }, {})
+
+      const newBaseAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newBaseAprs: Balances, vaultId: AssetId) => {
+        if (!baseAprs[vaultId]){
+          newBaseAprs[vaultId]=BNify(0)
+          return newBaseAprs
+        }
+        return {
+          ...newBaseAprs,
+          [vaultId]: baseAprs[vaultId]
+        }
+      }, {...state.baseAprs})
+
+      const newBalances = vaults.map( (vault: Vault) => vault.id ).reduce( (newBalances: Balances, vaultId: AssetId) => {
+        if (!balances[vaultId]){
+          newBalances[vaultId]=BNify(0)
+          return newBalances
+        }
+        return {
+          ...newBalances,
+          [vaultId]: balances[vaultId]
+        }
+      }, {...state.balances})
+
+      const newPricesUsd = vaults.map( (vault: Vault) => vault.id ).reduce( (newPricesUsd: Balances, vaultId: AssetId) => {
+        if (!pricesUsd[vaultId]){
+          newPricesUsd[vaultId]=BNify(0)
+          return newPricesUsd
+        }
+        return {
+          ...newPricesUsd,
+          [vaultId]: pricesUsd[vaultId]
+        }
+      }, {...state.pricesUsd})
+
+      const newAprRatios = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprRatios: Balances, vaultId: AssetId) => {
+        if (!aprRatios[vaultId]){
+          newAprRatios[vaultId]=BNify(0)
+          return newAprRatios
+        }
+        return {
+          ...newAprRatios,
+          [vaultId]: aprRatios[vaultId]
+        }
+      }, {...state.aprRatios})
+
+      const newAllocations = vaults.map( (vault: Vault) => vault.id ).reduce( (newAllocations: Record<AssetId, Balances>, vaultId: AssetId) => {
+        if (!allocations[vaultId]){
+          delete newAllocations[vaultId]
+          return newAllocations
+        }
+        return {
+          ...newAllocations,
+          [vaultId]: allocations[vaultId]
+        }
+      }, {...state.allocations})
+
+      const newLastHarvests = vaults.map( (vault: Vault) => vault.id ).reduce( (newLastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>, vaultId: AssetId) => {
+        if (!lastHarvests[vaultId]){
+          delete newLastHarvests[vaultId]
+          return newLastHarvests
+        }
+        return {
+          ...newLastHarvests,
+          [vaultId]: lastHarvests[vaultId]
+        }
+      }, {...state.lastHarvests})
+
+      const newVaultsPrices = vaults.map( (vault: Vault) => vault.id ).reduce( (newVaultsPrices: Balances, vaultId: AssetId) => {
+        if (!vaultsPrices[vaultId]){
+          newVaultsPrices[vaultId]=BNify(0)
+          return newVaultsPrices
+        }
+        return {
+          ...newVaultsPrices,
+          [vaultId]: vaultsPrices[vaultId]
+        }
+      }, {...state.vaultsPrices})
+
+      const newTotalSupplies = vaults.map( (vault: Vault) => vault.id ).reduce( (newTotalSupplies: Balances, vaultId: AssetId) => {
+        if (!totalSupplies[vaultId]){
+          newTotalSupplies[vaultId]=BNify(0)
+          return newTotalSupplies
+        }
+        return {
+          ...newTotalSupplies,
+          [vaultId]: totalSupplies[vaultId]
+        }
+      }, {...state.totalSupplies})
+
+      const newAprsBreakdown = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprsBreakdown: Record<AssetId, Balances>, vaultId: AssetId) => {
+        if (!aprsBreakdown[vaultId]){
+          delete newAprsBreakdown[vaultId]
+          return newAprsBreakdown
+        }
+        return {
+          ...newAprsBreakdown,
+          [vaultId]: aprsBreakdown[vaultId]
+        }
+      }, {...state.aprsBreakdown})
+
+      const newAdditionalAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newAdditionalAprs: Balances, vaultId: AssetId) => {
+        if (!additionalAprs[vaultId]){
+          newAdditionalAprs[vaultId]=BNify(0)
+          return newAdditionalAprs
+        }
+        return {
+          ...newAdditionalAprs,
+          [vaultId]: additionalAprs[vaultId]
+        }
+      }, {...state.additionalAprs})
+
+      // const newAprs = {...state.aprs, ...aprs}
+      // const newFees = {...state.fees, ...fees}
+      // const newRewards = {...state.rewards, ...rewards}
+      // const newBaseAprs = {...state.baseAprs, ...baseAprs}
+      // const newBalances = {...state.balances, ...balances}
+      // const newAprRatios = {...state.aprRatios, ...aprRatios}
+      // const newPricesUsd = {...state.pricesUsd, ...pricesUsd}
       // const newAssetsData = {...state.assetsData, ...assetsData}
-      const newAllocations = {...state.allocations, ...allocations}
-      const newLastHarvests = {...state.lastHarvests, ...lastHarvests}
-      const newVaultsPrices = {...state.vaultsPrices, ...vaultsPrices}
-      const newTotalSupplies = {...state.totalSupplies, ...totalSupplies}
-      const newAprsBreakdown = {...state.aprsBreakdown, ...aprsBreakdown}
-      const newAdditionalAprs = {...state.additionalAprs, ...additionalAprs}
+      // const newAllocations = {...state.allocations, ...allocations}
+      // const newLastHarvests = {...state.lastHarvests, ...lastHarvests}
+      // const newVaultsPrices = {...state.vaultsPrices, ...vaultsPrices}
+      // const newVaultsRewards = {...state.vaultsRewards, ...vaultsRewards}
+      // const newTotalSupplies = {...state.totalSupplies, ...totalSupplies}
+      // const newAprsBreakdown = {...state.aprsBreakdown, ...aprsBreakdown}
+      // const newAdditionalAprs = {...state.additionalAprs, ...additionalAprs}
+
+      // console.log('newAprs', newAprs, 'newFees', newFees, 'newRewards', newRewards, 'newBaseAprs', newBaseAprs, 'newBalances', newBalances, 'newAprRatios', newAprRatios, 'newPricesUsd', newPricesUsd, 'newAllocations', newAllocations, 'newLastHarvests', newLastHarvests, 'newVaultsPrices', newVaultsPrices, 'newVaultsRewards', newVaultsRewards, 'newTotalSupplies', newTotalSupplies, 'newAprsBreakdown', newAprsBreakdown, 'newAdditionalAprs', newAdditionalAprs)
 
       // Save assets data first
       // dispatch({type: 'SET_ASSETS_DATA', payload: newAssetsData})
@@ -1239,6 +1415,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_ALLOCATIONS', payload: newAllocations})
       dispatch({type: 'SET_LAST_HARVESTS', payload: newLastHarvests})
       dispatch({type: 'SET_VAULTS_PRICES', payload: newVaultsPrices})
+      dispatch({type: 'SET_VAULTS_REWARDS', payload: newVaultsRewards})
       dispatch({type: 'SET_APRS_BREAKDOWN', payload: newAprsBreakdown})
       dispatch({type: 'SET_TOTAL_SUPPLIES', payload: newTotalSupplies})
       dispatch({type: 'SET_ADDITIONAL_APRS', payload: newAdditionalAprs})
@@ -1690,6 +1867,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         lastHarvests,
         vaultsPrices,
         aprsBreakdown,
+        vaultsRewards,
         totalSupplies,
         additionalAprs
       } = vaultsOnChainData
@@ -1726,6 +1904,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         dispatch({type: 'SET_REWARDS', payload: {...state.rewards, ...rewards}})
       }
+      if (!enabledCalls.length || enabledCalls.includes('rewards')) {
+        dispatch({type: 'SET_VAULTS_REWARDS', payload: {...state.vaultsRewards, ...vaultsRewards}})
+      }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
         dispatch({type: 'SET_BALANCES', payload: {...state.balances, ...balances}})
       }
@@ -1755,6 +1936,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_APRS', payload: {}})
       dispatch({type: 'SET_REWARDS', payload: {}})
       dispatch({type: 'SET_BALANCES', payload: {}})
+      dispatch({type: 'SET_VAULTS_REWARDS', payload: {}})
       // dispatch({type: 'SET_PRICES_USD', payload: {}})
       // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
       // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
@@ -2027,6 +2209,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.pricesUsd,
     state.gaugesData,
     state.rewards,
+    state.vaultsRewards,
     state.balancesUsd,
     state.vaultsPrices,
     state.totalSupplies,

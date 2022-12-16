@@ -75,6 +75,10 @@ export const strategies: Record<string, StrategyProps> = {
     description:'strategies.best.description',
     image: `${strategiesFolder}best-yield.png`,
     bg: `${strategiesFolder}best-yield-bg.svg`,
+    dynamicActionFields:{
+      // deposit:['coverage' ,'newApy'],
+      withdraw:['gain', 'fee', 'netGain']
+    },
     carouselItems: [
       {
         image:`${strategiesCarouselFolder}BY-pooled-funds.gif`,
@@ -147,7 +151,8 @@ export const strategies: Record<string, StrategyProps> = {
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
     dynamicActionFields:{
-      deposit:['coverage' ,'newApy']
+      deposit:['coverage' ,'newApy'],
+      withdraw:['gain', 'fee', 'netGain']
     },
     carouselItems: [
       {
@@ -250,7 +255,8 @@ export const strategies: Record<string, StrategyProps> = {
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
     dynamicActionFields:{
-      deposit:['boost', 'overperformance', 'newApy']
+      deposit:['boost', 'overperformance', 'newApy'],
+      withdraw:['gain', 'fee', 'netGain']
     },
     carouselItems: [
       {
