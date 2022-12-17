@@ -3,7 +3,6 @@ import { strategies } from 'constants/'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import React, { useMemo, useState, useEffect } from 'react'
 import { InteractiveComponent } from './InteractiveComponent'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
@@ -11,13 +10,15 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { Approve, Deposit, Withdraw } from 'components/OperativeComponent/OperativeComponent'
 import { ContainerProps, Box, Flex, Stack, HStack, VStack, Tabs, Tab, TabList } from '@chakra-ui/react'
 
 export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const navigate = useNavigate()
-  const { params, location } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
+  const { params, location, searchParams } = useBrowserRouter()
+  const [ getSearchParams, setSearchParams ] = searchParams
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
   const { isPortfolioLoaded, selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
 
@@ -72,7 +73,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     if (vaultGauge){
       tabs.push(
         {
-          id:'stake',
+          id:'gauge',
           label:'navBar.gauge',
           component: GaugeStaking,
           actions: [
@@ -110,6 +111,52 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return tabs[selectedTabIndex].component
   }, [tabs, selectedTabIndex])
 
+  // Get selected tab id from search params
+  const selectedTabId = useMemo(() => {
+    return getSearchParams.get('tab')
+  }, [getSearchParams])
+
+  // Set tab index every time the tab search param changes
+  useEffect(() => {
+    if (selectedTabId) {
+      // console.log('selectedTabId', selectedTabId)
+      const foundTab = tabs.find( tab => tab.id.toString() === selectedTabId.toString() )
+      if (foundTab){
+        const tabIndex = tabs.indexOf(foundTab)
+        // console.log('setSelectedTabIndex', selectedTabId, foundTab, tabIndex)
+        setSelectedTabIndex(tabIndex)
+      }
+    } else {
+      setSelectedTabIndex(0)
+    }
+  }, [tabs, selectedTabId, setSelectedTabIndex])
+
+  // Change url and select tab
+  const selectTab = useCallback((tabIndex: number) => {
+    const selectedTab = tabs[tabIndex]
+    if (selectedTab) {
+      setSearchParams(`?tab=${selectedTab.id}`)
+    }
+  }, [tabs, setSearchParams])
+
+  const renderedTabs = useMemo(() => {
+    return (
+      <Tabs
+        index={selectedTabIndex}
+        variant={'unstyled'}
+        width={['100%', 'auto']}
+      >
+        <TabList>
+          {
+            tabs.map( (tab, index) => (
+              <Translation key={`tab_${index}`} component={Tab} width={[`${100/tabs.length}%`, 'auto']} translation={tab.label} onClick={() => selectTab(index)} />
+            ))
+          }
+        </TabList>
+      </Tabs>
+    )
+  }, [tabs, selectTab, selectedTabIndex])
+
   return (
     <AssetProvider
       wrapFlex={true}
@@ -141,19 +188,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
               borderColor={'divider'}
               justifyContent={'space-between'}
             >
-              <Tabs
-                defaultIndex={0}
-                variant={'unstyled'}
-                width={['100%', 'auto']}
-              >
-                <TabList>
-                  {
-                    tabs.map( (tab, index) => (
-                      <Translation key={`tab_${index}`} component={Tab} width={[`${100/tabs.length}%`, 'auto']} translation={tab.label} onClick={() => setSelectedTabIndex(index)} aria-selected={selectedTabIndex === index} />
-                    ))
-                  }
-                </TabList>
-              </Tabs>
+              {renderedTabs}
               {
                 !isMobile && (
                   <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />

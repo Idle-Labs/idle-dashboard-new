@@ -34,7 +34,7 @@ const Label: React.FC<LabelProps> = ({generalData}) => {
         label={translate(generalData.tooltip)}
       >
         <TooltipContent>
-          <MdInfo color={theme.colors.cta} size={18} />
+          <MdInfo color={theme.colors.cta} size={16} />
         </TooltipContent>
       </Tooltip>
     </HStack>

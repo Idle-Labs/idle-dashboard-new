@@ -537,6 +537,7 @@
     },
     "assets": "Assets",
     "stakeGauges": "Stake & Gauges",
+    "stakeIDLE": "Stake IDLE",
     "assetDetails": "Asset Details",
     "accounts": "Accounts",
     "accountAsset": "Account Asset",
@@ -1520,8 +1521,11 @@
         "lastHarvest":"Last Harvest"
       },
       "tooltips": {
-        "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
+        "weight": "The percentage of IDLE distributed to this gauge",
+        "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
+        "totalSupply": "Total amount of assets staked in this gauge",
         "autoCompounding": "These rewards are automatically re-invested in the strategy",
+        "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
         "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",

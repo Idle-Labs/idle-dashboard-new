@@ -1,8 +1,9 @@
 import React from 'react'
 import { NavLink } from "react-router-dom"
 import { Icon } from 'components/Icon/Icon'
+import { MdOpenInNew } from 'react-icons/md'
 import type { MenuItemType } from 'constants/menu'
-import { useTheme, Box, HStack } from '@chakra-ui/react'
+import { useTheme, Box, HStack, Link } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 
 type NavItemTextProps = {
@@ -39,6 +40,8 @@ export const NavItemText:React.FC<NavItemTextProps> = ({isActive, ...props}) => 
 }
 
 export const MenuNavItem:React.FC<MenuItemType> = (props) => {
+  const theme = useTheme()
+
   return props.path ? (
     <NavLink
       to={props.path}
@@ -47,6 +50,15 @@ export const MenuNavItem:React.FC<MenuItemType> = (props) => {
         <NavItemText isActive={isActive} {...props} />
       )}
     </NavLink>
+  ) : props.link ? (
+    <Link href={props.link} isExternal textDecoration={'none !important'}>
+      <HStack
+        spacing={1}
+      >
+        <Translation translation={props.label} textStyle={'cta'} {...props.labelProps}></Translation>
+        <MdOpenInNew color={theme.colors.cta} />
+      </HStack>
+    </Link>
   ) : (
     <NavItemText {...props} />
   )

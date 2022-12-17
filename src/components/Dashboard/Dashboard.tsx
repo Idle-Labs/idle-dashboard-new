@@ -4,7 +4,6 @@ import useLocalForge from 'hooks/useLocalForge'
 import { VAULTS_MIN_TVL } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
-import { BNify, getRoutePath, isEmpty } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -12,6 +11,7 @@ import { Scrollable } from 'components/Scrollable/Scrollable'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { BNify, getRoutePath, isEmpty, openWindow } from 'helpers/'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import React, { useRef, useState, useMemo, useCallback } from 'react'
@@ -484,7 +484,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           justifyContent={'space-between'}
         >
           <Translation translation={'dashboard.rewards.staking.empty.body'} component={Text} textAlign={['center', 'left']} />
-          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => { openWindow('https://app.idle.finance/#/stake') }} variant={['ctaPrimaryOutline']} px={10} py={2} />
         </Stack>
       </Card>
     )

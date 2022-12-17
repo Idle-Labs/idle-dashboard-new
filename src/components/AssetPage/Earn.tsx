@@ -230,9 +230,9 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
               <HStack
                 spacing={2}
               >
-                <AssetProvider.Name />
+                <AssetProvider.Name fontWeight={600} />
                 <Switch size={'md'} isChecked={useDollarConversion} onChange={ (e) => setUseDollarConversion(e.target.checked) } />
-                <Text>USD</Text>
+                <Text fontWeight={600}>USD</Text>
               </HStack>
             )
           }

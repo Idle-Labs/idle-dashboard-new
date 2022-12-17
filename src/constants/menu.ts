@@ -3,6 +3,7 @@ import { StrategyProps, strategies } from 'constants/strategies'
 
 export type MenuListType = {
   path?: string
+  link?: string
   label: string
   icon?: IconType
   onClick?: Function
@@ -10,15 +11,9 @@ export type MenuListType = {
   labelProps?: Record<string, any>
 }
 
-export type MenuItemType = {
-  path?: string
-  label: string
-  icon?: IconType
+export type MenuItemType = MenuListType & {
   color?: string
-  onClick?: Function
   children?: MenuListType[]
-  iconProps?: Record<string, any>
-  labelProps?: Record<string, any>
 }
 
 export const menu: MenuItemType[] = [
@@ -34,16 +29,18 @@ export const menu: MenuItemType[] = [
       color: strategy.color as string
     }))
   },
-  // {
-  //   path:'stats',
-  //   label:'navBar.stats'
-  // },
-  // {
-  //   path:'stake',
-  //   label:'navBar.stakeGauges'
-  // },
-  // {
-  //   path:'governance',
-  //   label:'navBar.governance'
-  // },
+  {
+    label:'navBar.stakeIDLE',
+    link:'https://app.idle.finance/#/stake'
+  },
+  {
+    // path:'stats',
+    label:'navBar.stats',
+    link:'https://app.idle.finance/#/stats'
+  },
+  {
+    // path:'governance',
+    label:'navBar.governance',
+    link:'https://app.idle.finance/#/governance'
+  },
 ]

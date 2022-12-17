@@ -46,7 +46,7 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
         {assetBalance}
         <NetworkSelector />
         <AccountSelector />
-        <NotificationList />
+        {/*<NotificationList />*/}
       </Stack>
     </Flex>
   )

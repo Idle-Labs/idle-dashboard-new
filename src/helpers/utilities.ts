@@ -186,6 +186,9 @@ export function requestTimeout(callback: Function, delay: number) {
   }
 }
 
+export const openWindow = (url: string) => {
+  return window.open(url, '_blank', 'noopener');
+}
 
 export const isEmpty = (object: any) => {
   return !object || !Object.keys(object).length

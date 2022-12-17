@@ -1,11 +1,13 @@
 import { Location } from 'history'
+import { URLSearchParams } from 'url'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
-import { useLocation, useRoutes } from 'react-router-dom'
 import React, { useMemo, createContext, useContext, useEffect } from 'react'
+import { useLocation, useRoutes, useSearchParams } from 'react-router-dom'
 
 export type BrowserRouterContextProps = {
   location: Location | null
+  searchParams: any
   params: any
   match: any
   query: any
@@ -15,7 +17,8 @@ const initialState: BrowserRouterContextProps = {
   match: {},
   query: {},
   params: {},
-  location: null
+  location: null,
+  searchParams: null
 }
 
 const BrowserRouterContext = createContext<BrowserRouterContextProps>(initialState)
@@ -26,6 +29,7 @@ export function BrowserRouterProvider() {
   const query = useQuery()
   const location = useLocation()
   const renderedRoutes = useRoutes(routes)
+  const searchParams = useSearchParams()
   
   const match = useMemo(() => {
     return renderedRoutes?.props.match
@@ -36,11 +40,12 @@ export function BrowserRouterProvider() {
   }, [match])
 
   const router = useMemo(() => ({
+    searchParams,
     location,
     params,
     query,
-    match
-  }), [location, params, query, match])
+    match,
+  }), [searchParams, location, params, query, match])
 
   useEffect(() => {
     window.scrollTo(0, 0)
