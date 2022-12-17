@@ -104,7 +104,7 @@ export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [vaultGauge])
 
   const vaultId = useMemo(() => {
-    return tabs[selectedTabIndex].id === 'stake' && vaultGauge ? vaultGauge.id : asset?.id
+    return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id
   }, [tabs, selectedTabIndex, asset, vaultGauge])
 
   const TabComponent = useMemo(() => {
