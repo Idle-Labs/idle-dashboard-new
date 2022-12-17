@@ -100,7 +100,7 @@ type AssetFieldProps = {
 const Name: React.FC<AssetFieldProps> = (props) => {
   const { asset } = useAssetProvider()
   return (
-    <SkeletonText minW={'50px'} noOfLines={2} isLoaded={!!asset}>
+    <SkeletonText minW={!asset ? '50px' : 'auto'} noOfLines={2} isLoaded={!!asset}>
       <Text {...props}>{asset?.name}</Text>
     </SkeletonText>
   )

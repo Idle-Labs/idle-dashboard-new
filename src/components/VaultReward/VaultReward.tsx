@@ -38,6 +38,7 @@ export const VaultReward: React.FC<RewardProps> = ({
             <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
             <HStack
               spacing={1}
+              justifyContent={'flex-end'}
             >
               <Amount value={amount} decimals={8} textStyle={'tableCell'} />
               <AssetProvider.Name textStyle={'tableCell'} />
