@@ -1151,10 +1151,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
   }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
-  // useEffect(() => {
-  //   console.log('accountChanged', account, connecting, walletInitialized)
-  // }, [account, connecting, walletInitialized])
-
   useEffect(() => {
     if (!protocolToken) return
     dispatch({type:'SET_PROTOCOL_TOKEN', payload: protocolToken})
@@ -1775,7 +1771,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical vaults data
   useEffect(() => {
 
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !isEmpty(state.historicalRates) /* || !walletInitialized || connecting*/) return
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !isEmpty(state.historicalRates)) return
 
     // Get Historical data
     ;(async () => {
@@ -1824,12 +1820,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded/*, walletInitialized, connecting*/])
+  }, [state.vaults, state.isPortfolioLoaded])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-    if (!state.vaults.length || !state.contracts.length || !multiCall || connecting || !walletInitialized) return
-    // console.log('Make chain calls', account, state.vaults, state.contracts, multiCall, walletInitialized)
+    if (!state.vaults.length || !state.contracts.length || !multiCall) return
 
     // Avoid refreshing is disconnected
     if (!isEmpty(state.aprs) && !account?.address) {
@@ -1944,7 +1939,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('RESET PORTFOLIO')
     };
   // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts, multiCall, walletInitialized])
+  }, [account, state.vaults, state.contracts, multiCall])
 
   // Get user vaults positions
   useEffect(() => {

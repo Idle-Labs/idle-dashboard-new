@@ -44,7 +44,6 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const accountAndPortfolioLoaded = useMemo(() => {
     return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
-    // return !walletInitialized || (account && !isVaultsPositionsLoaded)
   }, [walletInitialized, account, isPortfolioLoaded, isVaultsPositionsLoaded])
 
   const assetIds = useMemo(() => {
@@ -92,7 +91,6 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const strategiesOverview = useMemo(() => {
     if (!selectVaultsAssetsByType) return null
-    // if (!account || !walletInitialized) return null
     return (
       <SimpleGrid
         mt={6}
@@ -638,7 +636,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     layerStyle={'overlay'}
                     bg={'rgba(0, 0, 0, 0.4)'}
                   >
-                    <Translation translation={'dashboard.performanceChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                    <Translation translation={account ? 'dashboard.performanceChart.empty' : 'dashboard.performanceChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
                   </Center>
                 )
               }
@@ -717,7 +715,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                   layerStyle={'overlay'}
                   bg={'rgba(0, 0, 0, 0.4)'}
                 >
-                  <Translation translation={'dashboard.compositionChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                  <Translation translation={account ? 'dashboard.compositionChart.empty' : 'dashboard.compositionChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
                 </Center>
               )
             }

@@ -22,7 +22,7 @@ const Web3ProviderContext = React.createContext<ContextProps>(initialState)
 export const useWeb3Provider = () => useContext(Web3ProviderContext)
 
 export function Web3Provider({ children }: ProviderProps) {
-  const [ web3, setWeb3 ] = useState<Web3 | null>(null)
+  // const [ web3, setWeb3 ] = useState<Web3 | null>(null)
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
   const { wallet, chainId, walletInitialized } = useWalletProvider()
 
@@ -31,22 +31,32 @@ export function Web3Provider({ children }: ProviderProps) {
     return new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl))
   }, [chainId])
 
-  // Update wallet and provider
-  useEffect(() => {
-    if (!walletInitialized || !chainId) return
-    if (wallet?.provider) {
+  const web3 = useMemo(() => {
+    if (walletInitialized && wallet?.provider){
       // @ts-ignore
-      setWeb3(new Web3(wallet.provider))
+      return new Web3(wallet.provider)
     } else {
-      setWeb3(web3Rpc)
+      return web3Rpc
     }
-  }, [wallet?.provider, walletInitialized, chainId, web3Rpc])
+  }, [wallet?.provider, walletInitialized, web3Rpc])
+
+  // @ts-ignore // TO REMOVE
+  window.web3 = web3
+
+  // Update wallet and provider
+  // useEffect(() => {
+  //   console.log('wallet.provider', walletInitialized, chainId, wallet?.provider)
+  //   if (!walletInitialized || !chainId) return
+  //   if (wallet?.provider) {
+  //     // @ts-ignore
+  //     setWeb3(new Web3(wallet.provider))
+  //   } else {
+  //     setWeb3(web3Rpc)
+  //   }
+  // }, [wallet?.provider, walletInitialized, chainId, web3Rpc])
 
   useEffect(() => {
     if (!chainId || !web3 || !web3Rpc) return
-
-    // @ts-ignore // TO REMOVE
-    window.web3 = web3
 
     // const multiCall = new Multicall(chainId, web3Rpc)
     const multiCall = new Multicall(chainId, web3)

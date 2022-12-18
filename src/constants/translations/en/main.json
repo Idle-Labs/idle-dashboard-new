@@ -234,10 +234,12 @@
       }
     },
     "performanceChart": {
-      "empty": "The performances of your portfolio will appear here"
+      "empty": "The performances of your portfolio will appear here",
+      "emptyNotConnected": "Connect your wallet to view your portfolio performances"
     },
     "compositionChart": {
-      "empty": "The composition of your portfolio will appear here"
+      "empty": "The composition of your portfolio will appear here",
+      "emptyNotConnected": "Connect your wallet to view your portfolio composition"
     },
     "productUpdates": {
       "title": "Product updates",

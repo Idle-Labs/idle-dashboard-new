@@ -305,7 +305,7 @@ export const useTransactionManager = () => useContext(TransactionManagerContext)
 export function TransactionManagerProvider({children}: ProviderProps) {
   const { web3 }  = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { account, chainId, walletInitialized, explorer } = useWalletProvider()
+  const { account, chainId, explorer } = useWalletProvider()
 
   // Get estimated time
   const getEstimatedTime = useCallback( async (gasPrice: string): Promise<string | null> => {
@@ -342,7 +342,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Get chain token price
   useEffect(() => {
-    if (!walletInitialized || !chainId || !web3) return
+    if (!chainId || !web3) return
     ;(async () => {
       const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
       if (!chainToken || !chainToken.address) return
@@ -353,10 +353,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
       // console.log('chainToken', chainToken, chainTokenPriceUsd)
     })()
-  }, [walletInitialized, chainId, web3])
+  }, [chainId, web3])
 
   const updateGasPrices = useCallback( async () => {
-    if (!walletInitialized || !explorer || !chainId) return
+    if (!explorer || !chainId) return
     const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
     const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
     if (gasOracle) {
@@ -388,48 +388,13 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
       dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
     }
-  }, [explorer, chainId, walletInitialized, getEstimatedTime])
+  }, [explorer, chainId, getEstimatedTime])
 
   // Get Gas Oracle
   useEffect(() => {
-    if (!walletInitialized || !explorer || !chainId || state.gasOracle) return
-
+    if (!explorer || !chainId || state.gasOracle) return
     updateGasPrices()
-    // console.log('Get Gas Oracle', walletInitialized, explorer, chainId, state.gasOracle)
-    /*
-    ;(async () => {
-      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
-      const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      if (gasOracle) {
-        const gasPrices: GasPrices = {
-          [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
-          [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
-          [TransactionSpeed.Average]: (+gasOracle.SafeGasPrice+1).toString(),
-          [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice).toString()
-        }
-
-        const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
-        const defaultEstimatedTimes = Object.keys(gasPrices).reduce( (gasPrices: Record<string, string>, transactionSpeed) => ({ ...gasPrices, [transactionSpeed]: '60' }), {}) as GasPrices
-        const estimatedTimes = await asyncReduce<TransactionSpeed, GasPrices>(
-          transactionSpeeds,
-          async (transactionSpeed: TransactionSpeed): Promise<any> => {
-            const gasPrice = gasPrices[transactionSpeed]
-            const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? '15' : await getEstimatedTime(gasPrice)
-            return {
-              [transactionSpeed]: estimatedTime
-            }
-          },
-          (acc, val) => ({...acc, ...val}),
-          defaultEstimatedTimes
-        )
-
-        dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
-        dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
-        dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
-      }
-    })()
-    */
-  }, [explorer, chainId, walletInitialized, state.gasOracle, updateGasPrices/*, state.transactionSpeed, getEstimatedTime*/])
+  }, [explorer, chainId, state.gasOracle, updateGasPrices])
 
   // Update gas price based on selected transaction speed
   useEffect(() => {

@@ -13,6 +13,7 @@ import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import type { Asset, ReducerActionTypes, AssetId, Number } from 'constants/types'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
+import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy } from 'helpers/'
@@ -205,17 +206,6 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
       </Flex>
       <EstimatedGasFees />
     </VStack>
-  )
-}
-
-const ConnectWalletButton: React.FC<ButtonProps> = ({...props}) => {
-  const { connect, connecting } = useWalletProvider()
-  return connecting ? (
-    <Button disabled={true} variant={'ctaFull'}>
-      <Spinner size={'sm'} />
-    </Button>
-  ) : (
-    <Translation component={Button} translation={"common.connectWallet"} onClick={() => connect()} variant={'ctaFull'} {...props} />
   )
 }
 
@@ -511,7 +501,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return account ? (
       <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
     ) : (
-      <ConnectWalletButton />
+      <ConnectWalletButton variant={'ctaFull'} />
     )
   }, [account, disabled, deposit])
 
@@ -726,7 +716,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return account ? (
       <Translation component={Button} translation={"common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'} />
     ) : (
-      <ConnectWalletButton />
+      <ConnectWalletButton variant={'ctaFull'} />
     )
   }, [account, disabled, withdraw])
 

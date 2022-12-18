@@ -6,6 +6,7 @@ import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { MenuItemExpandable } from './Menu/MenuItemExpandable'
 import { MdOutlineChangeCircle, MdClose } from 'react-icons/md'
+import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 
 export const AccountSelector: React.FC = () => {
   const { screenSize } = useThemeProvider()
@@ -59,9 +60,7 @@ export const AccountSelector: React.FC = () => {
         </>
       )}
     </Menu>
-  ) : connecting ? (
-    <Button variant={'cta'}><Spinner size={'sm'} /></Button>
   ) : (
-    <Button variant={'cta'} onClick={() => connect()}>Connect wallet</Button>
+    <ConnectWalletButton variant={'cta'} />
   )
 }

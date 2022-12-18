@@ -22,8 +22,8 @@ import { ContainerProps, Heading, Box, Flex, Stack, Text, SimpleGrid, HStack, Sw
 
 export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { params } = useBrowserRouter()
+  const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const { account, walletInitialized } = useWalletProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
@@ -197,13 +197,13 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [asset, userHasBalance])
 
   const strategyDescriptionCarousel = useMemo(() => {
-    if (!strategy || !walletInitialized || !isPortfolioLoaded) return null
+    if (!strategy || !isPortfolioLoaded) return null
     const strategyProps = strategies[strategy]
     if (!strategyProps?.carouselItems) return null
     return (
       <StrategyDescriptionCarousel color={strategyColor} strategy={strategy} delay={10000} />
     )
-  }, [strategy, strategyColor, walletInitialized, isPortfolioLoaded])
+  }, [strategy, strategyColor, isPortfolioLoaded])
 
   const vaultRewards = useMemo(() => {
     // console.log('vaultRewards', asset)
