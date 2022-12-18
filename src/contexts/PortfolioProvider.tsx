@@ -2168,6 +2168,24 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].apr = assetsData[vault.id].aprBreakdown ? (Object.values(assetsData[vault.id].aprBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apr: BigNumber) => total.plus(apr), BNify(0)) : BNify(0)
       assetsData[vault.id].apy = assetsData[vault.id].apyBreakdown ? (Object.values(assetsData[vault.id].apyBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apy: BigNumber) => total.plus(apy), BNify(0)) : BNify(0)
 
+      // Set historical rates
+      assetsData[vault.id].rates = state.historicalRates[vault.id] || []
+
+      // Set historical prices
+      assetsData[vault.id].prices = state.historicalPrices[vault.id] || []
+      if (assetsData[vault.id].prices?.length){
+        const rates7 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-7)
+        const rates7_last_rate = rates7 ? BNify(rates7.pop()?.value) : BNify(0)
+        assetsData[vault.id].apy7 = rates7_last_rate.div(BNify(rates7[0].value)).minus(1).times(365).div(7).times(100)
+
+        // console.log('rates7', vault.id, rates7, BNify(rates7[0].value).toString(), rates7_last_rate.toString(), assetsData[vault.id].apy7.toString())
+
+        const rates30 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-30)
+        const rates30_last_rate = rates30 ? BNify(rates30.pop()?.value) : BNify(0)
+        assetsData[vault.id].apy30 = rates30_last_rate.div(BNify(rates30[0].value)).minus(1).times(365).div(30).times(100)
+
+        // console.log('rates30', vault.id, rates30, BNify(rates30[0].value).toString(), rates30_last_rate.toString(), assetsData[vault.id].apy30.toString())
+      }
 
       // console.log('aprBreakdown', vault.id, assetsData[vault.id].aprBreakdown)
 
@@ -2203,6 +2221,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.pricesUsd,
     state.gaugesData,
     state.rewards,
+    state.historicalRates,
+    state.historicalPrices,
     state.vaultsRewards,
     state.balancesUsd,
     state.vaultsPrices,

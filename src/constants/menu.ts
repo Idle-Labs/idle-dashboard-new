@@ -30,12 +30,12 @@ export const menu: MenuItemType[] = [
     }))
   },
   {
-    label:'navBar.stakeIDLE',
+    label:'navBar.stake',
     link:'https://app.idle.finance/#/stake'
   },
   {
     // path:'stats',
-    label:'navBar.stats',
+    label:'navBar.analytics',
     link:'https://app.idle.finance/#/stats'
   },
   {

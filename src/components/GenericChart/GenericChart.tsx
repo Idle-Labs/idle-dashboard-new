@@ -60,7 +60,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   }, [chartData])
 
   return (
-    <Box p={0} height={height}>
+    <Box width={'full'} p={0} height={height}>
       <Graph
         color={color}
         data={chartData}

@@ -160,10 +160,10 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'defi.earnings'} textStyle={'titleSmall'} />
-          <AssetProvider.EarningsUsd textStyle={'heading'} fontSize={'h3'} />
+          <Translation component={Text} translation={'defi.netEarnings'} textStyle={'titleSmall'} />
+          <AssetProvider.NetEarningsUsd textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
-            <AssetProvider.Earnings decimals={4} textStyle={'captionSmaller'} />
+            <AssetProvider.NetEarnings decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
@@ -239,30 +239,42 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </HStack>
         <Card.Dark
           p={0}
+          overflow={'hidden'}
+          minH={['auto', 460]}
+          alignItems={'flex-end'}
         >
-          <Stack
-            mt={8}
-            mx={8}
-            alignItems={'flex-start'}
-            direction={['column', 'row']}
-            justifyContent={['center', 'space-between']}
+          <VStack
+            spacing={0}
+            width={'100%'}
+            height={'100%'}
+            justifyContent={'space-between'}
           >
-            {chartHeading}
-            <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
-          </Stack>
-          <GenericChart
-            data={chartData}
-            percentChange={0}
-            color={strategyColor}
-            timeframe={timeframe}
-            isRainbowChart={false}
-            assetIds={[params.asset]}
-            setPercentChange={() => {}}
-            height={isMobile ? '300px' : '350px'}
-            margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
-            // formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
-          />
+            <Stack
+              pt={[6, 8]}
+              px={[6, 8]}
+              pb={[4, 0]}
+              width={'100%'}
+              alignItems={'flex-start'}
+              direction={['column', 'row']}
+              justifyContent={['center', 'space-between']}
+            >
+              {chartHeading}
+              <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+            </Stack>
+            <GenericChart
+              data={chartData}
+              percentChange={0}
+              color={strategyColor}
+              timeframe={timeframe}
+              isRainbowChart={false}
+              assetIds={[params.asset]}
+              setPercentChange={() => {}}
+              height={isMobile ? '300px' : '350px'}
+              margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+              formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
+              // formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
+            />
+          </VStack>
         </Card.Dark>
       </Box>
       {fundsOverview}

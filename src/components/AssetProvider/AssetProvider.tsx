@@ -356,6 +356,16 @@ const Earnings: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const NetEarnings: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+
+  const netEarnings = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset?.vaultPosition?.underlying.earnings).minus(BNify(asset.vaultPosition.underlying.earnings).times(asset.fee)) : BNify(0)
+  
+  return asset?.vaultPosition?.underlying.earnings ? (
+    <Amount.Usd value={netEarnings} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const EarningsUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   
@@ -443,10 +453,6 @@ const Apr: React.FC<PercentageProps> = (props) => {
 
 const Apy: React.FC<PercentageProps> = (props) => {
   const { asset, translate } = useAssetProvider()
-  
-  // return asset?.apy ? (
-  //   <Amount.Percentage value={asset?.apy} {...props} />
-  // ) : <Spinner size={'sm'} />
 
   const tooltipLabel = asset?.apyBreakdown ? (
     <VStack
@@ -457,7 +463,7 @@ const Apy: React.FC<PercentageProps> = (props) => {
         Object.keys(asset.apyBreakdown).map( (type: string) => {
           const translatedType = translate(`assets.assetDetails.apyBreakdown.${type}`)
           const apr = BNify(asset?.apyBreakdown?.[type])
-          // labels.push(`${translatedType}: ${apr.toFixed(2)}%`)
+          if (apr.lte(0)) return null
           return (
             <HStack
               spacing={3}
@@ -722,6 +728,7 @@ type GeneralDataProps = {
 } & TextProps & AvatarProps & BoxProps & ThemingProps
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
+  const { asset } = useAssetProvider()
   switch (field) {
     case 'protocol':
       return (
@@ -748,8 +755,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
       return (<PoolUsd textStyle={'tableCell'} {...props} />)
     case 'apy':
       return (<Apy textStyle={'tableCell'} {...props} />)
-    // case 'apyRatio':
-    //   return (<ApyRatio textStyle={'tableCell'} {...props} />)
+    case 'apy7':
+      return (<Amount.Percentage value={asset?.apy7} textStyle={'tableCell'} {...props} />)
+    case 'apy30':
+      return (<Amount.Percentage value={asset?.apy30} textStyle={'tableCell'} {...props} />)
     case 'apyRatio':
       return <ApyRatioChart width={'100%'} />
     case 'apyBoost':
@@ -824,6 +833,7 @@ AssetProvider.BalanceUsd = BalanceUsd
 AssetProvider.GeneralData = GeneralData
 AssetProvider.RealizedApy = RealizedApy
 AssetProvider.EarningsUsd = EarningsUsd
+AssetProvider.NetEarnings = NetEarnings
 AssetProvider.VaultBalance = VaultBalance
 AssetProvider.EarningsPerc = EarningsPerc
 AssetProvider.DepositedUsd = DepositedUsd

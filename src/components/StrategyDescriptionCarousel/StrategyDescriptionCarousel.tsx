@@ -33,10 +33,7 @@ const CarouselNav: React.FC = () => {
           <MdArrowBackIosNew color={!activeItem ? theme.colors.ctaDisabled : theme.colors.primary} />
         </Button>
         <Text textStyle={'ctaStatic'}>{activeItem+1}/{itemsLength}</Text>
-        <Button variant={'link'} minW={'auto'} onClick={() => {
-          stop()
-          goNext()
-        }}>
+        <Button variant={'link'} minW={'auto'} onClick={() => { stop(); goNext()}}>
           <MdArrowForwardIos color={activeItem === itemsLength-1 ? theme.colors.ctaDisabled : theme.colors.primary} />
         </Button>
       </HStack>

@@ -143,6 +143,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [255, 255, 255],
         hsl: ['0, 0%, 100%']
       },
+      chainlinkPriceFeed: {
+        address: '0x853d955acef822db058eb8505911ed77f175b99e'
+      },
       address: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B'
     },
     MIM3CRV: {
@@ -169,6 +172,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hex: '#ffbf93',
         rgb: [255, 191, 147],
         hsl: ['24, 100%, 79%']
+      },
+      chainlinkPriceFeed: {
+        address: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9'
       },
       address: '0x43b4FdFD4Ff969587185cDB6f0BD875c5Fc83f8c'
     },
@@ -394,6 +400,10 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       conversionRate: {
         field: "wethDAIPrice"
+      },
+      chainlinkPriceFeed: {
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        feedUsdAddress: '0x37bC7498f4FF12C19678ee8fE19d713b87F6a9e6'
       },
       address: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
     },

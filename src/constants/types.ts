@@ -194,6 +194,8 @@ export type Asset = {
   underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber
+  apy7?: BigNumber
+  apy30?: BigNumber
   fee?: BigNumber
   balance?: BigNumber
   aprRatio?: BigNumber

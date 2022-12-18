@@ -122,11 +122,12 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return navigate(`${location?.pathname.replace(/\/$/, '')}/${row.original.id}`)
   }, [navigate, location])
 
+  const columns = useMemo(() => {
+    return strategy && strategies[strategy].columns
+  }, [strategy])
 
   const strategyColumns: Column<Asset>[] = useMemo(() => {
-    if (!strategy) return []
-    const columns = strategies[strategy].columns
-    if (!columns) return []
+    if (!strategy || !columns) return []
     return columns.map( (column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
@@ -144,7 +145,28 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       }
     })
-  }, [strategy, translate])
+  }, [strategy, columns, translate])
+
+  const strategyColumnsDeposit: Column<Asset>[] = useMemo(() => {
+    if (!strategy || !columns) return []
+    return columns.filter( (column: StrategyColumn) => !column.tables || column.tables.includes('Deposited') ).map( (column: StrategyColumn) => {
+      const { id, accessor, sortType } = column
+      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      return {
+        id,
+        accessor,
+        disableSortBy: !sortTypeFn,
+        defaultCanSort: !!sortTypeFn,
+        Header: translate(`defi.${id}`),
+        sortType: sortTypeFn ? (a: any, b: any, field: any, c: any) => sortTypeFn(a, b, accessor, c) : undefined,
+        Cell: ({ value, row }: { value: any; row: RowProps }) => {
+          return (
+            <TableField field={id} value={value} row={row} />
+          )
+        }
+      }
+    })
+  }, [strategy, columns, translate])
 
   const depositedAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {
@@ -152,7 +174,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       accessor: 'id',
       display: 'none'
     },
-    ...strategyColumns,
+    ...strategyColumnsDeposit,
     {
       accessor:'balanceUsd',
       Header:translate('defi.balance'),
@@ -192,7 +214,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
       },
       sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage', c)
     },
-  ]), [translate, strategyColumns])
+  ]), [translate, strategyColumnsDeposit])
 
   const availableAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {

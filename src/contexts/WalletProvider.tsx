@@ -109,7 +109,7 @@ export function WalletProvider({ children }: ProviderProps) {
 
       // Set custom wallet
       // setAccount({
-      //   address: "0x3c361587e264cfb8c9a07bb0ca9d18976ea3648a",
+      //   address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
       //   ens: null,
       //   balance: {
       //     ETH: "0.838159899709204532"

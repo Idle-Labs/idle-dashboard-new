@@ -30,9 +30,16 @@ export const Amount = ({
   ...props
 }: AmountProps) => {
   const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) &&  value>=abbreviateThresold)
-  const parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals, maxPrecision, minPrecision) : (decimals ? BNify(value).toFixed(decimals) : value)))
+  let parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals, maxPrecision, minPrecision) : (decimals ? BNify(value).toFixed(decimals) : value)))
 
   const showPrefixSuffix = parsedValue.toString().length>0 && parsedValue !== '-'
+
+  // Add minus sign in prefix
+  if (BNify(parsedValue).lt(0)){
+    prefix=`-${prefix}`
+    parsedValue = Math.abs(parsedValue)
+  }
+
   return (
     <Text {...props}>
       {showPrefixSuffix && (prefix || '')}

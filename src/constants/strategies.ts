@@ -12,10 +12,13 @@ export type StrategyCarouselItem = {
   description: string
 }
 
+type Tables = "Available" | "Deposited"
+
 export type StrategyColumn = {
   id?: any
   title?: any
   accessor: any
+  tables?: Tables[]
   sortType?: 'alpha' | 'numeric'
 }
 
@@ -74,7 +77,7 @@ export const strategies: Record<string, StrategyProps> = {
   BY:{
     type:'BY',
     visible: true,
-    color:'#FFD15C',
+    color:'#6AE4FF',
     route:'best-yield',
     label:'strategies.best.title',
     description:'strategies.best.description',
@@ -119,6 +122,18 @@ export const strategies: Record<string, StrategyProps> = {
         sortType: 'numeric'
       },
       {
+        id:'apy7',
+        accessor:'apy7',
+        sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
+        id:'apy30',
+        accessor:'apy30',
+        sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
         id:'protocols',
         accessor:'id'
       }
@@ -130,7 +145,8 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'apy',
-        label:'assets.assetDetails.generalData.apy'
+        label:'assets.assetDetails.generalData.apy',
+        tooltip:'assets.assetDetails.tooltips.spotApy'
       },
       {
         field:'rewards',
@@ -203,6 +219,18 @@ export const strategies: Record<string, StrategyProps> = {
         sortType: 'numeric'
       },
       {
+        id:'apy7',
+        accessor:'apy7',
+        sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
+        id:'apy30',
+        accessor:'apy30',
+        sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
         id:'rewards',
         accessor:'id'
       }
@@ -259,7 +287,7 @@ export const strategies: Record<string, StrategyProps> = {
   BB:{
     type:'BB',
     visible: true,
-    color:'#6AE4FF',
+    color:'#FFD15C',
     route:'boosted-yield',
     label:'strategies.boosted.title',
     description:'strategies.boosted.description',
@@ -306,6 +334,18 @@ export const strategies: Record<string, StrategyProps> = {
         id:'apy',
         accessor:'apy',
         sortType: 'numeric'
+      },
+      {
+        id:'apy7',
+        accessor:'apy7',
+        sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
+        id:'apy30',
+        accessor:'apy30',
+        sortType: 'numeric',
+        tables: ['Available']
       },
       {
         id:'rewards',

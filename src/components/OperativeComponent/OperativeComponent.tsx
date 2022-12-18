@@ -611,6 +611,8 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
+  console.log('asset', asset)
+
   const vaultBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(vault?.id)
@@ -628,7 +630,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!selectAssetBalance) return BNify(0)
     const balance = selectAssetBalance(vault?.id)
     const vaultPrice = selectVaultPrice(vault?.id)
-    console.log('assetBalance', balance.toString(), vaultPrice.toString())
+    // console.log('assetBalance', balance.toString(), vaultPrice.toString())
     return balance.times(vaultPrice)
   }, [selectAssetBalance, selectVaultPrice, vault?.id])
 

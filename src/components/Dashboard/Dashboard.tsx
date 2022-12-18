@@ -153,7 +153,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                           spacing={2}
                           alignItems={'center'}
                         >
-                          <Translation translation={'defi.apy'} component={Text} textStyle={'captionSmall'} />
+                          <Translation translation={'defi.avgApy'} component={Text} textStyle={'captionSmall'} />
                           <SkeletonText noOfLines={2} minWidth={'50px'} isLoaded={!!isVaultsPositionsLoaded}>
                             {
                               strategyComposition.value>0 ? (
@@ -201,7 +201,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                                   field:'balanceUsd'
                                 },
                                 {
-                                  label:'defi.apy',
+                                  label:'defi.realizedApy',
                                   field:'realizedApy'
                                 }
                               ]}
