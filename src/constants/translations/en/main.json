@@ -673,6 +673,7 @@
     "expectedAmount": "Expected Amount",
     "beforeFees": "Before Fees",
     "minAmountAfterSlippage": "Min. expected amount after slippage (%{slippage}%)",
+    "depositGauge": "Stake your tokens in the Gauge to earn additional rewards",
     "actions": {
       "approve": {
         "confirm": "You are approving",
@@ -683,7 +684,8 @@
         "confirmed": "You have deposited",
         "status": {
           "success": {
-            "button": "New Deposit"
+            "button": "New Deposit",
+            "buttonGauge": "Stake in Gauge"
           }
         }
       },

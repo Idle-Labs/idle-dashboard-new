@@ -324,10 +324,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [account, web3, state.gasPrice, state.tokenPriceUsd])
 
   // Track transaction changed
-  useEffect(() => {
-    if (!state.transaction) return
-    console.log('Transaction CHANGED', state.transaction)
-  }, [state.transaction])
+  // useEffect(() => {
+  //   if (!state.transaction) return
+  //   console.log('Transaction CHANGED', state.transaction)
+  // }, [state.transaction])
 
   // Set estimated time
   useEffect(() => {
@@ -520,7 +520,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
                   }, 1000)
                 }
               })()
-            }, 7000)
+            }, 2000)
           }
         })()
       }, 2000)

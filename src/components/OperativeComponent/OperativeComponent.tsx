@@ -7,6 +7,7 @@ import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
@@ -34,19 +35,34 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd
     setAmount(Math.max(0, parseFloat(value)).toString())
   }
 
-  // useEffect(() => {
-  //   if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
-  //   const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
-  //   const vaultPrice = selectVaultPrice(asset.id)
+  /*
+  useEffect(() => {
+    if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    const vaultPrice = selectVaultPrice(asset.id)
 
-  //   if (asset.type === 'underlying') {
-  //     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
-  //     setAmountUsd(amountUsd)
-  //   } else {
-  //     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
-  //     setAmountUsd(amountUsd)
-  //   }
-  // }, [asset, underlyingAsset, amount, selectVaultPrice, selectAssetPriceUsd])
+    if (asset.type === 'underlying') {
+      const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+      setAmountUsd(amountUsd)
+    } else {
+      const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
+      setAmountUsd(amountUsd)
+    }
+  }, [asset, underlyingAsset, amount, selectVaultPrice, selectAssetPriceUsd])
+  */
+
+  const amountUsdToDisplay = useMemo(() => {
+    if (amountUsd) return BNify(amountUsd)
+    if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    const vaultPrice = selectVaultPrice(asset.id)
+
+    if (asset.type === 'underlying') {
+      return parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+    } else {
+      return parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
+    }
+  }, [asset, underlyingAsset, amount, amountUsd, selectVaultPrice, selectAssetPriceUsd])
 
   // console.log('InputAmount', asset)
 
@@ -56,7 +72,7 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd
       justifyContent={'space-between'}
     >
       <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} />
-      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={BNify(amountUsd).toString()} />
+      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={BNify(amountUsdToDisplay).toString()} />
     </HStack>
   )
 }
@@ -369,7 +385,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
-  const { dispatch, activeItem, executeAction } = useOperativeComponent()
+  const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
@@ -417,13 +433,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
 
         sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
-        // sendTransactionTest(depositContractSendMethod)
+        // sendTransactionTest(vault.id, underlyingAsset?.id, depositContractSendMethod)
       } else {
         // Go to approve section
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, vault, underlyingAsset, dispatch, sendTransaction/*, sendTransactionTest*/])
+  }, [account, disabled, amount, vault, underlyingAsset, dispatch, sendTransaction])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -435,10 +451,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // Reset amount on transaction succeeded
   useEffect(() => {
-    if (transaction.status === 'success'){
+    if (!executeAction && activeStep === itemIndex && transaction.status === 'success'){
       setAmount('')
     }
-  }, [transaction.status])
+  }, [executeAction, transaction.status, activeStep, itemIndex])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -482,8 +498,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     dispatch({type: 'SET_DEFAULT_AMOUNT', payload: amount})
     dispatch({type: 'SET_ASSET', payload: underlyingAsset})
 
-    // console.log('executeAction', executeAction)
+    // console.log('Deposit - executeAction', executeAction)
     if (executeAction) {
+      // console.log('Deposit - execute deposit')
       deposit(false)
       dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
     }
@@ -599,7 +616,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
-  const { dispatch, activeItem, executeAction } = useOperativeComponent()
+  const { dispatch, activeItem, activeStep } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance } } = usePortfolioProvider()
@@ -645,10 +662,10 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // Reset amount on transaction succeeded
   useEffect(() => {
-    if (transaction.status === 'success'){
+    if (activeStep === itemIndex && transaction.status === 'success'){
       setAmount('')
     }
-  }, [transaction.status])
+  }, [transaction.status, activeStep, itemIndex])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -703,7 +720,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const vaultPrice = selectVaultPrice(vault.id)
     dispatch({type: 'SET_AMOUNT', payload: BNify(amount).toString()})
     dispatch({type: 'SET_DEFAULT_AMOUNT', payload: BNify(amount).toString()})
-  }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, executeAction, withdraw])
+  }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, withdraw])
 
   const withdrawButton = useMemo(() => {
     return account ? (
@@ -891,16 +908,23 @@ type TransactionStatusProps = {
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const countTimeoutId = useRef<any>(null)
+  const { searchParams } = useBrowserRouter()
   const { chainId, explorer } = useWalletProvider()
   const [ progressValue, setProgressValue ] = useState<number>(0)
-  const { underlyingAsset, theme, translate } = useAssetProvider()
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
   // const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(1)
+  const { underlyingAsset, theme, translate, asset } = useAssetProvider()
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
+  const { selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
   const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
+
+  const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams])
+
+  const vaultGauge = useMemo(() => {
+    return asset?.id && selectVaultGauge && selectVaultGauge(asset.id)
+  }, [selectVaultGauge, asset?.id])
 
   const startCountDown = useCallback((targetTimestamp: number) => {
     // console.log('TransactionStatus - startCountDown', targetTimestamp, transactionState.status, transactionState)
@@ -998,7 +1022,17 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           <>
             <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={['heading', 'h3']} textAlign={'center'} />
             {
-              activeStep ? (
+              txActionType === 'deposit' && vaultGauge ? (
+                <VStack
+                  pt={2}
+                  spacing={4}
+                >
+                  <Translation translation={'trade.depositGauge'} textAlign={'center'} />
+                  <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.buttonGauge`} onClick={() => { resetAndGoBack(); setTimeout(() => setSearchParams(`?tab=gauge`), 1000) }} variant={'ctaFull'} />
+                  <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => { resetAndGoBack() }} variant={'ctaPrimaryOutline'} width={'100%'} />
+                  {/*<Translation<LinkProps> component={Link} translation={`trade.actions.${txActionType}.status.success.button`} textStyle={['captionSmall', 'link', 'bold']}  onClick={() => resetAndGoBack()} />*/}
+                </VStack>
+              ) : activeStep ? (
                 <Translation component={Button} translation={`common.${baseActionType}`} onClick={() => resetAndGoBack(true)} variant={'ctaFull'} />
               ) : (
                 <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
@@ -1011,14 +1045,14 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           <>
             <Translation component={Text} translation={`modals.${txActionType}.status.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={['heading', 'h3']} textAlign={'center'} />
             <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'captionSmall'} textAlign={'center'} />
-            <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => retry} variant={'ctaFull'} />
+            <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => { retry() }} variant={'ctaFull'} />
             <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => resetAndGoBack()} />
           </>
         )
       default:
         return null
     }
-  }, [transactionState?.status, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry])
+  }, [transactionState?.status, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
 
   const isLongTransaction = useMemo(() => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0
@@ -1050,9 +1084,9 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           position={'relative'}
         >
           <CircularProgress
+            size={145}
             top={'-10px'}
             left={'-10px'}
-            size={145}
             thickness={'5px'}
             position={'absolute'}
             value={progressValue}
@@ -1124,7 +1158,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
             width={'100%'}
             justifyContent={'center'}
           >
-            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={['captionSmall', 'link', 'bold']} isExternal href={getExplorerTxUrl(chainId, explorer, transactionState.hash)} />
+            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(chainId, explorer, transactionState.hash)} />
           </HStack>
         )
       }
