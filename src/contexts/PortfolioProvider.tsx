@@ -27,7 +27,6 @@ type VaultsOnchainData = {
   aprs: Balances
   baseAprs: Balances
   balances: Balances
-  assetsData: Assets
   aprRatios: Balances
   pricesUsd: Balances
   gaugesData: GaugesData
@@ -43,6 +42,7 @@ type VaultsOnchainData = {
 
 type InitialState = {
   vaults: Vault[]
+  assetsData: Assets
   balancesUsd: Balances
   helpers: Record<any, any>
   isPortfolioLoaded: boolean
@@ -477,6 +477,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultBalance = vaultBalance.plus(stakedAmount)
       }
 
+      // console.log(assetId, depositedAmount.toString(), vaultBalance.toString())
+
       // Wait for balances to be loaded
       if (vaultBalance.lte(0)) return vaultsPositions
 
@@ -744,9 +746,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('gaugesTimeWeights', gaugesTimeWeights)
     // console.log('gaugesWeights', gaugesWeights)
 
-    const assetsData: Assets = {
-      ...state.assetsData
-    }
+    // const assetsData: Assets = {
+    //   ...state.assetsData
+    // }
 
     // Process protocols
     const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
@@ -807,10 +809,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const trancheAPRSplitRatio = BNify(callResult.data.toString()).div(`1e03`)
           const aprRatio = asset.type === 'AA' ? trancheAPRSplitRatio : BNify(100).minus(trancheAPRSplitRatio)
 
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            aprRatio
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   aprRatio
+          // }
 
           aprRatios[assetId] = aprRatio
         }
@@ -877,10 +879,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
             // console.log(`Base Apr ${asset.name}: ${vaultAdditionalBaseApr.apr.toString()} = ${baseApr.toString()}`)
           }
 
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            baseApr
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   baseApr
+          // }
 
           baseAprs[assetId] = baseApr
         }
@@ -897,10 +899,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       filteredVaults.forEach( (vault: Vault) => {
         const assetId = vault.id
 
-        assetsData[assetId] = {
-          ...assetsData[assetId],
-         lastHarvest: lastHarvest.harvest || null 
-        }
+        // assetsData[assetId] = {
+        //   ...assetsData[assetId],
+        //  lastHarvest: lastHarvest.harvest || null 
+        // }
 
         lastHarvests[assetId] = lastHarvest.harvest || null
       })
@@ -944,11 +946,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const apy = apr2apy(aprs[assetId].div(100)).times(100)
 
           // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            apr: aprs[assetId],
-            apy
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   apr: aprs[assetId],
+          //   apy
+          // }
         }
       }
       return aprs
@@ -961,10 +963,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const asset = selectAssetById(assetId)
         if (asset){
           const fee = BNify(callResult.data.toString()).div(`1e05`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            fee
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   fee
+          // }
 
           fees[assetId] = fee
         }
@@ -979,10 +981,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         if (asset){
           balances[assetId] = BNify(callResult.data.toString()).div(`1e${asset.decimals}`)
           // console.log(`Balance ${asset.name}: ${balances[assetId].toString()}`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            balance: balances[assetId]
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   balance: balances[assetId]
+          // }
         }
       }
       return balances
@@ -996,10 +998,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const decimals = callResult.extraData.decimals || asset.decimals
           vaultsPrices[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
           // console.log(`Vault Price ${asset.name} ${decimals}: ${vaultsPrices[assetId].toString()}`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            vaultPrice: vaultsPrices[assetId]
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   vaultPrice: vaultsPrices[assetId]
+          // }
         }
       }
       return vaultsPrices
@@ -1011,17 +1013,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (asset){
         pricesUsd[assetId] = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
         // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
-        assetsData[assetId] = {
-          ...assetsData[assetId],
-          priceUsd: pricesUsd[assetId]
-        }
-
-        if (asset.underlyingId){
-          assetsData[asset.underlyingId] = {
-            ...assetsData[asset.underlyingId],
-            priceUsd: pricesUsd[asset.underlyingId]
-          }
-        }
+        // assetsData[assetId] = {
+        //   ...assetsData[assetId],
+        //   priceUsd: pricesUsd[assetId]
+        // }
+        // if (asset.underlyingId){
+        //   assetsData[asset.underlyingId] = {
+        //     ...assetsData[asset.underlyingId],
+        //     priceUsd: pricesUsd[asset.underlyingId]
+        //   }
+        // }
       }
       return pricesUsd
     }, {})
@@ -1033,10 +1034,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         if (asset){
           const decimals = callResult.extraData.decimals || asset.decimals
           totalSupplies[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
-          assetsData[assetId] = {
-            ...assetsData[assetId],
-            totalSupply: totalSupplies[assetId]
-          }
+          // assetsData[assetId] = {
+          //   ...assetsData[assetId],
+          //   totalSupply: totalSupplies[assetId]
+          // }
         }
       }
       return totalSupplies
@@ -1108,10 +1109,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         distributionRate
       }
 
-      assetsData[gaugeId] = {
-        ...assetsData[gaugeId],
-        gaugeData
-      }
+      // assetsData[gaugeId] = {
+      //   ...assetsData[gaugeId],
+      //   gaugeData
+      // }
 
       return {
         ...gaugesData,
@@ -1139,7 +1140,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       baseAprs,
       pricesUsd,
       aprRatios,
-      assetsData,
+      // assetsData,
       gaugesData,
       allocations,
       lastHarvests,
@@ -1149,7 +1150,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsRewards,
       additionalAprs
     }
-  }, [selectAssetById, account, multiCall, selectVaultById, state.assetsData, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -1218,7 +1219,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprs: Balances, vaultId: AssetId) => {
         if (!aprs[vaultId]){
-          newAprs[vaultId]=BNify(0)
+          newAprs[vaultId] = BNify(0)
           return newAprs
         }
         return {
@@ -1229,7 +1230,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newFees: Balances, vaultId: AssetId) => {
         if (!fees[vaultId]){
-          newFees[vaultId]=BNify(0)
+          newFees[vaultId] = BNify(0)
           return newFees
         }
         return {
@@ -1272,7 +1273,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newBaseAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newBaseAprs: Balances, vaultId: AssetId) => {
         if (!baseAprs[vaultId]){
-          newBaseAprs[vaultId]=BNify(0)
+          newBaseAprs[vaultId] = BNify(0)
           return newBaseAprs
         }
         return {
@@ -1283,7 +1284,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newBalances = vaults.map( (vault: Vault) => vault.id ).reduce( (newBalances: Balances, vaultId: AssetId) => {
         if (!balances[vaultId]){
-          newBalances[vaultId]=BNify(0)
+          newBalances[vaultId] = BNify(0)
           return newBalances
         }
         return {
@@ -1294,7 +1295,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newPricesUsd = vaults.map( (vault: Vault) => vault.id ).reduce( (newPricesUsd: Balances, vaultId: AssetId) => {
         if (!pricesUsd[vaultId]){
-          newPricesUsd[vaultId]=BNify(0)
+          newPricesUsd[vaultId] = BNify(1)
           return newPricesUsd
         }
         return {
@@ -1305,7 +1306,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newAprRatios = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprRatios: Balances, vaultId: AssetId) => {
         if (!aprRatios[vaultId]){
-          newAprRatios[vaultId]=BNify(0)
+          newAprRatios[vaultId] = BNify(0)
           return newAprRatios
         }
         return {
@@ -1338,7 +1339,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newVaultsPrices = vaults.map( (vault: Vault) => vault.id ).reduce( (newVaultsPrices: Balances, vaultId: AssetId) => {
         if (!vaultsPrices[vaultId]){
-          newVaultsPrices[vaultId]=BNify(0)
+          newVaultsPrices[vaultId] = BNify(1)
           return newVaultsPrices
         }
         return {
@@ -1349,7 +1350,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newTotalSupplies = vaults.map( (vault: Vault) => vault.id ).reduce( (newTotalSupplies: Balances, vaultId: AssetId) => {
         if (!totalSupplies[vaultId]){
-          newTotalSupplies[vaultId]=BNify(0)
+          newTotalSupplies[vaultId] = BNify(0)
           return newTotalSupplies
         }
         return {
@@ -1371,7 +1372,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const newAdditionalAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newAdditionalAprs: Balances, vaultId: AssetId) => {
         if (!additionalAprs[vaultId]){
-          newAdditionalAprs[vaultId]=BNify(0)
+          newAdditionalAprs[vaultId] = BNify(0)
           return newAdditionalAprs
         }
         return {
@@ -1826,7 +1827,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     if (!state.vaults.length || !state.contracts.length || !multiCall) return
 
-    // Avoid refreshing is disconnected
+    // Avoid refreshing if disconnected
     if (!isEmpty(state.aprs) && !account?.address) {
       return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
     }
@@ -1846,7 +1847,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
       if (!vaultsOnChainData) return
-      // console.log('Vaults Data', state.vaults, vaultsOnChainData)
+      // console.log('Vaults Data', state.vaults, enabledCalls, vaultsOnChainData)
 
       const {
         fees,
@@ -1918,10 +1919,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {...state.totalSupplies, ...totalSupplies}})
       }
 
-      // Don't update 
-      // if (!state.isPortfolioLoaded) {
+      // Don't update if partial loading
+      if (!state.isPortfolioLoaded) {
         dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
-      // }
+      }
 
       console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
     })()
@@ -1931,11 +1932,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_APRS', payload: {}})
       dispatch({type: 'SET_REWARDS', payload: {}})
       dispatch({type: 'SET_BALANCES', payload: {}})
+      // dispatch({type: 'SET_GAUGES_DATA', payload: {}})
       dispatch({type: 'SET_VAULTS_REWARDS', payload: {}})
       // dispatch({type: 'SET_PRICES_USD', payload: {}})
       // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
       // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
-      dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
+      // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
       // console.log('RESET PORTFOLIO')
     };
   // eslint-disable-next-line
@@ -1943,14 +1945,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get user vaults positions
   useEffect(() => {
-    if (!account?.address || !state.isPortfolioLoaded || !walletInitialized || connecting) return
-
+    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting) return
     // console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
 
     ;(async () => {
       const results = await getVaultsPositions(state.vaults)
-
-      console.log('getVaultsPositions', results)
+      // console.log('getVaultsPositions', state.balances, results)
 
       if (!results) return
 
@@ -1959,14 +1959,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsTransactions
       } = results
 
-      // console.log('vaultsPositions', vaultsPositions)
-
-      // Set asset data with vault position
-      // Object.keys(vaultsPositions).forEach( (assetId: AssetId) => {
-      //   const vaultPosition = vaultsPositions[assetId]
-      //   dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { vaultPosition } }})
-      // })
-
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
       dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: vaultsTransactions})
@@ -1974,9 +1966,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Clean transactions and positions
     return () => {
-      dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
-      dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
-      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
+      // if (!account?.address || !state.isPortfolioLoaded || !walletInitialized || connecting){
+        dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+        dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
+        dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
+      // }
 
       // Reset all vaults positions
       // const assetsData: Assets = {
@@ -1988,7 +1982,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
     };
   // eslint-disable-next-line
-  }, [account, state.isPortfolioLoaded, state.portfolioTimestamp, walletInitialized, connecting])
+  }, [account, state.isPortfolioLoaded, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
   
   // Update balances USD
   useEffect(() => {
@@ -2134,6 +2128,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
+
+      // Update Underlying price Usd
+      if (vault.underlyingToken?.address){
+        assetsData[vault.underlyingToken.address.toLowerCase()].priceUsd = assetsData[vault.id].priceUsd
+      }
 
       assetsData[vault.id].aprBreakdown =  state.aprsBreakdown[vault.id] || {}
 

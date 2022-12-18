@@ -99,8 +99,14 @@ export const GaugeStaking: React.FC = () => {
                 spacing={2}
                 justifyContent={'center'}
               >
-                <Translation component={Text} translation={'defi.dailyDistribution'} textStyle={'titleSmall'} />
-                <AssetProvider.GaugeUserDistribution suffix={` ${vaultGauge.rewardToken?.token}`} textStyle={'heading'} fontSize={'h3'} />
+                <Translation component={Text} translation={'defi.idleDistribution'} textStyle={'titleSmall'} />
+                <HStack
+                  spacing={1}
+                  alignItems={'baseline'}
+                >
+                  <AssetProvider.GaugeUserDistribution suffix={` ${vaultGauge.rewardToken?.token}`} textStyle={'heading'} fontSize={'h3'} />
+                  <Translation component={Text} translation={['/','common.day']} textStyle={'captionSmall'} textTransform={'lowercase'} />
+                </HStack>
               </VStack>
 
               <VStack

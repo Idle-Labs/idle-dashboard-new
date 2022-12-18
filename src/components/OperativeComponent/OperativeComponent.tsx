@@ -522,7 +522,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       >
         <VStack
           flex={1}
-          spacing={8}
+          spacing={6}
           width={'100%'}
           alignItems={'flex-start'}
         >
@@ -609,19 +609,29 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { dispatch, activeItem, activeStep } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
-  const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance } } = usePortfolioProvider()
+  const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
   const vaultBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(vault?.id)
   }, [selectAssetBalance, vault?.id])
 
+  const vaultGauge = useMemo(() => {
+    return asset?.id && selectVaultGauge && selectVaultGauge(asset.id)
+  }, [selectVaultGauge, asset?.id])
+
+  const assetGauge = useMemo(() => {
+    return vaultGauge && selectAssetById && selectAssetById(vaultGauge.id)
+  }, [selectAssetById, vaultGauge])
+
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     const balance = selectAssetBalance(vault?.id)
     const vaultPrice = selectVaultPrice(vault?.id)
+    console.log('assetBalance', balance.toString(), vaultPrice.toString())
     return balance.times(vaultPrice)
   }, [selectAssetBalance, selectVaultPrice, vault?.id])
+
 
   const disabled = useMemo(() => {
     setError('')
@@ -791,20 +801,23 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             </VStack>
           </HStack>
           {
-            vaultMessages?.withdraw ? (
+            assetBalance.gt(0) && vaultMessages?.withdraw ? (
               <Card.Dark
                 p={2}
                 border={0}
               >
                 <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} textAlign={'center'} />
               </Card.Dark>
-            ) : null
-          }
-          {
-            assetBalance.gt(0) && (
-              <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
+            ) : BNify(assetGauge?.balance).gt(0) && (
+              <Card.Dark
+                p={2}
+                border={0}
+              >
+                <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.unstakeFromGauge'} textAlign={'center'} />
+              </Card.Dark>
             )
           }
+          <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
         </VStack>
         <VStack
           spacing={4}

@@ -418,6 +418,7 @@ export const theme = extendTheme({
         fontWeight: 500,
         bg:'table.header',
         fontFamily:'body',
+        boxShadow:'0px 0px 10px 0px rgba(0,0,0,0.6)',
         '--popper-arrow-bg':'colors.table.header'
       },
       defaultProps:{
