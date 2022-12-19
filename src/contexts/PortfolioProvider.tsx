@@ -358,7 +358,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
     }
 
-    console.log('getUserTransactions', startBlock, endBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
+    // console.log('getUserTransactions', startBlock, endBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
 
     return Array.from(dataToCache.values()) as EtherscanTransaction[]
   }, [account?.address, explorer, chainId, cacheProvider])
@@ -392,7 +392,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       (acc, value) => ({...acc, ...value}),
       {}
     )
-    console.log('vaultsTransactions', test, vaultsTransactions)
+    // console.log('vaultsTransactions', test, vaultsTransactions)
 
     const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: AssetId) => {
       const transactions = vaultsTransactions[assetId]

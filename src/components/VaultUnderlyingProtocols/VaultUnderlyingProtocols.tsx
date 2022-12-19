@@ -33,8 +33,6 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocols> = ({ a
   if (!vault || !(vault instanceof BestYieldVault)) return null
   if (!("tokenConfig" in vault) || !vault.tokenConfig?.protocols) return null
 
-  console.log('VaultUnderlyingProtocols', asset, vault)
-
   return (
     <VStack
       spacing={6}
@@ -59,7 +57,6 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocols> = ({ a
             return assetIds
           }, [])
 
-          console.log('assetIds', protocol.name, assetIds)
           return (
             <Card
               p={6}

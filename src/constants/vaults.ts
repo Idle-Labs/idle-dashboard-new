@@ -43,6 +43,7 @@ export interface Pool {
 export interface VaultMessages {
   withdraw?: string
   buyInstructions?: string
+  actions?: Record<string, string>
 }
 
 interface StakingReward {
@@ -309,6 +310,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         description:'This strategy deploys funds in the <a href="https://polygon.lido.fi/" class="link" rel="nofollow noopener noreferrer" target="_blank">Lido MATIC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
           // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
+          actions:{
+            withdraw:'trade.actions.deposit.messages.maticNFT'
+          },
           withdraw:'trade.actions.withdraw.messages.maticNFT'
         },
         Tranches: {

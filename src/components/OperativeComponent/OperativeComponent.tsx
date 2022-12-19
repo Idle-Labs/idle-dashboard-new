@@ -608,7 +608,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { account } = useWalletProvider()
   const { dispatch, activeItem, activeStep } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
-  const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
+  const { sendTransactionTest, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
   // console.log('asset', asset)
@@ -657,9 +657,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const withdrawParams = vault.getWithdrawParams(amountToWithdraw)
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
       console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
-      sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
+      sendTransactionTest(vault.id, vault.id, withdrawContractSendMethod)
     })()
-  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
+  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransactionTest])
 
   // Reset amount on transaction succeeded
   useEffect(() => {
@@ -920,11 +920,15 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { underlyingAsset, theme, translate, asset } = useAssetProvider()
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
-  const { selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
   const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
+  const { selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
 
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams])
+
+  const vault = useMemo(() => {
+    return asset?.id && selectVaultById && selectVaultById(asset.id)
+  }, [selectVaultById, asset?.id])
 
   const vaultGauge = useMemo(() => {
     return asset?.id && selectVaultGauge && selectVaultGauge(asset.id)
@@ -1023,12 +1027,18 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       case 'success':
         // const amountToDisplay = amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8)
         return (
-          <>
+          <VStack
+            spacing={2}
+          >
             <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            {
+              vault?.messages?.actions?.[txActionType] && (
+                <Translation pb={2} translation={vault?.messages?.actions?.[txActionType]} textStyle={'captionSmall'} textAlign={'center'} />
+              )
+            }
             {
               txActionType === 'deposit' && vaultGauge ? (
                 <VStack
-                  pt={2}
                   spacing={4}
                 >
                   <Translation translation={'trade.depositGauge'} textAlign={'center'} />
@@ -1042,7 +1052,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
                 <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
               )
             }
-          </>
+          </VStack>
         )
       case 'failed':
         return (
@@ -1056,7 +1066,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       default:
         return null
     }
-  }, [transactionState?.status, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
+  }, [transactionState?.status, vault, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
 
   const isLongTransaction = useMemo(() => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0

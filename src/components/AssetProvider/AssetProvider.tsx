@@ -9,6 +9,7 @@ import { selectProtocol } from 'selectors/selectProtocol'
 import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
+import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
@@ -454,30 +455,56 @@ const Apr: React.FC<PercentageProps> = (props) => {
 const Apy: React.FC<PercentageProps> = (props) => {
   const { asset, translate } = useAssetProvider()
 
+  const netApy = BNify(asset?.apy).minus(BNify(asset?.apy).times(BNify(asset?.fee)))
+
   const tooltipLabel = asset?.apyBreakdown ? (
     <VStack
       py={1}
       spacing={1}
     >
-      {
-        Object.keys(asset.apyBreakdown).map( (type: string) => {
-          const translatedType = translate(`assets.assetDetails.apyBreakdown.${type}`)
-          const apr = BNify(asset?.apyBreakdown?.[type])
-          if (apr.lte(0)) return null
-          return (
-            <HStack
-              spacing={3}
-              width={'100%'}
-              key={`apr_${type}`}
-              alignItems={'baseline'}
-              justifyContent={'space-between'}
-            >
-              <Text>{translatedType}</Text>
-              <Amount.Percentage value={apr} {...props} />
-            </HStack>
-          )
-        })
-      }
+      <VStack
+        pb={1}
+        spacing={1}
+        borderBottom={'1px dashed'}
+        borderBottomColor={'cta'}
+      >
+        {
+          Object.keys(asset.apyBreakdown).map( (type: string) => {
+            const apr = BNify(asset?.apyBreakdown?.[type])
+            if (apr.lte(0)) return null
+            return (
+              <HStack
+                spacing={3}
+                width={'100%'}
+                key={`apr_${type}`}
+                alignItems={'baseline'}
+                justifyContent={'space-between'}
+              >
+                <Translation translation={`assets.assetDetails.apyBreakdown.${type}`} />
+                <Amount.Percentage value={apr} {...props} />
+              </HStack>
+            )
+          })
+        }
+      </VStack>
+      <HStack
+        spacing={3}
+        width={'100%'}
+        alignItems={'baseline'}
+        justifyContent={'space-between'}
+      >
+        <Translation translation={'assets.assetDetails.apyBreakdown.gross'} />
+        <Amount.Percentage value={asset?.apy} {...props} />
+      </HStack>
+      <HStack
+        spacing={3}
+        width={'100%'}
+        alignItems={'baseline'}
+        justifyContent={'space-between'}
+      >
+        <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
+        <Amount.Percentage value={netApy} {...props} />
+      </HStack>
     </VStack>
   ) : null
 

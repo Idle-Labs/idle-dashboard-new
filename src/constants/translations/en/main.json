@@ -695,6 +695,9 @@
       "deposit": {
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
+        "messages": {
+          "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC."
+        },
         "status": {
           "success": {
             "button": "New Deposit",
@@ -1553,7 +1556,9 @@
       "apyBreakdown": {
         "base": "Base APY",
         "harvest": "Harvest APY",
-        "gauge": "Gauge APY"
+        "gauge": "Gauge APY",
+        "gross": "Gross APY",
+        "net": "Net APY"
       },
       "assetHeader": {
         "balance": "Balance",
