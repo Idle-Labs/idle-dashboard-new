@@ -26,14 +26,11 @@ const CarouselNav: React.FC = () => {
       <HStack
         spacing={2}
       >
-        <Button variant={'link'} minW={'auto'} onClick={() => {
-          stop()
-          goBack()
-        }}>
+        <Button variant={'link'} minW={'auto'} onClick={() => { if (activeItem) stop(); goBack() }}>
           <MdArrowBackIosNew color={!activeItem ? theme.colors.ctaDisabled : theme.colors.primary} />
         </Button>
         <Text textStyle={'ctaStatic'}>{activeItem+1}/{itemsLength}</Text>
-        <Button variant={'link'} minW={'auto'} onClick={() => { stop(); goNext()}}>
+        <Button variant={'link'} minW={'auto'} onClick={() => { if (activeItem<itemsLength-1) stop(); goNext()}}>
           <MdArrowForwardIos color={activeItem === itemsLength-1 ? theme.colors.ctaDisabled : theme.colors.primary} />
         </Button>
       </HStack>

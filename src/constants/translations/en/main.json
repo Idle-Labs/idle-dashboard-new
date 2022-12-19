@@ -221,7 +221,7 @@
       "staking": {
         "title": "IDLE Staking",
         "empty" : {
-          "body": "Stake your IDLE tokens to start accruing some IDLE rewards.",
+          "body": "Stake your IDLE tokens and start accruing some IDLE rewards.",
           "cta": "Go to Staking"
         }
       },
@@ -229,7 +229,7 @@
         "title": "Gauges Rewards",
         "empty" : {
           "body": "Stake your Protected Yield tokens to start earnings additional IDLE rewards.",
-          "cta": "Go to Gauges"
+          "cta": "Explore vaults"
         }
       }
     },
@@ -396,6 +396,7 @@
     "stake": "Stake",
     "share": "Share",
     "gauges": "Gauges",
+    "govToken": "Gov. token",
     "protocol": "Protocol",
     "protocols": "Protocols",
     "unstake": "Unstake",
@@ -420,6 +421,8 @@
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",
     "claimable": "Claimable",
+    "claimableNTFs": "Claimable NFTs",
+    "estUnlockDate": "Estimated unlock date",
     "dailyDistribution": "Daily distribution",
     "idleDistribution": "IDLE distribution",
     "additionalRewards": "Additional rewards",
@@ -452,6 +455,8 @@
     "clickHereToEarn": "Click here to Earn",
     "byFarming": " APR* by farming your ETH-FOX liquidity pool tokens",
     "overview": "Overview",
+    "strategyDescription": "Strategy description",
+    "underlyingProtocols": "Underlying protocols",
     "historicalPerformance": "Historical Performance",
     "fundsOverview": "Funds Overview",
     "liquidityPools": "Liquidity Pools",
@@ -462,6 +467,7 @@
     "farmingBalance": "Farming Balance",
     "liquidityPoolBalance": "Liquidity Pool Balance",
     "poolValue": "Pool Value",
+    "poolAddress": "Pool Address",
     "currentValue": "Current Value",
     "currentAPY": "Current APY",
     "currentAPR": "Current APR",
@@ -485,7 +491,7 @@
       "gauges": {
         "title": "Gauges Rewards",
         "body": "Stake your Protected Yield tokens to start earnings additional IDLE rewards.",
-        "cta": "Go to Gauges"
+        "cta": "Explore vaults"
       },
       "pools": {
         "body": "You have not deposited into any liquidity pools.",

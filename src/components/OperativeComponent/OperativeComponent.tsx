@@ -611,7 +611,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
-  console.log('asset', asset)
+  // console.log('asset', asset)
 
   const vaultBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -658,7 +658,6 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
       console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
       sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
-      // sendTransactionTest(withdrawContractSendMethod)
     })()
   }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
 
@@ -700,7 +699,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
 
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
-    // console.log('WITHDRAW - estimatedGasLimit', assetBalance.toFixed(), estimatedGasLimit)
+    // console.log('WITHDRAW - estimatedGasLimit', estimatedGasLimit)
     return estimatedGasLimit
   }, [account, vaultBalance, vault])
 

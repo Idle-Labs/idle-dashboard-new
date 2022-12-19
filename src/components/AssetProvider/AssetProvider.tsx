@@ -631,7 +631,7 @@ const Coverage: React.FC<AmountProps> = (props) => {
   if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
-  const coverageAmount = bbTranche.tvl && asset?.tvl ? bbTranche.tvl.div(asset.tvl) : 0;
+  const coverageAmount = bbTranche.tvl && asset?.tvl && BNify(asset?.tvl).gt(0) ? bbTranche.tvl.div(asset.tvl) : 0;
   const coverageText = translate('defi.coverageAmount', {amount: '$1', coverageAmount: `$${abbreviateNumber(coverageAmount, 2)}`})
   
   return asset?.tvlUsd ? (

@@ -4,6 +4,7 @@ import useLocalForge from 'hooks/useLocalForge'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { MaticNFTs } from 'components/MaticNFTs/MaticNFTs'
 import { BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { HistoryTimeframe, BigNumber } from 'constants/types'
@@ -17,6 +18,7 @@ import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
+import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { ContainerProps, Heading, Box, Flex, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText, Button } from '@chakra-ui/react'
 
@@ -26,7 +28,7 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const { isMobile } = useThemeProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
-  const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectAssetBalanceUsd } } = usePortfolioProvider()
+  const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectVaultById, selectAssetBalanceUsd } } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -40,14 +42,20 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
     return selectAssetById && selectAssetById(params.asset)
   }, [selectAssetById, params.asset])
 
+  const vault = useMemo(() => {
+    return asset && selectVaultById && selectVaultById(asset.id)
+  }, [selectVaultById, asset])
+
   const assetBalance = useMemo(() => {
     if (!asset?.id) return
     return selectAssetBalanceUsd && selectAssetBalanceUsd(asset.id)
   }, [asset, selectAssetBalanceUsd])
 
   const userHasBalance = useMemo(() => {
-    return assetBalance && assetBalance.gt(0)
-  }, [assetBalance])
+    return asset?.vaultPosition && assetBalance && assetBalance.gt(0)
+  }, [asset, assetBalance])
+
+  // console.log('asset', asset, assetBalance, userHasBalance)
 
   const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
   const { performanceChartData } = usePerformanceChartData({ assetIds: [asset?.id], timeframe })
@@ -205,6 +213,21 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
     )
   }, [strategy, strategyColor, isPortfolioLoaded])
 
+  const strategyDescription = useMemo(() => {
+    if (!vault || !("description" in vault) || !vault.description) return null
+    return (
+      <VStack
+        spacing={6}
+        alignItems={'flex-start'}
+      >
+        <Translation component={Heading} as={'h3'} size={'md'} translation={'defi.strategyDescription'} />
+        <Card.Dark>
+          <Text dangerouslySetInnerHTML={{__html: vault.description}} />
+        </Card.Dark>
+      </VStack>
+    )
+  }, [vault])
+
   const vaultRewards = useMemo(() => {
     // console.log('vaultRewards', asset)
     if (!asset || isEmpty(asset.rewards)) return null
@@ -237,50 +260,53 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
             )
           }
         </HStack>
-        <Card.Dark
+        <Card.Flex
           p={0}
           overflow={'hidden'}
+          direction={'column'}
           minH={['auto', 460]}
-          alignItems={'flex-end'}
+          layerStyle={'cardDark'}
+          justifyContent={'space-between'}
         >
-          <VStack
-            spacing={0}
+          <Stack
+            pt={[6, 8]}
+            px={[6, 8]}
+            pb={[4, 0]}
             width={'100%'}
-            height={'100%'}
-            justifyContent={'space-between'}
+            alignItems={'flex-start'}
+            direction={['column', 'row']}
+            justifyContent={['center', 'space-between']}
           >
-            <Stack
-              pt={[6, 8]}
-              px={[6, 8]}
-              pb={[4, 0]}
-              width={'100%'}
-              alignItems={'flex-start'}
-              direction={['column', 'row']}
-              justifyContent={['center', 'space-between']}
-            >
-              {chartHeading}
-              <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
-            </Stack>
-            <GenericChart
-              data={chartData}
-              percentChange={0}
-              color={strategyColor}
-              timeframe={timeframe}
-              isRainbowChart={false}
-              assetIds={[params.asset]}
-              setPercentChange={() => {}}
-              height={isMobile ? '300px' : '350px'}
-              margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-              formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
-              // formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
-            />
-          </VStack>
-        </Card.Dark>
+            {chartHeading}
+            <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+          </Stack>
+          <GenericChart
+            data={chartData}
+            percentChange={0}
+            color={strategyColor}
+            timeframe={timeframe}
+            isRainbowChart={false}
+            assetIds={[params.asset]}
+            setPercentChange={() => {}}
+            height={isMobile ? '300px' : '350px'}
+            margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+            formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
+            // formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
+          />
+        </Card.Flex>
       </Box>
       {fundsOverview}
-      {strategyDescriptionCarousel}
-      <AssetGeneralData assetId={asset?.id} />
+      <MaticNFTs assetId={asset?.id} />
       {vaultRewards}
+      <VStack
+        spacing={4}
+        width={'100%'}
+      >
+        {strategyDescriptionCarousel}
+        {strategyDescription}
+      </VStack>
+      <AssetGeneralData assetId={asset?.id} />
+      <VaultUnderlyingProtocols assetId={asset?.id} />
     </>
   )
 }

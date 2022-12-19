@@ -17,8 +17,8 @@ import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, Contract
 type ConstructorProps = {
   web3: Web3
   type: string
-  web3Rpc?: Web3 | null
   chainId: number
+  web3Rpc?: Web3 | null
   tokenConfig: BestYieldConfig
   cacheProvider?: CacheContextProps
 }
@@ -30,8 +30,10 @@ export class BestYieldVault {
   readonly web3: Web3
   readonly chainId: number
   readonly protocol: string
+  readonly description: string | undefined
   readonly messages: VaultMessages | undefined
   readonly vaultFunctionsHelper: VaultFunctionsHelper
+  readonly flags: Record<string, boolean> | undefined
 
   // Private attributes
   private readonly cacheProvider: CacheContextProps | undefined

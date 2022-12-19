@@ -16,7 +16,7 @@ type ApisProps = {
   path?: string,
   filters?: string[]
   params?: string[]
-  config: Record<any, any>
+  config?: Record<any, any>
   endpoint: Record<number, string>,
 }
 
@@ -24,8 +24,9 @@ export interface Protocol {
   enabled: boolean
   label: string
   icon?: string
-  colors?: ProtocolColors
   stats?: StatsProps
+  govTokens?: string[]
+  colors?: ProtocolColors
   apis?: Record<string, ApisProps>
 }
 
@@ -36,6 +37,7 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "Compound",
+    govTokens: ['COMP'],
     icon:`${protocolsFolder}compound.svg`,
     colors: {
       rgb: [0, 209, 146],
@@ -98,6 +100,7 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "Aave V2",
+    govTokens: ['STKAAVE'],
     icon:`${protocolsFolder}aave.svg`,
     colors: {
       rgb: [151, 79, 141],
@@ -129,6 +132,12 @@ export const protocols: Record<string, Protocol> = {
         },
         config: {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        },
+      },
+      checkpoints:{
+        path:'result',
+        endpoint: {
+          1: 'https://heimdall-api.polygon.technology/checkpoints/'
         },
       }
     },
@@ -204,6 +213,7 @@ export const protocols: Record<string, Protocol> = {
     stats: {
       showLegend: false,
     },
+    govTokens: ['CPOOL'],
     enabled: true,
     label: "Clearpool",
     colors: {

@@ -2,6 +2,7 @@ import type { Abi } from './types'
 import DAI from 'abis/tokens/DAI.json'
 import USDC from 'abis/tokens/USDC.json'
 import WETH from 'abis/tokens/WETH.json'
+import stMATIC from 'abis/lido/stMATIC.json'
 import QuickswapLiquidityPool from "abis/quickswap/QuickswapLiquidityPool.json";
 
 type TokenColors = {
@@ -323,6 +324,21 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         field: "maticDAIPrice"
       },
       address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
+    },
+    STMATIC: {
+      decimals: 18,
+      enabled: true,
+      token: 'stMATIC',
+      abi: stMATIC as Abi,
+      colors: {
+        hex: '#8247E5',
+        rgb: [130, 71, 229],
+        hsl: ['262, 75%, 59%']
+      },
+      conversionRate: {
+        field: "maticDAIPrice"
+      },
+      address: '0x9ee91F9f426fA633d227f7a9b000E28b9dfd8599'
     },
     USDC: {
       decimals: 6,

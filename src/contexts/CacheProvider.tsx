@@ -47,6 +47,9 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
       ...newEntries
     }))
 
+    // For Precached data
+    // console.log('cachedRequests', Object.fromEntries(cachedRequestsMap))
+
     setCachedRequests(Object.fromEntries(cachedRequestsMap))
   }, [requestQueue, setCachedRequests, cachedRequests])
 

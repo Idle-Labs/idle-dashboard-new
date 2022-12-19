@@ -3,9 +3,9 @@ import type { AssetId } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
+import { TransactionStatus, useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useTheme, ButtonProps, Button, Box, Flex, Spinner, Text, TextProps } from '@chakra-ui/react'
 
 type TransactionButtonProps = {
@@ -30,6 +30,24 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
   const intervalId = useRef<any>(null)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const { state: { transaction }, cleanTransaction } = useTransactionManager()
+
+  // const transaction: TransactionStatus = useMemo(() => ({
+  //   hash: null,
+  //   error: null,
+  //   status: 'success',
+  //   amount: null,
+  //   assetId: null,
+  //   vaultId: null,
+  //   receipt: null,
+  //   created: null,
+  //   timestamp: null,
+  //   actionType: null,
+  //   transaction: null,
+  //   lastUpdated: null,
+  //   estimatedTime: null,
+  //   confirmationCount: 0,
+  //   contractSendMethod,
+  // }), [contractSendMethod])
 
   // @ts-ignore
   const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
@@ -151,6 +169,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
         overflow={'hidden'}
         position={'absolute'}
         alignItems={'center'}
+        justifyContent={'center'}
         transition={'background 0.5s ease-in-out'}
         sx={{
           animationIterationCount: 1,
@@ -162,6 +181,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
         }}
       >
         <Flex
+          left={0}
           width={props.width}
           alignItems={'center'}
           position={'absolute'}
@@ -192,14 +212,14 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
 }) => {
   // @ts-ignore
   const [ref, { width }] = useBoundingRect()
-  const { sendTransaction, sendTransactionTest, state: { transaction } } = useTransactionManager()
+  const { sendTransaction, state: { transaction } } = useTransactionManager()
 
   // @ts-ignore
   const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
 
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
-    console.log('onClick', vaultId, assetId, contractSendMethod)
+    // console.log('onClick', vaultId, assetId, contractSendMethod)
     return sendTransaction(vaultId, assetId, contractSendMethod, actionType, amount)
   }, [transaction, vaultId, assetId, contractSendMethod, actionType, amount, sendTransaction])
 
@@ -221,6 +241,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
       px={10}
       overflow={'hidden'}
       position={'relative'}
+      width={width || 'auto'}
       borderColor={borderColor}
       onClick={() => onClick()}
       ref={ref as typeof useRef}

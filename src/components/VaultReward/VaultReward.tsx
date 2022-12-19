@@ -16,7 +16,6 @@ export const VaultReward: React.FC<RewardProps> = ({
   assetId,
   amount
 }) => {
-  // console.log('VaultReward', assetId, amount.toString()))
   if (amount.lte(0)) return null
   return (
     <AssetProvider

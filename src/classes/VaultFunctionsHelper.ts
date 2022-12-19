@@ -3,10 +3,15 @@ import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
+import stMATIC_abi from 'abis/lido/stMATIC.json'
+import { selectUnderlyingToken } from 'selectors/'
 import { TrancheVault } from 'vaults/TrancheVault'
+import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
 import { CacheContextProps } from 'contexts/CacheProvider'
-import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN } from 'helpers/'
-import type { Asset, Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import { GenericContract } from 'contracts/GenericContract'
+import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
+import type { Abi, Asset, Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce } from 'helpers/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -177,6 +182,144 @@ export class VaultFunctionsHelper {
     // }
 
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
+  }
+
+  public async getMaticTrancheNFTs(account: string): Promise<any> {
+
+    if (!this.multiCall) return []
+
+    const MATIC = selectUnderlyingToken(this.chainId, 'MATIC')
+    const stMATIC = selectUnderlyingToken(this.chainId, 'STMATIC')
+
+    const stMaticContract = new GenericContract(this.web3, this.chainId, {
+      name: 'stMATIC',
+      abi: stMATIC_abi as Abi,
+      address: stMATIC?.address as string
+    })
+
+    const rawCalls: CallData[] = [
+      this.multiCall.getCallData(stMaticContract.contract, 'poLidoNFT'),
+      this.multiCall.getCallData(stMaticContract.contract, 'stakeManager'),
+    ].filter( (call): call is CallData => !!call )
+
+    const multicallResults = await this.multiCall.executeMulticalls(rawCalls)
+    if (!multicallResults) return []
+
+    const [
+      poLidoNFT_address,
+      stakeManager_address
+    ] = multicallResults.map( r => r.data as string )
+
+    const poLidoNFTContract = new GenericContract(this.web3, this.chainId, {
+      name: 'poLidoNFT',
+      abi: PoLidoNFT_abi as Abi,
+      address: poLidoNFT_address
+    })
+
+    const poLidoStakeManagerContract = new GenericContract(this.web3, this.chainId, {
+      name: 'poLidoStakeManager',
+      abi: PoLidoStakeManager_abi as Abi,
+      address: stakeManager_address
+    })
+
+    const rawCalls2: CallData[] = [
+      this.multiCall.getCallData(poLidoStakeManagerContract.contract, 'epoch'),
+      this.multiCall.getCallData(poLidoNFTContract.contract, 'getOwnedTokens', [account]),
+    ].filter( (call): call is CallData => !!call )
+
+    const [
+      multicallResults2,
+      currentPolygonHeight
+    ] = await Promise.all([
+      this.multiCall.executeMulticalls(rawCalls2),
+      callPlatformApis(this.chainId, 'lido', 'checkpoints', 'count')
+    ])
+
+    if (!multicallResults2) return []
+
+    const [
+      poLidoStakeManagerEpoch,
+      tokenIds
+    ] = multicallResults2.map( r => r.data )
+
+    // console.log('poLidoNFT_address', poLidoNFT_address, 'stakeManager_address', stakeManager_address, 'poLidoStakeManagerEpoch', poLidoStakeManagerEpoch, 'tokenIds', tokenIds, 'currentPolygonHeight', currentPolygonHeight)
+
+    // Decrease checkpoint
+    let epochIntervalInSeconds = 2700;
+    let currentEpochTimestamp = Date.now()/1000;
+    let currentPolygonEpoch = currentPolygonHeight?.result || poLidoStakeManagerEpoch;
+
+    // Get checkpoints interval
+    if (currentPolygonEpoch){
+      // Safe margin for epoch fethed from polido stake manager
+      if (!currentPolygonHeight || !currentPolygonHeight.result){
+        currentPolygonEpoch-=2;
+      }
+      const [
+        lastEpochInfo,
+        currentEpochInfo
+      ] = await Promise.all([
+        callPlatformApis(this.chainId, 'lido', 'checkpoints', (currentPolygonEpoch-1).toString()),
+        callPlatformApis(this.chainId, 'lido', 'checkpoints', currentPolygonEpoch.toString())
+      ])
+
+      if (currentEpochInfo && currentEpochInfo.result){
+        currentEpochTimestamp = parseInt(currentEpochInfo.result.timestamp);
+
+        if (lastEpochInfo && lastEpochInfo.result){
+          epochIntervalInSeconds = (currentEpochInfo.result.timestamp-lastEpochInfo.result.timestamp);
+        }
+      }
+      // console.log('epoch info', currentEpochInfo, lastEpochInfo, epochIntervalInSeconds);
+    } else {
+      currentPolygonEpoch = 0;
+    }
+
+    const tokensAmounts = await asyncReduce<any, any>(
+      tokenIds,
+      async (tokenId) => {
+        const rawCalls: CallData[] = [
+          this.multiCall?.getCallData(stMaticContract.contract, 'getMaticFromTokenId', [tokenId]),
+          this.multiCall?.getCallData(stMaticContract.contract, 'token2WithdrawRequest', [tokenId]),
+        ].filter( (call): call is CallData => !!call )
+
+        const multicallResults = await this.multiCall?.executeMulticalls(rawCalls)
+
+        if (!multicallResults) return
+
+        const [
+          tokenAmount,
+          usersRequest
+        ] = multicallResults.map( r => r.data )
+
+        const status = Math.round(usersRequest.requestEpoch)>=Math.round(poLidoStakeManagerEpoch) ? 'pending' : 'available';
+
+        // console.log('usersRequest', tokenId, usersRequest, epochIntervalInSeconds);
+
+        const remainingEpochs = Math.max(0, Math.round(usersRequest.requestEpoch)-Math.round(currentPolygonEpoch));
+
+        // Calculate tokens unlock time
+        const remainingTime = Math.round(remainingEpochs)*epochIntervalInSeconds;
+        const unlockTimestamp = (currentEpochTimestamp+remainingTime)*1000
+        const contractSendMethod = stMaticContract.contract.methods.claimTokens(tokenId)
+
+        return {
+          status,
+          tokenId,
+          remainingTime,
+          unlockTimestamp,
+          remainingEpochs,
+          contractSendMethod,
+          currentEpoch: Math.round(currentPolygonEpoch),
+          requestEpoch: Math.round(usersRequest.requestEpoch),
+          amount: fixTokenDecimals(tokenAmount, MATIC?.decimals)
+        }
+      },
+      (acc, value) => value ? [...acc, value] : acc,
+      []
+    )
+
+    return tokensAmounts
   }
 
   public async getVaultAdditionalApr(vault: Vault): Promise<VaultAdditionalApr> {

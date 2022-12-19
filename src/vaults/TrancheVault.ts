@@ -32,9 +32,11 @@ export class TrancheVault {
   readonly web3: Web3
   readonly chainId: number
   readonly protocol: string
+  readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
   readonly messages: VaultMessages | undefined
   readonly vaultFunctionsHelper: VaultFunctionsHelper
+  readonly flags: Record<string, boolean> | undefined
 
   // Private attributes
   private readonly cacheProvider: CacheContextProps | undefined
@@ -78,10 +80,12 @@ export class TrancheVault {
     this.web3Rpc = web3Rpc
     this.chainId = chainId
     this.protocol = protocol
+    this.flags = vaultConfig.flags
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
     this.cacheProvider = cacheProvider
     this.messages = vaultConfig.messages
+    this.description = vaultConfig.description
     this.trancheConfig = vaultConfig.Tranches[type]
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
@@ -354,9 +358,9 @@ export class TrancheVault {
   public getMethodDefaultGasLimit(methodName: string): number | undefined {
     switch (methodName){
       case 'deposit':
-        return 1185000
+        return 246316
       case 'withdraw':
-        return 1972478
+        return 249642
       default:
         return
     }

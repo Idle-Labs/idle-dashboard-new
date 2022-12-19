@@ -103,6 +103,18 @@ export type VaultRewards = {
   amount: BigNumber
 }
 
+export type MaticNFT = {
+  amount: BigNumber
+  currentEpoch: number
+  remainingEpochs: number
+  remainingTime: number
+  requestEpoch: number
+  status: string
+  tokenId: string
+  unlockTimestamp: number
+  contractSendMethod: ContractSendMethod
+}
+
 export type VaultsRewards = Record<AssetId, VaultRewards>
 
 export type Transaction = {

@@ -20,7 +20,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsOnchainData = {
   fees: Balances
@@ -29,6 +29,7 @@ type VaultsOnchainData = {
   balances: Balances
   aprRatios: Balances
   pricesUsd: Balances
+  maticNFTs: MaticNFT[]
   gaugesData: GaugesData
   vaultsPrices: Balances
   totalSupplies: Balances
@@ -72,6 +73,7 @@ const initialState: InitialState = {
   aprRatios: {},
   selectors: {},
   contracts: [],
+  maticNFTs: [],
   pricesUsd: {},
   gaugesData: {},
   assetsData: {},
@@ -146,6 +148,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, historicalPricesUsd: action.payload}
     case 'SET_BALANCES':
       return {...state, balances: action.payload}
+    case 'SET_MATIC_NTFS':
+      return {...state, maticNFTs: action.payload}  
     case 'SET_GAUGES_DATA':
       return {...state, gaugesData: action.payload}
     case 'SET_REWARDS':
@@ -329,14 +333,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return new GenericContractsHelper({chainId, web3, multiCall, contracts: state.contracts})
   }, [chainId, web3, multiCall, state.contracts])
 
-  const getUserTransactions = useCallback( async (startBlock: number): Promise<EtherscanTransaction[]> => {
+  const getUserTransactions = useCallback( async (startBlock: number, endBlock: string | number = 'latest'): Promise<EtherscanTransaction[]> => {
     if (!account?.address || !explorer || !chainId) return []
     const cacheKey = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}`
     const cachedData = cacheProvider && cacheProvider.getCachedUrl(cacheKey)
 
     startBlock = cachedData ? cachedData.data.reduce( (t: number, r: any) => Math.max(t, +r.blockNumber), 0)+1 : startBlock
 
-    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=latest&sort=asc`
+    const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=${endBlock}&sort=asc`
+
     const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
 
     const dataToCache = new Set()
@@ -353,12 +358,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
     }
 
-    // console.log('getUserTransactions', startBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
+    console.log('getUserTransactions', startBlock, endBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
 
     return Array.from(dataToCache.values()) as EtherscanTransaction[]
   }, [account?.address, explorer, chainId, cacheProvider])
 
-  const getVaultsPositions = useCallback( async (vaults: Vault[]) => {
+  const getVaultsPositions = useCallback( async (vaults: Vault[], test: boolean = false) => {
 
     if (!account?.address || !explorer || !chainId) return
 
@@ -371,14 +376,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return Math.min(startBlock, vaultBlockNumber)
     }, 0)
     
-    const etherscanTransactions = await getUserTransactions(startBlock)
-    // console.log('etherscanTransactions', endpoint, etherscanTransactions)
+    const etherscanTransactions = await getUserTransactions(startBlock, test ? '14133495' : 'latest')
+    // console.log('etherscanTransactions', startBlock, etherscanTransactions)
 
     const vaultsTransactions: Record<string, Transaction[]> = await asyncReduce<Vault, Record<string, Transaction[]>>(
       vaults,
       async (vault: Vault) => {
         if (!("getTransactions" in vault)) return {}
         const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
+
         return {
           [vault.id]: vaultTransactions
         }
@@ -386,7 +392,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       (acc, value) => ({...acc, ...value}),
       {}
     )
-    // console.log('vaultsTransactions', vaultsTransactions)
+    console.log('vaultsTransactions', test, vaultsTransactions)
 
     const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: AssetId) => {
       const transactions = vaultsTransactions[assetId]
@@ -439,15 +445,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const realizedApr = duration ? BigNumber.maximum(0, earningsPercentage.times(31536000).div(duration)) : BNify(0)
           const realizedApy = realizedApr ? apr2apy(realizedApr).times(100) : BNify(0)
 
-          depositsInfo.balancePeriods.push({
-            duration,
-            realizedApy,
-            realizedApr,
-            earningsPercentage,
-            idlePrice: transaction.idlePrice,
-            timeStamp: +transaction.timeStamp,
-            balance: depositsInfo.depositedAmount
-          })
+          if (duration>=86400 || index<transactions.length-1){
+            depositsInfo.balancePeriods.push({
+              duration,
+              realizedApy,
+              realizedApr,
+              earningsPercentage,
+              idlePrice: transaction.idlePrice,
+              timeStamp: +transaction.timeStamp,
+              balance: depositsInfo.depositedAmount
+            })
+          }
 
           // if (index === transactions.length-1) {
             // console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), duration, transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString())
@@ -460,6 +468,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         depositedAmount: BNify(0),
         depositedIdleAmount: BNify(0)
       })
+
+      // console.log('depositsInfo', assetId, depositsInfo)
 
       const { balancePeriods, depositedAmount, depositedIdleAmount } = depositsInfo
 
@@ -683,6 +693,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return promises
     }, new Map())
 
+    const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : async () => []
+
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
     
     // Add gauges calls
@@ -694,6 +706,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('rawCalls', enabledCalls, rawCalls)
 
     const [
+      maticNFTs,
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
@@ -718,12 +731,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
         gaugesDistributionRate
       ]
     ] = await Promise.all([
+      maticNFTsPromise,
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
       multiCall.executeMultipleBatches(rawCalls)
     ])
 
+    // console.log('maticNFTs', maticNFTs)
     // console.log('gaugeRewardContracts', gaugeRewardContracts)
     // console.log('gaugesRelativeWeights', gaugesRelativeWeights)
     // console.log('gaugesDistributionRate', gaugesDistributionRate)
@@ -1140,6 +1155,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       baseAprs,
       pricesUsd,
       aprRatios,
+      maticNFTs,
       // assetsData,
       gaugesData,
       allocations,
@@ -1206,7 +1222,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         baseAprs,
         pricesUsd,
         aprRatios,
-        // assetsData,
+        maticNFTs,
         gaugesData,
         allocations,
         lastHarvests,
@@ -1405,6 +1421,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_APRS', payload: newAprs})
       dispatch({type: 'SET_REWARDS', payload: newRewards})
       dispatch({type: 'SET_BALANCES', payload: newBalances})
+      dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs})
       dispatch({type: 'SET_BASE_APRS', payload: newBaseAprs})
       dispatch({type: 'SET_GAUGES_DATA', payload: gaugesData})
       dispatch({type: 'SET_APR_RATIOS', payload: newAprRatios})
@@ -1762,6 +1779,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         historicalPricesUsd: mergedHistoricalPricesUsd
       })
 
+      // Pre-cached data
       // console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, mergedHistoricalPricesUsd)
 
       dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: mergedHistoricalPricesUsd})
@@ -1857,6 +1875,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         baseAprs,
         pricesUsd,
         aprRatios,
+        maticNFTs,
         // assetsData,
         gaugesData,
         allocations,
@@ -1907,6 +1926,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_BALANCES', payload: {...state.balances, ...balances}})
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
+        dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs})
+      }
+      if (!enabledCalls.length || enabledCalls.includes('balances')) {
         dispatch({type: 'SET_GAUGES_DATA', payload: {...state.gaugesData, ...gaugesData}})
       }
       if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
@@ -1932,6 +1954,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_APRS', payload: {}})
       dispatch({type: 'SET_REWARDS', payload: {}})
       dispatch({type: 'SET_BALANCES', payload: {}})
+      dispatch({type: 'SET_MATIC_NTFS', payload: []})
       // dispatch({type: 'SET_GAUGES_DATA', payload: {}})
       dispatch({type: 'SET_VAULTS_REWARDS', payload: {}})
       // dispatch({type: 'SET_PRICES_USD', payload: {}})
@@ -1949,7 +1972,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
 
     ;(async () => {
-      const results = await getVaultsPositions(state.vaults)
+
+      const test = false //!state.isVaultsPositionsLoaded
+      const results = await getVaultsPositions(state.vaults, test)
       // console.log('getVaultsPositions', state.balances, results)
 
       if (!results) return
@@ -2174,12 +2199,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Set historical prices
       assetsData[vault.id].prices = state.historicalPrices[vault.id] || []
       if (assetsData[vault.id].prices?.length){
+        // Calculate APY 7 days
         const rates7 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-7)
         const rates7_last_rate = rates7 ? BNify(rates7.pop()?.value) : BNify(0)
         assetsData[vault.id].apy7 = rates7_last_rate.div(BNify(rates7[0].value)).minus(1).times(365).div(7).times(100)
 
         // console.log('rates7', vault.id, rates7, BNify(rates7[0].value).toString(), rates7_last_rate.toString(), assetsData[vault.id].apy7.toString())
 
+        // Calculate APY 30 days
         const rates30 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-30)
         const rates30_last_rate = rates30 ? BNify(rates30.pop()?.value) : BNify(0)
         assetsData[vault.id].apy30 = rates30_last_rate.div(BNify(rates30[0].value)).minus(1).times(365).div(30).times(100)

@@ -22,7 +22,7 @@ type GasOracle = {
 
 type GasPrices = Record<TransactionSpeed, string>
 
-type TransactionStatus = {
+export type TransactionStatus = {
   hash: string | null
   status: string | null
   amount: string | null
@@ -485,7 +485,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
                   }, 1000)
                 }
               })()
-            }, 2000)
+            }, 3000)
           }
         })()
       }, 2000)

@@ -345,7 +345,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     }
 
     if (isEmpty(gaugesRewards)) {
-      const strategyProps = strategies.BY
+      const strategyProps = strategies.AA
       const strategyPath = getRoutePath('earn', [strategyProps.route as string])
       return (
         <Card
@@ -358,7 +358,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             justifyContent={'space-between'}
           >
             <Translation translation={'dashboard.rewards.gauges.empty.body'} component={Text} textAlign={['center', 'left']} />
-            <Translation component={Button} translation={`dashboard.rewards.gauges.empty.cta`} onClick={() => {}} variant={['ctaPrimaryOutline']} px={10} py={2} />
+            <Translation component={Button} translation={`dashboard.rewards.gauges.empty.cta`} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
           </Stack>
         </Card>
       )
@@ -462,7 +462,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       </VStack>
     )
     
-  }, [gaugesRewards, accountAndPortfolioLoaded])
+  }, [navigate, gaugesRewards, accountAndPortfolioLoaded])
 
   const stakingRewards = useMemo(() => {
     if (!accountAndPortfolioLoaded){

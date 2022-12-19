@@ -89,6 +89,7 @@ export interface TrancheConfig {
   Strategy: Strategy
   description?: string
   messages?: VaultMessages
+  flags?: Record<string, boolean>
   Tranches: Record<string, Tranche>
 }
 
@@ -207,6 +208,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_lido_stETH',
           address:'0x0cac674ebD77bBD899f6079932768f6d59Da089A'
         },
+
+        description:'This strategy converts the stETH into native <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0">Lido wstETH</a> tokens. The APR is boosted by Gauge rewards and dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
           buyInstructions:'To get stETH token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://stake.lido.fi">Lido ETH staking</a>.',
         },
@@ -280,23 +283,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['LDO'],
         blockNumber:15623682,
         underlyingToken:'MATIC',
-        // getApyFromApi:{
-        //   path:['apr'],
-        //   protocol:'polido',
-        //   apyLabel:'stMATIC APR'
-        // },
-        // functions:{
-        //   getCustomApr:'getMaticTrancheApy',
-        //   getAdditionalApr:'getMaticTrancheAdditionalApy',
-        // },
-        // ClaimNFT:{
-        //   contract:'stMATIC',
-        //   method:'claimTokens',
-        //   event:{
-        //     name:'ClaimTokensEvent',
-        //     amountField:'_amountClaimed'
-        //   }
-        // },
+        flags:{
+          showMaticNFTs: true
+        },
         CDO:{
           decimals:18,
           abi:IdleCDO as Abi,
@@ -317,6 +306,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           title:'Lido stMATIC unstake period',
           text:'When you withdraw your funds from the tranche you will receive an NFT representing your redeemed amount, default stMATIC unstaking period takes around 3-4 days (80 epochs) to process. After that you can claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab. More info at <a href="https://docs.polygon.lido.fi/how-lido-on-polygon-works/#unstake-tokens" class="link" rel="nofollow noopener noreferrer" target="_blank">https://docs.polygon.lido.fi/how-lido-on-polygon-works/#unstake-tokens</a>'
         },
+        description:'This strategy deploys funds in the <a href="https://polygon.lido.fi/" class="link" rel="nofollow noopener noreferrer" target="_blank">Lido MATIC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
           // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
           withdraw:'trade.actions.withdraw.messages.maticNFT'
@@ -382,6 +372,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    /*
     convex:{
       FRAX3CRV:{
         protocol:'convex',
@@ -695,6 +686,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    */
     euler:{
       USDC:{
         autoFarming:[],
@@ -790,6 +782,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_DAI',
           address:'0xc7F1B9C72B8230E470420A4b69af7c50781A3f44'
         },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x6b175474e89094c44da98b954eedeac495271d0f" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -865,6 +858,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_USDT',
           address:'0x3d1775dA27Dd9c6d936795Ac21b94CDeD8baBD69'
         },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xdac17f958d2ee523a2206206994597c13d831ec7" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -940,6 +934,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_AGEUR',
           address:'0x8468B8Efe7eeA52978Ccfe3C0248Ca6F6895e166'
         },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x1a7e4e63778b4f12a199c062f3efdd288afcbce8" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler AGEUR pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1076,6 +1071,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    /*
     ribbon:{
       USDCFolk:{
         protocol:'ribbon',
@@ -1334,6 +1330,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    */
   }
 };
 
@@ -1363,6 +1360,7 @@ export type BestYieldConfig = {
   idle: IdleToken
   proxies?: string[]
   blockNumber: number
+  description?: string
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
@@ -1410,6 +1408,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    /*
     USDCBB: {
       blockNumber: 15919570,
       underlyingToken: 'USDC',
@@ -1451,6 +1450,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
       ]
     },
+    */
     USDC: {
       blockNumber: 10618515,
       underlyingToken: 'USDC',
@@ -1542,6 +1542,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    /*
     SUSD: {
       blockNumber: 10628446,
       underlyingToken: 'SUSD',
@@ -1590,6 +1591,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    */
     WETH: {
       blockNumber: 11815164,
       underlyingToken: 'WETH',
@@ -1666,6 +1668,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    /*
     RAI: {
       blockNumber: 12317005,
       underlyingToken: 'RAI',
@@ -1690,6 +1693,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    */
   },
   137:{ // Matic Mainnet
     DAI:{
