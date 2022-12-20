@@ -1,7 +1,7 @@
-import { chains } from 'constants/'
 import trezorModule from '@web3-onboard/trezor'
 import ledgerModule from '@web3-onboard/ledger'
 import gnosisModule from '@web3-onboard/gnosis'
+import { chains, DASHBORD_URL } from 'constants/'
 import { translations } from 'constants/translations'
 import coinbaseWalletModule from '@web3-onboard/coinbase'
 import injectedModule from '@web3-onboard/injected-wallets'
@@ -10,7 +10,7 @@ import walletConnectModule from '@web3-onboard/walletconnect'
 const gnosis = gnosisModule()
 const trezor = trezorModule({
   email: '<EMAIL_CONTACT>',
-  appUrl: 'https://app.idle.finance'
+  appUrl: DASHBORD_URL
 })
 const ledger = ledgerModule()
 const injected = injectedModule()

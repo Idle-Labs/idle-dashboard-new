@@ -73,7 +73,7 @@ const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd
       justifyContent={'space-between'}
     >
       <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} />
-      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={BNify(amountUsdToDisplay).toString()} />
+      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={bnOrZero(amountUsdToDisplay).toString()} />
     </HStack>
   )
 }
@@ -632,11 +632,13 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
+  const { searchParams } = useBrowserRouter()
   const { dispatch, activeItem, activeStep } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
+  const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams])
   // console.log('asset', asset)
 
   const vaultBalance = useMemo(() => {
@@ -837,10 +839,18 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               </Card.Dark>
             ) : BNify(assetGauge?.balance).gt(0) && (
               <Card.Dark
-                p={2}
+                py={2}
+                pl={3}
+                pr={2}
                 border={0}
               >
-                <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.unstakeFromGauge'} textAlign={'center'} />
+                <HStack
+                  spacing={3}
+                  width={'full'}
+                >
+                  <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.unstakeFromGauge'} textAlign={'left'} />
+                  <Translation component={Button} translation={`defi.goToGauge`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setSearchParams(`?tab=gauge`) } />
+                </HStack>
               </Card.Dark>
             )
           }
@@ -1295,7 +1305,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
           })
         }
       </VStack>
-      <Translation component={Button} translation={"common.save"} onClick={() => save()} variant={'ctaFull'} />
+      <Translation component={Button} translation={"common.close"} onClick={() => save()} variant={'ctaFull'} />
     </VStack>
   )
 }

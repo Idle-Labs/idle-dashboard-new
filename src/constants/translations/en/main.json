@@ -410,6 +410,7 @@
     "protocol": "Protocol",
     "protocols": "Protocols",
     "unstake": "Unstake",
+    "goToGauge": "Go to Gauge",
     "stakeAsset": "Stake %{assetSymbol}",
     "unstakeAsset": "Unstake %{assetSymbol}",
     "claimAsset": "Claim Staking Rewards",
@@ -560,6 +561,7 @@
       "title": "Notifications",
       "empty": "You have no notifications"
     },
+    "legacyApp": "Legacy App",
     "assets": "Assets",
     "stakeGauges": "Stake & Gauges",
     "assetDetails": "Asset Details",
@@ -1552,8 +1554,8 @@
         "lastHarvest":"Last Harvest"
       },
       "tooltips": {
-        "weight": "The percentage of IDLE distributed to this gauge",
         "totalSupply": "Total amount of assets staked in this gauge",
+        "weight": "The percentage of IDLE currently distributed to this gauge",
         "spotApy": "The annualized yield this vault is providing at the current block",
         "autoCompounding": "These rewards are automatically re-invested in the strategy",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",

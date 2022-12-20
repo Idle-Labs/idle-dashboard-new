@@ -1,8 +1,10 @@
+import { lazy } from 'react'
 import utc from 'dayjs/plugin/utc'
 import BigNumber from 'bignumber.js'
 import dayjs, { ManipulateType } from 'dayjs'
 import dayOfYear from 'dayjs/plugin/dayOfYear'
 import { HistoryTimeframe } from 'constants/types'
+import { LEGACY_DASHBOARD_URL } from 'constants/vars'
 
 type BNifyInput = any
 
@@ -187,6 +189,17 @@ export function requestTimeout(callback: Function, delay: number) {
     id: timeout.id,
     clear
   }
+}
+
+export const lazyLoadComponent = (component: string) => {
+  return lazy(() => {
+    const promise = import(`components/${component}/${component}`)
+    return promise.then(module => ({default: module[component]}))
+  })
+}
+
+export const getLegacyDashboardUrl = (section: string) => {
+  return `${LEGACY_DASHBOARD_URL}${section}`
 }
 
 export const openWindow = (url: string) => {

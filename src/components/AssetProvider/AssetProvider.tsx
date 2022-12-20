@@ -462,21 +462,23 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, ...props})
 
   const netApy = BNify(asset?.apy).minus(BNify(asset?.apy).times(BNify(asset?.fee)))
 
+  showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length>1
+
   const tooltipLabel = asset?.apyBreakdown ? (
     <VStack
       py={1}
       spacing={1}
     >
       <VStack
-        pb={1}
         spacing={1}
-        borderBottom={'1px dashed'}
+        pb={showGross || showNet ? 1 : 0}
+        borderBottom={showGross || showNet ? '1px dashed' : 'none'}
         borderBottomColor={'cta'}
       >
         {
           Object.keys(asset.apyBreakdown).map( (type: string) => {
             const apr = BNify(asset?.apyBreakdown?.[type])
-            if (apr.lte(0)) return null
+            if (apr.lte(0) && type!=='base') return null
             return (
               <HStack
                 spacing={3}

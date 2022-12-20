@@ -86,7 +86,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
       if (transaction.status === 'success' || transaction.error?.code !== 4001){
         setTimeout(() => {
           cleanTransaction()
-        }, 5000)
+        }, 4000)
       }
     } else if (transaction.status === 'pending' && !intervalId.current){
       startCountdown()

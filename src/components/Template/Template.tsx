@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Header } from 'components/Header/Header'
 import { ContainerProps, Box } from '@chakra-ui/react'
@@ -26,7 +26,9 @@ export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
         mx={[4, 20]}
       >
         <Header />
-        <Outlet />
+        <Suspense>
+          <Outlet />
+        </Suspense>
       </Box>
     </Box>
   )

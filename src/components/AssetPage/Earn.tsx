@@ -1,5 +1,6 @@
 import { strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
+import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
 import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
@@ -23,6 +24,7 @@ import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarou
 import { ContainerProps, Heading, Box, Flex, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText, Button } from '@chakra-ui/react'
 
 export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
+  const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
@@ -79,6 +81,7 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
     // const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)    
 
     const isLoaded = (chartData?.total && chartData.total.length>0) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
+    
     return (
       <VStack
         spacing={1}
@@ -98,7 +101,18 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
               userHasBalance ? (
                 useDollarConversion ? <AssetProvider.BalanceUsd textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} /> : <AssetProvider.Redeemable textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} suffix={` ${asset?.name}`} />
               ) : (
-                <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
+                <Stack
+                  spacing={[0, 2]}
+                  alignItems={'baseline'}
+                  direction={['column', 'row']}
+                >
+                  <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'2xl'} />
+                  {
+                    asset?.apyBreakdown?.gauge && BNify(asset?.apyBreakdown?.gauge).gt(0) && (
+                      <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.gauge} suffix={` (${translate('assets.assetDetails.apyBreakdown.gauge')})`} textStyle={'caption'} />
+                    )
+                  }
+                </Stack>
               )
             }
             {
@@ -129,7 +143,7 @@ export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
         </SkeletonText>
       </VStack>
     )
-  }, [asset, userHasBalance, chartData, useDollarConversion, account, isVaultsPositionsLoaded, isPortfolioLoaded])
+  }, [asset, userHasBalance, translate, chartData, useDollarConversion, account, isVaultsPositionsLoaded, isPortfolioLoaded])
 
   const fundsOverview = useMemo(() => {
     if (!asset || !userHasBalance) return null

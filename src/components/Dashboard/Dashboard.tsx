@@ -7,6 +7,7 @@ import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { VAULTS_MIN_TVL, PROTOCOL_TOKEN } from 'constants/vars'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -17,18 +18,17 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
-import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
+// import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
-import { BNify, getRoutePath, isEmpty, openWindow, formatDate } from 'helpers/'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
-import { VAULTS_MIN_TVL, PROTOCOL_TOKEN, DATETIME_FORMAT } from 'constants/vars'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
-import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
+// import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
+import { BNify, getRoutePath, isEmpty, openWindow, formatDate, getLegacyDashboardUrl } from 'helpers/'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
+import { ContainerProps, Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const [ ref, dimensions ] = useBoundingRect()
@@ -113,8 +113,11 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               const asset = selectAssetById(assetId)
               return asset?.type === strategy.type
             }) : []
+
+            const CardComponent = strategyPositions.length>0 ? Card : Card.Dark
+
             return (
-              <Card.Dark
+              <CardComponent
                 py={4}
                 px={6}
                 key={`strategy_${index}`}
@@ -179,8 +182,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     )
                   }
                   <Scrollable
-                    minH={40}
-                    maxH={40}
+                    minH={190}
+                    maxH={190}
                   >
                     <VStack
                       spacing={2}
@@ -233,7 +236,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     </VStack>
                   </Scrollable>
                 </VStack>
-              </Card.Dark>
+              </CardComponent>
             )
           })
         }
@@ -493,7 +496,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 
-    const stakingUrl = 'https://app.idle.finance/#/stake'
+    const stakingUrl = getLegacyDashboardUrl('stake')
 
     return stakingData.stkIDLE.balance.lte(0) ? (
       <Card

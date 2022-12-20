@@ -1,9 +1,15 @@
-import { Stats } from 'components/Stats/Stats'
 import { Template } from 'components/Template/Template'
-import { Strategy } from 'components/Strategy/Strategy'
+// import { Strategy } from 'components/Strategy/Strategy'
+// import { Dashboard } from 'components/Dashboard/Dashboard'
+// import { AssetPage } from 'components/AssetPage/AssetPage'
+
+import { lazyLoadComponent } from 'helpers/'
 import { RouteObject, Navigate } from 'react-router-dom'
-import { Dashboard } from 'components/Dashboard/Dashboard'
-import { AssetPage } from 'components/AssetPage/AssetPage'
+
+// const Stats = lazyLoadComponent('Stats')
+const Strategy = lazyLoadComponent('Strategy')
+const Dashboard = lazyLoadComponent('Dashboard')
+const AssetPage = lazyLoadComponent('AssetPage')
 
 export const routes: RouteObject[] = [
   {
@@ -18,10 +24,6 @@ export const routes: RouteObject[] = [
       {
         path:'earn',
         children:[
-          // {
-          //   index: true,
-          //   element:<ComponentWithProps state={{section:'earn'}} />,
-          // },
           {
             path:':strategy',
             children:[
@@ -32,17 +34,18 @@ export const routes: RouteObject[] = [
               {
                 path:':asset',
                 element:<AssetPage />,
-                children:[
-                  {
-                    path:'stats',
-                    element: <Stats />,
-                  }
-                ]
+                // children:[
+                //   {
+                //     path:'stats',
+                //     element: <Stats />,
+                //   }
+                // ]
               },
             ]
           },
         ]
       },
+      /*
       {
         path:'stats',
         children:[
@@ -66,6 +69,7 @@ export const routes: RouteObject[] = [
           },
         ]
       },
+      */
       {
         index: true,
         element:<Navigate to="/dashboard" replace />
