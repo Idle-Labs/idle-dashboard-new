@@ -134,7 +134,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                     justifyContent={'space-between'}
                   >
                     <StrategyLabel strategy={strategy.type} fontSize={'h3'} />
-                    <Translation display={['none', 'block']} component={Button} translation={strategyComposition.value>0 ? 'common.manage' : `common.enter`} onClick={() => navigate(`${strategyPath}`)} variant={'ctaPrimary'} py={2} height={'auto'} />
+                    <Translation component={Button} translation={strategyComposition.value>0 ? 'common.manage' : `common.enter`} onClick={() => navigate(`${strategyPath}`)} variant={'ctaPrimary'} py={2} height={'auto'} />
                   </HStack>
                   {
                     strategyPositions.length>0 ? (

@@ -55,7 +55,7 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
         <Card.Dark
           p={0}
           border={0}
-          bg={'#000000'}
+          bg={'black'}
           overflow={'hidden'}
           position={'relative'}
         >
