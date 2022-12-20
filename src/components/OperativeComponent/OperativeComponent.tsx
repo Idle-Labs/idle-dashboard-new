@@ -120,7 +120,6 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
     console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
     if (!allowanceContractSendMethod) return
     sendTransaction(vault.id, underlyingAsset?.id, allowanceContractSendMethod)
-    // sendTransactionTest(allowanceContractSendMethod)
   }, [amountToApprove, vault, underlyingAsset, sendTransaction])
 
   // Update amount to approve and parent amount
@@ -449,7 +448,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
 
         sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
-        // sendTransactionTest(vault.id, underlyingAsset?.id, depositContractSendMethod)
       } else {
         // Go to approve section
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})

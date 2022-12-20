@@ -219,7 +219,7 @@
         "cta": "Explore vaults"
       },
       "vaults": {
-        "title": "Vaults rewards",
+        "title": "Vaults Rewards",
         "cta": "Explore vaults",
         "empty" : {
           "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
