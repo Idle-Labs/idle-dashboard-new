@@ -229,7 +229,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
       case 'success':
         return 'green.400'
       case 'failed':
-        return 'red.400'
+        return transaction.error?.code !== 4001 ? 'red.400' : 'primary'
       default:
         return 'primary'
     }

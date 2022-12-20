@@ -169,7 +169,7 @@
           "description": "Users who provide liquidity get the possibility to receive ownership of the protocol with $IDLE tokens via Gauges. Check out the Stake tab to learn more about it."
         },
         "boostedYield":{
-          "title": "Boosted yield",
+          "title": "Junior Tranches",
           "description": "Junior Tranches allow advanced users to provide first-loss capital to specific strategies. Because they get the losses first, they also get a proportionally bigger share of the profits."
         },
         "defaultManagement":{
@@ -179,11 +179,11 @@
       }
     },
     "protected": {
-      "title": "Protected Yield",
+      "title": "Senior Tranches",
       "description": "Senior Tranches provide a shielded access to any DeFi yield sources. The default coverage is provided by Junior Tranches and automatically enforced by design. This makes them perfect for high-profile users that want to access DeFi yields witouth compromising their risk profile."
     },
     "boosted": {
-      "title": "Boosted Yield",
+      "title": "Junior Tranches",
       "description": "Junior Tranches are designed to overperform any DeFi yield source. In exchange for taking on potential losses for Senior Tranches, they get a proportionally larger share of yield. This makes them perfect for advanced users that can assess risks and take them in exchange of higher returns."
     }
   },
@@ -218,8 +218,17 @@
         "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
         "cta": "Explore vaults"
       },
+      "vaults": {
+        "title": "Vaults rewards",
+        "cta": "Explore vaults",
+        "empty" : {
+          "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
+          "cta": "Explore vaults"
+        }
+      },
       "staking": {
         "title": "IDLE Staking",
+        "cta": "Manage staking",
         "empty" : {
           "body": "Stake your IDLE tokens and start accruing some IDLE rewards.",
           "cta": "Go to Staking"
@@ -227,8 +236,9 @@
       },
       "gauges": {
         "title": "Gauges Rewards",
+        "cta": "Explore vaults",
         "empty" : {
-          "body": "Stake your Protected Yield tokens to start earnings additional IDLE rewards.",
+          "body": "Stake your Senior Tranches tokens to start earnings additional IDLE rewards.",
           "cta": "Explore vaults"
         }
       }
@@ -490,7 +500,7 @@
       },
       "gauges": {
         "title": "Gauges Rewards",
-        "body": "Stake your Protected Yield tokens to start earnings additional IDLE rewards.",
+        "body": "Stake your Senior Tranches tokens to start earnings additional IDLE rewards.",
         "cta": "Explore vaults"
       },
       "pools": {
@@ -534,7 +544,9 @@
   },
   "staking": {
     "staking": "Staking",
+    "lockEnd": "Lock end date",
     "itWillTake": "It will take",
+    "totalSupply": "Total supply",
     "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately.",
     "assetStakingBalance": "%{assetSymbol} Staking Balance"
   },
@@ -1551,7 +1563,7 @@
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
         "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",
-        "apyRatio": "The base strategy yield is split across the senior and junior tranches with a specific ratio"
+        "apyRatio": "The base strategy yield is split across the Senior and Junior tranches with a specific ratio"
       },
       "apyBreakdown": {
         "base": "Base APY",

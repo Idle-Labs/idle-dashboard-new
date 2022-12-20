@@ -1,3 +1,4 @@
+import utc from 'dayjs/plugin/utc'
 import BigNumber from 'bignumber.js'
 import dayjs, { ManipulateType } from 'dayjs'
 import dayOfYear from 'dayjs/plugin/dayOfYear'
@@ -68,8 +69,10 @@ export const dateToLocale = (timestamp: number, locale: string) => {
   return dayjs(timestamp).locale(locale).format('LLL')
 }
 
-export const formatDate = (timestamp: number | string, format: string = 'YYYY/MM/DD') => {
-  return dayjs(+timestamp).format(format)
+export const formatDate = (timestamp: number | string, format: string = 'YYYY/MM/DD', isUTC: boolean = false) => {
+  dayjs.extend(utc)
+  const day = dayjs(+timestamp)
+  return (isUTC ? day.utc() : day).format(format).concat(isUTC ? ' UTC' : '')
 }
 
 export const splitArrayIntoChunks = (array: any, chunkSize: number) => {

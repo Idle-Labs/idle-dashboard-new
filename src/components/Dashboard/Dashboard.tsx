@@ -7,11 +7,9 @@ import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
-import { VAULTS_MIN_TVL, PROTOCOL_TOKEN } from 'constants/vars'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { BNify, getRoutePath, isEmpty, openWindow } from 'helpers/'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import React, { useRef, useState, useMemo, useCallback } from 'react'
@@ -21,7 +19,9 @@ import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
 import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
+import { BNify, getRoutePath, isEmpty, openWindow, formatDate } from 'helpers/'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
+import { VAULTS_MIN_TVL, PROTOCOL_TOKEN, DATETIME_FORMAT } from 'constants/vars'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
@@ -31,8 +31,8 @@ import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/us
 import { ContainerProps, Box, Flex, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
 
 export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
-  const { screenSize } = useThemeProvider()
   const [ ref, dimensions ] = useBoundingRect()
+  const { screenSize, isMobile } = useThemeProvider()
   const [ percentChange, setPercentChange ] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
@@ -206,7 +206,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
                                   field:'balanceUsd'
                                 },
                                 {
-                                  label:'defi.realizedApy',
+                                  label: isMobile ? 'defi.apy' : 'defi.realizedApy',
                                   field:'realizedApy'
                                 }
                               ]}
@@ -239,7 +239,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
         }
       </SimpleGrid>
     )
-  }, [userHasFunds, enabledStrategies, account, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
+  }, [userHasFunds, enabledStrategies, account, isMobile, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
   
   /*
   const products = useMemo(() => {
@@ -293,16 +293,16 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   */
 
   const vaultsRewardsOverview = useMemo(() => {
-
     if (!accountAndPortfolioLoaded){
       return (
         <Skeleton width={'100%'} height={'100px'} />
       )
     }
 
+    const strategyProps = strategies.BY
+    const strategyPath = getRoutePath('earn', [strategyProps.route as string])
+
     if (isEmpty(vaultsRewards)) {
-      const strategyProps = strategies.BY
-      const strategyPath = getRoutePath('earn', [strategyProps.route as string])
       return (
         <Card
           width={'100%'}
@@ -313,8 +313,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             direction={['column', 'row']}
             justifyContent={'space-between'}
           >
-            <Translation translation={'defi.empty.rewards.body'} component={Text} textAlign={['center', 'left']} />
-            <Translation component={Button} translation={`defi.empty.rewards.cta`} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
+            <Translation translation={'dashboard.rewards.vaults.empty.body'} component={Text} textAlign={['center', 'left']} />
+            <Translation component={Button} translation={`dashboard.rewards.vaults.empty.cta`} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
           </Stack>
         </Card>
       )
@@ -323,21 +323,28 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     // console.log('vaultsRewardsOverview', vaultsRewards)
     
     return (
-      <SimpleGrid
+      <VStack
         spacing={6}
-        width={'100%'}
-        columns={[1, 3]}
+        width={'full'}
+        alignItems={'flex-start'}
       >
-        {
-          Object.keys(vaultsRewards).map( (assetId: AssetId) =>
-            <VaultRewardOverview
-              key={`reward_${assetId}`}
-              assetId={assetId}
-              {...vaultsRewards[assetId]}
-            />
-          )
-        }
-      </SimpleGrid>
+        <SimpleGrid
+          spacing={6}
+          width={'100%'}
+          columns={[1, 3]}
+        >
+          {
+            Object.keys(vaultsRewards).map( (assetId: AssetId) =>
+              <VaultRewardOverview
+                key={`reward_${assetId}`}
+                assetId={assetId}
+                {...vaultsRewards[assetId]}
+              />
+            )
+          }
+        </SimpleGrid>
+        <Translation component={Button} translation={`dashboard.rewards.vaults.cta`} width={['full', 'auto']} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
+      </VStack>
     )
     
   }, [vaultsRewards, navigate, accountAndPortfolioLoaded])
@@ -349,9 +356,10 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       )
     }
 
+    const strategyProps = strategies.AA
+    const strategyPath = getRoutePath('earn', [strategyProps.route as string])
+
     if (isEmpty(gaugesRewards)) {
-      const strategyProps = strategies.AA
-      const strategyPath = getRoutePath('earn', [strategyProps.route as string])
       return (
         <Card
           width={'100%'}
@@ -371,106 +379,113 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
     
     return (
       <VStack
-        spacing={4}
-        width={'100%'}
+        spacing={6}
+        width={'full'}
+        alignItems={'flex-start'}
       >
-        {
-          Object.keys(gaugesRewards).map( rewardId => {
-            const rewardData = gaugesRewards[rewardId]
-            return (
-              <AssetProvider
-                wrapFlex={false}
-                assetId={rewardId}
-                key={`reward_${rewardId}`}
-              >
-                <Card
-                  p={6}
-                  px={8}
-                  width={'100%'}
+        <VStack
+          spacing={4}
+          width={'100%'}
+        >
+          {
+            Object.keys(gaugesRewards).map( rewardId => {
+              const rewardData = gaugesRewards[rewardId]
+              return (
+                <AssetProvider
+                  wrapFlex={false}
+                  assetId={rewardId}
+                  key={`reward_${rewardId}`}
                 >
-                  <Stack
-                    spacing={0}
+                  <Card
+                    p={6}
+                    px={8}
                     width={'100%'}
-                    alignItems={'center'}
-                    direction={['column', 'row']}
-                    justifyContent={'space-between'}
                   >
-                    <SimpleGrid
+                    <Stack
+                      spacing={0}
                       width={'100%'}
-                      spacing={[6, 0]}
-                      columns={[2, 5]}
+                      alignItems={'center'}
+                      direction={['column', 'row']}
+                      justifyContent={'space-between'}
                     >
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                        justifyContent={'flex-start'}
+                      <SimpleGrid
+                        width={'100%'}
+                        spacing={[4, 0]}
+                        columns={[2, 5]}
                       >
-                        <Translation component={Text} translation={'defi.asset'} textStyle={'captionSmall'} />
-                        <AssetProvider.GeneralData size={'xs'} field={'asset'} />
-                      </VStack>
-
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Translation component={Text} translation={'defi.gauges'} textStyle={'captionSmall'} />
-                        <AssetsIcons size={'xs'} assetIds={rewardData.gauges} showTooltip={true} />
-                      </VStack>
-
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
-                        <Amount.Percentage textStyle={'tableCell'} value={BNify(rewardData.apr).gt(0) ? rewardData.apr : null} />
-                      </VStack>
-
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Translation component={Text} translation={'defi.dailyDistribution'} textStyle={'captionSmall'} />
-                        <HStack
-                          spacing={1}
-                          width={'100%'}
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                          justifyContent={'flex-start'}
                         >
-                          <Amount textStyle={'tableCell'} value={rewardData.rate} decimals={4} />
-                          <AssetProvider.Symbol textStyle={'tableCell'} />
-                        </HStack>
-                      </VStack>
+                          <Translation component={Text} translation={'defi.asset'} textStyle={'captionSmall'} />
+                          <AssetProvider.GeneralData size={'xs'} field={'asset'} />
+                        </VStack>
 
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                        justifyContent={'flex-start'}
-                      >
-                        <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-                        <HStack
-                          spacing={1}
-                          width={'100%'}
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                          justifyContent={'flex-start'}
                         >
-                          <Amount textStyle={'tableCell'} value={rewardData.balance} decimals={BNify(rewardData.balance).lt(1) ? 4 : 2} />
-                          <AssetProvider.Symbol textStyle={'tableCell'} />
-                        </HStack>
-                      </VStack>
-                    </SimpleGrid>
-                    {/*<Translation component={Button} translation={`defi.claim`} onClick={() => {}} variant={['ctaPrimaryOutline']} disabled={rewardData.balance.lte(0)} px={10} py={2} />*/}
-                  </Stack>
-                </Card>
-              </AssetProvider>
-            )
-          })
-        }
+                          <Translation component={Text} translation={'defi.gauges'} textStyle={'captionSmall'} />
+                          <AssetsIcons size={'xs'} assetIds={rewardData.gauges} showTooltip={true} />
+                        </VStack>
+
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                          justifyContent={'flex-start'}
+                        >
+                          <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
+                          <Amount.Percentage textStyle={'tableCell'} value={BNify(rewardData.apr).gt(0) ? rewardData.apr : null} />
+                        </VStack>
+
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                          justifyContent={'flex-start'}
+                        >
+                          <Translation component={Text} translation={'defi.dailyDistribution'} textStyle={'captionSmall'} />
+                          <HStack
+                            spacing={1}
+                            width={'100%'}
+                          >
+                            <Amount textStyle={'tableCell'} value={rewardData.rate} decimals={4} />
+                            <AssetProvider.Symbol textStyle={'tableCell'} />
+                          </HStack>
+                        </VStack>
+
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                          justifyContent={'flex-start'}
+                        >
+                          <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+                          <HStack
+                            spacing={1}
+                            width={'100%'}
+                          >
+                            <Amount textStyle={'tableCell'} value={rewardData.balance} decimals={BNify(rewardData.balance).lt(1) ? 4 : 2} />
+                            <AssetProvider.Symbol textStyle={'tableCell'} />
+                          </HStack>
+                        </VStack>
+                      </SimpleGrid>
+                      {/*<Translation component={Button} translation={`defi.claim`} onClick={() => {}} variant={['ctaPrimaryOutline']} disabled={rewardData.balance.lte(0)} px={10} py={2} />*/}
+                    </Stack>
+                  </Card>
+                </AssetProvider>
+              )
+            })
+          }
+        </VStack>
+        <Translation component={Button} translation={`dashboard.rewards.gauges.cta`} width={['full', 'auto']} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
       </VStack>
     )
     
   }, [navigate, gaugesRewards, accountAndPortfolioLoaded])
 
   const stakingRewards = useMemo(() => {
-    if (!accountAndPortfolioLoaded || !stakedIdleVault){
+    if (!accountAndPortfolioLoaded || !stakedIdleVault || !stakingData){
       return (
         <Skeleton width={'100%'} height={'100px'} />
       )
@@ -478,7 +493,9 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 
-    return !stakingData ? (
+    const stakingUrl = 'https://app.idle.finance/#/stake'
+
+    return stakingData.stkIDLE.balance.lte(0) ? (
       <Card
         width={'100%'}
       >
@@ -489,75 +506,93 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           justifyContent={'space-between'}
         >
           <Translation translation={'dashboard.rewards.staking.empty.body'} component={Text} textAlign={['center', 'left']} />
-          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => { openWindow('https://app.idle.finance/#/stake') }} variant={['ctaPrimaryOutline']} px={10} py={2} />
+          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => { openWindow(stakingUrl) }} variant={['ctaPrimaryOutline']} px={10} py={2} />
         </Stack>
       </Card>
     ) : (
-      <Card
-        p={6}
-        px={8}
-        width={'100%'}
+      <VStack
+        spacing={6}
+        width={'full'}
+        alignItems={'flex-start'}
       >
-        <Stack
+        <Card
+          p={6}
+          px={8}
           width={'100%'}
-          spacing={[4, 0]}
-          alignItems={'center'}
-          direction={['column', 'row']}
-          justifyContent={'space-between'}
         >
-          <SimpleGrid
+          <Stack
             width={'100%'}
-            spacing={[6, 0]}
-            columns={[2, 5]}
+            spacing={[4, 14]}
+            alignItems={'center'}
+            direction={['column', 'row']}
+            justifyContent={'space-between'}
           >
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
+            <HStack
+              width={'100%'}
+              spacing={[0, 6]}
+              flexWrap={['wrap', 'nowrap']}
+              justifyContent={['flex-start', 'space-between']}
             >
-              <Translation component={Text} translation={'assets.assetDetails.generalData.totalSupply'} textStyle={'captionSmall'} />
-              <Amount value={stakingData.IDLE.totalSupply} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
-            </VStack>
+              <VStack
+                pb={[2, 0]}
+                spacing={[1, 2]}
+                width={['50%', 'auto']}
+                alignItems={'flex-start'}
+                justifyContent={'flex-start'}
+              >
+                <Translation component={Text} translation={'staking.totalSupply'} textStyle={'captionSmall'} />
+                <Amount value={stakingData.stkIDLE.totalSupply} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
+              </VStack>
 
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.apr'} textStyle={'captionSmall'} />
-              <Amount.Percentage value={stakingData.maxApr} textStyle={'tableCell'} />
-            </VStack>
+              <VStack
+                pb={[2, 0]}
+                spacing={[1, 2]}
+                width={['50%', 'auto']}
+                alignItems={'flex-start'}
+                justifyContent={'flex-start'}
+              >
+                <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
+                <Amount value={stakingData.stkIDLE.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
+              </VStack>
 
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.share'} textStyle={'captionSmall'} />
-              <Amount.Percentage value={stakingData.stkIDLE.share} textStyle={'tableCell'} />
-            </VStack>
+              <VStack
+                pb={[2, 0]}
+                spacing={[1, 2]}
+                width={['50%', 'auto']}
+                alignItems={'flex-start'}
+                justifyContent={'flex-start'}
+              >
+                <Translation component={Text} translation={'defi.share'} textStyle={'captionSmall'} />
+                <Amount.Percentage value={stakingData.stkIDLE.share} textStyle={'tableCell'} />
+              </VStack>
 
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
-              <Amount value={stakingData.stkIDLE.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
-            </VStack>
+              <VStack
+                pb={[2, 0]}
+                spacing={[1, 2]}
+                width={['50%', 'auto']}
+                alignItems={'flex-start'}
+                justifyContent={'flex-start'}
+              >
+                <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+                <Amount value={stakingData.IDLE.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+              </VStack>
 
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-              justifyContent={'flex-start'}
-            >
-              <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-              <Amount value={stakingData.IDLE.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
-            </VStack>
-          </SimpleGrid>
-          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.IDLE.claimable.toString()} width={['100%', '150px']} disabled={stakingData.IDLE.claimable.lte(0)} />
-        </Stack>
-      </Card>
+              <VStack
+                pb={[2, 0]}
+                spacing={[1, 2]}
+                width={['100%', 'auto']}
+                alignItems={'flex-start'}
+                justifyContent={'flex-start'}
+              >
+                <Translation component={Text} translation={'staking.lockEnd'} textStyle={'captionSmall'} />
+                <Text textStyle={'tableCell'}>{formatDate(stakingData.lockEnd)}</Text>
+              </VStack>
+            </HStack>
+            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.IDLE.claimable.toString()} width={['100%', '150px']} disabled={stakingData.IDLE.claimable.lte(0)} />
+          </Stack>
+        </Card>
+        <Translation component={Button} translation={`dashboard.rewards.staking.cta`} width={['full', 'auto']} onClick={() => { openWindow(stakingUrl) }} variant={['ctaPrimaryOutline']} px={10} py={2} />
+      </VStack>
     )
   }, [stakedIdleVault, stakingData, accountAndPortfolioLoaded])
 
@@ -573,7 +608,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           id={'gauges-rewards'}
           alignItems={'flex-start'}
         >
-          <Translation translation={'dashboard.rewards.gauges.title'} component={Text} textStyle={['heading', 'h3']} />
+          <StrategyLabel strategy={'AA'} customText={'dashboard.rewards.gauges.title'}  textStyle={'heading'} fontSize={'h3'} />
+          {/*<Translation translation={'dashboard.rewards.gauges.title'} component={Text} textStyle={'heading'} fontSize={'h3'} />*/}
           {gaugeRewards}
         </VStack>
 
@@ -583,7 +619,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           id={'best-yield-rewards'}
           alignItems={'flex-start'}
         >
-          <Translation translation={'defi.empty.rewards.title'} component={Text} textStyle={['heading', 'h3']} />
+          <StrategyLabel strategy={'BY'} customText={'dashboard.rewards.vaults.title'}  textStyle={'heading'} fontSize={'h3'} />
           {vaultsRewardsOverview}
         </VStack>
 
@@ -593,7 +629,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           id={'staking-rewards'}
           alignItems={'flex-start'}
         >
-          <Translation translation={'dashboard.rewards.staking.title'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation translation={'dashboard.rewards.staking.title'} component={Text} textStyle={'heading'} fontSize={'h3'} />
           {stakingRewards}
         </VStack>
       </VStack>
@@ -690,7 +726,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           spacing={6}
           alignItems={'flex-start'}
         >
-          <Translation display={['none', 'block']} translation={'dashboard.portfolio.performance'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation display={['none', 'block']} translation={'dashboard.portfolio.performance'} component={Text} textStyle={'heading'} fontSize={'h3'} />
           <Card.Dark
             p={0}
             overflow={'hidden'}
@@ -774,7 +810,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           width={['100%', '500px']}
           alignItems={'flex-start'}
         >
-          <Translation translation={'dashboard.portfolio.composition'} component={Text} textStyle={['heading', 'h3']} />
+          <Translation translation={'dashboard.portfolio.composition'} component={Text} textStyle={'heading'} fontSize={'h3'} />
           <Card.Dark
             p={0}
             flex={1}
@@ -802,8 +838,8 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       {
         account && (
           <Stack
-            mt={20}
             spacing={6}
+            mt={[10, 20]}
             width={'100%'}
             direction={['column', 'row']}
           >

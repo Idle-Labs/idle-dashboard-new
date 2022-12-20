@@ -796,7 +796,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const stakingData: StakingData = {
       maxApr,
-      lockEnd: +stkIdleLock.end,
+      lockEnd: +stkIdleLock.end*1000,
       rewardsDays: stkIdletotalRewardsDays,
       IDLE: {
         totalRewards: stkIdleTotalRewards,
@@ -807,7 +807,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       stkIDLE: {
         balance: fixTokenDecimals(stlIdleBalance, 18),
         totalSupply: fixTokenDecimals(stkIdleTotalSupply, 18),
-        share: fixTokenDecimals(stlIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18))
+        share: fixTokenDecimals(stlIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(100)
       }
     }
 

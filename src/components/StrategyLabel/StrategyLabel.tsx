@@ -5,9 +5,10 @@ import { TextProps, BoxProps, Box, Flex, Text, HStack } from '@chakra-ui/react'
 
 type StrategyLabelArgs = {
   strategy?: string
+  customText?: string
 } & TextProps
 
-export const StrategyLabel: React.FC<StrategyLabelArgs> = ({ strategy, ...props }) => {
+export const StrategyLabel: React.FC<StrategyLabelArgs> = ({ strategy, customText, ...props }) => {
   if (!strategy) return null
   const strategyConfig = strategies[strategy]
   if (!strategyConfig) return null
@@ -16,14 +17,13 @@ export const StrategyLabel: React.FC<StrategyLabelArgs> = ({ strategy, ...props 
       spacing={2}
       alignItems={'center'}
     >
-      <Translation component={Text} translation={strategyConfig?.label} textStyle={'ctaStatic'} {...props} />
+      <Translation component={Text} translation={customText || strategyConfig?.label} textStyle={'ctaStatic'} {...props} />
       <Box
         width={2}
         height={2}
         borderRadius={'50%'}
         bg={strategyConfig.color}
-      >
-      </Box>
+      />
     </HStack>
   )
 }

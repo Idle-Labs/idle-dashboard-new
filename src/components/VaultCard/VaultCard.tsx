@@ -31,7 +31,7 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
     >
       <Card
         py={2}
-        px={6}
+        px={[4, 6]}
         layerStyle={['card', 'cardHover']}
         onClick={onClick}
         {...cardProps}
