@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
+import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContractConfig } from 'constants/contracts'
 import type { UnderlyingTokenProps } from 'constants/underlyingTokens'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
@@ -121,6 +122,10 @@ export class StakedIdleVault {
     ]
   }
   */
+
+  public getClaimRewardsContractSendMethod(): ContractSendMethod {
+    return this.feeDistributorContract.methods.claim()
+  }
 
   public getAssetsData(): Assets {
     return {

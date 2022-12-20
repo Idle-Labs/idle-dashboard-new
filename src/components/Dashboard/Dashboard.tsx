@@ -23,6 +23,7 @@ import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
@@ -38,13 +39,17 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
+  const { stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType, selectVaultsByType } } = usePortfolioProvider()
 
   const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
 
   const accountAndPortfolioLoaded = useMemo(() => {
     return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
   }, [walletInitialized, account, isPortfolioLoaded, isVaultsPositionsLoaded])
+
+  const stakedIdleVault = useMemo(() => {
+    return selectVaultsByType && selectVaultsByType('staking')?.[0]
+  }, [selectVaultsByType])
 
   const assetIds = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -465,11 +470,13 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
   }, [navigate, gaugesRewards, accountAndPortfolioLoaded])
 
   const stakingRewards = useMemo(() => {
-    if (!accountAndPortfolioLoaded){
+    if (!accountAndPortfolioLoaded || !stakedIdleVault){
       return (
         <Skeleton width={'100%'} height={'100px'} />
       )
     }
+
+    const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 
     return !stakingData ? (
       <Card
@@ -527,7 +534,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               justifyContent={'flex-start'}
             >
               <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
-              <Amount value={stakingData.stkIDLE.balance} textStyle={'tableCell'} />
+              <Amount value={stakingData.stkIDLE.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
             </VStack>
 
             <VStack
@@ -539,11 +546,11 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
               <Amount value={stakingData.IDLE.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
             </VStack>
           </SimpleGrid>
-          {/*<TransactionButton text={'defi.claim'} vaultId={asset.id} assetId={rewardId} contractSendMethod={contractSendMethod} actionType={'claim'} amount={rewardData.balance.toString()} width={['100%', '150px']} disabled={rewardData.balance.lte(0)} />*/}
+          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.IDLE.claimable.toString()} width={['100%', '150px']} disabled={stakingData.IDLE.claimable.lte(0)} />
         </Stack>
       </Card>
     )
-  }, [stakingData, accountAndPortfolioLoaded])
+  }, [stakedIdleVault, stakingData, accountAndPortfolioLoaded])
 
   const strategiesRewards = useMemo(() => {
     return (
