@@ -453,7 +453,7 @@ const Apr: React.FC<PercentageProps> = (props) => {
 }
 
 const Apy: React.FC<PercentageProps> = (props) => {
-  const { asset, translate } = useAssetProvider()
+  const { asset } = useAssetProvider()
 
   const netApy = BNify(asset?.apy).minus(BNify(asset?.apy).times(BNify(asset?.fee)))
 

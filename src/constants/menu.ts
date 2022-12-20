@@ -41,6 +41,6 @@ export const menu: MenuItemType[] = [
   {
     // path:'governance',
     label:'navBar.governance',
-    link:'https://app.idle.finance/#/governance'
+    link:'https://www.tally.xyz/gov/eip155:1:0x3D5Fc645320be0A085A32885F078F7121e5E5375'
   },
 ]
