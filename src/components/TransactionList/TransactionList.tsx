@@ -74,9 +74,10 @@ const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
 type TransactionListArgs = {
   assetIds?: AssetId[]
   showTitleOnMobile?: boolean
+  fullHeightOnMobile?: boolean
 } & CardProps
 
-export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showTitleOnMobile = false, ...cardProps }) => {
+export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showTitleOnMobile = false, fullHeightOnMobile = false, ...cardProps }) => {
   const { account } = useWalletProvider()
   const [ ref, dimensions ] = useBoundingRect()
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectVaultTransactions, selectVaultGauge } } = usePortfolioProvider()
@@ -145,7 +146,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
         justifyContent={'flex-start'}
       >
         <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
-        <Scrollable maxH={[280, Math.max(dimensions?.height || 400)]}>
+        <Scrollable maxH={[fullHeightOnMobile ? '100%' : 280, Math.max(dimensions?.height || 400)]}>
           {transactionsList}
         </Scrollable>
       </VStack>

@@ -87,7 +87,7 @@ export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ asset
               </HStack>
             )
           }
-          <TransactionList assetIds={[vaultId as AssetId]} maxH={[400, 600]} />
+          <TransactionList assetIds={[vaultId as AssetId]} fullHeightOnMobile={true} maxH={['100%', 600]} />
         </VStack>
       </VStack>
       {
