@@ -732,7 +732,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const stkIdleCalls = getStkIdleCalls()
     rawCalls.push(stkIdleCalls)
     
-    console.log('stkIdleCalls', stkIdleCalls)
+    // console.log('stkIdleCalls', stkIdleCalls)
     // console.log('rawCalls', enabledCalls, rawCalls)
 
     const [
@@ -811,7 +811,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    console.log('stakingData', stakingData)
+    // console.log('stakingData', stakingData)
 
     // console.log('maticNFTs', maticNFTs)
     // console.log('gaugeRewardContracts', gaugeRewardContracts)
@@ -2324,7 +2324,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    console.log('Generate assets data', assetsData)
+    // console.log('Generate assets data', assetsData)
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
     state.vaults,
