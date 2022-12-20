@@ -54,8 +54,8 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
       >
         <Card.Dark
           p={0}
-          bg={'black'}
           border={0}
+          bg={'#000000'}
           overflow={'hidden'}
           position={'relative'}
         >
@@ -71,7 +71,7 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
                     direction={['column', 'row']}
                     justifyContent={['flex-start', 'space-between']}
                   >
-                    <Image src={`${carouselItem.image}`} width={['100%','55%']} />
+                    <Image src={`${carouselItem.image}`} width={['100%','55%']} sx={{objectFit: 'contain'}} />
                     <VStack
                       pb={[4, 0]}
                       px={[6, 0]}

@@ -18,7 +18,7 @@ const ProtocolIcon: React.FC<ProtocolIconProps> = ({children, protocolId, ...pro
       icon={<BsQuestion size={24} />}
       sx={{
         "> img": {
-          'object-fit': 'contain'
+          objectFit: 'contain'
         }
       }}
       {...props}

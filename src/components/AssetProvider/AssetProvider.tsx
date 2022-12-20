@@ -308,7 +308,7 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) =
             icon={<BsQuestion size={24} />}
             sx={{
               "> img": {
-                'object-fit': 'contain'
+                objectFit: 'contain'
               }
             }}
             ml={protocols.length>0 ? iconMargin !== undefined ? iconMargin : -1 : 0}
