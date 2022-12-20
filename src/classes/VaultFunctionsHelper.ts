@@ -43,9 +43,9 @@ export class VaultFunctionsHelper {
     this.cacheProvider = props.cacheProvider
   }
 
-  public async getStakingRewards(account: string | undefined, stakedIdleVault: StakedIdleVault): Promise<EtherscanTransaction[]> {
+  public async getStakingRewards(account: string | undefined, stakedIdleVault: StakedIdleVault | undefined): Promise<EtherscanTransaction[]> {
 
-    if (!this.explorer || !account) return []
+    if (!this.explorer || !account || !stakedIdleVault) return []
 
     const idleTokenConfig = stakedIdleVault.rewardTokenConfig
     const feeDistributorConfig = stakedIdleVault.feeDistributorConfig
