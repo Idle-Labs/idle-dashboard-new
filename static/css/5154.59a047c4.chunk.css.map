@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/5154.59a047c4.chunk.css","mappings":"AAAA,4BACE,GACE,OACF,CACA,GACE,UACF,CACF,CAPA,oBACE,GACE,OACF,CACA,GACE,UACF,CACF","sources":["components/StrategyDescriptionCarousel/progress.css"],"sourcesContent":["@keyframes progress {\n  from {\n    width: 0\n  }\n  to {\n    width: 100%\n  }\n}\n\n"],"names":[],"sourceRoot":""}
