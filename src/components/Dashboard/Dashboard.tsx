@@ -508,7 +508,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <SimpleGrid
             width={'100%'}
             spacing={[6, 0]}
-            columns={[2, 4]}
+            columns={[2, 5]}
           >
             <VStack
               spacing={2}
@@ -517,6 +517,15 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
             >
               <Translation component={Text} translation={'assets.assetDetails.generalData.totalSupply'} textStyle={'captionSmall'} />
               <Amount value={stakingData.IDLE.totalSupply} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.apr'} textStyle={'captionSmall'} />
+              <Amount.Percentage value={stakingData.maxApr} textStyle={'tableCell'} />
             </VStack>
 
             <VStack

@@ -792,7 +792,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const lastRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[stakedIdleVaultRewards.length-1] as EtherscanTransaction).timeStamp : 0
     const stkIdletotalRewardsDays = stakedIdleVaultRewards?.length ? Math.abs(lastRewardTimestamp-firstRewardTimestamp)/86400 : 0
     const stkIdleTotalRewards: BigNumber = stakedIdleVaultRewards.reduce( ( total: BigNumber, tx: EtherscanTransaction) => total.plus(fixTokenDecimals(tx.value, 18)), BNify(0) )
-    const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(365.2425).div(stkIdletotalRewardsDays)
+    const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(365.2425).div(stkIdletotalRewardsDays).times(100)
 
     const stakingData: StakingData = {
       maxApr,
