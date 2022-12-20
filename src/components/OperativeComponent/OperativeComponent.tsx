@@ -608,7 +608,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { account } = useWalletProvider()
   const { dispatch, activeItem, activeStep } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
-  const { sendTransactionTest, setGasLimit, state: { transaction } } = useTransactionManager()
+  const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
   // console.log('asset', asset)
@@ -657,9 +657,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const withdrawParams = vault.getWithdrawParams(amountToWithdraw)
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
       console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
-      sendTransactionTest(vault.id, vault.id, withdrawContractSendMethod)
+      sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
     })()
-  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransactionTest])
+  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
 
   // Reset amount on transaction succeeded
   useEffect(() => {
