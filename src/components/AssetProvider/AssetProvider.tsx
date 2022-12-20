@@ -452,7 +452,12 @@ const Apr: React.FC<PercentageProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Apy: React.FC<PercentageProps> = (props) => {
+type ApyProps = {
+  showGross?: boolean
+  showNet?: boolean
+} & PercentageProps
+
+const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, ...props}) => {
   const { asset } = useAssetProvider()
 
   const netApy = BNify(asset?.apy).minus(BNify(asset?.apy).times(BNify(asset?.fee)))
@@ -487,24 +492,32 @@ const Apy: React.FC<PercentageProps> = (props) => {
           })
         }
       </VStack>
-      <HStack
-        spacing={3}
-        width={'100%'}
-        alignItems={'baseline'}
-        justifyContent={'space-between'}
-      >
-        <Translation translation={'assets.assetDetails.apyBreakdown.gross'} />
-        <Amount.Percentage value={asset?.apy} {...props} />
-      </HStack>
-      <HStack
-        spacing={3}
-        width={'100%'}
-        alignItems={'baseline'}
-        justifyContent={'space-between'}
-      >
-        <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
-        <Amount.Percentage value={netApy} {...props} />
-      </HStack>
+      {
+        showGross && (
+          <HStack
+            spacing={3}
+            width={'100%'}
+            alignItems={'baseline'}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={'assets.assetDetails.apyBreakdown.gross'} />
+            <Amount.Percentage value={asset?.apy} {...props} />
+          </HStack>
+        )
+      }
+      {
+        showNet && (
+          <HStack
+            spacing={3}
+            width={'100%'}
+            alignItems={'baseline'}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
+            <Amount.Percentage value={netApy} {...props} />
+          </HStack>
+        )
+      }
     </VStack>
   ) : null
 
@@ -752,9 +765,10 @@ const Allocation: React.FC<BoxProps> = (props) => {
 
 type GeneralDataProps = {
   field: string
+  section?: string
 } & TextProps & AvatarProps & BoxProps & ThemingProps
 
-const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
+const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) => {
   const { asset } = useAssetProvider()
   switch (field) {
     case 'protocol':
@@ -781,7 +795,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, ...props }) => {
     case 'pool':
       return (<PoolUsd textStyle={'tableCell'} {...props} />)
     case 'apy':
-      return (<Apy textStyle={'tableCell'} {...props} />)
+      return (<Apy showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
     case 'apy7':
       return (<Amount.Percentage value={asset?.apy7} textStyle={'tableCell'} {...props} />)
     case 'apy30':

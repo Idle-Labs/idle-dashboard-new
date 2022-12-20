@@ -31,7 +31,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
   return (
     <SkeletonText noOfLines={2} isLoaded={!!value}>
       <AssetProvider assetId={assetId}>
-        <AssetProvider.GeneralData field={field} size={'sm'} />
+        <AssetProvider.GeneralData section={'strategy'} field={field} size={'sm'} />
       </AssetProvider>
     </SkeletonText>
   )

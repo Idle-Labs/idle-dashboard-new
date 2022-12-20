@@ -75,7 +75,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                   key={`field_${generalData.field}`}
                 >
                   <Label generalData={generalData} />
-                  <AssetProvider.GeneralData field={generalData.field} />
+                  <AssetProvider.GeneralData section={'asset'} field={generalData.field} />
                 </VStack>
               )
             })
@@ -101,7 +101,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
                       key={`field_${generalData.field}`}
                     >
                       <Label generalData={generalData} />
-                      <AssetProvider.GeneralData field={generalData.field} />
+                      <AssetProvider.GeneralData section={'asset'} field={generalData.field} />
                     </VStack>
                   )
                 })

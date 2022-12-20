@@ -254,7 +254,7 @@ type DynamicActionFieldProps = {
 } & TextProps & DynamicActionFieldsProps
 
 export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, action, amount, amountUsd, ...textProps }) => {
-  const { helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return assetId && selectAssetById && selectAssetById(assetId)
@@ -264,24 +264,50 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
     return assetId && selectVaultById && selectVaultById(assetId)
   }, [assetId, selectVaultById])
 
+  const vaultGauge = useMemo(() => {
+    return assetId && selectVaultGauge && selectVaultGauge(assetId)
+  }, [assetId, selectVaultGauge])
+
+  const assetGauge = useMemo(() => {
+    return vaultGauge && selectAssetById && selectAssetById(vaultGauge.id)
+  }, [vaultGauge, selectAssetById])
 
   const newTrancheTvl = useMemo(() => BNify(asset.tvl).plus(bnOrZero(amount)), [asset, amount])
+  const newTotalTvl = useMemo(() => BNify(asset.totalTvl).plus(bnOrZero(amount)), [asset, amount])
   
   const newApr = useMemo(() => {
     return vaultFunctionsHelper?.getVaultNewApr(asset, vault, BNify(amount))
   }, [asset, vault, amount, vaultFunctionsHelper])
 
-  // Calculate the new APY using the apy breakdown
+  // Calculate the new APY using the apy breakdown (dilute Gauge and Harest APY based on new TVL)
   const newApy = useMemo(() => {
     if (bnOrZero(newApr).gt(0)){
         const newApy = apr2apy(bnOrZero(newApr).div(100)).times(100)
-        const additionalApy = asset.apyBreakdown ? (Object.keys(asset.apyBreakdown || {}) as string[]).filter( (type: string) => type !== 'base' ).reduce( (total: BigNumber, type: string) => total.plus(asset.apyBreakdown[type]), BNify(0)) : BNify(0)
+        const additionalApy = asset.apyBreakdown ? (Object.keys(asset.apyBreakdown || {}) as string[]).filter( (type: string) => type !== 'base' ).reduce( (total: BigNumber, type: string) => {
+          switch (type){
+            case 'gauge':
+              const gaugeData = assetGauge?.gaugeData
+              if (gaugeData){
+                const gaugeNewTotalSupply = bnOrZero(gaugeData?.totalSupply).plus(bnOrZero(amount))
+                const gaugeApyCompressionFactor = bnOrZero(gaugeData?.totalSupply).div(gaugeNewTotalSupply)
+                const newGaugeApy = asset.apyBreakdown[type].times(gaugeApyCompressionFactor)
+                return total.plus(newGaugeApy)
+              }
+              return total.plus(asset.apyBreakdown[type])
+            case 'harvest':
+              const harvestApyCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
+              const newHarvestApy = asset.apyBreakdown[type].times(harvestApyCompressionFactor)
+              return total.plus(newHarvestApy)
+            default:
+              return total.plus(asset.apyBreakdown[type])
+          }
+        }, BNify(0)) : BNify(0)
         return BNify(newApy).plus(additionalApy)
     } else {
       return bnOrZero(asset?.apy)
     }
 
-  }, [asset, newApr])
+  }, [asset, amount, newTrancheTvl, assetGauge, newApr])
   
   // console.log('newApy', amount, asset, newApr.toString(), BNify(asset.additionalApr).toString(), newApy.toString())
 
