@@ -30,6 +30,10 @@ export const menu: MenuItemType[] = [
       color: strategy.color as string
     }))
   },
+  // {
+  //   label: 'navBar.gauges',
+  //   link: getLegacyDashboardUrl('gauges')
+  // },
   {
     label: 'navBar.legacyApp',
     link: getLegacyDashboardUrl('')

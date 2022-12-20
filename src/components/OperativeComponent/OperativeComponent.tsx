@@ -164,7 +164,7 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
           spacing={6}
         >
           <MdOutlineLockOpen size={72} />
-          <Translation component={Text} prefix={`${translate("modals.approve.routerName")} `} translation={"modals.approve.body"} params={{asset: underlyingAsset?.name}} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Translation component={Text} prefix={`${translate("modals.approve.routerName")} `} translation={"modals.approve.body"} params={{asset: underlyingAsset?.name}} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
           <VStack
             width={'100%'}
             spacing={6}
@@ -180,9 +180,9 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
               <HStack
                 spacing={1}
               >
-                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'bold', 'clickable', !allowanceModeExact ? 'active' : 'inactive']} onClick={ (e: any) => setAllowanceModeExact(false) } />
+                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'clickable']} fontWeight={700} color={!allowanceModeExact ? 'primary' : 'ctaDisabled'} onClick={ (e: any) => setAllowanceModeExact(false) } />
                 <Switch size={'sm'} isChecked={allowanceModeExact} onChange={ (e) => setAllowanceModeExact(e.target.checked) } />
-                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'bold', 'clickable', allowanceModeExact ? 'active' : 'inactive']} onClick={ (e: any) => setAllowanceModeExact(true) } />
+                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'clickable']} fontWeight={700} color={allowanceModeExact ? 'primary' : 'ctaDisabled'} onClick={ (e: any) => setAllowanceModeExact(true) } />
               </HStack>
             </HStack>
             {
@@ -231,10 +231,10 @@ const EstimatedGasFees: React.FC = () => {
     >
       <MdOutlineLocalGasStation color={theme.colors.ctaDisabled} size={24} />
       <Translation translation={'trade.estimatedGasFee'} suffix={':'} textStyle={'captionSmaller'} />
-      <Amount.Usd textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} prefix={TILDE} value={gasFeeUsd}></Amount.Usd>
+      <Amount.Usd textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} prefix={TILDE} value={gasFeeUsd}></Amount.Usd>
       {
         gasFeeUsd && (
-          <Amount textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} prefix={`(`} suffix={`${chainToken?.symbol})`} value={gasFee} decimals={4}></Amount>
+          <Amount textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} prefix={`(`} suffix={`${chainToken?.symbol})`} value={gasFee} decimals={4}></Amount>
         )
       }
     </HStack>
@@ -611,7 +611,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                 <AssetProvider
                   assetId={asset?.id}
                 >
-                  <AssetProvider.PerformanceFee textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} />
+                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
                 </AssetProvider>
               </HStack>
             </Card.Outline>
@@ -869,7 +869,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                 <AssetProvider
                   assetId={asset?.id}
                 >
-                  <AssetProvider.PerformanceFee textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} />
+                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
                 </AssetProvider>
               </HStack>
             </Card.Outline>
@@ -1056,7 +1056,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     switch (transactionState?.status) {
       case 'pending':
         return (
-          <Translation component={Text} translation={remainingTime===0 ? `modals.status.body.long` : `modals.${txActionType}.status.pending`} textStyle={['heading', 'h3']} textAlign={'center'} />
+          <Translation component={Text} translation={remainingTime===0 ? `modals.status.body.long` : `modals.${txActionType}.status.pending`} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
         )
       case 'success':
         // const amountToDisplay = amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8)
@@ -1064,7 +1064,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           <VStack
             spacing={2}
           >
-            <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
             {
               vault?.messages?.actions?.[txActionType] && (
                 <Translation pb={2} translation={vault?.messages?.actions?.[txActionType]} textStyle={'captionSmall'} textAlign={'center'} />
@@ -1091,7 +1091,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       case 'failed':
         return (
           <>
-            <Translation component={Text} translation={`modals.${txActionType}.status.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={['heading', 'h3']} textAlign={'center'} />
+            <Translation component={Text} translation={`modals.${txActionType}.status.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
             <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'captionSmall'} textAlign={'center'} />
             <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => { retry() }} variant={'ctaFull'} />
             <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => resetAndGoBack()} />
@@ -1271,7 +1271,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                     >
                       <Translation component={Text} whiteSpace={'nowrap'} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
                       <SkeletonText noOfLines={1} isLoaded={!!gasPrices} width={'100%'}>
-                        <Amount prefix={'('} suffix={')'} decimals={0} textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} value={gasPrices?.[transactionSpeed]}></Amount>
+                        <Amount prefix={'('} suffix={')'} decimals={0} textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} value={gasPrices?.[transactionSpeed]}></Amount>
                       </SkeletonText>
                     </HStack>
                   </HStack>
@@ -1283,7 +1283,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`common.gasFee`} />
                     <SkeletonText noOfLines={1} isLoaded={!!estimatedFeesUsd} width={'100%'}>
-                      <Amount.Usd textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
+                      <Amount.Usd textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
                     </SkeletonText>
                   </VStack>
                   <VStack
@@ -1294,7 +1294,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
                     <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={'100%'}>
-                      <Text textStyle={['captionSmaller']} fontWeight={'600'} color={'primary'}>{formatTime(estimatedTimes?.[transactionSpeed])}</Text>
+                      <Text textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'}>{formatTime(estimatedTimes?.[transactionSpeed])}</Text>
                     </SkeletonText>
                   </VStack>
                 </HStack>
@@ -1634,7 +1634,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   spacing={6}
                 >
                   <MdOutlineAccountBalanceWallet size={72} />
-                  <Translation component={Text} translation={"trade.confirmTransactionWallet"} textStyle={['heading', 'h3']} textAlign={'center'} />
+                  <Translation component={Text} translation={"trade.confirmTransactionWallet"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
                   <VStack
                     spacing={1}
                   >

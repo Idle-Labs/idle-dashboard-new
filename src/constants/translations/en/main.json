@@ -230,7 +230,7 @@
         "title": "IDLE Staking",
         "cta": "Manage staking",
         "empty" : {
-          "body": "Stake your IDLE tokens and start accruing some IDLE rewards.",
+          "body": "Stake your IDLE tokens and start accruing some IDLE rewards. Coming soon natively!",
           "cta": "Go to Staking"
         }
       },
@@ -563,6 +563,7 @@
     },
     "legacyApp": "Legacy App",
     "assets": "Assets",
+    "gauges": "Gauges",
     "stakeGauges": "Stake & Gauges",
     "assetDetails": "Asset Details",
     "accounts": "Accounts",
