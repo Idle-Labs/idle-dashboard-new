@@ -6,7 +6,7 @@ import { AccountSelector } from './AccountSelector'
 import { NotificationList } from './NotificationList'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { ContainerProps, Flex, Stack } from '@chakra-ui/react'
+import { ContainerProps, HStack, Stack } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
@@ -19,26 +19,27 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
     const idleToken = selectUnderlyingToken(chainId, 'IDLE')
     return (
       <AssetProvider assetId={idleToken?.address}>
-        <Flex
+        <HStack
+          spacing={0}
           width={'100%'}
           alignItems={'center'}
         >
           <AssetProvider.Icon size={'xs'} mr={2} />
           <AssetProvider.Balance decimals={isMobile ? 0 : 2} textStyle={'cta'} />
-        </Flex>
+        </HStack>
       </AssetProvider>
     )
   }, [account, chainId, isMobile])
 
   return (
-    <Flex
-      direction={'row'}
+    <HStack
+      spacing={0}
       justifyContent={'space-between'}
     >
       <TopBarMenu />
       <Stack
-        spacing={3}
-        width={'50%'}
+        flex={1}
+        spacing={[3, 4]}
         direction={'row'}
         alignItems={'center'}
         justifyContent={'flex-end'}
@@ -48,6 +49,6 @@ export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
         <AccountSelector />
         {/*<NotificationList />*/}
       </Stack>
-    </Flex>
+    </HStack>
   )
 }

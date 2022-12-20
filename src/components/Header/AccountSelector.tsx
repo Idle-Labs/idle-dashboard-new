@@ -61,6 +61,6 @@ export const AccountSelector: React.FC = () => {
       )}
     </Menu>
   ) : (
-    <ConnectWalletButton variant={'cta'} />
+    <ConnectWalletButton variant={'cta'} width={'auto'} px={[3, 'auto']} />
   )
 }
