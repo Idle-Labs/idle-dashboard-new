@@ -730,82 +730,78 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           alignItems={'flex-start'}
         >
           <Translation display={['none', 'block']} translation={'dashboard.portfolio.performance'} component={Text} textStyle={'heading'} fontSize={'h3'} />
-          <Card.Dark
+          <Card.Flex
             p={0}
             overflow={'hidden'}
+            direction={'column'}
             minH={['auto', 460]}
-            alignItems={'flex-end'}
+            position={'relative'}
+            layerStyle={'cardDark'}
+            justifyContent={'space-between'}
           >
-            <VStack
-              spacing={0}
+            {
+              !userHasFunds && (
+                <Center
+                  layerStyle={'overlay'}
+                  bg={'rgba(0, 0, 0, 0.4)'}
+                >
+                  <Translation translation={account ? 'dashboard.performanceChart.empty' : 'dashboard.performanceChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                </Center>
+              )
+            }
+            <Stack
+              pt={[6, 8]}
+              px={[6, 8]}
+              pb={[4, 0]}
               width={'100%'}
-              height={'100%'}
-              justifyContent={'space-between'}
+              alignItems={'flex-start'}
+              direction={['column', 'row']}
+              justifyContent={['center', 'space-between']}
             >
               {
-                !userHasFunds && (
-                  <Center
-                    layerStyle={'overlay'}
-                    bg={'rgba(0, 0, 0, 0.4)'}
+                userHasFunds && (
+                  <VStack
+                    width={'100%'}
+                    spacing={[5, 1]}
+                    alignItems={['center', 'flex-start']}
                   >
-                    <Translation translation={account ? 'dashboard.performanceChart.empty' : 'dashboard.performanceChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
-                  </Center>
+                    <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
+                      <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                      <HStack
+                        spacing={[2, 4]}
+                        alignItems={'baseline'}
+                      >
+                        <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />
+                        {
+                          totalFunds.gt(0) && (
+                            <Stat>
+                              <HStack spacing={2}>
+                                <Amount.Percentage value={earningsPercentage} textStyle={'captionSmall'} />
+                                <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
+                              </HStack>
+                            </Stat>
+                          )
+                        }
+                      </HStack>
+                    </SkeletonText>
+                  </VStack>
                 )
               }
-              <Stack
-                pt={[6, 8]}
-                px={[6, 8]}
-                pb={[4, 0]}
-                width={'100%'}
-                alignItems={'flex-start'}
-                direction={['column', 'row']}
-                justifyContent={['center', 'space-between']}
-              >
-                {
-                  userHasFunds && (
-                    <VStack
-                      width={'100%'}
-                      spacing={[5, 1]}
-                      alignItems={['center', 'flex-start']}
-                    >
-                      <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
-                        <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
-                        <HStack
-                          spacing={[2, 4]}
-                          alignItems={'baseline'}
-                        >
-                          <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />
-                          {
-                            totalFunds.gt(0) && (
-                              <Stat>
-                                <HStack spacing={2}>
-                                  <Amount.Percentage value={earningsPercentage} textStyle={'captionSmall'} />
-                                  <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                                </HStack>
-                              </Stat>
-                            )
-                          }
-                        </HStack>
-                      </SkeletonText>
-                    </VStack>
-                  )
-                }
-                {
-                  userHasFunds && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-                }
-              </Stack>
-              <BalanceChart
-                percentChange={0}
-                color={chartColor}
-                assetIds={assetIds}
-                timeframe={timeframe}
-                isRainbowChart={false}
-                strategies={selectedStrategies}
-                setPercentChange={setPercentChange}
-                margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-              />
-            </VStack>
-          </Card.Dark>
+              {
+                userHasFunds && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+              }
+            </Stack>
+            <BalanceChart
+              percentChange={0}
+              color={chartColor}
+              assetIds={assetIds}
+              timeframe={timeframe}
+              isRainbowChart={false}
+              strategies={selectedStrategies}
+              setPercentChange={setPercentChange}
+              margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+            />
+          </Card.Flex>
         </VStack>
 
         <VStack

@@ -579,7 +579,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     }, {})
 
-    console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
+    // console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return {
       vaultsPositions,
@@ -1921,7 +1921,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
 
-      console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+      // console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
 
   // eslint-disable-next-line
@@ -2034,7 +2034,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
       }
 
-      console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
+      // console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
     })()
 
     // Cleanup
@@ -2127,7 +2127,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
-    console.log('BALANCES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+    // console.log('BALANCES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
 
     // Cleanup
     return () => {
