@@ -8,6 +8,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
+import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { useCacheProvider } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -20,7 +21,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
 import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsOnchainData = {
   fees: Balances
@@ -35,6 +36,7 @@ type VaultsOnchainData = {
   totalSupplies: Balances
   additionalAprs: Balances
   vaultsRewards: VaultsRewards
+  stakingData: StakingData | null
   rewards: Record<AssetId, Balances>
   allocations: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
@@ -82,6 +84,7 @@ const initialState: InitialState = {
   lastHarvests: {},
   vaultsPrices: {},
   transactions: [],
+  stakingData: null,
   totalSupplies: {},
   vaultsRewards: {},
   gaugesRewards: {},
@@ -128,6 +131,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, vaults: action.payload}
     case 'SET_APRS':
       return {...state, aprs: action.payload}
+    case 'SET_STAKING_DATA':
+      return {...state, stakingData: action.payload}  
     case 'SET_FEES':
       return {...state, fees: action.payload}
     case 'SET_BASE_APRS':
@@ -341,7 +346,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     startBlock = cachedData ? cachedData.data.reduce( (t: number, r: any) => Math.max(t, +r.blockNumber), 0)+1 : startBlock
 
     const endpoint = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=${endBlock}&sort=asc`
-
     const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
 
     const dataToCache = new Set()
@@ -583,6 +587,24 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
   }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
+  const getStkIdleCalls = useCallback((): CallData[] => {
+    if (!web3 || !chainId || !multiCall || !state.contracts.length) return []
+    
+    const StkIdleContract = state.contracts.find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
+    const StakingFeeDistributorContract = state.contracts.find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
+    
+    if (!StkIdleContract || !StakingFeeDistributorContract) return []
+
+    return [
+      multiCall.getCallData(StkIdleContract.contract, 'supply'),
+      multiCall.getCallData(StkIdleContract.contract, 'totalSupply'),
+      multiCall.getCallData(StkIdleContract.contract, 'locked', [account?.address]),
+      multiCall.getCallData(StkIdleContract.contract, 'balanceOf', [account?.address]),
+      multiCall.getCallData(StakingFeeDistributorContract.contract, 'claim', [account?.address])
+    ].filter( (call): call is CallData => !!call )
+
+  }, [account, web3, chainId, multiCall, state.contracts])
+
   // const getGaugesWeightsCalls = useCallback(async (vaults: Vault[]): Promise<Record<AssetId, BigNumber> | undefined> => {
   const getGaugesCalls = useCallback((vaults: Vault[]): CallData[][] | undefined => {
     if (!web3 || !chainId || !multiCall || !state.contracts.length) return
@@ -693,7 +715,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return promises
     }, new Map())
 
-    const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : async () => []
+    const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'staking' ) as StakedIdleVault
+    const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(account?.address, stakedIdleVault)
+
+    // Get Matic NFTs
+    const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
 
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
     
@@ -703,10 +729,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       gaugesWeightsCalls.map( (calls: CallData[]) => rawCalls.push(calls) )
     }
 
+    const stkIdleCalls = getStkIdleCalls()
+    rawCalls.push(stkIdleCalls)
+    
+    console.log('stkIdleCalls', stkIdleCalls)
     // console.log('rawCalls', enabledCalls, rawCalls)
 
     const [
       maticNFTs,
+      stakedIdleVaultRewards,
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
@@ -728,15 +759,59 @@ export function PortfolioProvider({ children }:ProviderProps) {
         gaugesTimeWeights,
         gaugesWeights,
         gaugeTotalWeights,
-        gaugesDistributionRate
+        gaugesDistributionRate,
+        stkIdleResults
       ]
     ] = await Promise.all([
       maticNFTsPromise,
+      stakedIdleVaultRewardsPromise,
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
       multiCall.executeMultipleBatches(rawCalls)
     ])
+
+    // console.log('totalSupply', totalSupply,
+    //     'tokenTotalSupply', tokenTotalSupply,
+    //     'lockedInfo', lockedInfo,
+    //     'tokenUserBalance', tokenUserBalance,
+    //     'claimable', claimable)
+
+    // console.log('stkIdleResults', stkIdleResults)
+    // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
+
+    const [
+      stkIdleTotalLocked,
+      stkIdleTotalSupply,
+      stkIdleLock,
+      stlIdleBalance,
+      stkIdleClaimable
+    ] = stkIdleResults.map( r => r.data )
+
+    const firstRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[0] as EtherscanTransaction).timeStamp : 0
+    const lastRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[stakedIdleVaultRewards.length-1] as EtherscanTransaction).timeStamp : 0
+    const stkIdletotalRewardsDays = stakedIdleVaultRewards?.length ? Math.abs(lastRewardTimestamp-firstRewardTimestamp)/86400 : 0
+    const stkIdleTotalRewards: BigNumber = stakedIdleVaultRewards.reduce( ( total: BigNumber, tx: EtherscanTransaction) => total.plus(fixTokenDecimals(tx.value, 18)), BNify(0) )
+    const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(365.2425).div(stkIdletotalRewardsDays)
+
+    const stakingData: StakingData = {
+      maxApr,
+      lockEnd: +stkIdleLock.end,
+      rewardsDays: stkIdletotalRewardsDays,
+      IDLE: {
+        totalRewards: stkIdleTotalRewards,
+        claimable: fixTokenDecimals(stkIdleClaimable, 18),
+        deposited: fixTokenDecimals(stkIdleLock.amount, 18),
+        totalSupply: fixTokenDecimals(stkIdleTotalLocked, 18)
+      },
+      stkIDLE: {
+        balance: fixTokenDecimals(stlIdleBalance, 18),
+        totalSupply: fixTokenDecimals(stkIdleTotalSupply, 18),
+        share: fixTokenDecimals(stlIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18))
+      }
+    }
+
+    console.log('stakingData', stakingData)
 
     // console.log('maticNFTs', maticNFTs)
     // console.log('gaugeRewardContracts', gaugeRewardContracts)
@@ -1158,6 +1233,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       maticNFTs,
       // assetsData,
       gaugesData,
+      stakingData,
       allocations,
       lastHarvests,
       vaultsPrices,
@@ -1166,7 +1242,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsRewards,
       additionalAprs
     }
-  }, [selectAssetById, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -1225,6 +1301,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         maticNFTs,
         gaugesData,
         allocations,
+        stakingData,
         lastHarvests,
         vaultsPrices,
         totalSupplies,
@@ -1426,6 +1503,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_GAUGES_DATA', payload: gaugesData})
       dispatch({type: 'SET_APR_RATIOS', payload: newAprRatios})
       dispatch({type: 'SET_PRICES_USD', payload: newPricesUsd})
+      dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
       dispatch({type: 'SET_ALLOCATIONS', payload: newAllocations})
       dispatch({type: 'SET_LAST_HARVESTS', payload: newLastHarvests})
       dispatch({type: 'SET_VAULTS_PRICES', payload: newVaultsPrices})
@@ -1492,7 +1570,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return vaultsContracts
     }, [])
 
-    const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
+    // Init stkIDLE vault
+    const rewardTokenConfig = selectUnderlyingToken(chainId, PROTOCOL_TOKEN) as UnderlyingTokenProps
+    const stkIdleConfig = globalContracts[chainId].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
+    const feeDistributorConfig = globalContracts[chainId].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
+
+    const stakedIdleVault = new StakedIdleVault({web3, chainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
+    // console.log('stakedIdleVault', stakedIdleVault)
+
+    const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults, stakedIdleVault]
     
     const assetsData = generateAssetsData(allVaults)
     dispatch({type: 'SET_VAULTS', payload: allVaults})
@@ -1878,6 +1964,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         maticNFTs,
         // assetsData,
         gaugesData,
+        stakingData,
         allocations,
         lastHarvests,
         vaultsPrices,
@@ -1905,6 +1992,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_ALLOCATIONS', payload: {...state.allocations, ...allocations}})
       }
       
+      dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
       dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
 
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
@@ -2236,7 +2324,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    // console.log('Generate assets data', assetsData)
+    console.log('Generate assets data', assetsData)
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
     state.vaults,

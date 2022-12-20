@@ -1,13 +1,13 @@
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
-import { VAULTS_MIN_TVL } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { VAULTS_MIN_TVL, PROTOCOL_TOKEN } from 'constants/vars'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -38,7 +38,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
+  const { stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType } } = usePortfolioProvider()
 
   const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
 
@@ -471,7 +471,7 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
       )
     }
 
-    return (
+    return !stakingData ? (
       <Card
         width={'100%'}
       >
@@ -485,8 +485,65 @@ export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
           <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => { openWindow('https://app.idle.finance/#/stake') }} variant={['ctaPrimaryOutline']} px={10} py={2} />
         </Stack>
       </Card>
+    ) : (
+      <Card
+        p={6}
+        px={8}
+        width={'100%'}
+      >
+        <Stack
+          width={'100%'}
+          spacing={[4, 0]}
+          alignItems={'center'}
+          direction={['column', 'row']}
+          justifyContent={'space-between'}
+        >
+          <SimpleGrid
+            width={'100%'}
+            spacing={[6, 0]}
+            columns={[2, 4]}
+          >
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'assets.assetDetails.generalData.totalSupply'} textStyle={'captionSmall'} />
+              <Amount value={stakingData.IDLE.totalSupply} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.share'} textStyle={'captionSmall'} />
+              <Amount.Percentage value={stakingData.stkIDLE.share} textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
+              <Amount value={stakingData.stkIDLE.balance} textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+              <Amount value={stakingData.IDLE.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+            </VStack>
+          </SimpleGrid>
+          {/*<TransactionButton text={'defi.claim'} vaultId={asset.id} assetId={rewardId} contractSendMethod={contractSendMethod} actionType={'claim'} amount={rewardData.balance.toString()} width={['100%', '150px']} disabled={rewardData.balance.lte(0)} />*/}
+        </Stack>
+      </Card>
     )
-  }, [accountAndPortfolioLoaded])
+  }, [stakingData, accountAndPortfolioLoaded])
 
   const strategiesRewards = useMemo(() => {
     return (

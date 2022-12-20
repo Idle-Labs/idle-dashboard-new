@@ -156,6 +156,23 @@ export type GaugeData = {
 
 export type GaugesData = Record<AssetId, GaugeData>
 
+export type StakingData = {
+  lockEnd: number
+  maxApr: BigNumber
+  rewardsDays: number
+  IDLE: {
+    totalRewards: BigNumber
+    claimable: BigNumber
+    deposited: BigNumber
+    totalSupply: BigNumber
+  }
+  stkIDLE: {
+    share: BigNumber
+    balance: BigNumber
+    totalSupply: BigNumber
+  }
+}
+
 export type VaultPosition = {
   avgBuyPrice: BigNumber
   realizedApy: BigNumber

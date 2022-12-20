@@ -7,6 +7,7 @@ import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { selectUnderlyingToken } from 'selectors/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
+import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
@@ -40,6 +41,22 @@ export class VaultFunctionsHelper {
     this.explorer = props.explorer
     this.multiCall = props.multiCall
     this.cacheProvider = props.cacheProvider
+  }
+
+  public async getStakingRewards(account: string | undefined, stakedIdleVault: StakedIdleVault): Promise<EtherscanTransaction[]> {
+
+    if (!this.explorer || !account) return []
+
+    const idleTokenConfig = stakedIdleVault.rewardTokenConfig
+    const feeDistributorConfig = stakedIdleVault.feeDistributorConfig
+
+    const endpoint = `${this.explorer?.endpoints[this.chainId]}?module=account&action=tokentx&address=${feeDistributorConfig.address}&sort=desc`
+
+    const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
+    const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
+
+    // console.log('getIdleStakingRewardsTxs',etherscanEndpoint,etherscanTxlist);
+    return etherscanTxlist ? etherscanTxlist.filter( (tx: EtherscanTransaction) => (tx.contractAddress.toLowerCase() === idleTokenConfig.address?.toLowerCase() && tx.to.toLowerCase() === feeDistributorConfig.address.toLowerCase() && BNify(tx.value).gt(0))) : []
   }
 
   public async getTrancheLastHarvest(trancheVault: TrancheVault): Promise<CdoLastHarvest> {
