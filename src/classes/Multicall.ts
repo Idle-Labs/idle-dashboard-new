@@ -205,7 +205,7 @@ export class  Multicall {
   }
 
   // Split multicall into smaller chunks and execute
-  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled: boolean = false): Promise<DecodedResult[] | null> {
+  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false): Promise<DecodedResult[] | null> {
     const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
     const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled) ))
     // console.log('chunksResults', callsChunks, chunksResults)
@@ -215,7 +215,7 @@ export class  Multicall {
     }, [])
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled: boolean = true): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled = true): Promise<DecodedResult[] | null> {
 
     if (calls.length > this.maxBatchSize) {
       return await this.executeMulticallsChunks(calls, singleCallsEnabled)

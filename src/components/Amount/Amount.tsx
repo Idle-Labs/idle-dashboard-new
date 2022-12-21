@@ -1,10 +1,10 @@
 import React from 'react'
-import type { Number } from 'constants/types'
+import type { NumberType } from 'constants/types'
 import { Text, TextProps } from '@chakra-ui/react'
 import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN } from 'helpers/'
 
 export type AmountProps = {
-  value?: Number | null
+  value?: NumberType | null
   prefix?: string | React.ReactElement
   suffix?: string | React.ReactElement
   decimals?: number

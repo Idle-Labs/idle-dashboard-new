@@ -138,7 +138,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
 
     const timestampRange = getTimestampRange(startTimestamp, endTimestamp)
     const assetsBalancesByDateExtended: Record<number, Record<AssetId, number>> = {}
-    for (let timestampIndex: number = 0, prevTimestamp: number | null = null; timestampIndex < timestampRange.length; timestampIndex++) {
+    for (let timestampIndex = 0, prevTimestamp: number | null = null; timestampIndex < timestampRange.length; timestampIndex++) {
       const timestamp = timestampRange[timestampIndex]
 
       // Copy prev balances
@@ -155,8 +155,8 @@ export const useBalanceChartData: UseBalanceChartData = ({
     // console.log('assetsBalancesByDateExtended', assetsBalancesByDateExtended)
 
     // Trailing prices
-    let prevVaultPriceInfo: Record<AssetId, HistoryData> = {}
-    let prevVaultPriceInfoUsd: Record<AssetId, HistoryData> = {}
+    const prevVaultPriceInfo: Record<AssetId, HistoryData> = {}
+    const prevVaultPriceInfoUsd: Record<AssetId, HistoryData> = {}
 
     // Add totals
     Object.keys(assetsBalancesByDateExtended).forEach( (timestamp: any) => {

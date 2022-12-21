@@ -6,7 +6,7 @@ import { useWeb3Provider } from 'contexts/Web3Provider'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { Transaction, TransactionReceipt } from 'web3-core'
-import { Contract, ContractSendMethod, SendOptions } from 'web3-eth-contract'
+import { ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
 import { BNify, estimateGasLimit, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
@@ -465,7 +465,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           if (transaction){
             dispatch({type: 'SET_TRANSACTION', payload: transaction})
             setTimeout(() => {
-              ;(async() => {
+              (async() => {
                 const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)
                 console.log('Test tx: receipt', receipt)
                 if (receipt) {

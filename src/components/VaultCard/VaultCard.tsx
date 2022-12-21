@@ -7,7 +7,7 @@ import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { VStack, SimpleGrid, HStack, Box, Text, Button } from '@chakra-ui/react'
+import { VStack, SimpleGrid, HStack, Box, Text } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId

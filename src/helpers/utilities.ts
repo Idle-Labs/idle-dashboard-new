@@ -21,7 +21,7 @@ export const integerValue = (value: BNifyInput) :string => {
 export const normalizeTokenDecimals = (tokenDecimals: number): BigNumber => {
   return BNify(`1e${tokenDecimals}`);
 }
-export const normalizeTokenAmount = (tokenBalance: BNifyInput, tokenDecimals: number, round: boolean = true) => {
+export const normalizeTokenAmount = (tokenBalance: BNifyInput, tokenDecimals: number, round = true) => {
   return BNify(tokenBalance).times(`1e${tokenDecimals}`).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
 export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals?: number, exchangeRate?: BNifyInput) => {
@@ -63,7 +63,7 @@ export const dayDiff = (t1: number, t2: number) => {
   return Math.abs(dayjs(t1).dayOfYear()-dayjs(t2).dayOfYear())
 }
 
-export const dateDiff = (t1: number, t2: number, unit: any = 'ms', returnDecimals: boolean = false) => {
+export const dateDiff = (t1: number, t2: number, unit: any = 'ms', returnDecimals = false) => {
   return Math.abs(dayjs(t1).diff(t2, unit, returnDecimals))
 }
 
@@ -71,7 +71,7 @@ export const dateToLocale = (timestamp: number, locale: string) => {
   return dayjs(timestamp).locale(locale).format('LLL')
 }
 
-export const formatDate = (timestamp: number | string, format: string = 'YYYY/MM/DD', isUTC: boolean = false) => {
+export const formatDate = (timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) => {
   dayjs.extend(utc)
   const day = dayjs(+timestamp)
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? ' UTC' : '')
@@ -106,7 +106,19 @@ export const formatTime = (seconds: any) => {
   return timesFormatted.join(' ')
 }
 
-export const abbreviateNumber = (value: any, decimals: number = 2, maxPrecision: number = 5, minPrecision: number = 0) => {
+export const sumArray = function (array: Array<any>) {
+  return array.reduce(function (pv, cv) { return pv + cv; }, 0);
+}
+
+export const maxArray = function (array: Array<any>) {
+  return Math.max.apply(null, array);
+}
+
+export const avgArray = function (array: Array<any>) {
+  return sumArray(array) / array.length;
+}
+
+export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) => {
 
   const isNegative = parseFloat(value) < 0;
   let newValue: any = BNify(value).abs();
@@ -242,7 +254,7 @@ export const asyncReduce = async <T, U>(
   return Promise.all(promises).then(results => results.reduce((accumulator, currentValue) => aggregateFunction(accumulator, currentValue), initialValue))
 }
 
-export const asyncForEach = async (array: any[], callback: Function, asyncEnabled: boolean = true) => {
+export const asyncForEach = async (array: any[], callback: Function, asyncEnabled = true) => {
   let output = [];
   if (asyncEnabled) {
     output = await Promise.all(array.map((c, index) => {
@@ -256,13 +268,13 @@ export const asyncForEach = async (array: any[], callback: Function, asyncEnable
   return output;
 }
 
-export const sortArrayByKey = (array: any[], key: string, order: string = 'asc') => {
+export const sortArrayByKey = (array: any[], key: string, order = 'asc') => {
   const val1 = order === 'asc' ? -1 : 1
   const val2 = order === 'asc' ? 1 : -1
   return [...array].sort((a, b) => (parseInt(a[key]) < parseInt(b[key]) ? val1 : val2));
 }
 
-export const shortenHash = (hash: string, startLen: number = 7, endLen: number = 4) => {
+export const shortenHash = (hash: string, startLen = 7, endLen = 4) => {
   let shortHash = hash;
   const txStart = shortHash.substr(0, startLen);
   const txEnd = shortHash.substr(shortHash.length - endLen);

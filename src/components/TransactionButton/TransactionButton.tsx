@@ -4,9 +4,9 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
-import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { TransactionStatus, useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { useTheme, ButtonProps, Button, Box, Flex, Spinner, Text, TextProps } from '@chakra-ui/react'
+import { Translation } from 'components/Translation/Translation'
+import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { useTheme, ButtonProps, Button, Flex, Spinner, Text, TextProps } from '@chakra-ui/react'
 
 type TransactionButtonProps = {
   text: string

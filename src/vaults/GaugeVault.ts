@@ -9,9 +9,9 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import type { Number, GaugeRewardData, AssetId } from 'constants/types'
+import type { GaugeRewardData, AssetId, NumberType } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncReduce, catchPromise } from 'helpers/'
-import { ZERO_ADDRESS, TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
+import { TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
 
 type ConstructorProps = {
   web3: Web3
@@ -328,7 +328,7 @@ export class GaugeVault {
     }
   }
 
-  public getAllowanceParams(amount: Number): any[] {
+  public getAllowanceParams(amount: NumberType): any[] {
     const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, 18)
     return [this.getAllowanceOwner(), amountToApprove]
   }
@@ -346,7 +346,7 @@ export class GaugeVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  public getDepositParams(amount: Number): any[] {
+  public getDepositParams(amount: NumberType): any[] {
     return [normalizeTokenAmount(amount, 18)]
   }
 
@@ -363,7 +363,7 @@ export class GaugeVault {
     return this.contract.methods[`deposit`](...params)
   }
 
-  public getWithdrawParams(amount: Number): any[] {
+  public getWithdrawParams(amount: NumberType): any[] {
     return [normalizeTokenAmount(amount, 18)]
   }
 

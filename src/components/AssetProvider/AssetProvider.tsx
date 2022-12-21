@@ -19,7 +19,7 @@ import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { useTheme, SkeletonText, Box, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
+import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
 
 type AssetCellProps = {
   wrapFlex?: boolean,

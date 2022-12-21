@@ -22,7 +22,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
 
   const waitUntilProcessed = async () => {
     // Save cached requests
-    await (new Promise(async (resolve, reject) => {
+    await (new Promise( (resolve, reject) => {
       const checkProcessing = () => {
         if (processingRef.current){
           setTimeout(checkProcessing, 10)
@@ -36,7 +36,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
   
   /** Set value */
   const set = useCallback(( value: any ) => {
-    ;(async function () {
+    (async function () {
       await waitUntilProcessed()
       setProcessing(true)
       try {
@@ -65,7 +65,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
   }, [key])
 
   useEffect(() => {
-    ;(async function () {
+    (async function () {
       try {
         const value = await localforage.getItem(key)
         if ((value === null || value === undefined) && initialValue){

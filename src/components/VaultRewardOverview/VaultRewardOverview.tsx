@@ -4,7 +4,7 @@ import { Amount } from 'components/Amount/Amount'
 import type { VaultRewards, AssetId } from 'constants/types'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
-import { VStack, HStack, Text, SimpleGrid } from '@chakra-ui/react'
+import { VStack, HStack, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type RewardProps = {

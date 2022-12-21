@@ -11,18 +11,18 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import type { Asset, ReducerActionTypes, AssetId, Number } from 'constants/types'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
+import type { Asset, ReducerActionTypes, AssetId, NumberType } from 'constants/types'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, ButtonProps, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, SimpleGrid, Spinner, Link, LinkProps } from '@chakra-ui/react'
+import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
 
 type InputAmountArgs = {
-  amount?: Number
-  amountUsd?: Number
+  amount?: NumberType
+  amountUsd?: NumberType
   setAmount: Function
   inputHeight?: number
 }
@@ -425,7 +425,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
   // Deposit
-  const deposit = useCallback((checkAllowance: boolean = true) => {
+  const deposit = useCallback((checkAllowance = true) => {
     if (!account || disabled) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     if (!vault || !("getAllowanceContract" in vault)) return
@@ -1013,7 +1013,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     // console.log('START COUNTDOWN', newTargetTimestamp, transactionState)
   }, [transactionState, targetTimestamp, startCountDown])
 
-  const resetAndGoBack = useCallback((resetStep: boolean = false) => {
+  const resetAndGoBack = useCallback((resetStep = false) => {
     if (transactionState?.status === 'pending') return
     cleanTransaction()
     setProgressValue(0)
@@ -1532,7 +1532,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     )
   }, [activeAction, activeItem, gasPrice, transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened])
 
-  const goBack = useCallback((resetStep: boolean = false) => {
+  const goBack = useCallback((resetStep = false) => {
     if (resetStep){
       return dispatch({type: 'SET_ACTIVE_STEP', payload: 0})
     }

@@ -4,8 +4,8 @@ import { Contract } from 'web3-eth-contract'
 import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
-import type { Abi, Number } from 'constants/types'
 import type { VaultMessages } from 'constants/vaults'
+import type { Abi, NumberType } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -366,7 +366,7 @@ export class TrancheVault {
     }
   }
 
-  public getAllowanceParams(amount: Number): any[] {
+  public getAllowanceParams(amount: NumberType): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, decimals)
     return [this.cdoConfig.address, amountToApprove]
@@ -385,7 +385,7 @@ export class TrancheVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  public getDepositParams(amount: Number): any[] {
+  public getDepositParams(amount: NumberType): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     return [normalizeTokenAmount(amount, decimals)]
   }
@@ -394,7 +394,7 @@ export class TrancheVault {
     return this.cdoContract.methods[`deposit${this.type}`](...params)
   }
 
-  public getWithdrawParams(amount: Number): any[] {
+  public getWithdrawParams(amount: NumberType): any[] {
     return [normalizeTokenAmount(amount, this.cdoConfig.decimals)]
   }
 

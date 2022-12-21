@@ -2,7 +2,6 @@ import Web3 from 'web3'
 import { BNify } from 'helpers/'
 import type { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
-import type { Number } from 'constants/types'
 import { Contract, ContractSendMethod, CallOptions } from 'web3-eth-contract'
 
 export const getVaultAllowanceOwner = (vault: Vault) => {
@@ -15,7 +14,7 @@ export const getAllowance = async (contract: Contract, owner: string, spender: s
   return BNify(allowance)
 }
 
-export const estimateGasLimit = async (contractSendMethod: ContractSendMethod, callOptions: CallOptions = {}, minGasLimit: Number = 0): Promise<number | undefined> => {
+export const estimateGasLimit = async (contractSendMethod: ContractSendMethod, callOptions: CallOptions = {}, minGasLimit = 0): Promise<number | undefined> => {
   const gas = await contractSendMethod.estimateGas(callOptions).catch( err => null );
   if (!gas) return
   return BigNumber.maximum(BNify(gas), minGasLimit).integerValue(BigNumber.ROUND_FLOOR).toNumber()

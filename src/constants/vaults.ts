@@ -4,8 +4,6 @@ import ERC20 from 'abis/tokens/ERC20.json';
 import cToken from 'abis/compound/cDAI.json';
 import IdleCDO from 'abis/idle/IdleCDO.json';
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json';
-import TruefiPool from 'abis/truefi/TruefiPool.json';
-import RibbonPool from 'abis/ribbon/RibbonPool.json';
 import IdleStrategy from 'abis/idle/IdleStrategy.json';
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json';
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json';

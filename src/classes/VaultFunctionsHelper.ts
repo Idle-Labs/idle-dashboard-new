@@ -192,7 +192,7 @@ export class VaultFunctionsHelper {
       return BNify(0);
     }
 
-    let apr = isAATranche ? BNify(stratApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(stratApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
+    const apr = isAATranche ? BNify(stratApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(stratApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
     
     // if (!BNify(harvestApy).isNaN()){
     //   apr = apr.plus(harvestApy)
@@ -472,13 +472,13 @@ export class VaultFunctionsHelper {
       const dataToCache = new Map()
 
       if (cachedData){
-        for (let result of cachedData.data) {
+        for (const result of cachedData.data) {
           const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
           dataToCache.set(date, result)
         }
       }
 
-      for (let result of results) {
+      for (const result of results) {
         const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
         dataToCache.set(date, result)
       }

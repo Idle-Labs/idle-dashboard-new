@@ -1,5 +1,5 @@
 import type { AssetId } from 'constants/types'
-import { HStack, AvatarProps } from '@chakra-ui/react'
+import { HStack } from '@chakra-ui/react'
 import { IconProps, AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type AssetsIconsProps = {

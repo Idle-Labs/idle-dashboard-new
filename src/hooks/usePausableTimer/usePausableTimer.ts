@@ -30,7 +30,7 @@ export function usePausableTimer (func: Function, delay: number): PausableTimerR
     setRemainingTime(null)
   }, [clear])
 
-  const start = useCallback( (interval: number = delay, restartStartTime: boolean = true) => {
+  const start = useCallback( (interval: number = delay, restartStartTime = true) => {
     clear()
     setStatus('running')
     

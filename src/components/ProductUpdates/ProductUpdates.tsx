@@ -1,6 +1,5 @@
 import React from 'react'
 import { Card } from 'components/Card/Card'
-import { ProductUpdate } from './ProductUpdate'
 import { Flex, VStack, Text } from '@chakra-ui/react'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { Translation } from 'components/Translation/Translation'

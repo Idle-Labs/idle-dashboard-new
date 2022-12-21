@@ -1,7 +1,6 @@
 import { Group } from '@visx/group'
 import { ScaleSVG } from '@visx/responsive'
 import { ParentSize } from '@visx/responsive'
-import type { Number } from 'constants/types'
 import { BarStackHorizontal } from '@visx/shape'
 import { Amount } from 'components/Amount/Amount'
 import { useTheme, Text } from '@chakra-ui/react'
@@ -12,7 +11,7 @@ import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withToolti
 import { defaultStyles as defaultTooltipStyles, withTooltip, TooltipWithBounds } from '@visx/tooltip'
 
 export type BarChartKey = string
-export type BarChartData = Record<BarChartKey, Number>
+export type BarChartData = Record<BarChartKey, number>
 export type BarChartColors = Record<BarChartKey, string>
 export type BarChartLabels = Record<BarChartKey, string>
 
@@ -169,7 +168,7 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
             <Text mb={2} color={colorScale(tooltipData.key)}>{labels[tooltipData.key]}</Text>
             {
               tooltipData.bar.data[tooltipData.key] && (
-                <Amount.Percentage value={tooltipData.bar.data[tooltipData.key] as Number} textStyle={'tableCell'}></Amount.Percentage>
+                <Amount.Percentage value={tooltipData.bar.data[tooltipData.key] as number} textStyle={'tableCell'}></Amount.Percentage>
               )
             }
           </TooltipWithBounds>

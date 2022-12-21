@@ -19,8 +19,8 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce } from 'helpers/'
-import { globalContracts, GaugeData, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
+import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray } from 'helpers/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsOnchainData = {
@@ -316,7 +316,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return underlyingToken && selectAssetById(underlyingToken.address)
   }, [selectAssetById])
 
-  const selectVaultsAssetsWithBalance = useCallback( (vaultType: string | null = null, includeStakedAmount: boolean = true): Asset[] | null => {
+  const selectVaultsAssetsWithBalance = useCallback( (vaultType: string | null = null, includeStakedAmount = true): Asset[] | null => {
     const vaultsWithBalance = state.vaults ? state.vaults.filter( (vault: Vault) => {
       const assetBalance = selectAssetBalance(vault.id)
       const assetVaultPosition = selectVaultPosition(vault.id)
@@ -350,11 +350,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const dataToCache = new Set()
     if (cachedData){
-      for (let tx of cachedData.data) {
+      for (const tx of cachedData.data) {
         dataToCache.add(tx)
       }
     }
-    for (let tx of etherscanTransactions) {
+    for (const tx of etherscanTransactions) {
       dataToCache.add(tx)
     }
       
@@ -367,7 +367,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return Array.from(dataToCache.values()) as EtherscanTransaction[]
   }, [account?.address, explorer, chainId, cacheProvider])
 
-  const getVaultsPositions = useCallback( async (vaults: Vault[], test: boolean = false) => {
+  const getVaultsPositions = useCallback( async (vaults: Vault[], test = false) => {
 
     if (!account?.address || !explorer || !chainId) return
 
@@ -1284,7 +1284,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('Last Transaction Vault', vault)
     // console.log('Last Transaction Asset', asset)
 
-    ;(async () => {
+    (async () => {
       console.log('Update vaults after transaction', vaults)
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
       if (!vaultsOnChainData) return
@@ -1652,7 +1652,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     genericContractsHelper
   ])
 
-  const getChainlinkHistoricalPrices = useCallback(async (vaults: Vault[], maxDays: number = 365): Promise<Record<AssetId, HistoryData[]> | undefined> => {
+  const getChainlinkHistoricalPrices = useCallback(async (vaults: Vault[], maxDays = 365): Promise<Record<AssetId, HistoryData[]> | undefined> => {
 
     if (!web3 || !chainId || !multiCall) return
 
@@ -1812,7 +1812,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
 
     // Get Historical data
-    ;(async () => {
+    (async () => {
 
       const startTimestamp = Date.now()
 
@@ -1918,6 +1918,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       })
 
+      console.log('vaultsHistoricalData', vaultsHistoricalData)
+
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
 
@@ -1940,7 +1942,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
 
-    ;(async () => {
+    (async () => {
       const startTimestamp = Date.now()
 
       // Update balances only if account changed
@@ -2288,11 +2290,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].prices = state.historicalPrices[vault.id] || []
       if (assetsData[vault.id].prices?.length){
         // Calculate APY 7 days
-        const rates7 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-7)
-        const rates7_last_rate = rates7 ? BNify(rates7.pop()?.value) : BNify(0)
-        assetsData[vault.id].apy7 = rates7_last_rate.div(BNify(rates7[0].value)).minus(1).times(365).div(7).times(100)
+        const prices7 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-7)
+        const prices7_last_rate = prices7 ? BNify([...prices7].pop()?.value) : BNify(0)
+        const price_apy7 = prices7_last_rate.div(BNify(prices7[0].value)).minus(1).times(365).div(7).times(100)
 
-        // console.log('rates7', vault.id, rates7, BNify(rates7[0].value).toString(), rates7_last_rate.toString(), assetsData[vault.id].apy7.toString())
+        // console.log('prices7', vault.id, prices7, BNify(prices7[0].value).toString(), rates7_last_rate.toString(), assetsData[vault.id].apy7.toString())
+
+        // Calculate APY 7 days
+        const rates7 = assetsData[vault.id].rates!.slice(assetsData[vault.id].rates!.length-7).map( (data: HistoryData) => data.value )
+        const avg_rate7 = BNify(avgArray(rates7))
+
+        assetsData[vault.id].apy7 = avg_rate7.gt(0) ? avg_rate7 : price_apy7
+
+        console.log('rates7', vault.id, rates7, avg_rate7)
 
         // Calculate APY 30 days
         const rates30 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-30)

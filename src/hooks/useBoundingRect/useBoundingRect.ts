@@ -1,9 +1,8 @@
-import { requestTimeout } from 'helpers/'
 import { useState, useCallback, useLayoutEffect } from "react";
 
 // let timeoutRequest: any = null;
 
-const debounce = (delay: number = 0, callback: Function) => {
+const debounce = (delay = 0, callback: Function) => {
   let timeoutId: any = null;
   return (...args: any[]) => {
     if (timeoutId) {
@@ -54,7 +53,7 @@ function getDimensionObject(node: any): Dimensions {
   };
 }
 
-export default function useBoundingRect(delay: number = 0) {
+export default function useBoundingRect(delay = 0) {
   const [node, setNode] = useState<any>(null);
   const [dimensions, setDimensions] = useState<Dimensions>(initialDimensions);
 

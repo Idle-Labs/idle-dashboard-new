@@ -1,6 +1,5 @@
 import { BsQuestion } from 'react-icons/bs'
 import { selectProtocol } from 'selectors/selectProtocol'
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Avatar, AvatarProps, Text, HStack, TextProps } from '@chakra-ui/react'
 
 type ProtocolIconProps = {

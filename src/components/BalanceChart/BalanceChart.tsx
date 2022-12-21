@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { Graph } from 'components/Graph/Graph'
 import type { AssetId, HistoryTimeframe } from 'constants/types'
 import { abbreviateNumber, calculatePercentChange } from 'helpers/'

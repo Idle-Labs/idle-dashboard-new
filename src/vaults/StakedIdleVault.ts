@@ -5,7 +5,6 @@ import { tokensFolder } from 'constants/folders'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContractConfig } from 'constants/contracts'
 import type { UnderlyingTokenProps } from 'constants/underlyingTokens'
-import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { Abi, Assets, ContractRawCall, PlatformApiFilters } from 'constants/types'
 
 type ConstructorProps = {

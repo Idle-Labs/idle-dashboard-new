@@ -57,20 +57,10 @@
     "clean": "rimraf node_modules",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public",
-    "deploy": "echo 'app-new.idle.finance\nwww.app-new.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin"
-  },
-  "eslintConfig": {
-    "extends": "react-app",
-    "overrides": [
-      {
-        "files": [
-          "**/*.stories.*"
-        ],
-        "rules": {
-          "import/no-anonymous-default-export": "off"
-        }
-      }
-    ]
+    "deploy": "echo 'app-new.idle.finance\nwww.app-new.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
+    "deploy-dashboard": "echo 'dashboard.idle.finance\nwww.dashboard.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
+    "deploy-prod": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
+    "deploy-app": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote app"
   },
   "browserslist": {
     "production": [
@@ -99,7 +89,10 @@
     "@types/node-polyglot": "^2.4.2",
     "@types/react-router-dom": "^5.3.3",
     "@types/react-table": "^7.7.12",
+    "@typescript-eslint/eslint-plugin": "^5.47.0",
+    "@typescript-eslint/parser": "^5.47.0",
     "babel-plugin-named-exports-order": "^0.0.2",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "prop-types": "^15.8.1",
     "webpack": "^5.74.0"
   }

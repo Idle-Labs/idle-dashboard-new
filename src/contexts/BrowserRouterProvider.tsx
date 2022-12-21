@@ -1,5 +1,4 @@
 import { Location } from 'history'
-import { URLSearchParams } from 'url'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
 import React, { useMemo, createContext, useContext, useEffect } from 'react'

@@ -1,9 +1,9 @@
-export const TILDE: string = "~"
-export const PROTOCOL_TOKEN: string = 'IDLE'
-export const VAULTS_MIN_TVL: number = 1000
-export const DATE_FORMAT: string = 'YYYY/MM/DD'
+export const TILDE = "~"
+export const PROTOCOL_TOKEN = 'IDLE'
+export const VAULTS_MIN_TVL = 1000
+export const DATE_FORMAT = 'YYYY/MM/DD'
+export const DATETIME_FORMAT = 'YYYY/MM/DD HH:mm'
 export const DASHBORD_URL = 'https://app.idle.finance'
-export const DATETIME_FORMAT: string = 'YYYY/MM/DD HH:mm'
 export const LEGACY_DASHBOARD_URL = 'https://legacy.idle.finance/#/'
-export const ZERO_ADDRESS: string = "0x0000000000000000000000000000000000000000"
-export const MAX_ALLOWANCE: string = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+export const MAX_ALLOWANCE = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"

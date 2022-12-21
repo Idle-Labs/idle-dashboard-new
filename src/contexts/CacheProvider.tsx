@@ -2,7 +2,7 @@ import { hashCode } from 'helpers/'
 import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
 import { preCachedRequests } from 'constants/historicalData'
-import React, { useContext, useCallback, useEffect, useMemo } from 'react'
+import React, { useContext, useCallback, useMemo } from 'react'
 
 export type CacheContextProps = {
   fetchUrl: Function

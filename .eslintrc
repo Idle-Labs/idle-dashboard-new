@@ -1,15 +1,14 @@
 {
   "extends": [
     "react-app",
-    "react-app/jest",
     "plugin:jsx-a11y/recommended",
   ],
   "plugins": [
-    "jest",
+    "react",
+    "unused-imports"
   ],
   "env": {
     "browser": true,
-    "jest/globals": true
   },
   "rules": {
     "jsx-a11y/alt-text": "error",
@@ -19,6 +18,8 @@
     "default-case": "error",
     "object-shorthand": "error",
     "eqeqeq": "error",
-    "react-hooks/exhaustive-deps": "error"
+    "react-hooks/exhaustive-deps": "error",
+    "unused-imports/no-unused-imports": "warn",
+    "unused-imports/no-unused-vars": "warn"
   }
 }

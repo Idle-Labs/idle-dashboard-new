@@ -1,5 +1,5 @@
 import type { AssetId } from 'constants/types'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { MdKeyboardArrowLeft } from 'react-icons/md'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Translation } from 'components/Translation/Translation'

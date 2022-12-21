@@ -5,7 +5,7 @@ import type { BigNumber, AssetId } from 'constants/types'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { VStack, Button, HStack, Text, SimpleGrid } from '@chakra-ui/react'
+import { VStack, HStack, Text } from '@chakra-ui/react'
 
 type RewardProps = {
   assetId: AssetId

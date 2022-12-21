@@ -21,7 +21,7 @@ import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartDa
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
-import { ContainerProps, Heading, Box, Flex, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText, Button } from '@chakra-ui/react'
+import { ContainerProps, Heading, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 
 export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
   const translate = useTranslate()

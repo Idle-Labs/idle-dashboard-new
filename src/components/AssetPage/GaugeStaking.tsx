@@ -1,7 +1,7 @@
 import { strategies } from 'constants/'
 import { BNify, isEmpty } from 'helpers/'
 import { Card } from 'components/Card/Card'
-import React, { useMemo, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -9,7 +9,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
-import { VStack, Heading, Text, Stack, HStack, Button, SimpleGrid } from '@chakra-ui/react'
+import { VStack, Heading, Text, Stack, HStack, SimpleGrid } from '@chakra-ui/react'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 
 export const GaugeStaking: React.FC = () => {

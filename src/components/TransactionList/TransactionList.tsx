@@ -1,4 +1,3 @@
-import { Icon } from 'components/Icon/Icon'
 import React, { useMemo, useRef } from 'react'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'

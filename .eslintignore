@@ -1,4 +1,5 @@
 build
 coverage
+src/stories
 node_modules
 src/serviceWorker.ts

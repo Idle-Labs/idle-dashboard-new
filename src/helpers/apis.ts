@@ -116,7 +116,7 @@ export const getSubgraphTrancheInfo = async (chainId: number, trancheAddress: st
   return subgraphData;
 }
 
-export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["keys"] = [], TTL: number = 180, apiKeyIndex: number = 0): Promise<any> => {
+export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["keys"] = [], TTL = 180, apiKeyIndex = 0): Promise<any> => {
   const apiKey = keys[apiKeyIndex];
   const data = await makeRequest(endpoint + '&apikey=' + apiKey);
 

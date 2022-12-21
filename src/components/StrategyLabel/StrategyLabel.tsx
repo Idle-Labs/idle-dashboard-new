@@ -1,7 +1,7 @@
 import React from 'react'
 import { strategies } from 'constants/strategies'
 import { Translation } from 'components/Translation/Translation'
-import { TextProps, BoxProps, Box, Flex, Text, HStack } from '@chakra-ui/react'
+import { TextProps, Box, Text, HStack } from '@chakra-ui/react'
 
 type StrategyLabelArgs = {
   strategy?: string

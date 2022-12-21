@@ -12,7 +12,7 @@ export type Abi = AbiItem[]
 
 export type IconType = string | ReactIcon | React.ElementType
 
-export type Number = string | number | BigNumber
+export type NumberType = string | number | BigNumber
 
 export type VaultAdditionalApr = {
   vaultId: string
@@ -134,7 +134,7 @@ export type Transaction = {
 export type GaugeRewardData = {
   balance: BigNumber | null
   rate: BigNumber | null
-  apr: Number | null
+  apr: NumberType | null
 }
 export type GaugeRewards = Record<AssetId, GaugeRewardData>
 

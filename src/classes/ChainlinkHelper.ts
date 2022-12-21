@@ -64,7 +64,7 @@ export class ChainlinkHelper {
     ]
   }
 
-  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds, maxDays: number = 365): ContractRawCall[] {
+  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds, maxDays = 365): ContractRawCall[] {
 
     const priceFeedContract: GenericContractConfig = {
       address: feedAddress,

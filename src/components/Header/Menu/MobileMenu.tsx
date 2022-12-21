@@ -3,7 +3,7 @@ import { MenuNavItem } from './MenuNavItem'
 import { MdOutlineClose } from 'react-icons/md'
 import { menu, MenuItemType } from 'constants/menu'
 import { Translation } from 'components/Translation/Translation'
-import { Container, Image, VStack, HStack, Box } from '@chakra-ui/react'
+import { Container, Image, VStack, HStack } from '@chakra-ui/react'
 
 type MobileMenuProps = {
   isOpen: boolean
