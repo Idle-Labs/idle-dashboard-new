@@ -14,11 +14,11 @@ import { selectUnderlyingToken, selectProtocol } from 'selectors/'
 import { ProtocolLabel } from 'components/ProtocolLabel/ProtocolLabel'
 import { HStack, VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 
-type VaultUnderlyingProtocols = {
+type VaultUnderlyingProtocolsProps = {
   assetId: AssetId | undefined
 }
 
-export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocols> = ({ assetId }) => {
+export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> = ({ assetId }) => {
   const { chainId } = useWalletProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 

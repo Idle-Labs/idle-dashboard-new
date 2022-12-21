@@ -40,7 +40,7 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     if (!requestQueue.size) return
 
     const newEntries = Object.fromEntries(requestQueue)
-    const processedKeys = Object.keys(newEntries)
+    // const processedKeys = Object.keys(newEntries)
 
     const cachedRequestsMap = new Map(Object.entries({
       ...cachedRequests,
@@ -74,7 +74,7 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     return null
   }, [cachedRequests])
 
-  const saveData = useCallback( (url: string, data: any, TTL: number = defaultTTL, extraData?: any): any => {
+  const saveData = useCallback( (url: string, data: any, TTL: number = defaultTTL/*, extraData?: any*/): any => {
     const timestamp = Date.now()
     const urlHash = getUrlHash(url)
     const expirationDate = !TTL ? null : timestamp+(TTL*1000)

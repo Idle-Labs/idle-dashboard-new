@@ -28,12 +28,12 @@ import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'cons
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { BNify, getRoutePath, isEmpty, openWindow, formatDate, getLegacyDashboardUrl } from 'helpers/'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { ContainerProps, Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
+import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
 
-export const Dashboard: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const Dashboard: React.FC = () => {
   const [ ref, dimensions ] = useBoundingRect()
   const { screenSize, isMobile } = useThemeProvider()
-  const [ percentChange, setPercentChange ] = useState(0)
+  const [ , setPercentChange ] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
 

@@ -17,7 +17,7 @@ export type RateChartArgs = {
 export const RateChart: React.FC<RateChartArgs> = ({
   assetIds,
   timeframe,
-  percentChange,
+  // percentChange,
   setPercentChange,
   axisEnabled = true,
   margins = { top: 0, right: 0, bottom: 0, left: 0 },

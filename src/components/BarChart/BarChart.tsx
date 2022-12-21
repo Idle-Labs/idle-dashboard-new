@@ -53,7 +53,7 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
     events = false,
     margin = defaultMargin,
     tooltipOpen,
-    tooltipLeft = 0,
+    // tooltipLeft = 0,
     tooltipTop,
     tooltipData,
     hideTooltip,
@@ -82,7 +82,7 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
     }, [] as number[])
 
     // accessors
-    const getDate = (d: BarChartData) => ''
+    const getDate = (/*d: BarChartData*/) => ''
 
     // scales
     const allocationScale = scaleLinear<number>({

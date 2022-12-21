@@ -286,7 +286,7 @@ type ProtocolsProps = {
 
 const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) => {
   const { vault } = useAssetProvider();
-  const { selectors: { selectVaultById } } = usePortfolioProvider()
+  // const { selectors: { selectVaultById } } = usePortfolioProvider()
   
   const protocols = useMemo(() => {
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return children
@@ -744,7 +744,7 @@ const ApyRatioChart: React.FC<BoxProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const Allocation: React.FC<BoxProps> = (props) => {
+const Allocation: React.FC = () => {
 
   const { asset } = useAssetProvider()
 

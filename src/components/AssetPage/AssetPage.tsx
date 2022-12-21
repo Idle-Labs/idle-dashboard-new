@@ -11,10 +11,10 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { Box, Flex, Stack, HStack, Tabs, Tab, TabList } from '@chakra-ui/react'
 import { Approve, Deposit, Withdraw } from 'components/OperativeComponent/OperativeComponent'
-import { ContainerProps, Box, Flex, Stack, HStack, Tabs, Tab, TabList } from '@chakra-ui/react'
 
-export const AssetPage: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
   const { isMobile } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()

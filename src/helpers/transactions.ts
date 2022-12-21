@@ -15,7 +15,7 @@ export const getAllowance = async (contract: Contract, owner: string, spender: s
 }
 
 export const estimateGasLimit = async (contractSendMethod: ContractSendMethod, callOptions: CallOptions = {}, minGasLimit = 0): Promise<number | undefined> => {
-  const gas = await contractSendMethod.estimateGas(callOptions).catch( err => null );
+  const gas = await contractSendMethod.estimateGas(callOptions).catch( /*err => null*/ );
   if (!gas) return
   return BigNumber.maximum(BNify(gas), minGasLimit).integerValue(BigNumber.ROUND_FLOOR).toNumber()
 }

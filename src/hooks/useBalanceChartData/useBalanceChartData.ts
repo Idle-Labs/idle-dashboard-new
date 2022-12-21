@@ -35,7 +35,7 @@ type UseBalanceChartData = (args: UseBalanceChartDataArgs) => UseBalanceChartDat
 
 export const useBalanceChartData: UseBalanceChartData = ({
   assetIds,
-  accountId,
+  // accountId,
   strategies,
   timeframe,
   useDollarConversion = true

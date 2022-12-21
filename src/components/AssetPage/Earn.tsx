@@ -20,10 +20,10 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
+import { Heading, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
-import { ContainerProps, Heading, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 
-export const Earn: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const Earn: React.FC = () => {
   const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()

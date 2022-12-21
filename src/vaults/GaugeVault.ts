@@ -11,7 +11,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { GaugeRewardData, AssetId, NumberType } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncReduce, catchPromise } from 'helpers/'
-import { TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, PlatformApiFilters } from '../constants'
+import { TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from '../constants'
 
 type ConstructorProps = {
   web3: Web3
@@ -275,7 +275,7 @@ export class GaugeVault {
     ]
   }
 
-  public async getHistoricalData(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalData(): Promise<any> {
     return {
       vaultId: this.id,
       rates: [],
@@ -283,14 +283,14 @@ export class GaugeVault {
     }
   }
 
-  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalPrices(): Promise<any> {
     return {
       vaultId: this.id,
       prices: []
     }
   }
 
-  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalAprs(): Promise<any> {
     return {
       vaultId: this.id,
       rates: []

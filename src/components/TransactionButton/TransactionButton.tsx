@@ -19,10 +19,10 @@ type TransactionButtonProps = {
 
 export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps> = ({
   text,
-  amount,
-  assetId,
-  vaultId,
-  actionType,
+  // amount,
+  // assetId,
+  // vaultId,
+  // actionType,
   contractSendMethod,
   ...props
 }) => {

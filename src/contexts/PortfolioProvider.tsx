@@ -371,7 +371,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (!account?.address || !explorer || !chainId) return
 
-    const startTimestamp = Date.now()
+    // const startTimestamp = Date.now()
 
     const startBlock = vaults.reduce( (startBlock: number, vault: Vault): number => {
       if (!("getBlockNumber" in vault)) return startBlock
@@ -496,15 +496,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Wait for balances to be loaded
       if (vaultBalance.lte(0)) return vaultsPositions
 
-      const realizedEarningsParams = balancePeriods.reduce( (realizedEarningsParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
-        const denom = balancePeriod.balance
-        realizedEarningsParams.weight = realizedEarningsParams.weight.plus(balancePeriod.earningsPercentage.times(denom))
-        realizedEarningsParams.sumAmount = realizedEarningsParams.sumAmount.plus(denom)
-        return realizedEarningsParams
-      }, {
-        weight: BNify(0),
-        sumAmount: BNify(0)
-      })
+      // const realizedEarningsParams = balancePeriods.reduce( (realizedEarningsParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
+      //   const denom = balancePeriod.balance
+      //   realizedEarningsParams.weight = realizedEarningsParams.weight.plus(balancePeriod.earningsPercentage.times(denom))
+      //   realizedEarningsParams.sumAmount = realizedEarningsParams.sumAmount.plus(denom)
+      //   return realizedEarningsParams
+      // }, {
+      //   weight: BNify(0),
+      //   sumAmount: BNify(0)
+      // })
 
       const realizedAprParams = balancePeriods.reduce( (realizedAprParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
         const denom = balancePeriod.balance
@@ -516,20 +516,20 @@ export function PortfolioProvider({ children }:ProviderProps) {
         sumAmount: BNify(0)
       })
 
-      const realizedApyParams = balancePeriods.reduce( (realizedApyParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
-        const denom = balancePeriod.balance
-        realizedApyParams.weight = realizedApyParams.weight.plus(balancePeriod.realizedApy.times(denom))
-        realizedApyParams.sumAmount = realizedApyParams.sumAmount.plus(denom)
-        return realizedApyParams
-      }, {
-        weight: BNify(0),
-        sumAmount: BNify(0)
-      })
+      // const realizedApyParams = balancePeriods.reduce( (realizedApyParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
+      //   const denom = balancePeriod.balance
+      //   realizedApyParams.weight = realizedApyParams.weight.plus(balancePeriod.realizedApy.times(denom))
+      //   realizedApyParams.sumAmount = realizedApyParams.sumAmount.plus(denom)
+      //   return realizedApyParams
+      // }, {
+      //   weight: BNify(0),
+      //   sumAmount: BNify(0)
+      // })
 
       const realizedApr = realizedAprParams.weight.div(realizedAprParams.sumAmount)
       // const realizedApy = realizedApyParams.weight.div(realizedApyParams.sumAmount)
       const realizedApy = apr2apy(realizedApr).times(100)
-      const realizedEarnings = realizedEarningsParams.weight.div(realizedEarningsParams.sumAmount)
+      // const realizedEarnings = realizedEarningsParams.weight.div(realizedEarningsParams.sumAmount)
 
       const redeemableAmount = vaultBalance.times(vaultPrice)
       const earningsAmount = redeemableAmount.minus(depositedAmount)
@@ -1033,7 +1033,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             aprsBreakdown[assetId].harvest = additionalAprs[assetId]
           }
 
-          const apy = apr2apy(aprs[assetId].div(100)).times(100)
+          // const apy = apr2apy(aprs[assetId].div(100)).times(100)
 
           // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
           // assetsData[assetId] = {
@@ -1306,7 +1306,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsPrices,
         totalSupplies,
         aprsBreakdown,
-        vaultsRewards,
+        // vaultsRewards,
         additionalAprs
       } = vaultsOnChainData
 
@@ -1814,7 +1814,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Get Historical data
     (async () => {
 
-      const startTimestamp = Date.now()
+      // const startTimestamp = Date.now()
 
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
       // console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
@@ -1880,7 +1880,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Get Historical data
     ;(async () => {
-      const startTimestamp = Date.now();
+      // const startTimestamp = Date.now();
 
       // Fetch historical data from the first deposit (min 1 year)
       const vaultsHistoricalDataPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
@@ -1918,7 +1918,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       })
 
-      console.log('vaultsHistoricalData', vaultsHistoricalData)
+      // console.log('vaultsHistoricalData', vaultsHistoricalData)
 
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
@@ -1943,7 +1943,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
 
     (async () => {
-      const startTimestamp = Date.now()
+      // const startTimestamp = Date.now()
 
       // Update balances only if account changed
       const enabledCalls = []
@@ -2103,7 +2103,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     if (isEmpty(state.balances) || isEmpty(state.vaultsPositions)) return
 
-    const startTimestamp = Date.now();
+    // const startTimestamp = Date.now();
 
     const balancesUsd = Object.keys(state.balances).reduce( (balancesUsd: Balances, assetId) => {
       const asset = selectAssetById(assetId)
@@ -2302,12 +2302,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
         assetsData[vault.id].apy7 = avg_rate7.gt(0) ? avg_rate7 : price_apy7
 
-        console.log('rates7', vault.id, rates7, avg_rate7)
+        // Calculate APY 30 days
+        const prices30 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-30)
+        const prices30_last_rate = prices30 ? BNify([...prices30].pop()?.value) : BNify(0)
+        const price_apy30 = prices30_last_rate.div(BNify(prices30[0].value)).minus(1).times(365).div(30).times(100)
 
         // Calculate APY 30 days
-        const rates30 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-30)
-        const rates30_last_rate = rates30 ? BNify(rates30.pop()?.value) : BNify(0)
-        assetsData[vault.id].apy30 = rates30_last_rate.div(BNify(rates30[0].value)).minus(1).times(365).div(30).times(100)
+        const rates30 = assetsData[vault.id].rates!.slice(assetsData[vault.id].rates!.length-30).map( (data: HistoryData) => data.value )
+        const avg_rate30 = BNify(avgArray(rates30))
+
+        assetsData[vault.id].apy30 = avg_rate30.gt(0) ? avg_rate30 : price_apy30
 
         // console.log('rates30', vault.id, rates30, BNify(rates30[0].value).toString(), rates30_last_rate.toString(), assetsData[vault.id].apy30.toString())
       }

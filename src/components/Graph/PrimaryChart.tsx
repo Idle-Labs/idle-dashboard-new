@@ -44,7 +44,7 @@ export const PrimaryChart = ({
   height,
   formatFn,
   width = 10,
-  axisEnabled = true,
+  // axisEnabled = true,
   maxMinEnabled = true,
   color = 'chart.stroke',
   margins = { top: 0, right: 0, bottom: 0, left: 0 },

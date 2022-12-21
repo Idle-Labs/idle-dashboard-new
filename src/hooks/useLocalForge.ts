@@ -22,7 +22,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
 
   const waitUntilProcessed = async () => {
     // Save cached requests
-    await (new Promise( (resolve, reject) => {
+    await (new Promise( (resolve/*, reject*/) => {
       const checkProcessing = () => {
         if (processingRef.current){
           setTimeout(checkProcessing, 10)

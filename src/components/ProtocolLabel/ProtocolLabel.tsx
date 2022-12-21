@@ -6,7 +6,7 @@ type ProtocolIconProps = {
   protocolId: string
 } & AvatarProps
 
-const ProtocolIcon: React.FC<ProtocolIconProps> = ({children, protocolId, ...props}) => {
+const ProtocolIcon: React.FC<ProtocolIconProps> = ({protocolId, ...props}) => {
   const protocol = selectProtocol(protocolId)
   if (!protocol || !protocol.icon) return null
   return (

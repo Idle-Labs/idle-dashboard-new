@@ -101,31 +101,6 @@ export class  Multicall {
     };
   }
 
-  getMethodSignature(method: any): string {
-    const methodName = method.name;
-    const methodInputs = method.inputs.map( (i: any) => i.type )
-    return methodName+'('+methodInputs.join(',')+')'
-  }
-
-  getEncodedData = (contract: any, methodName: string, values: any[]) => {
-    // get the method signature
-    const methodSignature = this.web3.eth.abi.encodeFunctionSignature(methodName);
-
-    // get the encoded data
-    const encodedData = contract.methods[methodName](...values).encodeABI();
-
-    console.log('getEncodedData', methodName, values, encodedData)
-
-    return encodedData;
-  }
-
-  async aggregate3(batch: any[]): Promise<any> {
-    return await this.multicallContract.methods.aggregate3(batch).call();
-  }
-  async blockAndAggregate(batch: any[]): Promise<any> {
-    return await this.multicallContract.methods.blockAndAggregate(batch).call();
-  }
-
   prepareMulticallData(calls: CallData[]): string | null {
 
     const strip0x = (str: string) => {
@@ -133,7 +108,7 @@ export class  Multicall {
     }
 
     const values = [
-      calls.map(({ target, method, args, returnTypes }) => {
+      calls.map(({ target, method, args }) => {
 
         let decodedResult = ''
         try {
@@ -244,7 +219,7 @@ export class  Multicall {
       const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
       const decodedCalls = await Promise.all(callPromises);
 
-      console.log('SingleCalls - decodedCalls', decodedCalls)
+      // console.log('SingleCalls - decodedCalls', decodedCalls)
 
       return decodedCalls.reduce( (decodedResults, decodedCall, i) => {
         const output = {

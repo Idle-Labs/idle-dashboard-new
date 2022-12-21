@@ -279,7 +279,7 @@ export class BestYieldVault {
     ]
   }
 
-  public getRewardTokensCalls(data?: any): ContractRawCall[] {
+  public getRewardTokensCalls(): ContractRawCall[] {
     return [
       {
         assetId:this.id,
@@ -288,7 +288,7 @@ export class BestYieldVault {
     ]
   }
 
-  public getRewardTokensAmounts(account: string, data?: any): ContractRawCall[] {
+  public getRewardTokensAmounts(account: string): ContractRawCall[] {
     return [
       {
         assetId:this.id,

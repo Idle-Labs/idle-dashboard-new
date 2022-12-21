@@ -141,7 +141,7 @@ export class VaultFunctionsHelper {
     return lastHarvest
   }
 
-  public async getTrancheHarvestApy(trancheVault: TrancheVault, trancheType: string): Promise<BigNumber> {
+  public async getTrancheHarvestApy(trancheVault: TrancheVault): Promise<BigNumber> {
     const trancheLastHarvest = await this.getTrancheLastHarvest(trancheVault)
     if (!trancheLastHarvest?.harvest) return BNify(0)
     return trancheLastHarvest.harvest.aprs[trancheVault.type]
@@ -171,11 +171,11 @@ export class VaultFunctionsHelper {
     const [
       stratApr,
       multicallResults,
-      harvestApy
+      // harvestApy
     ] = await Promise.all([
       this.getMaticTrancheStrategyApr(),
       this.multiCall.executeMulticalls(rawCalls),
-      this.getTrancheHarvestApy(trancheVault, trancheVault.type)
+      // this.getTrancheHarvestApy(trancheVault)
     ]);
 
     if (!multicallResults) return BNify(0)
@@ -396,13 +396,11 @@ export class VaultFunctionsHelper {
           const newAprSplitAA = this.calcNewAPRSplit(newTvlRatioAA)
           // console.log('calcNewAPRSplit - AA', BNify(asset.tvl).plus(liqToAdd).toString(), newTotalTvl.toString(), newTvlRatioAA.toString(), newAprSplitAA.toString(), newAprSplitAA.div(newTvlRatioAA).toString())
           return BNify(asset.baseApr).times(newAprSplitAA.div(newTvlRatioAA))
-        break
         case 'BB':
           const newTvlRatioBB = BNify(FULL_ALLOC).minus(BNify(BNify(asset.tvl).plus(liqToAdd)).times(FULL_ALLOC).div(newTotalTvl))
           const newAprSplitBB = this.calcNewAPRSplit(newTvlRatioBB)
           // console.log('calcNewAPRSplit - BB', newTvlRatioBB.toString(), BNify(FULL_ALLOC).minus(newAprSplitBB).toString(), BNify(FULL_ALLOC).minus(newAprSplitBB).div(BNify(FULL_ALLOC).minus(newTvlRatioBB)).toString())
           return BNify(asset.baseApr).times(BNify(FULL_ALLOC).minus(newAprSplitBB).div(BNify(FULL_ALLOC).minus(newTvlRatioBB)))
-        break;
         default:
         break;
       }

@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react'
 import { TopBarMenu } from './Menu/TopBarMenu'
+import { HStack, Stack } from '@chakra-ui/react'
 import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { ContainerProps, HStack, Stack } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
-export const Header: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const Header: React.FC = () => {
   const { screenSize } = useThemeProvider()
   const isMobile = screenSize === 'sm'
   const { chainId, account } = useWalletProvider()

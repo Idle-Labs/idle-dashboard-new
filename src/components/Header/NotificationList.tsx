@@ -73,7 +73,7 @@ export const NotificationList: React.FC = () => {
 
   return (
     <Menu variant={'notifications'}>
-      {({ isOpen }) => (
+      {() => (
         <>
           <MenuButton as={IconButton} variant={'cta'} aria-label={'Notifications'} icon={<MdOutlineNotificationsNone size={24} />} />
           <MenuList zIndex={9999999}>

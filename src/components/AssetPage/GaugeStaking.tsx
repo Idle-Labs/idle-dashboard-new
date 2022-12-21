@@ -14,7 +14,7 @@ import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarou
 
 export const GaugeStaking: React.FC = () => {
   const { params } = useBrowserRouter()
-  const { assetsData, selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     const asset = selectAssetById && selectAssetById(params.asset)

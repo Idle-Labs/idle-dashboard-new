@@ -25,9 +25,9 @@ export const MaticNFTs: React.FC<MaticNFTsProps> = ({ assetId }) => {
     return selectVaultById && selectVaultById(assetId)
   }, [selectVaultById, assetId])
 
-  const showMaticNFTs = useMemo(() => {
-    return vault && ("flags" in vault) && vault.flags?.showMaticNFTs
-  }, [vault])
+  // const showMaticNFTs = useMemo(() => {
+  //   return vault && ("flags" in vault) && vault.flags?.showMaticNFTs
+  // }, [vault])
   
   if (!maticNFTs?.length) return null
 

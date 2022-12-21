@@ -40,7 +40,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   color,
   formatFn,
   axisEnabled = true,
-  maxMinEnabled = true,
+  // maxMinEnabled = true,
   margins = { top: 0, right: 0, bottom: 0, left: 0 },
 }) => {
   const theme = useTheme()

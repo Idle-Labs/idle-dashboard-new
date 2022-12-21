@@ -21,10 +21,10 @@ export const integerValue = (value: BNifyInput) :string => {
 export const normalizeTokenDecimals = (tokenDecimals: number): BigNumber => {
   return BNify(`1e${tokenDecimals}`);
 }
-export const normalizeTokenAmount = (tokenBalance: BNifyInput, tokenDecimals: number, round = true) => {
+export const normalizeTokenAmount = (tokenBalance: BNifyInput, tokenDecimals: number) => {
   return BNify(tokenBalance).times(`1e${tokenDecimals}`).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
-export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals?: number, exchangeRate?: BNifyInput) => {
+export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals?: number) => {
   if (!tokenDecimals) {
     return BNify(tokenBalance);
   }
@@ -239,7 +239,7 @@ export const getTimestampRange = (startDate: (Date | number | string), endDate: 
 export const catchPromise = async (promise: Promise<any>) => {
   return promise
     .then(data => data)
-    .catch(err => null)
+    .catch(/*err => null*/)
 }
 
 export const asyncReduce = async <T, U>(
@@ -300,7 +300,7 @@ export const getObjectPath = (object: any, path: string, fallback: any = null): 
   return getObjectPath(object[path.substr(0, dotIndex)], path.substr(dotIndex + 1), fallback);
 }
 
-export const sortNumeric = (a: any, b: any, field: any, c: any): number => {
+export const sortNumeric = (a: any, b: any, field: any): number => {
   const n1 = BNify(getObjectPath(a.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(a.original, field))
   const n2 = BNify(getObjectPath(b.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(b.original, field))
   return n1.gt(n2) ? -1 : 1

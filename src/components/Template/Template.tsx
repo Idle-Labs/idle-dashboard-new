@@ -5,7 +5,7 @@ import { ContainerProps, Box } from '@chakra-ui/react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 
-export const Template: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const Template: React.FC<ContainerProps> = () => {
   const { location } = useBrowserRouter()
   const { scrollLocked } = useThemeProvider()
   const className = location?.pathname.replace(/\//g,'-').replace(/^-/,'')

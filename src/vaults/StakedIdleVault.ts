@@ -4,8 +4,8 @@ import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContractConfig } from 'constants/contracts'
+import type { Abi, Assets, ContractRawCall } from 'constants/types'
 import type { UnderlyingTokenProps } from 'constants/underlyingTokens'
-import type { Abi, Assets, ContractRawCall, PlatformApiFilters } from 'constants/types'
 
 type ConstructorProps = {
   web3: Web3
@@ -58,11 +58,11 @@ export class StakedIdleVault {
     this.feeDistributorContract = new web3.eth.Contract(feeDistributorConfig.abi, feeDistributorConfig.address)
   }
 
-  public getTransactions(account: string, etherscanTransactions: any[]): any[] {
+  public getTransactions(): any[] {
     return []
   }
 
-  public async getHistoricalData(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalData(): Promise<any> {
     return {
       vaultId: this.id,
       rates: [],
@@ -70,14 +70,14 @@ export class StakedIdleVault {
     }
   }
 
-  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalPrices(): Promise<any> {
     return {
       vaultId: this.id,
       prices: []
     }
   }
 
-  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalAprs(): Promise<any> {
     return {
       vaultId: this.id,
       rates: []

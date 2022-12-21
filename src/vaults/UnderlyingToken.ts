@@ -3,9 +3,9 @@ import { Contract } from 'web3-eth-contract'
 import ERC20 from '../abis/tokens/ERC20.json'
 import { tokensFolder } from 'constants/folders'
 import { GenericContract } from '../contracts/GenericContract'
+import type { Abi, Assets, ContractRawCall } from '../constants/types'
 import type { UnderlyingTokenProps } from '../constants/underlyingTokens'
 import { GenericContractsHelper } from '../classes/GenericContractsHelper'
-import type { Abi, Assets, ContractRawCall, PlatformApiFilters } from '../constants/types'
 
 export class UnderlyingToken {
 
@@ -36,7 +36,7 @@ export class UnderlyingToken {
     }
   }
 
-  public getTransactions(account: string, etherscanTransactions: any[]): any[] {
+  public getTransactions(): any[] {
     return []
   }
 
@@ -85,7 +85,7 @@ export class UnderlyingToken {
     ]
   }
 
-  public async getHistoricalData(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalData(): Promise<any> {
     return {
       vaultId: this.id,
       rates: [],
@@ -93,14 +93,14 @@ export class UnderlyingToken {
     }
   }
 
-  public async getHistoricalPrices(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalPrices(): Promise<any> {
     return {
       vaultId: this.id,
       prices: []
     }
   }
 
-  public async getHistoricalAprs(filters?: PlatformApiFilters): Promise<any> {
+  public async getHistoricalAprs(): Promise<any> {
     return {
       vaultId: this.id,
       rates: []

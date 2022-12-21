@@ -1,5 +1,5 @@
 import { Card } from 'components/Card/Card'
-import { strategies } from 'constants/strategies'
+// import { strategies } from 'constants/strategies'
 import { HStack, Text, Progress, Box } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -19,8 +19,6 @@ export const StrategyAssetsCarousel: React.FC<StrategyAssetsCarouselArgs> = ({ s
     if (!selectVaultsAssetsByType) return null
     return selectVaultsAssetsByType(strategy)
   }, [selectVaultsAssetsByType, strategy])
-
-  const strategyProps = strategies[strategy]
 
   const getNextAssetIndex = useCallback(() => {
     return assetIndex === assets.length-1 ? 0 : assetIndex+1

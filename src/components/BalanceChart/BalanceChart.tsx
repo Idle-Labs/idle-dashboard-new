@@ -22,13 +22,13 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
   accountId,
   timeframe,
   strategies,
-  percentChange,
+  // percentChange,
   isRainbowChart,
   setPercentChange,
   color = 'chart.stroke',
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
-  const { assets, balanceChartData, balanceChartDataLoading } = useBalanceChartData({
+  const { balanceChartData, balanceChartDataLoading } = useBalanceChartData({
     assetIds,
     accountId,
     timeframe,

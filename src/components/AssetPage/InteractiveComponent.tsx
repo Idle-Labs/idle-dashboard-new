@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import { MdKeyboardArrowLeft } from 'react-icons/md'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Translation } from 'components/Translation/Translation'
-import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { HStack, VStack, Button, Flex, Text } from '@chakra-ui/react'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { OperativeComponent, OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
@@ -17,7 +16,6 @@ type InteractiveComponentArgs = {
 export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ assetId, vaultId, actions }) => {
   const { isMobile } = useThemeProvider()
   const [ showDeposit, setShowDeposit ] = useState<boolean>(false)
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
   const [ showTransactions, setShowTransactions ] = useState<boolean>(false)
 
   return (

@@ -83,7 +83,7 @@ type ActionComponentArgs = {
   goBack?: Function
 } & BoxProps
 
-export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, children }) => {
+export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex }) => {
   const { account } = useWalletProvider()
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
@@ -117,7 +117,7 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
     if (!vault || !("getAllowanceContractSendMethod" in vault) || !("getAllowanceParams" in vault)) return
     const allowanceParams = vault.getAllowanceParams(amountToApprove)
     const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
-    console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
+    // console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
     if (!allowanceContractSendMethod) return
     sendTransaction(vault.id, underlyingAsset?.id, allowanceContractSendMethod)
   }, [amountToApprove, vault, underlyingAsset, sendTransaction])
@@ -180,9 +180,9 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex, chil
               <HStack
                 spacing={1}
               >
-                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'clickable']} fontWeight={700} color={!allowanceModeExact ? 'primary' : 'ctaDisabled'} onClick={ (e: any) => setAllowanceModeExact(false) } />
+                <Translation component={Text} translation={"trade.unlimited"} textStyle={['captionSmall', 'clickable']} fontWeight={700} color={!allowanceModeExact ? 'primary' : 'ctaDisabled'} onClick={ () => setAllowanceModeExact(false) } />
                 <Switch size={'sm'} isChecked={allowanceModeExact} onChange={ (e) => setAllowanceModeExact(e.target.checked) } />
-                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'clickable']} fontWeight={700} color={allowanceModeExact ? 'primary' : 'ctaDisabled'} onClick={ (e: any) => setAllowanceModeExact(true) } />
+                <Translation component={Text} translation={"trade.exact"} textStyle={['captionSmall', 'clickable']} fontWeight={700} color={allowanceModeExact ? 'primary' : 'ctaDisabled'} onClick={ () => setAllowanceModeExact(true) } />
               </HStack>
             </HStack>
             {
@@ -252,7 +252,7 @@ type DynamicActionFieldProps = {
   field: string
 } & TextProps & DynamicActionFieldsProps
 
-export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, action, amount, amountUsd, ...textProps }) => {
+export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, amount, amountUsd, ...textProps }) => {
   const { helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -272,7 +272,7 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
   }, [vaultGauge, selectAssetById])
 
   const newTrancheTvl = useMemo(() => BNify(asset.tvl).plus(bnOrZero(amount)), [asset, amount])
-  const newTotalTvl = useMemo(() => BNify(asset.totalTvl).plus(bnOrZero(amount)), [asset, amount])
+  // const newTotalTvl = useMemo(() => BNify(asset.totalTvl).plus(bnOrZero(amount)), [asset, amount])
   
   const newApr = useMemo(() => {
     return vaultFunctionsHelper?.getVaultNewApr(asset, vault, BNify(amount))
@@ -315,7 +315,7 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
   const redeemable = bnOrZero(asset?.vaultPosition?.underlying.redeemable)
   const redeemableUsd = bnOrZero(asset?.vaultPosition?.usd.redeemable)
   const totalGain = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings))
-  const earningsPerc = bnOrZero(asset?.vaultPosition?.earningsPercentage)
+  // const earningsPerc = bnOrZero(asset?.vaultPosition?.earningsPercentage)
   const redeemablePercentage = BigNumber.minimum(1, bnOrZero(amountUsd).div(redeemableUsd))
   const gain = BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain))
   const maxFees = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings).times(asset?.fee))
@@ -352,9 +352,9 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
 }
 
 export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) => {
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
 
-  const { assetId, action, amount, amountUsd } = props
+  const { assetId, action } = props
 
   const vault = useMemo(() => {
     return assetId && selectVaultById && selectVaultById(assetId)
@@ -403,7 +403,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
-  const { asset, vault, underlyingAsset, underlyingAssetVault, translate } = useAssetProvider()
+  const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -439,12 +439,12 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const vaultOwner = getVaultAllowanceOwner(vault)
       const allowance = checkAllowance ? await getAllowance(allowanceContract, account.address, vaultOwner) : BNify(amount)
       
-      console.log('allowance', vaultOwner, account.address, allowance)
+      // console.log('allowance', vaultOwner, account.address, allowance)
 
       if (allowance.gte(amount)){
         const depositParams = vault.getDepositParams(amount)
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-        console.log('depositParams', depositParams, depositContractSendMethod)
+        // console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
 
         sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
@@ -636,7 +636,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
-  const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams])
+  const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
   // console.log('asset', asset)
 
   const vaultBalance = useMemo(() => {
@@ -682,7 +682,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       const amountToWithdraw = BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice))
       const withdrawParams = vault.getWithdrawParams(amountToWithdraw)
       const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
-      console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
+      // console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
       sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
     })()
   }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
@@ -698,7 +698,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   useEffect(() => {
     if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !vault) return
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
-    const vaultPrice = selectVaultPrice(vault.id)
+    // const vaultPrice = selectVaultPrice(vault.id)
     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
     // console.log('withdraw', BNify(amount).toString(), BNify(assetPriceUsd).toString(), BNify(vaultPrice).toString(), amountUsd.toString())
     setAmountUsd(amountUsd)
@@ -744,7 +744,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     dispatch({type: 'SET_ASSET', payload: asset})
 
     if (!selectVaultPrice || !vault) return
-    const vaultPrice = selectVaultPrice(vault.id)
+    // const vaultPrice = selectVaultPrice(vault.id)
     dispatch({type: 'SET_AMOUNT', payload: BNify(amount).toString()})
     dispatch({type: 'SET_DEFAULT_AMOUNT', payload: BNify(amount).toString()})
   }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, withdraw])
@@ -958,7 +958,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const { selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
 
-  const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams])
+  const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
 
   const vault = useMemo(() => {
     return asset?.id && selectVaultById && selectVaultById(asset.id)
@@ -1401,12 +1401,12 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   ...cardProps
 }) => {
   const intervalId = useRef<any>(null)
+  const { translate } = useAssetProvider()
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
 
-  const { underlyingAsset, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   const { state: { gasPrice, transaction: transactionState }, retry, cleanTransaction, updateGasPrices } = useTransactionManager()
 
@@ -1478,7 +1478,6 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
             return setActiveItem(state.activeStep)
           default:
             return setActiveItem(firstProcessIndex+1)
-          break
         }
       case 'success':
         setActiveItem(firstProcessIndex+1)

@@ -5,7 +5,7 @@ type ScrollableArgs = {
   parentRef?: any
 } & FlexProps
 
-export const Scrollable: React.FC<ScrollableArgs> = ({parentRef, children, ...flexProps}) => {
+export const Scrollable: React.FC<ScrollableArgs> = ({children, ...flexProps}) => {
   return (
     <Flex
       flex={1}

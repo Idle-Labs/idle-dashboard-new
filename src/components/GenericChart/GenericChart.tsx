@@ -3,7 +3,7 @@ import { Box } from '@chakra-ui/react'
 import { abbreviateNumber } from 'helpers/'
 import { Graph } from 'components/Graph/Graph'
 import type { AssetId, HistoryTimeframe } from 'constants/types'
-import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+// import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
 type GenericChartArgs = {
@@ -22,23 +22,23 @@ type GenericChartArgs = {
 
 export const GenericChart: React.FC<GenericChartArgs> = ({
   data,
-  assetIds,
-  accountId,
-  timeframe,
-  percentChange,
+  // assetIds,
+  // accountId,
+  // timeframe,
+  // percentChange,
   isRainbowChart,
   height = '350px',
-  setPercentChange,
+  // setPercentChange,
   color = 'chart.stroke',
   formatFn = (n: any) => `$${abbreviateNumber(n)}`,
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
-  const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
+  // const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
 
-  const assets = useMemo(() => {
-    if (!selectAssetsByIds) return []
-    return selectAssetsByIds(assetIds)
-  }, [assetIds, selectAssetsByIds])
+  // const assets = useMemo(() => {
+  //   if (!selectAssetsByIds) return []
+  //   return selectAssetsByIds(assetIds)
+  // }, [assetIds, selectAssetsByIds])
 
   // const color = useMemo(() => {
   //   const defaultColor = 'chart.stroke'

@@ -335,7 +335,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     ;(async () => {
       const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
       const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
+      // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
       dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
     })()
   }, [state.transaction, explorer, chainId])
@@ -461,19 +461,19 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
         ;(async() => {
           const transaction = await web3.eth.getTransaction(hash)
-          console.log('Test tx: transaction', transaction)
+          // console.log('Test tx: transaction', transaction)
           if (transaction){
             dispatch({type: 'SET_TRANSACTION', payload: transaction})
             setTimeout(() => {
               (async() => {
                 const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)
-                console.log('Test tx: receipt', receipt)
+                // console.log('Test tx: receipt', receipt)
                 if (receipt) {
                   dispatch({type: 'SET_RECEIPT', payload: receipt})
 
                   setTimeout(() => {
                     // receipt.status = 'success'
-                    console.log('Test tx: confirmation')
+                    // console.log('Test tx: confirmation')
                     dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
                     dispatch({type: 'SET_LAST_TRANSACTION', payload: null})
                     // if (receipt.status) {
@@ -519,7 +519,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
       }
 
-      console.log('sendOptions', contractSendMethod, sendOptions)
+      // console.log('sendOptions', contractSendMethod, sendOptions)
 
       dispatch({type: 'CREATE', payload: {
         amount,
@@ -529,9 +529,9 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         contractSendMethod
       }})
 
-      const transactionHandler = contractSendMethod.send(sendOptions)
+      contractSendMethod.send(sendOptions)
         .on("transactionHash", async (hash: string) => {
-          console.log('transactionHash', hash)
+          // console.log('transactionHash', hash)
           dispatch({type: 'SET_HASH', payload: hash})
           dispatch({type: 'SET_STATUS', payload: "pending"})
 
@@ -543,11 +543,11 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           })()
         })
         .on("receipt", (receipt: TransactionReceipt) => {
-          console.log('receipt', receipt)
+          // console.log('receipt', receipt)
           dispatch({type: 'SET_RECEIPT', payload: receipt})
         })
         .once("confirmation", (confirmationNumber: number, receipt: TransactionReceipt) => {
-          console.log('confirmation', confirmationNumber, receipt)
+          // console.log('confirmation', confirmationNumber, receipt)
           dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
           if (receipt.status) {
             dispatch({type: 'SET_STATUS', payload: "success"})
@@ -558,7 +558,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           }
         })
         .on("error", (error: ErrnoException) => {
-          console.log('error', error)
+          // console.log('error', error)
           dispatch({type: 'SET_ERROR', payload: error})
           dispatch({type: 'SET_STATUS', payload: 'failed'})
         });
@@ -567,7 +567,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Send again the transaction
   const retry = useCallback(() => {
-    console.log('retry', state.transaction.contractSendMethod)
+    // console.log('retry', state.transaction.contractSendMethod)
     if (!state.transaction.contractSendMethod) return
     sendTransaction(state.transaction.vaultId, state.transaction.assetId, state.transaction.contractSendMethod, state.transaction.actionType, state.transaction.amount)
   }, [sendTransaction, state.transaction.vaultId, state.transaction.assetId, state.transaction.contractSendMethod, state.transaction.actionType, state.transaction.amount])

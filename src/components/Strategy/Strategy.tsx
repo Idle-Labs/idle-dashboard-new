@@ -15,7 +15,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { ContainerProps, Flex, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { Flex, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -97,7 +97,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
   */
 }
 
-export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
+export const Strategy: React.FC = () => {
 
   const navigate = useNavigate()
   const translate = useTranslate()
@@ -136,7 +136,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(`defi.${id}`),
-        sortType: sortTypeFn ? (a: any, b: any, field: any, c: any) => sortTypeFn(a, b, accessor, c) : undefined,
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return (
             <TableField field={id} value={value} row={row} />
@@ -157,7 +157,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(`defi.${id}`),
-        sortType: sortTypeFn ? (a: any, b: any, field: any, c: any) => sortTypeFn(a, b, accessor, c) : undefined,
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return (
             <TableField field={id} value={value} row={row} />
@@ -177,7 +177,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     {
       accessor:'balanceUsd',
       Header:translate('defi.balance'),
-      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
+      Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
@@ -189,7 +189,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
     {
       accessor:'vaultPosition',
       Header:translate('defi.realizedApy'),
-      Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
+      Cell: ({ value/*, row*/ }: { value: VaultPosition | undefined/*; row: RowProps*/ }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             {
@@ -211,7 +211,7 @@ export const Strategy: React.FC<ContainerProps> = ({ children, ...rest }) => {
           </SkeletonText>
         )
       },
-      sortType: (a: any, b: any, field: any, c: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage', c)
+      sortType: (a: any, b: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage')
     },
   ]), [translate, strategyColumnsDeposit])
 

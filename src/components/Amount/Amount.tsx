@@ -51,7 +51,7 @@ export const Amount = ({
 
 export const Percentage: React.FC<PercentageProps> = ({
   value,
-  maxValue = 9999,
+  // maxValue = 9999,
   ...props
 }) => {
   const parsedValue = numberToPercentage(value)
