@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkidle_dashboard_new=self.webpackChunkidle_dashboard_new||[]).push([[6765],{56765:function(n,e,u){u.r(e),u.d(e,{Stats:function(){return r}});var r=function(){return null}}}]);

@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkidle_dashboard_new=self.webpackChunkidle_dashboard_new||[]).push([[1881],{1881:function(n,e,u){u.r(e),u.d(e,{Stats:function(){return r}});var r=function(){return null}}}]);
-//# sourceMappingURL=1881.dd03fa91.chunk.js.map
