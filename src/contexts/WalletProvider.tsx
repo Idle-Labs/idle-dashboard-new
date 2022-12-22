@@ -4,6 +4,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
 import { onboardInitParams } from './configs/onboard'
 import type { WalletState } from '@web3-onboard/core'
+import { usePrevious } from 'hooks/usePrevious/usePrevious'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
@@ -13,6 +14,7 @@ init(onboardInitParams)
 
 type ContextProps = {
   account: Account | null
+  prevAccount: Account | null | undefined
   chainId: number
   network: Network | null
   explorer: Explorer | null
@@ -33,6 +35,7 @@ const initialState: ContextProps = {
   explorer: null,
   chainToken: null,
   connecting: false,
+  prevAccount: null,
   connect: () => {},
   disconnect: () => {},
   setChainId: () => {},
@@ -53,6 +56,8 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
+
+  const prevAccount = usePrevious<Account | null>(account)
 
   const chainIdHex = useMemo(() => {
     return chains[chainId].id
@@ -129,7 +134,7 @@ export function WalletProvider({ children }: ProviderProps) {
   // console.log('wallet', wallet, 'account', account, 'network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainId', chainId, 'connecting', connecting)
 
   return (
-    <WalletProviderContext.Provider value={{wallet, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

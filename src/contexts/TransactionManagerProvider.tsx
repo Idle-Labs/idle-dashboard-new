@@ -455,7 +455,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       }})
 
       setTimeout(() => {
-        const hash = '0x7af6ac0d4f21beca905bca30be1a3d73b7634e8635c13edca5a4e74aa276c9c2'
+        const hash = '0xa8e9499cf134f381ac1b65a5b62c42929a56462e8dff8898a532dc1e933bc3b7'
         dispatch({type: 'SET_HASH', payload: hash})
         dispatch({type: 'SET_STATUS', payload: "pending"})
 
@@ -474,12 +474,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
                   setTimeout(() => {
                     // receipt.status = 'success'
                     // console.log('Test tx: confirmation')
+                    dispatch({type: 'SET_STATUS', payload: "success"})
                     dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
                     dispatch({type: 'SET_LAST_TRANSACTION', payload: null})
                     // if (receipt.status) {
                     //   dispatch({type: 'SET_STATUS', payload: "success"})
                     // } else if (!receipt.status) {
-                      dispatch({type: 'SET_STATUS', payload: "success"})
                       // dispatch({type: 'SET_STATUS', payload: "failed"})
                     // }
                   }, 1000)

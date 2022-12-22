@@ -159,6 +159,10 @@ export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, min
   return newValue;
 }
 
+export async function asyncWait(duration: number) {
+  return new Promise(resolve => setTimeout(resolve, duration));
+}
+
 export function requestTimeout(callback: Function, delay: number) {
   // Create an object to store the timeout id and state
   const timeout: {id: number | null, stopped: boolean} = {
@@ -235,6 +239,7 @@ export const getTimestampRange = (startDate: (Date | number | string), endDate: 
     return +(dayjs(startDayTimestamp+(dayTimestamp*dayIndex)).startOf('day').valueOf())
   })
 }
+
 
 export const catchPromise = async (promise: Promise<any>) => {
   return promise

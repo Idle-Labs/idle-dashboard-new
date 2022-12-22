@@ -1043,7 +1043,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   }, [actionType, transactionState.actionType])
 
   const amountToDisplay = useMemo(() => {
-    return transactionState.amount ? abbreviateNumber(transactionState.amount, 8) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8))
+    return transactionState.amount ? abbreviateNumber(bnOrZero(transactionState.amount), 8) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(bnOrZero(amount), 8))
   }, [amount, translate, transactionState.amount])
 
   const assetToDisplay = useMemo(() => {
@@ -1431,9 +1431,13 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       intervalId.current = null
     }
 
-    intervalId.current = setInterval(() => {
-      updateGasPrices()
-    }, 20000)
+    // Update gas prices only when the user is not interacting
+    if (!transactionState.status || ['success','failed'].includes(transactionState.status)){
+      intervalId.current = setInterval(() => {
+        updateGasPrices()
+      }, 20000)
+      // console.log('intervalId.current', intervalId.current)
+    }
 
     return () => {
       if (intervalId.current){
@@ -1441,7 +1445,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       intervalId.current = null
     }
     }
-  }, [updateGasPrices])
+  }, [transactionState, updateGasPrices])
 
   useEffect(() => {
     const actionType = activeStep ? activeStep.type : activeAction.type

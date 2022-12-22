@@ -19,9 +19,14 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray } from 'helpers/'
+import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait } from 'helpers/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
+
+type VaultsPositions = {
+  vaultsPositions: Record<string, VaultPosition>
+  vaultsTransactions: Record<string, Transaction[]>
+}
 
 type VaultsOnchainData = {
   fees: Balances
@@ -50,12 +55,12 @@ type InitialState = {
   helpers: Record<any, any>
   isPortfolioLoaded: boolean
   protocolToken: Asset | null
-  transactions: Transaction[]
   contracts: GenericContract[]
   gaugesRewards: GaugesRewards
   isVaultsPositionsLoaded: boolean
   portfolioTimestamp: number | null
   selectors: Record<string, Function>
+  transactions: Record<string, Transaction[]>
   vaultsPositions: Record<string, VaultPosition>
   historicalRates: Record<AssetId, HistoryData[]>
   historicalPrices: Record<AssetId, HistoryData[]>
@@ -83,7 +88,7 @@ const initialState: InitialState = {
   balancesUsd: {},
   lastHarvests: {},
   vaultsPrices: {},
-  transactions: [],
+  transactions: {},
   stakingData: null,
   totalSupplies: {},
   vaultsRewards: {},
@@ -206,8 +211,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const { web3, web3Rpc, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
-  const { walletInitialized, connecting, account, chainId, explorer } = useWalletProvider()
+  const { walletInitialized, connecting, account, prevAccount, chainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
+
+  const accountChanged = useMemo(() => {
+    return !!account && !!prevAccount && account.address !== prevAccount.address
+  }, [account, prevAccount])
 
   const generateAssetsData = (vaults: Vault[]) => {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
@@ -338,7 +347,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return new GenericContractsHelper({chainId, web3, multiCall, contracts: state.contracts})
   }, [chainId, web3, multiCall, state.contracts])
 
-  const getUserTransactions = useCallback( async (startBlock: number, endBlock: string | number = 'latest'): Promise<EtherscanTransaction[]> => {
+  const getUserTransactions = useCallback( async (startBlock: number, endBlock: string | number = 'latest', count = 0): Promise<EtherscanTransaction[]> => {
     if (!account?.address || !explorer || !chainId) return []
     const cacheKey = `${explorer.endpoints[chainId]}?module=account&action=tokentx&address=${account.address}`
     const cachedData = cacheProvider && cacheProvider.getCachedUrl(cacheKey)
@@ -362,14 +371,31 @@ export function PortfolioProvider({ children }:ProviderProps) {
       cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
     }
 
-    // console.log('getUserTransactions', startBlock, endBlock, cachedData, endpoint, etherscanTransactions, Array.from(dataToCache.values()))
+    const userTransactions = Array.from(dataToCache.values()) as EtherscanTransaction[]
 
-    return Array.from(dataToCache.values()) as EtherscanTransaction[]
-  }, [account?.address, explorer, chainId, cacheProvider])
+    // console.log('getUserTransactions', 'count', count, 'startBlock', startBlock, 'endBlock', endBlock, 'lastTransaction', lastTransaction, 'cachedData', cachedData, 'endpoint', endpoint, 'etherscanTransactions', etherscanTransactions, 'userTransactions', userTransactions)
 
-  const getVaultsPositions = useCallback( async (vaults: Vault[], test = false) => {
+    // Look for lastTransaction hash, otherwise wait and retry
+    if (lastTransaction?.hash){
+      const lastTransactionFound = userTransactions.find( (tx: EtherscanTransaction) => tx.hash.toLowerCase()===lastTransaction?.hash?.toLowerCase() )  
+      if (!lastTransactionFound && count<=10){
+        // console.log('lastTransaction hash NOT FOUND, wait 1s and try again, COUNT: ', count)
+        await asyncWait(1000)
+        return await getUserTransactions(startBlock, endBlock, count+1)
+      }
+    }
 
-    if (!account?.address || !explorer || !chainId) return
+    return userTransactions
+  }, [account?.address, explorer, lastTransaction, chainId, cacheProvider])
+
+  const getVaultsPositions = useCallback( async (vaults: Vault[], test = false): Promise<VaultsPositions> => {
+
+    const output: VaultsPositions = {
+      vaultsPositions: {},
+      vaultsTransactions: {}
+    }
+
+    if (!account?.address || !explorer || !chainId || test) return output
 
     // const startTimestamp = Date.now()
 
@@ -379,9 +405,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!startBlock) return vaultBlockNumber
       return Math.min(startBlock, vaultBlockNumber)
     }, 0)
-    
-    const etherscanTransactions = await getUserTransactions(startBlock, test ? '14133495' : 'latest')
-    // console.log('etherscanTransactions', startBlock, etherscanTransactions)
+      
+    const endBlock = test ? '14133495' : 'latest'
+    const etherscanTransactions = await getUserTransactions(startBlock, endBlock)
+    // console.log('etherscanTransactions', test, startBlock, endBlock, etherscanTransactions)
 
     const vaultsTransactions: Record<string, Transaction[]> = await asyncReduce<Vault, Record<string, Transaction[]>>(
       vaults,
@@ -579,12 +606,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     }, {})
 
+    output.vaultsPositions = vaultsPositions
+    output.vaultsTransactions = vaultsTransactions
+
     // console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
-    return {
-      vaultsPositions,
-      vaultsTransactions
-    }
+    return output
   }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
@@ -1285,10 +1312,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('Last Transaction Asset', asset)
 
     (async () => {
-      console.log('Update vaults after transaction', vaults)
+      // console.log('Update vaults after transaction', lastTransaction, vaults)
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
       if (!vaultsOnChainData) return
-      console.log('getVaultsOnchainData', vaultsOnChainData)
+      // console.log('getVaultsOnchainData', vaultsOnChainData)
 
       const {
         fees,
@@ -1937,23 +1964,20 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!isEmpty(state.aprs) && !account?.address) {
       return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
     }
-    
-    // console.log('Loading Portfolio', account?.address, state.isPortfolioLoaded, state.aprs)
 
     // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
 
-    (async () => {
+    ;(async () => {
       // const startTimestamp = Date.now()
 
       // Update balances only if account changed
-      const enabledCalls = []
-      if (!isEmpty(state.aprs)) {
-        enabledCalls.push('balances', 'rewards')
-      }
+      const enabledCalls = isEmpty(state.aprs) ? [] : ['balances', 'rewards']
+
+      // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls)
 
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
       if (!vaultsOnChainData) return
-      // console.log('Vaults Data', state.vaults, enabledCalls, vaultsOnChainData)
+      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
 
       const {
         fees,
@@ -1981,58 +2005,73 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Always update assets data
       // dispatch({type: 'SET_ASSETS_DATA', payload: {...state.assetsData, ...assetsData}})
 
-      if (!enabledCalls.length || enabledCalls.includes('fees')) {
-        dispatch({type: 'SET_FEES', payload: {...state.fees, ...fees}})
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        dispatch({type: 'SET_APR_RATIOS', payload: {...state.aprRatios, ...aprRatios}})
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        dispatch({type: 'SET_BASE_APRS', payload: {...state.baseAprs, ...baseAprs}})
-      }
-      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
-        dispatch({type: 'SET_ALLOCATIONS', payload: {...state.allocations, ...allocations}})
-      }
       
       dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
       dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
 
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        dispatch({type: 'SET_APRS', payload: {...state.aprs, ...aprs}})
+      if (!enabledCalls.length || enabledCalls.includes('fees')) {
+        const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
+        dispatch({type: 'SET_FEES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        dispatch({type: 'SET_ADDITIONAL_APRS', payload: {...state.additionalAprs, ...additionalAprs}})
+        const payload = !enabledCalls.length || accountChanged ? aprRatios : {...state.aprRatios, ...aprRatios}
+        dispatch({type: 'SET_APR_RATIOS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        dispatch({type: 'SET_APRS_BREAKDOWN', payload: {...state.aprsBreakdown, ...aprsBreakdown}})
+        const payload = !enabledCalls.length || accountChanged ? baseAprs : {...state.baseAprs, ...baseAprs}
+        dispatch({type: 'SET_BASE_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
+        const payload = !enabledCalls.length || accountChanged ? allocations : {...state.allocations, ...allocations}
+        dispatch({type: 'SET_ALLOCATIONS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? aprs : {...state.aprs, ...aprs}
+        dispatch({type: 'SET_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? additionalAprs : {...state.additionalAprs, ...additionalAprs}
+        dispatch({type: 'SET_ADDITIONAL_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? aprsBreakdown : {...state.aprsBreakdown, ...aprsBreakdown}
+        dispatch({type: 'SET_APRS_BREAKDOWN', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
-        dispatch({type: 'SET_REWARDS', payload: {...state.rewards, ...rewards}})
+        const payload = !enabledCalls.length || accountChanged ? rewards : {...state.rewards, ...rewards}
+        dispatch({type: 'SET_REWARDS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
-        dispatch({type: 'SET_VAULTS_REWARDS', payload: {...state.vaultsRewards, ...vaultsRewards}})
+        // console.log('SET_VAULTS_REWARDS', enabledCalls, state.vaultsRewards, vaultsRewards)
+        const payload = !enabledCalls.length || accountChanged ? vaultsRewards : {...state.vaultsRewards, ...vaultsRewards}
+        dispatch({type: 'SET_VAULTS_REWARDS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        dispatch({type: 'SET_BALANCES', payload: {...state.balances, ...balances}})
+        const payload = !enabledCalls.length || accountChanged ? balances : {...state.balances, ...balances}
+        dispatch({type: 'SET_BALANCES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs})
+        dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        dispatch({type: 'SET_GAUGES_DATA', payload: {...state.gaugesData, ...gaugesData}})
+        const payload = !enabledCalls.length || accountChanged ? gaugesData : {...state.gaugesData, ...gaugesData}
+        dispatch({type: 'SET_GAUGES_DATA', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
-        dispatch({type: 'SET_PRICES_USD', payload: {...state.pricesUsd, ...pricesUsd}})
+        const payload = !enabledCalls.length || accountChanged ? pricesUsd : {...state.pricesUsd, ...pricesUsd}
+        dispatch({type: 'SET_PRICES_USD', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('prices')) {
-        dispatch({type: 'SET_VAULTS_PRICES', payload: {...state.vaultsPrices, ...vaultsPrices}})
+        const payload = !enabledCalls.length || accountChanged ? vaultsPrices : {...state.vaultsPrices, ...vaultsPrices}
+        dispatch({type: 'SET_VAULTS_PRICES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('totalSupplies')) {
-        dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {...state.totalSupplies, ...totalSupplies}})
+        const payload = !enabledCalls.length || accountChanged ? totalSupplies : {...state.totalSupplies, ...totalSupplies}
+        dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
       }
 
       // Don't update if partial loading
-      if (!state.isPortfolioLoaded) {
+      if (!state.isPortfolioLoaded || accountChanged) {
         dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
       }
 
@@ -2063,11 +2102,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     ;(async () => {
 
-      const test = false //!state.isVaultsPositionsLoaded
-      const results = await getVaultsPositions(state.vaults, test)
-      // console.log('getVaultsPositions', state.balances, results)
+      const test = false//!state.isVaultsPositionsLoaded
 
-      if (!results) return
+      const results = await getVaultsPositions(state.vaults, test)
+      // console.log('getVaultsPositions', test, results)
 
       const {
         vaultsPositions,
