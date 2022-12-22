@@ -57,9 +57,8 @@
     "clean": "rimraf node_modules",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public",
-    "deploy": "echo 'dashboard.idle.finance\nwww.dashboard.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
-    "deploy-prod": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
-    "deploy-app": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote app"
+    "deploy": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
+    "build-deploy": "yarn build && yarn deploy"
   },
   "browserslist": {
     "production": [

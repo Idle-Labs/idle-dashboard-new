@@ -195,6 +195,7 @@ export const Dashboard: React.FC = () => {
                             <Skeleton width={'100%'} height={10} />
                             <Skeleton width={'100%'} height={10} />
                             <Skeleton width={'100%'} height={10} />
+                            <Skeleton width={'100%'} height={10} />
                           </>
                         ) : strategyPositions.length>0 ?
                           strategyPositions.sort((a: AssetId, b: AssetId) => vaultsPositions[a].usd?.redeemable && vaultsPositions[b].usd?.redeemable ? (vaultsPositions[a].usd.redeemable.gt(vaultsPositions[b].usd.redeemable.toString()) ? -1 : 1) : 1 ).map( (assetId: AssetId) => (
