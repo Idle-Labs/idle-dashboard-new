@@ -995,6 +995,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
+      /*
       USDCStaking:{
         status:'beta',
         autoFarming:[],
@@ -1071,7 +1072,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             address:'0x271db794317B44827EfE81DeC6193fFc277050F6'
           }
         }
-      },
+      }*/
     },
     clearpool:{
       USDC:{
