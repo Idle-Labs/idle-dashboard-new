@@ -806,7 +806,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     //     'claimable', claimable)
 
     // console.log('stkIdleResults', stkIdleResults)
-    // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
+    // console.log('vaultsLastHarvests', vaultsLastHarvests)
 
     const [
       stkIdleTotalLocked,

@@ -70,6 +70,7 @@ export class VaultFunctionsHelper {
     const rawCalls: CallData[] = [
       this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVAA'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVBB'),
+      this.multiCall.getCallData(trancheVault.cdoContract, 'latestHarvestBlock'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
     ].filter( (call): call is CallData => !!call )
 
@@ -86,9 +87,13 @@ export class VaultFunctionsHelper {
     const [
       trancheNAVAA,
       trancheNAVBB,
+      latestHarvestBlock,
       trancheAPRSplitRatio
     ] = multicallResults.map( r => BNify(r.data) )
+
     const lastHarvestBlock = this.web3.utils.hexToNumber(lastHarvestBlockHex)
+
+    // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlockHex, lastHarvestBlock, latestHarvestBlock)
 
     if (!lastHarvestBlock) return lastHarvest
 
