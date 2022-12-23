@@ -16,6 +16,7 @@ export type AmountProps = {
 
 export type PercentageProps = {
   maxValue?: number
+  minValue?: number
 } & AmountProps
 
 export const Amount = ({
@@ -51,10 +52,12 @@ export const Amount = ({
 
 export const Percentage: React.FC<PercentageProps> = ({
   value,
-  // maxValue = 9999,
+  decimals,
+  minValue = 0,
+  maxValue = 9999,
   ...props
 }) => {
-  const parsedValue = numberToPercentage(value)
+  const parsedValue = numberToPercentage(value, decimals, maxValue, minValue)
   return (
     <Amount abbreviate={false} value={parsedValue} {...props} />
   )

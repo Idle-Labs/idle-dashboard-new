@@ -92,7 +92,7 @@ export const GaugeStaking: React.FC = () => {
                 justifyContent={'center'}
               >
                 <Translation component={Text} translation={'defi.share'} textStyle={'titleSmall'} />
-                <AssetProvider.GaugeShare textStyle={'heading'} fontSize={'h3'} />
+                <AssetProvider.GaugeShare minValue={0.01} textStyle={'heading'} fontSize={'h3'} />
               </VStack>
 
               <VStack
@@ -193,7 +193,7 @@ export const GaugeStaking: React.FC = () => {
                           alignItems={'flex-start'}
                           justifyContent={'flex-start'}
                         >
-                          <Translation component={Text} translation={'defi.apr'} textStyle={'captionSmall'} />
+                          <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
                           <Amount.Percentage textStyle={'tableCell'} value={rewardData.apr} />
                         </VStack>
 

@@ -221,13 +221,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const generateAssetsData = (vaults: Vault[]) => {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
       const vaultAssetsData = vault.getAssetsData()
+      const status = ("status" in vault) && vault.status ? vault.status : 'production'
 
       // Add assets IDs
       const vaultAssetsDataWithIds = Object.keys(vaultAssetsData).reduce( (vaultAssetsDataWithIds: Assets, assetId: AssetId) => {
         vaultAssetsDataWithIds[assetId] = {
           id: assetId,
           ...vaultAssetsData[assetId],
-          status: 'production'
+          status
         }
         return vaultAssetsDataWithIds
       }, {})
@@ -397,7 +398,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (!account?.address || !explorer || !chainId || test) return output
 
-    // const startTimestamp = Date.now()
+    const startTimestamp = Date.now()
 
     const startBlock = vaults.reduce( (startBlock: number, vault: Vault): number => {
       if (!("getBlockNumber" in vault)) return startBlock
@@ -609,7 +610,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     output.vaultsPositions = vaultsPositions
     output.vaultsTransactions = vaultsTransactions
 
-    // console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
+    console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return output
   }, [account, explorer, chainId, selectVaultPrice, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
@@ -1907,15 +1908,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Get Historical data
     ;(async () => {
-      // const startTimestamp = Date.now();
+      const startTimestamp = Date.now();
 
       // Fetch historical data from the first deposit (min 1 year)
       const vaultsHistoricalDataPromises = state.vaults.reduce( (promises: Promise<any>[], vault: Vault): Promise<any>[] => {
         const asset = selectAssetById(vault.id)
         if (asset) {
           // const firstDepositTimestamp = asset.vaultPosition?.firstDepositTx?.timeStamp
-          const startTimestamp = /*firstDepositTimestamp ? firstDepositTimestamp : */dayjs().subtract(1, 'year').unix()
-          const start = Math.round(dayjs(+startTimestamp*1000).startOf('day').valueOf()/1000)
+          const startTime = /*firstDepositTimestamp ? firstDepositTimestamp : */dayjs().subtract(1, 'year').unix()
+          const start = Math.round(dayjs(+startTime*1000).startOf('day').valueOf()/1000)
           const end = Math.round(dayjs().endOf('day').valueOf()/1000)
 
           // Get vaults historical rates
@@ -1950,7 +1951,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
 
-      // console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+      console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
 
   // eslint-disable-next-line
@@ -1968,7 +1969,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
 
     ;(async () => {
-      // const startTimestamp = Date.now()
+      const startTimestamp = Date.now()
 
       // Update balances only if account changed
       const enabledCalls = isEmpty(state.aprs) ? [] : ['balances', 'rewards']
@@ -2075,7 +2076,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
       }
 
-      // console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
+      console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
     })()
 
     // Cleanup
@@ -2141,7 +2142,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     if (isEmpty(state.balances) || isEmpty(state.vaultsPositions)) return
 
-    // const startTimestamp = Date.now();
+    const startTimestamp = Date.now();
 
     const balancesUsd = Object.keys(state.balances).reduce( (balancesUsd: Balances, assetId) => {
       const asset = selectAssetById(assetId)
@@ -2167,7 +2168,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
-    // console.log('BALANCES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+    console.log('BALANCES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
 
     // Cleanup
     return () => {

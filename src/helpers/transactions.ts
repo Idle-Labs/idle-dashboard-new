@@ -14,10 +14,14 @@ export const getAllowance = async (contract: Contract, owner: string, spender: s
   return BNify(allowance)
 }
 
-export const estimateGasLimit = async (contractSendMethod: ContractSendMethod, callOptions: CallOptions = {}, minGasLimit = 0): Promise<number | undefined> => {
+export const estimateGasLimit = async (contractSendMethod: ContractSendMethod, callOptions: CallOptions = {}, minGasLimit = 0, addPercentage = 0): Promise<number | undefined> => {
   const gas = await contractSendMethod.estimateGas(callOptions).catch( /*err => null*/ );
   if (!gas) return
-  return BigNumber.maximum(BNify(gas), minGasLimit).integerValue(BigNumber.ROUND_FLOOR).toNumber()
+  let gasLimit = BigNumber.maximum(BNify(gas), BNify(minGasLimit))
+  if (addPercentage){
+    gasLimit = gasLimit.plus(gasLimit.times(BNify(addPercentage).div(100)))
+  }
+  return gasLimit.integerValue(BigNumber.ROUND_FLOOR).toNumber()
 }
 
 export const getBlockBaseFeePerGas = async (web3: Web3, blockNumber: string | number = 'latest'): Promise<number | null> => {

@@ -509,7 +509,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         gas,
         baseFeePerGas
       ] = await Promise.all([
-        estimateGasLimit(contractSendMethod, sendOptions),
+        estimateGasLimit(contractSendMethod, sendOptions, 0, 5), // Add 5% to estimated gas limit
         getBlockBaseFeePerGas(web3)
       ])
 
@@ -519,7 +519,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
       }
 
-      // console.log('sendOptions', contractSendMethod, sendOptions)
+      // console.log('sendOptions', contractSendMethod, gas, baseFeePerGas, sendOptions)
 
       dispatch({type: 'CREATE', payload: {
         amount,

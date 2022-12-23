@@ -425,10 +425,11 @@ const Deposited: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const GaugeShare: React.FC<AmountProps> = (props) => {
+const GaugeShare: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const share = asset && asset.totalSupply && BNify(asset?.vaultPosition?.underlying.redeemable).div(asset.totalSupply)
+
   return share ? (
     <Amount.Percentage value={share} {...props} />
   ) : <Spinner size={'sm'} />
@@ -779,7 +780,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon size={'xs'} />
+          <ProtocolIcon size={'sm'} />
           <ProtocolName textStyle={'tableCell'} {...props} />
         </HStack>
       )

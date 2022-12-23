@@ -42,8 +42,10 @@ export const isBigNumberNaN = (amount: any) => {
   return isNull || isUndefined || (isBigNumber && BNify(amount).isNaN())
 }
 
-export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999) => {
-  return isBigNumberNaN(value) ? '-' : (maxValue && BNify(value).gt(maxValue) ? `>${maxValue}` : BNify(value).toFixed(decimals))+'%'
+export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999, minValue = 0) => {
+  const isOverMaxValue = maxValue && BNify(value).gt(maxValue)
+  const isBelowMinValue = minValue && BNify(value).lt(minValue)
+  return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals)))+'%'
 }
 
 export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {

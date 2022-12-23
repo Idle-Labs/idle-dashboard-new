@@ -1,15 +1,15 @@
-import type { Abi } from './types'
-import aToken from 'abis/aave/AToken.json';
-import ERC20 from 'abis/tokens/ERC20.json';
-import cToken from 'abis/compound/cDAI.json';
-import IdleCDO from 'abis/idle/IdleCDO.json';
-import IdleTokenV4 from 'abis/idle/IdleTokenV4.json';
-import IdleStrategy from 'abis/idle/IdleStrategy.json';
-import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json';
-import LiquidityGauge from 'abis/idle/LiquidityGauge.json';
-import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json';
-import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json';
-import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json';
+import aToken from 'abis/aave/AToken.json'
+import ERC20 from 'abis/tokens/ERC20.json'
+import cToken from 'abis/compound/cDAI.json'
+import IdleCDO from 'abis/idle/IdleCDO.json'
+import type { Abi, VaultStatus } from './types'
+import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
+import IdleStrategy from 'abis/idle/IdleStrategy.json'
+import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
+import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
+import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
+import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
+import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
 
 export const vaultsStatusSchemes: Record<string, string> = {
   'production' : 'green',
@@ -74,6 +74,7 @@ export interface Tranche {
 
 export interface TrancheConfig {
   protocol:string
+  status?: VaultStatus
   enabledEnvs?: string[]
   curveApyPath?: string[]
   adaptiveYieldSplitEnabled?: boolean
@@ -993,7 +994,84 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             address:'0xcf5FD05F72cA777d71FB3e38F296AAD7cE735cB7'
           }
         }
-      }
+      },
+      USDCStaking:{
+        status:'beta',
+        autoFarming:[],
+        enabledEnvs: [],
+        protocol:'euler',
+        blockNumber:16246945,
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_euler_USDC',
+          address:'0xf615a552c000B114DdAa09636BBF4205De49333c'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_euler_USDC',
+          address:'0x0FE4Fc1301aFe4aFE8C3ac288c3E13cDaCe71b04'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_euler_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            name:'AA_euler_USDC',
+            blockNumber:16246945,
+            token:'AA_euler_USDC',
+            label:'euler USDC AA',
+            address:'0x1AF0294524093BFdF5DA5135853dC2fC678C12f7'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_euler_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            name:'BB_euler_USDC',
+            blockNumber:16246945,
+            token:'BB_euler_USDC',
+            label:'euler USDC BB',
+            address:'0x271db794317B44827EfE81DeC6193fFc277050F6'
+          }
+        }
+      },
     },
     clearpool:{
       USDC:{

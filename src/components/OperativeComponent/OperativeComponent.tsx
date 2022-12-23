@@ -16,7 +16,7 @@ import type { Asset, ReducerActionTypes, AssetId, NumberType } from 'constants/t
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy } from 'helpers/'
+import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
 
@@ -424,20 +424,28 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
+  const getDepositAllowance = useCallback(async (): Promise<BigNumber> => {
+    if (!underlyingAsset || !vault || !("getAllowanceContract" in vault)) return BNify(0)
+    if (!account?.address) return BNify(0)
+
+    const allowanceContract = vault.getAllowanceContract()
+    if (!allowanceContract) return BNify(0)
+
+    const vaultOwner = getVaultAllowanceOwner(vault)
+    const allowance = await getAllowance(allowanceContract, account.address, vaultOwner)
+    return fixTokenDecimals(allowance, underlyingAsset.decimals)
+  }, [underlyingAsset, vault, account?.address])
+
   // Deposit
   const deposit = useCallback((checkAllowance = true) => {
     if (!account || disabled) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
-    if (!vault || !("getAllowanceContract" in vault)) return
     // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
     ;(async() => {
       // if (!underlyingAssetVault.contract) return
-      const allowanceContract = vault.getAllowanceContract()
-      if (!allowanceContract) return
 
-      const vaultOwner = getVaultAllowanceOwner(vault)
-      const allowance = checkAllowance ? await getAllowance(allowanceContract, account.address, vaultOwner) : BNify(amount)
+      const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
       
       // console.log('allowance', vaultOwner, account.address, allowance)
 
@@ -453,7 +461,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, vault, underlyingAsset, dispatch, sendTransaction])
+  }, [account, disabled, amount, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -480,21 +488,27 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
 
-    // console.log('getDefaultGasLimit', underlyingAsset, assetBalance.toFixed())
-    if (!account || assetBalance.lte(0)){
+    const allowance = await getDepositAllowance()
+
+    // console.log('getDefaultGasLimit', assetBalance.toFixed(), allowance.toFixed())
+    if (!account || assetBalance.lte(0) || allowance.lte(0)){
       return defaultGasLimit
     }
+
+    const balanceToDeposit = BigNumber.minimum(assetBalance, allowance)
+
+    // console.log('balanceToDeposit', assetBalance.toFixed(), allowance.toFixed(), balanceToDeposit.toFixed())
 
     const sendOptions = {
       from: account?.address
     }
-    const depositParams = vault.getDepositParams(assetBalance.toFixed())
+    const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
     const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
 
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
-    // console.log('DEPOSIT - estimatedGasLimit', assetBalance.toFixed(), depositParams, estimatedGasLimit)
+    // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, assetBalance])
+  }, [account, vault, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {

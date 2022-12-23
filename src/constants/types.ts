@@ -209,6 +209,8 @@ export type Harvest ={
   totalValue: BigNumber
 }
 
+export type VaultStatus = 'production' | 'beta' | 'experimental'
+
 export type Asset = {
   id?: AssetId
   icon?: string
@@ -218,7 +220,7 @@ export type Asset = {
   token: string
   decimals: number
   color?: string
-  status?: string
+  status?: VaultStatus
   lastHarvest?: Harvest | null
   underlyingId?: AssetId
   apr?: BigNumber

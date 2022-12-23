@@ -256,7 +256,8 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'status',
-        label:'assets.assetDetails.generalData.status'
+        label:'assets.assetDetails.generalData.status',
+        tooltip:'assets.assetDetails.tooltips.vaultStatus'
       },
       {
         field:'pool',
@@ -372,7 +373,8 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'status',
-        label:'assets.assetDetails.generalData.status'
+        label:'assets.assetDetails.generalData.status',
+        tooltip:'assets.assetDetails.tooltips.vaultStatus'
       },
       {
         field:'pool',

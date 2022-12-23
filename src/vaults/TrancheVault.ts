@@ -5,10 +5,10 @@ import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import type { VaultMessages } from 'constants/vaults'
-import type { Abi, NumberType } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
+import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce } from 'helpers/'
@@ -48,6 +48,7 @@ export class TrancheVault {
   public readonly strategyConfig: Strategy
   public readonly vaultConfig: TrancheConfig
   public readonly poolConfig: Pool | undefined
+  public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
@@ -83,6 +84,7 @@ export class TrancheVault {
     this.flags = vaultConfig.flags
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
+    this.status = vaultConfig.status
     this.cacheProvider = cacheProvider
     this.messages = vaultConfig.messages
     this.description = vaultConfig.description
