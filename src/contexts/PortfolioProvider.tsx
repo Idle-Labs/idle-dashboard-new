@@ -1016,12 +1016,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const filteredVaults = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
       filteredVaults.forEach( (vault: Vault) => {
         const assetId = vault.id
-
-        // assetsData[assetId] = {
-        //   ...assetsData[assetId],
-        //  lastHarvest: lastHarvest.harvest || null 
-        // }
-
         lastHarvests[assetId] = lastHarvest.harvest || null
       })
 
@@ -1059,16 +1053,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
             // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalAprs[assetId].toString()} = ${aprs[assetId].plus(additionalAprs[assetId]).toString()}`)
             aprs[assetId] = aprs[assetId].plus(additionalAprs[assetId])
             aprsBreakdown[assetId].harvest = additionalAprs[assetId]
+
+            const harvestDays = dayDiff((lastHarvests[assetId]?.timestamp!)*1000, Date.now())
+
+            // Reset harvest APY if base APY is zero
+            if (aprsBreakdown[assetId].base.lte(0) && harvestDays>1){
+              aprsBreakdown[assetId].harvest = BNify(0)
+            }
           }
-
-          // const apy = apr2apy(aprs[assetId].div(100)).times(100)
-
-          // console.log(`Apr ${asset.name}: ${aprs[assetId].toString()}`)
-          // assetsData[assetId] = {
-          //   ...assetsData[assetId],
-          //   apr: aprs[assetId],
-          //   apy
-          // }
         }
       }
       return aprs
