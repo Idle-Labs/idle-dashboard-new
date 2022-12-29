@@ -1,6 +1,8 @@
+import { checkAddress } from 'helpers/'
 import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
 import { selectUnderlyingToken } from 'selectors/'
+import { useSearchParams } from 'react-router-dom'
 import type { ProviderProps } from './common/types'
 import { onboardInitParams } from './configs/onboard'
 import type { WalletState } from '@web3-onboard/core'
@@ -49,15 +51,21 @@ const WalletProviderContext = React.createContext<ContextProps>(initialState)
 export const useWalletProvider = () => useContext(WalletProviderContext)
 
 export function WalletProvider({ children }: ProviderProps) {
+  const searchParams = useSearchParams()
   const [ { connectedChain }, setChain ] = useSetChain()
   const [ account, setAccount ] = useState<Account | null>(null)
+  const prevAccount = usePrevious<Account | null>(account)
   const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
+  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
 
-  const prevAccount = usePrevious<Account | null>(account)
+  const customAddress = useMemo(() => {
+    const walletAddress = getSearchParams.get('wallet')
+    return walletAddress && checkAddress(walletAddress) ? walletAddress : null
+  }, [getSearchParams])
 
   const chainIdHex = useMemo(() => {
     return chains[chainId].id
@@ -105,12 +113,20 @@ export function WalletProvider({ children }: ProviderProps) {
 
   // Update wallet and provider
   useEffect(() => {
-    if (connecting) return
-    if (wallet) {
+    if (customAddress){
+      setWalletProvider('metamask')
+      setAccount({
+        address: customAddress,
+        ens: null,
+        balance: {
+          ETH: "0"
+        }
+      })
+    } else if (wallet) {
+      if (connecting) return
       setWalletProvider(wallet.label)
-        
-      // console.log('setAccount', wallet.accounts[0])
       setAccount(wallet.accounts[0])
+      // console.log('setAccount', wallet.accounts[0])
 
       // Set custom wallet
       // setAccount({
@@ -121,7 +137,7 @@ export function WalletProvider({ children }: ProviderProps) {
       //   }
       // })
     }
-  }, [wallet, connecting, setWalletProvider])
+  }, [wallet, customAddress, connecting, setWalletProvider])
 
   const disconnectWallet = async () => {
     if (wallet) {

@@ -77,8 +77,8 @@ export const Dashboard: React.FC = () => {
   }, [totalDeposited, totalFunds])
 
   const userHasFunds = useMemo(() => {
-    return account && isVaultsPositionsLoaded && totalFunds.gt(0)
-  }, [account, isVaultsPositionsLoaded, totalFunds])
+    return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
+  }, [account, isVaultsPositionsLoaded, vaultsPositions])
 
   const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 
@@ -741,7 +741,7 @@ export const Dashboard: React.FC = () => {
             justifyContent={'space-between'}
           >
             {
-              !userHasFunds && (
+              totalFunds.lte(0) && (
                 <Center
                   layerStyle={'overlay'}
                   bg={'rgba(0, 0, 0, 0.4)'}
@@ -819,7 +819,7 @@ export const Dashboard: React.FC = () => {
             alignItems={'center'}
           >
             {
-              !userHasFunds && (
+              totalFunds.lte(0) && (
                 <Center
                   layerStyle={'overlay'}
                   bg={'rgba(0, 0, 0, 0.4)'}

@@ -209,6 +209,10 @@ export function requestTimeout(callback: Function, delay: number) {
   }
 }
 
+export const checkAddress = (address: string) => {
+  return address && /^0x[a-fA-F0-9]{40}$/.test(address)
+}
+
 export const lazyLoadComponent = (component: string) => {
   return lazy(() => {
     const promise = import(`components/${component}/${component}`)

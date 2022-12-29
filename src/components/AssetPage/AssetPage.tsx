@@ -18,8 +18,8 @@ export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
   const { isMobile } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
-  const [ getSearchParams, setSearchParams ] = searchParams
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
+  const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
   const { isPortfolioLoaded, selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
