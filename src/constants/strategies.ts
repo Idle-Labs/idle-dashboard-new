@@ -19,6 +19,7 @@ export type StrategyColumn = {
   title?: any
   accessor: any
   tables?: Tables[]
+  extraFields?: string[]
   sortType?: 'alpha' | 'numeric'
 }
 
@@ -201,7 +202,8 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'protocol',
         accessor:'id',
-        sortType:'alpha'
+        sortType:'alpha',
+        extraFields:['betaBadge']
       },
       {
         id:'asset',

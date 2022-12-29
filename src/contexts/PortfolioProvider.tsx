@@ -20,7 +20,7 @@ import React, { useContext, useEffect, useMemo, useCallback, useReducer } from '
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN, DASHBORD_URL } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -213,6 +213,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const { state: { lastTransaction } } = useTransactionManager()
   const { walletInitialized, connecting, account, prevAccount, chainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
+
+  const environment = useMemo(() => {
+    return window.location.origin === DASHBORD_URL ? 'prod' : 'beta'
+  }, [])
 
   const accountChanged = useMemo(() => {
     return !!account && !!prevAccount && account.address !== prevAccount.address
@@ -1547,8 +1551,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return new GenericContract(web3, chainId, contract)
     })
 
+    const checkVaultEnv = (vaultConfig: any) => {
+      if (!("enabledEnvs" in vaultConfig)) return true
+      if (("enabledEnvs" in vaultConfig) && !vaultConfig.enabledEnvs.length) return true
+      if (("enabledEnvs" in vaultConfig) && vaultConfig.enabledEnvs.includes(environment)) return true
+      return false
+    }
+
     // Init underlying tokens vaults
-    const underlyingTokensVaults = Object.keys(underlyingTokens[chainId]).reduce( ( vaultsContracts: UnderlyingToken[], token) => {
+    const underlyingTokensVaults: UnderlyingToken[] = Object.keys(underlyingTokens[chainId]).reduce( ( vaultsContracts: UnderlyingToken[], token) => {
       const tokenConfig = underlyingTokens[chainId][token]
       if (tokenConfig.address) {
         const underlyingToken = new UnderlyingToken(web3, chainId, tokenConfig)
@@ -1558,30 +1569,34 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, [])
 
     // Init tranches vaults
-    const trancheVaults = Object.keys(tranches[chainId]).reduce( (vaultsContracts: TrancheVault[], protocol) => {
+    const trancheVaults: TrancheVault[] = Object.keys(tranches[chainId]).reduce( (vaultsContracts: TrancheVault[], protocol) => {
       Object.keys(tranches[chainId][protocol]).forEach( token => {
         const vaultConfig = tranches[chainId][protocol][token]
-        const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
-        const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
-        const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
-        vaultsContracts.push(trancheVaultAA)
-        vaultsContracts.push(trancheVaultBB)
+        if (checkVaultEnv(vaultConfig)){
+          const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
+          const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
+          const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
+          vaultsContracts.push(trancheVaultAA)
+          vaultsContracts.push(trancheVaultBB)
+        }
       })
       return vaultsContracts
     }, [])
 
     // Init best yield vaults
-    const bestYieldVaults = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
+    const bestYieldVaults: BestYieldVault[] = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
       const tokenConfig = bestYield[chainId][token]
-      const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', cacheProvider})
-      vaultsContracts.push(trancheVault)
+      if (checkVaultEnv(tokenConfig)){
+        const trancheVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', cacheProvider})
+        vaultsContracts.push(trancheVault)
+      }
       return vaultsContracts
     }, [])
 
     const gaugeDistributorProxy = contracts.find( c => c.name === 'GaugeDistributorProxy' )
 
     // Init gauges vaults
-    const gaugesVaults = Object.keys(gauges).reduce( (vaultsContracts: GaugeVault[], token) => {
+    const gaugesVaults: GaugeVault[] = Object.keys(gauges).reduce( (vaultsContracts: GaugeVault[], token) => {
       const gaugeConfig = gauges[token]
       const trancheVault = trancheVaults.find( tranche => tranche.trancheConfig.address.toLowerCase() === gaugeConfig.trancheToken.address.toLowerCase() )
       if (!trancheVault) return vaultsContracts
@@ -1595,7 +1610,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const stkIdleConfig = globalContracts[chainId].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
     const feeDistributorConfig = globalContracts[chainId].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
 
-    const stakedIdleVault = new StakedIdleVault({web3, chainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
+    const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3, chainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
     // console.log('stakedIdleVault', stakedIdleVault)
 
     const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults, stakedIdleVault]
@@ -1614,7 +1629,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     };
 
   // eslint-disable-next-line
-  }, [web3, web3Rpc, chainId, cacheProvider?.isLoaded])
+  }, [web3, web3Rpc, chainId, environment, cacheProvider?.isLoaded])
 
   // Set selectors
   useEffect(() => {

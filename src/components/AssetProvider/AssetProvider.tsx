@@ -16,10 +16,10 @@ import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
-import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps } from '@chakra-ui/react'
+import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag } from '@chakra-ui/react'
+import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag, Image } from '@chakra-ui/react'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -115,9 +115,24 @@ const Symbol: React.FC<AssetFieldProps> = (props) => {
 }
 
 const ProtocolName: React.FC<AssetFieldProps> = (props) => {
-  const { vault } = useAssetProvider();
+  const { vault } = useAssetProvider()
   return (
     <Text textTransform={'uppercase'} {...props}>{vault && "protocol" in vault ? vault?.protocol : ''}</Text>
+  )
+}
+
+const BetaBadge: React.FC<ImageProps> = (props) => {
+  const { vault, translate } = useAssetProvider()
+  if (!vault || !("status" in vault) || vault.status !== 'beta') return null
+
+  return (
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate('assets.assetDetails.tooltips.experimental')}
+    >
+      <Image src={'images/vaults/experimental.png'} {...props} />
+    </Tooltip>
   )
 }
 
@@ -159,7 +174,7 @@ const ProtocolIcon: React.FC<IconProps> = ({
   showTooltip = false,
   ...props
 }) => {
-  const { vault } = useAssetProvider();
+  const { vault } = useAssetProvider()
   
   const protocol = useMemo(() => {
     if (!vault || !("protocol" in vault)) return null
@@ -216,7 +231,7 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
 }
 
 const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
-  const { vault } = useAssetProvider();
+  const { vault } = useAssetProvider()
   
   const rewardTokens = useMemo(() => {
     if (!vault || !("rewardTokens" in vault)) return children
@@ -244,7 +259,7 @@ type RewardsProps = {
 } & AvatarProps & BoxProps
 
 const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
-  const { vault } = useAssetProvider();
+  const { vault } = useAssetProvider()
   const { selectors: { selectVaultById } } = usePortfolioProvider()
   
   const rewardTokens = useMemo(() => {
@@ -285,7 +300,7 @@ type ProtocolsProps = {
 } & AvatarProps & BoxProps
 
 const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) => {
-  const { vault } = useAssetProvider();
+  const { vault } = useAssetProvider()
   // const { selectors: { selectVaultById } } = usePortfolioProvider()
   
   const protocols = useMemo(() => {
@@ -823,6 +838,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<GaugeNextWeight textStyle={'tableCell'} {...props} />)
     case 'gaugeTotalSupply':
       return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
+    case 'betaBadge':
+      return (<BetaBadge width={6} height={6} {...props} />)
     case 'rewards':
       return (
         <Rewards size={'xs'} {...props}>

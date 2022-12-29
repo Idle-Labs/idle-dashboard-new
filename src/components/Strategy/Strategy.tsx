@@ -15,7 +15,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { Flex, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -138,7 +138,18 @@ export const Strategy: React.FC = () => {
         Header: translate(`defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return (
+          return column.extraFields && column.extraFields.length>0 ? (
+            <HStack
+              spacing={2}
+            >
+              <TableField field={id} value={value} row={row} />
+              {
+                column.extraFields.map( (extraField: string) => (
+                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
+                ))
+              }
+            </HStack>
+          ) : (
             <TableField field={id} value={value} row={row} />
           )
         }
@@ -222,24 +233,6 @@ export const Strategy: React.FC = () => {
       display: 'none'
     },
     ...strategyColumns
-    /*{
-      accessor: 'id',
-      canSort: false,
-      id: 'aprLastWeek',
-      disableSortBy: true,
-      defaultCanSort: false,
-      Header: translate('defi.aprLastWeek'),
-      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
-        // console.log('aprLastWeek', value)
-        return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <AssetProvider assetId={value}>
-              <AssetProvider.HistoricalRates height={'50px'} />
-            </AssetProvider>
-          </SkeletonText>
-        )
-      }
-    },*/
   ]), [strategyColumns])
 
   const depositedAssetsData = useMemo(() => {

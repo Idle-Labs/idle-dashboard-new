@@ -543,6 +543,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, deposit])
 
+  const isBeta = useMemo(() => {
+    return vault && ("status" in vault) && vault.status === 'beta'
+  }, [vault])
+
   return (
     <AssetProvider
       flex={1}
@@ -608,6 +612,16 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               }
             </VStack>
           </HStack>
+          {
+            isBeta && (
+              <Card.Dark
+                p={2}
+                border={0}
+              >
+                <Translation textStyle={'captionSmaller'} translation={'trade.actions.deposit.messages.beta'} textAlign={'center'} />
+              </Card.Dark>
+            )
+          }
           <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
         </VStack>
         <VStack

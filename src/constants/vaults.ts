@@ -995,13 +995,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
-      /*
       USDCStaking:{
         status:'beta',
         autoFarming:[],
-        enabledEnvs: [],
         protocol:'euler',
         blockNumber:16246945,
+        enabledEnvs: ['beta'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1072,7 +1071,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             address:'0x271db794317B44827EfE81DeC6193fFc277050F6'
           }
         }
-      }*/
+      },
     },
     clearpool:{
       USDC:{

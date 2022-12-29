@@ -132,7 +132,7 @@ function AnimatedPie<Datum>({
     leave: animate ? fromLeaveTransition : enterUpdateTransition,
     keys: getKey,
   });
-  return transitions((props, arc, { key }) => {
+  return transitions((props, arc) => {
     // const [centroidX, centroidY] = path.centroid(arc);
     // const hasSpaceForLabel = arc.endAngle - arc.startAngle >= 0.1;
 
