@@ -7,7 +7,7 @@ import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { VStack, SimpleGrid, HStack, Box, Text } from '@chakra-ui/react'
+import { TextProps, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId
@@ -16,6 +16,7 @@ export type VaultCardProps = {
 type VaultCardField = {
   label: string
   field: string
+  props?: TextProps & AvatarProps & BoxProps & ThemingProps
 }
 
 export type VaultCardInlineProps = {
@@ -48,7 +49,7 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
             <AssetProvider.Icon size={'xs'} />
             {/*<AssetProvider.Name textStyle={'tableCell'} />*/}
             {
-              fields.map( (fieldInfo, index) => (
+              fields.map( (fieldInfo: VaultCardField, index: number) => (
                 <React.Fragment key={`field_${index}`}>
                   <Box
                     width={1}
@@ -60,7 +61,7 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
                     spacing={2}
                   >
                     <Translation translation={fieldInfo.label} component={Text} textStyle={'captionSmall'} />
-                    <AssetProvider.GeneralData field={fieldInfo.field} textStyle={'tableCell'} />
+                    <AssetProvider.GeneralData field={fieldInfo.field} textStyle={'tableCell'} {...fieldInfo.props} />
                   </HStack>
                 </React.Fragment>
               ))

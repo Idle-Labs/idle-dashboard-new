@@ -18,6 +18,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
+import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 // import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
@@ -708,8 +709,10 @@ export const Dashboard: React.FC = () => {
       mt={12}
       width={'100%'}
     >
+      <VaultsCarousel />
       <Stack
         mb={10}
+        pt={[16, 12]}
         spacing={10}
         width={'100%'}
         alignItems={['flex-start','center']}

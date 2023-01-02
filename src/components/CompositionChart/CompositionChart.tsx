@@ -3,6 +3,7 @@ import { abbreviateNumber } from 'helpers/'
 import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
 import { useTheme, Box } from '@chakra-ui/react'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { DonutChart } from 'components/DonutChart/DonutChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
@@ -17,6 +18,7 @@ type CompositionChartArgs = {
 export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, strategies: enabledStrategies, type }) => {
   const theme = useTheme()
   const translate = useTranslate()
+  const { isMobile } = useThemeProvider()
   const { protocolToken } = usePortfolioProvider()
 
   const {
@@ -42,11 +44,11 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
               icon && (
                 <image
                   y={'35%'}
-                  x={'46.5%'}
                   href={icon}
                   height={"34"}
                   width={"34"}
                   textAnchor={"middle"}
+                  x={isMobile ? '44.5%' : '46.5%'}
                 />
               )
             }
@@ -77,7 +79,7 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
       default:
       break;
     }
-  }, [protocolToken, compositions, theme, translate, type])
+  }, [protocolToken, compositions, theme, translate, type, isMobile])
 
   // console.log('compositions', compositions)
 

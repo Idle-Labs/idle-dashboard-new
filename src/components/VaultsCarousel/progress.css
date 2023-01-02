@@ -1,0 +1,11 @@
+@keyframes vaults-carousel-progress {
+  0% {
+    transform: translateX(0)
+  }
+  50% {
+    transform: translateX(calc(-100% + 100vw))
+  }
+  100% {
+    transform: translateX(0)
+  }
+}

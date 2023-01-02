@@ -24,11 +24,11 @@ export const Header: React.FC = () => {
           alignItems={'center'}
         >
           <AssetProvider.Icon size={'xs'} mr={2} />
-          <AssetProvider.Balance decimals={isMobile ? 0 : 2} textStyle={'cta'} />
+          <AssetProvider.Balance decimals={2} textStyle={'cta'} />
         </HStack>
       </AssetProvider>
     )
-  }, [account, chainId, isMobile])
+  }, [account, chainId])
 
   return (
     <HStack
