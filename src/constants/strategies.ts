@@ -1,9 +1,11 @@
 import { strategiesCarouselFolder, strategiesFolder } from 'constants/folders'
 
 export type GeneralDataField = {
+  props?: any
   field: string
   label: string
   tooltip?: string
+  inlineField?: string
 }
 
 export type StrategyCarouselItem = {
@@ -41,6 +43,34 @@ export type StrategyProps = {
 }
 
 export const strategies: Record<string, StrategyProps> = {
+  STK:{
+    type:'STK',
+    visible: false,
+    label:'strategies.staking.title',
+    generalDataFields:[
+      {
+        field:'stakingTvl',
+        label:'assets.assetDetails.generalData.tvl',
+        tooltip:'assets.assetDetails.tooltips.totalIDLELocked'
+      },
+      {
+        field:'stakingAPY',
+        label:'assets.assetDetails.generalData.apy',
+        tooltip:'assets.assetDetails.tooltips.stakingAPY'
+      },
+      {
+        field:'stakingTotalRewards',
+        label:'assets.assetDetails.generalData.totalRewards',
+        tooltip:'assets.assetDetails.tooltips.stakingTotalRewards'
+      },
+      {
+        field:'stakingAvgLockTimeChart',
+        inlineField:'stakingAvgLockTime',
+        label:'assets.assetDetails.generalData.avgLockTime',
+        tooltip:'assets.assetDetails.tooltips.stakingAvgLockTime',
+      }
+    ]
+  },
   GG:{
     type:'GG',
     visible: false,

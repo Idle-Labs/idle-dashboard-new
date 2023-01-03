@@ -73,6 +73,24 @@ export const dateToLocale = (timestamp: number, locale: string) => {
   return dayjs(timestamp).locale(locale).format('LLL')
 }
 
+export const formatMoney = (amount: number, decimalCount = 2, decimal = ".", thousands = ","): string | null => {
+  try {
+    decimalCount = Math.abs(decimalCount);
+    decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+    const negativeSign = amount < 0 ? "-" : "";
+
+    // @ts-ignore
+    let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+    let j = (i.length > 3) ? i.length % 3 : 0;
+
+    // @ts-ignore
+    return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+  } catch (e) {
+    return null;
+  }
+}
+
 export const formatDate = (timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) => {
   dayjs.extend(utc)
   const day = dayjs(+timestamp)

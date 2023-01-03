@@ -20,7 +20,7 @@ import React, { useContext, useEffect, useMemo, useCallback, useReducer } from '
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN, DASHBORD_URL } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN, DASHBORD_URL, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -747,7 +747,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return promises
     }, new Map())
 
-    const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'staking' ) as StakedIdleVault
+    const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'STK' ) as StakedIdleVault
     const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(account?.address, stakedIdleVault)
 
     // Get Matic NFTs
@@ -816,34 +816,42 @@ export function PortfolioProvider({ children }:ProviderProps) {
       stkIdleTotalLocked,
       stkIdleTotalSupply,
       stkIdleLock,
-      stlIdleBalance,
+      stkIdleBalance,
       stkIdleClaimable
     ] = stkIdleResults.map( r => r.data )
+
+    // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
 
     const firstRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[0] as EtherscanTransaction).timeStamp : 0
     const lastRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[stakedIdleVaultRewards.length-1] as EtherscanTransaction).timeStamp : 0
     const stkIdletotalRewardsDays = stakedIdleVaultRewards?.length ? Math.abs(lastRewardTimestamp-firstRewardTimestamp)/86400 : 0
     const stkIdleTotalRewards: BigNumber = stakedIdleVaultRewards.reduce( ( total: BigNumber, tx: EtherscanTransaction) => total.plus(fixTokenDecimals(tx.value, 18)), BNify(0) )
-    const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(365.2425).div(stkIdletotalRewardsDays).times(100)
+    const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(365.2425).div(stkIdletotalRewardsDays).times(100)
+    const avgLockTime = parseFloat(fixTokenDecimals(stkIdleTotalSupply, 18).div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(MAX_STAKING_DAYS).toFixed())
+
+    // console.log(`stkIdleTotalRewards: ${stkIdleTotalRewards.toFixed()}, stkIdleTotalLocked: ${fixTokenDecimals(stkIdleTotalLocked, 18).toFixed()}, stkIdletotalRewardsDays: ${stkIdletotalRewardsDays.toFixed()}`)
 
     const stakingData: StakingData = {
       maxApr,
-      lockEnd: +stkIdleLock.end*1000,
+      avgLockTime,
       rewardsDays: stkIdletotalRewardsDays,
-      IDLE: {
-        totalRewards: stkIdleTotalRewards,
+      position: {
+        lockEnd: +stkIdleLock.end*1000,
         claimable: fixTokenDecimals(stkIdleClaimable, 18),
         deposited: fixTokenDecimals(stkIdleLock.amount, 18),
+        balance: fixTokenDecimals(stkIdleBalance, 18),
+        share: fixTokenDecimals(stkIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(100)
+      },
+      IDLE: {
+        totalRewards: stkIdleTotalRewards,
         totalSupply: fixTokenDecimals(stkIdleTotalLocked, 18)
       },
       stkIDLE: {
-        balance: fixTokenDecimals(stlIdleBalance, 18),
         totalSupply: fixTokenDecimals(stkIdleTotalSupply, 18),
-        share: fixTokenDecimals(stlIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(100)
       }
     }
 
-    // console.log('stakingData', stakingData)
+    // console.log('stakingData', stkIdleResults, stakingData)
 
     // console.log('maticNFTs', maticNFTs)
     // console.log('gaugeRewardContracts', gaugeRewardContracts)

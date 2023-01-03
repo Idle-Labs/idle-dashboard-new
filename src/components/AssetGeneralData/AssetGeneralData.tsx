@@ -19,7 +19,7 @@ type LabelProps = {
   generalData: GeneralDataField
 }
 
-const Label: React.FC<LabelProps> = ({generalData}) => {
+const Label: React.FC<LabelProps> = ({ generalData }) => {
   const theme = useTheme()
   const translate = useTranslate()
   return generalData.tooltip ? (
@@ -40,6 +40,30 @@ const Label: React.FC<LabelProps> = ({generalData}) => {
     </HStack>
   ) : (
     <Translation component={Text} translation={generalData.label} textStyle={'captionSmall'} />
+  )
+}
+
+export const AssetGeneralDataField: React.FC<LabelProps> = ({ generalData }) => {
+  return (
+    <VStack
+      spacing={2}
+      alignItems={'flex-start'}
+      justifyContent={'flex-start'}
+    >
+      <HStack
+        width={'100%'}
+        alignItems={'center'}
+        justifyContent={'space-between'}
+      >
+        <Label generalData={generalData} />
+        {
+          generalData.inlineField && (
+            <AssetProvider.GeneralData section={'asset'} field={generalData.inlineField} />
+          )
+        }
+      </HStack>
+      <AssetProvider.GeneralData section={'asset'} field={generalData.field} {...generalData.props} />
+    </VStack>
   )
 }
 
@@ -66,19 +90,9 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
           columns={[2, Math.min(strategy?.generalDataFields.length, 5)]}
         >
           {
-            strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => {
-              return (
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
-                  justifyContent={'flex-start'}
-                  key={`field_${generalData.field}`}
-                >
-                  <Label generalData={generalData} />
-                  <AssetProvider.GeneralData section={'asset'} field={generalData.field} />
-                </VStack>
-              )
-            })
+            strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => (
+              <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
+            ))
           }
         </SimpleGrid>
         {
@@ -92,19 +106,9 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
               borderTopColor={'divider'}
             >
               {
-                strategy?.generalDataFields.slice(5).map( (generalData: GeneralDataField) => {
-                  return (
-                    <VStack
-                      spacing={2}
-                      alignItems={'flex-start'}
-                      justifyContent={'flex-start'}
-                      key={`field_${generalData.field}`}
-                    >
-                      <Label generalData={generalData} />
-                      <AssetProvider.GeneralData section={'asset'} field={generalData.field} />
-                    </VStack>
-                  )
-                })
+                strategy?.generalDataFields.slice(5).map( (generalData: GeneralDataField) => (
+                  <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
+                ))
               }
             </SimpleGrid>
           )

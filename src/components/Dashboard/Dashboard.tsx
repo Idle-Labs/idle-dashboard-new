@@ -49,7 +49,7 @@ export const Dashboard: React.FC = () => {
   }, [walletInitialized, account, isPortfolioLoaded, isVaultsPositionsLoaded])
 
   const stakedIdleVault = useMemo(() => {
-    return selectVaultsByType && selectVaultsByType('staking')?.[0]
+    return selectVaultsByType && selectVaultsByType('STK')?.[0]
   }, [selectVaultsByType])
 
   const assetIds = useMemo(() => {
@@ -500,7 +500,7 @@ export const Dashboard: React.FC = () => {
 
     const stakingUrl = getLegacyDashboardUrl('stake')
 
-    return stakingData.stkIDLE.balance.lte(0) ? (
+    return stakingData.position.balance.lte(0) ? (
       <Card
         width={'100%'}
       >
@@ -557,7 +557,7 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.stkIDLE.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
+                <Amount value={stakingData.position.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -568,7 +568,7 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'defi.share'} textStyle={'captionSmall'} />
-                <Amount.Percentage value={stakingData.stkIDLE.share} textStyle={'tableCell'} />
+                <Amount.Percentage value={stakingData.position.share} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -579,7 +579,7 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.IDLE.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+                <Amount value={stakingData.position.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -590,10 +590,10 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'staking.lockEnd'} textStyle={'captionSmall'} />
-                <Text textStyle={'tableCell'}>{formatDate(stakingData.lockEnd)}</Text>
+                <Text textStyle={'tableCell'}>{formatDate(stakingData.position.lockEnd)}</Text>
               </VStack>
             </HStack>
-            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.IDLE.claimable.toString()} width={['100%', '150px']} disabled={stakingData.IDLE.claimable.lte(0)} />
+            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
           </Stack>
         </Card>
         <Translation component={Button} translation={`dashboard.rewards.staking.cta`} width={['full', 'auto']} onClick={() => { openWindow(stakingUrl) }} variant={['ctaPrimaryOutline']} px={10} py={2} />

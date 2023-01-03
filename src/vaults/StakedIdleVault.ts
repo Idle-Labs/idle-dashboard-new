@@ -43,7 +43,7 @@ export class StakedIdleVault {
     
     // Init global data
     this.web3 = web3
-    this.type = 'staking'
+    this.type = 'STK'
     this.chainId = chainId
     this.stkIdleConfig = stkIdleConfig
     this.rewardTokenConfig = rewardTokenConfig

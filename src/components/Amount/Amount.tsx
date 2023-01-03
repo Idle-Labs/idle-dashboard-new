@@ -1,7 +1,7 @@
 import React from 'react'
 import type { NumberType } from 'constants/types'
 import { Text, TextProps } from '@chakra-ui/react'
-import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN } from 'helpers/'
+import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney } from 'helpers/'
 
 export type AmountProps = {
   value?: NumberType | null
@@ -39,6 +39,10 @@ export const Amount = ({
   if (BNify(parsedValue).lt(0)){
     prefix=`-${prefix}`
     parsedValue = Math.abs(parsedValue)
+  }
+
+  if (!abbreviate && !BNify(parsedValue).isNaN() && BNify(parsedValue).gte(1000)){
+    parsedValue = formatMoney(+parsedValue, decimals)
   }
 
   return (

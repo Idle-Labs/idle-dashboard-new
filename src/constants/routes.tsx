@@ -7,6 +7,7 @@ import { lazyLoadComponent } from 'helpers/'
 import { RouteObject, Navigate } from 'react-router-dom'
 
 // const Stats = lazyLoadComponent('Stats')
+const Staking = lazyLoadComponent('Staking')
 const Strategy = lazyLoadComponent('Strategy')
 const Dashboard = lazyLoadComponent('Dashboard')
 const AssetPage = lazyLoadComponent('AssetPage')
@@ -45,6 +46,17 @@ export const routes: RouteObject[] = [
           },
         ]
       },
+      {
+        path:'stake',
+        element:<Staking />,
+        // element:<ComponentWithProps state={{section:'stake'}} />,
+        // children: [
+        //   {
+        //     path:'vote',
+        //     element:<ComponentWithProps state={{section:'vote'}} />,
+        //   },
+        // ]
+      },
       /*
       {
         path:'stats',
@@ -57,16 +69,6 @@ export const routes: RouteObject[] = [
           //   path:':asset',
           //   element:<ComponentWithProps state={{section:'stats/asset'}} />,
           // }
-        ]
-      },
-      {
-        path:'stake',
-        // element:<ComponentWithProps state={{section:'stake'}} />,
-        children: [
-          {
-            path:'vote',
-            // element:<ComponentWithProps state={{section:'vote'}} />,
-          },
         ]
       },
       */

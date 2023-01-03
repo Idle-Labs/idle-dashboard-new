@@ -1,6 +1,7 @@
 export const TILDE = "~"
-export const PROTOCOL_TOKEN = 'IDLE'
 export const VAULTS_MIN_TVL = 1000
+export const MAX_STAKING_DAYS = 1460
+export const PROTOCOL_TOKEN = 'IDLE'
 export const DATE_FORMAT = 'YYYY/MM/DD'
 export const DATETIME_FORMAT = 'YYYY/MM/DD HH:mm'
 export const DASHBORD_URL = 'https://app.idle.finance'

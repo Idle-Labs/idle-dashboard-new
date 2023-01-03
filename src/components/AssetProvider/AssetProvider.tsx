@@ -3,14 +3,15 @@ import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
-import { BNify, abbreviateNumber } from 'helpers/'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { selectProtocol } from 'selectors/selectProtocol'
 import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
+import { BNify, abbreviateNumber, formatDate } from 'helpers/'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/vars'
 import React, { useMemo, createContext, useContext } from 'react'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
@@ -668,6 +669,98 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const StakingTvl: React.FC<AmountProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData ? (
+    <Amount value={stakingData.IDLE.totalSupply} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingAPY: React.FC<AmountProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData ? (
+    <Amount.Percentage value={stakingData.maxApr} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingTotalRewards: React.FC<AmountProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData ? (
+    <Amount value={stakingData.IDLE.totalRewards} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingDeposited: React.FC<AmountProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData ? (
+    <Amount value={stakingData.position.deposited} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingEndDate: React.FC<AmountProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData?.position.lockEnd ? (
+    <Text {...props}>{formatDate(stakingData.position.lockEnd, 'YYYY/MM/DD HH:mm', true)}</Text>
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingAvgLockTime: React.FC<AmountProps> = (props) => {
+  const { translate } = useAssetProvider()
+  const { stakingData } = usePortfolioProvider()
+
+  const avgLockTime = stakingData && `${BNify(stakingData.avgLockTime).div(365).toFixed(1)}/4 ${translate(`common.years`).toLowerCase()}`
+  
+  return stakingData ? (
+    <Text {...props}>{avgLockTime}</Text>
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingAvgLockTimeChart: React.FC = () => {
+  const { translate } = useAssetProvider()
+  const { stakingData } = usePortfolioProvider()
+
+  if (!stakingData) return <Spinner size={'sm'} />
+
+  // const remainingDays = MAX_STAKING_DAYS-stakingData.avgLockTime
+  const stakingPercentage = stakingData.avgLockTime/MAX_STAKING_DAYS*100
+
+  const data: BarChartData = {
+    lock:stakingPercentage,
+    other:100-stakingPercentage
+  }
+
+  const labels = {
+    lock:`${BNify(stakingData.avgLockTime).div(365).toFixed(1)} ${translate(`common.years`).toLowerCase()}`,
+    other:null
+  }
+
+  const colors = {
+    lock:'#6AE4FF',
+    other:'#202a3e'
+  }
+
+  return (
+    <Flex
+      width={'100%'}
+      height={'100%'}
+      alignItems={'flex-start'}
+    >
+      <Flex
+        mt={2}
+        width={'100%'}
+        height={'12px'}
+      >
+        <BarChart data={data} labels={labels} colors={colors} tooltip={false} />
+      </Flex>
+    </Flex>
+  )
+}
+
 const Status: React.FC<AmountProps> = (props) => {
   const { asset, translate } = useAssetProvider()
 
@@ -809,6 +902,20 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )
+    case 'stakingTvl':
+      return (<StakingTvl suffix={` ${PROTOCOL_TOKEN}`} abbreviate={false} decimals={2} textStyle={'tableCell'} {...props} />)
+    case 'stakingAPY':
+      return (<StakingAPY textStyle={'tableCell'} {...props} />)
+    case 'stakingTotalRewards':
+      return (<StakingTotalRewards suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} {...props} />)  
+    case 'stakingAvgLockTimeChart':
+      return (<StakingAvgLockTimeChart {...props} />)
+    case 'stakingAvgLockTime':
+      return (<StakingAvgLockTime textStyle={'tableCell'} {...props} />)
+    case 'stakingDeposited':
+      return (<StakingDeposited suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} {...props} />)
+    case 'stakingEndDate':
+      return (<StakingEndDate textStyle={'tableCell'} {...props} />)
     case 'tvl':
     case 'pool':
       return (<PoolUsd textStyle={'tableCell'} {...props} />)

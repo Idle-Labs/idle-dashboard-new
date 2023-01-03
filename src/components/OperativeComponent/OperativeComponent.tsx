@@ -1557,7 +1557,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
           spacing={1}
         >
           <MdOutlineLocalGasStation color={'primary'} size={24} />
-          <Amount abbreviate={false} textStyle={'titleSmall'} color={'primary'} value={gasPrice} />
+          <Amount decimals={0} abbreviate={false} textStyle={'titleSmall'} color={'primary'} value={gasPrice} />
         </HStack>
       </Button>
     )

@@ -62,6 +62,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "days": "Days",
+    "years": "Years",
     "day": "Day",
     "copied": "Copied to clipboard.",
     "copyFailed": "Failed to copy to clipboard",
@@ -141,6 +142,9 @@
     }
   },
   "strategies": {
+    "staking": {
+      "title": "Staking"
+    },
     "gauge": {
       "title": "Gauge"
     },
@@ -573,6 +577,7 @@
     "analytics": "Analytics",
     "stats": "Stats",
     "stake": "Stake",
+    "stakeIDLE": "Stake IDLE",
     "gauge": "Gauge",
     "defi": "DeFi",
     "transactionHistory": "Transaction History",
@@ -1539,11 +1544,15 @@
         "protocol":"Protocol",
         "rewards":"Rewards",
         "allocation":"Allocation",
+        "lockEndDate":"Lock end date",
+        "tvl":"TVL",
         "stakingRewards":"Staking Rewards",
         "gaugeRewards":"Gauge Rewards",
         "autoCompounding":"Auto Compounding",
         "performanceFee":"Performance Fee",
         "claimableRewards":"Claimable Rewards",
+        "avgLockTime":"Avg. Lock Time",
+        "totalRewards":"Total rewards",
         "status":"Status",
         "pool":"Pool",
         "apy":"APY",
@@ -1553,19 +1562,25 @@
         "weight":"Weight",
         "nextWeight":"Next weight",
         "totalSupply":"Total supply",
+        "totalStaked":"Total staked",
         "lastHarvest":"Last Harvest"
       },
       "tooltips": {
         "totalSupply": "Total amount of assets staked in this gauge",
         "experimental": "This vault is experimental, use at your own risk",
+        "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
+        "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
         "spotApy": "The annualized yield this vault is providing at the current block",
+        "lockEndDate": "You will be able to withdraw your staked IDLE after this date",
         "autoCompounding": "These rewards are automatically re-invested in the strategy",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "vaultStatus": "This badge shows whether the vault is in Production or still in Beta",
+        "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy",
         "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
+        "stakingAPY": "The estimated annual percentage yield received on a 4 years long staking period",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
         "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",

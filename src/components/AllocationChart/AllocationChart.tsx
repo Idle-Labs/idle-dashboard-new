@@ -7,7 +7,6 @@ type AllocationChartArgs = {
 }
 
 export const AllocationChart: React.FC<AllocationChartArgs> = ({ assetId }) => {
-
   const {
     allocations,
     colors,

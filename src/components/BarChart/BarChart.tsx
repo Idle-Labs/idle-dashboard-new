@@ -13,7 +13,7 @@ import { defaultStyles as defaultTooltipStyles, withTooltip, TooltipWithBounds }
 export type BarChartKey = string
 export type BarChartData = Record<BarChartKey, number>
 export type BarChartColors = Record<BarChartKey, string>
-export type BarChartLabels = Record<BarChartKey, string>
+export type BarChartLabels = Record<BarChartKey, string | null>
 
 type TooltipData = {
   bar: SeriesPoint<BarChartData>
@@ -27,6 +27,7 @@ type TooltipData = {
 }
 
 type BarChartInitialData = {
+  tooltip?: boolean
   data: BarChartData
   colors: BarChartColors
   labels: BarChartLabels
@@ -51,6 +52,7 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
     width,
     height,
     events = false,
+    tooltip = true,
     margin = defaultMargin,
     tooltipOpen,
     // tooltipLeft = 0,
@@ -158,14 +160,18 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
             </BarStackHorizontal>
           </Group>
         </ScaleSVG>
-        {tooltipOpen && tooltipData && (
+        {tooltip && tooltipOpen && tooltipData && (
           <TooltipWithBounds
             key={Math.random()}
             top={tooltipTop}
             left={tooltipData.x}
             style={tooltipStyles}
           >
-            <Text mb={2} color={colorScale(tooltipData.key)}>{labels[tooltipData.key]}</Text>
+            {
+              labels[tooltipData.key] && (
+                <Text mb={2} color={colorScale(tooltipData.key)}>{labels[tooltipData.key]}</Text>
+              )
+            }
             {
               tooltipData.bar.data[tooltipData.key] && (
                 <Amount.Percentage value={tooltipData.bar.data[tooltipData.key] as number} textStyle={'tableCell'}></Amount.Percentage>
@@ -181,7 +187,8 @@ export const BarChartWithTooltip = withTooltip<BarStackHorizontalProps, TooltipD
 export const BarChart = ({
   data,
   colors,
-  labels
+  labels,
+  tooltip
 }: BarChartInitialData) => {
   return (
     <ParentSize debounceTime={10}>
@@ -190,6 +197,7 @@ export const BarChart = ({
           width={parent.width}
           height={parent.height}
           data={data}
+          tooltip={tooltip}
           colors={colors}
           labels={labels}
         ></BarChartWithTooltip>
