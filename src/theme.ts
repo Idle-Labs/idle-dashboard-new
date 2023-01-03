@@ -576,6 +576,7 @@ export const theme = extendTheme({
           px:4,
           py:3,
           border:0,
+          zIndex:999,
           borderRadius:8,
           minWidth:'auto',
           backgroundColor:'menu.bg'

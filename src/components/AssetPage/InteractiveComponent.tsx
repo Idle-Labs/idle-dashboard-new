@@ -22,7 +22,7 @@ export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ asset
     <>
       <VStack
         left={0}
-        zIndex={40}
+        zIndex={[40, 0]}
         spacing={[0, 6]}
         id={'right-side'}
         width={['100vw', '27em']}
@@ -95,8 +95,8 @@ export const InteractiveComponent: React.FC<InteractiveComponentArgs> = ({ asset
             left={0}
             bottom={0}
             border={0}
-            zIndex={30}
             width={'100%'}
+            zIndex={[10, 0]}
             bg={'card.bgDark'}
             position={'fixed'}
           >

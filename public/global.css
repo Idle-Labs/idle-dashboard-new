@@ -32,6 +32,8 @@
   --onboard-wallet-button-border-color: var(--border-color);
   --onboard-wallet-app-icon-border-color: var(--border-color);
   --onboard-wallet-button-background-hover: var(--item-hover);
+
+  --onboard-modal-z-index: 999999;
 }
 
 .link{

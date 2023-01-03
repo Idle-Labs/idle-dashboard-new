@@ -321,7 +321,8 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'protocol',
         accessor:'id',
-        sortType:'alpha'
+        sortType:'alpha',
+        extraFields:['betaBadge']
       },
       {
         id:'asset',

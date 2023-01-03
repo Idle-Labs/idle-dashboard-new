@@ -13,11 +13,14 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 export const VaultsCarousel: React.FC = () => {
   const navigate = useNavigate()
   const { isMobile } = useThemeProvider()
-  const { vaults } = usePortfolioProvider()
+  const { vaults, isPortfolioLoaded } = usePortfolioProvider()
+
+  if (!isPortfolioLoaded) return null
 
   return (
     <HStack
       left={0}
+      zIndex={1}
       spacing={2}
       width={'100%'}
       overflow={'hidden'}

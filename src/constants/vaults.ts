@@ -3,6 +3,7 @@ import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
 import IdleCDO from 'abis/idle/IdleCDO.json'
 import type { Abi, VaultStatus } from './types'
+import RibbonPool from 'abis/ribbon/RibbonPool.json'
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
 import IdleStrategy from 'abis/idle/IdleStrategy.json'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
@@ -1151,9 +1152,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-    /*
     ribbon:{
       USDCFolk:{
+        status:'beta',
         protocol:'ribbon',
         autoFarming:['RBN'],
         enabledEnvs:['beta'],
@@ -1238,6 +1239,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDCWin:{
+        status:'beta',
         protocol:'ribbon',
         autoFarming:['RBN'],
         // lender:'wintermute',
@@ -1326,6 +1328,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       DAI:{
+        status:'beta',
         protocol:'ribbon',
         autoFarming:['RBN'],
         blockNumber:15831214,
@@ -1410,7 +1413,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-    */
   }
 };
 
