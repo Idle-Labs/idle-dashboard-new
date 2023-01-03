@@ -4,13 +4,12 @@ import { HStack, Stack } from '@chakra-ui/react'
 import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
-import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
+// import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 export const Header: React.FC = () => {
-  const { screenSize } = useThemeProvider()
-  const isMobile = screenSize === 'sm'
+  // const { screenSize } = useThemeProvider()
   const { chainId, account } = useWalletProvider()
 
   const assetBalance = useMemo(() => {
