@@ -1,8 +1,7 @@
 import { lazy } from 'react'
-import utc from 'dayjs/plugin/utc'
+import dayjs from 'classes/dayjs'
 import BigNumber from 'bignumber.js'
-import dayjs, { ManipulateType } from 'dayjs'
-import dayOfYear from 'dayjs/plugin/dayOfYear'
+import { Dayjs, ManipulateType } from 'dayjs'
 import { HistoryTimeframe } from 'constants/types'
 import { LEGACY_DASHBOARD_URL } from 'constants/vars'
 
@@ -10,45 +9,45 @@ type BNifyInput = any
 
 export const BNify = (s: BNifyInput): BigNumber => new BigNumber(typeof s === 'object' ? s : String(s))
 
-export const bnOrZero = (n: BNifyInput): BigNumber => {
+export function bnOrZero (n: BNifyInput): BigNumber {
   const value = BNify(n || 0)
   return value.isFinite() ? value : BNify(0)
 }
 
-export const integerValue = (value: BNifyInput) :string => {
+export function integerValue (value: BNifyInput) :string {
   return BNify(value).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
-export const normalizeTokenDecimals = (tokenDecimals: number): BigNumber => {
+export function normalizeTokenDecimals (tokenDecimals: number): BigNumber {
   return BNify(`1e${tokenDecimals}`);
 }
-export const normalizeTokenAmount = (tokenBalance: BNifyInput, tokenDecimals: number) => {
+export function normalizeTokenAmount (tokenBalance: BNifyInput, tokenDecimals: number) {
   return BNify(tokenBalance).times(`1e${tokenDecimals}`).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
-export const fixTokenDecimals = (tokenBalance: BNifyInput, tokenDecimals?: number) => {
+export function fixTokenDecimals (tokenBalance: BNifyInput, tokenDecimals?: number) {
   if (!tokenDecimals) {
     return BNify(tokenBalance);
   }
   return BNify(tokenBalance).div(`1e${tokenDecimals}`);
 }
 
-export const apr2apy = (apr: BNifyInput) => {
+export function apr2apy (apr: BNifyInput) {
   return BNify((BNify(1).plus(BNify(apr).div(365))).pow(365).minus(1).toFixed(18));
 }
 
-export const isBigNumberNaN = (amount: any) => {
+export function isBigNumberNaN (amount: any) {
   const isNull = amount === null
   const isUndefined = amount === undefined
   const isBigNumber = amount instanceof BigNumber
   return isNull || isUndefined || (isBigNumber && BNify(amount).isNaN())
 }
 
-export const numberToPercentage = (value: any, decimals = 2, maxValue = 9999, minValue = 0) => {
+export function numberToPercentage (value: any, decimals = 2, maxValue = 9999, minValue = 0) {
   const isOverMaxValue = maxValue && BNify(value).gt(maxValue)
   const isBelowMinValue = minValue && BNify(value).lt(minValue)
   return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals)))+'%'
 }
 
-export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {
+export function getTimeframeTimestamp (timeframe: HistoryTimeframe): number {
   if (timeframe === 'ALL') return 0
   const periods: Record<string, ManipulateType> = {
     'W':'week',
@@ -60,20 +59,31 @@ export const getTimeframeTimestamp = (timeframe: HistoryTimeframe): number => {
   return dayjs().subtract(value, period).startOf('day').valueOf()
 }
 
-export const dayDiff = (t1: number, t2: number) => {
-  dayjs.extend(dayOfYear)
+export function dayMax(d1: Dayjs, d2: Dayjs) {
+  return dayjs.max(d1, d2)
+}
+
+export function dayMin(d1: Dayjs, d2: Dayjs) {
+  return dayjs.min(d1, d2)
+}
+
+export function dayDiff(t1: number, t2: number) {
   return Math.abs(dayjs(t1).dayOfYear()-dayjs(t2).dayOfYear())
 }
 
-export const dateDiff = (t1: number, t2: number, unit: any = 'ms', returnDecimals = false) => {
+export function dateDiff(t1: number, t2: number, unit: any = 'ms', returnDecimals = false) {
   return Math.abs(dayjs(t1).diff(t2, unit, returnDecimals))
 }
 
-export const dateToLocale = (timestamp: number, locale: string) => {
+export function toDayjs(timestamp?: number | string) {
+  return dayjs(timestamp)
+}
+
+export function dateToLocale (timestamp: number, locale: string) {
   return dayjs(timestamp).locale(locale).format('LLL')
 }
 
-export const formatMoney = (amount: number, decimalCount = 2, decimal = ".", thousands = ","): string | null => {
+export function formatMoney (amount: number, decimalCount = 2, decimal = ".", thousands = ","): string | null {
   try {
     decimalCount = Math.abs(decimalCount);
     decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
@@ -91,13 +101,12 @@ export const formatMoney = (amount: number, decimalCount = 2, decimal = ".", tho
   }
 }
 
-export const formatDate = (timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) => {
-  dayjs.extend(utc)
+export function formatDate (timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) {
   const day = dayjs(+timestamp)
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? ' UTC' : '')
 }
 
-export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
+export function splitArrayIntoChunks (array: any, chunkSize: number) {
   const output = []
   for (let i = 0; i < array.length; i += chunkSize) {
       const chunk = array.slice(i, i + chunkSize);
@@ -106,14 +115,14 @@ export const splitArrayIntoChunks = (array: any, chunkSize: number) => {
   return output
 }
 
-export const hashCode = (s: string): string => {
+export function hashCode (s: string): string {
   let h = 0;
   for (let i = 0; i < s.length; i++)
     h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
   return Math.abs(h).toString();
 }
 
-export const formatTime = (seconds: any) => {
+export function formatTime (seconds: any) {
   if (!seconds) return ['0s']
   const suffixes = ['h', 'm', 's']
   let timesJoined = new Date(seconds * 1000).toISOString().substr(11, 8).replace(/:/g, "").replace(/^0+/g,"")
@@ -126,19 +135,19 @@ export const formatTime = (seconds: any) => {
   return timesFormatted.join(' ')
 }
 
-export const sumArray = function (array: Array<any>) {
+export function sumArray (array: Array<any>) {
   return array.reduce(function (pv, cv) { return pv + cv; }, 0);
 }
 
-export const maxArray = function (array: Array<any>) {
+export function maxArray (array: Array<any>) {
   return Math.max.apply(null, array);
 }
 
-export const avgArray = function (array: Array<any>) {
+export function avgArray (array: Array<any>) {
   return sumArray(array) / array.length;
 }
 
-export const abbreviateNumber = (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) => {
+export function abbreviateNumber (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) {
 
   const isNegative = parseFloat(value) < 0;
   let newValue: any = BNify(value).abs();
@@ -227,30 +236,30 @@ export function requestTimeout(callback: Function, delay: number) {
   }
 }
 
-export const checkAddress = (address: string) => {
+export function checkAddress(address: string) {
   return address && /^0x[a-fA-F0-9]{40}$/.test(address)
 }
 
-export const lazyLoadComponent = (component: string) => {
+export function lazyLoadComponent(component: string) {
   return lazy(() => {
     const promise = import(`components/${component}/${component}`)
     return promise.then(module => ({default: module[component]}))
   })
 }
 
-export const getLegacyDashboardUrl = (section: string) => {
+export function getLegacyDashboardUrl (section: string) {
   return `${LEGACY_DASHBOARD_URL}${section}`
 }
 
-export const openWindow = (url: string) => {
+export function openWindow (url: string) {
   return window.open(url, '_blank', 'noopener');
 }
 
-export const isEmpty = (object: any) => {
+export function isEmpty (object: any) {
   return !object || !Object.keys(object).length
 }
 
-export const getTimestampRange = (startDate: (Date | number | string), endDate: (Date | number | string)) => {
+export function getTimestampRange (startDate: (Date | number | string), endDate: (Date | number | string)) {
   const startDayTimestamp = +(dayjs(startDate).startOf('day').valueOf())
   const endDayTimestamp = +(dayjs(endDate).startOf('day').valueOf())
 
@@ -265,25 +274,25 @@ export const getTimestampRange = (startDate: (Date | number | string), endDate: 
 }
 
 
-export const catchPromise = async (promise: Promise<any>) => {
+export async function catchPromise (promise: Promise<any>) {
   return promise
     .then(data => data)
     .catch(/*err => null*/)
 }
 
-export const asyncReduce = async <T, U>(
+export async function asyncReduce <T, U>(
   array: T[],
   callback: (currentValue: T, currentIndex: number) => Promise<any>,
   aggregateFunction: (acc: U, currentValue: U) => U,
   initialValue: U,
-): Promise<U> => {
+): Promise<U> {
   const promises = array.map(async (currentValue, currentIndex) => {
     return callback(currentValue, currentIndex)
   });
   return Promise.all(promises).then(results => results.reduce((accumulator, currentValue) => aggregateFunction(accumulator, currentValue), initialValue))
 }
 
-export const asyncForEach = async (array: any[], callback: Function, asyncEnabled = true) => {
+export async function asyncForEach (array: any[], callback: Function, asyncEnabled = true) {
   let output = [];
   if (asyncEnabled) {
     output = await Promise.all(array.map((c, index) => {
@@ -297,13 +306,13 @@ export const asyncForEach = async (array: any[], callback: Function, asyncEnable
   return output;
 }
 
-export const sortArrayByKey = (array: any[], key: string, order = 'asc') => {
+export function sortArrayByKey(array: any[], key: string, order = 'asc') {
   const val1 = order === 'asc' ? -1 : 1
   const val2 = order === 'asc' ? 1 : -1
   return [...array].sort((a, b) => (parseInt(a[key]) < parseInt(b[key]) ? val1 : val2));
 }
 
-export const shortenHash = (hash: string, startLen = 7, endLen = 4) => {
+export function shortenHash(hash: string, startLen = 7, endLen = 4) {
   let shortHash = hash;
   const txStart = shortHash.substr(0, startLen);
   const txEnd = shortHash.substr(shortHash.length - endLen);
@@ -311,7 +320,7 @@ export const shortenHash = (hash: string, startLen = 7, endLen = 4) => {
   return shortHash;
 }
 
-export const getObjectPath = (object: any, path: string, fallback: any = null): any => {
+export function getObjectPath(object: any, path: string, fallback: any = null): any {
   if (!path) return undefined
   const dotIndex = path ? path.indexOf('.') : -1;
   
@@ -329,12 +338,12 @@ export const getObjectPath = (object: any, path: string, fallback: any = null): 
   return getObjectPath(object[path.substr(0, dotIndex)], path.substr(dotIndex + 1), fallback);
 }
 
-export const sortNumeric = (a: any, b: any, field: any): number => {
+export function sortNumeric(a: any, b: any, field: any): number {
   const n1 = BNify(getObjectPath(a.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(a.original, field))
   const n2 = BNify(getObjectPath(b.original, field)).isNaN() ? BNify(-1) : BNify(getObjectPath(b.original, field))
   return n1.gt(n2) ? -1 : 1
 }
 
-export const sortAlpha = (a: any, b: any, field: any): number => {
+export function sortAlpha(a: any, b: any, field: any): number {
   return getObjectPath(a.original, field).localeCompare(getObjectPath(b.original, field))
 }

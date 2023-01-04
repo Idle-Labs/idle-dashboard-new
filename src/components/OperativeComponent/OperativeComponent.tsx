@@ -1,10 +1,13 @@
+import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js'
+import { ManipulateType } from 'dayjs'
 import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import type { VaultMessages } from 'constants/vaults'
-import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
+import { StakedIdleVault } from 'vaults/StakedIdleVault'
+import { InputDate } from 'components/InputDate/InputDate'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { InputAmount } from 'components/InputAmount/InputAmount'
@@ -16,9 +19,10 @@ import { TranslationProps, Translation } from 'components/Translation/Translatio
 import type { Asset, ReducerActionTypes, AssetId, NumberType } from 'constants/types'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { TILDE, MAX_ALLOWANCE, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
+import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals, toDayjs, dayMax, dayMin } from 'helpers/'
 import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 
 type ActionComponentArgs = {
@@ -340,7 +344,10 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
 export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
+  const [ errorDate, setErrorDate ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const [ lockEndTime, setLockEndTime ] = useState<number>(0)
+  const [ lockEndDate, setLockEndDate ] = useState<any>(toDayjs())
 
   const { account } = useWalletProvider()
   const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
@@ -351,19 +358,39 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(underlyingAsset?.id)
-  }, [selectAssetBalance, underlyingAsset?.id])
+  }, [selectAssetBalance, underlyingAsset?.id])  
 
+  const minDate = useMemo(() => {
+    return toDayjs().add(MIN_STAKING_SECONDS, 'second')
+  }, [])
+
+  const maxDate = useMemo(() => {
+    return toDayjs().add(MAX_STAKING_SECONDS, 'second')
+  }, [])
+
+  const checkLockEndDate = useCallback(() => {
+    return lockEndDate.isSameOrAfter(minDate) && lockEndDate.isSameOrBefore(maxDate)
+  }, [lockEndDate, minDate, maxDate])
 
   const disabled = useMemo(() => {
+    // Reset errors
     setError('')
+    setErrorDate('')
+
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
     }
+
+    if (!checkLockEndDate()){
+      setErrorDate(translate('trade.errors.stakingLockEndDateNotCorrect'))
+      return true
+    }
+
     return false
-  }, [amount, assetBalance, underlyingAsset, translate])
+  }, [amount, checkLockEndDate, assetBalance, underlyingAsset, translate])
 
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
@@ -382,7 +409,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   // Deposit
   const deposit = useCallback((checkAllowance = true) => {
     if (!account || disabled) return
-    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault) || !(vault instanceof StakedIdleVault)) return
     // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
     ;(async() => {
@@ -390,21 +417,21 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
       const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
       
-      // console.log('allowance', vaultOwner, account.address, allowance)
+      console.log('allowance', account.address, allowance)
 
       if (allowance.gte(amount)){
-        const depositParams = vault.getDepositParams(amount)
-        const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-        // console.log('depositParams', depositParams, depositContractSendMethod)
-        // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+        const depositParams = vault.getDepositParams(amount, lockEndTime)
 
+        console.log('depositParams', depositParams)
+
+        const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
       } else {
         // Go to approve section
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+  }, [account, disabled, amount, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -428,12 +455,11 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [underlyingAsset])
 
   const getDefaultGasLimit = useCallback(async () => {
-    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault) || !(vault instanceof StakedIdleVault)) return
     const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
 
     const allowance = await getDepositAllowance()
 
-    // console.log('getDefaultGasLimit', assetBalance.toFixed(), allowance.toFixed())
     if (!account || assetBalance.lte(0) || allowance.lte(0)){
       return defaultGasLimit
     }
@@ -445,13 +471,13 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const sendOptions = {
       from: account?.address
     }
-    const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
+    const depositParams = vault.getDepositParams(balanceToDeposit.toFixed(), lockEndTime)
     const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
 
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, getDepositAllowance, assetBalance])
+  }, [account, vault, lockEndTime, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {
@@ -486,9 +512,31 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, deposit])
 
-  const isBeta = useMemo(() => {
-    return vault && ("status" in vault) && vault.status === 'beta'
-  }, [vault])
+  const selectQuickOption = useCallback((value: number, timeframe: ManipulateType) => {
+    const newDate = dayMin(dayMax(toDayjs().add(value, timeframe), minDate), maxDate)
+    setLockEndDate(newDate)
+    setLockEndTime(Math.round(newDate.toDate().getTime()/1000))
+  }, [setLockEndDate, setLockEndTime, minDate, maxDate])
+
+  // console.log('minDate', minDate, 'maxDate', maxDate)
+
+  const quickOptions: { label: string, value: number, timeframe: ManipulateType }[] = [
+    {
+      label:'staking.6months',
+      value: 6,
+      timeframe: 'month'
+    },
+    {
+      label:'staking.1year',
+      value: 1,
+      timeframe: 'year'
+    },
+    {
+      label:'staking.4years',
+      value: MAX_STAKING_SECONDS,
+      timeframe: 'second'
+    }
+  ]
 
   return (
     <AssetProvider
@@ -581,35 +629,30 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   spacing={2}
                   alignItems={'flex-start'}
                 >
-                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
+                  <InputDate value={lockEndDate.format('YYYY-MM-DD')} setValue={setLockEndDate} min={minDate.format('YYYY-MM-DD')} max={maxDate.format('YYYY-MM-DD')} />
                   <SimpleGrid
-                    columns={3}
                     spacing={1}
                     width={'100%'}
+                    columns={quickOptions.length}
                     justifyContent={'space-between'}
                   >
-                    <Translation translation={'staking.6months'} component={Button} variant={'selector'} />
-                    <Translation translation={'staking.1year'} component={Button} variant={'selector'} />
-                    <Translation translation={'staking.4years'} component={Button} variant={'selector'} />
+                    {
+                      quickOptions.map( quickOption => {
+                        const isSelected = lockEndDate.format('YYYY-MM-DD') === toDayjs().add(quickOption.value, quickOption.timeframe).format('YYYY-MM-DD')
+                        return (
+                          <Translation key={`option_${quickOption.label}`} translation={quickOption.label} component={Button} variant={'selector'} aria-selected={isSelected} onClick={ () => selectQuickOption(quickOption.value, quickOption.timeframe) } />
+                        )
+                      })
+                    }
                   </SimpleGrid>
                 </VStack>
               </Card>
               {
-                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+                errorDate && <Text textStyle={'captionSmaller'} color={'orange'}>{errorDate}</Text>
               }
             </VStack>
           </HStack>
-          {
-            isBeta && (
-              <Card.Dark
-                p={2}
-                border={0}
-              >
-                <Translation textStyle={'captionSmaller'} translation={'trade.actions.deposit.messages.beta'} textAlign={'center'} />
-              </Card.Dark>
-            )
-          }
-          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+          <DynamicActionFields assetId={asset?.id} action={'stake'} amount={amount} amountUsd={amountUsd} />
         </VStack>
         <VStack
           spacing={4}

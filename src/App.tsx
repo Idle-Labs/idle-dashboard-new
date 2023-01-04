@@ -1,6 +1,7 @@
 import * as React from "react"
 import { theme } from './theme'
 // import { Logo } from "./Logo"
+import dayjs from 'classes/dayjs'
 import { HashRouter } from "react-router-dom"
 import { ChakraProvider } from "@chakra-ui/react"
 import { Web3Provider } from 'contexts/Web3Provider'

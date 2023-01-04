@@ -60,7 +60,8 @@
     "build-storybook": "build-storybook -s public",
     "deploy": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
     "deploy-beta": "echo 'beta.idle.finance\nwww.beta.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote beta",
-    "build-deploy": "yarn build && yarn deploy && yarn deploy-beta"
+    "deploy-all": "yarn deploy && yarn deploy-beta",
+    "build-deploy": "yarn build && yarn deploy-all"
   },
   "browserslist": {
     "production": [

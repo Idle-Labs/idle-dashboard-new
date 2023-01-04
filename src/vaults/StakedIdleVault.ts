@@ -1,12 +1,13 @@
 import Web3 from 'web3'
 import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
+import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContractConfig } from 'constants/contracts'
-import { asyncReduce, fixTokenDecimals, BNify } from 'helpers/'
 import type { UnderlyingTokenProps } from 'constants/underlyingTokens'
-import type { Abi, Assets, ContractRawCall, EtherscanTransaction, Transaction } from 'constants/types'
+import { asyncReduce, fixTokenDecimals, BNify, normalizeTokenAmount } from 'helpers/'
+import type { Abi, Assets, ContractRawCall, EtherscanTransaction, Transaction, NumberType } from 'constants/types'
 
 type ConstructorProps = {
   web3: Web3
@@ -191,10 +192,6 @@ export class StakedIdleVault {
   }
   */
 
-  public getClaimRewardsContractSendMethod(): ContractSendMethod {
-    return this.feeDistributorContract.methods.claim()
-  }
-
   public getAssetsData(): Assets {
     return {
       [this.id]:{
@@ -207,5 +204,56 @@ export class StakedIdleVault {
         name: this.rewardTokenConfig.label || this.rewardTokenConfig.token,
       }
     }
+  }
+
+  // Transactions
+
+  public getMethodDefaultGasLimit(methodName: string): number | undefined {
+    switch (methodName){
+      case 'stake':
+        return 583082
+      case 'unstake':
+        return 567990
+      default:
+        return
+    }
+  }
+
+  public getAllowanceParams(amount: NumberType): any[] {
+    const amountToApprove = amount === MAX_ALLOWANCE ? MAX_ALLOWANCE : normalizeTokenAmount(amount, 18)
+    return [this.id, amountToApprove]
+  }
+
+  public getUnlimitedAllowanceParams(): any[] {
+    return this.getAllowanceParams(MAX_ALLOWANCE)
+  }
+
+  public getAllowanceContract(): Contract | undefined {
+    return this.rewardTokenContract
+  }
+
+  public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
+    const allowanceContract = this.getAllowanceContract()
+    return allowanceContract?.methods.approve(...params)
+  }
+
+  public getDepositParams(amount: NumberType, lockEndTime?: number): any[] {
+    return [normalizeTokenAmount(amount, 18), lockEndTime]
+  }
+
+  public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.stkIdleContract.methods[`create_lock`](...params)
+  }
+
+  public getWithdrawParams(): any[] {
+    return []
+  }
+
+  public getClaimRewardsContractSendMethod(): ContractSendMethod {
+    return this.feeDistributorContract.methods.claim()
+  }
+
+  public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.stkIdleContract.methods[`withdraw`](...params)
   }
 }

@@ -788,6 +788,7 @@
       "broadcastFailed": "An error occurred while broadcasting the transaction",
       "insufficientFundsForLimit": "Insufficient funds. The minimum trade amount for this pair is %{minLimit}",
       "insufficientFundsForAmount": "Insufficient funds. Your %{symbol} balance is less than the selected amount",
+      "stakingLockEndDateNotCorrect": "Lock end date not correct. You can stake for a minimum of 2 weeks and a maximum of 4 years.",
       "invalidTradePair": "Invalid trade pair: %{sellAssetName} and %{buyAssetName}",
       "invalidTradePairBtnText": "Invalid Trade Pair",
       "noLiquidityError": "Not enough liquidity available",
