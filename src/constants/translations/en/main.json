@@ -548,6 +548,9 @@
     }
   },
   "staking": {
+    "6months": "6 months",
+    "1year": "1 year",
+    "4years": "4 years",
     "staking": "Staking",
     "lockEnd": "Lock end date",
     "itWillTake": "It will take",

@@ -9,7 +9,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
-import { Approve, Deposit, Withdraw } from 'components/OperativeComponent/OperativeComponent'
+import { Approve, Stake, Withdraw } from 'components/OperativeComponent/OperativeComponent'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 
 export const Staking: React.FC = () => {
@@ -29,9 +29,9 @@ export const Staking: React.FC = () => {
 
   const actions = [
     {
-      type: 'deposit',
-      component: Deposit,
-      label: 'common.deposit',
+      type: 'stake',
+      component: Stake,
+      label: 'common.stake',
       steps: [
         {
           type: 'approve',
@@ -86,7 +86,7 @@ export const Staking: React.FC = () => {
   }, [account, stakingData])
 
   const claimableIDLE = useMemo(() => {
-    if (!account || !stakingData || stakingData.position.deposited.lte(0) || !stakedIdleVault) return null
+    if (!account || !stakingData || stakingData.position.claimable.lte(0) || !stakedIdleVault) return null
 
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 
@@ -171,7 +171,7 @@ export const Staking: React.FC = () => {
       width={'100%'}
     >
       <Stack
-        my={[10, 14]}
+        my={[10, 16]}
         width={'100%'}
         direction={['column', 'row']}
         justifyContent={'flex-start'}

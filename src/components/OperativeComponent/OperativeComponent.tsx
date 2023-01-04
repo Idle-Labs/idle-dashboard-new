@@ -7,6 +7,7 @@ import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
@@ -18,65 +19,7 @@ import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetP
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, Input, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
-
-type InputAmountArgs = {
-  amount?: NumberType
-  amountUsd?: NumberType
-  setAmount: Function
-  inputHeight?: number
-}
-
-const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd, setAmount }) => {
-  const { asset, underlyingAsset } = useAssetProvider()
-  // const [ amountUsd, setAmountUsd ] = useState<number>(0)
-  const { selectors: { selectAssetPriceUsd, selectVaultPrice } } = usePortfolioProvider()
-  
-  const handleAmountChange = ({target: { value }}: { target: {value: string} }) => {
-    setAmount(Math.max(0, parseFloat(value)).toString())
-  }
-
-  /*
-  useEffect(() => {
-    if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
-    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
-    const vaultPrice = selectVaultPrice(asset.id)
-
-    if (asset.type === 'underlying') {
-      const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
-      setAmountUsd(amountUsd)
-    } else {
-      const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
-      setAmountUsd(amountUsd)
-    }
-  }, [asset, underlyingAsset, amount, selectVaultPrice, selectAssetPriceUsd])
-  */
-
-  const amountUsdToDisplay = useMemo(() => {
-    if (amountUsd) return BNify(amountUsd)
-    if (!selectAssetPriceUsd || !selectVaultPrice || !underlyingAsset || !asset) return
-    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
-    const vaultPrice = selectVaultPrice(asset.id)
-
-    if (asset.type === 'underlying') {
-      return parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
-    } else {
-      return parseFloat(BNify(amount).times(assetPriceUsd).times(vaultPrice).toString()) || 0
-    }
-  }, [asset, underlyingAsset, amount, amountUsd, selectVaultPrice, selectAssetPriceUsd])
-
-  // console.log('InputAmount', asset)
-
-  return (
-    <HStack
-      width={'100%'}
-      justifyContent={'space-between'}
-    >
-      <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} />
-      <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={bnOrZero(amountUsdToDisplay).toString()} />
-    </HStack>
-  )
-}
+import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 
 type ActionComponentArgs = {
   itemIndex: number
@@ -394,6 +337,309 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
   )
 }
 
+export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
+  const [ error, setError ] = useState<string>('')
+  const [ amount, setAmount ] = useState<string>('0')
+  const [ amountUsd, setAmountUsd ] = useState<number>(0)
+
+  const { account } = useWalletProvider()
+  const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
+  const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
+  const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
+  const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
+
+  const assetBalance = useMemo(() => {
+    if (!selectAssetBalance) return BNify(0)
+    return selectAssetBalance(underlyingAsset?.id)
+  }, [selectAssetBalance, underlyingAsset?.id])
+
+
+  const disabled = useMemo(() => {
+    setError('')
+    if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
+    // if (BNify(assetBalance).lte(0)) return true
+    if (BNify(amount).gt(assetBalance)){
+      setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
+      return true
+    }
+    return false
+  }, [amount, assetBalance, underlyingAsset, translate])
+
+  // console.log('assetBalance', amount, assetBalance.toString(), disabled)
+
+  const getDepositAllowance = useCallback(async (): Promise<BigNumber> => {
+    if (!underlyingAsset || !vault || !("getAllowanceContract" in vault)) return BNify(0)
+    if (!account?.address) return BNify(0)
+
+    const allowanceContract = vault.getAllowanceContract()
+    if (!allowanceContract) return BNify(0)
+
+    const vaultOwner = getVaultAllowanceOwner(vault)
+    const allowance = await getAllowance(allowanceContract, account.address, vaultOwner)
+    return fixTokenDecimals(allowance, underlyingAsset.decimals)
+  }, [underlyingAsset, vault, account?.address])
+
+  // Deposit
+  const deposit = useCallback((checkAllowance = true) => {
+    if (!account || disabled) return
+    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
+
+    ;(async() => {
+      // if (!underlyingAssetVault.contract) return
+
+      const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
+      
+      // console.log('allowance', vaultOwner, account.address, allowance)
+
+      if (allowance.gte(amount)){
+        const depositParams = vault.getDepositParams(amount)
+        const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+        // console.log('depositParams', depositParams, depositContractSendMethod)
+        // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+
+        sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+      } else {
+        // Go to approve section
+        dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+      }
+    })()
+  }, [account, disabled, amount, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+
+  // Update amount USD and disabled
+  useEffect(() => {
+    if (!selectAssetPriceUsd || !underlyingAsset) return
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+    setAmountUsd(amountUsd)
+  }, [underlyingAsset, amount, selectAssetPriceUsd, dispatch])
+
+  // Reset amount on transaction succeeded
+  useEffect(() => {
+    if (!executeAction && activeStep === itemIndex && transaction.status === 'success'){
+      setAmount('')
+    }
+  }, [executeAction, transaction.status, activeStep, itemIndex])
+
+  // Set max balance function
+  const setMaxBalance = useCallback(() => {
+    if (!underlyingAsset?.balance) return
+    setAmount(underlyingAsset.balance.toString())
+  }, [underlyingAsset])
+
+  const getDefaultGasLimit = useCallback(async () => {
+    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
+
+    const allowance = await getDepositAllowance()
+
+    // console.log('getDefaultGasLimit', assetBalance.toFixed(), allowance.toFixed())
+    if (!account || assetBalance.lte(0) || allowance.lte(0)){
+      return defaultGasLimit
+    }
+
+    const balanceToDeposit = BigNumber.minimum(assetBalance, allowance)
+
+    // console.log('balanceToDeposit', assetBalance.toFixed(), allowance.toFixed(), balanceToDeposit.toFixed())
+
+    const sendOptions = {
+      from: account?.address
+    }
+    const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
+    const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+
+    const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
+    // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
+    return estimatedGasLimit
+  }, [account, vault, getDepositAllowance, assetBalance])
+
+  // Update gas fees
+  useEffect(() => {
+    if (activeItem !== itemIndex) return
+    ;(async () => {
+      const defaultGasLimit = await getDefaultGasLimit()
+      setGasLimit(defaultGasLimit)
+    })()
+  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
+
+  // Update parent amount
+  useEffect(() => {
+    if (activeItem !== itemIndex) return
+    dispatch({type: 'SET_AMOUNT', payload: amount})
+    dispatch({type: 'SET_DEFAULT_AMOUNT', payload: amount})
+    dispatch({type: 'SET_ASSET', payload: underlyingAsset})
+
+    // console.log('Deposit - executeAction', executeAction)
+    if (executeAction) {
+      // console.log('Deposit - execute deposit')
+      deposit(false)
+      dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
+    }
+
+  }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
+
+  const depositButton = useMemo(() => {
+    return account ? (
+      <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
+    ) : (
+      <ConnectWalletButton variant={'ctaFull'} />
+    )
+  }, [account, disabled, deposit])
+
+  const isBeta = useMemo(() => {
+    return vault && ("status" in vault) && vault.status === 'beta'
+  }, [vault])
+
+  return (
+    <AssetProvider
+      flex={1}
+      width={'100%'}
+      assetId={asset?.underlyingId}
+    >
+      <VStack
+        pt={8}
+        flex={1}
+        spacing={6}
+        height={'100%'}
+        id={'deposit-container'}
+        alignItems={'space-between'}
+        justifyContent={'flex-start'}
+      >
+        <VStack
+          flex={1}
+          spacing={6}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+          <HStack
+            spacing={4}
+            width={'100%'}
+            alignItems={'flex-start'}
+          >
+            <Box
+              pt={8}
+              width={'110px'}
+            >
+              <AssetLabel assetId={asset?.id} />
+            </Box>
+            <VStack
+              flex={1}
+              spacing={1}
+              alignItems={'flex-start'}
+            >
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
+              >
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
+                >
+                  <InputAmount amount={amount} amountUsd={null} setAmount={setAmount} />
+                  <HStack
+                    width={'100%'}
+                    justifyContent={'space-between'}
+                  >
+                    <HStack
+                      spacing={1}
+                    >
+                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                      <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    </HStack>
+                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                  </HStack>
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+              }
+            </VStack>
+          </HStack>
+          <HStack
+            spacing={4}
+            width={'100%'}
+            alignItems={'flex-start'}
+          >
+            <Box
+              pt={8}
+              width={'110px'}
+            >
+              <Translation translation={'staking.lockEnd'} textStyle={'titleSmall'} fontSize={'md'} color={'primary'} whiteSpace={'nowrap'}></Translation>
+            </Box>
+            <VStack
+              flex={1}
+              spacing={1}
+              alignItems={'flex-start'}
+            >
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
+              >
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
+                >
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
+                  <SimpleGrid
+                    columns={3}
+                    spacing={1}
+                    width={'100%'}
+                    justifyContent={'space-between'}
+                  >
+                    <Translation translation={'staking.6months'} component={Button} variant={'selector'} />
+                    <Translation translation={'staking.1year'} component={Button} variant={'selector'} />
+                    <Translation translation={'staking.4years'} component={Button} variant={'selector'} />
+                  </SimpleGrid>
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+              }
+            </VStack>
+          </HStack>
+          {
+            isBeta && (
+              <Card.Dark
+                p={2}
+                border={0}
+              >
+                <Translation textStyle={'captionSmaller'} translation={'trade.actions.deposit.messages.beta'} textAlign={'center'} />
+              </Card.Dark>
+            )
+          }
+          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+        </VStack>
+        <VStack
+          spacing={4}
+          id={'footer'}
+          alignItems={'flex-start'}
+        >
+          {
+            /*
+            <Card.Outline px={4} py={2}>
+              <HStack
+                spacing={1}
+              >
+                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                <AssetProvider
+                  assetId={asset?.id}
+                >
+                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
+                </AssetProvider>
+              </HStack>
+            </Card.Outline>
+            */
+          }
+          <EstimatedGasFees />
+          {depositButton}
+        </VStack>
+      </VStack>
+    </AssetProvider>
+  )
+}
+
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
@@ -652,6 +898,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     </AssetProvider>
   )
 }
+
 export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')

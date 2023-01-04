@@ -6,23 +6,15 @@ import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
 import { Translation } from 'components/Translation/Translation'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { useTheme, ButtonProps, Button, Flex, Spinner, Text, TextProps } from '@chakra-ui/react'
+import { useTheme, ButtonProps, Button, Flex, Spinner, Text, TextProps, FlexProps } from '@chakra-ui/react'
 
-type TransactionButtonProps = {
+type TransactionButtonValueProps = {
   text: string
-  amount?: string
-  assetId: AssetId
-  vaultId: AssetId
-  actionType?: string
   contractSendMethod: ContractSendMethod
-}
+} & TextProps & FlexProps
 
-export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps> = ({
+export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
   text,
-  // amount,
-  // assetId,
-  // vaultId,
-  // actionType,
   contractSendMethod,
   ...props
 }) => {
@@ -30,24 +22,6 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
   const intervalId = useRef<any>(null)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const { state: { transaction }, cleanTransaction } = useTransactionManager()
-
-  // const transaction: TransactionStatus = useMemo(() => ({
-  //   hash: null,
-  //   error: null,
-  //   status: 'success',
-  //   amount: null,
-  //   assetId: null,
-  //   vaultId: null,
-  //   receipt: null,
-  //   created: null,
-  //   timestamp: null,
-  //   actionType: null,
-  //   transaction: null,
-  //   lastUpdated: null,
-  //   estimatedTime: null,
-  //   confirmationCount: 0,
-  //   contractSendMethod,
-  // }), [contractSendMethod])
 
   // @ts-ignore
   const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
@@ -201,6 +175,15 @@ export const TransactionButtonValue: React.FC<TransactionButtonProps & TextProps
   )
 }
 
+type TransactionButtonProps = {
+  text: string
+  amount?: string
+  assetId: AssetId
+  vaultId: AssetId
+  actionType?: string
+  contractSendMethod: ContractSendMethod
+}
+
 export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> = ({
   text,
   amount,
@@ -249,7 +232,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
       transition={'border 0.5s ease-in-out'}
       {...props}
     >
-      <TransactionButtonValue text={text} vaultId={vaultId} assetId={assetId} contractSendMethod={contractSendMethod} width={width} />
+      <TransactionButtonValue text={text} contractSendMethod={contractSendMethod} width={width} />
     </Button>
   )
 }

@@ -95,7 +95,7 @@ export const AssetProvider = ({assetId, wrapFlex = true, children, ...flexProps}
   )
 }
 
-type AssetFieldProps = {
+export type AssetFieldProps = {
   value?: string | number | BigNumber
 } & TextProps
 

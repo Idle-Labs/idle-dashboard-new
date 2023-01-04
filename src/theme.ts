@@ -465,7 +465,7 @@ export const theme = extendTheme({
           height:'auto',
           fontSize:'xs',
           fontWeight:700,
-          borderRadius:8,
+          borderRadius:4,
           textStyle:'cta',
           borderWidth:'1px',
           borderStyle:'solid',

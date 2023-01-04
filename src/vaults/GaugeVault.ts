@@ -11,7 +11,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { GaugeRewardData, AssetId, NumberType } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, asyncReduce, catchPromise } from 'helpers/'
-import { TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from '../constants'
+import { TrancheToken, GaugeConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction } from 'constants/'
 
 type ConstructorProps = {
   web3: Web3

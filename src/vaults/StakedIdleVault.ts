@@ -4,8 +4,9 @@ import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { GenericContractConfig } from 'constants/contracts'
-import type { Abi, Assets, ContractRawCall } from 'constants/types'
+import { asyncReduce, fixTokenDecimals, BNify } from 'helpers/'
 import type { UnderlyingTokenProps } from 'constants/underlyingTokens'
+import type { Abi, Assets, ContractRawCall, EtherscanTransaction, Transaction } from 'constants/types'
 
 type ConstructorProps = {
   web3: Web3
@@ -58,8 +59,76 @@ export class StakedIdleVault {
     this.feeDistributorContract = new web3.eth.Contract(feeDistributorConfig.abi, feeDistributorConfig.address)
   }
 
-  public getTransactions(): any[] {
-    return []
+  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[]): Promise<Transaction[]> {
+
+    const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
+      if (!transactions[transaction.hash]) {
+        transactions[transaction.hash] = []
+      }
+
+      transactions[transaction.hash].push(transaction)
+
+      return transactions
+    },{})
+
+    const transactions: Transaction[] = await asyncReduce<Transaction[], Transaction[]>(
+      (Object.values(transactionsByHash) as Transaction[][]),
+      async (internalTxs: Transaction[]) => {
+        const transactions = []
+
+        for (const tx of internalTxs) {
+          // Check for right token
+          const isRightToken = internalTxs.filter(iTx => iTx.contractAddress.toLowerCase() === this.rewardTokenConfig.address?.toLowerCase()).length > 0;
+
+          const isDepositInternalTx = isRightToken && internalTxs.find(iTx => iTx.from.toLowerCase() === account.toLowerCase() && (iTx.to.toLowerCase() === this.id))
+          const isRedeemInternalTx = isRightToken && internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.rewardTokenConfig.address?.toLowerCase() && iTx.from.toLowerCase() === this.id && iTx.to.toLowerCase() === account.toLowerCase())
+
+          const isSendTransferTx = internalTxs.length === 1 && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id
+          const isReceiveTransferTx = internalTxs.length === 1 && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id
+
+          const isDepositTx = isRightToken && tx.from.toLowerCase() === account.toLowerCase() && (tx.to.toLowerCase() === this.id)
+          const isRedeemTx = isRightToken && !isDepositInternalTx && tx.from.toLowerCase() === this.id && tx.contractAddress.toLowerCase() === this.rewardTokenConfig.address?.toLowerCase() && tx.to.toLowerCase() === account.toLowerCase()
+
+          const isSwapOutTx = !isSendTransferTx && !isRedeemInternalTx && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id
+          const isSwapTx = !isReceiveTransferTx && !isDepositInternalTx && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id
+
+          // Get action by positive condition
+          const actions: Record<string, boolean> = {
+            stake: !!(isReceiveTransferTx || isDepositTx || isSwapTx),
+            unstake: !!(isSendTransferTx || isRedeemTx || isSwapOutTx)
+          }
+
+          const action = Object.keys(actions).find( (action: string) => !!actions[action] )
+
+          if (action) {
+
+            // Get idle token tx and underlying token tx
+            const idleTokenToAddress = action === 'unstake' ? (isSendTransferTx ? null : account) : this.id
+            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.rewardTokenConfig.address?.toLowerCase() && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
+            const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
+            const underlyingAmount = idleAmount
+            const idlePrice = BNify(1)
+
+            transactions.push({
+              ...tx,
+              action,
+              idlePrice,
+              idleAmount,
+              assetId:this.id,
+              underlyingAmount
+            })
+          }
+        }
+
+        return transactions
+      },
+      (acc, val) => ([...acc, ...val]),
+      []
+    )
+
+    // console.log('Staking transactions', this.id, transactions)
+
+    return transactions
   }
 
   public async getHistoricalData(): Promise<any> {

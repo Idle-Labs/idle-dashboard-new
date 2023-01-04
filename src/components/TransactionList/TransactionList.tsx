@@ -6,6 +6,7 @@ import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { AssetId, Transaction } from 'constants/types'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
@@ -19,54 +20,37 @@ type TransactionItemArgs = {
 
 const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
   return (
-    <AssetProvider
-      wrapFlex={false}
-      assetId={transaction.assetId}
+    <VStack
+      mb={2}
+      pb={4}
+      spacing={4}
+      width={'100%'}
+      alignItems={'flex-start'}
+      borderBottomWidth={'1px'}
+      borderBottomColor={'divider'}
     >
-      <VStack
-        mb={2}
-        pb={4}
-        spacing={4}
+      <HStack
         width={'100%'}
-        alignItems={'flex-start'}
-        borderBottomWidth={'1px'}
-        borderBottomColor={'divider'}
+        justifyContent={'space-between'}
       >
         <HStack
-          width={'100%'}
-          justifyContent={'space-between'}
+          spacing={3}
+          direction={'row'}
+          alignItems={'center'}
         >
-          <HStack
-            spacing={3}
-            direction={'row'}
-            alignItems={'center'}
-          >
-            {/*<Icon IconComponent={transaction.icon} width={24} height={24} size={24} />*/}
-            <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
-          </HStack>
-          <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>
+          {/*<Icon IconComponent={transaction.icon} width={24} height={24} size={24} />*/}
+          <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
         </HStack>
-        <HStack
-          width={'100%'}
-          justifyContent={'space-between'}
-        >
-          <HStack
-            spacing={2}
-            alignItems={'center'}
-          >
-            <AssetProvider.Icon size={'xs'} />
-            <HStack
-              spacing={1}
-              alignItems={'center'}
-            >
-              <Amount value={transaction.underlyingAmount} decimals={4} textStyle={'tableCell'} />
-              <AssetProvider.Name textStyle={'tableCell'} />
-            </HStack>
-          </HStack>
-          <TransactionLink hash={transaction.hash} />
-        </HStack>
-      </VStack>
-    </AssetProvider>
+        <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>
+      </HStack>
+      <HStack
+        width={'100%'}
+        justifyContent={'space-between'}
+      >
+        <TokenAmount assetId={transaction.assetId} amount={transaction.underlyingAmount} size={'xs'} textStyle={'tableCell'} />
+        <TransactionLink hash={transaction.hash} />
+      </HStack>
+    </VStack>
   )
 }
 
