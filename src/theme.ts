@@ -559,6 +559,27 @@ export const theme = extendTheme({
               color:'tab.colorSelected',
             }
           }
+        },
+        buttonTertiary: {
+          tab: {
+            color:'cta',
+            borderRadius:8,
+            borderBottom:0,
+            textStyle:'cta',
+            backgroundColor:'tab.bgSelected',
+            _after: {
+              display:'none'
+            },
+            _selected: {
+              borderBottom:0,
+              color:'tab.colorSelected',
+              backgroundColor:'tertiary',
+            },
+            _hover: {
+              borderBottom:0,
+              color:'tab.colorSelected',
+            }
+          }
         }
       }
     },

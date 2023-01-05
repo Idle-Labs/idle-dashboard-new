@@ -69,7 +69,12 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.avgLockTime',
         tooltip:'assets.assetDetails.tooltips.stakingAvgLockTime',
       }
-    ]
+    ],
+    dynamicActionFields:{
+      stake:['stakingPoolShare', 'stakingApy', 'stkIDLE'],
+      increaseTime:['stakingPoolShare', 'stakingApy', 'stkIDLEAfterIncrease'],
+      increaseAmount:['stakingPoolShare', 'stakingApy', 'stkIDLEAfterIncrease']
+    },
   },
   GG:{
     type:'GG',

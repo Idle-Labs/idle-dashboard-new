@@ -211,7 +211,7 @@ export class StakedIdleVault {
   public getMethodDefaultGasLimit(methodName: string): number | undefined {
     switch (methodName){
       case 'stake':
-        return 583082
+        return 558690
       case 'unstake':
         return 567990
       default:
@@ -235,6 +235,22 @@ export class StakedIdleVault {
   public getAllowanceContractSendMethod(params: any[] = []): ContractSendMethod | undefined {
     const allowanceContract = this.getAllowanceContract()
     return allowanceContract?.methods.approve(...params)
+  }
+
+  public getIncreaseAmountParams(amount: NumberType): any[] {
+    return [normalizeTokenAmount(amount, 18)]
+  }
+
+  public getIncreaseAmountContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.stkIdleContract.methods[`increase_amount`](...params)
+  }
+
+  public getIncreaseTimeParams(lockEndTime: number): any[] {
+    return [lockEndTime]
+  }
+
+  public getIncreaseTimeContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.stkIdleContract.methods[`increase_unlock_time`](...params)
   }
 
   public getDepositParams(amount: NumberType, lockEndTime?: number): any[] {

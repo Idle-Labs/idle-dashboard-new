@@ -6,6 +6,7 @@ import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import type { VaultMessages } from 'constants/vaults'
 import { Card, CardProps } from 'components/Card/Card'
+import { useWeb3Provider } from 'contexts/Web3Provider'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { InputDate } from 'components/InputDate/InputDate'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -19,10 +20,10 @@ import { TranslationProps, Translation } from 'components/Translation/Translatio
 import type { Asset, ReducerActionTypes, AssetId, NumberType } from 'constants/types'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { TILDE, MAX_ALLOWANCE, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
+import { TILDE, MAX_ALLOWANCE, MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals, toDayjs, dayMax, dayMin } from 'helpers/'
+import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals, toDayjs, dayMax, dayMin, getBlock } from 'helpers/'
 import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 
 type ActionComponentArgs = {
@@ -190,8 +191,9 @@ const EstimatedGasFees: React.FC = () => {
 
 type DynamicActionFieldsProps = {
   action: string
-  amount: string
-  amountUsd: number
+  amount: BigNumber | string
+  stakingPower?: BigNumber | number
+  amountUsd: BigNumber | string | number
   assetId: AssetId | undefined
 }
 
@@ -199,8 +201,8 @@ type DynamicActionFieldProps = {
   field: string
 } & TextProps & DynamicActionFieldsProps
 
-export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, amount, amountUsd, ...textProps }) => {
-  const { helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
+export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, amount, amountUsd, stakingPower, ...textProps }) => {
+  const { stakingData, helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return assetId && selectAssetById && selectAssetById(assetId)
@@ -293,6 +295,18 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
       const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
       const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
       return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={coverageAmount} />
+    case 'stakingPoolShare':
+      if (!stakingData) return null
+      const stakingPoolShare = bnOrZero(amount).div(stakingData.stkIDLE.totalSupply.plus(bnOrZero(amount))).times(100)
+      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingPoolShare} />
+    case 'stkIDLE':
+    case 'stkIDLEAfterIncrease':
+      return <Amount textStyle={'titleSmall'} color={'primary'} {...textProps} value={amount} />
+    case 'stakingApy':
+      if (!stakingData) return null
+      const stakingApy = bnOrZero(stakingPower).times(stakingData.maxApr)
+      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingApy} />
+    break;
     default:
       return null
   }
@@ -346,51 +360,143 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState<string>('0')
   const [ errorDate, setErrorDate ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
-  const [ lockEndTime, setLockEndTime ] = useState<number>(0)
-  const [ lockEndDate, setLockEndDate ] = useState<any>(toDayjs())
+  const [ increaseTab, setIncreaseTab ] = useState<number>(0)
+  const [ lockEndDate, setLockEndDate ] = useState<any>(null)
 
+  const { web3 } = useWeb3Provider()
   const { account } = useWalletProvider()
   const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
-  const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
+  const { stakingData, selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(underlyingAsset?.id)
-  }, [selectAssetBalance, underlyingAsset?.id])  
+  }, [selectAssetBalance, underlyingAsset?.id])
+
+  const increaseOptions: {action: string, label: string, type: string}[] = useMemo(() => [
+    {
+      type:'amount',
+      action:'increaseAmount',
+      label:'staking.increaseAmount',
+    },
+    {
+      type:'time',
+      action:'increaseTime',
+      label:'staking.increaseTime'
+    }
+  ], [])
+
+  const increaseEnabled = useMemo(() => {
+    return stakingData?.position?.deposited.gt(0)
+  }, [stakingData])
+
+  const selectedIncreaseOption = useMemo(() => {
+    return increaseEnabled ? increaseOptions[increaseTab] : null
+  }, [increaseEnabled, increaseOptions, increaseTab])
+
+  const selectedIncreaseType = useMemo(() => {
+    return selectedIncreaseOption ? selectedIncreaseOption.type : null
+  }, [selectedIncreaseOption])
+
+  const selectedAction = useMemo(() => {
+    return selectedIncreaseOption ? selectedIncreaseOption.action : 'stake'
+  }, [selectedIncreaseOption])
 
   const minDate = useMemo(() => {
-    return toDayjs().add(MIN_STAKING_SECONDS, 'second')
-  }, [])
+    return stakingData?.position?.lockEnd ? toDayjs(stakingData?.position?.lockEnd).add(MIN_STAKING_INCREASE_SECONDS, 'second') : toDayjs().add(MIN_STAKING_SECONDS, 'second')
+  }, [stakingData])
 
   const maxDate = useMemo(() => {
     return toDayjs().add(MAX_STAKING_SECONDS, 'second')
   }, [])
 
+  const lockEndTime = useMemo(() => {
+    if (selectedIncreaseType === 'amount' && stakingData?.position?.lockEnd){
+      return Math.round(stakingData.position.lockEnd/1000)
+    }
+
+    const now = toDayjs()
+    const newLockEndDate = lockEndDate && lockEndDate.set('hour', now.hour()).set('minute', now.minute()).set('second', now.second())
+
+    // console.log('newLockEndDate', newLockEndDate?.format('YYYY-MM-DD HH:mm:ss'))
+
+    return newLockEndDate ? Math.round(newLockEndDate.toDate().getTime()/1000) : 0
+  }, [selectedIncreaseType, stakingData, lockEndDate])
+
+  const stakingPower = useMemo(() => {
+    // Use lockEnd from staking position if user is incrementing his amount
+    const stakingDurationSeconds = Math.max(0, lockEndTime-Math.round(Date.now()/1000))
+    return BNify(stakingDurationSeconds).div(MAX_STAKING_SECONDS)
+  }, [lockEndTime])
+
+  // console.log('stakingPower', stakingPower.toFixed())
+
+  const stkIDLEAmount = useMemo(() => {
+    if (selectedIncreaseType === 'time' && stakingData?.position){
+      return stakingData?.position?.deposited.times(stakingPower)
+    }
+    const balance = bnOrZero(stakingData?.position?.balance)
+    return balance.plus(bnOrZero(amount).times(stakingPower))
+  }, [selectedIncreaseType, stakingData, stakingPower, amount])
+
+  // Update lock end date if not set
+  useEffect(() => {
+    if (!stakingData?.position?.lockEnd || selectedIncreaseType !== 'time') return
+    // console.log('minDate', minDate.format('YYYY-MM-DD'))
+    setLockEndDate(minDate)
+  }, [stakingData, setLockEndDate, selectedIncreaseType, minDate])
+
   const checkLockEndDate = useCallback(() => {
-    return lockEndDate.isSameOrAfter(minDate) && lockEndDate.isSameOrBefore(maxDate)
+    return lockEndDate && lockEndDate.startOf('day').isSameOrAfter(minDate.startOf('day')) && lockEndDate.startOf('day').isSameOrBefore(maxDate.startOf('day'))
   }, [lockEndDate, minDate, maxDate])
+
+  const quickOptions: { label: string, value: number, timeframe: ManipulateType }[] = useMemo(() => [
+    {
+      label:'staking.6months',
+      value: 6,
+      timeframe: 'month'
+    },
+    {
+      label:'staking.1year',
+      value: 1,
+      timeframe: 'year'
+    },
+    {
+      label:'staking.4years',
+      value: MAX_STAKING_SECONDS,
+      timeframe: 'second'
+    }
+  ], [])
 
   const disabled = useMemo(() => {
     // Reset errors
     setError('')
     setErrorDate('')
 
-    if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
-    // if (BNify(assetBalance).lte(0)) return true
-    if (BNify(amount).gt(assetBalance)){
-      setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
-      return true
+    if (!selectedIncreaseType || selectedIncreaseType === 'amount'){
+      if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
+      // if (BNify(assetBalance).lte(0)) return true
+      if (BNify(amount).gt(assetBalance)){
+        setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
+        return true
+      }
     }
 
-    if (!checkLockEndDate()){
-      setErrorDate(translate('trade.errors.stakingLockEndDateNotCorrect'))
-      return true
+    if (!selectedIncreaseType || selectedIncreaseType === 'time'){
+      if (!checkLockEndDate()){
+        if (selectedIncreaseType === 'time'){
+          setErrorDate(translate('trade.errors.stakingIncreaseLockEndDateNotCorrect'))
+        } else {
+          setErrorDate(translate('trade.errors.stakingLockEndDateNotCorrect'))
+        }
+        return true
+      }
     }
 
     return false
-  }, [amount, checkLockEndDate, assetBalance, underlyingAsset, translate])
+  }, [amount, selectedIncreaseType, checkLockEndDate, assetBalance, underlyingAsset, translate])
 
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
@@ -415,23 +521,70 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ;(async() => {
       // if (!underlyingAssetVault.contract) return
 
-      const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
-      
-      console.log('allowance', account.address, allowance)
+      // Approve and create lock
+      if (!increaseEnabled){
+        const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
+        console.log('allowance', account.address, allowance)
+        if (allowance.gte(amount)){
 
-      if (allowance.gte(amount)){
-        const depositParams = vault.getDepositParams(amount, lockEndTime)
+          // Check if max lockEndTime is selected
+          let newLockEndTime = lockEndTime
+          const maxStakeOption = [...quickOptions].pop()
+          if (lockEndDate?.format('YYYY-MM-DD') === toDayjs().add(maxStakeOption!.value, maxStakeOption!.timeframe).format('YYYY-MM-DD')){
+            const latestBlock = await getBlock(web3!)
+            if (latestBlock){
+              newLockEndTime = +latestBlock.timestamp+MAX_STAKING_SECONDS
+            }
+          }
 
-        console.log('depositParams', depositParams)
+          // console.log('newLockEndTime', newLockEndTime, toDayjs(newLockEndTime*1000).format('YYYY-MM-DD HH:mm:ss'))
+          const depositParams = vault.getDepositParams(amount, newLockEndTime)
 
-        const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-        sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+          console.log('depositParams', depositParams)
+
+          const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+          sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+        } else {
+          // Go to approve section
+          dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+        }
       } else {
-        // Go to approve section
-        dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+        switch (selectedIncreaseType){
+          case 'amount':
+            const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
+            if (allowance.gte(amount)){
+              const increaseAmountParams = vault.getIncreaseAmountParams(amount)
+              console.log('increaseAmountParams', increaseAmountParams)
+              const depositContractSendMethod = vault.getIncreaseAmountContractSendMethod(increaseAmountParams)
+              sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+            } else {
+              // Go to approve section
+              dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+            }
+          break;
+          case 'time':
+            // Check if max lockEndTime is selected
+            let newLockEndTime = lockEndTime
+            const maxStakeOption = [...quickOptions].pop()
+            if (lockEndDate?.format('YYYY-MM-DD') === toDayjs().add(maxStakeOption!.value, maxStakeOption!.timeframe).format('YYYY-MM-DD')){
+              const latestBlock = await getBlock(web3!)
+              if (latestBlock){
+                newLockEndTime = +latestBlock.timestamp+MAX_STAKING_SECONDS
+              }
+            }
+
+            const increaseTimeParams = vault.getIncreaseTimeParams(newLockEndTime)
+            console.log('increaseTimeParams', increaseTimeParams)
+            const depositContractSendMethod = vault.getIncreaseTimeContractSendMethod(increaseTimeParams)
+            sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+          break;
+          default:
+          break;
+        }
       }
+
     })()
-  }, [account, disabled, amount, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+  }, [account, increaseEnabled, selectedIncreaseType, disabled, amount, quickOptions, web3, lockEndDate, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -458,26 +611,43 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault) || !(vault instanceof StakedIdleVault)) return
     const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
 
+    if (!account || assetBalance.lte(0) || !checkLockEndDate()){
+      return defaultGasLimit
+    }
+
     const allowance = await getDepositAllowance()
 
-    if (!account || assetBalance.lte(0) || allowance.lte(0)){
+    if (allowance.lte(0)){
       return defaultGasLimit
     }
 
     const balanceToDeposit = BigNumber.minimum(assetBalance, allowance)
 
-    // console.log('balanceToDeposit', assetBalance.toFixed(), allowance.toFixed(), balanceToDeposit.toFixed())
+    // console.log('balanceToDeposit', assetBalance.toFixed(), allowance.toFixed(), balanceToDeposit.toFixed(), lockEndTime)
 
     const sendOptions = {
       from: account?.address
     }
-    const depositParams = vault.getDepositParams(balanceToDeposit.toFixed(), lockEndTime)
-    const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+
+    let depositContractSendMethod = null
+
+    if (!increaseEnabled){
+      const depositParams = vault.getDepositParams(balanceToDeposit.toFixed(), lockEndTime)
+      depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+    } else if (selectedIncreaseType === 'amount'){
+      const depositParams = vault.getIncreaseAmountParams(balanceToDeposit.toFixed())
+      depositContractSendMethod = vault.getIncreaseAmountContractSendMethod(depositParams)
+    } else if (selectedIncreaseType === 'time'){
+      const depositParams = vault.getIncreaseTimeParams(lockEndTime)
+      depositContractSendMethod = vault.getIncreaseTimeContractSendMethod(depositParams)
+    }
+
+    if (!depositContractSendMethod) return defaultGasLimit
 
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, lockEndTime, getDepositAllowance, assetBalance])
+  }, [account, increaseEnabled, selectedIncreaseType, vault, checkLockEndDate, lockEndTime, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {
@@ -506,37 +676,127 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const depositButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
+      <Translation component={Button} translation={`staking.${selectedAction}`} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, deposit])
+  }, [account, disabled, selectedAction, deposit])
 
   const selectQuickOption = useCallback((value: number, timeframe: ManipulateType) => {
     const newDate = dayMin(dayMax(toDayjs().add(value, timeframe), minDate), maxDate)
     setLockEndDate(newDate)
-    setLockEndTime(Math.round(newDate.toDate().getTime()/1000))
-  }, [setLockEndDate, setLockEndTime, minDate, maxDate])
+  }, [setLockEndDate, minDate, maxDate])
+
+  const handleActionChange = useCallback((index: number) => {
+    setIncreaseTab(index)
+  }, [setIncreaseTab])
+
+  const increaseAmount = useMemo(() => {
+    if (increaseEnabled && selectedIncreaseType !== 'amount') return null
+    return (
+      <HStack
+        spacing={4}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Box
+          pt={8}
+          width={'110px'}
+        >
+          <AssetLabel assetId={asset?.id} />
+        </Box>
+        <VStack
+          flex={1}
+          spacing={1}
+          alignItems={'flex-start'}
+        >
+          <Card
+            px={4}
+            py={2}
+            layerStyle={'cardLight'}
+          >
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+            >
+              <InputAmount amount={amount} amountUsd={null} setAmount={setAmount} />
+              <HStack
+                width={'100%'}
+                justifyContent={'space-between'}
+              >
+                <HStack
+                  spacing={1}
+                >
+                  <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                  <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                </HStack>
+                <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+              </HStack>
+            </VStack>
+          </Card>
+          {
+            error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+          }
+        </VStack>
+      </HStack>
+    )
+  }, [asset, amount, setAmount, error, setMaxBalance, increaseEnabled, selectedIncreaseType])
+
+  const increaseTime = useMemo(() => {
+    if (increaseEnabled && selectedIncreaseType !== 'time') return null
+    return (
+      <HStack
+        spacing={4}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Box
+          pt={8}
+          width={'110px'}
+        >
+          <Translation translation={'staking.lockEnd'} textStyle={'titleSmall'} fontSize={'md'} color={'primary'} whiteSpace={'nowrap'}></Translation>
+        </Box>
+        <VStack
+          flex={1}
+          spacing={1}
+          alignItems={'flex-start'}
+        >
+          <Card
+            px={4}
+            py={2}
+            layerStyle={'cardLight'}
+          >
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+            >
+              <InputDate value={lockEndDate?.format('YYYY-MM-DD')} setValue={setLockEndDate} min={minDate.format('YYYY-MM-DD')} max={maxDate.format('YYYY-MM-DD')} />
+              <SimpleGrid
+                spacing={1}
+                width={'100%'}
+                columns={quickOptions.length}
+                justifyContent={'space-between'}
+              >
+                {
+                  quickOptions.map( quickOption => {
+                    const isSelected = lockEndDate?.format('YYYY-MM-DD') === toDayjs().add(quickOption.value, quickOption.timeframe).format('YYYY-MM-DD')
+                    return (
+                      <Translation key={`option_${quickOption.label}`} translation={quickOption.label} component={Button} variant={'selector'} aria-selected={isSelected} onClick={ () => selectQuickOption(quickOption.value, quickOption.timeframe) } />
+                    )
+                  })
+                }
+              </SimpleGrid>
+            </VStack>
+          </Card>
+          {
+            errorDate && <Text textStyle={'captionSmaller'} color={'orange'}>{errorDate}</Text>
+          }
+        </VStack>
+      </HStack>
+    ) 
+  }, [increaseEnabled, selectedIncreaseType, lockEndDate, setLockEndDate, minDate, maxDate, quickOptions, selectQuickOption, errorDate])
 
   // console.log('minDate', minDate, 'maxDate', maxDate)
-
-  const quickOptions: { label: string, value: number, timeframe: ManipulateType }[] = [
-    {
-      label:'staking.6months',
-      value: 6,
-      timeframe: 'month'
-    },
-    {
-      label:'staking.1year',
-      value: 1,
-      timeframe: 'year'
-    },
-    {
-      label:'staking.4years',
-      value: MAX_STAKING_SECONDS,
-      timeframe: 'second'
-    }
-  ]
 
   return (
     <AssetProvider
@@ -559,100 +819,39 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           width={'100%'}
           alignItems={'flex-start'}
         >
-          <HStack
-            spacing={4}
-            width={'100%'}
-            alignItems={'flex-start'}
-          >
-            <Box
-              pt={8}
-              width={'110px'}
-            >
-              <AssetLabel assetId={asset?.id} />
-            </Box>
-            <VStack
-              flex={1}
-              spacing={1}
-              alignItems={'flex-start'}
-            >
-              <Card
-                px={4}
-                py={2}
-                layerStyle={'cardLight'}
+          {
+            increaseEnabled && (
+              <Tabs
+                width={'100%'}
+                defaultIndex={0}
+                variant={'buttonTertiary'}
+                onChange={handleActionChange}
               >
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
+                <TabList
+                  width={'100%'}
                 >
-                  <InputAmount amount={amount} amountUsd={null} setAmount={setAmount} />
-                  <HStack
-                    width={'100%'}
-                    justifyContent={'space-between'}
-                  >
-                    <HStack
-                      spacing={1}
-                    >
-                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                      <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
-                    </HStack>
-                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
-                  </HStack>
-                </VStack>
-              </Card>
-              {
-                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-              }
-            </VStack>
-          </HStack>
-          <HStack
-            spacing={4}
-            width={'100%'}
-            alignItems={'flex-start'}
-          >
-            <Box
-              pt={8}
-              width={'110px'}
-            >
-              <Translation translation={'staking.lockEnd'} textStyle={'titleSmall'} fontSize={'md'} color={'primary'} whiteSpace={'nowrap'}></Translation>
-            </Box>
-            <VStack
-              flex={1}
-              spacing={1}
-              alignItems={'flex-start'}
-            >
-              <Card
-                px={4}
-                py={2}
-                layerStyle={'cardLight'}
-              >
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
-                >
-                  <InputDate value={lockEndDate.format('YYYY-MM-DD')} setValue={setLockEndDate} min={minDate.format('YYYY-MM-DD')} max={maxDate.format('YYYY-MM-DD')} />
                   <SimpleGrid
-                    spacing={1}
+                    spacing={2}
                     width={'100%'}
-                    columns={quickOptions.length}
-                    justifyContent={'space-between'}
+                    columns={increaseOptions.length}
                   >
                     {
-                      quickOptions.map( quickOption => {
-                        const isSelected = lockEndDate.format('YYYY-MM-DD') === toDayjs().add(quickOption.value, quickOption.timeframe).format('YYYY-MM-DD')
-                        return (
-                          <Translation key={`option_${quickOption.label}`} translation={quickOption.label} component={Button} variant={'selector'} aria-selected={isSelected} onClick={ () => selectQuickOption(quickOption.value, quickOption.timeframe) } />
-                        )
-                      })
+                      increaseOptions.map( option => (
+                        <Translation key={`option_${option.label}`} component={Tab} translation={option.label} />
+                      ))
                     }
                   </SimpleGrid>
-                </VStack>
-              </Card>
-              {
-                errorDate && <Text textStyle={'captionSmaller'} color={'orange'}>{errorDate}</Text>
-              }
-            </VStack>
-          </HStack>
-          <DynamicActionFields assetId={asset?.id} action={'stake'} amount={amount} amountUsd={amountUsd} />
+                </TabList>
+              </Tabs>
+            )
+          }
+          {increaseAmount}
+          {increaseTime}
+          {
+            stkIDLEAmount.gt(0) && (
+              <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
+            )
+          }
         </VStack>
         <VStack
           spacing={4}

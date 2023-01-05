@@ -548,15 +548,18 @@
     }
   },
   "staking": {
-    "6months": "6 months",
+    "stake": "Stake",
     "1year": "1 year",
     "4years": "4 years",
     "staking": "Staking",
+    "6months": "6 months",
     "lockEnd": "Lock end date",
     "itWillTake": "It will take",
     "totalSupply": "Total supply",
-    "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately.",
-    "assetStakingBalance": "%{assetSymbol} Staking Balance"
+    "increaseTime": "Increase time",
+    "increaseAmount": "Increase amount",
+    "assetStakingBalance": "%{assetSymbol} Staking Balance",
+    "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately."
   },
   "footer": {
     "joinCommunity": "Join our community"
@@ -672,6 +675,10 @@
     "noSupportedAssets": "No supported assets in portfolio."
   },
   "dynamicActionFields": {
+    "stakingPoolShare": "Pool share",
+    "stakingApy": "Estimated APY",
+    "stkIDLE": "stkIDLE you will receive",
+    "stkIDLEAfterIncrease": "stkIDLE balance after the increase",
     "boost": "The base strategy APY is boosted by",
     "overperformance": "Overperformance on base strategy",
     "newApy": "New APY (after deposit)",
@@ -788,6 +795,7 @@
       "broadcastFailed": "An error occurred while broadcasting the transaction",
       "insufficientFundsForLimit": "Insufficient funds. The minimum trade amount for this pair is %{minLimit}",
       "insufficientFundsForAmount": "Insufficient funds. Your %{symbol} balance is less than the selected amount",
+      "stakingIncreaseLockEndDateNotCorrect": "You can only increase the stake period for a maximum of 4 years.",
       "stakingLockEndDateNotCorrect": "Lock end date not correct. You can stake for a minimum of 2 weeks and a maximum of 4 years.",
       "invalidTradePair": "Invalid trade pair: %{sellAssetName} and %{buyAssetName}",
       "invalidTradePairBtnText": "Invalid Trade Pair",

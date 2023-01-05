@@ -10,7 +10,8 @@ type InputDateArgs = {
 
 export const InputDate: React.FC<InputDateArgs> = ({ inputHeight, value, setValue, ...props }) => {
   const handleInputChange = ({target: { value }}: { target: {value: string} }) => {
-    setValue(toDayjs(value))
+    const date = toDayjs(value).isValid() ? toDayjs(value) : null
+    setValue(date)
   }
 
   return (
@@ -18,7 +19,7 @@ export const InputDate: React.FC<InputDateArgs> = ({ inputHeight, value, setValu
       width={'100%'}
       justifyContent={'space-between'}
     >
-      <Input type={"date"} height={inputHeight} flex={1} placeholder={''} variant={'balance'} value={value} onChange={handleInputChange} {...props} />
+      <Input type={"date"} height={inputHeight} flex={1} placeholder={''} variant={'balance'} value={value || ''} onChange={handleInputChange} {...props} />
     </HStack>
   )
 }
