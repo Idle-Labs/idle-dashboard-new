@@ -557,9 +557,16 @@
     "itWillTake": "It will take",
     "totalSupply": "Total supply",
     "increaseTime": "Increase time",
+    "increaseLock": "Increase lock",
     "increaseAmount": "Increase amount",
+    "lockExpired": "Your lock is expired",
+    "noStake": "You haven't staked any IDLE",
+    "lockNotExpired": "Your lock is not expired yet",
     "assetStakingBalance": "%{assetSymbol} Staking Balance",
-    "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately."
+    "selectStakeTab": "Select the Stake tab to stake your IDLE tokens",
+    "waitUntilLockExpired": "Wait until %{lockEndDate} to withdraw your IDLE. Meanwhile you can increase your lock.",
+    "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately.",
+    "canWithdrawLock": "%{amount} %{asset} are now available to be withdrawn. Staking rewards will need to be claimed separately."
   },
   "footer": {
     "joinCommunity": "Join our community"
@@ -677,8 +684,8 @@
   "dynamicActionFields": {
     "stakingPoolShare": "Pool share",
     "stakingApy": "Estimated APY",
-    "stkIDLE": "stkIDLE you will receive",
-    "stkIDLEAfterIncrease": "stkIDLE balance after the increase",
+    "stkIDLE": "You will receive",
+    "stkIDLEAfterIncrease": "Balance after the increase",
     "boost": "The base strategy APY is boosted by",
     "overperformance": "Overperformance on base strategy",
     "newApy": "New APY (after deposit)",
@@ -751,6 +758,24 @@
         "status": {
           "success": {
             "button": "New Stake"
+          }
+        }
+      },
+      "increaseAmount": {
+        "confirm": "You are increasing your stake by",
+        "confirmed": "You have increase your stake by",
+        "status": {
+          "success": {
+            "button": "New Increase"
+          }
+        }
+      },
+      "increaseTime": {
+        "confirm": "You are increasing your stake until",
+        "confirmed": "You have increase your stake until",
+        "status": {
+          "success": {
+            "button": "New Increase"
           }
         }
       },
@@ -1030,6 +1055,22 @@
         "failed": "There was an issue with your staking transaction."
       }
     },
+    "increaseAmount": {
+      "status": {
+        "confirm": "You are increasing your stake by",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully increase your stake by %{amount} %{asset}.",
+        "failed": "There was an issue with your staking transaction."
+      }
+    },
+    "increaseTime": {
+      "status": {
+        "confirm": "You are increasing your lock end date until",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully increased your lock end date to %{amount}.",
+        "failed": "There was an issue with your staking transaction."
+      }
+    },
     "unstake": {
       "amountToStake": "Amount To Unstake",
       "stakeYour": "Unstake your %{opportunity}",
@@ -1102,6 +1143,12 @@
       },
       "claim": {
         "header": "Confirm Claim"
+      },
+      "increaseAmount": {
+        "header": "Increase stake amount"
+      },
+      "increaseTime": {
+        "header": "Increase stake time"
       },
       "deposit": {
         "header": "Confirm Deposit",

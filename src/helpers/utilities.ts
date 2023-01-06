@@ -9,45 +9,45 @@ type BNifyInput = any
 
 export const BNify = (s: BNifyInput): BigNumber => new BigNumber(typeof s === 'object' ? s : String(s))
 
-export function bnOrZero (n: BNifyInput): BigNumber {
+export function bnOrZero(n: BNifyInput): BigNumber {
   const value = BNify(n || 0)
   return value.isFinite() ? value : BNify(0)
 }
 
-export function integerValue (value: BNifyInput) :string {
+export function integerValue(value: BNifyInput) :string {
   return BNify(value).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
-export function normalizeTokenDecimals (tokenDecimals: number): BigNumber {
+export function normalizeTokenDecimals(tokenDecimals: number): BigNumber {
   return BNify(`1e${tokenDecimals}`);
 }
-export function normalizeTokenAmount (tokenBalance: BNifyInput, tokenDecimals: number) {
+export function normalizeTokenAmount(tokenBalance: BNifyInput, tokenDecimals: number) {
   return BNify(tokenBalance).times(`1e${tokenDecimals}`).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
-export function fixTokenDecimals (tokenBalance: BNifyInput, tokenDecimals?: number) {
+export function fixTokenDecimals(tokenBalance: BNifyInput, tokenDecimals?: number) {
   if (!tokenDecimals) {
     return BNify(tokenBalance);
   }
   return BNify(tokenBalance).div(`1e${tokenDecimals}`);
 }
 
-export function apr2apy (apr: BNifyInput) {
+export function apr2apy(apr: BNifyInput) {
   return BNify((BNify(1).plus(BNify(apr).div(365))).pow(365).minus(1).toFixed(18));
 }
 
-export function isBigNumberNaN (amount: any) {
+export function isBigNumberNaN(amount: any) {
   const isNull = amount === null
   const isUndefined = amount === undefined
   const isBigNumber = amount instanceof BigNumber
   return isNull || isUndefined || (isBigNumber && BNify(amount).isNaN())
 }
 
-export function numberToPercentage (value: any, decimals = 2, maxValue = 9999, minValue = 0) {
+export function numberToPercentage(value: any, decimals = 2, maxValue = 9999, minValue = 0) {
   const isOverMaxValue = maxValue && BNify(value).gt(maxValue)
   const isBelowMinValue = minValue && BNify(value).lt(minValue)
   return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals)))+'%'
 }
 
-export function getTimeframeTimestamp (timeframe: HistoryTimeframe): number {
+export function getTimeframeTimestamp(timeframe: HistoryTimeframe): number {
   if (timeframe === 'ALL') return 0
   const periods: Record<string, ManipulateType> = {
     'W':'week',

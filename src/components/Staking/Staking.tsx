@@ -9,7 +9,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
-import { Approve, Stake, Withdraw } from 'components/OperativeComponent/OperativeComponent'
+import { Approve, Stake, Unstake } from 'components/OperativeComponent/OperativeComponent'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 
 export const Staking: React.FC = () => {
@@ -41,9 +41,9 @@ export const Staking: React.FC = () => {
       ]
     },
     {
-      type: 'withdraw',
-      label: 'common.withdraw',
-      component: Withdraw,
+      type: 'unstake',
+      label: 'common.unstake',
+      component: Unstake,
       steps: []
     }
   ]

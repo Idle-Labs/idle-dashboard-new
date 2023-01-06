@@ -21,9 +21,9 @@ import type { Asset, ReducerActionTypes, AssetId, NumberType } from 'constants/t
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { TILDE, MAX_ALLOWANCE, MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
-import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals, toDayjs, dayMax, dayMin, getBlock } from 'helpers/'
+import { TILDE, PROTOCOL_TOKEN, MAX_ALLOWANCE, MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
+import { MdLockOpen, MdHighlightOff, MdLockClock, MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdKeyboardArrowLeft, MdOutlineLockOpen, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
+import { BNify, bnOrZero, getAllowance, getVaultAllowanceOwner, estimateGasLimit, formatTime, abbreviateNumber, getExplorerTxUrl, apr2apy, fixTokenDecimals, toDayjs, dayMax, dayMin, getBlock, formatDate } from 'helpers/'
 import { TextProps, BoxProps, useTheme, Switch, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 
 type ActionComponentArgs = {
@@ -301,7 +301,7 @@ export const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId,
       return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingPoolShare} />
     case 'stkIDLE':
     case 'stkIDLEAfterIncrease':
-      return <Amount textStyle={'titleSmall'} color={'primary'} {...textProps} value={amount} />
+      return <Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />
     case 'stakingApy':
       if (!stakingData) return null
       const stakingApy = bnOrZero(stakingPower).times(stakingData.maxApr)
@@ -365,10 +365,10 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const { web3 } = useWeb3Provider()
   const { account } = useWalletProvider()
-  const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
+  const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
+  const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
-  const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -387,6 +387,11 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       label:'staking.increaseTime'
     }
   ], [])
+
+  const lockExpired = useMemo(() => {
+    if (!stakingData?.position?.lockEnd) return false
+    return toDayjs(stakingData?.position?.lockEnd).isSameOrBefore(toDayjs())
+  }, [stakingData])
 
   const increaseEnabled = useMemo(() => {
     return stakingData?.position?.deposited.gt(0)
@@ -543,7 +548,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           console.log('depositParams', depositParams)
 
           const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-          sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+          sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod, selectedAction)
         } else {
           // Go to approve section
           dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
@@ -556,7 +561,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               const increaseAmountParams = vault.getIncreaseAmountParams(amount)
               console.log('increaseAmountParams', increaseAmountParams)
               const depositContractSendMethod = vault.getIncreaseAmountContractSendMethod(increaseAmountParams)
-              sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+              sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod, selectedAction)
             } else {
               // Go to approve section
               dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
@@ -576,7 +581,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             const increaseTimeParams = vault.getIncreaseTimeParams(newLockEndTime)
             console.log('increaseTimeParams', increaseTimeParams)
             const depositContractSendMethod = vault.getIncreaseTimeContractSendMethod(increaseTimeParams)
-            sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
+            sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod, selectedAction, formatDate(lockEndDate, 'YYYY-MM-DD HH:mm', true))
           break;
           default:
           break;
@@ -584,7 +589,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       }
 
     })()
-  }, [account, increaseEnabled, selectedIncreaseType, disabled, amount, quickOptions, web3, lockEndDate, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+  }, [account, increaseEnabled, selectedAction, selectedIncreaseType, disabled, amount, quickOptions, web3, lockEndDate, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Update amount USD and disabled
   useEffect(() => {
@@ -609,7 +614,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const getDefaultGasLimit = useCallback(async () => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault) || !(vault instanceof StakedIdleVault)) return
-    const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
+    const defaultGasLimit = vault.getMethodDefaultGasLimit('stake')
 
     if (!account || assetBalance.lte(0) || !checkLockEndDate()){
       return defaultGasLimit
@@ -804,79 +809,274 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       width={'100%'}
       assetId={asset?.underlyingId}
     >
+      {
+        lockExpired ? (
+          <Center
+            py={10}
+            px={10}
+            flex={1}
+            width={'100%'}
+          >
+            <VStack
+              spacing={6}
+            >
+              <MdLockOpen size={72} />
+              <VStack
+                spacing={4}
+              >
+                <Translation component={Text} translation={"staking.lockExpired"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                <Translation component={Text} translation={`staking.canWithdrawLock`} params={{amount: abbreviateNumber(amount), asset: asset?.name}} textStyle={'captionSmall'} textAlign={'center'} />
+                <Translation component={Button} translation={`common.unstake`} onClick={() => setActionIndex(1)} variant={'ctaPrimary'} px={10} />
+              </VStack>
+            </VStack>
+          </Center>
+        ) : (
+          <VStack
+            pt={8}
+            flex={1}
+            spacing={6}
+            height={'100%'}
+            id={'deposit-container'}
+            alignItems={'space-between'}
+            justifyContent={'flex-start'}
+          >
+            <VStack
+              flex={1}
+              spacing={6}
+              width={'100%'}
+              alignItems={'flex-start'}
+            >
+              {
+                increaseEnabled && (
+                  <Tabs
+                    width={'100%'}
+                    defaultIndex={0}
+                    variant={'buttonTertiary'}
+                    onChange={handleActionChange}
+                  >
+                    <TabList
+                      width={'100%'}
+                    >
+                      <SimpleGrid
+                        spacing={2}
+                        width={'100%'}
+                        columns={increaseOptions.length}
+                      >
+                        {
+                          increaseOptions.map( option => (
+                            <Translation key={`option_${option.label}`} component={Tab} translation={option.label} />
+                          ))
+                        }
+                      </SimpleGrid>
+                    </TabList>
+                  </Tabs>
+                )
+              }
+              {increaseAmount}
+              {increaseTime}
+              {
+                stkIDLEAmount.gt(0) && (
+                  <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
+                )
+              }
+            </VStack>
+            <VStack
+              spacing={4}
+              id={'footer'}
+              alignItems={'flex-start'}
+            >
+              <EstimatedGasFees />
+              {depositButton}
+            </VStack>
+          </VStack>
+        )
+      }
+    </AssetProvider>
+  )
+}
+
+export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
+  const [ error, setError ] = useState<string>('')
+
+  const { account } = useWalletProvider()
+  const { searchParams } = useBrowserRouter()
+  const { asset, vault, underlyingAsset, translate } = useAssetProvider()
+  const { dispatch, activeItem, activeStep, setActionIndex } = useOperativeComponent()
+  const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
+  const { stakingData, selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
+
+  const amount = useMemo(() => {
+    return bnOrZero(stakingData?.position?.deposited)
+  }, [stakingData])
+
+  const lockExpired = useMemo(() => {
+    if (!stakingData?.position?.lockEnd) return false
+    return toDayjs(stakingData?.position?.lockEnd).isSameOrBefore(toDayjs())
+  }, [stakingData])
+
+  const lockEndDate = useMemo(() => {
+    if (!stakingData?.position?.lockEnd) return null
+    return formatDate(stakingData?.position?.lockEnd, 'YYYY-MM-DD HH:mm', true)
+  }, [stakingData])
+
+  // Withdraw
+  const withdraw = useCallback(() => {
+    if (!account || lockExpired) return
+    if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault) || !(vault instanceof StakedIdleVault)) return
+
+    ;(async() => {
+      const withdrawParams = vault.getWithdrawParams()
+      const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
+      // console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
+      sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
+    })()
+  }, [account, lockExpired, vault, sendTransaction])
+
+  const getDefaultGasLimit = useCallback(async () => {
+    if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault) || !(vault instanceof StakedIdleVault)) return
+    
+    const defaultGasLimit = vault.getMethodDefaultGasLimit('unstake')
+    if (!account || !lockExpired){
+      return defaultGasLimit
+    }
+
+    const sendOptions = {
+      from: account?.address
+    }
+    const withdrawParams = vault.getWithdrawParams()
+    const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
+
+    const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
+    // console.log('WITHDRAW - estimatedGasLimit', estimatedGasLimit)
+    return estimatedGasLimit
+  }, [account, vault, lockExpired])
+
+  // Update gas fees
+  useEffect(() => {
+    if (activeItem !== itemIndex) return
+    ;(async () => {
+      const defaultGasLimit = await getDefaultGasLimit()
+      setGasLimit(defaultGasLimit)
+    })()
+  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
+
+  // Update parent amount
+  useEffect(() => {
+    if (activeItem !== itemIndex) return
+    dispatch({type: 'SET_ASSET', payload: asset})
+
+    if (!selectVaultPrice || !vault) return
+    // const vaultPrice = selectVaultPrice(vault.id)
+    dispatch({type: 'SET_AMOUNT', payload: BNify(amount).toString()})
+    dispatch({type: 'SET_DEFAULT_AMOUNT', payload: BNify(amount).toString()})
+  }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, withdraw])
+
+  const withdrawButton = useMemo(() => {
+    return account ? (
+      <Translation component={Button} translation={"common.withdraw"} disabled={!lockExpired} onClick={withdraw} variant={'ctaFull'} />
+    ) : (
+      <ConnectWalletButton variant={'ctaFull'} />
+    )
+  }, [account, lockExpired, withdraw])
+
+  // console.log('stakingData', stakingData)
+
+  return (
+    <AssetProvider
+      flex={1}
+      width={'100%'}
+      assetId={asset?.id}
+    >
       <VStack
-        pt={8}
         flex={1}
         spacing={6}
+        width={'100%'}
         height={'100%'}
-        id={'deposit-container'}
+        id={'withdraw-container'}
         alignItems={'space-between'}
         justifyContent={'flex-start'}
+        pt={stakingData?.position?.lockEnd ? 8 : 0}
       >
         <VStack
           flex={1}
-          spacing={6}
-          width={'100%'}
+          spacing={0}
+          id={'confirm-on-wallet'}
           alignItems={'flex-start'}
         >
           {
-            increaseEnabled && (
-              <Tabs
+            !stakingData?.position?.lockEnd ? (
+              <VStack
+                mt={10}
+                py={20}
+                px={14}
+                flex={1}
+                spacing={6}
                 width={'100%'}
-                defaultIndex={0}
-                variant={'buttonTertiary'}
-                onChange={handleActionChange}
               >
-                <TabList
-                  width={'100%'}
+                <MdHighlightOff size={72} />
+                <VStack
+                  spacing={4}
                 >
-                  <SimpleGrid
-                    spacing={2}
-                    width={'100%'}
-                    columns={increaseOptions.length}
+                  <Translation component={Text} translation={"staking.noStake"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                  {/*<Translation component={Text} translation={`staking.selectStakeTab`} textStyle={'captionSmall'} textAlign={'center'} />*/}
+                  <Translation component={Button} translation={`common.stake`} onClick={() => setActionIndex(0)} variant={'ctaPrimary'} px={10} />
+                </VStack>
+              </VStack>
+            ) : !lockExpired ? (
+              <VStack
+                py={20}
+                px={14}
+                flex={1}
+                spacing={6}
+                width={'100%'}
+              >
+                <MdLockClock size={72} />
+                <VStack
+                  spacing={4}
+                >
+                  <Translation component={Text} translation={"staking.lockNotExpired"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                  <Translation component={Text} translation={`staking.waitUntilLockExpired`} params={{lockEndDate}} textStyle={'captionSmall'} textAlign={'center'} />
+                  <Translation component={Button} translation={`staking.increaseLock`} onClick={() => setActionIndex(0)} variant={'ctaPrimary'} px={10} />
+                </VStack>
+              </VStack>
+            ) : (
+              <Center
+                py={14}
+                px={10}
+                flex={1}
+                width={'100%'}
+              >
+                <VStack
+                  spacing={6}
+                >
+                  <MdLockOpen size={72} />
+                  <VStack
+                    spacing={4}
                   >
-                    {
-                      increaseOptions.map( option => (
-                        <Translation key={`option_${option.label}`} component={Tab} translation={option.label} />
-                      ))
-                    }
-                  </SimpleGrid>
-                </TabList>
-              </Tabs>
-            )
-          }
-          {increaseAmount}
-          {increaseTime}
-          {
-            stkIDLEAmount.gt(0) && (
-              <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
+                    <Translation component={Text} translation={"staking.lockExpired"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                    <Translation component={Text} translation={`staking.canWithdrawLock`} params={{amount: abbreviateNumber(amount), asset: asset?.name}} textStyle={'captionSmall'} textAlign={'center'} />
+                  </VStack>
+                </VStack>
+              </Center>
             )
           }
         </VStack>
-        <VStack
-          spacing={4}
-          id={'footer'}
-          alignItems={'flex-start'}
-        >
-          {
-            /*
-            <Card.Outline px={4} py={2}>
-              <HStack
-                spacing={1}
-              >
-                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                <AssetProvider
-                  assetId={asset?.id}
-                >
-                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                </AssetProvider>
-              </HStack>
-            </Card.Outline>
-            */
-          }
-          <EstimatedGasFees />
-          {depositButton}
-        </VStack>
+        {
+          stakingData?.position?.lockEnd && lockExpired && (
+            <VStack
+              spacing={4}
+              id={'footer'}
+              alignItems={'flex-start'}
+            >
+              {
+                lockExpired && (
+                  <EstimatedGasFees />
+                )
+              }
+              {withdrawButton}
+            </VStack>
+          )
+        }
       </VStack>
     </AssetProvider>
   )
@@ -1560,14 +1760,18 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   }, [actionType, transactionState.actionType])
 
   const amountToDisplay = useMemo(() => {
-    return transactionState.amount ? abbreviateNumber(bnOrZero(transactionState.amount), 8) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(bnOrZero(amount), 8))
+    return transactionState.amount ? (BNify(transactionState.amount).isNaN() ? transactionState.amount : abbreviateNumber(bnOrZero(transactionState.amount), 8)) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(bnOrZero(amount), 8))
   }, [amount, translate, transactionState.amount])
 
+  // console.log('amountToDisplay', amountToDisplay)
+
   const assetToDisplay = useMemo(() => {
+    // Don't show asset if amount is not a number
+    if (transactionState.amount && BNify(transactionState.amount).isNaN()) return ''
     if (!selectAssetById) return underlyingAsset?.name
     const asset = selectAssetById(transactionState.assetId)
     return asset?.name || underlyingAsset?.name
-  }, [selectAssetById, underlyingAsset?.name, transactionState.assetId])
+  }, [selectAssetById, underlyingAsset?.name, transactionState.assetId, transactionState.amount])
 
   const body = useMemo(() => {
     switch (transactionState?.status) {
@@ -1868,6 +2072,7 @@ interface OperativeComponentContextProps {
   defaultAmount: string
   executeAction: boolean
   baseActionType: string
+  setActionIndex: Function
 }
 
 const initialState: OperativeComponentContextProps = {
@@ -1879,7 +2084,8 @@ const initialState: OperativeComponentContextProps = {
   defaultAmount: '',
   baseActionType: '',
   dispatch: () => {},
-  executeAction: false
+  executeAction: false,
+  setActionIndex: () => {}
 }
 
 const reducer = (state: OperativeComponentContextProps, action: ReducerActionTypes) => {
@@ -1934,8 +2140,6 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   const activeAction = useMemo(() => actions[actionIndex], [actions, actionIndex])
   const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep-1], [activeAction, state.activeStep])
   const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actions, actionIndex])
-
-  // console.log('actionIndex', actionIndex)
 
   useEffect(() => {
     setActiveItem(state.activeStep)
@@ -2064,7 +2268,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       wrapFlex={false}
       assetId={assetId}
     >
-      <OperativeComponentContext.Provider value={{...state, activeItem, dispatch}}>
+      <OperativeComponentContext.Provider value={{...state, activeItem, dispatch, setActionIndex}}>
         <Card.Flex
           p={4}
           width={'100%'}
@@ -2112,6 +2316,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                 <Tabs
                   defaultIndex={0}
                   variant={'button'}
+                  index={actionIndex}
                   onChange={handleActionChange}
                 >
                   <TabList>
@@ -2160,7 +2365,13 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   >
                     <Translation component={Text} translation={`modals.${actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
                     <HStack>
-                      <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
+                      {
+                        BNify(amountToDisplay).isNaN() ? (
+                          <Text textStyle={'bold'}>{amountToDisplay}</Text>
+                        ) : (
+                          <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
+                        )
+                      }
                     </HStack>
                   </VStack>
                 </VStack>
