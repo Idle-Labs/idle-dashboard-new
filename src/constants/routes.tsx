@@ -45,10 +45,10 @@ export const routes: RouteObject[] = [
           },
         ]
       },
-      // {
-      //   path:'stake',
-      //   element:<Staking />
-      // },
+      {
+        path:'stake',
+        element:<Staking />
+      },
       /*
       {
         path:'stats',

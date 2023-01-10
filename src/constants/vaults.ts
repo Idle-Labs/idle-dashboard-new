@@ -377,14 +377,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-    /*
     convex:{
       FRAX3CRV:{
         protocol:'convex',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:13812864,
         autoFarming:['CVX','CRV'],
-        curveApyPath:['apy','day','frax'],
         underlyingToken:'FRAX3CRV',
+        curveApyPath:['apy','day','frax'],
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -459,6 +460,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       steCRV:{
         protocol:'convex',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:14182975,
         autoFarming:['CVX','CRV','LDO'],
         curveApyPath:['apy','day','steth'],
@@ -537,6 +540,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       ALUSD3CRV:{
         protocol:'convex',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:14177732,
         autoFarming:['CVX','CRV'],
         underlyingToken:'ALUSD3CRV',
@@ -614,6 +619,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       PBTCCRV:{
         protocol:'convex',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:14570195,
         multiCallDisabled:true,
         autoFarming:['CVX','CRV','PNT'],
@@ -691,7 +698,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-    */
     euler:{
       USDC:{
         autoFarming:[],
@@ -998,7 +1004,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDCStaking:{
-        status:'beta',
+        status:'experimental',
         autoFarming:[],
         protocol:'euler',
         variant:'staking',
@@ -1076,12 +1082,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDTStaking:{
-        status:'beta',
+        status:'experimental',
         autoFarming:[],
-        enabledEnvs: [],
         protocol:'euler',
         variant:'staking',
         blockNumber:16375769,
+        enabledEnvs: ['beta'],
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1154,12 +1160,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       WETHStaking:{
-        status:'beta',
+        status:'experimental',
         autoFarming:[],
-        enabledEnvs: [],
         protocol:'euler',
         variant:'staking',
         blockNumber:16375825,
+        enabledEnvs: ['beta'],
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1312,7 +1318,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     },
     ribbon:{
       USDCFolk:{
-        status:'beta',
+        status:'experimental',
         protocol:'ribbon',
         autoFarming:['RBN'],
         enabledEnvs:['beta'],
@@ -1397,7 +1403,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDCWin:{
-        status:'beta',
+        status:'experimental',
         protocol:'ribbon',
         autoFarming:['RBN'],
         // lender:'wintermute',
@@ -1486,7 +1492,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       DAI:{
-        status:'beta',
+        status:'experimental',
         protocol:'ribbon',
         autoFarming:['RBN'],
         blockNumber:15831214,

@@ -123,7 +123,7 @@ const ProtocolName: React.FC<AssetFieldProps> = (props) => {
 }
 
 const VaultVariant: React.FC<TextProps> = (props) => {
-  const { vault, translate } = useAssetProvider()
+  const { vault } = useAssetProvider()
   if (!vault || !("variant" in vault) || !vault?.variant?.length) return null
 
   return (
@@ -131,17 +131,17 @@ const VaultVariant: React.FC<TextProps> = (props) => {
   )
 }
 
-const BetaBadge: React.FC<ImageProps> = (props) => {
+const StatusBadge: React.FC<ImageProps> = (props) => {
   const { vault, translate } = useAssetProvider()
-  if (!vault || !("status" in vault) || vault.status !== 'beta') return null
+  if (!vault || !("status" in vault) || !vault?.status?.length) return null
 
   return (
     <Tooltip
       hasArrow
       placement={'top'}
-      label={translate('assets.assetDetails.tooltips.experimental')}
+      label={translate(`assets.assetDetails.tooltips.${vault.status}`)}
     >
-      <Image src={'images/vaults/experimental.png'} {...props} />
+      <Image src={`images/vaults/${vault.status}.png`} {...props} />
     </Tooltip>
   )
 }
@@ -954,8 +954,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<GaugeNextWeight textStyle={'tableCell'} {...props} />)
     case 'gaugeTotalSupply':
       return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
-    case 'betaBadge':
-      return (<BetaBadge width={6} height={6} {...props} />)
+    case 'statusBadge':
+      return (<StatusBadge width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
     case 'rewards':

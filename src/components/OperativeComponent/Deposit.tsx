@@ -164,10 +164,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, deposit])
 
-  const isBeta = useMemo(() => {
-    return vault && ("status" in vault) && vault.status === 'beta'
-  }, [vault])
-
   return (
     <AssetProvider
       flex={1}
@@ -234,12 +230,12 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             </VStack>
           </HStack>
           {
-            isBeta && (
+            vault && ("status" in vault) && vault.status && (
               <Card.Dark
                 p={2}
                 border={0}
               >
-                <Translation textStyle={'captionSmaller'} translation={'trade.actions.deposit.messages.beta'} textAlign={'center'} />
+                <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${vault?.status}`} textAlign={'center'} />
               </Card.Dark>
             )
           }

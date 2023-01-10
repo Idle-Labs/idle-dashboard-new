@@ -212,7 +212,7 @@ export type Harvest ={
   totalValue: BigNumber
 }
 
-export type VaultStatus = 'production' | 'beta' | 'experimental'
+export type VaultStatus = 'production' | 'beta' | 'experimental' | 'deprecated'
 
 export type Asset = {
   id?: AssetId

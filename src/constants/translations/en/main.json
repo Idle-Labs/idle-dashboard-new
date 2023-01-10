@@ -733,7 +733,8 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
-          "beta": "This is an experimental Vault that is not been released in production yet. Use at your own risk.",
+          "deprecated": "This Vault has been deprecated, redeem your funds.",
+          "experimental": "This is an experimental Vault that is not been released in production yet. Use at your own risk.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC."
         },
         "status": {
@@ -1627,6 +1628,7 @@
       "tooltips": {
         "totalSupply": "Total amount of assets staked in this gauge",
         "experimental": "This vault is experimental, use at your own risk",
+        "deprecated": "This vaults has been deprecated, withdraw your assets",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
         "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
