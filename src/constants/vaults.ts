@@ -16,7 +16,9 @@ export const vaultsStatusSchemes: Record<string, string> = {
   'production' : 'green',
   'paused' : 'gray',
   'disabled' : 'gray',
-  'beta' : 'blue'
+  'beta' : 'blue',
+  'experimental' : 'purple',
+  'deprecated' : 'gray'
 }
 
 export interface CDO {
