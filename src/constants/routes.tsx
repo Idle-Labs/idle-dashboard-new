@@ -19,7 +19,6 @@ export const routes: RouteObject[] = [
     children:[
       {
         path:'dashboard',
-        // state: {'dashboard'},
         element:<Dashboard />,
       },
       {
@@ -46,17 +45,10 @@ export const routes: RouteObject[] = [
           },
         ]
       },
-      {
-        path:'stake',
-        element:<Staking />,
-        // element:<ComponentWithProps state={{section:'stake'}} />,
-        // children: [
-        //   {
-        //     path:'vote',
-        //     element:<ComponentWithProps state={{section:'vote'}} />,
-        //   },
-        // ]
-      },
+      // {
+      //   path:'stake',
+      //   element:<Staking />
+      // },
       /*
       {
         path:'stats',

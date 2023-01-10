@@ -170,7 +170,18 @@ export const Strategy: React.FC = () => {
         Header: translate(`defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return (
+          return column.extraFields && column.extraFields.length>0 ? (
+            <HStack
+              spacing={2}
+            >
+              <TableField field={id} value={value} row={row} />
+              {
+                column.extraFields.map( (extraField: string) => (
+                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
+                ))
+              }
+            </HStack>
+          ) : (
             <TableField field={id} value={value} row={row} />
           )
         }

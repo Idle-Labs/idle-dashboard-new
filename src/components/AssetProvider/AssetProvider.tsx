@@ -122,6 +122,15 @@ const ProtocolName: React.FC<AssetFieldProps> = (props) => {
   )
 }
 
+const VaultVariant: React.FC<TextProps> = (props) => {
+  const { vault, translate } = useAssetProvider()
+  if (!vault || !("variant" in vault) || !vault?.variant?.length) return null
+
+  return (
+    <Text textStyle={'tableCell'} {...props}>({vault.variant})</Text>
+  )
+}
+
 const BetaBadge: React.FC<ImageProps> = (props) => {
   const { vault, translate } = useAssetProvider()
   if (!vault || !("status" in vault) || vault.status !== 'beta') return null
@@ -947,6 +956,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
     case 'betaBadge':
       return (<BetaBadge width={6} height={6} {...props} />)
+    case 'vaultVariant':
+      return (<VaultVariant {...props} />)
     case 'rewards':
       return (
         <Rewards size={'xs'} {...props}>

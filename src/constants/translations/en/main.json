@@ -234,7 +234,7 @@
         "title": "IDLE Staking",
         "cta": "Manage staking",
         "empty" : {
-          "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4 years deposit.",
+          "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4-year deposit.",
           "cta": "Go to Staking"
         }
       },
@@ -500,7 +500,7 @@
       },
       "staking": {
         "title": "Staking Rewards",
-        "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4 years deposit.",
+        "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4-year deposit.",
         "cta": "Go to Staking"
       },
       "gauges": {
@@ -1636,10 +1636,10 @@
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "vaultStatus": "This badge shows whether the vault is in Production or still in Beta",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
+        "stakingAPY": "The estimated annual percentage yield received on a 4-year staking period",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy",
         "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
-        "stakingAPY": "The estimated annual percentage yield received on a 4 years long staking period",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
         "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",

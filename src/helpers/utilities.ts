@@ -246,10 +246,6 @@ export function lazyLoadComponent(component: string) {
   })
 }
 
-export function openWindow (url: string) {
-  return window.open(url, '_blank', 'noopener');
-}
-
 export function isEmpty (object: any) {
   return !object || !Object.keys(object).length
 }

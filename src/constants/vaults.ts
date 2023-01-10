@@ -85,6 +85,7 @@ export interface TrancheConfig {
   autoFarming?:string[]
   underlyingToken:string
   modal?: any
+  variant?: string
   CDO: CDO
   Pool?: Pool
   Strategy: Strategy
@@ -1000,6 +1001,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'beta',
         autoFarming:[],
         protocol:'euler',
+        variant:'staking',
         blockNumber:16246945,
         enabledEnvs: ['beta'],
         underlyingToken:'USDC',
@@ -1070,6 +1072,162 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_euler_USDC',
             label:'euler USDC BB',
             address:'0x271db794317B44827EfE81DeC6193fFc277050F6'
+          }
+        }
+      },
+      USDTStaking:{
+        status:'beta',
+        autoFarming:[],
+        enabledEnvs: [],
+        protocol:'euler',
+        variant:'staking',
+        blockNumber:16375769,
+        underlyingToken:'USDT',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_euler_USDTStaking',
+          address:'0x860B1d25903DbDFFEC579d30012dA268aEB0d621'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_euler_USDTStaking',
+          address:'0xaf141907c3185bee2d451b5a72b89232b0340652'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xdac17f958d2ee523a2206206994597c13d831ec7" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDT pool</a> and automatically stake the received eUSDT to earn additional EUL rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_euler_USDTStaking_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375769,
+            label:'euler USDT AA',
+            name:'AA_euler_USDTStaking',
+            token:'AA_euler_USDTStaking',
+            address:'0x6796FCd41e4fb26855Bb9BDD7Cad41128Da1Fd59'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_euler_USDTStaking_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375769,
+            label:'euler USDT BB',
+            name:'BB_euler_USDTStaking',
+            token:'BB_euler_USDTStaking',
+            address:'0x00B80FCCA0fE4fDc3940295AA213738435B0f94e'
+          }
+        }
+      },
+      WETHStaking:{
+        status:'beta',
+        autoFarming:[],
+        enabledEnvs: [],
+        protocol:'euler',
+        variant:'staking',
+        blockNumber:16375825,
+        underlyingToken:'WETH',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_euler_WETHStaking',
+          address:'0xec964d06cD71a68531fC9D083a142C48441F391C'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_euler_WETHStaking',
+          address:'0x2D29c277Ac61376Fb011DCAFCe03EA3C9485f4c2'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler WETH pool</a> and automatically stake the received eWETH to earn additional EUL rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_euler_WETHStaking_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'euler WETH AA',
+            name:'AA_euler_WETHStaking',
+            token:'AA_euler_WETHStaking',
+            address:'0x2B7Da260F101Fb259710c0a4f2EfEf59f41C0810'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_euler_WETHStaking_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'euler WETH BB',
+            name:'BB_euler_WETHStaking',
+            token:'BB_euler_WETHStaking',
+            address:'0x2e80225f383F858E8737199D3496c5Cf827670a5'
           }
         }
       },

@@ -30,10 +30,10 @@ export const menu: MenuItemType[] = [
       color: strategy.color as string
     }))
   },
-  {
-    path: 'stake',
-    label: 'navBar.stake'
-  },
+  // {
+  //   path: 'stake',
+  //   label: 'navBar.stake'
+  // },
   // {
   //   label: 'navBar.gauges',
   //   link: getLegacyDashboardUrl('gauges')

@@ -150,7 +150,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
         // const amountToDisplay = amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(amount, 8)
         return (
           <VStack
-            spacing={2}
+            spacing={4}
           >
             <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
             {
@@ -169,9 +169,9 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
                   {/*<Translation<LinkProps> component={Link} translation={`trade.actions.${txActionType}.status.success.button`} textStyle={['captionSmall', 'link', 'bold']}  onClick={() => resetAndGoBack()} />*/}
                 </VStack>
               ) : activeStep ? (
-                <Translation component={Button} translation={`common.${baseActionType}`} onClick={() => resetAndGoBack(true)} variant={'ctaFull'} />
+                <Translation component={Button} translation={`common.${baseActionType}`} onClick={() => resetAndGoBack(true)} variant={'ctaPrimary'} px={10} />
               ) : (
-                <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaFull'} />
+                <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaPrimary'} px={10} />
               )
             }
           </VStack>
@@ -181,7 +181,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           <>
             <Translation component={Text} translation={`modals.${txActionType}.status.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
             <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'captionSmall'} textAlign={'center'} />
-            <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => { retry() }} variant={'ctaFull'} />
+            <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => { retry() }} variant={'ctaPrimary'} px={10} />
             <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => resetAndGoBack()} />
           </>
         )

@@ -243,7 +243,8 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'asset',
         accessor:'name',
-        sortType:'alpha'
+        sortType:'alpha',
+        extraFields:['vaultVariant']
       },
       {
         id:'tvl',
@@ -362,7 +363,8 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'asset',
         accessor:'name',
-        sortType:'alpha'
+        sortType:'alpha',
+        extraFields:['vaultVariant']
       },
       {
         id:'tvl',
