@@ -1,3 +1,4 @@
+import { useTranslate } from 'react-polyglot'
 import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
@@ -27,13 +28,14 @@ type TransactionStatusProps = {
 }
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
+  const translate = useTranslate()
   const countTimeoutId = useRef<any>(null)
   const { searchParams } = useBrowserRouter()
   const { chainId, explorer } = useWalletProvider()
+  const { underlyingAsset, theme, asset } = useAssetProvider()
   const [ progressValue, setProgressValue ] = useState<number>(0)
   // const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(1)
-  const { underlyingAsset, theme, translate, asset } = useAssetProvider()
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
   const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
@@ -489,7 +491,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   ...cardProps
 }) => {
   const intervalId = useRef<any>(null)
-  const { translate } = useAssetProvider()
+  const translate = useTranslate()
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ actionIndex, setActionIndex ] = useState<number>(0)
   const [ state, dispatch ] = useReducer(reducer, initialState)
@@ -543,15 +545,16 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     return transactionState.actionType || state.actionType
   }, [state.actionType, transactionState.actionType])
 
-  const amountToDisplay = useMemo(() => {
-    return transactionState.amount ? transactionState.amount : (state.amount === MAX_ALLOWANCE ? translate('trade.unlimited') : parseFloat(state.amount))
-  }, [state.amount, translate, transactionState.amount])
 
   const assetToDisplay = useMemo(() => {
     if (!selectAssetById) return state.asset?.name
     const asset = selectAssetById(transactionState.assetId)
     return asset?.name || state.asset?.name
   }, [selectAssetById, state.asset, transactionState.assetId])
+
+  const amountToDisplay = useMemo(() => {
+    return transactionState.amount ? transactionState.amount : (state.amount === MAX_ALLOWANCE ? `${translate('trade.unlimited')} ${assetToDisplay}` : parseFloat(state.amount))
+  }, [state.amount, assetToDisplay, translate, transactionState.amount])
 
   useEffect(() => {
     // console.log('TransactionProcess', transactionState)
@@ -734,7 +737,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                         BNify(amountToDisplay).isNaN() ? (
                           <Text textStyle={'bold'}>{amountToDisplay}</Text>
                         ) : (
-                          <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
+                          <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay as string)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
                         )
                       }
                     </HStack>
