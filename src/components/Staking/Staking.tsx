@@ -35,6 +35,9 @@ export const Staking: React.FC = () => {
         {
           type: 'approve',
           component: Approve,
+          props: {
+            amountUsd: null
+          },
           label:'modals.approve.header',
         }
       ]

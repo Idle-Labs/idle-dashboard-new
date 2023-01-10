@@ -400,6 +400,7 @@ export type ActionStep = {
   type: string
   label: string
   component: any
+  props?: any
 }
 
 export type OperativeComponentAction = ActionStep & {
@@ -707,7 +708,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
               actions[actionIndex].steps.map((step, index) => {
                 const StepComponent = step.component
                 return (
-                  <StepComponent key={`step_${index}`} itemIndex={index+1} goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} />
+                  <StepComponent key={`step_${index}`} itemIndex={index+1} goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} {...step.props} />
                 )
               })
             }

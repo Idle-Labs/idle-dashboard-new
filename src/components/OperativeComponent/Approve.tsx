@@ -1,6 +1,7 @@
 import { Card } from 'components/Card/Card'
 import { estimateGasLimit } from 'helpers/'
 import { MAX_ALLOWANCE } from 'constants/vars'
+import type { NumberType } from 'constants/types'
 import { MdOutlineLockOpen } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { NavBar } from 'components/OperativeComponent/NavBar'
@@ -13,7 +14,15 @@ import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 
-export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex }) => {
+type ApproveArgs = {
+  amountUsd?: NumberType | null
+} & ActionComponentArgs
+
+export const Approve: React.FC<ApproveArgs> = ({
+  amountUsd,
+  goBack,
+  itemIndex
+}) => {
   const { account } = useWalletProvider()
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
@@ -124,7 +133,7 @@ export const Approve: React.FC<ActionComponentArgs> = ({ goBack, itemIndex }) =>
                     py={2}
                     layerStyle={'cardLight'}
                   >
-                    <InputAmount inputHeight={6} amount={amount} setAmount={setAmount} />
+                    <InputAmount inputHeight={6} amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
                   </Card>
                 </HStack>
               )
