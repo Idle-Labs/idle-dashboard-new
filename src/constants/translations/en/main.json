@@ -234,7 +234,7 @@
         "title": "IDLE Staking",
         "cta": "Manage staking",
         "empty" : {
-          "body": "Stake your IDLE tokens and start accruing some IDLE rewards. Coming soon natively!",
+          "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4 years deposit.",
           "cta": "Go to Staking"
         }
       },
@@ -500,7 +500,7 @@
       },
       "staking": {
         "title": "Staking Rewards",
-        "body": "Stake your IDLE tokens to start accruing some IDLE rewards.",
+        "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4 years deposit.",
         "cta": "Go to Staking"
       },
       "gauges": {
@@ -563,7 +563,7 @@
     "noStake": "You haven't staked any IDLE",
     "lockNotExpired": "Your lock is not expired yet",
     "assetStakingBalance": "%{assetSymbol} Staking Balance",
-    "selectStakeTab": "Select the Stake tab to stake your IDLE tokens",
+    "stakeBeforeUnstake": "You should stake your IDLE before unstaking",
     "waitUntilLockExpired": "Wait until %{lockEndDate} to withdraw your IDLE. Meanwhile you can increase your lock.",
     "toUnlock": "to unlock your %{assetSymbol} after you unstake. Staking rewards will need to be withdrawn separately.",
     "canWithdrawLock": "%{amount} %{asset} are now available to be withdrawn. Staking rewards will need to be claimed separately."

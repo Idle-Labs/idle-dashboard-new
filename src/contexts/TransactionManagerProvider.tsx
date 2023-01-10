@@ -9,7 +9,7 @@ import type { Transaction, TransactionReceipt } from 'web3-core'
 import { ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { BNify, estimateGasLimit, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
+import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
   FastGasPrice: string
@@ -41,6 +41,7 @@ export type TransactionStatus = {
 }
 
 type StateProps = {
+  block: any | null
   gasPrice: string | null
   gasLimit: number | null
   transactionsCount: number
@@ -68,6 +69,7 @@ type ContextProps = {
 }
 
 const initialState: StateProps = {
+  block: null,
   gasPrice: null,
   gasLimit: null,
   gasOracle: null,
@@ -266,6 +268,11 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
           lastUpdated
         }
       }
+    case 'SET_BLOCK':
+      return {
+        ...state,
+        block: action.payload
+      }
     case 'SET_STATUS':
       return {
         ...state,
@@ -323,37 +330,16 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     return fixTokenDecimals(BNify(gasLimit).times(BNify(state.gasPrice).times(1e09)), 18)
   }, [account, web3, state.gasPrice, state.tokenPriceUsd])
 
+  const getLatestBlock = useCallback(async () => {
+    if (!web3) return null
+    return await getBlock(web3, 'latest')
+  }, [web3])
+
   // Track transaction changed
   // useEffect(() => {
   //   if (!state.transaction) return
   //   console.log('Transaction CHANGED', state.transaction)
   // }, [state.transaction])
-
-  // Set estimated time
-  useEffect(() => {
-    if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
-    ;(async () => {
-      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
-      const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
-      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
-    })()
-  }, [state.transaction, explorer, chainId])
-
-  // Get chain token price
-  useEffect(() => {
-    if (!chainId || !web3) return
-    ;(async () => {
-      const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
-      if (!chainToken || !chainToken.address) return
-      
-      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3)
-      const chainTokenPriceUsd = await chainlinkHelper.getTokenPriceUsd(chainToken.address)
-      if (!chainTokenPriceUsd) return
-      dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
-      // console.log('chainToken', chainToken, chainTokenPriceUsd)
-    })()
-  }, [chainId, web3])
 
   const updateGasPrices = useCallback( async () => {
     if (!explorer || !chainId) return
@@ -389,6 +375,43 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
     }
   }, [explorer, chainId, getEstimatedTime])
+
+  // Set estimated time
+  useEffect(() => {
+    if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
+    ;(async () => {
+      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
+      const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
+      // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
+      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
+    })()
+  }, [state.transaction, explorer, chainId])
+
+  // Get chain token price
+  useEffect(() => {
+    if (!chainId || !web3) return
+    ;(async () => {
+      const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
+      if (!chainToken || !chainToken.address) return
+      
+      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3)
+      const chainTokenPriceUsd = await chainlinkHelper.getTokenPriceUsd(chainToken.address)
+      if (!chainTokenPriceUsd) return
+      dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
+      // console.log('chainToken', chainToken, chainTokenPriceUsd)
+    })()
+  }, [chainId, web3])
+
+  // Get latest block
+  useEffect(() => {
+    if (!chainId || !web3) return
+    ;(async () => {
+      const block = await getLatestBlock()
+      if (block){
+        dispatch({type: 'SET_BLOCK', payload: block})
+      }
+    })()
+  }, [chainId, web3, getLatestBlock])
 
   // Get Gas Oracle
   useEffect(() => {

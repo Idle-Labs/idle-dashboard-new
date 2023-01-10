@@ -1,6 +1,5 @@
 import React, { useMemo, useRef } from 'react'
 import { DATETIME_FORMAT } from 'constants/vars'
-import { Amount } from 'components/Amount/Amount'
 import { formatDate, sortArrayByKey } from 'helpers/'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -10,7 +9,6 @@ import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { VStack, HStack, Flex, Text, Skeleton } from '@chakra-ui/react'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 

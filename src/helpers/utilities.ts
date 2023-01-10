@@ -3,7 +3,6 @@ import dayjs from 'classes/dayjs'
 import BigNumber from 'bignumber.js'
 import { Dayjs, ManipulateType } from 'dayjs'
 import { HistoryTimeframe } from 'constants/types'
-import { LEGACY_DASHBOARD_URL } from 'constants/vars'
 
 type BNifyInput = any
 
@@ -245,10 +244,6 @@ export function lazyLoadComponent(component: string) {
     const promise = import(`components/${component}/${component}`)
     return promise.then(module => ({default: module[component]}))
   })
-}
-
-export function getLegacyDashboardUrl (section: string) {
-  return `${LEGACY_DASHBOARD_URL}${section}`
 }
 
 export function openWindow (url: string) {

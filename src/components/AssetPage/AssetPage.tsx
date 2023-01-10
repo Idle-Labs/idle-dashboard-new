@@ -4,7 +4,10 @@ import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { Deposit } from 'components/OperativeComponent/Deposit'
+import { Approve } from 'components/OperativeComponent/Approve'
 import { Translation } from 'components/Translation/Translation'
+import { Withdraw } from 'components/OperativeComponent/Withdraw'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -12,7 +15,6 @@ import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { Box, Flex, Stack, HStack, Tabs, Tab, TabList } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
-import { Approve, Deposit, Withdraw } from 'components/OperativeComponent/OperativeComponent'
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()

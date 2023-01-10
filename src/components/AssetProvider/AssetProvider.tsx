@@ -379,7 +379,7 @@ const NetEarnings: React.FC<AmountProps> = (props) => {
   const netEarnings = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset?.vaultPosition?.underlying.earnings).minus(BNify(asset.vaultPosition.underlying.earnings).times(asset.fee)) : BNify(0)
   
   return asset?.vaultPosition?.underlying.earnings ? (
-    <Amount.Usd value={netEarnings} {...props} />
+    <Amount value={netEarnings} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

@@ -1,6 +1,6 @@
 import React from 'react'
+import { HStack } from '@chakra-ui/react'
 import type { AssetId } from 'constants/types'
-import { TextProps, HStack } from '@chakra-ui/react'
 import { Amount, AmountProps } from 'components/Amount/Amount'
 import { AssetFieldProps, AssetProvider } from 'components/AssetProvider/AssetProvider'
 
@@ -30,7 +30,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
           spacing={1}
           alignItems={'center'}
         >
-          <Amount value={amount} decimals={4} {...props} />
+          <Amount value={amount} decimals={3} {...props} />
           <AssetProvider.Name {...props} />
         </HStack>
       </HStack>

@@ -2,14 +2,16 @@ import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
 import { PROTOCOL_TOKEN } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
+import { Stake } from 'components/OperativeComponent/Stake'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { GeneralDataField } from 'constants/strategies'
+import { Unstake } from 'components/OperativeComponent/Unstake'
+import { Approve } from 'components/OperativeComponent/Approve'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
-import { Approve, Stake, Unstake } from 'components/OperativeComponent/OperativeComponent'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 
 export const Staking: React.FC = () => {
@@ -23,9 +25,6 @@ export const Staking: React.FC = () => {
   const stakedIdleAsset = useMemo(() => {
     return selectAssetById && stakedIdleVault && selectAssetById(stakedIdleVault.id)
   }, [selectAssetById, stakedIdleVault])
-
-  // console.log('stakingData', stakedIdleVault, stakingData)
-  // console.log('stakedIdleAsset', stakedIdleAsset)
 
   const actions = [
     {
@@ -86,7 +85,7 @@ export const Staking: React.FC = () => {
   }, [account, stakingData])
 
   const claimableIDLE = useMemo(() => {
-    if (!account || !stakingData || stakingData.position.claimable.lte(0) || !stakedIdleVault) return null
+    if (!account || !stakingData || stakingData.position.deposited.lte(0) || !stakedIdleVault) return null
 
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 

@@ -11,6 +11,7 @@ import { VAULTS_MIN_TVL, PROTOCOL_TOKEN } from 'constants/vars'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { BNify, getRoutePath, isEmpty, formatDate } from 'helpers/'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import React, { useRef, useState, useMemo, useCallback } from 'react'
@@ -27,7 +28,6 @@ import { TransactionButton } from 'components/TransactionButton/TransactionButto
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
-import { BNify, getRoutePath, isEmpty, openWindow, formatDate, getLegacyDashboardUrl } from 'helpers/'
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
 import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
 
@@ -483,7 +483,7 @@ export const Dashboard: React.FC = () => {
             })
           }
         </VStack>
-        <Translation component={Button} translation={`dashboard.rewards.gauges.cta`} width={['full', 'auto']} onClick={() => navigate(`${strategyPath}`)} variant={['ctaPrimaryOutline']} px={10} py={2} />
+        <Translation component={Button} translation={`dashboard.rewards.gauges.cta`} width={['full', 'auto']} onClick={() => navigate(strategyPath)} variant={['ctaPrimaryOutline']} px={10} py={2} />
       </VStack>
     )
     
@@ -496,9 +496,8 @@ export const Dashboard: React.FC = () => {
       )
     }
 
+    const strategyPath = getRoutePath('stake')
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
-
-    const stakingUrl = getLegacyDashboardUrl('stake')
 
     return stakingData.position.balance.lte(0) ? (
       <Card
@@ -510,8 +509,8 @@ export const Dashboard: React.FC = () => {
           direction={['column', 'row']}
           justifyContent={'space-between'}
         >
-          <Translation translation={'dashboard.rewards.staking.empty.body'} component={Text} textAlign={['center', 'left']} />
-          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => { openWindow(stakingUrl) }} variant={['ctaPrimaryOutline']} px={10} py={2} />
+          <Translation translation={'dashboard.rewards.staking.empty.body'} params={{apy: stakingData.maxApr.toFixed(2)}} component={Text} textAlign={['center', 'left']} />
+          <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => navigate(strategyPath)} variant={['ctaPrimaryOutline']} px={10} py={2} />
         </Stack>
       </Card>
     ) : (
@@ -596,10 +595,10 @@ export const Dashboard: React.FC = () => {
             <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
           </Stack>
         </Card>
-        <Translation component={Button} translation={`dashboard.rewards.staking.cta`} width={['full', 'auto']} onClick={() => { openWindow(stakingUrl) }} variant={['ctaPrimaryOutline']} px={10} py={2} />
+        <Translation component={Button} translation={`dashboard.rewards.staking.cta`} width={['full', 'auto']} onClick={() => navigate(strategyPath)} variant={['ctaPrimaryOutline']} px={10} py={2} />
       </VStack>
     )
-  }, [stakedIdleVault, stakingData, accountAndPortfolioLoaded])
+  }, [stakedIdleVault, stakingData, navigate, accountAndPortfolioLoaded])
 
   const strategiesRewards = useMemo(() => {
     return (

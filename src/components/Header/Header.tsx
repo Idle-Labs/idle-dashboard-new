@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { NavLink } from "react-router-dom"
 import { TopBarMenu } from './Menu/TopBarMenu'
 import { HStack, Stack } from '@chakra-ui/react'
 import { selectUnderlyingToken } from 'selectors/'
@@ -16,16 +17,22 @@ export const Header: React.FC = () => {
     if (!account?.address) return null
     const idleToken = selectUnderlyingToken(chainId, 'IDLE')
     return (
-      <AssetProvider assetId={idleToken?.address}>
-        <HStack
-          spacing={0}
-          width={'100%'}
-          alignItems={'center'}
+      <NavLink
+        to={'stake'}
+      >
+        <AssetProvider
+          assetId={idleToken?.address}
         >
-          <AssetProvider.Icon size={'xs'} mr={2} />
-          <AssetProvider.Balance decimals={2} textStyle={'cta'} />
-        </HStack>
-      </AssetProvider>
+          <HStack
+            spacing={0}
+            width={'100%'}
+            alignItems={'center'}
+          >
+            <AssetProvider.Icon size={'xs'} mr={2} />
+            <AssetProvider.Balance decimals={2} textStyle={'cta'} />
+          </HStack>
+        </AssetProvider>
+      </NavLink>
     )
   }, [account, chainId])
 
