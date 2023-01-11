@@ -37,14 +37,15 @@
 
     <link rel="stylesheet" type="text/css" href="%PUBLIC_URL%/global.css">
 
-    <!-- Google Analytics -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8ZKZ867JNC"></script>
     <script>
-    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-    ga('create', 'UA-156373850-1', 'auto');
-    ga('send', 'pageview');
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-8ZKZ867JNC');
     </script>
-    <script async src='https://www.google-analytics.com/analytics.js'></script>
-    <!-- End Google Analytics -->
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
