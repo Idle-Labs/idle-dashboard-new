@@ -1,9 +1,9 @@
 import './progress.css'
+import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
 import { StrategyCarouselItem, strategies } from 'constants/'
 import { Translation } from 'components/Translation/Translation'
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md'
-import React, { useMemo } from 'react'
 import { useTheme, Button, Flex, Stack, HStack, Image, VStack, Text } from '@chakra-ui/react'
 import { usePausableChakraCarouselProvider, PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 

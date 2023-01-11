@@ -834,6 +834,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const stakingData: StakingData = {
       maxApr,
       avgLockTime,
+      rewards: stakedIdleVaultRewards,
       rewardsDays: stkIdletotalRewardsDays,
       position: {
         lockEnd: +stkIdleLock.end*1000,

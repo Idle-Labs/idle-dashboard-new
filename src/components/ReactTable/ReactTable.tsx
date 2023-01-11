@@ -6,6 +6,8 @@ import { Flex, Table, Tbody, Td, Th, Thead, Tr, useColorModeValue, useTheme } fr
 type ReactTableProps<T extends {}> = {
   columns: Column<T>[]
   data: T[]
+  page?: number
+  rowsPerPage?: number
   displayHeaders?: boolean
   onRowClick?: (row: Row<T>) => void
   initialState?: Partial<TableState<{}>>
@@ -37,6 +39,8 @@ const TableHeader: React.FC<any> = ({column}) => {
 export const ReactTable = <T extends {}>({
   columns,
   data,
+  page,
+  rowsPerPage,
   displayHeaders = true,
   onRowClick,
   initialState,
@@ -51,8 +55,13 @@ export const ReactTable = <T extends {}>({
     useSortBy,
   )
 
+  const pageRows = useMemo(() => {
+    if (!rowsPerPage || !page) return rows
+    return rows.slice(rowsPerPage*(page-1), rowsPerPage*page)
+  }, [rows, page, rowsPerPage])
+
   const renderRows = useMemo(() => {
-    return rows.map( row => {
+    return pageRows.map( row => {
       let firstCellFound = false
       prepareRow(row)
       return (
@@ -79,7 +88,7 @@ export const ReactTable = <T extends {}>({
         </Tr>
       )
     })
-  }, [prepareRow, rows, onRowClick])
+  }, [prepareRow, pageRows, onRowClick])
 
   return (
     <Table variant='clickable' size={{ base: 'sm', md: 'md' }} {...getTableProps()}>

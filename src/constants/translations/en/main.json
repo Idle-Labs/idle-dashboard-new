@@ -561,6 +561,7 @@
     "increaseAmount": "Increase amount",
     "lockExpired": "Your lock is expired",
     "noStake": "You haven't staked any IDLE",
+    "distributedRewards":"Distributed rewards",
     "lockNotExpired": "Your lock is not expired yet",
     "assetStakingBalance": "%{assetSymbol} Staking Balance",
     "stakeBeforeUnstake": "You should stake your IDLE before unstaking",
@@ -605,8 +606,10 @@
     "explore": "Explore"
   },
   "transactionRow": {
+    "hash": "Hash",
     "deposit": "Deposit",
     "redeem": "Withdraw",
+    "distributed": "Distributed",
     "send": "Sent",
     "stake": "Stake",
     "unstake": "Unstake",
@@ -734,8 +737,8 @@
         "confirmed": "You have deposited",
         "messages": {
           "deprecated": "This Vault has been deprecated, redeem your funds.",
-          "experimental": "This is an experimental Vault that is not been released in production yet. Use at your own risk.",
-          "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC."
+          "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
+          "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose."
         },
         "status": {
           "success": {

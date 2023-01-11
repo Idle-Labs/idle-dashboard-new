@@ -5,7 +5,7 @@ import { Amount, AmountProps } from 'components/Amount/Amount'
 import { AssetFieldProps, AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type TokenAmountProps = {
-  assetId: AssetId
+  assetId?: AssetId
   amount: AmountProps["value"]
   size?: string
 } & AmountProps & AssetFieldProps

@@ -13,6 +13,7 @@ import { Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
+import { StakingDistributedRewards } from 'components/StakingDistributedRewards/StakingDistributedRewards'
 
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
@@ -199,6 +200,7 @@ export const Staking: React.FC = () => {
             {stakingPosition}
             {claimableIDLE}
             <AssetGeneralData assetId={stakedIdleAsset?.id} />
+            <StakingDistributedRewards />
           </VStack>
         </Stack>
         <InteractiveComponent vaultId={stakedIdleAsset?.id} assetId={stakedIdleVault?.id} actions={actions} />

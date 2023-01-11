@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom'
 import { sortNumeric, sortAlpha } from 'helpers/'
 import { Amount } from 'components/Amount/Amount'
 import React, { useMemo, useCallback } from 'react'
+import { Asset, VaultPosition } from 'constants/types'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
-import { Asset, VaultPosition } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -34,74 +34,13 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
       </AssetProvider>
     </SkeletonText>
   )
-
-  /*
-  switch (field) {
-    case 'protocol':
-      return (
-        <SkeletonText noOfLines={2} isLoaded={!!value}>
-          <AssetProvider assetId={assetId}>
-            <Flex
-              width={'100%'}
-              alignItems={'center'}
-            >
-              <AssetProvider.ProtocolIcon size={'sm'} mr={2} />
-              <AssetProvider.ProtocolName textStyle={'tableCell'} />
-            </Flex>
-          </AssetProvider>
-        </SkeletonText>
-      )
-    case 'asset':
-      return (
-        <AssetProvider assetId={assetId}>
-          <Flex
-            width={'100%'}
-            alignItems={'center'}
-          >
-            <AssetProvider.Icon size={'sm'} mr={2} />
-            <AssetProvider.Name textStyle={'tableCell'} />
-          </Flex>
-        </AssetProvider>
-      )
-    case 'tvl':
-      return (
-        <Skeleton isLoaded={!!value}>
-          <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
-        </Skeleton>
-      )
-    case 'apy':
-      return (
-        <SkeletonText noOfLines={2} isLoaded={!!value}>
-          <Amount.Percentage value={value} textStyle={'tableCell'} />
-        </SkeletonText>
-      )
-    case 'rewards':
-      return (
-        <SkeletonText noOfLines={2} isLoaded={!!value}>
-          <AssetProvider assetId={assetId}>
-            <AssetProvider.Rewards size={'sm'} />
-          </AssetProvider>
-        </SkeletonText>
-      )
-    case 'protocols':
-      return (
-        <SkeletonText noOfLines={2} isLoaded={!!value}>
-          <AssetProvider assetId={assetId}>
-            <AssetProvider.Protocols size={'sm'} />
-          </AssetProvider>
-        </SkeletonText>
-      )
-    default:
-      return null
-  }
-  */
 }
 
 export const Strategy: React.FC = () => {
 
   const navigate = useNavigate()
   const translate = useTranslate()
-  const { screenSize } = useThemeProvider()
+  const { isMobile } = useThemeProvider()
   const { location, params } = useBrowserRouter()
 
   const { isPortfolioLoaded, selectors: {
@@ -110,8 +49,6 @@ export const Strategy: React.FC = () => {
     selectVaultsAssetsByType,
     selectVaultsAssetsWithBalance
   } } = usePortfolioProvider()
-
-  const isMobile = useMemo(() => screenSize==='sm', [screenSize])
 
   const strategy = useMemo(() => (
     Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -202,7 +139,7 @@ export const Strategy: React.FC = () => {
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <Amount prefix={'$ '} value={value} textStyle={'tableCell'} />
+            <Amount.Usd value={value} textStyle={'tableCell'} />
           </SkeletonText>
         )
       },
@@ -226,7 +163,7 @@ export const Strategy: React.FC = () => {
                       <Amount.Percentage value={value.realizedApy} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>
-                  {/*<Amount prefix={'$ '} value={value.usd.earnings} textStyle={'captionSmall'} />*/}
+                  {/*<Amount.Usd value={value.usd.earnings} textStyle={'captionSmall'} />*/}
                 </Stat>
               )
             }
