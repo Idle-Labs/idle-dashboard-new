@@ -169,6 +169,7 @@ export type StakingData = {
     claimable: BigNumber
   },
   IDLE: {
+    asset: Asset | null | undefined,
     totalRewards: BigNumber
     totalSupply: BigNumber
   }

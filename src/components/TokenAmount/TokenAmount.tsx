@@ -4,7 +4,7 @@ import type { AssetId } from 'constants/types'
 import { Amount, AmountProps } from 'components/Amount/Amount'
 import { AssetFieldProps, AssetProvider } from 'components/AssetProvider/AssetProvider'
 
-type TokenAmountProps = {
+export type TokenAmountProps = {
   assetId?: AssetId
   amount: AmountProps["value"]
   size?: string
@@ -16,6 +16,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
   size,
   ...props
 }) => {
+
   return (
     <AssetProvider
       wrapFlex={false}

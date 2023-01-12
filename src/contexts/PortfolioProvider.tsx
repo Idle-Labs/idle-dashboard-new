@@ -820,8 +820,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       stkIdleClaimable
     ] = stkIdleResults.map( r => r.data )
 
-    // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
-
     const firstRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[0] as EtherscanTransaction).timeStamp : 0
     const lastRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[stakedIdleVaultRewards.length-1] as EtherscanTransaction).timeStamp : 0
     const stkIdletotalRewardsDays = stakedIdleVaultRewards?.length ? Math.abs(lastRewardTimestamp-firstRewardTimestamp)/86400 : 0
@@ -844,6 +842,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         share: fixTokenDecimals(stkIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(100)
       },
       IDLE: {
+        asset: protocolToken,
         totalRewards: stkIdleTotalRewards,
         totalSupply: fixTokenDecimals(stkIdleTotalLocked, 18)
       },
@@ -1275,7 +1274,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsRewards,
       additionalAprs
     }
-  }, [selectAssetById, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, protocolToken, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return

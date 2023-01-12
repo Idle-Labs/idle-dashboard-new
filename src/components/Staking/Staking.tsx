@@ -1,23 +1,36 @@
+import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
+import { toDayjs, BNify } from 'helpers/'
 import { Card } from 'components/Card/Card'
-import { PROTOCOL_TOKEN } from 'constants/vars'
+import { defaultChainId } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
+import type { Transaction } from 'constants/types'
+import { selectUnderlyingToken } from 'selectors/'
 import { Stake } from 'components/OperativeComponent/Stake'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { GeneralDataField } from 'constants/strategies'
+import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Unstake } from 'components/OperativeComponent/Unstake'
 import { Approve } from 'components/OperativeComponent/Approve'
 import { Translation } from 'components/Translation/Translation'
+import { PROTOCOL_TOKEN, SECONDS_IN_YEAR } from 'constants/vars'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
+import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { StakingDistributedRewards } from 'components/StakingDistributedRewards/StakingDistributedRewards'
 
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
-  const { stakingData, selectors: { selectVaultsByType, selectAssetById } } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, stakingData, selectors: { selectVaultsByType, selectAssetById, selectVaultTransactions } } = usePortfolioProvider()
+
+  const protocolToken = useMemo(() => {
+    if (!selectAssetById) return
+    const underlyingToken = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+    return underlyingToken && selectAssetById(underlyingToken.address)
+  }, [selectAssetById])
 
   const stakedIdleVault = useMemo(() => {
     return selectVaultsByType && selectVaultsByType('STK')?.[0]
@@ -26,6 +39,48 @@ export const Staking: React.FC = () => {
   const stakedIdleAsset = useMemo(() => {
     return selectAssetById && stakedIdleVault && selectAssetById(stakedIdleVault.id)
   }, [selectAssetById, stakedIdleVault])
+
+  const transactions = useMemo(() => {
+    return isVaultsPositionsLoaded && stakedIdleVault && selectVaultTransactions(stakedIdleVault.id)
+  }, [isVaultsPositionsLoaded, stakedIdleVault, selectVaultTransactions])
+
+  // console.log('transactions', transactions)
+  const startTimestamp = useMemo(() => {
+    const result = transactions && transactions.reduce( (acc: {startTimestamp: string | null, totalDeposited: BigNumber}, tx: Transaction) => {
+      switch (tx.action){
+        case 'stake':
+          acc.totalDeposited = acc.totalDeposited.plus(tx.underlyingAmount)
+        break;
+        case 'unstake':
+          acc.totalDeposited = acc.totalDeposited.minus(tx.underlyingAmount)
+        break;
+        default:
+        break;
+      }
+
+      if (acc.totalDeposited.lte(0)){
+        acc.startTimestamp = null
+      } else if (!acc.startTimestamp){
+        acc.startTimestamp = tx.timeStamp
+      }
+
+      return acc
+    }, {
+      startTimestamp: null,
+      totalDeposited: BNify(0)
+    })
+
+    return result.startTimestamp
+  }, [transactions])
+
+  const realizedApy = useMemo(() => {
+    if (!startTimestamp || !stakingData) return null
+    const elapsedTime = Math.round(Date.now()/1000)-startTimestamp
+    const realizedApy = BNify(stakingData.position.claimable).div(stakingData.position.deposited).times(SECONDS_IN_YEAR).div(elapsedTime)
+    // console.log('realizedApy', stakingData.position.claimable.toString(), stakingData.position.deposited.toString(), elapsedTime, realizedApy.toString())
+    return realizedApy.times(100)
+  }, [startTimestamp, stakingData])
+
 
   const actions = [
     {
@@ -61,7 +116,15 @@ export const Staking: React.FC = () => {
           fontSize:'h3',
           textStyle:'heading',
         },
-        label:'assets.assetDetails.generalData.totalStaked',
+        label:'assets.assetDetails.generalData.totalIDLEStaked',
+      },
+      {
+        field:'stkIDLEBalance',
+        props:{
+          fontSize:'h3',
+          textStyle:'heading',
+        },
+        label:'assets.assetDetails.generalData.stkIDLEBalance',
       },
       {
         field:'stakingEndDate',
@@ -70,21 +133,31 @@ export const Staking: React.FC = () => {
           textStyle:'heading',
         },
         tooltip:'assets.assetDetails.tooltips.lockEndDate',
-        label:'assets.assetDetails.generalData.lockEndDate'
+        label:'assets.assetDetails.generalData.lockedUntil'
+      },
+      {
+        field:'stakingShare',
+        props:{
+          fontSize:'h3',
+          textStyle:'heading',
+        },
+        tooltip:'assets.assetDetails.tooltips.stakingShare',
+        label:'defi.share'
       },
     ]
 
     return (
-      <HStack
-        spacing={20}
-        width={'100%'}
+      <SimpleGrid
+        columns={[2, 4]}
+        spacing={[6, 20]}
+        alignItems={'flex-start'}
       >
         {
           fields.map( (generalData: GeneralDataField) => (
             <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
           ))
         }
-      </HStack>
+      </SimpleGrid>
     )
   }, [account, stakingData])
 
@@ -99,7 +172,76 @@ export const Staking: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.claimable'} suffix={` ${PROTOCOL_TOKEN}`} component={Text} textStyle={'heading'} fontSize={'h3'} />
+        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
+        <SimpleGrid
+          spacing={6}
+          width={'100%'}
+          columns={[1, 3]}
+        >
+          <AssetProvider
+            wrapFlex={false}
+            assetId={protocolToken.id}
+          >
+            <Card
+              p={6}
+            >
+              <VStack
+                spacing={4}
+                width={'100%'}
+                alignItems={'flex-start'}
+              >
+                <HStack
+                  width={'full'}
+                  justifyContent={'space-between'}
+                >
+                  <AssetLabel assetId={protocolToken.id} />
+                </HStack>
+                <HStack
+                  width={'full'}
+                  justifyContent={'space-between'}
+                >
+                  <VStack
+                    spacing={1}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation component={Text} translation={'defi.realizedApy'} textStyle={'captionSmall'} />
+                    <HStack
+                      spacing={1}
+                      justifyContent={'flex-start'}
+                    >
+                      <Amount.Percentage value={realizedApy} textStyle={'tableCell'} />
+                    </HStack>
+                  </VStack>
+                  <VStack
+                    spacing={1}
+                    alignItems={'flex-end'}
+                  >
+                    <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+                    <HStack
+                      spacing={1}
+                      justifyContent={'flex-end'}
+                    >
+                      <Amount value={stakingData.position.claimable} decimals={3} textStyle={'tableCell'} />
+                      <AssetProvider.Name textStyle={'tableCell'} />
+                    </HStack>
+                  </VStack>
+                </HStack>
+                <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} disabled={stakingData.position.claimable.lte(0)} />
+              </VStack>
+            </Card>
+          </AssetProvider>
+        </SimpleGrid>
+      </VStack>
+    )
+
+    /*
+    return (
+      <VStack
+        spacing={6}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
         <Card
           p={6}
           px={8}
@@ -125,17 +267,6 @@ export const Staking: React.FC = () => {
                 alignItems={'flex-start'}
                 justifyContent={'flex-start'}
               >
-                <Translation component={Text} translation={'staking.totalSupply'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.stkIDLE.totalSupply} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
-              </VStack>
-
-              <VStack
-                pb={[2, 0]}
-                spacing={[1, 2]}
-                width={['50%', 'auto']}
-                alignItems={'flex-start'}
-                justifyContent={'flex-start'}
-              >
                 <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
                 <Amount value={stakingData.position.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
               </VStack>
@@ -147,8 +278,8 @@ export const Staking: React.FC = () => {
                 alignItems={'flex-start'}
                 justifyContent={'flex-start'}
               >
-                <Translation component={Text} translation={'defi.share'} textStyle={'captionSmall'} />
-                <Amount.Percentage value={stakingData.position.share} textStyle={'tableCell'} />
+                <Translation component={Text} translation={'defi.realizedApy'} textStyle={'captionSmall'} />
+                <Amount.Percentage value={realizedApy} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -167,21 +298,24 @@ export const Staking: React.FC = () => {
         </Card>
       </VStack>
     )
-  }, [account, stakingData, stakedIdleVault])
+    */
+  }, [account, protocolToken, stakingData, realizedApy, stakedIdleVault])
 
   return (
     <Box
       width={'100%'}
     >
-      <Stack
+      <VStack
+        spacing={6}
         my={[10, 16]}
         width={'100%'}
         direction={['column', 'row']}
         justifyContent={'flex-start'}
-        alignItems={['flex-start','center']}
+        alignItems={['center','flex-start']}
       >
         <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} size={'3xl'} />
-      </Stack>
+        <Translation translation={'strategies.staking.description'} textAlign={['left', 'center']} component={Text} />
+      </VStack>
       <HStack
         width={'100%'}
         spacing={[0, 10]}
@@ -196,6 +330,7 @@ export const Staking: React.FC = () => {
           <VStack
             spacing={10}
             width={'100%'}
+            alignItems={'flex-start'}
           >
             {stakingPosition}
             {claimableIDLE}

@@ -50,12 +50,17 @@ export const strategies: Record<string, StrategyProps> = {
     generalDataFields:[
       {
         field:'stakingTvl',
-        label:'assets.assetDetails.generalData.tvl',
+        label:'assets.assetDetails.generalData.lockedIDLE',
         tooltip:'assets.assetDetails.tooltips.totalIDLELocked'
       },
       {
+        field:'stkIDLESupply',
+        label:'assets.assetDetails.generalData.stkIDLESupply',
+        tooltip:'assets.assetDetails.tooltips.stkIDLESupply'
+      },
+      {
         field:'stakingAPY',
-        label:'assets.assetDetails.generalData.apy',
+        label:'assets.assetDetails.generalData.estimatedApy',
         tooltip:'assets.assetDetails.tooltips.stakingAPY'
       },
       {
