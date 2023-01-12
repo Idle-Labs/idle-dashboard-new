@@ -99,7 +99,6 @@ export const ReactTable = <T extends {}>({
             return (
               <Tr {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map( (column, colIndex) => {
-                  
                   const isFirstCell = !firstColumnFound && column.display !== 'none'
                   const isLastCell = colIndex === headerGroup.headers.length-1
                   if (isFirstCell) {

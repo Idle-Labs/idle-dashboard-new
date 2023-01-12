@@ -679,11 +679,11 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const StakingTvl: React.FC<TextProps> = (props) => {
+const StakingTvl: React.FC<AmountProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData ? (
-    <TokenAmount assetId={stakingData.IDLE.asset?.id} amount={stakingData.IDLE.totalSupply} size={'xs'} textStyle={props.textStyle} />
+    <Amount value={stakingData.IDLE.totalSupply} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -723,7 +723,7 @@ const StakingDeposited: React.FC<AmountProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData ? (
-    <TokenAmount assetId={stakingData.IDLE.asset?.id} amount={stakingData.position.deposited} size={'xs'} textStyle={props.textStyle} fontSize={props.fontSize} />
+    <Amount value={stakingData.position.deposited} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -937,7 +937,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
         </HStack>
       )
     case 'stakingTvl':
-      return (<StakingTvl textStyle={'tableCell'} />)
+      return (<StakingTvl suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />)
     case 'stkIDLESupply':
       return (<StkIDLESupply textStyle={'tableCell'} />)
     case 'stkIDLEBalance':
@@ -951,7 +951,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'stakingAvgLockTime':
       return (<StakingAvgLockTime textStyle={'tableCell'} {...props} />)
     case 'stakingDeposited':
-      return (<StakingDeposited textStyle={'tableCell'} {...props} />)
+      return (<StakingDeposited suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} {...props} />)
     case 'stakingEndDate':
       return (<StakingEndDate textStyle={'tableCell'} {...props} />)
     case 'stakingShare':

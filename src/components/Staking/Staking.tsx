@@ -6,6 +6,7 @@ import { defaultChainId } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import type { Transaction } from 'constants/types'
 import { selectUnderlyingToken } from 'selectors/'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Stake } from 'components/OperativeComponent/Stake'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { GeneralDataField } from 'constants/strategies'
@@ -24,6 +25,7 @@ import { StakingDistributedRewards } from 'components/StakingDistributedRewards/
 
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
+  const { isMobile } = useThemeProvider()
   const { isVaultsPositionsLoaded, stakingData, selectors: { selectVaultsByType, selectAssetById, selectVaultTransactions } } = usePortfolioProvider()
 
   const protocolToken = useMemo(() => {
@@ -147,16 +149,23 @@ export const Staking: React.FC = () => {
     ]
 
     return (
-      <SimpleGrid
-        columns={[2, 4]}
-        spacing={[6, 20]}
+      <VStack
+        spacing={6}
+        width={'full'}
+        alignItems={'flex-start'}
       >
-        {
-          fields.map( (generalData: GeneralDataField) => (
-            <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
-          ))
-        }
-      </SimpleGrid>
+        <Translation translation={'staking.yourstkIDLE'} component={Text} textStyle={'heading'} fontSize={'h3'} />
+        <SimpleGrid
+          columns={[2, 4]}
+          spacing={[6, 20]}
+        >
+          {
+            fields.map( (generalData: GeneralDataField) => (
+              <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
+            ))
+          }
+        </SimpleGrid>
+      </VStack>
     )
   }, [account, stakingData])
 
@@ -165,140 +174,101 @@ export const Staking: React.FC = () => {
 
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 
-    return (
-      <VStack
-        spacing={6}
-        width={'100%'}
-        alignItems={'flex-start'}
+    return isMobile ? (
+      <AssetProvider
+        wrapFlex={false}
+        assetId={protocolToken.id}
       >
-        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
-        <SimpleGrid
-          spacing={6}
-          width={'100%'}
-          columns={[1, 3]}
-        >
-          <AssetProvider
-            wrapFlex={false}
-            assetId={protocolToken.id}
-          >
-            <Card
-              p={6}
-            >
-              <VStack
-                spacing={4}
-                width={'100%'}
-                alignItems={'flex-start'}
-              >
-                <HStack
-                  width={'full'}
-                  justifyContent={'space-between'}
-                >
-                  <AssetLabel assetId={protocolToken.id} />
-                </HStack>
-                <HStack
-                  width={'full'}
-                  justifyContent={'space-between'}
-                >
-                  <VStack
-                    spacing={1}
-                    alignItems={'flex-start'}
-                  >
-                    <Translation component={Text} translation={'defi.realizedApy'} textStyle={'captionSmall'} />
-                    <HStack
-                      spacing={1}
-                      justifyContent={'flex-start'}
-                    >
-                      <Amount.Percentage value={realizedApy} textStyle={'tableCell'} />
-                    </HStack>
-                  </VStack>
-                  <VStack
-                    spacing={1}
-                    alignItems={'flex-end'}
-                  >
-                    <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-                    <HStack
-                      spacing={1}
-                      justifyContent={'flex-end'}
-                    >
-                      <Amount value={stakingData.position.claimable} decimals={3} textStyle={'tableCell'} />
-                      <AssetProvider.Name textStyle={'tableCell'} />
-                    </HStack>
-                  </VStack>
-                </HStack>
-                <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} disabled={stakingData.position.claimable.lte(0)} />
-              </VStack>
-            </Card>
-          </AssetProvider>
-        </SimpleGrid>
-      </VStack>
-    )
-
-    /*
-    return (
-      <VStack
-        spacing={6}
-        width={'100%'}
-        alignItems={'flex-start'}
-      >
-        <Translation translation={'assets.assetDetails.generalData.claimableRewards'} component={Text} textStyle={'heading'} fontSize={'h3'} />
         <Card
           p={6}
-          px={8}
-          width={'100%'}
         >
-          <Stack
+          <VStack
+            spacing={4}
             width={'100%'}
-            spacing={[4, 14]}
-            alignItems={'center'}
-            direction={['column', 'row']}
-            justifyContent={'space-between'}
+            alignItems={'flex-start'}
           >
             <HStack
-              width={'100%'}
-              spacing={[0, 6]}
-              flexWrap={['wrap', 'nowrap']}
-              justifyContent={['flex-start', 'space-between']}
+              width={'full'}
+              justifyContent={'space-between'}
+            >
+              <AssetLabel assetId={protocolToken.id} />
+            </HStack>
+            <HStack
+              width={'full'}
+              justifyContent={'space-between'}
             >
               <VStack
-                pb={[2, 0]}
-                spacing={[1, 2]}
-                width={['50%', 'auto']}
+                spacing={1}
                 alignItems={'flex-start'}
-                justifyContent={'flex-start'}
-              >
-                <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.position.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
-              </VStack>
-
-              <VStack
-                pb={[2, 0]}
-                spacing={[1, 2]}
-                width={['50%', 'auto']}
-                alignItems={'flex-start'}
-                justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'defi.realizedApy'} textStyle={'captionSmall'} />
-                <Amount.Percentage value={realizedApy} textStyle={'tableCell'} />
+                <HStack
+                  spacing={1}
+                  justifyContent={'flex-start'}
+                >
+                  <Amount.Percentage value={realizedApy} textStyle={'heading'} fontSize={'h3'} />
+                </HStack>
               </VStack>
-
               <VStack
-                pb={[2, 0]}
-                spacing={[1, 2]}
-                width={['50%', 'auto']}
-                alignItems={'flex-start'}
-                justifyContent={'flex-start'}
+                spacing={1}
+                alignItems={'flex-end'}
               >
                 <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.position.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+                <HStack
+                  spacing={1}
+                  justifyContent={'flex-end'}
+                >
+                  <Amount value={stakingData.position.claimable} decimals={3} textStyle={'heading'} fontSize={'h3'} />
+                  <AssetProvider.Name textStyle={'heading'} fontSize={'h3'} />
+                </HStack>
               </VStack>
             </HStack>
-            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
-          </Stack>
+            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} disabled={stakingData.position.claimable.lte(0)} />
+          </VStack>
         </Card>
-      </VStack>
+      </AssetProvider>
+    ) : (
+      <Card
+        p={6}
+        px={8}
+        width={'100%'}
+      >
+        <Stack
+          width={'100%'}
+          spacing={[0, 6]}
+          direction={['column', 'row']}
+          flexWrap={['wrap', 'nowrap']}
+          justifyContent={['flex-start', 'space-between']}
+        >
+          <AssetLabel assetId={protocolToken.id} />
+
+          <VStack
+            pb={[2, 0]}
+            spacing={[1, 2]}
+            width={['50%','auto']}
+            alignItems={'flex-start'}
+            justifyContent={'flex-start'}
+          >
+            <Translation component={Text} translation={'defi.realizedApy'} textStyle={'captionSmall'} />
+            <Amount.Percentage value={realizedApy} fontSize={'h3'} textStyle={'heading'} />
+          </VStack>
+
+          <VStack
+            pb={[2, 0]}
+            spacing={[1, 2]}
+            width={['50%','auto']}
+            alignItems={'flex-start'}
+            justifyContent={'flex-start'}
+          >
+            <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
+            <Amount value={stakingData.position.claimable} suffix={` ${PROTOCOL_TOKEN}`} fontSize={'h3'} textStyle={'heading'} />
+          </VStack>
+
+          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
+        </Stack>
+      </Card>
     )
-    */
-  }, [account, protocolToken, stakingData, realizedApy, stakedIdleVault])
+  }, [account, isMobile, stakingData, protocolToken, realizedApy, stakedIdleVault])
 
   return (
     <Box
@@ -313,7 +283,7 @@ export const Staking: React.FC = () => {
         alignItems={['center','flex-start']}
       >
         <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} size={'3xl'} />
-        <Translation translation={'strategies.staking.description'} textAlign={['left', 'center']} component={Text} />
+        <Translation isHtml={true} translation={'strategies.staking.description'} textAlign={['left', 'center']} component={Text} />
       </VStack>
       <HStack
         width={'100%'}
@@ -333,7 +303,14 @@ export const Staking: React.FC = () => {
           >
             {stakingPosition}
             {claimableIDLE}
-            <AssetGeneralData assetId={stakedIdleAsset?.id} />
+            <VStack
+              spacing={6}
+              width={'full'}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'staking.globalstkIDLE'} component={Text} textStyle={'heading'} fontSize={'h3'} />
+              <AssetGeneralData assetId={stakedIdleAsset?.id} />
+            </VStack>
             <StakingDistributedRewards />
           </VStack>
         </Stack>

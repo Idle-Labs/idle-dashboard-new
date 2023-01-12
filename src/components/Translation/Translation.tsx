@@ -8,6 +8,7 @@ export type TranslationProps<T = DefaultProps> = {
   prefix?: string
   suffix?: string
   joinChar?: string
+  isHtml?: boolean
   params?: Record<string, any>
   translation: string | null | undefined | [string, number] | string[]
 } & T
@@ -19,6 +20,7 @@ export const Translation = <T = void>({
   prefix='',
   suffix='',
   joinChar=' ',
+  isHtml = false,
   ...props
 }: TranslationProps<T>) => {
   const translate = useTranslate()
@@ -34,7 +36,9 @@ export const Translation = <T = void>({
   const translatedText = translatedTexts.join(joinChar)
 
   const formattedText = `${prefix}${translatedText}${suffix}`
-  return (
+  return isHtml ? (
+    <Component {...props} dangerouslySetInnerHTML={{__html: formattedText}} />
+  ) : (
     <Component {...props}>
       {formattedText}
     </Component>

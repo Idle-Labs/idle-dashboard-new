@@ -144,7 +144,7 @@
   "strategies": {
     "staking": {
       "title": "Staking",
-      "description": "In IIP-10, the Idle DAO community voted in favor of allowing long-term holders to stake their IDLE and receive a share of the recurrent IDLE buyback. Available only for Ethereum."
+      "description": "In <a href='https://gov.idle.finance/t/iip-10-single-token-staking/543' class='link' target='_blank' rel='noopener'>IIP-10</a>, the Idle DAO community voted in favor of allowing long-term holders to stake their IDLE and receive a share of the recurrent IDLE buyback. Available only for Ethereum."
     },
     "gauge": {
       "title": "Gauge"
@@ -557,9 +557,11 @@
     "lockEnd": "Lock end date",
     "itWillTake": "It will take",
     "totalSupply": "Total supply",
+    "yourstkIDLE": "Your stkIDLE",
     "increaseTime": "Increase time",
     "increaseLock": "Increase lock",
     "stkIDLESupply":"stkIDLE supply",
+    "globalstkIDLE": "Global stkIDLE",
     "increaseAmount": "Increase amount",
     "lockExpired": "Your lock is expired",
     "noStake": "You haven't staked any IDLE",
