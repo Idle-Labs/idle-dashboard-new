@@ -174,6 +174,7 @@ export type StakingData = {
     totalSupply: BigNumber
   }
   stkIDLE: {
+    asset: Asset | null | undefined,
     totalSupply: BigNumber
   }
 }

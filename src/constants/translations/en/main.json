@@ -235,7 +235,7 @@
         "title": "IDLE Staking",
         "cta": "Manage staking",
         "empty" : {
-          "body": "Stake your IDLE tokens and earn up to %{apy}% APY on a 4-year deposit.",
+          "body": "Stake your IDLE tokens and receive up to 17.62% APY on a 4 year deposit.",
           "cta": "Go to Staking"
         }
       },
@@ -1612,6 +1612,7 @@
       "generalData": {
         "protocol":"Protocol",
         "rewards":"Rewards",
+        "totalLocked":"Total locked",
         "allocation":"Allocation",
         "stkIDLESupply":"stkIDLE supply",
         "lockedIDLE":"Locked IDLE",
@@ -1636,20 +1637,19 @@
         "weight":"Weight",
         "nextWeight":"Next weight",
         "totalSupply":"Total supply",
-        "totalIDLEStaked":"Total IDLE staked",
+        "totalIDLEStaked":"Total staked",
         "lastHarvest":"Last Harvest"
       },
       "tooltips": {
         "stkIDLESupply":"Total supply of stkIDLE minted",
         "totalSupply": "Total amount of assets staked in this gauge",
+        "totalIDLEStaked":"The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
         "deprecated": "This vaults has been deprecated, withdraw your assets",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
         "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
         "spotApy": "The annualized yield this vault is providing at the current block",
-        "lockEndDate": "You will be able to withdraw your staked IDLE after this date",
-        "stakingShare": "The percentage of rewards your will receive every distribution",
         "autoCompounding": "These rewards are automatically re-invested in the strategy",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
@@ -1658,10 +1658,13 @@
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
         "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprected",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
+        "stkIDLEBalance":"This is your stkIDLE balance, the longer you stake the higher this balance will be",
         "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",
         "stakingAPY": "Estimate of the IDLE buyback distribution over 1 year based on the current stkIDLE supply",
-        "apyRatio": "The base strategy yield is split across the Senior and Junior tranches with a specific ratio"
+        "apyRatio": "The base strategy yield is split across the Senior and Junior tranches with a specific ratio",
+        "lockEndDate": "This is the expiration date of your lock, after this date you will be able to withdraw your IDLE",
+        "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution"
       },
       "apyBreakdown": {
         "base": "Base APY",

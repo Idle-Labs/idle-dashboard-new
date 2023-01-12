@@ -1,21 +1,26 @@
 import React from 'react'
-import { HStack } from '@chakra-ui/react'
 import type { AssetId } from 'constants/types'
+import { ResponsiveValue, HStack } from '@chakra-ui/react'
 import { Amount, AmountProps } from 'components/Amount/Amount'
 import { AssetFieldProps, AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 export type TokenAmountProps = {
   assetId?: AssetId
   amount: AmountProps["value"]
-  size?: string
+  size?: ResponsiveValue<string> | undefined
+  showIcon?: boolean
 } & AmountProps & AssetFieldProps
 
 export const TokenAmount: React.FC<TokenAmountProps> = ({
   assetId,
   amount,
   size,
+  showIcon = true,
   ...props
 }) => {
+
+  const { ...amountProps } = props as Omit<AmountProps, keyof TokenAmountProps>
+  const { ...assetFieldProps } = props as Omit<AssetFieldProps, keyof TokenAmountProps>
 
   return (
     <AssetProvider
@@ -26,13 +31,17 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
         spacing={2}
         alignItems={'center'}
       >
-        <AssetProvider.Icon size={size || 'xs'} />
+        {
+          showIcon && (
+            <AssetProvider.Icon size={size || 'xs'} />
+          )
+        }
         <HStack
           spacing={1}
-          alignItems={'center'}
+          alignItems={'baseline'}
         >
-          <Amount value={amount} decimals={3} {...props} />
-          <AssetProvider.Name {...props} />
+          <Amount value={amount} decimals={2} {...amountProps} />
+          <AssetProvider.Name {...assetFieldProps} fontSize={'85%'} fontWeight={400} />
         </HStack>
       </HStack>
     </AssetProvider>

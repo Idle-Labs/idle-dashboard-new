@@ -19,8 +19,8 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, PROTOCOL_TOKEN, DASHBORD_URL, MAX_STAKING_DAYS } from 'constants/'
+import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, DASHBORD_URL, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -239,6 +239,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       return {...assets, ...vaultAssetsDataWithIds}
     },{})
+
+    // console.log('assetData', vaults, assetData)
+
     return assetData
   }
 
@@ -328,6 +331,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!selectAssetById) return
     const underlyingToken = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
     return underlyingToken && selectAssetById(underlyingToken.address)
+  }, [selectAssetById])
+
+  const stkIDLEToken = useMemo(() => {
+    if (!selectAssetById) return
+    const underlyingToken = selectUnderlyingToken(defaultChainId, stkIDLE_TOKEN)
+    return underlyingToken && selectAssetById(underlyingToken.token)
   }, [selectAssetById])
 
   const selectVaultsAssetsWithBalance = useCallback( (vaultType: string | null = null, includeStakedAmount = true): Asset[] | null => {
@@ -688,7 +697,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return !enabledCalls.length || enabledCalls.includes(call)
     }
     
-    const rawCalls = vaults.reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
+    const rawCalls = vaults.filter( (vault: Vault) => checkAddress(vault.id) ).reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
       const aggregatedRawCalls = [
         account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
         ("getPricesCalls" in vault) && checkEnabledCall('prices') ? vault.getPricesCalls() : [],
@@ -847,6 +856,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         totalSupply: fixTokenDecimals(stkIdleTotalLocked, 18)
       },
       stkIDLE: {
+        asset: stkIDLEToken,
         totalSupply: fixTokenDecimals(stkIdleTotalSupply, 18),
       }
     }
@@ -1274,7 +1284,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsRewards,
       additionalAprs
     }
-  }, [selectAssetById, protocolToken, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, protocolToken, stkIDLEToken, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -1569,7 +1579,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Init underlying tokens vaults
     const underlyingTokensVaults: UnderlyingToken[] = Object.keys(underlyingTokens[chainId]).reduce( ( vaultsContracts: UnderlyingToken[], token) => {
       const tokenConfig = underlyingTokens[chainId][token]
-      if (tokenConfig.address) {
+      if (tokenConfig) {
         const underlyingToken = new UnderlyingToken(web3, chainId, tokenConfig)
         vaultsContracts.push(underlyingToken)
       }

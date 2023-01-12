@@ -480,6 +480,16 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: "0x875773784Af8135eA0ef43b5a374AaD105c5D39e"
     },
+    STKIDLE: {
+      decimals: 18,
+      token: 'stkIDLE',
+      enabled: true,
+      colors: {
+        hex: "#0d55bb",
+        rgb: [13, 85, 187],
+        hsl: ["215", "87%", "39%"]
+      }
+    },
     RAI: {
       token: 'RAI',
       decimals: 18,

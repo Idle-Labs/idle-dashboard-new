@@ -2,6 +2,7 @@ export const TILDE = "~"
 export const VAULTS_MIN_TVL = 1000
 export const MAX_STAKING_DAYS = 1460
 export const PROTOCOL_TOKEN = 'IDLE'
+export const stkIDLE_TOKEN = 'STKIDLE'
 export const DATE_FORMAT = 'YYYY/MM/DD'
 export const SECONDS_IN_YEAR = 30879000
 export const MIN_STAKING_SECONDS = 1209600 // 2 weeks

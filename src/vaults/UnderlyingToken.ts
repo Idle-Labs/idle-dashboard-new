@@ -26,7 +26,7 @@ export class UnderlyingToken {
     this.chainId = chainId
     this.type = 'underlying'
     this.tokenConfig = tokenConfig
-    this.id = tokenConfig.address?.toLowerCase() || '0x0000000000000000000000000000000000000000'
+    this.id = tokenConfig.address?.toLowerCase() || tokenConfig.token.toLowerCase()
 
     // Init CDO contract
     this.contract = null

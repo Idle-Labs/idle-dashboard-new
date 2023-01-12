@@ -1,8 +1,6 @@
-import BigNumber from 'bignumber.js'
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
-import { useNavigate } from 'react-router-dom'
 import { PROTOCOL_TOKEN } from 'constants/vars'
 import { selectUnderlyingToken } from 'selectors/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
@@ -12,7 +10,6 @@ import React, { useState, useMemo, useCallback } from 'react'
 import { Translation } from 'components/Translation/Translation'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
@@ -24,12 +21,10 @@ type RowProps = Row<EtherscanTransaction>
 
 export const StakingDistributedRewards: React.FC = () => {
   const theme = useTheme()
-  const navigate = useNavigate()
   const translate = useTranslate()
   const { isMobile } = useThemeProvider()
   const [ page, setPage ] = useState<number>(1)
   const { stakingData } = usePortfolioProvider()
-  const { location, params } = useBrowserRouter()
   const { chainId, explorer } = useWalletProvider()
 
   const onRowClick = useCallback((row: RowProps) => {
@@ -71,7 +66,7 @@ export const StakingDistributedRewards: React.FC = () => {
       id:'amount',
       accessor:'value',
       Header:translate('transactionRow.amount'),
-      Cell: ({ value, row }: { value: NumberType; row: RowProps }) => {
+      Cell: ({ value }: { value: NumberType }) => {
         const amount = fixTokenDecimals(value, protocolToken?.decimals)
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -85,7 +80,7 @@ export const StakingDistributedRewards: React.FC = () => {
       id:'hash',
       accessor:'hash',
       Header:translate('transactionRow.hash'),
-      Cell: ({ value, row }: { value: string; row: RowProps }) => {
+      Cell: ({ value }: { value: string }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             <TransactionLink hash={value} />

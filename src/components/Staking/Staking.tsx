@@ -1,6 +1,6 @@
+import { BNify } from 'helpers/'
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
-import { toDayjs, BNify } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { defaultChainId } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
@@ -13,6 +13,7 @@ import type { GeneralDataField } from 'constants/strategies'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Unstake } from 'components/OperativeComponent/Unstake'
 import { Approve } from 'components/OperativeComponent/Approve'
+import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { PROTOCOL_TOKEN, SECONDS_IN_YEAR } from 'constants/vars'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -119,6 +120,7 @@ export const Staking: React.FC = () => {
           textStyle:'heading',
         },
         label:'assets.assetDetails.generalData.totalIDLEStaked',
+        tooltip:'assets.assetDetails.tooltips.totalIDLEStaked'
       },
       {
         field:'stkIDLEBalance',
@@ -126,7 +128,8 @@ export const Staking: React.FC = () => {
           fontSize:'h3',
           textStyle:'heading',
         },
-        label:'assets.assetDetails.generalData.stkIDLEBalance',
+        label:'common.balance',
+        tooltip:'assets.assetDetails.tooltips.stkIDLEBalance'
       },
       {
         field:'stakingEndDate',
@@ -214,13 +217,7 @@ export const Staking: React.FC = () => {
                 alignItems={'flex-end'}
               >
                 <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-                <HStack
-                  spacing={1}
-                  justifyContent={'flex-end'}
-                >
-                  <Amount value={stakingData.position.claimable} decimals={3} textStyle={'heading'} fontSize={'h3'} />
-                  <AssetProvider.Name textStyle={'heading'} fontSize={'h3'} />
-                </HStack>
+                <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} decimals={2} textStyle={'heading'} fontSize={'h3'} />
               </VStack>
             </HStack>
             <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} disabled={stakingData.position.claimable.lte(0)} />
@@ -261,7 +258,7 @@ export const Staking: React.FC = () => {
             justifyContent={'flex-start'}
           >
             <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-            <Amount value={stakingData.position.claimable} suffix={` ${PROTOCOL_TOKEN}`} fontSize={'h3'} textStyle={'heading'} />
+            <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} decimals={2} textStyle={'heading'} fontSize={'h3'} />
           </VStack>
 
           <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
@@ -283,7 +280,6 @@ export const Staking: React.FC = () => {
         alignItems={['center','flex-start']}
       >
         <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} size={'3xl'} />
-        <Translation isHtml={true} translation={'strategies.staking.description'} textAlign={['left', 'center']} component={Text} />
       </VStack>
       <HStack
         width={'100%'}
@@ -310,6 +306,9 @@ export const Staking: React.FC = () => {
             >
               <Translation translation={'staking.globalstkIDLE'} component={Text} textStyle={'heading'} fontSize={'h3'} />
               <AssetGeneralData assetId={stakedIdleAsset?.id} />
+              <Card.Dark>
+                <Translation isHtml={true} translation={'strategies.staking.description'} component={Text} />
+              </Card.Dark>
             </VStack>
             <StakingDistributedRewards />
           </VStack>

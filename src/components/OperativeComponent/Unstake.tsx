@@ -119,9 +119,9 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           alignItems={'flex-start'}
         >
           {
-            !stakingData?.position?.lockEnd ? (
+            false && !stakingData?.position?.lockEnd ? (
               <Center
-                px={14}
+                px={6}
                 flex={1}
                 width={'100%'}
               >
@@ -133,12 +133,12 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   <Translation component={Button} translation={`common.stake`} onClick={() => setActionIndex(0)} variant={'ctaPrimary'} px={10} />
                 </VStack>
               </Center>
-            ) : !lockExpired ? (
+            ) : false && !lockExpired ? (
               <VStack
                 py={20}
-                px={14}
                 flex={1}
                 spacing={6}
+                px={[6, 10]}
                 width={'100%'}
               >
                 <MdLockClock size={72} />
@@ -153,8 +153,8 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             ) : (
               <Center
                 py={14}
-                px={10}
                 flex={1}
+                px={[4, 10]}
                 width={'100%'}
               >
                 <VStack

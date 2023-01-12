@@ -1,5 +1,6 @@
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
+import { VAULTS_MIN_TVL } from 'constants/vars'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
@@ -7,7 +8,7 @@ import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
-import { VAULTS_MIN_TVL, PROTOCOL_TOKEN } from 'constants/vars'
+import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -547,7 +548,7 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'staking.totalSupply'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.stkIDLE.totalSupply} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
+                <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.stkIDLE.totalSupply} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -558,7 +559,7 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'defi.balance'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.position.balance} suffix={` ${stakedIdleVault.stkIdleConfig.name}`} textStyle={'tableCell'} />
+                <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.position.balance} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -580,7 +581,7 @@ export const Dashboard: React.FC = () => {
                 justifyContent={'flex-start'}
               >
                 <Translation component={Text} translation={'defi.claimable'} textStyle={'captionSmall'} />
-                <Amount value={stakingData.position.claimable} suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />
+                <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -611,6 +612,16 @@ export const Dashboard: React.FC = () => {
         <VStack
           spacing={6}
           width={'100%'}
+          id={'staking-rewards'}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'dashboard.rewards.staking.title'} component={Text} textStyle={'heading'} fontSize={'h3'} />
+          {stakingRewards}
+        </VStack>
+
+        <VStack
+          spacing={6}
+          width={'100%'}
           id={'gauges-rewards'}
           alignItems={'flex-start'}
         >
@@ -627,16 +638,6 @@ export const Dashboard: React.FC = () => {
         >
           <StrategyLabel strategy={'BY'} customText={'dashboard.rewards.vaults.title'}  textStyle={'heading'} fontSize={'h3'} />
           {vaultsRewardsOverview}
-        </VStack>
-
-        <VStack
-          spacing={6}
-          width={'100%'}
-          id={'staking-rewards'}
-          alignItems={'flex-start'}
-        >
-          <Translation translation={'dashboard.rewards.staking.title'} component={Text} textStyle={'heading'} fontSize={'h3'} />
-          {stakingRewards}
         </VStack>
       </VStack>
     )

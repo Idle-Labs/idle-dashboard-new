@@ -3,6 +3,7 @@ import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
+import { MAX_STAKING_DAYS } from 'constants/vars'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { selectProtocol } from 'selectors/selectProtocol'
 import type { IdleTokenProtocol } from 'constants/vaults'
@@ -12,7 +13,6 @@ import { BNify, abbreviateNumber, formatDate } from 'helpers/'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/vars'
 import React, { useMemo, createContext, useContext } from 'react'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
@@ -679,11 +679,11 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const StakingTvl: React.FC<AmountProps> = (props) => {
+const StakingTvl: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData ? (
-    <Amount value={stakingData.IDLE.totalSupply} {...props} />
+    <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.IDLE.totalSupply} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -691,7 +691,7 @@ const StkIDLESupply: React.FC<TextProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData?.stkIDLE.totalSupply ? (
-    <Amount value={stakingData.stkIDLE.totalSupply} suffix={` stkIDLE`} {...props} />
+    <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.stkIDLE.totalSupply} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -699,7 +699,7 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData?.position.balance ? (
-    <Amount value={stakingData.position.balance} suffix={` stkIDLE`} {...props} />
+    <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.position.balance} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -711,19 +711,19 @@ const StakingAPY: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const StakingTotalRewards: React.FC<AmountProps> = (props) => {
+const StakingTotalRewards: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData?.IDLE.totalRewards ? (
-    <Amount value={stakingData.IDLE.totalRewards} {...props} />
+    <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.IDLE.totalRewards} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
-const StakingDeposited: React.FC<AmountProps> = (props) => {
+const StakingDeposited: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
   return stakingData ? (
-    <Amount value={stakingData.position.deposited} {...props} />
+    <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.deposited} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -922,7 +922,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon size={'sm'} />
+          <ProtocolIcon size={'xs'} />
           <ProtocolName textStyle={'tableCell'} {...props} />
         </HStack>
       )
@@ -937,7 +937,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
         </HStack>
       )
     case 'stakingTvl':
-      return (<StakingTvl suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} />)
+      return (<StakingTvl textStyle={'tableCell'} />)
     case 'stkIDLESupply':
       return (<StkIDLESupply textStyle={'tableCell'} />)
     case 'stkIDLEBalance':
@@ -945,13 +945,13 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'stakingAPY':
       return (<StakingAPY textStyle={'tableCell'} {...props} />)
     case 'stakingTotalRewards':
-      return (<StakingTotalRewards suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} {...props} />)  
+      return (<StakingTotalRewards textStyle={'tableCell'} {...props} />)  
     case 'stakingAvgLockTimeChart':
       return (<StakingAvgLockTimeChart {...props} />)
     case 'stakingAvgLockTime':
       return (<StakingAvgLockTime textStyle={'tableCell'} {...props} />)
     case 'stakingDeposited':
-      return (<StakingDeposited suffix={` ${PROTOCOL_TOKEN}`} textStyle={'tableCell'} {...props} />)
+      return (<StakingDeposited textStyle={'tableCell'} {...props} />)
     case 'stakingEndDate':
       return (<StakingEndDate textStyle={'tableCell'} {...props} />)
     case 'stakingShare':
