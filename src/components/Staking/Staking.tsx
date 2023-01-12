@@ -150,7 +150,6 @@ export const Staking: React.FC = () => {
       <SimpleGrid
         columns={[2, 4]}
         spacing={[6, 20]}
-        alignItems={'flex-start'}
       >
         {
           fields.map( (generalData: GeneralDataField) => (
