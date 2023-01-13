@@ -1,5 +1,6 @@
 export * from './apis'
 export * from './charts'
+export * from './analytics'
 export * from './utilities'
 export * from './navigation'
 export * from './transactions'

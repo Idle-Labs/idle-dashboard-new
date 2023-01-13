@@ -18,21 +18,3 @@ export function checkSectionEnabled(path: string) {
 export function openWindow(url: string) {
   return window.open(url, '_blank', 'noopener');
 }
-
-export function sendGoogleAnalyticsPageview(path: string | null = null) {
-  const page_path = path || window.location.hash.substr(1)
-  // @ts-ignore
-  if (window.gtag) {
-    // console.log('sendGoogleAnalyticsPageview', {
-    //   page_title: window.document.title,
-    //   page_location: window.location.href,
-    //   page_path
-    // })
-    // @ts-ignore
-    window.gtag('event', 'page_view', {
-      page_title: window.document.title,
-      page_location: window.location.href,
-      page_path
-    })
-  }
-}

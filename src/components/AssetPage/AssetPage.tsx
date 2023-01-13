@@ -1,7 +1,8 @@
 import { Earn } from './Earn'
-import { strategies } from 'constants/'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
+import { strategies, AssetId } from 'constants/'
+import { sendViewItem } from 'helpers/analytics'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Deposit } from 'components/OperativeComponent/Deposit'
@@ -21,8 +22,18 @@ export const AssetPage: React.FC = () => {
   const { isMobile } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
+  const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | null>(null)
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
-  const { isPortfolioLoaded, selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
+  const {
+    isPortfolioLoaded,
+    pricesUsd,
+    portfolioTimestamp,
+    assetsDataTimestamp,
+    selectors: {
+      selectAssetById,
+      selectVaultGauge
+    }
+  } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -43,6 +54,14 @@ export const AssetPage: React.FC = () => {
       return navigate(location.pathname.replace(`/${params.asset}`, ''))
     }
   }, [isPortfolioLoaded, selectAssetById, asset, params.asset, location, navigate])
+
+  // Send viewItem event
+  useEffect(() => {
+    if (!isPortfolioLoaded || !asset || viewItemEventSent === asset?.id || !portfolioTimestamp || !assetsDataTimestamp || portfolioTimestamp>assetsDataTimestamp) return
+    console.log('asset', isPortfolioLoaded, portfolioTimestamp, assetsDataTimestamp, asset)
+    sendViewItem(asset)
+    // setViewItemEventSent(asset.id)
+  }, [asset, pricesUsd, portfolioTimestamp, assetsDataTimestamp, isPortfolioLoaded, viewItemEventSent, setViewItemEventSent])
 
   const tabs = useMemo(() => {
     const tabs = [

@@ -226,6 +226,8 @@ export type Asset = {
   token: string
   decimals: number
   color?: string
+  protocol?: string
+  variant?: string
   status?: VaultStatus
   lastHarvest?: Harvest | null
   underlyingId?: AssetId

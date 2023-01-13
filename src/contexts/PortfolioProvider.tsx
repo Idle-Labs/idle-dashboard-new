@@ -59,6 +59,7 @@ type InitialState = {
   gaugesRewards: GaugesRewards
   isVaultsPositionsLoaded: boolean
   portfolioTimestamp: number | null
+  assetsDataTimestamp: number | null
   selectors: Record<string, Function>
   transactions: Record<string, Transaction[]>
   vaultsPositions: Record<string, VaultPosition>
@@ -102,6 +103,7 @@ const initialState: InitialState = {
   historicalPricesUsd: {},
   isPortfolioLoaded: false,
   portfolioTimestamp: null,
+  assetsDataTimestamp: null,
   isVaultsPositionsLoaded: false,
 }
 
@@ -114,6 +116,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
   switch (action.type){
     case 'RESET_STATE':
       return {...initialState}
+    case 'SET_STATE':
+      return {...state, ...action.payload}
     case 'SET_PROTOCOL_TOKEN':
       return {...state, protocolToken: action.payload}
     case 'SET_PORTFOLIO_TIMESTAMP':
@@ -179,7 +183,7 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
     case 'SET_APRS_BREAKDOWN':
       return {...state, aprsBreakdown: action.payload}  
     case 'SET_ASSETS_DATA':
-      return {...state, assetsData: action.payload}
+      return {...state, assetsData: action.payload, assetsDataTimestamp: Date.now()}
     case 'SET_ASSETS_DATA_IF_EMPTY':
       if (isEmpty(state.assetsData)) {
         return {...state, assetsData: action.payload}
@@ -1536,6 +1540,30 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // Save assets data first
       // dispatch({type: 'SET_ASSETS_DATA', payload: newAssetsData})
+
+      const newState: any = {
+        fees: newFees,
+        aprs: newAprs,
+        rewards: newRewards,
+        balances: newBalances,
+        maticNFTs,
+        baseAprs: newBaseAprs,
+        gaugesData,
+        aprRatios: newAprRatios,
+        pricesUsd: newPricesUsd,
+        stakingData,
+        allocations: newAllocations,
+        lastHarvests: newLastHarvests,
+        vaultsPrices: newVaultsPrices,
+        vaultsRewards: newVaultsRewards,
+        aprsBreakdown: newAprsBreakdown,
+        totalSupplies: newTotalSupplies,
+        additionalAprs: newAdditionalAprs,
+      }
+
+
+      dispatch({type: 'SET_STATE', payload: newState})
+      /*
       dispatch({type: 'SET_FEES', payload: newFees})
       dispatch({type: 'SET_APRS', payload: newAprs})
       dispatch({type: 'SET_REWARDS', payload: newRewards})
@@ -1553,6 +1581,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_APRS_BREAKDOWN', payload: newAprsBreakdown})
       dispatch({type: 'SET_TOTAL_SUPPLIES', payload: newTotalSupplies})
       dispatch({type: 'SET_ADDITIONAL_APRS', payload: newAdditionalAprs})
+      */
       dispatch({type: 'SET_PORTFOLIO_TIMESTAMP', payload: Date.now()})
     })()
 
@@ -2030,71 +2059,91 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // Always update assets data
       // dispatch({type: 'SET_ASSETS_DATA', payload: {...state.assetsData, ...assetsData}})
-
+      const newState: any = {}
       
-      dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
-      dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
+      // dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
+      // dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
+
+      newState.stakingData = stakingData
+      newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
 
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
         const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
-        dispatch({type: 'SET_FEES', payload })
+        newState.fees = payload
+        // dispatch({type: 'SET_FEES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprRatios : {...state.aprRatios, ...aprRatios}
-        dispatch({type: 'SET_APR_RATIOS', payload })
+        newState.aprRatios = payload
+        // dispatch({type: 'SET_APR_RATIOS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? baseAprs : {...state.baseAprs, ...baseAprs}
-        dispatch({type: 'SET_BASE_APRS', payload })
+        newState.baseAprs = payload
+        // dispatch({type: 'SET_BASE_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
         const payload = !enabledCalls.length || accountChanged ? allocations : {...state.allocations, ...allocations}
-        dispatch({type: 'SET_ALLOCATIONS', payload })
+        newState.allocations = payload
+        // dispatch({type: 'SET_ALLOCATIONS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprs : {...state.aprs, ...aprs}
-        dispatch({type: 'SET_APRS', payload })
+        newState.aprs = payload
+        // dispatch({type: 'SET_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? additionalAprs : {...state.additionalAprs, ...additionalAprs}
-        dispatch({type: 'SET_ADDITIONAL_APRS', payload })
+        newState.additionalAprs = payload
+        // dispatch({type: 'SET_ADDITIONAL_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprsBreakdown : {...state.aprsBreakdown, ...aprsBreakdown}
-        dispatch({type: 'SET_APRS_BREAKDOWN', payload })
+        newState.aprsBreakdown = payload
+        // dispatch({type: 'SET_APRS_BREAKDOWN', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         const payload = !enabledCalls.length || accountChanged ? rewards : {...state.rewards, ...rewards}
-        dispatch({type: 'SET_REWARDS', payload })
+        newState.rewards = payload
+        // dispatch({type: 'SET_REWARDS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         // console.log('SET_VAULTS_REWARDS', enabledCalls, state.vaultsRewards, vaultsRewards)
         const payload = !enabledCalls.length || accountChanged ? vaultsRewards : {...state.vaultsRewards, ...vaultsRewards}
-        dispatch({type: 'SET_VAULTS_REWARDS', payload })
+        newState.vaultsRewards = payload
+        // dispatch({type: 'SET_VAULTS_REWARDS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
         const payload = !enabledCalls.length || accountChanged ? balances : {...state.balances, ...balances}
-        dispatch({type: 'SET_BALANCES', payload })
+        newState.balances = payload
+        // dispatch({type: 'SET_BALANCES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs })
+        newState.maticNFTs = maticNFTs
+        // dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
         const payload = !enabledCalls.length || accountChanged ? gaugesData : {...state.gaugesData, ...gaugesData}
-        dispatch({type: 'SET_GAUGES_DATA', payload })
+        newState.gaugesData = payload
+        // dispatch({type: 'SET_GAUGES_DATA', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
         const payload = !enabledCalls.length || accountChanged ? pricesUsd : {...state.pricesUsd, ...pricesUsd}
-        dispatch({type: 'SET_PRICES_USD', payload })
+        newState.pricesUsd = payload
+        // dispatch({type: 'SET_PRICES_USD', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('prices')) {
         const payload = !enabledCalls.length || accountChanged ? vaultsPrices : {...state.vaultsPrices, ...vaultsPrices}
-        dispatch({type: 'SET_VAULTS_PRICES', payload })
+        newState.vaultsPrices = payload
+        // dispatch({type: 'SET_VAULTS_PRICES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('totalSupplies')) {
         const payload = !enabledCalls.length || accountChanged ? totalSupplies : {...state.totalSupplies, ...totalSupplies}
-        dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
+        newState.totalSupplies = payload
+        // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
       }
+
+      dispatch({type: 'SET_STATE', payload: newState})
 
       // Don't update if partial loading
       if (!state.isPortfolioLoaded || accountChanged) {
@@ -2308,6 +2357,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
 
+      // Add protocol
+      if ("protocol" in vault){
+        assetsData[vault.id].protocol = vault.protocol
+      }
+
+      // Add variant
+      if ("variant" in vault){
+        assetsData[vault.id].variant = vault.variant
+      }
+
       // Update Underlying price Usd
       if (vault.underlyingToken?.address){
         assetsData[vault.underlyingToken.address.toLowerCase()].priceUsd = assetsData[vault.id].priceUsd
@@ -2402,7 +2461,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    // console.log('Generate assets data', assetsData)
+    console.log('Generate assets data', assetsData)
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
     state.vaults,

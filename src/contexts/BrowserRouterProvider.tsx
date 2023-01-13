@@ -1,7 +1,7 @@
 import { Location } from 'history'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
-import { sendGoogleAnalyticsPageview } from 'helpers/'
+import { sendPageview } from 'helpers/analytics'
 import { useLocation, useRoutes, useSearchParams } from 'react-router-dom'
 import React, { useMemo, createContext, useContext, useEffect } from 'react'
 
@@ -49,7 +49,7 @@ export function BrowserRouterProvider() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    sendGoogleAnalyticsPageview()
+    sendPageview()
   }, [location])
 
   return (

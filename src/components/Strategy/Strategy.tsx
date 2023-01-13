@@ -3,18 +3,20 @@ import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
-import { sortNumeric, sortAlpha } from 'helpers/'
+import { protocols } from 'constants/protocols'
 import { Amount } from 'components/Amount/Amount'
-import React, { useMemo, useCallback } from 'react'
 import { Asset, VaultPosition } from 'constants/types'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
 import { Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -40,21 +42,29 @@ export const Strategy: React.FC = () => {
 
   const navigate = useNavigate()
   const translate = useTranslate()
+  const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
   const { location, params } = useBrowserRouter()
+  const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
+  const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
 
-  const { isPortfolioLoaded, selectors: {
-    selectVaultsByType,
-    selectVaultsWithBalance,
-    selectVaultsAssetsByType,
-    selectVaultsAssetsWithBalance
-  } } = usePortfolioProvider()
+  const {
+    isPortfolioLoaded,
+    selectors: {
+      selectVaultsByType,
+      selectVaultsWithBalance,
+      selectVaultsAssetsByType,
+      selectVaultsAssetsWithBalance
+    }
+  } = usePortfolioProvider()
 
   const strategy = useMemo(() => (
     Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
   ), [params])
 
-  const onRowClick = useCallback((row: RowProps) => {
+  const onRowClick = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
+    // console.log('row', row, item_list_id, item_list_name)
+    sendSelectItem(item_list_id, item_list_name, row.original)
     return navigate(`${location?.pathname.replace(/\/$/, '')}/${row.original.id}`)
   }, [navigate, location])
 
@@ -189,10 +199,57 @@ export const Strategy: React.FC = () => {
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
 
   const availableAssetsData = useMemo(() => {
-    if (!selectVaultsByType || !isPortfolioLoaded) return []
+    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
     return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
-  }, [isPortfolioLoaded, selectVaultsByType, selectVaultsAssetsByType, depositedAssetsData, strategy])
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
+
+  const strategyAssets = useMemo(() => {
+    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
+    return selectVaultsAssetsByType(strategy)
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, strategy])
+
+  const depositedListId = useMemo(() => {
+    if (!strategy) return ''
+    return `${strategy}_deposited`
+  }, [strategy])
+
+  const depositedListName = useMemo(() => {
+    if (!strategy) return ''
+    const strategyName = translate(strategies[strategy].label)
+    return `${strategyName} - ${translate('defi.deposited')}`
+  }, [strategy, translate])
+
+  const availableListId = useMemo(() => {
+    if (!strategy) return ''
+    return `${strategy}_available`
+  }, [strategy])
+
+  const availableListName = useMemo(() => {
+    if (!strategy) return ''
+    const strategyName = translate(strategies[strategy].label)
+    return `${strategyName} - ${translate('common.available')}`
+  }, [strategy, translate])
+
+  // Send Deposited list
+  useEffect(() => {
+    if (!strategy || depositedListEventSent === strategy || !depositedAssetsData.length) return
+    const items = depositedAssetsData.map( (asset: Asset) => getAssetListItem(asset, depositedListId, depositedListName))
+    
+    // Send gtag.js event and set state
+    sendViewItemList(depositedListId, depositedListName, items)
+    setDepositedListEventSent(strategy)
+  }, [account, strategy, translate, depositedListId, depositedListName, depositedAssetsData, depositedListEventSent, setDepositedListEventSent])
+
+  useEffect(() => {
+    if (!strategy || availableListEventSent === strategy || !availableAssetsData.length) return
+
+    const items = availableAssetsData.map( (asset: Asset) => getAssetListItem(asset, availableListId, availableListName))
+
+    // Send gtag.js event and set state
+    sendViewItemList(availableListId, availableListName, items)
+    setAvailableListEventSent(strategy)
+  }, [account, translate, availableListId, availableListName, availableListEventSent, setAvailableListEventSent, strategy, availableAssetsData])
 
   const depositedAssets = useMemo(() => {
     if (!depositedAssetsData.length) return null
@@ -227,10 +284,10 @@ export const Strategy: React.FC = () => {
     ) : (
       <Card mt={10}>
         <Translation translation={'defi.depositedAssets'} component={Card.Heading} />
-        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={onRowClick} />
+        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={ (row) => onRowClick(row, depositedListId, depositedListName) } />
       </Card>
     )
-  }, [isMobile, depositedAssetsColumns, depositedAssetsData, onRowClick])
+  }, [isMobile, depositedAssetsColumns, depositedListId, depositedListName, depositedAssetsData, onRowClick])
 
   const availableAssets = useMemo(() => {
     if (isPortfolioLoaded && !availableAssetsData.length) return null
@@ -273,12 +330,12 @@ export const Strategy: React.FC = () => {
               <Skeleton />
             </Stack>
           ) : (
-            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={onRowClick} />
+            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={ (row) => onRowClick(row, availableListId, availableListName) } />
           )
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableAssetsData, onRowClick])
+  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClick])
 
   const heading = useMemo(() => {
     if (!strategy) return null
