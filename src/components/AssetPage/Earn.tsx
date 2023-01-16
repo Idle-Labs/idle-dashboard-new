@@ -30,7 +30,15 @@ export const Earn: React.FC = () => {
   const { isMobile } = useThemeProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
-  const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectAssetById, selectVaultById, selectAssetBalanceUsd } } = usePortfolioProvider()
+  const {
+      isPortfolioLoaded,
+      isVaultsPositionsLoaded,
+      selectors: {
+        selectAssetById,
+        selectVaultById,
+        selectAssetBalanceUsd
+      }
+    } = usePortfolioProvider()
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )

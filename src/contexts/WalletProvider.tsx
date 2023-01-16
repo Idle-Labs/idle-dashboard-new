@@ -1,6 +1,6 @@
-import { checkAddress } from 'helpers/'
 import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
+import { checkAddress, sendLogin } from 'helpers/'
 import { selectUnderlyingToken } from 'selectors/'
 import { useSearchParams } from 'react-router-dom'
 import type { ProviderProps } from './common/types'
@@ -90,7 +90,6 @@ export function WalletProvider({ children }: ProviderProps) {
       if (!wallet && walletProvider){
         await connect({autoSelect: { label: walletProvider, disableModals: true }})
       }
-      setWalletInitialized(true)
     })()
   // eslint-disable-next-line
   }, [walletProvider, isWalletProviderLoaded])
@@ -122,22 +121,20 @@ export function WalletProvider({ children }: ProviderProps) {
           ETH: "0"
         }
       })
+      sendLogin('Custom wallet')
     } else if (wallet) {
       if (connecting) return
       setWalletProvider(wallet.label)
       setAccount(wallet.accounts[0])
-      // console.log('setAccount', wallet.accounts[0])
-
-      // Set custom wallet
-      // setAccount({
-      //   address: "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814",
-      //   ens: null,
-      //   balance: {
-      //     ETH: "0.838159899709204532"
-      //   }
-      // })
+      sendLogin(wallet.label)
     }
   }, [wallet, customAddress, connecting, setWalletProvider])
+
+  useEffect(() => {
+    if (connecting || !isWalletProviderLoaded) return
+    const walletInitialized = !!(!walletProvider || account?.address)
+    setWalletInitialized(walletInitialized)
+  }, [account, connecting, walletProvider, isWalletProviderLoaded])
 
   const disconnectWallet = async () => {
     if (wallet) {

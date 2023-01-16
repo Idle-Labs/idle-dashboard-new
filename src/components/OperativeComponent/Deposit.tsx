@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
+import { sendBeginCheckout } from 'helpers/analytics'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
@@ -31,6 +32,20 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return selectAssetBalance(underlyingAsset?.id)
   }, [selectAssetBalance, underlyingAsset?.id])
 
+  // Update amount USD and disabled
+  useEffect(() => {
+    if (!selectAssetPriceUsd || !underlyingAsset) return
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
+    setAmountUsd(amountUsd)
+  }, [underlyingAsset, amount, selectAssetPriceUsd, dispatch])
+
+  // Reset amount on transaction succeeded
+  useEffect(() => {
+    if (!executeAction && activeStep === itemIndex && transaction.status === 'success'){
+      setAmount('')
+    }
+  }, [executeAction, transaction.status, activeStep, itemIndex])
 
   const disabled = useMemo(() => {
     setError('')
@@ -76,28 +91,17 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         // console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
 
+        // Send analytics event
+        sendBeginCheckout(asset, amountUsd)
+
+        // Send transaction
         sendTransaction(vault.id, underlyingAsset?.id, depositContractSendMethod)
       } else {
         // Go to approve section
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
-
-  // Update amount USD and disabled
-  useEffect(() => {
-    if (!selectAssetPriceUsd || !underlyingAsset) return
-    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
-    const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
-    setAmountUsd(amountUsd)
-  }, [underlyingAsset, amount, selectAssetPriceUsd, dispatch])
-
-  // Reset amount on transaction succeeded
-  useEffect(() => {
-    if (!executeAction && activeStep === itemIndex && transaction.status === 'success'){
-      setAmount('')
-    }
-  }, [executeAction, transaction.status, activeStep, itemIndex])
+  }, [account, disabled, amount, amountUsd, vault, asset, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {

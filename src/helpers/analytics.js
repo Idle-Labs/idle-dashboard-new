@@ -3,72 +3,119 @@ import { protocols } from 'constants/protocols'
 
 export function sendPageview(path = null) {
   const page_path = path || window.location.hash.substr(1)
-  if (window.gtag) {
-    // console.log('sendGoogleAnalyticsPageview', {
-    //   page_title: window.document.title,
-    //   page_location: window.location.href,
-    //   page_path
-    // })
-    window.gtag('event', 'page_view', {
-      page_title: window.document.title,
-      page_location: window.location.href,
-      page_path
-    })
-  }
+  console.log("Send event: page_view", {
+    page_title: window.document.title,
+    page_location: window.location.href,
+    page_path
+  })
+  // window.gtag('event', 'page_view', {
+  //   page_title: window.document.title,
+  //   page_location: window.location.href,
+  //   page_path
+  // })
 }
 
 export function sendViewItemList(item_list_id, item_list_name, items){
-  window.gtag("event", "view_item_list", {
-    item_list_id,
-    item_list_name,
-    items
-  });
-  /*
-  console.log("view_item_list", {
+  // window.gtag("event", "view_item_list", {
+  //   item_list_id,
+  //   item_list_name,
+  //   items
+  // });
+  console.log("Send event: view_item_list", {
     item_list_id,
     item_list_name,
     items
   })
-  */
 }
 
 export function sendSelectItem(item_list_id, item_list_name, asset){
-  window.gtag("event", "select_item", {
-    item_list_id,
-    item_list_name,
-    items:[getAssetListItem(asset, item_list_id, item_list_name)]
-  });
-  /*
-  console.log("select_item", {
+  // window.gtag("event", "select_item", {
+  //   item_list_id,
+  //   item_list_name,
+  //   items:[getAssetListItem(asset, item_list_id, item_list_name)]
+  // });
+  console.log("Send event: select_item", {
     item_list_id,
     item_list_name,
     items:[getAssetListItem(asset, item_list_id, item_list_name)]
   })
-  */
 }
 
-export function sendViewItem(asset){
+export function sendViewItem(asset, value){
   // window.gtag("event", "view_item", {
-  //   currency:"USD",
-  //   value:asset.vaultPrice.toFixed()
+  //   currency: "USD",
+  //   value: bnOrZero(value).toFixed(2),
   //   items:[getAssetListItem(asset)]
   // });
-  console.log("view_item", {
-    currency:"USD",
-    value:bnOrZero(asset.vaultPrice).times(bnOrZero(asset.priceUsd)).toFixed(2),
+  console.log("Send event: view_item", {
+    currency: "USD",
+    value: bnOrZero(value).toFixed(2),
     items:[getAssetListItem(asset)]
   })
 }
 
+export function sendBeginCheckout(asset, value){
+  const itemProps = getAssetListItem(asset)
+  const quantity = bnOrZero(value).div(itemProps.price)
+
+  // window.gtag("event", "begin_checkout", {
+  //   currency:"USD",
+  //   value: bnOrZero(value).toFixed(2),
+  //   items:[{...itemProps, quantity: quantity.toFixed(2)}]
+  // });
+  console.log("Send event: begin_checkout", {
+    currency:"USD",
+    value: bnOrZero(value).toFixed(2),
+    items:[{...itemProps, quantity: quantity.toFixed(2)}]
+  })
+}
+
+export function sendPurchase(asset, value, tx){
+  const itemProps = getAssetListItem(asset)
+  const quantity = bnOrZero(value).div(itemProps.price)
+
+  // window.gtag("event", "purchase", {
+  //   currency:"USD",
+  //   transaction_id: txHash,
+  //   value: bnOrZero(value).toFixed(2),
+  //   items:[{...itemProps, quantity: quantity.toFixed(2)}]
+  // });
+  console.log("Send event: purchase", {
+    currency:"USD",
+    transaction_id: tx.hash,
+    value: bnOrZero(value).toFixed(2),
+    items:[{...itemProps, quantity: quantity.toFixed(2)}]
+  })
+}
+
+export function sendLogin(method){
+  // window.gtag("event", "login", {
+  //   method
+  // });
+  console.log('Send event: login', method)
+}
+
 export function getAssetListItem(asset, item_list_id = '', item_list_name = ''){
-  return {
+  const default_brand = 'Idle'
+  const price = bnOrZero(asset.vaultPrice).times(bnOrZero(asset.priceUsd)).toFixed(2)
+
+  const item = {
+    price,
     item_id: asset.id,
     item_name: asset.name, // Token name
-    item_brand: asset.protocol ? protocols[asset.protocol]?.label : '', // Protocol
+    item_brand: asset.protocol ? protocols[asset.protocol]?.label || default_brand : default_brand, // Protocol
     item_category: asset.type, // Vault type
     item_category2: asset.status, // Status
     item_category3: asset.variant, // Vault variant
-    item_list_name,
-    item_list_id
   }
+
+  // Add list info
+  if (item_list_id.length){
+    item.item_list_id = item_list_id
+  }
+  if (item_list_name.length){
+    item.item_list_name = item_list_name
+  }
+
+  return item
 }

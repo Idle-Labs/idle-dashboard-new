@@ -12,7 +12,7 @@ import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl } from 'helpers/'
+import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendPurchase } from 'helpers/'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
@@ -38,9 +38,10 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const [ progressMaxValue, setProgressMaxValue ] = useState<number>(1)
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
+  const [ purchaseEventSent, setPurchaseEventSent ] = useState<string | undefined | null>(null)
   const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
-  const { selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
+  const { selectors: { selectAssetById, selectAssetPriceUsd, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
 
@@ -51,6 +52,24 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const vaultGauge = useMemo(() => {
     return asset?.id && selectVaultGauge && selectVaultGauge(asset.id)
   }, [selectVaultGauge, asset?.id])
+
+  const txActionType = useMemo(() => {
+    return transactionState.actionType || actionType
+  }, [actionType, transactionState.actionType])
+
+  const transactionAmount = useMemo(() => {
+    return transactionState.amount ? bnOrZero(transactionState.amount) : bnOrZero(amount)
+  }, [amount, transactionState.amount])
+
+  const transactionAmountUsd = useMemo(() => {
+    if (!underlyingAsset || !selectAssetPriceUsd) return BNify(0)
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    return bnOrZero(transactionAmount).times(assetPriceUsd)
+  }, [underlyingAsset, transactionAmount, selectAssetPriceUsd])
+
+  const amountToDisplay = useMemo(() => {
+    return transactionState.amount ? (BNify(transactionState.amount).isNaN() ? transactionState.amount : abbreviateNumber(bnOrZero(transactionState.amount), 8)) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(bnOrZero(amount), 8))
+  }, [amount, translate, transactionState.amount])
 
   const startCountDown = useCallback((targetTimestamp: number) => {
     // console.log('TransactionStatus - startCountDown', targetTimestamp, transactionState.status, transactionState)
@@ -78,8 +97,15 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     setRemainingTime(0)
     countTimeoutId.current = null
     setProgressValue(progressMaxValue)
+
+    // Send purchase event for deposit and stake
+    if (['deposit', 'stake'].includes(txActionType) && transactionState.status === 'success' && purchaseEventSent !== transactionState.transaction?.hash){
+      sendPurchase(asset, transactionAmountUsd, transactionState.transaction)
+      setPurchaseEventSent(transactionState.transaction?.hash)
+    }
+
   // eslint-disable-next-line
-  }, [transactionState?.status, setProgressValue, progressMaxValue])
+  }, [asset, transactionState?.status, purchaseEventSent, transactionAmountUsd, setProgressValue, progressMaxValue])
 
   // Set progress max value
   useEffect(() => {
@@ -121,14 +147,6 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       resetAndGoBack(false)
     }
   }, [transactionState?.status, activeItem, resetAndGoBack])
-
-  const txActionType = useMemo(() => {
-    return transactionState.actionType || actionType
-  }, [actionType, transactionState.actionType])
-
-  const amountToDisplay = useMemo(() => {
-    return transactionState.amount ? (BNify(transactionState.amount).isNaN() ? transactionState.amount : abbreviateNumber(bnOrZero(transactionState.amount), 8)) : (amount === MAX_ALLOWANCE ? translate('trade.unlimited') : abbreviateNumber(bnOrZero(amount), 8))
-  }, [amount, translate, transactionState.amount])
 
   // console.log('amountToDisplay', amountToDisplay)
 

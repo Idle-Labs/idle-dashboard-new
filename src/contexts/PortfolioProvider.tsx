@@ -57,6 +57,7 @@ type InitialState = {
   protocolToken: Asset | null
   contracts: GenericContract[]
   gaugesRewards: GaugesRewards
+  isPortfolioAccountReady: boolean
   isVaultsPositionsLoaded: boolean
   portfolioTimestamp: number | null
   assetsDataTimestamp: number | null
@@ -104,7 +105,8 @@ const initialState: InitialState = {
   isPortfolioLoaded: false,
   portfolioTimestamp: null,
   assetsDataTimestamp: null,
-  isVaultsPositionsLoaded: false,
+  isPortfolioAccountReady: false,
+  isVaultsPositionsLoaded: false
 }
 
 const initialContextState = initialState
@@ -112,6 +114,7 @@ const initialContextState = initialState
 const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
   // console.log(action.type, action.payload)
+  const currTime = Date.now()
 
   switch (action.type){
     case 'RESET_STATE':
@@ -123,7 +126,9 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
     case 'SET_PORTFOLIO_TIMESTAMP':
       return {...state, portfolioTimestamp: action.payload}
     case 'SET_PORTFOLIO_LOADED':
-      return {...state, isPortfolioLoaded: action.payload, portfolioTimestamp: Date.now()}
+      return {...state, isPortfolioLoaded: action.payload, portfolioTimestamp: currTime}
+    case 'SET_PORTFOLIO_ACCOUNT_READY':
+      return {...state, isPortfolioAccountReady: action.payload}
     case 'SET_VAULTS_POSITIONS_LOADED':
       return {...state, isVaultsPositionsLoaded: action.payload}
     case 'SET_SELECTORS':
@@ -183,7 +188,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
     case 'SET_APRS_BREAKDOWN':
       return {...state, aprsBreakdown: action.payload}  
     case 'SET_ASSETS_DATA':
-      return {...state, assetsData: action.payload, assetsDataTimestamp: Date.now()}
+      // console.log('Generate assets data', state.pricesUsd, action.payload['0xc8e6ca6e96a326dc448307a5fde90a0b21fd7f80'].priceUsd.toString(), currTime)
+      return {...state, assetsData: action.payload, assetsDataTimestamp: currTime}
     case 'SET_ASSETS_DATA_IF_EMPTY':
       if (isEmpty(state.assetsData)) {
         return {...state, assetsData: action.payload}
@@ -1542,16 +1548,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_ASSETS_DATA', payload: newAssetsData})
 
       const newState: any = {
+        maticNFTs,
+        gaugesData,
+        stakingData,
         fees: newFees,
         aprs: newAprs,
         rewards: newRewards,
         balances: newBalances,
-        maticNFTs,
         baseAprs: newBaseAprs,
-        gaugesData,
         aprRatios: newAprRatios,
         pricesUsd: newPricesUsd,
-        stakingData,
         allocations: newAllocations,
         lastHarvests: newLastHarvests,
         vaultsPrices: newVaultsPrices,
@@ -2211,6 +2217,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
     };
   // eslint-disable-next-line
   }, [account, state.isPortfolioLoaded, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
+
+  // Set isPortfolioAccountReady
+  useEffect(() => {
+    if (!walletInitialized || connecting || !state.isPortfolioLoaded) return
+    const isPortfolioAccountReady = state.isPortfolioLoaded && (!account?.address || state.isVaultsPositionsLoaded)
+    // console.log('isPortfolioAccountReady', walletInitialized, connecting, account, state.isPortfolioLoaded, state.isVaultsPositionsLoaded, isPortfolioAccountReady)
+    dispatch({type: 'SET_PORTFOLIO_ACCOUNT_READY', payload: isPortfolioAccountReady})
+
+    return () => {
+      dispatch({type: 'SET_PORTFOLIO_ACCOUNT_READY', payload: false})
+    }
+  }, [account, state.isPortfolioLoaded, state.isVaultsPositionsLoaded, walletInitialized, connecting])
   
   // Update balances USD
   useEffect(() => {
@@ -2460,8 +2478,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }
     }
-
-    console.log('Generate assets data', assetsData)
+    
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
     state.vaults,

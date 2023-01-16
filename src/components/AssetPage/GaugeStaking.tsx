@@ -1,8 +1,8 @@
 import { strategies } from 'constants/'
-import { BNify, isEmpty } from 'helpers/'
 import { Card } from 'components/Card/Card'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
+import { bnOrZero, BNify, isEmpty } from 'helpers/'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
@@ -14,7 +14,18 @@ import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarou
 
 export const GaugeStaking: React.FC = () => {
   const { params } = useBrowserRouter()
-  const { selectors: { selectAssetById, selectVaultGauge } } = usePortfolioProvider()
+  // const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
+  const {
+    portfolioTimestamp,
+    assetsDataTimestamp,
+    isPortfolioAccountReady,
+    selectors: {
+      selectAssetById,
+      selectVaultGauge,
+      selectAssetBalance,
+      selectAssetPriceUsd
+    }
+  } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     const asset = selectAssetById && selectAssetById(params.asset)
@@ -53,8 +64,22 @@ export const GaugeStaking: React.FC = () => {
     return assetGauge?.vaultPosition && BNify(assetGauge?.vaultPosition?.underlying.redeemable).div(assetGauge.totalSupply)
   }, [assetGauge])
 
+  const assetBalanceUsd = useMemo(() => {
+    if (!assetGauge || !assetGauge?.underlyingId || !selectAssetBalance || !selectAssetPriceUsd) return BNify(0)
+    const assetBalance = selectAssetBalance(assetGauge.underlyingId)
+    const assetPriceUsd = selectAssetPriceUsd(assetGauge.underlyingId)
+    return bnOrZero(assetBalance).times(bnOrZero(assetPriceUsd))
+  }, [assetGauge, selectAssetBalance, selectAssetPriceUsd])
+
+  // Send viewItem event
+  // useEffect(() => {
+  //   if (!isPortfolioAccountReady || !assetGauge || viewItemEventSent === assetGauge?.id || !portfolioTimestamp || !assetsDataTimestamp || portfolioTimestamp>assetsDataTimestamp || assetsDataTimestamp>latestAssetUpdate) return
+  //   sendViewItem(assetGauge, assetBalanceUsd)
+  //   setViewItemEventSent(assetGauge.id)
+  // }, [assetGauge, portfolioTimestamp, assetBalanceUsd, assetsDataTimestamp, isPortfolioAccountReady, latestAssetUpdate, viewItemEventSent, setViewItemEventSent])
+
   // console.log('vaultGauge', vaultGauge)
-  // console.log('assetGauge', assetGauge)
+  console.log('assetGauge', assetGauge, assetBalanceUsd.toString())
 
   return (
     <VStack
