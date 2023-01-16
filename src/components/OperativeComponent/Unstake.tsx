@@ -119,7 +119,7 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           alignItems={'flex-start'}
         >
           {
-            false && !stakingData?.position?.lockEnd ? (
+            !stakingData?.position?.lockEnd ? (
               <Center
                 px={6}
                 flex={1}
@@ -133,7 +133,7 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   <Translation component={Button} translation={`common.stake`} onClick={() => setActionIndex(0)} variant={'ctaPrimary'} px={10} />
                 </VStack>
               </Center>
-            ) : false && !lockExpired ? (
+            ) : !lockExpired ? (
               <VStack
                 py={20}
                 flex={1}
