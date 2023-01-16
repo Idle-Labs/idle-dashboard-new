@@ -22,7 +22,6 @@ export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const [ asset, setAsset ] = useState<Asset | undefined>()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
@@ -47,14 +46,15 @@ export const AssetPage: React.FC = () => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
   }, [params])
 
+  const asset = useMemo(() => {
+    return selectAssetById && selectAssetById(params.asset)
+  }, [selectAssetById, params.asset])
+
   // Update asset
   useEffect(() => {
-    const asset = selectAssetById && selectAssetById(params.asset)
-    if (asset){
-      setAsset(asset) 
-      setLatestAssetUpdate(Date.now())
-    }
-  }, [selectAssetById, params.asset])
+    if (!asset) return
+    setLatestAssetUpdate(Date.now())
+  }, [asset])
 
   const assetBalanceUsd = useMemo(() => {
     if (!asset || !selectAssetBalance || !asset?.underlyingId || !selectAssetPriceUsd) return BNify(0)

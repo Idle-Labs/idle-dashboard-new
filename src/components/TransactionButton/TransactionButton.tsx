@@ -50,6 +50,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
   }, [transaction])
 
   useEffect(() => {
+    if (!isRightTransaction) return
     if (transaction.status === 'success' || transaction.status === 'failed'){
       // console.log('Clear Interval', intervalId.current)
       if (intervalId.current){
@@ -65,7 +66,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
     } else if (transaction.status === 'pending' && !intervalId.current){
       startCountdown()
     }
-  }, [transaction.status, startCountdown, cleanTransaction, transaction.error?.code])
+  }, [isRightTransaction, transaction.status, startCountdown, cleanTransaction, transaction.error?.code])
   
   const textComponent = useMemo(() => {
     if (isRightTransaction){

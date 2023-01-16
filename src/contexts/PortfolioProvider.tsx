@@ -2386,8 +2386,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
 
       // Update Underlying price Usd
-      if (vault.underlyingToken?.address){
+      if (("underlyingToken" in vault) && vault.underlyingToken?.address){
         assetsData[vault.underlyingToken.address.toLowerCase()].priceUsd = assetsData[vault.id].priceUsd
+      }
+
+      // Update staking vault priceUsd
+      if (vault.type === 'STK' && ("rewardTokenConfig" in vault)){
+        const underlyingToken = assetsData[vault.rewardTokenConfig.address.toLowerCase()]
+        assetsData[vault.id].priceUsd = underlyingToken.priceUsd
       }
 
       assetsData[vault.id].aprBreakdown =  state.aprsBreakdown[vault.id] || {}

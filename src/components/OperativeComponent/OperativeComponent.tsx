@@ -143,10 +143,10 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   // Handle transaction reset from another component
   useEffect(() => {
     // console.log('goBackAndReset?', activeItem, transactionState?.status, !transactionState?.status)
-    if (!transactionState?.status && activeItem){
+    if (!transactionState?.status && activeItem && !activeStep){
       resetAndGoBack(false)
     }
-  }, [transactionState?.status, activeItem, resetAndGoBack])
+  }, [transactionState?.status, activeItem, activeStep, resetAndGoBack])
 
   // console.log('amountToDisplay', amountToDisplay)
 
@@ -524,8 +524,8 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   }
 
   const activeAction = useMemo(() => actions[actionIndex], [actions, actionIndex])
-  const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep-1], [activeAction, state.activeStep])
   const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actions, actionIndex])
+  const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep-1], [activeAction, state.activeStep])
 
   useEffect(() => {
     setActiveItem(state.activeStep)
@@ -649,6 +649,8 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     }
     return setActiveItem(state.activeStep)
   }, [dispatch, setActiveItem, state.activeStep])
+  
+  // console.log('activeItem', activeItem)
 
   return (
     <AssetProvider

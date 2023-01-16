@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { ManipulateType } from 'dayjs'
 import { Card } from 'components/Card/Card'
 import { MdLockOpen } from 'react-icons/md'
+import { sendBeginCheckout } from 'helpers/analytics'
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { InputDate } from 'components/InputDate/InputDate'
@@ -31,14 +32,23 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { web3 } = useWeb3Provider()
   const { account } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
-  const { stakingData, selectors: { selectAssetBalance } } = usePortfolioProvider()
   const { sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
+  const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(underlyingAsset?.id)
   }, [selectAssetBalance, underlyingAsset?.id])
+
+  // Update amount USD and disabled
+  const amountUsd = useMemo(() => {
+    if (!selectAssetPriceUsd || !underlyingAsset) return
+    const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
+    return bnOrZero(amount).times(assetPriceUsd)
+  }, [underlyingAsset, amount, selectAssetPriceUsd])
+
+  // console.log('asset', asset, 'underlyingAsset', underlyingAsset)
 
   const increaseOptions: {action: string, label: string, type: string}[] = useMemo(() => [
     {
@@ -211,9 +221,11 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             }
           }
 
+          // Send analytics event
+          sendBeginCheckout(asset, amountUsd)
+
           // console.log('newLockEndTime', newLockEndTime, toDayjs(newLockEndTime*1000).format('YYYY-MM-DD HH:mm:ss'))
           const depositParams = vault.getDepositParams(amount, newLockEndTime)
-
           // console.log('depositParams', depositParams)
 
           const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
@@ -258,7 +270,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       }
 
     })()
-  }, [account, increaseEnabled, selectedAction, selectedIncreaseType, disabled, amount, quickOptions, web3, lockEndDate, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+  }, [account, asset, increaseEnabled, selectedAction, selectedIncreaseType, disabled, amount, amountUsd, quickOptions, web3, lockEndDate, lockEndTime, vault, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Reset amount on transaction succeeded
   useEffect(() => {
