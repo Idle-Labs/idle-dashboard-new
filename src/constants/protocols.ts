@@ -107,6 +107,18 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["308", "31%", "45%"]
     }
   },
+  morpho: {
+    icon:`${protocolsFolder}morpho.svg`,
+    label: "Morpho",
+    stats: {
+      showLegend: false,
+    },
+    enabled: true,
+    colors: {
+      rgb: [30, 61, 137],
+      hsl: ["223", "64%", "33%"]
+    }
+  },
   cream: {
     icon:`${protocolsFolder}cream.svg`,
     stats: {

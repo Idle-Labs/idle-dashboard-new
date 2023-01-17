@@ -169,7 +169,11 @@ export const Strategy: React.FC = () => {
                       direction={'row'}
                       alignItems={'center'}
                     >
-                      <StatArrow type={'increase'} />
+                      {
+                        !value.realizedApy.isNaN() && (
+                          <StatArrow type={'increase'} />
+                        )
+                      }
                       <Amount.Percentage value={value.realizedApy} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>

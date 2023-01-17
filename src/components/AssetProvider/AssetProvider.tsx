@@ -922,7 +922,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon size={'xs'} />
+          <ProtocolIcon size={props.size || 'xs'} />
           <ProtocolName textStyle={'tableCell'} {...props} />
         </HStack>
       )

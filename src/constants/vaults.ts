@@ -1240,84 +1240,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
     },
-    clearpool:{
-      USDC:{
-        enabledEnvs:[],
-        blockNumber:15044679,
-        protocol:'clearpool',
-        autoFarming:['CPOOL'],
-        adaptiveYieldSplitEnabled:true,
-        underlyingToken:'USDC',
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_clearpool_USDC',
-          address:'0xDBCEE5AE2E9DAf0F5d93473e08780C9f45DfEb93'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_clearpool_USDC',
-          address:'0x54ae90be2dee0a960953c724839541e75bb1f471'
-        },
-        description:'This strategy deploys funds in the <a href="https://app.clearpool.finance/pool/0xCb288b6d30738db7E3998159d192615769794B5b" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wintermute USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              unstake:'exit',
-              rewards:'earned',
-              claim:'getReward',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              rewardsRate:'rewardRate',
-              stakedBalance:'balanceOf'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:false,
-              abi:TrancheStakingRewards as Abi,
-              name:'TrancheStakingRewards_clearpool_USDC_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15044679,
-            name:'AA_clearpool_USDC',
-            token:'AA_clearpool_USDC',
-            label:'clearpool USDC AA',
-            address:'0xb86264c21418aA75F7c337B1821CcB4Ff4d57673'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_clearpool_USDC_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15044679,
-            name:'BB_clearpool_USDC',
-            token:'BB_clearpool_USDC',
-            label:'clearpool USDC BB',
-            address:'0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d'
-          }
-        }
-      }
-    },
     ribbon:{
       USDCFolk:{
         status:'experimental',
@@ -1579,7 +1501,87 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-  }
+    morpho:{
+      USDC:{
+        variant:'Aave',
+        autoFarming:[],
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16420584,
+        status:'experimental',
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_USDC',
+          address:'0x9C13Ff045C0a994AF765585970A5818E1dB580F8'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_USDC',
+          address:'0x6c14a1a28dd6dae5734fd960bac0b89a6b401cfd'
+        },
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'AA_morpho_USDC',
+            token:'AA_morpho_USDC',
+            label:'morpho USDC AA',
+            address:'0x376B2dCF9eBd3067BB89eb6D1020FbE604092212'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'BB_morpho_USDC',
+            token:'BB_morpho_USDC',
+            label:'morpho USDC BB',
+            address:'0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0'
+          }
+        }
+      }
+    },
+  },
 };
 
 export type IdleToken = {

@@ -2,6 +2,7 @@ import { Location } from 'history'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
 import { sendPageview } from 'helpers/analytics'
+import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useLocation, useRoutes, useSearchParams } from 'react-router-dom'
 import React, { useMemo, createContext, useContext, useEffect } from 'react'
 
@@ -28,8 +29,9 @@ export const useBrowserRouter = () => useContext(BrowserRouterContext)
 export function BrowserRouterProvider() {
   const query = useQuery()
   const location = useLocation()
-  const renderedRoutes = useRoutes(routes)
   const searchParams = useSearchParams()
+  const renderedRoutes = useRoutes(routes)
+  const { cleanTransaction } = useTransactionManager()
   
   const match = useMemo(() => {
     return renderedRoutes?.props.match
@@ -50,7 +52,8 @@ export function BrowserRouterProvider() {
   useEffect(() => {
     window.scrollTo(0, 0)
     sendPageview()
-  }, [location])
+    cleanTransaction()
+  }, [location, cleanTransaction])
 
   return (
     <BrowserRouterContext.Provider value={router}>

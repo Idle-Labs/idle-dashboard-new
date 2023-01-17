@@ -480,6 +480,17 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: "0x875773784Af8135eA0ef43b5a374AaD105c5D39e"
     },
+    MORPHO: {
+      decimals: 18,
+      token: 'MORPHO',
+      enabled: true,
+      colors: {
+        hex: "#1e3d89",
+        rgb: [30, 61, 137],
+        hsl: ["223", "64%", "33%"]
+      },
+      address: "0x9994E35Db50125E0DF82e4c2dde62496CE330999"
+    },
     STKIDLE: {
       decimals: 18,
       token: 'stkIDLE',
