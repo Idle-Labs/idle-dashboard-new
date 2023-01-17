@@ -3,7 +3,6 @@ import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
-import { protocols } from 'constants/protocols'
 import { Amount } from 'components/Amount/Amount'
 import { Asset, VaultPosition } from 'constants/types'
 import { useThemeProvider } from 'contexts/ThemeProvider'
@@ -51,7 +50,6 @@ export const Strategy: React.FC = () => {
   const {
     isPortfolioLoaded,
     selectors: {
-      selectVaultsByType,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
       selectVaultsAssetsWithBalance
@@ -207,11 +205,6 @@ export const Strategy: React.FC = () => {
     const vaultsAssets = selectVaultsAssetsByType(strategy)
     return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
   }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
-
-  const strategyAssets = useMemo(() => {
-    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
-    return selectVaultsAssetsByType(strategy)
-  }, [isPortfolioLoaded, selectVaultsAssetsByType, strategy])
 
   const depositedListId = useMemo(() => {
     if (!strategy) return ''

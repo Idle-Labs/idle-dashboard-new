@@ -1,10 +1,9 @@
 import { Earn } from './Earn'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
-import { strategies, AssetId, Asset } from 'constants/'
+import { strategies, AssetId } from 'constants/'
 import { bnOrZero, BNify, sendViewItem } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Deposit } from 'components/OperativeComponent/Deposit'
 import { Approve } from 'components/OperativeComponent/Approve'
@@ -20,7 +19,6 @@ import { InteractiveComponent } from 'components/InteractiveComponent/Interactiv
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
-  const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
@@ -28,8 +26,6 @@ export const AssetPage: React.FC = () => {
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
   const {
-    assetsData,
-    pricesUsd,
     isPortfolioLoaded,
     portfolioTimestamp,
     assetsDataTimestamp,
