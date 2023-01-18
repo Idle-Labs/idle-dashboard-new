@@ -47,7 +47,6 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const assetPriceUsd = selectAssetPriceUsd(underlyingAsset.id)
     return bnOrZero(amount).times(assetPriceUsd)
   }, [underlyingAsset, amount, selectAssetPriceUsd])
-
   // console.log('asset', asset, 'underlyingAsset', underlyingAsset)
 
   const increaseOptions: {action: string, label: string, type: string}[] = useMemo(() => [

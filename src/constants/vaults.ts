@@ -2037,6 +2037,7 @@ export type GaugeConfig = {
   token: string
   address:string
   protocol:string
+  enabled: boolean
   rewardToken:string
   underlyingToken:string
   multiRewards?:MultiReward
@@ -2045,6 +2046,7 @@ export type GaugeConfig = {
 
 export const gauges: Record<string, GaugeConfig> = {
   stETH:{
+    enabled: true,
     protocol:'lido',
     rewardToken:'IDLE',
     underlyingToken:'stETH',
@@ -2065,6 +2067,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   ALUSD3CRV:{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2079,6 +2082,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   FRAX3CRV:{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2093,6 +2097,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   MIM3CRV:{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2107,6 +2112,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   "3EUR":{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2121,6 +2127,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   steCRV:{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2135,6 +2142,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   MUSD3CRV:{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2155,6 +2163,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   PBTCCRV:{
+    enabled: false,
     protocol:'convex',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2175,6 +2184,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   AGEUR:{
+    enabled: false,
     protocol:'euler',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2189,6 +2199,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   USDC:{
+    enabled: false,
     protocol:'euler',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2203,6 +2214,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   DAI:{
+    enabled: false,
     protocol:'euler',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,
@@ -2217,6 +2229,7 @@ export const gauges: Record<string, GaugeConfig> = {
     }
   },
   USDT:{
+    enabled: false,
     protocol:'euler',
     rewardToken:'IDLE',
     abi:LiquidityGauge as Abi,

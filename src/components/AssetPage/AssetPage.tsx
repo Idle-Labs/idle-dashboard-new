@@ -1,9 +1,10 @@
 import { Earn } from './Earn'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
-import { strategies, AssetId } from 'constants/'
+import { IconTab } from 'components/IconTab/IconTab'
 import { bnOrZero, BNify, sendViewItem } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { strategies, AssetId, imageFolder } from 'constants/'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Deposit } from 'components/OperativeComponent/Deposit'
 import { Approve } from 'components/OperativeComponent/Approve'
@@ -14,8 +15,21 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
-import { Box, Flex, Stack, HStack, Tabs, Tab, TabList } from '@chakra-ui/react'
+import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
+import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
+
+type TabType = {
+  id:string
+  label:string
+  icon?: null | {
+    src: string
+    props?: ImageProps,
+    tooltip?: string
+  }
+  component: React.FunctionComponent<any>
+  actions: OperativeComponentAction[]
+}
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
@@ -88,7 +102,7 @@ export const AssetPage: React.FC = () => {
   }, [asset, portfolioTimestamp, assetBalanceUsd, assetsDataTimestamp, isPortfolioAccountReady, latestAssetUpdate, viewItemEventSent, setViewItemEventSent])
 
   const tabs = useMemo(() => {
-    const tabs = [
+    const tabs: TabType[] = [
       {
         id:'earn',
         label:'navBar.earn',
@@ -116,11 +130,13 @@ export const AssetPage: React.FC = () => {
       },
     ]
     if (vaultGauge){
+      const vaultDisabled = ("enabled" in vaultGauge) && !vaultGauge.enabled
       tabs.push(
         {
           id:'gauge',
           label:'navBar.gauge',
           component: GaugeStaking,
+          icon: vaultDisabled ? {src:`${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props:{width:5, height:5}} : null,
           actions: [
             {
               type: 'stake',
@@ -187,14 +203,16 @@ export const AssetPage: React.FC = () => {
   const renderedTabs = useMemo(() => {
     return (
       <Tabs
-        index={selectedTabIndex}
         variant={'unstyled'}
+        index={selectedTabIndex}
         width={['100%', 'auto']}
       >
         <TabList>
           {
             tabs.map( (tab, index) => (
-              <Translation key={`tab_${index}`} component={Tab} width={[`${100/tabs.length}%`, 'auto']} translation={tab.label} onClick={() => selectTab(index)} />
+              <IconTab key={`tab_${index}`} width={[`${100/tabs.length}%`, 'auto']} icon={tab.icon} onClick={() => selectTab(index)}>
+                <Translation translation={tab.label} />
+              </IconTab>
             ))
           }
         </TabList>

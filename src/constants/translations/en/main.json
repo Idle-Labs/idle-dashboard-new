@@ -731,6 +731,12 @@
     "beforeFees": "Before Fees",
     "minAmountAfterSlippage": "Min. expected amount after slippage (%{slippage}%)",
     "depositGauge": "Stake your tokens in the Gauge to earn additional rewards",
+    "vaults": {
+      "GG": {
+        "disabled":"This gauge has been deactivated, unstake your tranche tokens",
+        "disabledCta":"Unstake"
+      }
+    },
     "actions": {
       "approve": {
         "confirm": "You are approving",

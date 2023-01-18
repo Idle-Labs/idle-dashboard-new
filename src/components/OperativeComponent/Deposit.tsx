@@ -1,14 +1,15 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
+import { imageFolder } from 'constants/folders'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
@@ -22,10 +23,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
-  const { dispatch, activeItem, activeStep, executeAction } = useOperativeComponent()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
+  const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -47,8 +48,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     }
   }, [executeAction, transaction.status, activeStep, itemIndex])
 
+  const vaultEnabled = useMemo(() => {
+    return vault && (!("enabled" in vault) || vault.enabled)
+  }, [vault])
+
   const disabled = useMemo(() => {
     setError('')
+    if (!vaultEnabled) return true
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
@@ -56,8 +62,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       return true
     }
     return false
-  }, [amount, assetBalance, underlyingAsset, translate])
+  }, [amount, vaultEnabled, assetBalance, underlyingAsset, translate])
 
+  // console.log('vaultEnabled', vault, vaultEnabled)
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
   const getDepositAllowance = useCallback(async (): Promise<BigNumber> => {
@@ -234,7 +241,23 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             </VStack>
           </HStack>
           {
-            vault && ("status" in vault) && vault.status && (
+            !vaultEnabled ? (
+              <Card.Dark
+                py={2}
+                pl={3}
+                pr={2}
+                border={0}
+              >
+                <HStack
+                  spacing={3}
+                  width={'full'}
+                >
+                  <Image src={`${imageFolder}vaults/deprecated.png`} width={6} height={6} />
+                  <Translation textStyle={'captionSmaller'} translation={`trade.vaults.${asset?.type}.disabled`} textAlign={'left'} />
+                  <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
+                </HStack>
+              </Card.Dark>
+            ) : vault && ("status" in vault) && vault.status && (
               <Card.Dark
                 p={2}
                 border={0}
