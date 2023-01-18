@@ -240,7 +240,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   width={'full'}
                 >
                   <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.unstakeFromGauge'} textAlign={'left'} />
-                  <Translation component={Button} translation={`defi.goToGauge`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setSearchParams(`?tab=gauge`) } />
+                  <Translation component={Button} translation={`common.unstake`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setSearchParams(`?tab=gauge`) } />
                 </HStack>
               </Card.Dark>
             )

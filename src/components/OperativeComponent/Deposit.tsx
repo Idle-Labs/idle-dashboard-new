@@ -175,6 +175,33 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, deposit])
 
+  const vaultMessage = useMemo(() => {
+    return !vaultEnabled && assetBalance.gt(0) ? (
+      <Card.Dark
+        py={2}
+        pl={3}
+        pr={2}
+        border={0}
+      >
+        <HStack
+          spacing={3}
+          width={'full'}
+        >
+          <Image src={`${imageFolder}vaults/deprecated.png`} width={6} height={6} />
+          <Translation textStyle={'captionSmaller'} translation={`trade.vaults.${asset?.type}.disabled`} textAlign={'left'} />
+          <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
+        </HStack>
+      </Card.Dark>
+    ) : vault && ("status" in vault) && vault.status && (
+      <Card.Dark
+        p={2}
+        border={0}
+      >
+        <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${vault?.status}`} textAlign={'center'} />
+      </Card.Dark>
+    )
+  }, [asset, vault, vaultEnabled, assetBalance, setActionIndex])
+
   return (
     <AssetProvider
       flex={1}
@@ -240,32 +267,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               }
             </VStack>
           </HStack>
-          {
-            !vaultEnabled ? (
-              <Card.Dark
-                py={2}
-                pl={3}
-                pr={2}
-                border={0}
-              >
-                <HStack
-                  spacing={3}
-                  width={'full'}
-                >
-                  <Image src={`${imageFolder}vaults/deprecated.png`} width={6} height={6} />
-                  <Translation textStyle={'captionSmaller'} translation={`trade.vaults.${asset?.type}.disabled`} textAlign={'left'} />
-                  <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
-                </HStack>
-              </Card.Dark>
-            ) : vault && ("status" in vault) && vault.status && (
-              <Card.Dark
-                p={2}
-                border={0}
-              >
-                <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${vault?.status}`} textAlign={'center'} />
-              </Card.Dark>
-            )
-          }
+          {vaultMessage}
           <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
         </VStack>
         <VStack

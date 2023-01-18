@@ -807,7 +807,7 @@
         "confirmed": "You have withdrawed",
         "messages": {
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",
-          "unstakeFromGauge": "To withdraw your funds remember to unstake your tranche tokens from the Gauge."
+          "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first."
         },
         "status": {
           "success": {
