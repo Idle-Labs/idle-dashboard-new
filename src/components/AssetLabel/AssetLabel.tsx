@@ -18,7 +18,7 @@ export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, size = 'sm', ..
         justifyContent={'flex-start'}
       >
         <AssetProvider.Icon size={size} />
-        <AssetProvider.Name textStyle={'heading'} fontSize={'h3'} whiteSpace={'nowrap'} {...textProps} />
+        <AssetProvider.Name textStyle={'heading'} fontSize={['15px','h3']} whiteSpace={'nowrap'} {...textProps} />
       </HStack>
     </AssetProvider>
   )

@@ -18,6 +18,7 @@ export const IconTab = React.forwardRef<HTMLDivElement, any>((props, ref) => {
       <HStack
         spacing={2}
         width={'full'}
+        justifyContent={'center'}
       >
         {tabProps.children}
         {

@@ -372,8 +372,8 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (increaseEnabled && selectedIncreaseType !== 'amount') return null
     return (
       <HStack
-        spacing={4}
         width={'100%'}
+        spacing={[3, 4]}
         alignItems={'flex-start'}
       >
         <Box

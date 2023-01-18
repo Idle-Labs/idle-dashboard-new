@@ -197,8 +197,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           alignItems={'flex-start'}
         >
           <HStack
-            spacing={4}
             width={'100%'}
+            spacing={[3, 4]}
             alignItems={'flex-start'}
           >
             <Box
