@@ -84,6 +84,10 @@ export const AssetPage: React.FC = () => {
     return selectVaultGauge && selectVaultGauge(params.asset)
   }, [selectVaultGauge, params.asset])
 
+  const assetGauge = useMemo(() => {
+    return vaultGauge && selectAssetById && selectAssetById(vaultGauge.id)
+  }, [selectAssetById, vaultGauge])
+
   // Check asset exists
   useEffect(() => {
     // console.log(isPortfolioLoaded, selectAssetById, location, asset)
@@ -129,14 +133,15 @@ export const AssetPage: React.FC = () => {
         ]
       },
     ]
-    if (vaultGauge){
-      const vaultDisabled = ("enabled" in vaultGauge) && !vaultGauge.enabled
+    
+    const vaultDisabled = vaultGauge && ("enabled" in vaultGauge) && !vaultGauge.enabled
+    if (vaultGauge && (!vaultDisabled || bnOrZero(assetGauge?.balance).gt(0))){
       tabs.push(
         {
           id:'gauge',
           label:'navBar.gauge',
           component: GaugeStaking,
-          icon: vaultDisabled ? {src:`${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props:{width:5, height:5}} : null,
+          icon: vaultDisabled && BNify(assetGauge?.balance).gt(0) ? {src:`${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props:{width:5, height:5}} : null,
           actions: [
             {
               type: 'stake',
@@ -162,7 +167,7 @@ export const AssetPage: React.FC = () => {
     }
 
     return tabs
-  }, [vaultGauge])
+  }, [vaultGauge, assetGauge])
 
   const vaultId = useMemo(() => {
     return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id
