@@ -1,19 +1,21 @@
 import type { AssetId } from 'constants/types'
-import { HStack, TextProps } from '@chakra-ui/react'
+import { ResponsiveValue, HStack, TextProps } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type AssetLabelProps = {
   size?: string
   assetId: AssetId | undefined
+  spacing?: ResponsiveValue<string | number> | undefined
 } & TextProps
 
-export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, size = 'sm', ...textProps }) => {
+export const AssetLabel: React.FC<AssetLabelProps> = ({ assetId, size = 'sm', spacing, ...textProps }) => {
   return (
     <AssetProvider
       wrapFlex={false}
       assetId={assetId}
     >
       <HStack
+        spacing={spacing}
         alignItems={'center'}
         justifyContent={'flex-start'}
       >

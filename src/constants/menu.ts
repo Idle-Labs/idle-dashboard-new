@@ -34,6 +34,10 @@ export const menu: MenuItemType[] = [
     path: 'stake',
     label: 'navBar.stake'
   },
+  {
+    path: 'stats',
+    label: 'navBar.stats'
+  },
   // {
   //   label: 'navBar.gauges',
   //   link: getLegacyDashboardUrl('gauges')

@@ -6,7 +6,7 @@ import { Template } from 'components/Template/Template'
 import { lazyLoadComponent } from 'helpers/'
 import { RouteObject, Navigate } from 'react-router-dom'
 
-// const Stats = lazyLoadComponent('Stats')
+const Stats = lazyLoadComponent('Stats')
 const Staking = lazyLoadComponent('Staking')
 const Strategy = lazyLoadComponent('Strategy')
 const Dashboard = lazyLoadComponent('Dashboard')
@@ -49,21 +49,19 @@ export const routes: RouteObject[] = [
         path:'stake',
         element:<Staking />
       },
-      /*
       {
         path:'stats',
         children:[
-          // {
-          //   index: true,
-          //   element:<ComponentWithProps state={{section:'stats'}} />,
-          // },
-          // {
-          //   path:':asset',
-          //   element:<ComponentWithProps state={{section:'stats/asset'}} />,
-          // }
+          {
+            index: true,
+            element:<Stats />,
+          },
+          {
+            path:':asset',
+            // element:<ComponentWithProps state={{section:'stats/asset'}} />,
+          }
         ]
       },
-      */
       {
         index: true,
         element:<Navigate to="/dashboard" replace />
