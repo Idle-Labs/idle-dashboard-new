@@ -1006,12 +1006,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDCStaking:{
-        status:'experimental',
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'euler',
         variant:'staking',
         blockNumber:16246945,
-        enabledEnvs: ['beta'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1084,12 +1083,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDTStaking:{
-        status:'experimental',
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'euler',
         variant:'staking',
         blockNumber:16375769,
-        enabledEnvs: ['beta'],
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1162,12 +1160,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       WETHStaking:{
-        status:'experimental',
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'euler',
         variant:'staking',
         blockNumber:16375825,
-        enabledEnvs: ['beta'],
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
         CDO:{
