@@ -525,6 +525,7 @@ export const theme = extendTheme({
           borderBottom: '2px solid transparent',
           _selected: {
             _after: {
+              left:0,
               bg:'white',
               content:'""',
               width:'100%',

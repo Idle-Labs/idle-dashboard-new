@@ -29,6 +29,7 @@ export class GaugeVault {
   readonly web3: Web3
   readonly chainId: number
   public readonly type: string
+  public readonly enabled: boolean
 
   // Private attributes
   private readonly cacheProvider: CacheContextProps | undefined
@@ -65,6 +66,7 @@ export class GaugeVault {
     this.chainId = chainId
     this.gaugeConfig = gaugeConfig
     this.trancheVault = trancheVault
+    this.enabled = gaugeConfig.enabled
     this.cacheProvider = cacheProvider
     this.trancheToken = gaugeConfig.trancheToken
     this.id = this.gaugeConfig.address.toLowerCase()
