@@ -679,6 +679,27 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const TotalPoolUsd: React.FC<AmountProps> = (props) => {
+  const { vault, asset } = useAssetProvider()
+  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+
+  let totalTvlUsd = asset?.tvlUsd
+  if (asset && vault && ['AA', 'BB'].includes(asset.type as string)){
+    const otherVaultType = asset.type === 'AA' ? 'BB' : 'AA'
+    const otherVault = vaults.find( (otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
+    if (otherVault){
+      const otherAsset = selectAssetById(otherVault.id)
+      if (otherAsset) {
+        totalTvlUsd = BNify(totalTvlUsd).plus(otherAsset.tvlUsd)
+      }
+    }
+  }
+  
+  return !BNify(totalTvlUsd).isNaN() ? (
+    <Amount.Usd value={totalTvlUsd} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const StakingTvl: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
@@ -1044,6 +1065,7 @@ AssetProvider.GeneralData = GeneralData
 AssetProvider.RealizedApy = RealizedApy
 AssetProvider.EarningsUsd = EarningsUsd
 AssetProvider.NetEarnings = NetEarnings
+AssetProvider.TotalPoolUsd = TotalPoolUsd
 AssetProvider.VaultBalance = VaultBalance
 AssetProvider.EarningsPerc = EarningsPerc
 AssetProvider.DepositedUsd = DepositedUsd

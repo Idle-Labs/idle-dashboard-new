@@ -46,8 +46,8 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
   const transactionsList = useMemo(() => {
     return isLoaded ?
       transactions.length>0 ? 
-        sortArrayByKey(transactions, 'timeStamp', 'desc').map( (transaction: Transaction) => (
-          <TransactionItem key={`tx_${transaction.hash}`} transaction={transaction} />
+        sortArrayByKey(transactions, 'timeStamp', 'desc').map( (transaction: Transaction, index: number) => (
+          <TransactionItem key={`tx_${index}`} transaction={transaction} />
         ))
       : (
         <Flex

@@ -5,6 +5,7 @@ import { Card } from 'components/Card/Card'
 import { strategies } from 'constants/strategies'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -19,30 +20,29 @@ export const VaultCardStats: React.FC<VaultCardStatsProps> = ({ vault }) => {
   const vaultStrategies = useMemo(() => {
     const vaultTypes = (vault instanceof TrancheVault) ? ['AA', 'BB'] : [vault.type]
     return (
-      <AssetProvider
-        assetId={vault.id}
-        wrapFlex={false}
+      <HStack
+        width={'full'}
+        justifyContent={'space-between'}
       >
-        <HStack
-          width={'full'}
-          justifyContent={'space-between'}
-        >
-          <Tag bg={'brand.blue'} size={'md'}>
-            <TagLabel>
-              <AssetProvider.ProtocolName textStyle={'ctaStatic'} fontSize={'sm'} textTransform={'capitalize'} fontWeight={600} />
-            </TagLabel>
-          </Tag>
-          <HStack
-            spacing={2}
-            width={'full'}
-            justifyContent={'flex-end'}
-          >
-          {
-            vaultTypes.map( vaultType => <StrategyLabel strategy={vaultType} showLabel={false} /> )
-          }
-          </HStack>
+        {/*<Tag bg={'brand.blue'} size={'md'}>
+          <TagLabel>
+            <AssetProvider.ProtocolName textStyle={'ctaStatic'} fontSize={'sm'} textTransform={'capitalize'} fontWeight={600} />
+          </TagLabel>
+        </Tag>*/}
+        <HStack>
+          <AssetProvider.ProtocolIcon size={'xs'} />
+          <AssetProvider.ProtocolName textStyle={'captionSmall'} fontSize={'md'} textTransform={'capitalize'} fontWeight={600} />
         </HStack>
-      </AssetProvider>
+        <HStack
+          spacing={2}
+          width={'full'}
+          justifyContent={'flex-end'}
+        >
+        {
+          vaultTypes.map( vaultType => <StrategyLabel strategy={vaultType} showLabel={false} /> )
+        }
+        </HStack>
+      </HStack>
     )
   }, [vault])
 
@@ -52,27 +52,42 @@ export const VaultCardStats: React.FC<VaultCardStatsProps> = ({ vault }) => {
   }, [vault])
 
   return (
-    <Card
-      p={4}
+    <AssetProvider
+      assetId={vault.id}
+      wrapFlex={false}
     >
-      <VStack
-        spacing={4}
+      <Card
+        p={4}
       >
-        {vaultStrategies}
-        <Flex
-          width={'full'}
-          alignItems={'center'}
-          justifyContent={'center'}
+        <VStack
+          spacing={5}
         >
-          <AssetLabel assetId={vaultUnderlyingId} size={'md'} fontSize={'xl'} spacing={4} />
-        </Flex>
-        <HStack
-          justifyContent={'space-between'}
-        >
-
-        </HStack>
-      </VStack>
-    </Card>
+          {vaultStrategies}
+          <Flex
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'center'}
+          >
+            <AssetLabel assetId={vaultUnderlyingId} size={'md'} fontSize={'xl'} spacing={4} />
+          </Flex>
+          <HStack
+            width={'full'}
+            justifyContent={'space-between'}
+          >
+            {/*<HStack>
+              <AssetProvider.ProtocolIcon size={'xs'} />
+              <AssetProvider.ProtocolName textStyle={'ctaStatic'} fontSize={'md'} textTransform={'capitalize'} fontWeight={600} />
+            </HStack>*/}
+            <HStack
+              spacing={2}
+            >
+              <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
+              <AssetProvider.TotalPoolUsd textStyle={'tableCell'} />
+            </HStack>
+          </HStack>
+        </VStack>
+      </Card>
+    </AssetProvider>
   )
 }
 
