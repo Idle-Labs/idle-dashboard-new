@@ -41,9 +41,9 @@ export const Dashboard: React.FC = () => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType, selectVaultsByType } } = usePortfolioProvider()
+  const { assetsData, stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType, selectVaultsByType } } = usePortfolioProvider()
 
-  const enabledStrategies = Object.keys(strategies).filter( strategy => strategies[strategy].visible )
+  const enabledStrategies = useMemo(() => Object.keys(strategies).filter( strategy => strategies[strategy].visible ), [])
 
   const accountAndPortfolioLoaded = useMemo(() => {
     return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
@@ -59,6 +59,10 @@ export const Dashboard: React.FC = () => {
     const assets = selectAssetsByIds(assetIds)
     return assets.filter( (asset: Asset) => !selectedStrategies || !asset.type || (selectedStrategies.includes(asset.type) && enabledStrategies.includes(asset.type)) ).map( (asset: Asset) => asset.id )
   }, [vaultsPositions, selectedStrategies, enabledStrategies, selectAssetsByIds])
+
+  const allAssetIds = useMemo(() => {
+    return Object.values(assetsData).filter( (asset: Asset) => asset.id && (!asset.type || enabledStrategies.includes(asset.type)) ).map( (asset: Asset) => asset.id as string )
+  }, [assetsData, enabledStrategies])
 
   const totalDeposited = useMemo(() => {
     return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (amount: BigNumber, vaultPosition: VaultPosition) => {
@@ -860,7 +864,7 @@ export const Dashboard: React.FC = () => {
               width={['100%', '500px']}
               alignItems={'flex-start'}
             >
-              <TransactionList assetIds={assetIds} maxH={[400, Math.max(400, dimensions?.height)]} showTitleOnMobile={true} />
+              <TransactionList assetIds={allAssetIds} maxH={[400, Math.max(400, dimensions?.height)]} showTitleOnMobile={true} />
             </VStack>
           </Stack>
         )

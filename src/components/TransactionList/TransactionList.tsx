@@ -37,6 +37,8 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
 
   }, [account, assetIds, selectVaultTransactions, selectVaultGauge])
 
+  // console.log('TransactionList', assetIds, transactions)
+
   const isLoaded = useMemo(() => {
     return isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
   }, [isPortfolioLoaded, account, isVaultsPositionsLoaded])
