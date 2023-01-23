@@ -509,7 +509,7 @@ export class VaultFunctionsHelper {
       results
     } = await this.getSubgraphData(vault, filters)
 
-    // console.log('getVaultHistoricalDataFromSubgraph', latestTimestamp, filters, daysDiff, results)
+    // console.log('getVaultHistoricalDataFromSubgraph', vault.id, results)
 
     const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       
@@ -517,10 +517,16 @@ export class VaultFunctionsHelper {
       const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
       const price = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
       const rate = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
+      const tvl = parseFloat(fixTokenDecimals(result.contractValue, decimals).toFixed(8))
 
       dailyData.rates[date] = {
         date,
         value: rate
+      }
+
+      dailyData.tvls[date] = {
+        date,
+        value: tvl
       }
 
       dailyData.prices[date] = {
@@ -530,12 +536,14 @@ export class VaultFunctionsHelper {
 
       return dailyData
     }, {
+      tvls: {},
       rates: {},
       prices: {}
     })
 
     return {
       vaultId: vault.id,
+      tvls: Object.values(dailyData.tvls),
       rates: Object.values(dailyData.rates),
       prices: Object.values(dailyData.prices)
     }
@@ -673,6 +681,7 @@ export class VaultFunctionsHelper {
 
     const historicalData: VaultHistoricalData = {
       vaultId: vault.id,
+      tvls: [],
       rates: [],
       prices: []
     }
@@ -696,10 +705,16 @@ export class VaultFunctionsHelper {
       const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
       const price = parseFloat(fixTokenDecimals(result.idlePrice, decimals).toFixed(8))
       const rate = parseFloat(fixTokenDecimals(result.idleRate, 18).toFixed(8))
+      const tvl = parseFloat(fixTokenDecimals(result.idleSupply, 18).times(fixTokenDecimals(result.idlePrice, decimals)).toFixed(8))
 
       dailyData.rates[date] = {
         date,
         value: rate
+      }
+
+      dailyData.tvls[date] = {
+        date,
+        value: tvl
       }
 
       dailyData.prices[date] = {
@@ -709,10 +724,12 @@ export class VaultFunctionsHelper {
 
       return dailyData
     }, {
+      tvls: {},
       rates: {},
       prices: {}
     })
 
+    historicalData.tvls = Object.values(dailyData.tvls)
     historicalData.rates = Object.values(dailyData.rates)
     historicalData.prices = Object.values(dailyData.prices)
 

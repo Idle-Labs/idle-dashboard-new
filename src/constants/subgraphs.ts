@@ -11,7 +11,7 @@ export const subgraphs = {
         // 'blockNumber',
         // 'totalSupply',
         'virtualPrice',
-        // 'contractValue',
+        'contractValue',
       ]
     }
   },

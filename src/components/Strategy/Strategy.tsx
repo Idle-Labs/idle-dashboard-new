@@ -267,7 +267,7 @@ export const Strategy: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.depositedAssets'} component={Heading} as={'h2'} fontSize={'lg'} />
+        <Translation translation={'defi.depositedAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
         <VStack
           spacing={2}
           width={'100%'}

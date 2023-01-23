@@ -415,6 +415,7 @@
     "protocol": "Protocol",
     "protocols": "Protocols",
     "unstake": "Unstake",
+    "chooseAsset": "Choose an asset",
     "goToGauge": "Go to Gauge",
     "stakeAsset": "Stake %{assetSymbol}",
     "unstakeAsset": "Unstake %{assetSymbol}",
@@ -608,6 +609,10 @@
     "clickToConnect": "Click to connect a wallet",
     "wallet": "Wallet",
     "explore": "Explore"
+  },
+  "stats":{
+    "performances": "Performances",
+    "tvlDistribution": "TVL distribution"
   },
   "transactionRow": {
     "hash": "Hash",

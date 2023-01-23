@@ -23,6 +23,7 @@ import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 // import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
+import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
@@ -33,8 +34,8 @@ import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/us
 import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
+  const { isMobile } = useThemeProvider()
   const [ ref, dimensions ] = useBoundingRect()
-  const { screenSize, isMobile } = useThemeProvider()
   const [ , setPercentChange ] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
   const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
@@ -670,39 +671,6 @@ export const Dashboard: React.FC = () => {
   //   return strategiesRewards
   // }, [accountAndPortfolioLoaded, strategiesRewards])
 
-  const strategiesFilters = useMemo(() => {
-    if (!account || screenSize==='sm' || !userHasFunds) return null
-    return (
-      <Stack
-        py={4}
-        flex={1}
-        spacing={3}
-        direction={'row'}
-        borderBottom={'1px solid'}
-        borderColor={'divider'}
-      >
-        {
-          Object.keys(strategies).filter( strategy => strategies[strategy].visible ).map( (strategy: string) => {
-            return (
-              <Button
-                minW={'180px'}
-                variant={'filter'}
-                key={`strategy_${strategy}`}
-                onClick={() => toggleStrategy(strategy)}
-                aria-selected={selectedStrategies.includes(strategy)}
-              >
-                <StrategyLabel
-                  color={'primary'}
-                  strategy={strategy}
-                />
-              </Button>
-            )
-          })
-        }
-      </Stack>
-    )
-  }, [account, userHasFunds, screenSize, toggleStrategy, selectedStrategies])
-
   const chartColor = useMemo(() => {
     if (selectedStrategies.length===1){
       return strategies[selectedStrategies[0]].color
@@ -726,7 +694,14 @@ export const Dashboard: React.FC = () => {
         direction={['column', 'row']}
       >
         <Translation translation={'navBar.dashboard'} component={Heading} as={'h2'} size={'3xl'} />
-        {strategiesFilters}
+        <HStack
+          pb={3}
+          flex={1}
+          borderBottom={'1px solid'}
+          borderColor={'divider'}
+        >
+          <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} checkUserFunds={true} showOnMobile={false} />
+        </HStack>
       </Stack>
       <Stack
         flex={1}
@@ -781,7 +756,7 @@ export const Dashboard: React.FC = () => {
                         spacing={[2, 4]}
                         alignItems={'baseline'}
                       >
-                        <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'2xl'} />
+                        <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
                         {
                           totalFunds.gt(0) && (
                             <Stat>

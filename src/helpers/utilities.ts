@@ -33,6 +33,14 @@ export function apr2apy(apr: BNifyInput) {
   return BNify((BNify(1).plus(BNify(apr).div(365))).pow(365).minus(1).toFixed(18));
 }
 
+export function removeItemFromArray<T>(arr: T[], item: T): T[] {
+  const index = arr.indexOf(item);
+  if (index !== -1) {
+    arr.splice(index, 1);
+  }
+  return arr;
+}
+
 export function isBigNumberNaN(amount: any) {
   const isNull = amount === null
   const isUndefined = amount === undefined

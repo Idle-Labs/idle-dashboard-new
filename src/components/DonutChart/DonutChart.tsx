@@ -13,7 +13,7 @@ export type DonutChartData = {
 }
 export type DonutChartColors = Record<DonutChartKey, string>
 
-type DonutChartInitialData = {
+export type DonutChartInitialData = {
   getSliceData?: Function
   data: DonutChartData[]
   colors: DonutChartColors

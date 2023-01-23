@@ -31,8 +31,8 @@ export const useRateChartData: UseRateChartData = args => {
 
   const { assetIds, timeframe } = args
 
+  const [ rateChartDataLoading, setRateChartDataLoading ] = useState<boolean>(true)
   const { historicalRates, selectors: { selectAssetsByIds, selectAssetHistoricalRates } } = usePortfolioProvider()
-  const [rateChartDataLoading, setRateChartDataLoading] = useState<boolean>(true)
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []

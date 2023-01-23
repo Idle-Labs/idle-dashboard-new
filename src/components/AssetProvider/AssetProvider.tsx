@@ -11,13 +11,13 @@ import type { IdleTokenProtocol } from 'constants/vaults'
 import { RateChart } from 'components/RateChart/RateChart'
 import { BNify, abbreviateNumber, formatDate } from 'helpers/'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
-import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
+import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
@@ -109,17 +109,25 @@ const Name: React.FC<AssetFieldProps> = (props) => {
   )
 }
 
-const Symbol: React.FC<AssetFieldProps> = (props) => {
+const Symbol: React.FC<TextProps> = (props) => {
   const { asset } = useAssetProvider()
   return (
     <Text {...props}>{asset?.token}</Text>
   )
 }
 
-const ProtocolName: React.FC<AssetFieldProps> = (props) => {
+const ProtocolName: React.FC<TextProps> = (props) => {
   const { vault } = useAssetProvider()
   return (
     <Text textTransform={'uppercase'} {...props}>{vault && "protocol" in vault ? vault?.protocol : ''}</Text>
+  )
+}
+
+const Strategy: React.FC<Omit<TranslationProps, "translation">> = (props) => {
+  const { vault } = useAssetProvider()
+  if (!vault) return null
+  return (
+    <Translation translation={strategies[vault.type].label} {...props} />
   )
 }
 
@@ -1055,6 +1063,7 @@ AssetProvider.FeesUsd = FeesUsd
 AssetProvider.PoolUsd = PoolUsd
 AssetProvider.Earnings = Earnings
 AssetProvider.ApyRatio = ApyRatio
+AssetProvider.Strategy = Strategy
 AssetProvider.Protocols = Protocols
 AssetProvider.Deposited = Deposited
 AssetProvider.GaugeShare = GaugeShare

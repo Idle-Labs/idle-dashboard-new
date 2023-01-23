@@ -63,9 +63,11 @@ type InitialState = {
   assetsDataTimestamp: number | null
   selectors: Record<string, Function>
   transactions: Record<string, Transaction[]>
+  historicalTvls: Record<AssetId, HistoryData[]>
   vaultsPositions: Record<string, VaultPosition>
   historicalRates: Record<AssetId, HistoryData[]>
   historicalPrices: Record<AssetId, HistoryData[]>
+  historicalTvlsUsd: Record<AssetId, HistoryData[]>
   historicalPricesUsd: Record<AssetId, HistoryData[]>
 } & VaultsOnchainData
 
@@ -97,10 +99,12 @@ const initialState: InitialState = {
   gaugesRewards: {},
   aprsBreakdown: {},
   additionalAprs: {},
+  historicalTvls: {},
   protocolToken: null,
   vaultsPositions: {},
   historicalRates: {},
   historicalPrices: {},
+  historicalTvlsUsd: {},
   historicalPricesUsd: {},
   isPortfolioLoaded: false,
   portfolioTimestamp: null,
@@ -159,6 +163,10 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, lastHarvests: action.payload}
     case 'SET_HISTORICAL_RATES':
       return {...state, historicalRates: action.payload}
+    case 'SET_HISTORICAL_TVLS':
+      return {...state, historicalTvls: action.payload}
+    case 'SET_HISTORICAL_TVLS_USD':
+      return {...state, historicalTvlsUsd: action.payload}
     case 'SET_ADDITIONAL_APRS':
       return {...state, additionalAprs: action.payload}
     case 'SET_HISTORICAL_PRICES':
@@ -282,6 +290,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const selectAssetHistoricalRates = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
     return assetId && state.historicalRates[assetId.toLowerCase()] ? state.historicalRates[assetId.toLowerCase()] : null
   }, [state.historicalRates])
+
+  const selectAssetHistoricalTvls = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
+    return assetId && state.historicalTvls[assetId.toLowerCase()] ? state.historicalTvls[assetId.toLowerCase()] : null
+  }, [state.historicalTvls])
+
+  const selectAssetHistoricalTvlsUsd = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
+    return assetId && state.historicalTvlsUsd[assetId.toLowerCase()] ? state.historicalTvlsUsd[assetId.toLowerCase()] : null
+  }, [state.historicalTvlsUsd])
 
   const selectAssetsByIds = useCallback( (assetIds: AssetId[]): Asset[] | null => {
     const assetIdsLowerCase = assetIds.map( assetId => assetId && assetId.toLowerCase() )
@@ -1700,8 +1716,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectVaultTransactions,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
+      selectAssetHistoricalTvls,
       selectAssetHistoricalRates,
       selectAssetHistoricalPrices,
+      selectAssetHistoricalTvlsUsd,
       selectVaultsAssetsWithBalance,
       selectAssetHistoricalPriceByTimestamp,
       selectAssetHistoricalPriceUsdByTimestamp,
@@ -1722,8 +1740,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectVaultTransactions,
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
+    selectAssetHistoricalTvls,
     selectAssetHistoricalRates,
     selectAssetHistoricalPrices,
+    selectAssetHistoricalTvlsUsd,
     selectVaultsAssetsWithBalance,
     selectAssetHistoricalPriceByTimestamp,
     selectAssetHistoricalPriceUsdByTimestamp,
@@ -1993,21 +2013,25 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const vaultsHistoricalData = await Promise.all(vaultsHistoricalDataPromises)
 
+      const tvls: Record<AssetId, HistoryData[]> = {}
       const rates: Record<AssetId, HistoryData[]> = {}
       const prices: Record<AssetId, HistoryData[]> = {}
+      const tvlsUsd: Record<AssetId, HistoryData[]> = {}
 
       vaultsHistoricalData.forEach( (vaultHistoricalData: VaultHistoricalData) => {
         const assetId = vaultHistoricalData.vaultId
         const asset = selectAssetById(assetId)
         if (asset){
+          tvls[assetId] = vaultHistoricalData.tvls
           rates[assetId] = vaultHistoricalData.rates
           prices[assetId] = vaultHistoricalData.prices
-          dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { rates: rates[assetId], prices: prices[assetId] } }})
+          dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { tvls: tvls[assetId], rates: rates[assetId], prices: prices[assetId] } }})
         }
       })
 
       // console.log('vaultsHistoricalData', vaultsHistoricalData)
 
+      dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
 
@@ -2016,6 +2040,31 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // eslint-disable-next-line
   }, [state.vaults, state.isPortfolioLoaded])
+
+  // Calculate historicalTvls USD
+  useEffect(() => {
+    if (isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalTvls)) return
+    const historicalTvlsUsd = Object.keys(state.historicalTvls).reduce( (historicalTvlsUsd: InitialState["historicalTvlsUsd"], assetId: AssetId) => {
+      // console.log('historicalTvls', assetId, state.historicalTvls)
+      if (!state.historicalTvls[assetId]/* || !state.historicalPricesUsd[assetId]*/) return historicalTvlsUsd
+      historicalTvlsUsd[assetId] = state.historicalTvls[assetId].map( (data: HistoryData) => {
+        const asset = selectAssetById(assetId)
+        const priceUsd = selectAssetHistoricalPriceUsdByTimestamp(asset?.underlyingId, data.date)?.value || BNify(1)
+        const value = BNify(data.value).times(priceUsd)
+        // console.log('priceUsd', assetId, data.date, priceUsd, value.toString())
+        return {
+          value,
+          date: data.date
+        }
+      })
+      return historicalTvlsUsd
+    }, {})
+
+    // console.log('historicalTvlsUsd', historicalTvlsUsd, state.historicalPricesUsd)
+    dispatch({type: 'SET_HISTORICAL_TVLS_USD', payload: historicalTvlsUsd})
+
+  // eslint-disable-next-line
+  }, [state.historicalPricesUsd, state.historicalTvls])
 
   // Get tokens prices, balances, rates
   useEffect(() => {

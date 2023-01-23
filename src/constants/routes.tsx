@@ -11,6 +11,7 @@ const Staking = lazyLoadComponent('Staking')
 const Strategy = lazyLoadComponent('Strategy')
 const Dashboard = lazyLoadComponent('Dashboard')
 const AssetPage = lazyLoadComponent('AssetPage')
+const AssetStats = lazyLoadComponent('AssetStats')
 
 export const routes: RouteObject[] = [
   {
@@ -58,7 +59,7 @@ export const routes: RouteObject[] = [
           },
           {
             path:':asset',
-            // element:<ComponentWithProps state={{section:'stats/asset'}} />,
+            element:<AssetStats />,
           }
         ]
       },

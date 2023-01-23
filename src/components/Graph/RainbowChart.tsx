@@ -8,6 +8,7 @@ import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xyc
 import { extent, Numeric } from 'd3-array'
 import dayjs from 'dayjs'
 import omit from 'lodash/omit'
+import { strategies } from 'constants/'
 import React, { useCallback, useMemo } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { useI18nProvider } from 'contexts/I18nProvider'
@@ -137,9 +138,9 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
             key={assetId}
             fillOpacity={0.1}
             dataKey={assetId}
-            fill={asset?.color}
             xAccessor={accessors.x[assetId]}
             yAccessor={accessors.y[assetId]}
+            fill={strategies[asset?.type]?.color}
           />
         )
       }),
@@ -192,6 +193,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
               const { datum, key: assetId } = tooltipData?.nearestDatum!
               const price = datum[assetId]
               const { date } = datum
+              const asset = selectAssetById(assetId)
               return (
                 <Stack
                   borderRadius={'lg'}
@@ -210,11 +212,12 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                         alignItems={'center'}
                       >
                         <AssetProvider.Icon size={'2xs'} mr={2} />
-                        <AssetProvider.Name fontWeight='bold' />
+                        <AssetProvider.Name fontWeight={'bold'} />
+                        <AssetProvider.Strategy color={strategies[asset?.type]?.color} ml={1} fontWeight={'bold'} prefix={'('} suffix={')'} />
                       </Flex>
                     </AssetProvider>
                   </Stack>
-                  <Amount value={formatFn(price)} fontWeight='bold' />
+                  <Text fontWeight={'bold'}>{formatFn(price)}</Text>
                   <Text fontSize={'xs'} color={colors.gray[500]}>
                     {dayjs(date).locale(locale).format('LLL')}
                   </Text>

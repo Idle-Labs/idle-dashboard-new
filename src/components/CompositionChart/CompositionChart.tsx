@@ -22,8 +22,8 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
   const { protocolToken } = usePortfolioProvider()
 
   const {
-    compositions,
     colors,
+    compositions
   }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds, strategies: enabledStrategies })
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {

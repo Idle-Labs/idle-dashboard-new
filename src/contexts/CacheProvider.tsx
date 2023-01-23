@@ -34,6 +34,8 @@ type CacheProviderProps = {
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
   const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge('cachedRequests', preCachedRequests)
 
+  // console.log('cachedRequests', cachedRequests)
+
   const requestQueue = useMemo(() => new Map(), [])
 
   const processQueue = useCallback(async () => {

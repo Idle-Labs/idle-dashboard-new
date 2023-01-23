@@ -3,9 +3,9 @@ import { Heading, Flex, Box, FlexProps, BoxProps, ThemingProps } from '@chakra-u
 export type CardProps = BoxProps & ThemingProps 
 
 const HeadingTitle = (props: CardProps) => {
-  const { children, ...rest } = props
+  const { children, ...headingProps } = props
   return (
-    <Heading as={'h3'} size={'md'} mb={6} {...rest}>{children}</Heading>
+    <Heading as={'h3'} size={'md'} mb={6} {...headingProps}>{children}</Heading>
   )
 }
 

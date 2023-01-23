@@ -35,7 +35,7 @@ export interface PrimaryChartProps {
 dayjs.extend(localizedFormat)
 
 // accessors
-const getDate = (d: HistoryData) => new Date(d.date)
+const getDate = (d: HistoryData) => d && new Date(d.date)
 const getValue = (d: HistoryData) => d?.value || 0
 const bisectDate = bisector<HistoryData, Date>(d => new Date(d.date)).left
 

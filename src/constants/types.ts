@@ -33,6 +33,11 @@ export type ReducerActionTypes = {
   payload: any
 }
 
+export type VaultHistoricalTvls = {
+  vaultId: string
+  tvls: HistoryData[]
+}
+
 export type VaultHistoricalRates = {
   vaultId: string
   rates: HistoryData[]
@@ -45,6 +50,7 @@ export type VaultHistoricalPrices = {
 
 export type VaultHistoricalData = {
   vaultId: string
+  tvls: HistoryData[]
   rates: HistoryData[]
   prices: HistoryData[]
 }
