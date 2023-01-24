@@ -710,8 +710,8 @@ export const Dashboard: React.FC = () => {
         direction={['column', 'row']}
       >
         <VStack
-          flex={1}
           spacing={6}
+          width={['full', '66.3%']}
           alignItems={'flex-start'}
         >
           <Translation display={['none', 'block']} translation={'dashboard.portfolio.performance'} component={Text} textStyle={'heading'} fontSize={'h3'} />
@@ -790,6 +790,7 @@ export const Dashboard: React.FC = () => {
         </VStack>
 
         <VStack
+          flex={1}
           spacing={6}
           width={['100%', '500px']}
           alignItems={'flex-start'}
