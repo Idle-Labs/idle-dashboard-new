@@ -23,6 +23,7 @@
     "insufficientAmountForGas": "Not enough ETH to cover gas",
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
+    "redeem": "Redeem",
     "stake": "Stake",
     "unstake": "Unstake",
     "withdraw": "Withdraw",
@@ -612,6 +613,7 @@
   },
   "stats":{
     "performances": "Performances",
+    "volumes": "Volumes",
     "tvlDistribution": "TVL distribution"
   },
   "transactionRow": {

@@ -2,10 +2,10 @@ import BigNumber from 'bignumber.js'
 import type { Vault } from 'vaults/'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
-import useLocalForge from 'hooks/useLocalForge'
 import { SECONDS_IN_YEAR } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
+import { BarChart } from 'components/Graph/BarChart'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { HistoryTimeframe, AssetId } from 'constants/types'
 import React, { useMemo, useCallback, useState } from 'react'
@@ -30,7 +30,7 @@ export const AssetStats: React.FC = () => {
   const { location, params } = useBrowserRouter()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const { vaults, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
-  const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
+  const [ selectedStrategies, setSelectedStrategies ] = useState<string[]>(Object.keys(strategies))
 
   const asset = useMemo(() => {
     return params.asset && selectAssetById && selectAssetById(params.asset)
@@ -323,6 +323,19 @@ export const AssetStats: React.FC = () => {
                 isRainbowChart={assetIds.length>1 ? true : false}
                 margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
               />
+            </Card.Dark>
+          </VStack>
+          <VStack
+            spacing={6}
+            width={'full'}
+            alignItems={'flex-start'}
+          >
+            <Translation translation={'stats.volumes'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
+            <Card.Dark
+              p={6}
+              flex={1}
+            >
+              <BarChart />
             </Card.Dark>
           </VStack>
         </SimpleGrid>

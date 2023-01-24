@@ -1,3 +1,5 @@
+// import dayjs from 'dayjs'
+import { toDayjs } from 'helpers/'
 import { useColorModeValue } from '@chakra-ui/color-mode'
 import { useToken } from '@chakra-ui/system'
 import { useTheme } from '@chakra-ui/react'
@@ -10,8 +12,6 @@ import { scaleLinear, scaleTime } from '@visx/scale'
 import { Bar, Line } from '@visx/shape'
 import { defaultStyles as defaultTooltipStyles, TooltipWithBounds, useTooltip } from '@visx/tooltip'
 import { bisector, extent, max, min } from 'd3-array'
-import dayjs from 'dayjs'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
 import React, { useCallback, useMemo } from 'react'
 import { Amount } from 'components/Amount/Amount'
 
@@ -31,11 +31,8 @@ export interface PrimaryChartProps {
   margins?: { top: number; right: number; bottom: number; left: number }
 }
 
-
-dayjs.extend(localizedFormat)
-
 // accessors
-const getDate = (d: HistoryData) => d && new Date(d.date)
+const getDate = (d: HistoryData): Date => d && new Date(d.date)
 const getValue = (d: HistoryData) => d?.value || 0
 const bisectDate = bisector<HistoryData, Date>(d => new Date(d.date)).left
 
@@ -83,6 +80,7 @@ export const PrimaryChart = ({
       domain: extent(data, getDate) as [Date, Date],
     })
   }, [xMax, data])
+
   const priceScale = useMemo(() => {
     return scaleLinear({
       range: [yMax + margins.top, margins.top],
@@ -93,7 +91,8 @@ export const PrimaryChart = ({
   }, [margins.top, yMax, data])
 
   const dateToLocale = useCallback( (tooltipData: HistoryData) => {
-    return dayjs(getDate(tooltipData)).locale(locale).format('LLL')
+    // console.log('dateToLocale', tooltipData, locale, toDayjs(getDate(tooltipData)), )
+    return toDayjs(getDate(tooltipData)).locale(locale).format('LLL')
   }, [locale])
 
   // tooltip handler

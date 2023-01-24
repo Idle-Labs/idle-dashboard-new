@@ -82,7 +82,7 @@ export function dateDiff(t1: number, t2: number, unit: any = 'ms', returnDecimal
   return Math.abs(dayjs(t1).diff(t2, unit, returnDecimals))
 }
 
-export function toDayjs(timestamp?: number | string) {
+export function toDayjs(timestamp?: Date | number | string) {
   return dayjs(timestamp)
 }
 
