@@ -121,24 +121,26 @@ export const AssetStats: React.FC = () => {
   }, [filteredAssetIds, selectAssetById, performanceChartData])
 
   const compositionData: DonutChartInitialData = useMemo(() => {
-    return assetIds.reduce( (donutChartData, assetId: AssetId) => {
-      const asset = selectAssetById(assetId)
-      if (asset){
-        donutChartData.colors[asset.id] = strategies[asset.type].color
-        donutChartData.data.push({
-          value: BNify(asset.tvlUsd).toFixed(2),
-          label: asset.id,
-          extraData: {
-            asset
-          }
-        })
-      }
-      return donutChartData
-    }, {
+    const initialData = {
       data:[],
       colors:{}
-    })
-  }, [assetIds, selectAssetById])
+    }
+    // console.log('filteredAssetIds', filteredAssetIds)
+    if (!filteredAssetIds) return initialData
+    return (filteredAssetIds as Array<AssetId>).reduce( (donutChartData: DonutChartInitialData, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      if (!asset) return donutChartData
+      donutChartData.colors[assetId] = strategies[asset.type].color as string
+      donutChartData.data.push({
+        value: parseFloat(BNify(asset.tvlUsd).toFixed(2)),
+        label: asset.id,
+        extraData: {
+          asset
+        }
+      })
+      return donutChartData
+    }, initialData)
+  }, [filteredAssetIds, selectAssetById])
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     const totalFunds = compositionData.data.reduce( (total: BigNumber, data: DonutChartData) => total.plus(data.value), BNify(0))
@@ -228,8 +230,8 @@ export const AssetStats: React.FC = () => {
           direction={['column', 'row']}
         >
           <VStack
-            width={2/3}
             spacing={6}
+            width={['full', 2/3]}
             alignItems={'flex-start'}
           >
             <Translation translation={'stats.performances'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
@@ -259,6 +261,7 @@ export const AssetStats: React.FC = () => {
           <VStack
             flex={1}
             spacing={6}
+            width={['full', 'auto']}
             alignItems={'flex-start'}
           >
             <Translation translation={'stats.tvlDistribution'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
