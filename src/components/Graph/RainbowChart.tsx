@@ -148,13 +148,13 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   )
 
   const crosshairColor = useMemo(() => {
-    if (assetIds.length>1) return colors.blue[500]
+    if (assetIds.length>1) return colors.primary
       const asset = selectAssetById(assetIds[0])
       if (asset && asset?.color) {
         return asset.color
       }
-      return colors.blue[500]
-  }, [assetIds, selectAssetById, colors.blue])
+      return colors.primary
+  }, [assetIds, selectAssetById, colors.primary])
 
   return (
     <div style={{ position: 'relative' }}>

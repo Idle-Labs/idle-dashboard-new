@@ -103,7 +103,7 @@ export const AssetStats: React.FC = () => {
             const startPoint: RainbowData = performanceChartData.rainbow[0]
             const endPoint: RainbowData = performanceChartData.rainbow[performanceChartData.rainbow.length-1]
             const gainSeconds = Math.round((endPoint.date-startPoint.date)/1000)
-            const apy = BNify(endPoint![assetId]).div(startPoint[assetId]).times(SECONDS_IN_YEAR).div(gainSeconds)
+            const apy = BNify(endPoint![assetId]).div(startPoint[assetId]).minus(1).times(SECONDS_IN_YEAR).div(gainSeconds).times(100)
             return (
               <HStack
                 spacing={1}
