@@ -7,14 +7,14 @@ import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { HistoryTimeframe, AssetId } from 'constants/types'
-import React, { useMemo, useCallback, useState } from 'react'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { GenericChart } from 'components/GenericChart/GenericChart'
-import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
 import { VolumeChart } from 'components/VolumeChart/VolumeChart'
+import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
+import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
@@ -29,7 +29,7 @@ export const AssetStats: React.FC = () => {
   const { isMobile } = useThemeProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const { vaults, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
-  const [ selectedStrategies, setSelectedStrategies ] = useState<string[]>(Object.keys(strategies))
+  const [ selectedStrategies, setSelectedStrategies ] = useState<string[] | undefined>(undefined)
 
   const asset = useMemo(() => {
     return params.asset && selectAssetById && selectAssetById(params.asset)
@@ -48,6 +48,12 @@ export const AssetStats: React.FC = () => {
     return ['AA','BB'].includes(asset.type) ? ['AA','BB'] : [asset.type]
   }, [asset])
 
+  useEffect(() => {
+    if (availableStrategies && !selectedStrategies){
+      setSelectedStrategies(availableStrategies)
+    }
+  }, [selectedStrategies, availableStrategies, setSelectedStrategies])
+
   const assetIds = useMemo(() => {
     if (!asset?.type) return []
     switch (asset.type){
@@ -62,6 +68,7 @@ export const AssetStats: React.FC = () => {
   }, [asset, vault, vaults])
 
   const filteredAssetIds: AssetId[] = useMemo(() => {
+    if (!selectedStrategies) return []
     return assetIds.filter( (assetId: AssetId) => {
       const asset = selectAssetById(assetId)
       return asset && selectedStrategies.includes(asset.type)
@@ -77,6 +84,9 @@ export const AssetStats: React.FC = () => {
   // console.log('performanceChartData', performanceChartData)
 
   const toggleStrategy = useCallback((strategy: string) => {
+    // console.log('selectedStrategies', selectedStrategies)
+    if (!selectedStrategies || (selectedStrategies.length === 1 && selectedStrategies.includes(strategy))) return
+
     if (!selectedStrategies.includes(strategy)){
       setSelectedStrategies([
         ...selectedStrategies,

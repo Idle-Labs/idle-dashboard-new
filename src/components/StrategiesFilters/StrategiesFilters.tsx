@@ -10,7 +10,7 @@ type StrategiesFiltersType = {
   showOnMobile?: boolean
   checkUserFunds?: boolean
   toggleStrategy: Function
-  selectedStrategies: string[]
+  selectedStrategies?: string[]
   availableStrategies?: string[]
 }
 
@@ -33,7 +33,7 @@ export const StrategiesFilters: React.FC<StrategiesFiltersType> = ({ checkUserFu
               variant={'filter'}
               key={`strategy_${strategy}`}
               onClick={() => toggleStrategy(strategy)}
-              aria-selected={selectedStrategies.includes(strategy)}
+              aria-selected={selectedStrategies?.includes(strategy)}
             >
               <StrategyLabel
                 color={'primary'}

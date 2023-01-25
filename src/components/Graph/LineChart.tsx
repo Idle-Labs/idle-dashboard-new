@@ -87,12 +87,11 @@ export const LineChart = ({
       </Group>
       {!hideBottomAxis && (
         <AxisBottom
+          hideTicks
+          numTicks={6}
           scale={xScale}
           strokeWidth={0}
-          hideTicks={true}
-          stroke={strokeColor}
           top={yMax + margin.top + 25}
-          numTicks={width > 520 ? 5 : 5}
           tickLabelProps={() => AXIS_BOTTOM_TICK_LABEL_PROPS}
         />
       )}

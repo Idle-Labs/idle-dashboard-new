@@ -1,18 +1,18 @@
-import { useTheme, Stack, Text, Flex } from '@chakra-ui/react'
-import { useColorModeValue, useToken } from '@chakra-ui/system'
-import { curveLinear } from '@visx/curve'
-import { Group } from '@visx/group'
-import { Text as VisxText } from '@visx/text'
-import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
-import { extent, Numeric } from 'd3-array'
 import dayjs from 'dayjs'
 import omit from 'lodash/omit'
+import { Group } from '@visx/group'
 import { strategies } from 'constants/'
+import { curveLinear } from '@visx/curve'
+import { extent, Numeric } from 'd3-array'
+import { Text as VisxText } from '@visx/text'
 import React, { useCallback, useMemo } from 'react'
 import { useI18nProvider } from 'contexts/I18nProvider'
+import { useColorModeValue, useToken } from '@chakra-ui/system'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { RainbowData } from 'hooks/useBalanceChartData/useBalanceChartData'
+import { useTheme, HStack, VStack, Stack, Text, Flex } from '@chakra-ui/react'
+import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
 
 export type RainbowChartProps = {
   data: RainbowData[]
@@ -121,7 +121,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const scaledMaxPriceY = getScaledY(maxPrice, minPrice, maxPrice, height - margins.bottom)
   const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margins.bottom)
 
-  const tooltipBg = useColorModeValue('white', colors.gray[700])
+  const tooltipBg = useColorModeValue('white', theme.colors.card.bg)
   const tooltipBorder = useColorModeValue(colors.gray[200], colors.gray[600])
   const tooltipColor = useColorModeValue(colors.gray[800], 'white')
   const minMaxTextColor = useToken('colors', color)
@@ -145,14 +145,14 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
     [selectAssetById, accessors, assetIds, data],
   )
 
-  const crosshairColor = useMemo(() => {
+  const crosshairColor = colors.primary/*useMemo(() => {
     if (assetIds.length>1) return colors.primary
-      const asset = selectAssetById(assetIds[0])
-      if (asset && asset?.color) {
-        return asset.color
-      }
-      return colors.primary
-  }, [assetIds, selectAssetById, colors.primary])
+    const asset = selectAssetById(assetIds[0])
+    if (asset && asset?.color) {
+      return asset.color
+    }
+    return colors.primary
+  }, [assetIds, selectAssetById, colors.primary])*/
 
   return (
     <XYChart margin={margins} height={height} width={width} xScale={xScale} yScale={yScale}>
@@ -185,39 +185,54 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
           pointerEvents: 'none',
         }}
         renderTooltip={({ tooltipData }) => {
-          // console.log('tooltipData', tooltipData)
           const { datum, key: assetId } = tooltipData?.nearestDatum!
           const price = datum[assetId]
           const { date } = datum
-          const asset = selectAssetById(assetId)
           return (
-            <Stack
-              borderRadius={'lg'}
-              borderColor={tooltipBorder}
+            <VStack
+              p={2}
+              spacing={1}
               borderWidth={1}
+              borderRadius={'lg'}
               color={tooltipColor}
               bgColor={tooltipBg}
-              direction='column'
-              spacing={0}
-              p={2}
+              alignItems={'flex-start'}
+              borderColor={tooltipBorder}
             >
-              <Stack direction='row' alignItems={'center'}>
-                <AssetProvider assetId={assetId}>
-                  <Flex
-                    direction={'row'}
-                    alignItems={'center'}
-                  >
-                    <AssetProvider.Icon size={'2xs'} mr={2} />
-                    <AssetProvider.Name fontWeight={'bold'} />
-                    <AssetProvider.Strategy color={strategies[asset?.type]?.color} ml={1} fontWeight={'bold'} prefix={'('} suffix={')'} />
-                  </Flex>
-                </AssetProvider>
-              </Stack>
-              <Text fontWeight={'bold'}>{formatFn(price)}</Text>
+              <VStack
+                spacing={2}
+                width={'full'}
+                alignItems={'flex-start'}
+              >
+                {
+                  Object.keys(datum).filter( k => !['date','total'].includes(k) ).map( (assetId: string) => {
+                    const asset = selectAssetById(assetId)
+                    return (
+                      <VStack
+                        key={assetId}
+                        spacing={0}
+                        width={'full'}
+                        alignItems={'flex-start'}
+                      >
+                        <AssetProvider assetId={assetId}>
+                          <HStack
+                            spacing={1}
+                          >
+                            <AssetProvider.Icon size={'2xs'} />
+                            <AssetProvider.Name fontSize={'sm'} fontWeight={'bold'} />
+                            <AssetProvider.Strategy fontSize={'sm'} color={strategies[asset?.type]?.color} fontWeight={'bold'} prefix={'('} suffix={')'} />
+                          </HStack>
+                        </AssetProvider>
+                        <Text fontWeight={'bold'}>{formatFn(price)}</Text>
+                      </VStack>
+                    )
+                  })
+                }
+              </VStack>
               <Text fontSize={'xs'} color={colors.gray[500]}>
                 {dayjs(date).locale(locale).format('LLL')}
               </Text>
-            </Stack>
+            </VStack>
           )
         }}
       />

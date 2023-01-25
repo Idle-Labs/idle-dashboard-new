@@ -11,8 +11,8 @@ import type { RainbowData } from 'constants/types'
 import { SeriesPoint } from '@visx/shape/lib/types'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { useColorModeValue } from '@chakra-ui/color-mode'
-import { useTheme, Text, Stack, Flex } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { useTheme, Text, HStack, VStack, Flex } from '@chakra-ui/react'
 import { defaultStyles, withTooltip, TooltipWithBounds } from '@visx/tooltip'
 import { scaleBand, scaleLinear, scaleOrdinal, scaleTime } from '@visx/scale'
 import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip'
@@ -83,7 +83,7 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
       fontWeight: 'bold',
       fill: axisLabelColor,
     }
-    
+
     // const AXIS_LEFT_TICK_LABEL_PROPS = {
     //   dx: '-0.25em',
     //   dy: '0.25em',
@@ -157,8 +157,8 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
               x={getDate}
               color={colorScale}
               xScale={dateScale}
-              offset={'diverging'}
               yScale={dataScale}
+              offset={'diverging'}
             >
               {(barStacks) =>
                 barStacks.map((barStack) =>
@@ -234,29 +234,56 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
             left={tooltipData.x}
             style={{
               ...defaultStyles,
-              background: tooltipBg,
-              padding: '0.5rem',
-              borderRadius: '8px',
-              border: `1px solid ${tooltipBorder}`,
-              color: tooltipColor
+              border:'none',
+              backgroundColor:'transparent',
+              paddingTop: 0,
+              paddingLeft: 0,
+              paddingBottom: 0,
+              paddingRight: 0
             }}
           >
-            <Stack direction='row' alignItems={'center'}>
-              <AssetProvider assetId={tooltipData.key}>
-                <Flex
-                  direction={'row'}
-                  alignItems={'center'}
-                >
-                  <AssetProvider.Icon size={'2xs'} mr={2} />
-                  <AssetProvider.Name fontWeight={'bold'} />
-                  <AssetProvider.Strategy color={colorScale(tooltipData.key)} ml={1} fontWeight={'bold'} prefix={'('} suffix={')'} />
-                </Flex>
-              </AssetProvider>
-            </Stack>
-            <Amount.Usd abbreviate={false} fontWeight='bold' fontSize='lg' my={2} value={tooltipData.bar.data[tooltipData.key]} />
-            <Text fontSize={'xs'} color={axisLabelColor}>
-              {formatDate(tooltipData.bar.data)}
-            </Text>
+            <VStack
+              p={2}
+              spacing={3}
+              width={'full'}
+              alignItems={'flex-start'}
+              borderRadius={'lg'}
+              borderColor={tooltipBorder}
+              borderWidth={1}
+              color={tooltipColor}
+              bgColor={tooltipBg}
+            >
+              <VStack
+                spacing={4}
+                width={'full'}
+                alignItems={'flex-start'}
+              >
+                {
+                  Object.keys(tooltipData.bar.data).filter( k => !['date','total'].includes(k) ).map( (assetId: string) => (
+                    <VStack
+                      spacing={2}
+                      key={assetId}
+                      width={'full'}
+                      alignItems={'flex-start'}
+                    >
+                      <AssetProvider assetId={assetId}>
+                        <HStack
+                          spacing={1}
+                        >
+                          <AssetProvider.Icon size={'2xs'} />
+                          <AssetProvider.Name fontWeight={'bold'} />
+                          <AssetProvider.Strategy color={colorScale(assetId)} fontWeight={'bold'} prefix={'('} suffix={')'} />
+                        </HStack>
+                      </AssetProvider>
+                      <Amount.Usd abbreviate={false} fontWeight={'bold'} fontSize={'md'} value={tooltipData.bar.data[assetId]} />
+                    </VStack>
+                  ))
+                }
+              </VStack>
+              <Text fontSize={'xs'} color={theme.colors.gray[500]}>
+                {formatDate(tooltipData.bar.data)}
+              </Text>
+            </VStack>
             {
               /*
               <ul style={{ padding: '0', margin: '0', listStyle: 'none' }}>
