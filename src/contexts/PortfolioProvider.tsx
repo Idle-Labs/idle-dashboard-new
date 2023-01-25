@@ -2041,7 +2041,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // eslint-disable-next-line
   }, [state.vaults, state.isPortfolioLoaded])
 
-  // Calculate historicalTvls USD
+  // Calculate historical USD Tvls
   useEffect(() => {
     if (isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalTvls)) return
     const historicalTvlsUsd = Object.keys(state.historicalTvls).reduce( (historicalTvlsUsd: InitialState["historicalTvlsUsd"], assetId: AssetId) => {

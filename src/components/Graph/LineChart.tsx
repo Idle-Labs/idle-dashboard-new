@@ -1,4 +1,4 @@
-import { useTheme, useColorModeValue } from '@chakra-ui/react'
+import { useTheme } from '@chakra-ui/react'
 import { HistoryData } from 'constants/types'
 import { AxisBottom, AxisLeft } from '@visx/axis'
 import { AxisScale } from '@visx/axis'
@@ -38,8 +38,9 @@ export const LineChart = ({
   children,
 }: LineChartProps) => {
   const theme = useTheme()
-  const strokeColor = useColorModeValue(theme.colors.gray[200], theme.colors.gray[750])
-  const labelColor = useColorModeValue(theme.colors.gray[300], theme.colors.table.axisLabel)
+  const strokeColor = theme.colors.gray[750]
+  const labelColor = theme.colors.table.axisLabel
+
   const AXIS_BOTTOM_TICK_LABEL_PROPS = {
     textAnchor: 'middle' as const,
     fontSize: 12,

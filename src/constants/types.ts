@@ -60,6 +60,12 @@ export type HistoryData = {
   date: number
 }
 
+export type RainbowData = {
+  date: number
+  total: number
+  [k: AssetId]: number
+}
+
 export type PlatformApiFilters = Record<string, string | number>
 
 export enum HistoryTimeframe {

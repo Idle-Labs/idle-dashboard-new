@@ -5,7 +5,6 @@ import { useTranslate } from 'react-polyglot'
 import { SECONDS_IN_YEAR } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
-import { BarChart } from 'components/Graph/BarChart'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { HistoryTimeframe, AssetId } from 'constants/types'
 import React, { useMemo, useCallback, useState } from 'react'
@@ -15,19 +14,19 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
+import { VolumeChart } from 'components/VolumeChart/VolumeChart'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
+import { SimpleGrid, Box, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
 import { BNify, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
-import { useTheme, SimpleGrid, Box, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 
 export const AssetStats: React.FC = () => {
-  const theme = useTheme()
   const translate = useTranslate()
+  const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
-  const { location, params } = useBrowserRouter()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const { vaults, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   const [ selectedStrategies, setSelectedStrategies ] = useState<string[]>(Object.keys(strategies))
@@ -248,10 +247,10 @@ export const AssetStats: React.FC = () => {
                   assetIds={assetIds}
                   color={strategyColor}
                   timeframe={timeframe}
+                  isRainbowChart={true}
                   data={performanceChartData}
                   setPercentChange={() => {}}
                   height={isMobile ? '300px' : '350px'}
-                  isRainbowChart={assetIds.length>1 ? true : false}
                   margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
                   //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                 />
@@ -294,9 +293,9 @@ export const AssetStats: React.FC = () => {
                 color={strategyColor}
                 timeframe={timeframe}
                 maxMinEnabled={false}
+                isRainbowChart={true}
                 setPercentChange={() => {}}
                 height={isMobile ? '300px' : '350px'}
-                isRainbowChart={assetIds.length>1 ? true : false}
                 margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
               />
             </Card.Dark>
@@ -317,10 +316,10 @@ export const AssetStats: React.FC = () => {
                 color={strategyColor}
                 timeframe={timeframe}
                 maxMinEnabled={false}
+                isRainbowChart={true}
                 setPercentChange={() => {}}
                 height={isMobile ? '300px' : '350px'}
                 formatFn={(n: any) => `${numberToPercentage(n)}`}
-                isRainbowChart={assetIds.length>1 ? true : false}
                 margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
               />
             </Card.Dark>
@@ -335,7 +334,7 @@ export const AssetStats: React.FC = () => {
               p={6}
               flex={1}
             >
-              <BarChart />
+              <VolumeChart timeframe={timeframe} assetIds={filteredAssetIds} />
             </Card.Dark>
           </VStack>
         </SimpleGrid>

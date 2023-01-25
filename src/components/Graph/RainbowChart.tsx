@@ -2,7 +2,6 @@ import { useTheme, Stack, Text, Flex } from '@chakra-ui/react'
 import { useColorModeValue, useToken } from '@chakra-ui/system'
 import { curveLinear } from '@visx/curve'
 import { Group } from '@visx/group'
-import { ScaleSVG } from '@visx/responsive'
 import { Text as VisxText } from '@visx/text'
 import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
 import { extent, Numeric } from 'd3-array'
@@ -10,7 +9,6 @@ import dayjs from 'dayjs'
 import omit from 'lodash/omit'
 import { strategies } from 'constants/'
 import React, { useCallback, useMemo } from 'react'
-import { Amount } from 'components/Amount/Amount'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -49,7 +47,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const { locale } = useI18nProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   const assetIds = useMemo(() => Object.keys(omit(data[0], ['date', 'total'])), [data])
-  const magicXAxisOffset = 37
+  const magicXAxisOffset = 35
 
   type Accessor = (d: RainbowData) => number
   const accessors = useMemo(() => {
@@ -70,7 +68,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
     [data, width],
   )
 
-  const labelColor = useColorModeValue(colors.gray[300], colors.gray[700])
+  const labelColor = theme.colors.table.axisLabel
   const tickLabelProps = useMemo(
     () => ({
       textAnchor: 'middle' as const,
@@ -157,105 +155,101 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   }, [assetIds, selectAssetById, colors.primary])
 
   return (
-    <div style={{ position: 'relative' }}>
-      <ScaleSVG width={width} height={height}>
-        <XYChart margin={margins} height={height} width={width} xScale={xScale} yScale={yScale}>
-          <Group top={margins.top} left={margins.left}>
-            <AreaStack order='ascending' curve={curveLinear}>
-              {areaLines}
-            </AreaStack>
-          </Group>
-          {
-            axisEnabled && (
-              <Axis
-                key={'date'}
-                orientation={'bottom'}
-                top={height - magicXAxisOffset}
-                hideTicks
-                hideAxisLine
-                numTicks={5}
-                tickLabelProps={() => tickLabelProps}
-              />
-            )
-          }
-          <Tooltip<RainbowData>
-            applyPositionStyle
-            style={{ zIndex: 10 }} // render over swapper TokenButton component
-            showVerticalCrosshair
-            verticalCrosshairStyle={{
-              stroke: crosshairColor,
-              strokeWidth: 2,
-              opacity: 0.5,
-              strokeDasharray: '5,2',
-              pointerEvents: 'none',
-            }}
-            renderTooltip={({ tooltipData }) => {
-              const { datum, key: assetId } = tooltipData?.nearestDatum!
-              const price = datum[assetId]
-              const { date } = datum
-              const asset = selectAssetById(assetId)
-              return (
-                <Stack
-                  borderRadius={'lg'}
-                  borderColor={tooltipBorder}
-                  borderWidth={1}
-                  color={tooltipColor}
-                  bgColor={tooltipBg}
-                  direction='column'
-                  spacing={0}
-                  p={2}
-                >
-                  <Stack direction='row' alignItems={'center'}>
-                    <AssetProvider assetId={assetId}>
-                      <Flex
-                        direction={'row'}
-                        alignItems={'center'}
-                      >
-                        <AssetProvider.Icon size={'2xs'} mr={2} />
-                        <AssetProvider.Name fontWeight={'bold'} />
-                        <AssetProvider.Strategy color={strategies[asset?.type]?.color} ml={1} fontWeight={'bold'} prefix={'('} suffix={')'} />
-                      </Flex>
-                    </AssetProvider>
-                  </Stack>
-                  <Text fontWeight={'bold'}>{formatFn(price)}</Text>
-                  <Text fontSize={'xs'} color={colors.gray[500]}>
-                    {dayjs(date).locale(locale).format('LLL')}
-                  </Text>
-                </Stack>
-              )
-            }}
+    <XYChart margin={margins} height={height} width={width} xScale={xScale} yScale={yScale}>
+      <AreaStack order='ascending' curve={curveLinear}>
+        {areaLines}
+      </AreaStack>
+      {
+        axisEnabled && (
+          <Axis
+            hideTicks
+            key={'date'}
+            hideAxisLine
+            numTicks={5}
+            orientation={'bottom'}
+            top={height - magicXAxisOffset}
+            tickLabelProps={() => tickLabelProps}
           />
-          <Group top={margins.top} left={margins.left}>
-            <g>
-              <VisxText
-                x={scaledMaxPriceX.x}
-                textAnchor={scaledMaxPriceX.anchor}
-                y={scaledMaxPriceY}
-                fill={minMaxTextColor}
-                fontSize='12px'
-                dy='1rem'
-                dx='-0.5rem'
-              >
-                {formatFn(maxPrice)}
-              </VisxText>
-            </g>
-            <g>
-              <VisxText
-                x={scaledMinPriceX.x}
-                textAnchor={scaledMinPriceX.anchor}
-                y={scaledMinPriceY}
-                fill={minMaxTextColor}
-                fontSize='12px'
-                dy='1rem'
-                dx='-0.5rem'
-                width={100}
-              >
-                {formatFn(minPrice)}
-              </VisxText>
-            </g>
-          </Group>
-        </XYChart>
-      </ScaleSVG>
-    </div>
+        )
+      }
+
+      <Tooltip<RainbowData>
+        applyPositionStyle
+        style={{ zIndex: 10 }}
+        showVerticalCrosshair
+        verticalCrosshairStyle={{
+          stroke: crosshairColor,
+          strokeWidth: 2,
+          opacity: 0.5,
+          strokeDasharray: '5,2',
+          pointerEvents: 'none',
+        }}
+        renderTooltip={({ tooltipData }) => {
+          // console.log('tooltipData', tooltipData)
+          const { datum, key: assetId } = tooltipData?.nearestDatum!
+          const price = datum[assetId]
+          const { date } = datum
+          const asset = selectAssetById(assetId)
+          return (
+            <Stack
+              borderRadius={'lg'}
+              borderColor={tooltipBorder}
+              borderWidth={1}
+              color={tooltipColor}
+              bgColor={tooltipBg}
+              direction='column'
+              spacing={0}
+              p={2}
+            >
+              <Stack direction='row' alignItems={'center'}>
+                <AssetProvider assetId={assetId}>
+                  <Flex
+                    direction={'row'}
+                    alignItems={'center'}
+                  >
+                    <AssetProvider.Icon size={'2xs'} mr={2} />
+                    <AssetProvider.Name fontWeight={'bold'} />
+                    <AssetProvider.Strategy color={strategies[asset?.type]?.color} ml={1} fontWeight={'bold'} prefix={'('} suffix={')'} />
+                  </Flex>
+                </AssetProvider>
+              </Stack>
+              <Text fontWeight={'bold'}>{formatFn(price)}</Text>
+              <Text fontSize={'xs'} color={colors.gray[500]}>
+                {dayjs(date).locale(locale).format('LLL')}
+              </Text>
+            </Stack>
+          )
+        }}
+      />
+      <Group top={margins.top} left={margins.left}>
+        <g>
+          <VisxText
+            x={scaledMaxPriceX.x}
+            textAnchor={scaledMaxPriceX.anchor}
+            y={scaledMaxPriceY}
+            fill={minMaxTextColor}
+            fontSize='12px'
+            dy='1rem'
+            dx='-0.5rem'
+          >
+            {formatFn(maxPrice)}
+          </VisxText>
+        </g>
+        <g>
+          <VisxText
+            x={scaledMinPriceX.x}
+            textAnchor={scaledMinPriceX.anchor}
+            y={scaledMinPriceY}
+            fill={minMaxTextColor}
+            fontSize='12px'
+            dy='1rem'
+            dx='-0.5rem'
+            width={100}
+          >
+            {formatFn(minPrice)}
+          </VisxText>
+        </g>
+      </Group>
+    </XYChart>
   )
 }
