@@ -9,9 +9,9 @@ import React, { useCallback, useMemo } from 'react'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { useColorModeValue, useToken } from '@chakra-ui/system'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { useTheme, HStack, VStack, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { RainbowData } from 'hooks/useBalanceChartData/useBalanceChartData'
-import { useTheme, HStack, VStack, Stack, Text, Flex } from '@chakra-ui/react'
 import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
 
 export type RainbowChartProps = {
