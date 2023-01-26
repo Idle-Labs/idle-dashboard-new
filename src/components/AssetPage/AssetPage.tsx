@@ -50,6 +50,7 @@ export const AssetPage: React.FC = () => {
     isPortfolioAccountReady,
     selectors: {
       selectAssetById,
+      selectVaultById,
       selectVaultGauge,
       selectAssetBalance,
       selectAssetPriceUsd
@@ -63,6 +64,10 @@ export const AssetPage: React.FC = () => {
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(params.asset)
   }, [selectAssetById, params.asset])
+
+  const vault = useMemo(() => {
+    return selectVaultById && selectVaultById(params.asset)
+  }, [selectVaultById, params.asset])
 
   // Update asset
   useEffect(() => {
@@ -171,19 +176,21 @@ export const AssetPage: React.FC = () => {
     }
 
     // Add stats tab
-    tabs.push({
-      id:'stats',
-      label:'navBar.stats',
-      component: AssetStats,
-      componentProps: {
-        timeframe,
-        showHeader: false,
-        showAssetStrategy: true
-      }
-    })
+    if (!vault?.flags || vault.flags.statsEnabled === undefined || vault.flags.statsEnabled){
+      tabs.push({
+        id:'stats',
+        label:'navBar.stats',
+        component: AssetStats,
+        componentProps: {
+          timeframe,
+          showHeader: false,
+          showAssetStrategy: true
+        }
+      })
+    }
 
     return tabs
-  }, [vaultGauge, assetGauge, timeframe])
+  }, [vault, vaultGauge, assetGauge, timeframe])
 
   const vaultId = useMemo(() => {
     return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id

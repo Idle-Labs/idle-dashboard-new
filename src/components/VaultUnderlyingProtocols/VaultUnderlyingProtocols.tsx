@@ -49,6 +49,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
           const protocolConfig = selectProtocol(protocol.name)
           const allocationPercentage = BNify(asset.allocations?.[protocol.name]).div(100)
           const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
+          const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
           const assetIds = protocolConfig?.govTokens?.reduce( (assetIds: string[], tokenName: string) => {
             const underlyingToken = selectUnderlyingToken(chainId, tokenName)
             if (underlyingToken?.address){
@@ -56,6 +57,8 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
             }
             return assetIds
           }, [])
+
+          {/*console.log('protocolApr', asset, asset?.protocolsAprs, protocolApr)*/}
 
           return (
             <Card
@@ -70,6 +73,8 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                 <ProtocolLabel protocolId={protocol.name} size={'xs'} />
                 <HStack
                   spacing={6}
+                  width={'full'}
+                  justifyContent={'space-between'}
                 >
                   <VStack
                     spacing={1}
@@ -82,13 +87,16 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                     spacing={1}
                     alignItems={'flex-start'}
                   >
-                    <Translation component={Text} translation={'defi.govToken'} textStyle={'captionSmall'} />
+                    <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
+                    <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
                     {
+                      /*
                       !assetIds ? (
                         <Text textStyle={'captionSmall'}>-</Text>
                       ) : (
                         <AssetsIcons assetIds={assetIds} showTooltip={true} size={'xs'} />
                       )
+                      */
                     }
                   </VStack>
                   <VStack

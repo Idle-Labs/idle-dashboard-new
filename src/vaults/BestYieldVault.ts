@@ -69,6 +69,7 @@ export class BestYieldVault {
     this.messages = {}
     this.chainId = chainId
     this.protocol = 'idle'
+    this.flags = tokenConfig.flags
     this.tokenConfig = tokenConfig
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle

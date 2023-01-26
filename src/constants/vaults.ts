@@ -1612,6 +1612,7 @@ export type BestYieldConfig = {
   enabledEnvs?: string[]
   underlyingToken: string
   protocols: IdleTokenProtocol[]
+  flags?: Record<string, boolean>
 }
 
 export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
@@ -1655,49 +1656,50 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
-    /*
     USDCBB: {
-      blockNumber: 15919570,
-      underlyingToken: 'USDC',
       enabledEnvs: ['beta'],
+      blockNumber: 16277063,
+      flags:{
+        statsEnabled:false
+      },
+      underlyingToken: 'USDC',
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
         token: 'idleUSDCBB',
-        address: '0xf6954b03d6a94ba9e8c80cbe5824f22a401ee5d2',
+        address: '0xDc7777C771a6e4B3A82830781bDDe4DBC78f320e',
       },
       protocols: [
         {
           decimals: 18,
+          name: 'euler',
           enabled: true,
-          name: 'clearpool',
           abi: IdleCDO as Abi,
-          token: 'BB_clearpool_USDC',
-          address: '0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d',
+          token: 'BB_euler_USDC',
+          address: '0x271db794317B44827EfE81DeC6193fFc277050F6',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d']
+              params: ['0x271db794317B44827EfE81DeC6193fFc277050F6']
             }
           },
         },
         {
           decimals: 18,
           enabled: true,
-          name: 'ribbon',
+          name: 'morpho',
           abi: IdleCDO as Abi,
-          token: 'BB_ribbon_USDC',
-          address: '0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C',
+          token: 'BB_morpho_USDC',
+          address: '0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C']
+              params: ['0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0']
             }
           },
-        },
+        }
       ]
     },
-    */
     USDC: {
       blockNumber: 10618515,
       underlyingToken: 'USDC',
@@ -1735,6 +1737,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
 
           }
         },
+        /*
         {
           abi: IdleCDO as Abi,
           enabled: true,
@@ -1749,6 +1752,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
             }
           },
         },
+        */
       ]
     },
     USDT: {

@@ -254,6 +254,7 @@ export type Asset = {
   apyBoost?: BigNumber
   priceUsd?: BigNumber
   balanceUsd?: BigNumber
+  protocolsAprs?: Balances
   vaultPrice?: BigNumber
   totalSupply?: BigNumber
   additionalApr?: BigNumber

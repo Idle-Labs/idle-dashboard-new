@@ -50,6 +50,7 @@ export const routes: RouteObject[] = [
         path:'stake',
         element:<Staking />
       },
+      /*
       {
         path:'stats',
         children:[
@@ -63,6 +64,7 @@ export const routes: RouteObject[] = [
           }
         ]
       },
+      */
       {
         index: true,
         element:<Navigate to="/dashboard" replace />

@@ -2,6 +2,7 @@ import { menu } from 'constants/menu'
 import { MdMenu } from 'react-icons/md'
 import { MobileMenu } from './MobileMenu'
 import { MenuNavItem } from './MenuNavItem'
+import { checkSectionEnabled } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MenuItemExpandable } from './MenuItemExpandable'
 import React, { useState, useMemo, useEffect } from 'react'
@@ -41,6 +42,8 @@ export const TopBarMenu: React.FC = () => {
         !isMobile ? (
           <Menu>
             {({ isOpen }) => menu.map( (menuItem, index) => {
+              const sectionEnabled = !menuItem.path || checkSectionEnabled(menuItem.path)
+              if (!sectionEnabled) return null
               return (
                 <Flex
                   key={`menuItem_${index}`}

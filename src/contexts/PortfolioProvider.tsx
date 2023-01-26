@@ -44,6 +44,7 @@ type VaultsOnchainData = {
   stakingData: StakingData | null
   rewards: Record<AssetId, Balances>
   allocations: Record<AssetId, Balances>
+  protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
 }
@@ -98,6 +99,7 @@ const initialState: InitialState = {
   vaultsRewards: {},
   gaugesRewards: {},
   aprsBreakdown: {},
+  protocolsAprs: {},
   additionalAprs: {},
   historicalTvls: {},
   protocolToken: null,
@@ -169,6 +171,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, historicalTvlsUsd: action.payload}
     case 'SET_ADDITIONAL_APRS':
       return {...state, additionalAprs: action.payload}
+    case 'SET_PROTOCOLS_APRS':
+      return {...state, protocolsAprs: action.payload}
     case 'SET_HISTORICAL_PRICES':
       return {...state, historicalPrices: action.payload}
     case 'SET_HISTORICAL_PRICES_USD':
@@ -916,6 +920,21 @@ export function PortfolioProvider({ children }:ProviderProps) {
     //   ...state.assetsData
     // }
 
+    // Process protocols Aprs
+    const protocolsAprs = protocolsResults.reduce( (protocolsAprs: Record<AssetId, Balances>, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        protocolsAprs[assetId] =  {}
+        callResult.data[0].forEach( (protocolAddress: string, index: number) => {
+          const protocolApr = fixTokenDecimals(callResult.data[1][index], 18)
+          protocolsAprs[assetId][protocolAddress.toLowerCase()] = apr2apy(protocolApr.div(100)).times(100)
+        })
+      }
+      return protocolsAprs
+    }, {})
+
+    // console.log('protocolsAprs', protocolsAprs)
+
     // Process protocols
     const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
       if (callResult.data) {
@@ -1307,6 +1326,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPrices,
       totalSupplies,
       aprsBreakdown,
+      protocolsAprs,
       vaultsRewards,
       additionalAprs
     }
@@ -1373,6 +1393,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         lastHarvests,
         vaultsPrices,
         totalSupplies,
+        protocolsAprs,
         aprsBreakdown,
         // vaultsRewards,
         additionalAprs
@@ -1388,6 +1409,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: aprs[vaultId]
         }
       }, {...state.aprs})
+
+      const newProtocolsAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newProtocolsAprs: Record<AssetId, Balances>, vaultId: AssetId) => {
+        if (!protocolsAprs[vaultId]){
+          delete newProtocolsAprs[vaultId]
+          return newProtocolsAprs
+        }
+        return {
+          ...newProtocolsAprs,
+          [vaultId]: protocolsAprs[vaultId]
+        }
+      }, {...state.protocolsAprs})
 
       const newFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newFees: Balances, vaultId: AssetId) => {
         if (!fees[vaultId]){
@@ -1577,6 +1609,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         allocations: newAllocations,
         lastHarvests: newLastHarvests,
         vaultsPrices: newVaultsPrices,
+        protocolsAprs: newProtocolsAprs,
         vaultsRewards: newVaultsRewards,
         aprsBreakdown: newAprsBreakdown,
         totalSupplies: newTotalSupplies,
@@ -1722,7 +1755,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectAssetHistoricalTvlsUsd,
       selectVaultsAssetsWithBalance,
       selectAssetHistoricalPriceByTimestamp,
-      selectAssetHistoricalPriceUsdByTimestamp,
+      selectAssetHistoricalPriceUsdByTimestamp
     }
 
     dispatch({type: 'SET_SELECTORS', payload: selectors})
@@ -2104,6 +2137,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         allocations,
         lastHarvests,
         vaultsPrices,
+        protocolsAprs,
         aprsBreakdown,
         vaultsRewards,
         totalSupplies,
@@ -2136,6 +2170,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const payload = !enabledCalls.length || accountChanged ? baseAprs : {...state.baseAprs, ...baseAprs}
         newState.baseAprs = payload
         // dispatch({type: 'SET_BASE_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
+        const payload = !enabledCalls.length || accountChanged ? protocolsAprs : {...state.protocolsAprs, ...protocolsAprs}
+        newState.protocolsAprs = payload
+        // dispatch({type: 'SET_ALLOCATIONS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
         const payload = !enabledCalls.length || accountChanged ? allocations : {...state.allocations, ...allocations}
@@ -2420,6 +2459,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
       assetsData[vault.id].additionalApr =  state.additionalAprs[vault.id] || BNify(0)
+      assetsData[vault.id].protocolsAprs =  state.protocolsAprs[vault.id]
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
@@ -2545,6 +2585,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.pricesUsd,
     state.gaugesData,
     state.rewards,
+    state.protocolsAprs,
     state.historicalRates,
     state.historicalPrices,
     state.vaultsRewards,

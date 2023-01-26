@@ -108,8 +108,9 @@ export const Stats: React.FC = () => {
 
   const visibleVaults = useMemo(() => {
     return Object.values(vaults).reduce( (visibleVaults: Vault[], vault: Vault) => {
+      const statsEnabled = !("flags" in vault) || !vault?.flags || vault.flags?.statsEnabled === undefined || vault.flags.statsEnabled
       const vaultAlreadyPresent = vault instanceof TrancheVault && (visibleVaults.filter( (v: Vault) => v instanceof TrancheVault) as Array<TrancheVault>).find( (v: TrancheVault) => v.cdoConfig.address === vault.cdoConfig.address )
-      if (enabledStrategies.includes(vault.type as string) && !vaultAlreadyPresent){
+      if (statsEnabled && enabledStrategies.includes(vault.type as string) && !vaultAlreadyPresent){
         visibleVaults.push(vault)
       }
       return visibleVaults
