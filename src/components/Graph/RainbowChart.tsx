@@ -47,7 +47,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const { locale } = useI18nProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   const assetIds = useMemo(() => Object.keys(omit(data[0], ['date', 'total'])), [data])
-  const magicXAxisOffset = 35
+  const magicXAxisOffset = 25
 
   type Accessor = (d: RainbowData) => number
   const accessors = useMemo(() => {
@@ -172,7 +172,6 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
           />
         )
       }
-
       <Tooltip<RainbowData>
         applyPositionStyle
         style={{ zIndex: 10 }}

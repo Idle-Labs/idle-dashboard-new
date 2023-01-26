@@ -23,11 +23,17 @@ import { BNify, removeItemFromArray, abbreviateNumber, numberToPercentage } from
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 
-export const AssetStats: React.FC = () => {
+type AssetStatsProps = {
+  showHeader?: boolean
+  showAssetStrategy?: boolean
+  timeframe?: HistoryTimeframe
+}
+
+export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showAssetStrategy = false, timeframe: defaultTimeframe }) => {
   const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["6MONTHS"])
   const { vaults, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   const [ selectedStrategies, setSelectedStrategies ] = useState<string[] | undefined>(undefined)
 
@@ -45,8 +51,9 @@ export const AssetStats: React.FC = () => {
 
   const availableStrategies = useMemo(() => {
     if (!asset?.type) return
+    if (showAssetStrategy) return [asset.type]
     return ['AA','BB'].includes(asset.type) ? ['AA','BB'] : [asset.type]
-  }, [asset])
+  }, [asset, showAssetStrategy])
 
   useEffect(() => {
     if (availableStrategies && !selectedStrategies){
@@ -75,9 +82,13 @@ export const AssetStats: React.FC = () => {
     })
   }, [selectAssetById, assetIds, selectedStrategies])
 
-  const { tvlChartData } = useTVLChartData({ assetIds: filteredAssetIds, timeframe })
-  const { performanceChartData } = usePerformanceChartData({ assetIds: filteredAssetIds, timeframe })
-  const { rateChartData } = useRateChartData({ assetIds: filteredAssetIds, timeframe })
+  const selectedTimeframe = useMemo(() => {
+    return defaultTimeframe || timeframe
+  }, [timeframe, defaultTimeframe])
+
+  const { tvlChartData } = useTVLChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
+  const { performanceChartData } = usePerformanceChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
+  const { rateChartData } = useRateChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
 
   // console.log('tvlChartData', tvlChartData)
   // console.log('rateChartData', rateChartData)
@@ -206,29 +217,33 @@ export const AssetStats: React.FC = () => {
 
   return (
     <Box
-      mt={14}
       width={'100%'}
     >
-      <Stack
-        mb={10}
-        spacing={10}
-        width={'100%'}
-        alignItems={['flex-start','center']}
-        justifyContent={'flex-start'}
-        direction={['column', 'row']}
-      >
-        <AssetLabel assetId={params.asset} fontSize={'h2'} />
-        <HStack
-          pb={3}
-          flex={1}
-          borderBottom={'1px solid'}
-          borderColor={'divider'}
-          justifyContent={'space-between'}
-        >
-          <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} availableStrategies={availableStrategies} />
-          <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-        </HStack>
-      </Stack>
+      {
+        showHeader && (
+          <Stack
+            mt={14}
+            mb={10}
+            spacing={10}
+            width={'100%'}
+            alignItems={['flex-start','center']}
+            justifyContent={'flex-start'}
+            direction={['column', 'row']}
+          >
+            <AssetLabel assetId={params.asset} fontSize={'h2'} />
+            <HStack
+              pb={3}
+              flex={1}
+              borderBottom={'1px solid'}
+              borderColor={'divider'}
+              justifyContent={'space-between'}
+            >
+              <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} availableStrategies={availableStrategies} />
+              <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+            </HStack>
+          </Stack>
+        )
+      }
       <VStack
         spacing={20}
         width={'full'}
@@ -256,12 +271,12 @@ export const AssetStats: React.FC = () => {
                   percentChange={0}
                   assetIds={assetIds}
                   color={strategyColor}
-                  timeframe={timeframe}
                   isRainbowChart={true}
                   data={performanceChartData}
                   setPercentChange={() => {}}
+                  timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
-                  margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+                  margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
                   //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                 />
               </VStack>
@@ -301,12 +316,12 @@ export const AssetStats: React.FC = () => {
                 data={tvlChartData}
                 assetIds={assetIds}
                 color={strategyColor}
-                timeframe={timeframe}
                 maxMinEnabled={false}
                 isRainbowChart={true}
                 setPercentChange={() => {}}
+                timeframe={selectedTimeframe}
                 height={isMobile ? '300px' : '350px'}
-                margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+                margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
               />
             </Card.Dark>
           </VStack>
@@ -324,13 +339,13 @@ export const AssetStats: React.FC = () => {
                 assetIds={assetIds}
                 data={rateChartData}
                 color={strategyColor}
-                timeframe={timeframe}
                 maxMinEnabled={false}
                 isRainbowChart={true}
                 setPercentChange={() => {}}
+                timeframe={selectedTimeframe}
                 height={isMobile ? '300px' : '350px'}
                 formatFn={(n: any) => `${numberToPercentage(n)}`}
-                margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+                margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
               />
             </Card.Dark>
           </VStack>
@@ -344,7 +359,7 @@ export const AssetStats: React.FC = () => {
               p={6}
               flex={1}
             >
-              <VolumeChart timeframe={timeframe} assetIds={filteredAssetIds} />
+              <VolumeChart timeframe={selectedTimeframe} assetIds={filteredAssetIds} />
             </Card.Dark>
           </VStack>
         </SimpleGrid>

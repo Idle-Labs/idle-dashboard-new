@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { IconTab } from 'components/IconTab/IconTab'
 import { bnOrZero, BNify, sendViewItem } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { strategies, AssetId, imageFolder } from 'constants/'
+import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Deposit } from 'components/OperativeComponent/Deposit'
 import { Approve } from 'components/OperativeComponent/Approve'
@@ -15,6 +15,8 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { strategies, AssetId, imageFolder, HistoryTimeframe } from 'constants/'
+import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
@@ -27,8 +29,9 @@ type TabType = {
     props?: ImageProps,
     tooltip?: string
   }
+  componentProps?: any
   component: React.FunctionComponent<any>
-  actions: OperativeComponentAction[]
+  actions?: OperativeComponentAction[]
 }
 
 export const AssetPage: React.FC = () => {
@@ -39,6 +42,7 @@ export const AssetPage: React.FC = () => {
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["6MONTHS"])
   const {
     isPortfolioLoaded,
     portfolioTimestamp,
@@ -131,7 +135,7 @@ export const AssetPage: React.FC = () => {
             steps: []
           }
         ]
-      },
+      }
     ]
     
     const vaultDisabled = vaultGauge && ("enabled" in vaultGauge) && !vaultGauge.enabled
@@ -166,16 +170,32 @@ export const AssetPage: React.FC = () => {
       )
     }
 
+    // Add stats tab
+    tabs.push({
+      id:'stats',
+      label:'navBar.stats',
+      component: AssetStats,
+      componentProps: {
+        timeframe,
+        showHeader: false,
+        showAssetStrategy: true
+      }
+    })
+
     return tabs
-  }, [vaultGauge, assetGauge])
+  }, [vaultGauge, assetGauge, timeframe])
 
   const vaultId = useMemo(() => {
     return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id
   }, [tabs, selectedTabIndex, asset, vaultGauge])
 
-  const TabComponent = useMemo(() => {
-    return tabs[selectedTabIndex].component
+  const selectedTab = useMemo(() => {
+    return tabs[selectedTabIndex]
   }, [tabs, selectedTabIndex])
+
+  const TabComponent = useMemo(() => {
+    return selectedTab.component
+  }, [selectedTab])
 
   // Get selected tab id from search params
   const selectedTabId = useMemo(() => {
@@ -225,6 +245,25 @@ export const AssetPage: React.FC = () => {
     )
   }, [tabs, selectTab, selectedTabIndex])
 
+  const interactiveComponent = useMemo(() => {
+    if (!selectedTab.actions) return null
+    return (
+      <InteractiveComponent vaultId={asset?.id} assetId={vaultId} actions={selectedTab.actions!} />
+    )
+  }, [selectedTab, asset, vaultId])
+
+  const headerRightSide = useMemo(() => {
+    if (selectedTab.id === 'stats'){
+      return (
+        <TimeframeSelector style={{marginTop:'-20px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+      )
+    } else {
+      return !isMobile && (
+        <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />
+      )
+    }
+  }, [selectedTab, strategy, isMobile, timeframe, setTimeframe])
+
   return (
     <AssetProvider
       wrapFlex={true}
@@ -257,11 +296,7 @@ export const AssetPage: React.FC = () => {
               justifyContent={'space-between'}
             >
               {renderedTabs}
-              {
-                !isMobile && (
-                  <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />
-                )
-              }
+              {headerRightSide}
             </Stack>
           </Stack>
         </Flex>
@@ -276,9 +311,9 @@ export const AssetPage: React.FC = () => {
             spacing={10}
             width={['100%', 14/20]}
           >
-            <TabComponent />
+            <TabComponent {...tabs[selectedTabIndex].componentProps} />
           </Stack>
-          <InteractiveComponent vaultId={asset?.id} assetId={vaultId} actions={tabs[selectedTabIndex].actions} />
+          {interactiveComponent}
         </HStack>
       </Box>
     </AssetProvider>
