@@ -222,7 +222,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                             <AssetProvider.Strategy fontSize={'sm'} color={strategies[asset?.type]?.color} fontWeight={'bold'} prefix={'('} suffix={')'} />
                           </HStack>
                         </AssetProvider>
-                        <Text fontWeight={'bold'}>{formatFn(price)}</Text>
+                        <Text fontWeight={'bold'}>{formatFn(datum[assetId])}</Text>
                       </VStack>
                     )
                   })
