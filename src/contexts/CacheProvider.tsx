@@ -1,8 +1,9 @@
 import { hashCode } from 'helpers/'
+import { CACHE_VERSION } from 'constants/vars'
 import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
 import { preCachedRequests } from 'constants/historicalData'
-import React, { useContext, useCallback, useMemo } from 'react'
+import React, { useContext, useCallback, useMemo, useEffect } from 'react'
 
 export type CacheContextProps = {
   fetchUrl: Function
@@ -32,9 +33,21 @@ type CacheProviderProps = {
 } & ProviderProps
 
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
+  const [ cacheVersion, setCacheVersion, , isVersionLoaded ] = useLocalForge('cacheVersion')
   const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge('cachedRequests', preCachedRequests)
 
-  // console.log('cachedRequests', cachedRequests)
+  // Check preCachedData version
+  useEffect(() => {
+    if (!isLoaded || !isVersionLoaded || cacheVersion === CACHE_VERSION) return
+    setCachedRequests(preCachedRequests)
+    setCacheVersion(CACHE_VERSION)
+  }, [cacheVersion, isLoaded, isVersionLoaded, setCachedRequests, setCacheVersion])
+
+  const cacheIsLoaded = useMemo(() => {
+    return isLoaded && isVersionLoaded && cacheVersion === CACHE_VERSION
+  }, [cacheVersion, isVersionLoaded, isLoaded])
+
+  // console.log('cacheIsLoaded', cacheIsLoaded)
 
   const requestQueue = useMemo(() => new Map(), [])
 
@@ -129,7 +142,7 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
   }, [getCachedUrl, saveData, defaultTTL])
 
   return (
-    <CacheContext.Provider value={{ fetchUrl, saveData, getUrlHash, getCachedUrl, checkAndCache, isLoaded, processing }}>
+    <CacheContext.Provider value={{ fetchUrl, saveData, getUrlHash, getCachedUrl, checkAndCache, isLoaded: cacheIsLoaded, processing }}>
       {children}
     </CacheContext.Provider>
   )
