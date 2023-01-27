@@ -360,6 +360,10 @@ export const theme = extendTheme({
       cursor:'pointer',
       textDecoration:'underline',
     },
+    linkBlue:{
+      color:'link',
+      cursor:'pointer'
+    },
     bold:{
       fontWeight:700
     },
@@ -372,6 +376,22 @@ export const theme = extendTheme({
   },
   // Create components styles
   components: {
+    Checkbox: {
+      baseStyle:{
+        control:{
+          outline:'none',
+          borderWidth:'1px',
+          borderColor:'ctaDisabled',
+          _checked: {
+            borderWidth:0,
+            backgroundColor:'primary',
+            _hover:{
+              backgroundColor:'#ccc'
+            }
+          }
+        }
+      }
+    },
     Divider: {
       baseStyle: {
         borderColor: 'divider'

@@ -12,6 +12,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { SimpleGrid, VStack, HStack, Flex, Tag, TagLabel, Heading } from '@chakra-ui/react'
+import { VaultsFiltersContext, VaultsFiltersProvider, useVaultsFiltersProvider } from 'components/VaultsFiltersProvider/VaultsFiltersProvider'
 
 type VaultCardStatsProps = {
   vault: Vault
@@ -97,26 +98,33 @@ export const VaultCardStats: React.FC<VaultCardStatsProps> = ({ vault }) => {
   )
 }
 
-export const Stats: React.FC = () => {
-  const {
-    vaults,
-    assetsData: assets,
-    isPortfolioLoaded,
-  } = usePortfolioProvider()
-
-  const enabledStrategies = useMemo(() => Object.keys(strategies).filter( strategy => strategies[strategy].visible ), [])
-
-  const visibleVaults = useMemo(() => {
+export const FilteredVaultsGrid: React.FC = () => {
+  const { vaults } = useVaultsFiltersProvider()
+  
+  const filteredVaults = useMemo(() => {
     return Object.values(vaults).reduce( (visibleVaults: Vault[], vault: Vault) => {
       const statsEnabled = !("flags" in vault) || !vault?.flags || vault.flags?.statsEnabled === undefined || vault.flags.statsEnabled
       const vaultAlreadyPresent = vault instanceof TrancheVault && (visibleVaults.filter( (v: Vault) => v instanceof TrancheVault) as Array<TrancheVault>).find( (v: TrancheVault) => v.cdoConfig.address === vault.cdoConfig.address )
-      if (statsEnabled && enabledStrategies.includes(vault.type as string) && !vaultAlreadyPresent){
+      if (statsEnabled && !vaultAlreadyPresent){
         visibleVaults.push(vault)
       }
       return visibleVaults
     }, [])
-  }, [vaults, enabledStrategies])
+  }, [vaults])
 
+  return (
+    <SimpleGrid
+      pt={6}
+      spacing={6}
+      width={'full'}
+      columns={[1, 4]}
+    >
+      {filteredVaults.map( (vault: Vault) => <VaultCardStats key={`card_${vault.id}`} vault={vault} /> )}
+    </SimpleGrid>
+  )
+}
+
+export const Stats: React.FC = () => {
   return (
     <VStack
       mt={14}
@@ -124,15 +132,9 @@ export const Stats: React.FC = () => {
       width={'full'}
     >
       <Translation translation={'defi.chooseAsset'} component={Heading} as={'h2'} size={'3xl'} />
-      <SimpleGrid
-        spacing={6}
-        width={'full'}
-        columns={[1, 4]}
-      >
-        {
-          visibleVaults.map( (vault: Vault) => <VaultCardStats key={`card_${vault.id}`} vault={vault} /> )
-        }
-      </SimpleGrid>
+      <VaultsFiltersProvider types={['strategies', 'assets', 'protocols', 'apy', 'tvl']}>
+        <FilteredVaultsGrid />
+      </VaultsFiltersProvider>
     </VStack>
   )
 }

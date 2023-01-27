@@ -296,6 +296,15 @@ export const protocols: Record<string, Protocol> = {
         config: {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         },
+      },
+      juniorRates:{
+        endpoint: {
+          1: 'https://api.idle.finance/junior-rates/',
+        },
+        filters: ['start', 'end', 'limit', 'frequency', 'order'],
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        },
       }
     },
   }
