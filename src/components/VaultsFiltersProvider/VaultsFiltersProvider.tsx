@@ -214,6 +214,12 @@ const ApyFilter = ({ filterValues, dispatch }: FiltersProps) => {
     dispatch({type:'SET_APY', payload: availableRange})
   }, [dispatch, availableRange])
 
+  const rangeSliderValue = useMemo(() => {
+    const minValue = filterValues.minValue ? bnOrZero(filterValues.minValue).toNumber() : bnOrZero(availableRange.minValue).toNumber()
+    const maxValue = filterValues.maxValue ? bnOrZero(filterValues.maxValue).toNumber() : bnOrZero(availableRange.maxValue).toNumber()
+    return [minValue, maxValue]
+  }, [filterValues, availableRange])
+
   return availableRange.minValue && availableRange.maxValue ? (
     <VStack
       spacing={6}
@@ -245,10 +251,10 @@ const ApyFilter = ({ filterValues, dispatch }: FiltersProps) => {
       >
         <RangeSlider
           step={0.1}
+          value={rangeSliderValue}
           onChange={(range) => updateRange(range)}
           min={bnOrZero(availableRange.minValue).toNumber()}
           max={bnOrZero(availableRange.maxValue).toNumber()}
-          value={[bnOrZero(filterValues.minValue).toNumber(), bnOrZero(filterValues.maxValue).toNumber()]}
           defaultValue={[bnOrZero(availableRange.minValue).toNumber(), bnOrZero(availableRange.maxValue).toNumber()]}
         >
           <RangeSliderTrack>
@@ -286,6 +292,12 @@ const TvlFilter = ({ filterValues, dispatch }: FiltersProps) => {
     dispatch({type:'SET_TVL', payload: availableRange})
   }, [dispatch, availableRange])
 
+  const rangeSliderValue = useMemo(() => {
+    const minValue = filterValues.minValue ? bnOrZero(filterValues.minValue).toNumber() : bnOrZero(availableRange.minValue).toNumber()
+    const maxValue = filterValues.maxValue ? bnOrZero(filterValues.maxValue).toNumber() : bnOrZero(availableRange.maxValue).toNumber()
+    return [minValue, maxValue]
+  }, [filterValues, availableRange])
+
   return availableRange.minValue && availableRange.maxValue ? (
     <VStack
       spacing={6}
@@ -317,10 +329,10 @@ const TvlFilter = ({ filterValues, dispatch }: FiltersProps) => {
       >
         <RangeSlider
           step={100}
+          value={rangeSliderValue}
           onChange={(range) => updateRange(range)}
           min={bnOrZero(availableRange.minValue).toNumber()}
           max={bnOrZero(availableRange.maxValue).toNumber()}
-          value={[bnOrZero(filterValues.minValue).toNumber(), bnOrZero(filterValues.maxValue).toNumber()]}
           defaultValue={[bnOrZero(availableRange.minValue).toNumber(), bnOrZero(availableRange.maxValue).toNumber()]}
         >
           <RangeSliderTrack>
