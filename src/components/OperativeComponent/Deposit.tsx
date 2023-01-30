@@ -1,11 +1,15 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
+import { ZERO_ADDRESS } from 'constants/vars'
 import { imageFolder } from 'constants/folders'
 import { sendBeginCheckout } from 'helpers/analytics'
+import { BestYieldVault } from 'vaults/BestYieldVault'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
+import { AddressLink } from 'components/AddressLink/AddressLink'
 import { InputAmount } from 'components/InputAmount/InputAmount'
+import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
@@ -15,7 +19,7 @@ import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
+import { BNify, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
@@ -23,10 +27,23 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { account } = useWalletProvider()
+  const { searchParams } = useBrowserRouter()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
+
+  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams]) 
+
+  const referralEnabled = useMemo(() => vault && ("flags" in vault) && vault.flags?.referralEnabled, [vault])
+
+  // Get selected tab id from search params
+  const _referral = useMemo((): string | undefined => {
+    if (!referralEnabled) return
+    const referral = getSearchParams.get('_referral')
+    if (!checkAddress(referral) || referral === ZERO_ADDRESS) return
+    return referral
+  }, [referralEnabled, getSearchParams])
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -64,6 +81,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return false
   }, [amount, vaultEnabled, assetBalance, underlyingAsset, translate])
 
+  // console.log(Object.getOwnPropertyNames(vault))
   // console.log('vaultEnabled', vault, vaultEnabled)
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
@@ -93,7 +111,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       // console.log('allowance', vaultOwner, account.address, allowance)
 
       if (allowance.gte(amount)){
-        const depositParams = vault.getDepositParams(amount)
+
+        const depositParams = _referral && ("flags" in vault) && vault.flags?.referralEnabled ? vault.getDepositParams(amount, _referral) : vault.getDepositParams(amount)
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         // console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
@@ -108,7 +127,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, amount, amountUsd, vault, asset, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+  }, [account, disabled, _referral, amount, amountUsd, vault, asset, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -174,6 +193,25 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       <ConnectWalletButton variant={'ctaFull'} />
     )
   }, [account, disabled, deposit])
+
+  const referralMessage = useMemo(() => {
+    if (!_referral) return null
+    return (
+      <Card.Dark
+        py={2}
+        pl={3}
+        pr={2}
+        border={0}
+      >
+        <VStack
+          spacing={1}
+        >
+          <Translation textStyle={'captionSmaller'} translation={`defi.depositWithReferral`} />
+          <AddressLink address={_referral} text={_referral} fontSize={'sm'} />
+        </VStack>
+      </Card.Dark>
+    )
+  }, [_referral])
 
   const vaultMessage = useMemo(() => {
     return !vaultEnabled && assetBalance.gt(0) ? (
@@ -267,6 +305,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               }
             </VStack>
           </HStack>
+          {referralMessage}
           {vaultMessage}
           <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
         </VStack>

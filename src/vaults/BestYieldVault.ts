@@ -371,7 +371,7 @@ export class BestYieldVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  public getDepositParams(amount: NumberType, _referral: string = ZERO_ADDRESS): any[] {
+  public getDepositParams(amount: NumberType, _referral: string | undefined = ZERO_ADDRESS): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     return [normalizeTokenAmount(amount, decimals), true, _referral]
   }

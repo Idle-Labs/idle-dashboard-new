@@ -525,7 +525,13 @@ export const VaultsFiltersProvider = ({ children, types }: VaultsFiltersProvider
         >
           {
             types.map( (type: string) => (
-              <Selector type={type} filterValues={selectedFilters[type as keyof ReducerType]} dispatch={dispatch} {...(selectorsProperties[type] ? selectorsProperties[type] : {})} />
+              <Selector
+                type={type}
+                dispatch={dispatch}
+                key={`type_${type}`}
+                filterValues={selectedFilters[type as keyof ReducerType]}
+                {...(selectorsProperties[type] ? selectorsProperties[type] : {})}
+              />
             ))
           }
         </SimpleGrid>

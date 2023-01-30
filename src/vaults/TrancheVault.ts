@@ -389,7 +389,7 @@ export class TrancheVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  public getDepositParams(amount: NumberType): any[] {
+  public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     return [normalizeTokenAmount(amount, decimals)]
   }

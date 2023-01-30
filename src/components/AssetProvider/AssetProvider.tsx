@@ -363,6 +363,46 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) =
   )
 }
 
+const Strategies: React.FC<ProtocolsProps> = ({children, iconMargin = 1, ...props}) => {
+  const { vault, translate } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  const availableStrategies = useMemo(() => {
+    if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return []
+    return vault.tokenConfig.protocols.reduce( (availableStrategies: string[], protocolConfig: IdleTokenProtocol) => {
+      const asset = selectAssetById(protocolConfig.address)
+      if (!asset || availableStrategies.includes(asset.type)) return availableStrategies
+      return [
+        ...availableStrategies,
+        asset.type
+      ]
+    }, [])
+  }, [vault, selectAssetById])
+  
+  const protocols = useMemo(() => {
+    if (!availableStrategies.length) return children
+
+    const protocolIcons: JSX.Element[] = availableStrategies.map( (strategy: string, index: number) => (
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        key={`icon_${index}`}
+        label={translate(`assets.assetDetails.tooltips.${strategy}`)}
+      >
+        <Image src={`images/strategies/${strategy}.svg`} ml={iconMargin} {...props} />
+      </Tooltip>
+    ))
+
+    return protocolIcons
+  }, [translate, children, props, iconMargin, availableStrategies])
+
+  return (
+    <Flex>
+      {protocols}
+    </Flex>
+  )
+}
+
 const Balance: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
@@ -964,6 +1004,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           <Icon size={'sm'} {...props} />
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
+      )
+    case 'strategies':
+      return (
+        <Strategies />
       )
     case 'stakingTvl':
       return (<StakingTvl textStyle={'tableCell'} />)

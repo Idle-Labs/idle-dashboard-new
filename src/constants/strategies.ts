@@ -150,7 +150,8 @@ export const strategies: Record<string, StrategyProps> = {
         id:'asset',
         accessor:'name',
         sortType:'alpha',
-        title:'defi.asset'
+        title:'defi.asset',
+        extraFields:['strategies']
       },
       {
         id:'tvl',

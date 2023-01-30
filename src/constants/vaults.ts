@@ -1576,9 +1576,165 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             address:'0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0'
           }
         }
+      },
+      DAI:{
+        variant:'Aave',
+        autoFarming:[],
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16519261,
+        status:'experimental',
+        underlyingToken:'DAI',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_aave_DAI',
+          address:'0xDB82dDcb7e2E4ac3d13eBD1516CBfDb7b7CE0ffc'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_aave_DAI',
+          address:'0x9182A7C9D9858d54816baC7e3C049B26d3fc56bB'
+        },
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_aave_DAI_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16519261,
+            name:'AA_morpho_aave_DAI',
+            token:'AA_morpho_aave_DAI',
+            label:'morpho DAI AA',
+            address:'0x69d87d0056256e3df7Be9b4c8D6429B4b8207C5E'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_aave_DAI_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16519261,
+            name:'BB_morpho_aave_DAI',
+            token:'BB_morpho_aave_DAI',
+            label:'morpho DAI BB',
+            address:'0xB098AF638aF0c4Fa3edb1A24f807E9c22dA0fE73'
+          }
+        }
+      },
+      USDT:{
+        variant:'Aave',
+        autoFarming:[],
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16519329,
+        status:'experimental',
+        underlyingToken:'USDT',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_aave_USDT',
+          address:'0x440ceAd9C0A0f4ddA1C81b892BeDc9284Fc190dd'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_aave_USDT',
+          address:'0x57E142278E93d721F3eBD52EC5D2D28484862f32'
+        },
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_aave_USDT_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16519329,
+            label:'morpho USDT AA',
+            name:'AA_morpho_aave_USDT',
+            token:'AA_morpho_aave_USDT',
+            address:'0x745e005a5dF03bDE0e55be811350acD6316894E1'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_aave_USDT_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16519329,
+            label:'morpho USDT BB',
+            name:'BB_morpho_aave_USDT',
+            token:'BB_morpho_aave_USDT',
+            address:'0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967'
+          }
+        }
       }
-    },
-  },
+    }
+  }
 };
 
 export type IdleToken = {
@@ -1626,6 +1782,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleDAIYield',
         address: '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
       },
+      flags:{
+        referralEnabled:true
+      },
       proxies: ['0xDe3c769cCD1878372864375e9f89956806B86daA'],
       autoFarming:['IDLE', 'COMP'],
       protocols: [
@@ -1660,7 +1819,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
-        statsEnabled:false
+        statsEnabled:false,
+        referralEnabled:true
       },
       underlyingToken: 'USDC',
       idle: {
@@ -1700,6 +1860,51 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    USTBB: {
+      enabledEnvs: ['beta'],
+      blockNumber: 16277063,
+      flags:{
+        statsEnabled:false,
+        referralEnabled:true
+      },
+      underlyingToken: 'USDT',
+      idle: {
+        decimals:18,
+        abi: IdleTokenV4 as Abi,
+        token: 'idleUSTBB',
+        address: '0xfa3AfC9a194BaBD56e743fA3b7aA2CcbED3eAaad',
+      },
+      protocols: [
+        {
+          decimals: 18,
+          name: 'euler',
+          enabled: true,
+          abi: IdleCDO as Abi,
+          token: 'BB_euler_USDT',
+          address: '0xb1EC065abF6783BCCe003B8d6B9f947129504854',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xb1EC065abF6783BCCe003B8d6B9f947129504854']
+            }
+          },
+        },
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'morpho',
+          abi: IdleCDO as Abi,
+          token: 'BB_morpho_aave_USDT',
+          address: '0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967']
+            }
+          },
+        }
+      ]
+    },
     USDC: {
       blockNumber: 10618515,
       underlyingToken: 'USDC',
@@ -1708,6 +1913,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         abi: IdleTokenV4 as Abi,
         token: 'idleUSDCYield',
         address: '0x5274891bEC421B39D23760c04A6755eCB444797C',
+      },
+      flags:{
+        referralEnabled:true
       },
       proxies: ['0x43bD6a78b37b50E3f52CAcec53F1202dbDe6a761'],
       autoFarming:['IDLE', 'COMP'],
@@ -1774,6 +1982,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         abi: IdleTokenV4 as Abi,
         token: 'idleUSDTYield',
         address: '0xF34842d05A1c888Ca02769A633DF37177415C2f8',
+      },
+      flags:{
+        referralEnabled:true
       },
       autoFarming:['IDLE', 'COMP'],
       protocols: [
@@ -1874,6 +2085,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleWETHYield',
         address: '0xC8E6CA6E96a326dC448307A5fDE90a0b21fd7f80',
       },
+      flags:{
+        referralEnabled:true
+      },
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
@@ -1922,6 +2136,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         abi: IdleTokenV4 as Abi,
         token: 'idleWBTCYield',
         address: '0x8C81121B15197fA0eEaEE1DC75533419DcfD3151',
+      },
+      flags:{
+        referralEnabled:true
       },
       autoFarming:['IDLE', 'COMP'],
       protocols: [

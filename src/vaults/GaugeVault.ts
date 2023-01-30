@@ -348,7 +348,7 @@ export class GaugeVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  public getDepositParams(amount: NumberType): any[] {
+  public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
     return [normalizeTokenAmount(amount, 18)]
   }
 
