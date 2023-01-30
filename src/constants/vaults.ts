@@ -1048,10 +1048,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               name:'TrancheStakingRewards_euler_USDC_AA',
               address:'0x0000000000000000000000000000000000000000'
             },
-            name:'AA_euler_USDC',
             blockNumber:16246945,
-            token:'AA_euler_USDC',
             label:'euler USDC AA',
+            name:'AA_euler_USDCStaking',
+            token:'AA_euler_USDCStaking',
             address:'0x1AF0294524093BFdF5DA5135853dC2fC678C12f7'
           },
           BB:{
@@ -1074,10 +1074,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               name:'IdleCDOTrancheRewards_euler_USDC_BB',
               address:'0x0000000000000000000000000000000000000000'
             },
-            name:'BB_euler_USDC',
             blockNumber:16246945,
-            token:'BB_euler_USDC',
             label:'euler USDC BB',
+            name:'BB_euler_USDCStaking',
+            token:'BB_euler_USDCStaking',
             address:'0x271db794317B44827EfE81DeC6193fFc277050F6'
           }
         }
@@ -1737,6 +1737,17 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
 
           }
         },
+        {
+          decimals: 18,
+          name: 'euler',
+          enabled: true,
+          abi: ERC20 as Abi,
+          token: 'AA_euler_USDCStaking',
+          address: '0x1AF0294524093BFdF5DA5135853dC2fC678C12f7',
+          functions: {
+
+          }
+        },
         /*
         {
           abi: IdleCDO as Abi,
@@ -1790,7 +1801,18 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
 
           }
-        }
+        },
+        {
+          abi: ERC20 as Abi,
+          name: 'euler',
+          enabled: true,
+          address: '0x6796FCd41e4fb26855Bb9BDD7Cad41128Da1Fd59',
+          token: 'AA_euler_USDTStaking',
+          decimals: 18,
+          functions: {
+
+          }
+        },
       ]
     },
     /*
@@ -1874,6 +1896,17 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           enabled: true,
           address: '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e',
           token: 'aWETH',
+          decimals: 18,
+          functions: {
+
+          }
+        },
+        {
+          abi: ERC20 as Abi,
+          name: 'euler',
+          enabled: true,
+          address: '0x2B7Da260F101Fb259710c0a4f2EfEf59f41C0810',
+          token: 'AA_euler_WETHStaking',
           decimals: 18,
           functions: {
 

@@ -24,6 +24,7 @@
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
     "redeem": "Redeem",
+    "token": "Token",
     "stake": "Stake",
     "unstake": "Unstake",
     "withdraw": "Withdraw",

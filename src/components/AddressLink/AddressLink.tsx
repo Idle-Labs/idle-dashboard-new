@@ -5,15 +5,16 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 
 type AddressLinkArgs = {
   address: string
+  text?: string
 } & LinkProps
 
-export const AddressLink: React.FC<AddressLinkArgs> = ({ address, ...props }) => {
+export const AddressLink: React.FC<AddressLinkArgs> = ({ address, text, ...props }) => {
   const { chainId, explorer } = useWalletProvider()
   const url = useMemo(() => {
     return getExplorerAddressUrl(chainId, explorer, address)
   }, [chainId, explorer, address])
 
   return (
-    <Link href={url} textStyle={'tableCell'} color={'link'} isExternal {...props}>{shortenHash(address)}</Link>
+    <Link href={url} textStyle={'tableCell'} color={'link'} isExternal {...props}>{text || shortenHash(address)}</Link>
   )
 }
