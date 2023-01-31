@@ -1,0 +1,83 @@
+import { useTranslate } from 'react-polyglot'
+import type { ModalProps } from 'constants/types'
+import type { ProviderProps } from './common/types'
+import React, { useCallback, useState, useContext } from 'react'
+import { useDisclosure, Text, Button, Flex, Heading } from "@chakra-ui/react"
+
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from '@chakra-ui/react'
+
+type ContextProps = {
+  openModal: Function
+}
+
+const initialState: ContextProps = {
+  openModal: () => {}
+}
+
+const ModalContext = React.createContext<ContextProps>(initialState)
+export const useModalProvider = () => useContext(ModalContext)
+
+export function ModalProvider({ children }: ProviderProps) {
+  const translate = useTranslate()
+  const [ modalProps, setModalProps ] = useState<ModalProps>({
+    cta:'',
+    text:'',
+    title:'',
+    subtitle:''
+  })
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const openModal = useCallback((props: ModalProps, translateProps: boolean = true) => {
+
+    const modalProps = translateProps ? (Object.keys(props) as Array<keyof ModalProps>).reduce( (modalProps: ModalProps, prop: keyof ModalProps) => {
+      modalProps[prop] = translate(props[prop])
+      return modalProps
+    }, {
+      cta:'',
+      text:'',
+      title:'',
+      subtitle:''
+    }) : props
+
+    setModalProps(modalProps)
+    onOpen()
+  }, [onOpen, setModalProps, translate])
+
+  return (
+    <ModalContext.Provider value={{openModal}}>
+      {children}
+      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Heading as={'h3'} fontSize={'lg'} mb={6}>
+              {modalProps.subtitle}
+            </Heading>
+            <Text color={'cta'} dangerouslySetInnerHTML={{__html: modalProps.text}} />
+          </ModalBody>
+          <ModalFooter>
+            <Flex
+              width={'full'}
+              justifyContent={'center'}
+            >
+              <Button variant={'ctaPrimary'} px={10} onClick={onClose}>
+                {modalProps.cta}
+              </Button>
+            </Flex>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </ModalContext.Provider>
+  )
+}

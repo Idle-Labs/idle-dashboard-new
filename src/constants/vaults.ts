@@ -1819,7 +1819,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
-        statsEnabled:false,
+        // statsEnabled:false,
         referralEnabled:true
       },
       underlyingToken: 'USDC',

@@ -1,3 +1,4 @@
+import type { BannerProps } from 'constants/types'
 import { strategiesCarouselFolder, strategiesFolder } from 'constants/folders'
 
 export type GeneralDataField = {
@@ -35,6 +36,7 @@ export type StrategyProps = {
   label?: string
   image?: string
   visible: boolean
+  banner?: BannerProps
   description?: string
   columns?: StrategyColumn[]
   generalDataFields: GeneralDataField[]
@@ -121,6 +123,16 @@ export const strategies: Record<string, StrategyProps> = {
     color:'#6AE4FF',
     route:'best-yield',
     label:'strategies.best.title',
+    banner:{
+      text:'strategies.best.banner.text',
+      cta:'strategies.best.banner.cta',
+      modal:{
+        cta:'strategies.best.modal.cta',
+        text:'strategies.best.modal.text',
+        title:'strategies.best.modal.title',
+        subtitle:'strategies.best.modal.subtitle'
+      }
+    },
     description:'strategies.best.description',
     image: `${strategiesFolder}best-yield.png`,
     bg: `${strategiesFolder}best-yield-bg.svg`,
@@ -150,8 +162,8 @@ export const strategies: Record<string, StrategyProps> = {
         id:'asset',
         accessor:'name',
         sortType:'alpha',
-        title:'defi.asset'
-        // extraFields:['strategies']
+        title:'defi.asset',
+        extraFields:['strategies']
       },
       {
         id:'tvl',

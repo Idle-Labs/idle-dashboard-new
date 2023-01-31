@@ -154,6 +154,16 @@
     },
     "best": {
       "title": "Best Yield",
+      "banner": {
+        "text": "Take advantage of either the power of the Junior tranches or the coverage of the Senior tranches by using our Best-Yield",
+        "cta": "How does it work?"
+      },
+      "modal": {
+        "cta": "Got it",
+        "title": "How it works",
+        "subtitle": "Junior Best Yield",
+        "text": "The Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources.<br /><br />Instead of depositing funds into a single Junior Tranche, users can now take advantage of multiple opportunities as they arise, further optimizing their boosted APYs thanks to the battle-tested Best Yield’s automated rebalancing process and algorithmic capital reallocation.<br /><br />The Junior Best Yield Vaults represent an aggressive target risk allocation strategy, as users provide first-loss capital to an array of different Junior Tranches."
+      },
       "description": "Best Yield vaults are pools designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
       "carousel": {
         "pooledDeposits":{
@@ -1670,8 +1680,8 @@
         "totalSupply": "Total amount of assets staked in this gauge",
         "totalIDLEStaked":"The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
-        "AA":"This strategy might allocates its funds into Senior tranches",
-        "BB":"This strategy might allocates its funds into Junior tranches",
+        "AA":"This strategy might allocate its funds into Senior tranches",
+        "BB":"This strategy might allocate its funds into Junior tranches",
         "deprecated": "This vaults has been deprecated, withdraw your assets",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",

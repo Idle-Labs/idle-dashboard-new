@@ -4,7 +4,7 @@ import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
-import { Asset, VaultPosition } from 'constants/types'
+import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -14,9 +14,10 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
-import { Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { Link, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -43,6 +44,7 @@ export const Strategy: React.FC = () => {
   const translate = useTranslate()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
+  const { openModal } = useModalProvider()
   const { location, params } = useBrowserRouter()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
@@ -336,37 +338,72 @@ export const Strategy: React.FC = () => {
 
   const heading = useMemo(() => {
     if (!strategy) return null
+
+    const modalProps = strategies[strategy].banner?.modal
+
     return (
-      <Stack
-        spacing={[10, 0]}
-        direction={['column', 'row']}
-        alignItems={['center', 'flex-start']}
-        width={['100%', '100%', '100%', '80%', '55%']}
+      <VStack
+        width={'full'}
+        spacing={10}
       >
-        <VStack
-          pr={[0, 14]}
-          pt={[0, 20]}
-          spacing={10}
-          direction={'column'}
-          width={['100%', '65%']}
+        {
+          strategies[strategy].banner && (
+            <Card.Dark
+              p={5}
+              border={0}
+              position={'relative'}
+            >
+              <HStack
+                width={'full'}
+                justifyContent={'center'}
+              >
+                <Translation textAlign={'center'} translation={strategies[strategy].banner?.text} textStyle={'caption'} />
+                {
+                  strategies[strategy].banner?.cta && (
+                    <HStack
+                      right={6}
+                      spacing={2}
+                      position={'absolute'}
+                    >
+                      <Translation translation={strategies[strategy].banner?.cta} component={Link} textAlign={'center'} textStyle={'cta'} fontSize={'sm'} onClick={() => openModal(modalProps as ModalProps)} />
+                    </HStack>
+                  )
+                }
+              </HStack>
+            </Card.Dark>
+          )
+        }
+        <Stack
+          spacing={[10, 0]}
+          direction={['column', 'row']}
           alignItems={['center', 'flex-start']}
+          width={['100%', '100%', '100%', '80%', '55%']}
         >
-          <Translation translation={strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
+          <VStack
+            pr={[0, 14]}
+            pt={[0, 20]}
+            spacing={10}
+            direction={'column'}
+            width={['100%', '65%']}
+            alignItems={['center', 'flex-start']}
+          >
+            <Translation translation={strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
+            {
+              !isMobile && (
+                <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+              )
+            }
+          </VStack>
+          <Image width={['70%', '35%']} src={strategies[strategy].image} />
           {
-            !isMobile && (
+            isMobile && (
               <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
             )
           }
-        </VStack>
-        <Image width={['70%', '35%']} src={strategies[strategy].image} />
-        {
-          isMobile && (
-            <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
-          )
-        }
-      </Stack>
+        </Stack>
+      </VStack>
     )
-  }, [strategy, isMobile])
+  }, [strategy, isMobile, openModal])
 
   return (
     <Flex

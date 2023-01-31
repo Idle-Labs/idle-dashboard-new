@@ -229,6 +229,19 @@ export type Harvest ={
 
 export type VaultStatus = 'production' | 'beta' | 'experimental' | 'deprecated'
 
+export type ModalProps = {
+  title: string
+  subtitle: string
+  text: string
+  cta: string
+}
+
+export type BannerProps = {
+  text: string
+  cta?: string
+  modal?: ModalProps
+}
+
 export type Asset = {
   id?: AssetId
   icon?: string

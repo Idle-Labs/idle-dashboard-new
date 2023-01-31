@@ -6,6 +6,7 @@ import { Web3Provider } from 'contexts/Web3Provider'
 import { I18nProvider } from 'contexts/I18nProvider'
 import { CacheProvider } from 'contexts/CacheProvider'
 import { ThemeProvider } from 'contexts/ThemeProvider'
+import { ModalProvider } from 'contexts/ModalProvider'
 import { WalletProvider } from 'contexts/WalletProvider'
 import { PortfolioProvider } from 'contexts/PortfolioProvider'
 import { BrowserRouterProvider } from 'contexts/BrowserRouterProvider'
@@ -21,7 +22,9 @@ export const App = () => (
               <CacheProvider TTL={300}>
                 <TransactionManagerProvider>
                   <PortfolioProvider>
-                    <BrowserRouterProvider />
+                    <ModalProvider>
+                      <BrowserRouterProvider />
+                    </ModalProvider>
                   </PortfolioProvider>
                 </TransactionManagerProvider>
               </CacheProvider>

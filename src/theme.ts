@@ -383,6 +383,13 @@ export const theme = extendTheme({
   },
   // Create components styles
   components: {
+    Modal: {
+      baseStyle:{
+        dialog:{
+          bg:'card.bgDark'
+        }
+      }
+    },
     Checkbox: {
       baseStyle:{
         control:{
