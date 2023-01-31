@@ -241,16 +241,16 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     columns: [
       {
-        id:'protocol',
         accessor:'id',
         sortType:'alpha',
+        id:'protocolWithVariant',
         extraFields:['statusBadge']
       },
       {
         id:'asset',
         accessor:'name',
         sortType:'alpha',
-        extraFields:['vaultVariant']
+        // extraFields:[]
       },
       {
         id:'tvl',
@@ -361,16 +361,15 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     columns: [
       {
-        id:'protocol',
         accessor:'id',
         sortType:'alpha',
+        id:'protocolWithVariant',
         extraFields:['statusBadge']
       },
       {
         id:'asset',
         accessor:'name',
-        sortType:'alpha',
-        extraFields:['vaultVariant']
+        sortType:'alpha'
       },
       {
         id:'tvl',

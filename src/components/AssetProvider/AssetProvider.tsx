@@ -136,7 +136,7 @@ const VaultVariant: React.FC<TextProps> = (props) => {
   if (!vault || !("variant" in vault) || !vault?.variant?.length) return null
 
   return (
-    <Text textStyle={'tableCell'} {...props}>({vault.variant})</Text>
+    <Text textStyle={'tableCell'} {...props}>{vault.variant}</Text>
   )
 }
 
@@ -983,8 +983,25 @@ type GeneralDataProps = {
 } & TextProps & AvatarProps & BoxProps & ThemingProps
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) => {
-  const { asset } = useAssetProvider()
+  const { asset, vault } = useAssetProvider()
   switch (field) {
+    case 'protocolWithVariant':
+      if (!vault || !("variant" in vault) || !vault?.variant?.length) return (<GeneralData field={'protocol'} section={section} {...props} />)
+      return (
+        <HStack
+          spacing={2}
+          alignItems={'flex-start'}
+        >
+          <ProtocolIcon size={props.size || 'xs'} />
+          <VStack
+            spacing={0}
+            alignItems={'flex-start'}
+          >
+            <ProtocolName textStyle={'tableCell'} {...props} />
+            <VaultVariant textStyle={'vaultVariant'}  />
+          </VStack>
+        </HStack>
+      )
     case 'protocol':
       return (
         <HStack

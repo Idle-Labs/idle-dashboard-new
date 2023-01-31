@@ -417,6 +417,7 @@
     "gauges": "Gauges",
     "govToken": "Gov. token",
     "protocol": "Protocol",
+    "protocolWithVariant": "Protocol",
     "protocols": "Protocols",
     "unstake": "Unstake",
     "chooseAsset": "Choose an asset",

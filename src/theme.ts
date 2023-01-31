@@ -288,6 +288,13 @@ export const theme = extendTheme({
       fontWeight:400,
       fontSize:'sm',
     },
+    vaultVariant:{
+      color:'cta',
+      fontSize:'xxs',
+      fontWeight:600,
+      lineHeight:'normal',
+      textTransform:'uppercase'
+    },
     tableCell: {
       fontSize:'md',
       fontWeight: 600,
@@ -436,10 +443,10 @@ export const theme = extendTheme({
         borderRadius:4,
         color:'primary',
         fontWeight: 500,
-        bg:'table.header',
+        bg:'brand.blue',
         fontFamily:'body',
         boxShadow:'0px 0px 10px 0px rgba(0,0,0,0.5)',
-        '--popper-arrow-bg':'colors.table.header'
+        '--popper-arrow-bg':'colors.brand.blue'
       },
       defaultProps:{
         placement:'top'
