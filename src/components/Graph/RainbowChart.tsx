@@ -184,8 +184,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
           pointerEvents: 'none',
         }}
         renderTooltip={({ tooltipData }) => {
-          const { datum, key: assetId } = tooltipData?.nearestDatum!
-          const price = datum[assetId]
+          const { datum } = tooltipData?.nearestDatum!
           const { date } = datum
           return (
             <VStack

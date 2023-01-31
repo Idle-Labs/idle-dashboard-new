@@ -1,8 +1,8 @@
-import { menu } from 'constants/menu'
 import { MdMenu } from 'react-icons/md'
 import { MobileMenu } from './MobileMenu'
 import { MenuNavItem } from './MenuNavItem'
 import { checkSectionEnabled } from 'helpers/'
+import { menu, MenuItemType } from 'constants/menu'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MenuItemExpandable } from './MenuItemExpandable'
 import React, { useState, useMemo, useEffect } from 'react'
@@ -11,7 +11,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 
 export const TopBarMenu: React.FC = () => {
   const { location } = useBrowserRouter()
-  const { screenSize, setScrollLocked } = useThemeProvider()
+  const { screenSize, setScrollLocked, environment } = useThemeProvider()
   const [ mobileMenuOpened, setMobileMenuOpened ] = useState<boolean>(true)
 
   const isMobile = useMemo(() => screenSize === 'sm', [screenSize])
@@ -25,6 +25,10 @@ export const TopBarMenu: React.FC = () => {
   useEffect(() => {
     setScrollLocked(isMobile && mobileMenuOpened)
   }, [mobileMenuOpened, isMobile, setScrollLocked])
+
+  const enabledMenuItems = useMemo(() => {
+    return menu.filter( (menuItem: MenuItemType) => !menuItem.path || checkSectionEnabled(menuItem.path as string, environment) )
+  }, [environment])
 
   return (
     <HStack
@@ -41,9 +45,7 @@ export const TopBarMenu: React.FC = () => {
       {
         !isMobile ? (
           <Menu>
-            {({ isOpen }) => menu.map( (menuItem, index) => {
-              const sectionEnabled = !menuItem.path || checkSectionEnabled(menuItem.path)
-              if (!sectionEnabled) return null
+            {({ isOpen }) => enabledMenuItems.map( (menuItem: MenuItemType, index) => {
               return (
                 <Flex
                   key={`menuItem_${index}`}

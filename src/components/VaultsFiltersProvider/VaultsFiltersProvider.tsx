@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import type { Vault } from 'vaults/'
 import { BNify, bnOrZero } from 'helpers/'
-import { Card } from 'components/Card/Card'
+// import { Card } from 'components/Card/Card'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import type { ProviderProps } from 'contexts/common/types'
@@ -14,14 +14,14 @@ import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import { ProtocolLabel } from 'components/ProtocolLabel/ProtocolLabel'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
+import { useRef, useMemo, useCallback, useContext, useReducer, createContext } from 'react'
 import { useTheme, Checkbox, Button, Box, VStack, HStack, SimpleGrid, Text } from '@chakra-ui/react'
-import { useState, useRef, useMemo, useCallback, useContext, useReducer, useEffect, createContext } from 'react'
 
 import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem
+  // MenuItem
 } from '@chakra-ui/react'
 
 import {
@@ -191,7 +191,7 @@ const ProtocolFilter = ({ filterValues, dispatch }: FiltersProps) => {
 }
 
 const ApyFilter = ({ filterValues, dispatch }: FiltersProps) => {
-  const { isPortfolioLoaded, vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
   
   const availableRange: RangeType = useMemo(() => {
     return vaults.reduce( (availableRange: RangeType, vault: Vault) => {
@@ -269,7 +269,7 @@ const ApyFilter = ({ filterValues, dispatch }: FiltersProps) => {
 }
 
 const TvlFilter = ({ filterValues, dispatch }: FiltersProps) => {
-  const { isPortfolioLoaded, vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
   
   const availableRange: RangeType = useMemo(() => {
     return vaults.reduce( (availableRange: RangeType, vault: Vault) => {

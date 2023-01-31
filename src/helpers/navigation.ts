@@ -1,4 +1,5 @@
 import { routes } from 'constants/routes'
+import { menu, MenuItemType } from 'constants/menu'
 import { LEGACY_DASHBOARD_URL } from 'constants/vars'
 
 export function getRoutePath(path: string, params: string[] = []): string {
@@ -11,8 +12,14 @@ export function getLegacyDashboardUrl(section: string) {
   return `${LEGACY_DASHBOARD_URL}${section}`
 }
 
-export function checkSectionEnabled(path: string) {
-  return !!routes[0].children?.find( route => route.path?.toLowerCase() === path.toLowerCase() )
+export function checkMenuItemEnabled(path: string, environment: string) {
+  const menuItem = menu.find( (m: MenuItemType) => m.path?.toLowerCase() === path.toLowerCase() )
+  if (!menuItem) return false
+  return !menuItem.enabledEnvs?.length || menuItem.enabledEnvs.includes(environment)
+}
+
+export function checkSectionEnabled(path: string, environment?: string) {
+  return !!routes[0].children?.find( route => route.path?.toLowerCase() === path.toLowerCase() ) && (!environment || checkMenuItemEnabled(path, environment))
 }
 
 export function openWindow(url: string) {

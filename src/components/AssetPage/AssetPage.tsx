@@ -2,7 +2,6 @@ import { Earn } from './Earn'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { IconTab } from 'components/IconTab/IconTab'
-import { bnOrZero, BNify, sendViewItem } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -15,6 +14,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { strategies, AssetId, imageFolder, HistoryTimeframe } from 'constants/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
@@ -36,7 +36,7 @@ type TabType = {
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
-  const { isMobile } = useThemeProvider()
+  const { isMobile, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
@@ -176,7 +176,7 @@ export const AssetPage: React.FC = () => {
     }
 
     // Add stats tab
-    if (!vault?.flags || vault.flags.statsEnabled === undefined || vault.flags.statsEnabled){
+    if (checkSectionEnabled('stats', environment) && (!vault?.flags || vault.flags.statsEnabled === undefined || vault.flags.statsEnabled)){
       tabs.push({
         id:'stats',
         label:'navBar.stats',
@@ -190,7 +190,7 @@ export const AssetPage: React.FC = () => {
     }
 
     return tabs
-  }, [vault, vaultGauge, assetGauge, timeframe])
+  }, [vault, vaultGauge, assetGauge, timeframe, environment])
 
   const vaultId = useMemo(() => {
     return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id

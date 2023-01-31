@@ -525,66 +525,72 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     async (vaultId: AssetId, assetId: AssetId, contractSendMethod: ContractSendMethod, actionType?: string, amount?: string) => {
       if (!account || !web3) return null
 
-      const sendOptions: SendOptions = {
-        from: account?.address
-      }
-      const [
-        gas,
-        baseFeePerGas
-      ] = await Promise.all([
-        estimateGasLimit(contractSendMethod, sendOptions, 0, 5), // Add 5% to estimated gas limit
-        getBlockBaseFeePerGas(web3)
-      ])
+      try {
+        const sendOptions: SendOptions = {
+          from: account?.address
+        }
+        const [
+          gas,
+          baseFeePerGas
+        ] = await Promise.all([
+          estimateGasLimit(contractSendMethod, sendOptions, 0, 5), // Add 5% to estimated gas limit
+          getBlockBaseFeePerGas(web3)
+        ])
 
-      if (gas) {
-        sendOptions.gas = gas
-        // @ts-ignore
-        sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
-      }
+        if (gas) {
+          sendOptions.gas = gas
+          // @ts-ignore
+          sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
+        }
 
-      // console.log('sendOptions', contractSendMethod, gas, baseFeePerGas, sendOptions)
+        // console.log('sendOptions', contractSendMethod, gas, baseFeePerGas, sendOptions)
 
-      dispatch({type: 'CREATE', payload: {
-        amount,
-        assetId,
-        vaultId,
-        actionType,
-        contractSendMethod
-      }})
+        dispatch({type: 'CREATE', payload: {
+          amount,
+          assetId,
+          vaultId,
+          actionType,
+          contractSendMethod
+        }})
 
-      contractSendMethod.send(sendOptions)
-        .on("transactionHash", async (hash: string) => {
-          // console.log('transactionHash', hash)
-          dispatch({type: 'SET_HASH', payload: hash})
-          dispatch({type: 'SET_STATUS', payload: "pending"})
+        contractSendMethod.send(sendOptions)
+          .on("transactionHash", async (hash: string) => {
+            // console.log('transactionHash', hash)
+            dispatch({type: 'SET_HASH', payload: hash})
+            dispatch({type: 'SET_STATUS', payload: "pending"})
 
-          ;(async() => {
-            const transaction = await web3.eth.getTransaction(hash)
-            if (transaction) {
-              dispatch({type: 'SET_TRANSACTION', payload: transaction})
+            ;(async() => {
+              const transaction = await web3.eth.getTransaction(hash)
+              if (transaction) {
+                dispatch({type: 'SET_TRANSACTION', payload: transaction})
+              }
+            })()
+          })
+          .on("receipt", (receipt: TransactionReceipt) => {
+            // console.log('receipt', receipt)
+            dispatch({type: 'SET_RECEIPT', payload: receipt})
+          })
+          .once("confirmation", (confirmationNumber: number, receipt: TransactionReceipt) => {
+            // console.log('confirmation', confirmationNumber, receipt)
+            dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
+            if (receipt.status) {
+              dispatch({type: 'SET_STATUS', payload: "success"})
+              dispatch({type: 'SET_LAST_TRANSACTION', payload: null})
+              dispatch({type: 'INCREMENT_TRANSACTIONS_COUNT', payload: null})
+            } else if (!receipt.status) {
+              dispatch({type: 'SET_STATUS', payload: "failed"})
             }
-          })()
-        })
-        .on("receipt", (receipt: TransactionReceipt) => {
-          // console.log('receipt', receipt)
-          dispatch({type: 'SET_RECEIPT', payload: receipt})
-        })
-        .once("confirmation", (confirmationNumber: number, receipt: TransactionReceipt) => {
-          // console.log('confirmation', confirmationNumber, receipt)
-          dispatch({type: 'INCREASE_CONFIRMATION_COUNT', payload: null})
-          if (receipt.status) {
-            dispatch({type: 'SET_STATUS', payload: "success"})
-            dispatch({type: 'SET_LAST_TRANSACTION', payload: null})
-            dispatch({type: 'INCREMENT_TRANSACTIONS_COUNT', payload: null})
-          } else if (!receipt.status) {
-            dispatch({type: 'SET_STATUS', payload: "failed"})
-          }
-        })
-        .on("error", (error: ErrnoException) => {
-          // console.log('error', error)
-          dispatch({type: 'SET_ERROR', payload: error})
-          dispatch({type: 'SET_STATUS', payload: 'failed'})
-        });
+          })
+          .on("error", (error: ErrnoException) => {
+            // console.log('error', error)
+            dispatch({type: 'SET_ERROR', payload: error})
+            dispatch({type: 'SET_STATUS', payload: 'failed'})
+          });
+      } catch (err) {
+        // console.log('error', error)
+        dispatch({type: 'SET_ERROR', payload: err})
+        dispatch({type: 'SET_STATUS', payload: 'failed'})
+      }
     }
   , [account, web3, state.gasPrice])
 

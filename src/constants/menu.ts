@@ -14,13 +14,14 @@ export type MenuListType = {
 
 export type MenuItemType = MenuListType & {
   color?: string
+  enabledEnvs?: string[]
   children?: MenuListType[]
 }
 
 export const menu: MenuItemType[] = [
   {
     path: 'dashboard',
-    label: 'navBar.dashboard'
+    label: 'navBar.dashboard',
   },
   {
     label: 'navBar.earn',
@@ -36,7 +37,8 @@ export const menu: MenuItemType[] = [
   },
   {
     path: 'stats',
-    label: 'navBar.stats'
+    label: 'navBar.stats',
+    enabledEnvs: ['beta']
   },
   // {
   //   label: 'navBar.gauges',

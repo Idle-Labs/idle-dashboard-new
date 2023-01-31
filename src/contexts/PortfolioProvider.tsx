@@ -11,6 +11,7 @@ import { BestYieldVault } from 'vaults/BestYieldVault'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import { useCacheProvider } from 'contexts/CacheProvider'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { historicalPricesUsd } from 'constants/historicalData'
 import type { CallData, DecodedResult } from 'classes/Multicall'
@@ -20,7 +21,7 @@ import React, { useContext, useEffect, useMemo, useCallback, useReducer } from '
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, DASHBORD_URL, MAX_STAKING_DAYS } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -230,15 +231,12 @@ export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 
 export function PortfolioProvider({ children }:ProviderProps) {
   const cacheProvider = useCacheProvider()
+  const { environment } = useThemeProvider()
   const { web3, web3Rpc, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
   const { walletInitialized, connecting, account, prevAccount, chainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
-
-  const environment = useMemo(() => {
-    return window.location.origin === DASHBORD_URL ? 'prod' : 'beta'
-  }, [])
 
   const accountChanged = useMemo(() => {
     return !!account && !!prevAccount && account.address !== prevAccount.address

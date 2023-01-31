@@ -35,7 +35,7 @@ export const useTVLChartData: UseTVLChartData = ({
 }) => {
   
   const [ tvlChartDataLoading, setTVLChartDataLoading ] = useState<boolean>(true)
-  const { historicalTvls, historicalTvlsUsd, selectors: { selectAssetsByIds, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd } } = usePortfolioProvider()
+  const { historicalTvls, selectors: { selectAssetsByIds, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd } } = usePortfolioProvider()
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []

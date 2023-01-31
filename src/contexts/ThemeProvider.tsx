@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import { DASHBORD_URL } from 'constants/vars'
 import type { ProviderProps } from './common/types'
 import React, { useContext, useState } from 'react'
 import { useTheme, useMediaQuery } from "@chakra-ui/react"
@@ -7,11 +9,13 @@ type ContextProps = {
   screenSize: string | null
   setScrollLocked: Function
   isMobile: boolean
+  environment: string
 }
 
 const initialState: ContextProps = {
   isMobile: false,
   screenSize: null,
+  environment: 'prod',
   scrollLocked: false,
   setScrollLocked: () => {}
 }
@@ -22,6 +26,7 @@ export const useThemeProvider = () => useContext(ThemeProviderContext)
 export function ThemeProvider({ children }: ProviderProps) {
   const { breakpoints } = useTheme()
   const [ scrollLocked, setScrollLocked ] = useState<boolean>(false)
+  const environment = useMemo(() => window.location.origin === DASHBORD_URL ? 'prod' : 'beta', [])
 
   const [isSmall] = useMediaQuery(`(min-width: ${breakpoints.base}) and (max-width: ${breakpoints.sm})`)
   const [isMedium] = useMediaQuery(`(min-width: ${breakpoints.sm}) and (max-width: ${breakpoints.md})`)
@@ -32,7 +37,7 @@ export function ThemeProvider({ children }: ProviderProps) {
   const isMobile = screenSize === 'sm'
 
   return (
-    <ThemeProviderContext.Provider value={{screenSize, scrollLocked, setScrollLocked, isMobile}}>
+    <ThemeProviderContext.Provider value={{screenSize, scrollLocked, setScrollLocked, isMobile, environment}}>
       {children}
     </ThemeProviderContext.Provider>
   )

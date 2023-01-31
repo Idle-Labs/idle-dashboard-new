@@ -1,16 +1,16 @@
 import { BNify } from 'helpers/'
 import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
+// import { selectProtocol } from 'selectors/'
 import type { AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
 import { BestYieldVault } from 'vaults/BestYieldVault'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import type { IdleTokenProtocol } from 'constants/vaults'
-import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
+// import { useWalletProvider } from 'contexts/WalletProvider'
+// import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { AddressLink } from 'components/AddressLink/AddressLink'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { selectUnderlyingToken, selectProtocol } from 'selectors/'
 import { ProtocolLabel } from 'components/ProtocolLabel/ProtocolLabel'
 import { HStack, VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 
@@ -19,7 +19,7 @@ type VaultUnderlyingProtocolsProps = {
 }
 
 export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> = ({ assetId }) => {
-  const { chainId } = useWalletProvider()
+  // const { chainId } = useWalletProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -46,10 +46,12 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
       >
       {
         vault.tokenConfig?.protocols.map( (protocol: IdleTokenProtocol) => {
-          const protocolConfig = selectProtocol(protocol.name)
+          // const protocolConfig = selectProtocol(protocol.name)
           const allocationPercentage = BNify(asset.allocations?.[protocol.name]).div(100)
           const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
           const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
+            
+          /*
           const assetIds = protocolConfig?.govTokens?.reduce( (assetIds: string[], tokenName: string) => {
             const underlyingToken = selectUnderlyingToken(chainId, tokenName)
             if (underlyingToken?.address){
@@ -57,8 +59,8 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
             }
             return assetIds
           }, [])
-
-          {/*console.log('protocolApr', asset, asset?.protocolsAprs, protocolApr)*/}
+          */
+          // console.log('protocolApr', asset, asset?.protocolsAprs, protocolApr)
 
           return (
             <Card

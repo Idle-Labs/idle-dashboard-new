@@ -1,18 +1,18 @@
 import type { Vault } from 'vaults/'
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
-import { strategies } from 'constants/strategies'
+import type { AssetId } from 'constants/types'
 import { TrancheVault } from 'vaults/TrancheVault'
 import React, { useMemo, useCallback } from 'react'
-import type { AssetId, Asset } from 'constants/types'
+// import { strategies } from 'constants/strategies'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
-import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+// import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { SimpleGrid, VStack, HStack, Flex, Tag, TagLabel, Heading } from '@chakra-ui/react'
-import { VaultsFiltersContext, VaultsFiltersProvider, useVaultsFiltersProvider } from 'components/VaultsFiltersProvider/VaultsFiltersProvider'
+import { VaultsFiltersProvider, useVaultsFiltersProvider } from 'components/VaultsFiltersProvider/VaultsFiltersProvider'
 
 type VaultCardStatsProps = {
   vault: Vault
@@ -20,7 +20,7 @@ type VaultCardStatsProps = {
 
 export const VaultCardStats: React.FC<VaultCardStatsProps> = ({ vault }) => {
   const navigate = useNavigate()
-  const { location, params } = useBrowserRouter()
+  const { location } = useBrowserRouter()
 
   const onClick = useCallback((vaultId: AssetId) => {
     // sendSelectItem(item_list_id, item_list_name, row.original)
