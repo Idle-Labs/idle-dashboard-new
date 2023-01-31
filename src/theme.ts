@@ -163,14 +163,26 @@ export const theme = extendTheme({
         color: 'white',
       },
       '.earn-best-yield': {
-        background:`url(${strategies.BY.bg}) no-repeat top right`,
-        backgroundSize:'100% auto'
+        background:`url(${strategies.BY.bg}) no-repeat -50% 0`,
+        backgroundSize:'cover'
       },
       '.earn-protected-yield': {
         background:`url(${strategies.AA.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
       '.earn-boosted-yield': {
+        background:`url(${strategies.BB.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
+      '.earn-best-yield.mobile': {
+        background:`url(${strategies.BY.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
+      '.earn-protected-yield.mobile': {
+        background:`url(${strategies.AA.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
+      '.earn-boosted-yield.mobile': {
         background:`url(${strategies.BB.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
@@ -207,6 +219,15 @@ export const theme = extendTheme({
       _hover:{
         backgroundColor:'table.headerHover'
       }
+    },
+    gradientBadge: {
+      px:3,
+      py:1,
+      fontSize:'sm',
+      fontWeight:600,
+      borderRadius:15,
+      color:'nearBlack',
+      bg: "linear-gradient(to right, rgba(106,159,255,1) 1%,rgba(106,228,255,1) 100%)"
     },
     card: {
       p:8,

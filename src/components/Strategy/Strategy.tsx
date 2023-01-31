@@ -4,6 +4,8 @@ import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
+import { MdArrowForwardIos } from 'react-icons/md'
+import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -16,7 +18,7 @@ import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
-import { Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { Box, Link, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -338,6 +340,54 @@ export const Strategy: React.FC = () => {
     )
   }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClick])
 
+  const banner = useMemo(() => {
+    if (!strategy || !strategies[strategy].banner) return null
+
+    const modalProps = strategies[strategy].banner?.modal
+    return (
+      <Card.Dark
+        p={[4, 5]}
+        border={0}
+        position={'relative'}
+      >
+        <Stack
+          width={'full'}
+          spacing={[2, 3]}
+          alignItems={'center'}
+          justifyContent={'center'}
+          direction={['column', 'row']}
+        >
+          <Translation component={Box} width={'auto'} textAlign={'center'} translation={'common.new'} layerStyle={'gradientBadge'} />
+          <Translation textAlign={'center'} translation={strategies[strategy].banner?.text} isHtml={true} textStyle={'caption'} />
+          {
+            strategy === 'BY' && (
+              <HStack
+                spacing={2}
+              >
+                <Image src={`images/strategies/AA.svg`} width={6} />
+                <Image src={`images/strategies/BB.svg`} width={6} />
+              </HStack>
+            )
+          }
+          {
+            strategies[strategy].banner?.cta && (
+              <HStack
+                spacing={2}
+                right={[0, 6]}
+                alignItems={'center'}
+                justifyContent={'center'}
+                position={['relative','absolute']}
+              >
+                <Translation translation={strategies[strategy].banner?.cta} component={Link} textAlign={'center'} textStyle={'cta'} onClick={() => openModal(modalProps as ModalProps)} />
+                <MdArrowForwardIos />
+              </HStack>
+            )
+          }
+        </Stack>
+      </Card.Dark>
+    )
+  }, [strategy, openModal])
+
   const heading = useMemo(() => {
     if (!strategy) return null
     return (
@@ -345,11 +395,12 @@ export const Strategy: React.FC = () => {
         width={'full'}
         spacing={10}
       >
+        {banner}
         <Stack
           spacing={[10, 0]}
           direction={['column', 'row']}
           alignItems={['center', 'flex-start']}
-          width={['100%', '100%', '100%', '80%', '55%']}
+          width={['100%', '100%', '100%', '100%', '70%']}
         >
           <VStack
             pr={[0, 14]}
@@ -359,14 +410,18 @@ export const Strategy: React.FC = () => {
             width={['100%', '65%']}
             alignItems={['center', 'flex-start']}
           >
-            <Translation translation={strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
+            <Translation isHtml={true} translation={strategies[strategy].title || strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
             {
               !isMobile && (
-                <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+                <Flex
+                  width={['100%', '80%']}
+                >
+                  <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+                </Flex>
               )
             }
           </VStack>
-          <Image width={['70%', '35%']} src={strategies[strategy].image} />
+          <Image width={['70%', '33%']} src={strategies[strategy].image} />
           {
             isMobile && (
               <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
@@ -375,7 +430,7 @@ export const Strategy: React.FC = () => {
         </Stack>
       </VStack>
     )
-  }, [strategy, isMobile])
+  }, [strategy, banner, isMobile])
 
   return (
     <Flex

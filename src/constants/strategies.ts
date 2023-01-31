@@ -36,6 +36,7 @@ export type StrategyProps = {
   color?: string
   route?: string
   label?: string
+  title?: string
   image?: string
   visible: boolean
   banner?: BannerProps
@@ -124,7 +125,8 @@ export const strategies: Record<string, StrategyProps> = {
     visible: true,
     color:'#6AE4FF',
     route:'best-yield',
-    label:'strategies.best.title',
+    title:'strategies.best.title',
+    label:'strategies.best.label',
     banner:{
       text:'strategies.best.banner.text',
       cta:'strategies.best.banner.cta',
@@ -136,8 +138,8 @@ export const strategies: Record<string, StrategyProps> = {
       }
     },
     description:'strategies.best.description',
-    image: `${strategiesFolder}best-yield.png`,
     bg: `${strategiesFolder}best-yield-bg.svg`,
+    image: `${strategiesFolder}best-yield.png`,
     dynamicActionFields:{
       // deposit:['coverage' ,'newApy'],
       withdraw:['gain', 'fee', 'netGain']

@@ -7,8 +7,11 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 
 export const Template: React.FC<ContainerProps> = () => {
   const { location } = useBrowserRouter()
-  const { scrollLocked } = useThemeProvider()
-  const className = location?.pathname.replace(/\//g,'-').replace(/^-/,'')
+  const { scrollLocked, isMobile } = useThemeProvider()
+  let className = location?.pathname.replace(/\//g,'-').replace(/^-/,'')
+  if (isMobile){
+    className += ' mobile'
+  }
 
   return (
     <Box

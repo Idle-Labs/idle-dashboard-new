@@ -24,6 +24,7 @@
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
     "redeem": "Redeem",
+    "new": "New",
     "token": "Token",
     "stake": "Stake",
     "unstake": "Unstake",
@@ -153,10 +154,11 @@
       "title": "Gauge"
     },
     "best": {
-      "title": "Best Yield",
+      "label": "Best Yield",
+      "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span> in an inconsistent world",
       "banner": {
-        "text": "Take advantage of either the power of the Junior tranches or the coverage of the Senior tranches by using our Best-Yield",
-        "cta": "How does it work?"
+        "text": "<strong style='color: white'>Best Yield meets Senior & Junior Tranches</strong> harnessing the full yield power",
+        "cta": "How it works"
       },
       "modal": {
         "cta": "Got it",
