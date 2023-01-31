@@ -1880,12 +1880,12 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'euler',
           enabled: true,
           abi: IdleCDO as Abi,
-          token: 'BB_euler_USDT',
-          address: '0xb1EC065abF6783BCCe003B8d6B9f947129504854',
+          token: 'BB_euler_USDTStaking',
+          address: '0x00B80FCCA0fE4fDc3940295AA213738435B0f94e',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0xb1EC065abF6783BCCe003B8d6B9f947129504854']
+              params: ['0x00B80FCCA0fE4fDc3940295AA213738435B0f94e']
             }
           },
         },
