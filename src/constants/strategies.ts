@@ -165,7 +165,7 @@ export const strategies: Record<string, StrategyProps> = {
         accessor:'name',
         sortType:'alpha',
         title:'defi.asset',
-        extraFields:['strategies'],
+        // extraFields:['strategies'],
         stackProps:{
           justifyContent:'space-between'
         },

@@ -1502,10 +1502,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDC:{
         variant:'Aave',
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'morpho',
-        enabledEnvs:['beta'],
         blockNumber:16420584,
-        status:'experimental',
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1580,10 +1579,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       DAI:{
         variant:'Aave',
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'morpho',
-        enabledEnvs:['beta'],
         blockNumber:16519261,
-        status:'experimental',
         underlyingToken:'DAI',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1658,10 +1656,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDT:{
         variant:'Aave',
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'morpho',
-        enabledEnvs:['beta'],
         blockNumber:16519329,
-        status:'experimental',
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -1819,6 +1816,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
+
         // statsEnabled:false,
         referralEnabled:true
       },
