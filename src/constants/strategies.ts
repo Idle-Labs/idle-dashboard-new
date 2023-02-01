@@ -1,3 +1,4 @@
+import { StackProps } from '@chakra-ui/react'
 import type { BannerProps } from 'constants/types'
 import { strategiesCarouselFolder, strategiesFolder } from 'constants/folders'
 
@@ -23,6 +24,7 @@ export type StrategyColumn = {
   accessor: any
   tables?: Tables[]
   extraFields?: string[]
+  stackProps?: StackProps
   sortType?: 'alpha' | 'numeric'
 }
 
@@ -163,7 +165,10 @@ export const strategies: Record<string, StrategyProps> = {
         accessor:'name',
         sortType:'alpha',
         title:'defi.asset',
-        extraFields:['strategies']
+        extraFields:['strategies'],
+        stackProps:{
+          justifyContent:'space-between'
+        },
       },
       {
         id:'tvl',
