@@ -123,6 +123,21 @@ const ProtocolName: React.FC<TextProps> = (props) => {
   )
 }
 
+const StrategyBadge: React.FC<ImageProps> = (props) => {
+  const { asset, translate } = useAssetProvider()
+  if (!asset || !("type" in asset) || !asset?.type) return null
+  const strategy = strategies[asset.type]
+  return (
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate(strategy.label)}
+    >
+      <Image src={`images/strategies/${asset.type}.svg`} {...props} />
+    </Tooltip>
+  )
+}
+
 const Strategy: React.FC<Omit<TranslationProps, "translation">> = (props) => {
   const { vault } = useAssetProvider()
   if (!vault) return null
@@ -1141,6 +1156,7 @@ AssetProvider.EarningsPerc = EarningsPerc
 AssetProvider.DepositedUsd = DepositedUsd
 AssetProvider.ProtocolName = ProtocolName
 AssetProvider.ProtocolIcon = ProtocolIcon
+AssetProvider.StrategyBadge = StrategyBadge
 AssetProvider.ApyRatioChart = ApyRatioChart
 AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards

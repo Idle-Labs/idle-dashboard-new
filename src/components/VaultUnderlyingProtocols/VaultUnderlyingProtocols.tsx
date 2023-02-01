@@ -11,6 +11,7 @@ import type { IdleTokenProtocol } from 'constants/vaults'
 import { AddressLink } from 'components/AddressLink/AddressLink'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { ProtocolLabel } from 'components/ProtocolLabel/ProtocolLabel'
 import { HStack, VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 
@@ -63,54 +64,66 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
           // console.log('protocolApr', asset, asset?.protocolsAprs, protocolApr)
 
           return (
-            <Card
-              p={6}
-              key={`protocol_${protocol.name}`}
+            <AssetProvider
+              assetId={protocol.address}
+              wrapFlex={false}
             >
-              <VStack
-                spacing={6}
-                width={'100%'}
-                alignItems={'flex-start'}
+              <Card
+                p={6}
+                key={`protocol_${protocol.name}`}
               >
-                <ProtocolLabel protocolId={protocol.name} size={'xs'} />
-                <HStack
+                <VStack
                   spacing={6}
-                  width={'full'}
-                  justifyContent={'space-between'}
+                  width={'100%'}
+                  alignItems={'flex-start'}
                 >
-                  <VStack
-                    spacing={1}
-                    alignItems={'flex-start'}
+                  <HStack
+                    spacing={2}
+                    width={'full'}
+                    justifyContent={'space-between'}
                   >
-                    <Translation component={Text} translation={'defi.poolAddress'} textStyle={'captionSmall'} />
-                    <AddressLink address={protocol.address} />{/*text={protocol.token} />*/}
-                  </VStack>
-                  <VStack
-                    spacing={1}
-                    alignItems={'flex-start'}
+                    <ProtocolLabel protocolId={protocol.name} size={'xs'} />
+                    <AssetProvider.StrategyBadge width={6} height={6} />
+                  </HStack>
+                  <HStack
+                    spacing={6}
+                    width={'full'}
+                    justifyContent={'space-between'}
                   >
-                    <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
-                    <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
-                    {
-                      /*
-                      !assetIds ? (
-                        <Text textStyle={'captionSmall'}>-</Text>
-                      ) : (
-                        <AssetsIcons assetIds={assetIds} showTooltip={true} size={'xs'} />
-                      )
-                      */
-                    }
-                  </VStack>
-                  <VStack
-                    spacing={1}
-                    alignItems={'flex-start'}
-                  >
-                    <Translation component={Text} translation={'assets.assetDetails.generalData.allocation'} textStyle={'captionSmall'} />
-                    <Amount.Usd value={allocationUsd} textStyle={'tableCell'} />
-                  </VStack>
-                </HStack>
-              </VStack>
-            </Card>
+                    <VStack
+                      spacing={1}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation component={Text} translation={'defi.poolAddress'} textStyle={'captionSmall'} />
+                      <AddressLink address={protocol.address} />{/*text={protocol.token} />*/}
+                    </VStack>
+                    <VStack
+                      spacing={1}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
+                      <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
+                      {
+                        /*
+                        !assetIds ? (
+                          <Text textStyle={'captionSmall'}>-</Text>
+                        ) : (
+                          <AssetsIcons assetIds={assetIds} showTooltip={true} size={'xs'} />
+                        )
+                        */
+                      }
+                    </VStack>
+                    <VStack
+                      spacing={1}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation component={Text} translation={'assets.assetDetails.generalData.allocation'} textStyle={'captionSmall'} />
+                      <Amount.Usd value={allocationUsd} textStyle={'tableCell'} />
+                    </VStack>
+                  </HStack>
+                </VStack>
+              </Card>
+            </AssetProvider>
           )
         })
       }
