@@ -1236,6 +1236,84 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
+      DAIStaking:{
+        autoFarming:[],
+        protocol:'euler',
+        variant:'staking',
+        enabledEnvs:['beta'],
+        blockNumber:16375825,
+        underlyingToken:'DAI',
+        status:'experimental',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_euler_DAIStaking',
+          address:'0x264E1552Ee99f57a7D9E1bD1130a478266870C39'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_euler_DAIStaking',
+          address:'0x62aa57dd00c3d77f984379892c857bef58fc7722'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x6b175474e89094c44da98b954eedeac495271d0f" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler DAI pool</a> and automatically stake the received eDAI to earn additional EUL rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_euler_DAIStaking_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'euler DAI AA',
+            name:'AA_euler_DAIStaking',
+            token:'AA_euler_DAIStaking',
+            address:'0x62Eb6a8c7A555eae3e0B17D42CA9A3299af2787E'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_euler_DAIStaking_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'euler DAI BB',
+            name:'BB_euler_DAIStaking',
+            token:'BB_euler_DAIStaking',
+            address:'0x56263BDE26b72b3e3D26d8e03399a275Aa8Bbfb2'
+          }
+        }
+      },
     },
     ribbon:{
       USDCFolk:{
@@ -1858,7 +1936,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
-    USTBB: {
+    USDTBB: {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
@@ -1869,7 +1947,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
-        token: 'idleUSTBB',
+        token: 'idleUSDTBB',
         address: '0xfa3AfC9a194BaBD56e743fA3b7aA2CcbED3eAaad',
       },
       protocols: [
@@ -1898,6 +1976,51 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
             exchangeRate: {
               name: 'virtualPrice',
               params: ['0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967']
+            }
+          },
+        }
+      ]
+    },
+    DAIBB: {
+      enabledEnvs: ['beta'],
+      blockNumber: 16519501,
+      flags:{
+        statsEnabled:false,
+        referralEnabled:true
+      },
+      underlyingToken: 'DAI',
+      idle: {
+        decimals:18,
+        abi: IdleTokenV4 as Abi,
+        token: 'idleDAIBB',
+        address: '0xeC9482040e6483B7459CC0Db05d51dfA3D3068E1',
+      },
+      protocols: [
+        {
+          decimals: 18,
+          name: 'euler',
+          enabled: true,
+          abi: IdleCDO as Abi,
+          token: 'BB_euler_DAIStaking',
+          address: '0x56263BDE26b72b3e3D26d8e03399a275Aa8Bbfb2',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0x56263BDE26b72b3e3D26d8e03399a275Aa8Bbfb2']
+            }
+          },
+        },
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'morpho',
+          abi: IdleCDO as Abi,
+          token: 'BB_morpho_aave_DAI',
+          address: '0xB098AF638aF0c4Fa3edb1A24f807E9c22dA0fE73',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xB098AF638aF0c4Fa3edb1A24f807E9c22dA0fE73']
             }
           },
         }
