@@ -165,10 +165,10 @@ export const strategies: Record<string, StrategyProps> = {
         accessor:'name',
         sortType:'alpha',
         title:'defi.asset',
-        // extraFields:['strategies'],
-        stackProps:{
-          justifyContent:'space-between'
-        },
+        extraFields:['statusBadge', 'strategies'],
+        // stackProps:{
+        //   justifyContent:'space-between'
+        // },
       },
       {
         id:'tvl',

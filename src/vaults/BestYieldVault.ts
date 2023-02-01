@@ -4,11 +4,11 @@ import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import type { VaultMessages } from 'constants/vaults'
-import type { Abi, NumberType } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
+import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { BNify, fixTokenDecimals, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
@@ -41,7 +41,9 @@ export class BestYieldVault {
   // Raw config
   public readonly type: string
   public readonly idleConfig: IdleToken
+  public readonly variant: string | undefined
   public readonly tokenConfig: BestYieldConfig
+  public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
   public readonly underlyingToken: UnderlyingTokenProps | undefined
 
@@ -71,6 +73,8 @@ export class BestYieldVault {
     this.protocol = 'idle'
     this.flags = tokenConfig.flags
     this.tokenConfig = tokenConfig
+    this.status = tokenConfig.status
+    this.variant = tokenConfig.variant
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
     this.id = this.idleConfig.address.toLowerCase()

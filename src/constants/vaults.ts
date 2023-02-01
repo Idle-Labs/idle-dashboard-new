@@ -1838,7 +1838,9 @@ export type BestYieldConfig = {
   idle: IdleToken
   proxies?: string[]
   blockNumber: number
+  variant?: string
   description?: string
+  status?: VaultStatus
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
@@ -1889,6 +1891,23 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           }
         }
       ]
+    },
+    USDCBBOld: {
+      status:'deprecated',
+      enabledEnvs: ['beta'],
+      blockNumber: 16277063,
+      flags:{
+        statsEnabled:false,
+        referralEnabled:false
+      },
+      underlyingToken: 'USDC',
+      idle: {
+        decimals:18,
+        abi: IdleTokenV4 as Abi,
+        token: 'idleUSDCBBOld',
+        address: '0xF6954B03d6a94Ba9e8C80CBE5824f22a401EE5D2',
+      },
+      protocols: []
     },
     USDCBB: {
       enabledEnvs: ['beta'],

@@ -32,7 +32,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
   }, [selectVaultById, assetId])
 
   if (!vault || !(vault instanceof BestYieldVault)) return null
-  if (!("tokenConfig" in vault) || !vault.tokenConfig?.protocols) return null
+  if (!("tokenConfig" in vault) || !vault.tokenConfig?.protocols.length) return null
 
   return (
     <VStack
