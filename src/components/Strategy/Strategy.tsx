@@ -9,13 +9,13 @@ import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import type { Asset, VaultPosition } from 'constants/types'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
 import { Box, Link, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
@@ -45,6 +45,7 @@ export const Strategy: React.FC = () => {
   const translate = useTranslate()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
+  const { openModal } = useModalProvider()
   const { location, params } = useBrowserRouter()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
@@ -82,7 +83,7 @@ export const Strategy: React.FC = () => {
         accessor,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
-        Header: translate(`defi.${id}`),
+        Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (
@@ -116,7 +117,7 @@ export const Strategy: React.FC = () => {
         accessor,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
-        Header: translate(`defi.${id}`),
+        Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (

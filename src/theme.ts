@@ -70,7 +70,8 @@ export const theme = extendTheme({
       200: '#4DE3B0'
     },
     brand: {
-      blue: '#0519D3'
+      blue: '#0519D3',
+      primary: '#04117B'
     },
     darkTeal: {
       500: '#144241',
@@ -471,10 +472,10 @@ export const theme = extendTheme({
         borderRadius:4,
         color:'primary',
         fontWeight: 500,
-        bg:'brand.blue',
+        bg:'brand.primary',
         fontFamily:'body',
         boxShadow:'0px 0px 10px 0px rgba(0,0,0,0.5)',
-        '--popper-arrow-bg':'colors.brand.blue'
+        '--popper-arrow-bg':'colors.brand.primary'
       },
       defaultProps:{
         placement:'top'

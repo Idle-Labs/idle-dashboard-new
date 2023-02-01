@@ -163,14 +163,14 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     columns: [
       {
-        id:'asset',
         accessor:'name',
         sortType:'alpha',
         title:'defi.asset',
-        extraFields:['statusBadge', 'strategies'],
-        // stackProps:{
-        //   justifyContent:'space-between'
-        // },
+        id:'assetWithStatus',
+        extraFields:['strategies'],
+        stackProps:{
+          justifyContent:'space-between'
+        },
       },
       {
         id:'tvl',

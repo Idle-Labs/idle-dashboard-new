@@ -194,14 +194,15 @@ const Icon: React.FC<IconProps> = ({
       hasArrow
       placement={'top'}
       label={asset?.name}
+      isDisabled={!showTooltip}
     >
       {avatar}
     </Tooltip>
-  ), [avatar, asset])
+  ), [showTooltip, avatar, asset])
 
   if (!asset) return <Spinner size={props.size || 'sm'} />
 
-  return showTooltip ? tooltip : avatar
+  return tooltip
 }
 
 const ProtocolIcon: React.FC<IconProps> = ({
@@ -1035,6 +1036,17 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
         >
           <Icon size={'sm'} {...props} />
           <Name textStyle={'tableCell'} {...props} />
+        </HStack>
+      )
+    case 'assetWithStatus':
+      return (
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+        >
+          <Icon size={'sm'} {...props} />
+          <Name textStyle={'tableCell'} {...props} />
+          <StatusBadge width={6} height={6} />
         </HStack>
       )
     case 'strategies':

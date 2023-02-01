@@ -155,7 +155,7 @@
     },
     "best": {
       "label": "Best Yield",
-      "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span> in an inconsistent world",
+      "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",
       "banner": {
         "text": "<strong style='color: white'>Best Yield meets Senior & Junior Tranches</strong> harnessing the full yield power",
         "cta": "How it works"
@@ -166,7 +166,7 @@
         "subtitle": "Junior Best Yield",
         "text": "The Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources.<br /><br />Instead of depositing funds into a single Junior Tranche, users can now take advantage of multiple opportunities as they arise, further optimizing their boosted APYs thanks to the battle-tested Best Yield’s automated rebalancing process and algorithmic capital reallocation.<br /><br />The Junior Best Yield Vaults represent an aggressive target risk allocation strategy, as users provide first-loss capital to an array of different Junior Tranches."
       },
-      "description": "Best Yield vaults are pools designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
+      "description": "Best Yield vaults are designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
       "carousel": {
         "pooledDeposits":{
           "title": "Pooled deposits",
