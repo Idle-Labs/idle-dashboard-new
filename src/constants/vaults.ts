@@ -1912,7 +1912,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     */
     USDCBB: {
-      enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
         apiType:'juniorRates',
@@ -1958,7 +1957,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDTBB: {
-      enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
         apiType:'juniorRates',
