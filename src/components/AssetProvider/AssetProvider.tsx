@@ -1030,7 +1030,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'flex-start'}
         >
-          <ProtocolIcon size={props.size || 'xs'} />
+          <ProtocolIcon size={props.size || 'sm'} />
           <VStack
             spacing={0}
             alignItems={'flex-start'}
@@ -1046,7 +1046,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon size={props.size || 'xs'} />
+          <ProtocolIcon size={props.size || 'sm'} />
           <ProtocolName textStyle={'tableCell'} {...props} />
         </HStack>
       )
@@ -1056,7 +1056,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <Icon {...props} />
+          <Icon size={'sm'} {...props} />
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )
@@ -1134,7 +1134,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<VaultVariant {...props} />)
     case 'rewards':
       return (
-        <Rewards size={'xs'} {...props}>
+        <Rewards size={'sm'} {...props}>
           <Text textStyle={'tableCell'} {...props}>-</Text>
         </Rewards>
       )

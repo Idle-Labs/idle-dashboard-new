@@ -316,6 +316,9 @@ export const strategies: Record<string, StrategyProps> = {
     generalDataFields:[
       {
         field: 'protocol',
+        props: {
+          size:'xs'
+        },
         label: 'assets.assetDetails.generalData.protocol'
       },
       {
@@ -435,6 +438,9 @@ export const strategies: Record<string, StrategyProps> = {
     generalDataFields:[
       {
         field: 'protocol',
+        props: {
+          size:'xs'
+        },
         label: 'assets.assetDetails.generalData.protocol'
       },
       {
