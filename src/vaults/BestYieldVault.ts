@@ -81,6 +81,7 @@ export class BestYieldVault {
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
     this.idleController = idleController
+    this.description = tokenConfig.description
     this.id = this.idleConfig.address.toLowerCase()
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)

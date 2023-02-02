@@ -109,6 +109,7 @@ export const ReactTable = <T extends {}>({
                     <Th
                       {...column.getHeaderProps(column.getSortByToggleProps({title: undefined /*remove mouse hover tooltip*/}))}
                       color={'gray.500'}
+                      fontWeight={400}
                       display={column.display}
                       textAlign={column.textAlign}
                       _hover={{ color: column.canSort ? hoverColor : 'gray.500' }}

@@ -18,7 +18,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
-import { Box, Link, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { Box, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -345,7 +345,6 @@ export const Strategy: React.FC = () => {
 
   const banner = useMemo(() => {
     if (!strategy || !strategies[strategy].banner) return null
-
     const modalProps = strategies[strategy].banner?.modal
     return (
       <Card.Dark
@@ -381,7 +380,7 @@ export const Strategy: React.FC = () => {
                 justifyContent={'center'}
                 position={['relative','absolute']}
               >
-                <Translation translation={strategies[strategy].banner?.cta} component={Link} textAlign={'center'} textStyle={'cta'} onClick={() => openModal(modalProps as ModalProps)} />
+                <Translation translation={strategies[strategy].banner?.cta} textAlign={'center'} textStyle={'cta'} onClick={() => openModal(modalProps as ModalProps)} />
                 <MdArrowForwardIos />
               </HStack>
             )
@@ -413,7 +412,7 @@ export const Strategy: React.FC = () => {
             width={['100%', '65%']}
             alignItems={['center', 'flex-start']}
           >
-            <Translation isHtml={true} translation={strategies[strategy].title || strategies[strategy].label} component={Heading} as={'h2'} size={'3xl'} />
+            <Translation isHtml={true} translation={strategies[strategy].title || strategies[strategy].label} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} />
             {
               !isMobile && (
                 <Flex

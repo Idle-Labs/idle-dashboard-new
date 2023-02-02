@@ -1925,6 +1925,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleUSDCBB',
         address: '0xDc7777C771a6e4B3A82830781bDDe4DBC78f320e',
       },
+      description:"This Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources (see protocols below). As deposited funds provide first-loss capital to an array of different Junior Tranches, it represent an aggressive target risk allocation strategy.",
       protocols: [
         {
           decimals: 18,
@@ -1970,6 +1971,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleUSDTBB',
         address: '0xfa3AfC9a194BaBD56e743fA3b7aA2CcbED3eAaad',
       },
+      description:"This Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources (see protocols below). As deposited funds provide first-loss capital to an array of different Junior Tranches, it represent an aggressive target risk allocation strategy.",
       protocols: [
         {
           decimals: 18,
@@ -2016,6 +2018,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         token: 'idleDAIBB',
         address: '0xeC9482040e6483B7459CC0Db05d51dfA3D3068E1',
       },
+      description:"This Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources (see protocols below). As deposited funds provide first-loss capital to an array of different Junior Tranches, it represent an aggressive target risk allocation strategy.",
       protocols: [
         {
           decimals: 18,
@@ -2059,6 +2062,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       flags:{
         referralEnabled:true
       },
+      description:"This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy.",
       proxies: ['0x43bD6a78b37b50E3f52CAcec53F1202dbDe6a761'],
       autoFarming:['IDLE', 'COMP'],
       protocols: [
@@ -2129,6 +2133,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         referralEnabled:true
       },
       autoFarming:['IDLE', 'COMP'],
+      description:"This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy.",
       protocols: [
         {
           name: 'compound',
@@ -2231,6 +2236,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         referralEnabled:true
       },
       autoFarming:['IDLE', 'COMP'],
+      description:"This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy.",
       protocols: [
         {
           enabled: true,
