@@ -263,6 +263,9 @@
         }
       }
     },
+    "assetChart": {
+      "empty": "We're still collecting data for this vault"
+    },
     "performanceChart": {
       "empty": "The performances of your portfolio will appear here",
       "emptyNotConnected": "Connect your wallet to view your portfolio performances"
@@ -1683,8 +1686,6 @@
         "totalSupply": "Total amount of assets staked in this gauge",
         "totalIDLEStaked":"The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
-        "AA":"This strategy might allocate its funds into Senior tranches",
-        "BB":"This strategy might allocate its funds into Junior tranches",
         "deprecated": "This vaults has been deprecated, withdraw your assets",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
@@ -1705,7 +1706,9 @@
         "stakingAPY": "Estimate of the IDLE buyback distribution over 1 year based on the current stkIDLE supply",
         "apyRatio": "The base strategy yield is split across the Senior and Junior tranches with a specific ratio",
         "lockEndDate": "This is the expiration date of your lock, after this date you will be able to withdraw your IDLE",
-        "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution"
+        "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution",
+        "AA":"This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
+        "BB":"This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts"
       },
       "apyBreakdown": {
         "base": "Base APY",

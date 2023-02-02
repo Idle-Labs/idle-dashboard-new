@@ -6,7 +6,6 @@ import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MaticNFTs } from 'components/MaticNFTs/MaticNFTs'
-import { BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { HistoryTimeframe, BigNumber } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
@@ -14,14 +13,15 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
+import { bnOrZero, BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
-import { Heading, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
+import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -82,13 +82,13 @@ export const Earn: React.FC = () => {
   const chartHeading = useMemo(() => {
     const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
     const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
-    const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
+    const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
 
     // const earningsPercentage = performanceChartData?.total?.length && BNify(performanceChartData.total[performanceChartData.total.length-1].value).div(performanceChartData.total[0].value).minus(1).times(100)
     // const earningsDays = performanceChartData?.total?.length ? BNify(performanceChartData.total[performanceChartData.total.length-1].date).minus(performanceChartData.total[0].date).div(1000).div(86400) : BNify(0)
     // const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)    
 
-    const isLoaded = (chartData?.total && chartData.total.length>0) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
+    const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
     
     return (
       <VStack
@@ -287,9 +287,20 @@ export const Earn: React.FC = () => {
           overflow={'hidden'}
           direction={'column'}
           minH={['auto', 460]}
+          position={'relative'}
           layerStyle={'cardDark'}
           justifyContent={'space-between'}
         >
+          {
+            chartData && !chartData.total?.length && (
+              <Center
+                layerStyle={'overlay'}
+                bg={'rgba(0, 0, 0, 0.4)'}
+              >
+                <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+              </Center>
+            )
+          }
           <Stack
             pt={[6, 8]}
             px={[6, 8]}
@@ -300,7 +311,11 @@ export const Earn: React.FC = () => {
             justifyContent={['center', 'space-between']}
           >
             {chartHeading}
-            <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+            {
+              chartData && chartData.total?.length>0 && (
+                <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+              )
+            }
           </Stack>
           <GenericChart
             data={chartData}

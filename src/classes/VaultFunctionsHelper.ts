@@ -605,8 +605,8 @@ export class VaultFunctionsHelper {
 
     const currTime = Math.ceil(Date.now()/1000)
 
-    const apyType = ("flags" in vault) && vault.flags?.apyType ? vault.flags?.apyType : 'rates'
-    const address = apyType === 'rates' ? vault.underlyingToken?.address : vault.id
+    const apiType = ("flags" in vault) && vault.flags?.apiType ? vault.flags?.apiType : 'rates'
+    const address = apiType === 'rates' ? vault.underlyingToken?.address : vault.id
 
     const cacheKey = `idleRates_${this.chainId}_${address}`
     const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
@@ -632,9 +632,9 @@ export class VaultFunctionsHelper {
     }
 
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
-    let results = fetchData ? await callPlatformApis(this.chainId, 'idle', apyType as string, address, filters) : cachedData.data
+    let results = fetchData ? await callPlatformApis(this.chainId, 'idle', apiType as string, address, filters) : cachedData.data
 
-    // console.log('getIdleRatesData', cacheKey, cachedData, latestTimestamp, daysDiff, hoursDiff, fetchData, results)
+    // console.log('getIdleRatesData', cacheKey, cachedData, latestTimestamp, results)
 
     // Replace if not valid
     results = results || []

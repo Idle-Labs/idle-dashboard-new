@@ -1915,7 +1915,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
-        apyType:'juniorRates',
+        apiType:'juniorRates',
         referralEnabled:true
       },
       underlyingToken: 'USDC',
@@ -1960,7 +1960,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
-        apyType:'juniorRates',
+        apiType:'juniorRates',
         referralEnabled:true
       },
       underlyingToken: 'USDT',
@@ -2007,7 +2007,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       flags:{
         statsEnabled: false,
         referralEnabled:true,
-        apyType:'juniorRates'
+        apiType:'juniorRates'
       },
       underlyingToken: 'DAI',
       idle: {

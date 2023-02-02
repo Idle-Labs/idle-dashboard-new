@@ -2587,6 +2587,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         assetsData[vault.id].apy30 = avg_rate30.gt(0) ? avg_rate30 : price_apy30
 
         // console.log('rates30', vault.id, rates30, BNify(rates30[0].value).toString(), rates30_last_rate.toString(), assetsData[vault.id].apy30.toString())
+      } else {
+        assetsData[vault.id].apy7 = assetsData[vault.id].apy
+        assetsData[vault.id].apy30 = assetsData[vault.id].apy
       }
 
       // console.log('aprBreakdown', vault.id, assetsData[vault.id].aprBreakdown)

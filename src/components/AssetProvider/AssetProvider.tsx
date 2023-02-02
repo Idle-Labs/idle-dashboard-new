@@ -1140,7 +1140,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       )
     case 'protocols':
       return (
-        <Protocols size={'xs'} {...props}>
+        <Protocols size={'sm'} {...props}>
           <Text textStyle={'tableCell'} {...props}>-</Text>
         </Protocols>
       )
