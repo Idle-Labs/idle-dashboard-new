@@ -59,7 +59,7 @@ export function ModalProvider({ children }: ProviderProps) {
   return (
     <ModalContext.Provider value={{openModal}}>
       {children}
-      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose} size={size}>
+      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose} size={size} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>

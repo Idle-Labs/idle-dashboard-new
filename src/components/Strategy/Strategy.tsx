@@ -412,7 +412,7 @@ export const Strategy: React.FC = () => {
             width={['100%', '65%']}
             alignItems={['center', 'flex-start']}
           >
-            <Translation isHtml={true} translation={strategies[strategy].title || strategies[strategy].label} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} />
+            <Translation isHtml={true} translation={strategies[strategy].title || strategies[strategy].label} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} />
             {
               !isMobile && (
                 <Flex
