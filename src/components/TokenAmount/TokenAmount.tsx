@@ -14,14 +14,12 @@ export type TokenAmountProps = {
 export const TokenAmount: React.FC<TokenAmountProps> = ({
   assetId,
   amount,
-  size,
+  size = 'sm',
   showIcon = true,
   ...props
 }) => {
-
   const { ...amountProps } = props as Omit<AmountProps, keyof TokenAmountProps>
   const { ...assetFieldProps } = props as Omit<AssetFieldProps, keyof TokenAmountProps>
-
   return (
     <AssetProvider
       wrapFlex={false}
@@ -33,7 +31,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
       >
         {
           showIcon && (
-            <AssetProvider.Icon size={size || 'xs'} />
+            <AssetProvider.Icon size={size} />
           )
         }
         <HStack

@@ -163,8 +163,8 @@
       "modal": {
         "cta": "Got it",
         "title": "How it works",
-        "subtitle": "Junior Best Yield",
-        "text": "The Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources.<br /><br />Instead of depositing funds into a single Junior Tranche, users can now take advantage of multiple opportunities as they arise, further optimizing their boosted APYs thanks to the battle-tested Best Yield’s automated rebalancing process and algorithmic capital reallocation.<br /><br />The Junior Best Yield Vaults represent an aggressive target risk allocation strategy, as users provide first-loss capital to an array of different Junior Tranches."
+        "subtitle": "Best Yield meets Senior & Junior Tranches",
+        "text": "Now Best Yield Vaults are integrated with Senior & Junior Tranches.<br /><br />Best Yield Vaults with Senior <img src='/images/strategies/AA.svg' style='width:24px;height:24px;display:inline;vertical-align:bottom' /> can deploy funds and optimize allocation into Senior Tranches, providing a wider and more fruitful yield spectrum while keeping a low-risk profile, thanks to Senior's built-in coverage.<br /><br />Best Yield Vaults with Junior <img src='/images/strategies/BB.svg' style='width:24px;height:24px;display:inline;vertical-align:bottom' /> route deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts. The Junior Best Yield Vaults represent an aggressive target risk allocation strategy, as users provide first-loss capital to an array of different Junior Tranches.<br /><br />Some Best Yield Vaults, will continue to traditionally route deposits across top-tier, over-collateralized lending protocols (Aave and Compound)."
       },
       "description": "Best Yield vaults are designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
       "carousel": {
@@ -1658,6 +1658,7 @@
         "estimatedApy":"Est. APY",
         "stkIDLEBalance":"stkIDLE balance",
         "tvl":"TVL",
+        "idleDistribution":"IDLE distribution",
         "stakingRewards":"Staking Rewards",
         "gaugeRewards":"Gauge Rewards",
         "autoCompounding":"Auto Compounding",
@@ -1691,6 +1692,7 @@
         "spotApy": "The annualized yield this vault is providing at the current block",
         "autoCompounding": "These rewards are automatically re-invested in the strategy",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
+        "idleDistribution": "The total amount of IDLE distributed daily for the entire pool",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy",
         "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",

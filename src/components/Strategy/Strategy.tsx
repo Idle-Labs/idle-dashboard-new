@@ -33,7 +33,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
   return (
     <SkeletonText noOfLines={2} isLoaded={!!value}>
       <AssetProvider assetId={assetId}>
-        <AssetProvider.GeneralData section={'strategy'} field={field} size={'sm'} />
+        <AssetProvider.GeneralData section={'strategy'} field={field} />
       </AssetProvider>
     </SkeletonText>
   )
@@ -87,9 +87,10 @@ export const Strategy: React.FC = () => {
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (
-            <HStack
+            <Stack
               spacing={2}
               width={'full'}
+              direction={'row'}
               {...column.stackProps}
             >
               <TableField field={id} value={value} row={row} />
@@ -98,7 +99,7 @@ export const Strategy: React.FC = () => {
                   <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
                 ))
               }
-            </HStack>
+            </Stack>
           ) : (
             <TableField field={id} value={value} row={row} />
           )
@@ -121,9 +122,10 @@ export const Strategy: React.FC = () => {
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (
-            <HStack
+            <Stack
               spacing={2}
               width={'full'}
+              direction={'row'}
               {...column.stackProps}
             >
               <TableField field={id} value={value} row={row} />
@@ -132,7 +134,7 @@ export const Strategy: React.FC = () => {
                   <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
                 ))
               }
-            </HStack>
+            </Stack>
           ) : (
             <TableField field={id} value={value} row={row} />
           )

@@ -180,7 +180,12 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'apy',
         accessor:'apy',
-        sortType: 'numeric'
+        sortType: 'numeric',
+        extraFields:['idleDistribution'],
+        stackProps:{
+          direction:'column',
+          justifyContent:'flex-start'
+        },
       },
       {
         id:'apy7',
@@ -208,6 +213,16 @@ export const strategies: Record<string, StrategyProps> = {
         field:'apy',
         label:'assets.assetDetails.generalData.apy',
         tooltip:'assets.assetDetails.tooltips.spotApy'
+      },
+      {
+        field:'idleDistribution',
+        props:{
+          size:'xs',
+          fontSize:'md',
+          defaultText:'-'
+        },
+        label:'assets.assetDetails.generalData.idleDistribution',
+        tooltip:'assets.assetDetails.tooltips.idleDistribution'
       },
       {
         field:'rewards',

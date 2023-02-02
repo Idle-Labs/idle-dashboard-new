@@ -604,11 +604,20 @@ export class VaultFunctionsHelper {
     }
 
     const currTime = Math.ceil(Date.now()/1000)
-    const cacheKey = `idleRates_${this.chainId}_${vault.underlyingToken?.address}`
+
+    const apyType = ("flags" in vault) && vault.flags?.apyType ? vault.flags?.apyType : 'rates'
+    const address = apyType === 'rates' ? vault.underlyingToken?.address : vault.id
+
+    const cacheKey = `idleRates_${this.chainId}_${address}`
     const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
 
     const lastFetchTimestamp = cachedData && cachedData.timestamp
     const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timestamp), 0)
+
+    // Retrieve new data if the latest cached is more than 1 day and 1 hour old
+    const daysDiff = latestTimestamp && dayDiff(latestTimestamp*1000, currTime*1000)
+    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp*1000, currTime*1000, 'h', true)
+    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
 
     if (filters) {
       // Replace start timestamp with latest cached timestamp
@@ -622,13 +631,8 @@ export class VaultFunctionsHelper {
       }
     }
 
-    // Retrieve new data if the latest cached is more than 1 day and 1 hour old
-    const daysDiff = latestTimestamp && dayDiff(latestTimestamp*1000, currTime*1000)
-    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp*1000, currTime*1000, 'h', true)
-    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
-
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
-    let results = fetchData ? await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) : cachedData.data
+    let results = fetchData ? await callPlatformApis(this.chainId, 'idle', apyType as string, address, filters) : cachedData.data
 
     // console.log('getIdleRatesData', cacheKey, cachedData, latestTimestamp, daysDiff, hoursDiff, fetchData, results)
 

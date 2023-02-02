@@ -21,6 +21,7 @@ type ConstructorProps = {
   web3Rpc?: Web3 | null
   tokenConfig: BestYieldConfig
   cacheProvider?: CacheContextProps
+  idleController?: GenericContract
 }
 
 export class BestYieldVault {
@@ -53,6 +54,7 @@ export class BestYieldVault {
 
   // Read only contracts
   public readonly contractRpc: Contract | undefined // Used for calls on specific blocks
+  public readonly idleController: GenericContract | undefined
 
   constructor(props: ConstructorProps){
 
@@ -62,7 +64,8 @@ export class BestYieldVault {
       web3Rpc,
       chainId,
       tokenConfig,
-      cacheProvider
+      cacheProvider,
+      idleController
     } = props
     
     // Init global data
@@ -77,6 +80,7 @@ export class BestYieldVault {
     this.variant = tokenConfig.variant
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
+    this.idleController = idleController
     this.id = this.idleConfig.address.toLowerCase()
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
@@ -244,6 +248,11 @@ export class BestYieldVault {
         call:this.contract.methods.fee()
       }
     ]
+  }
+
+  public getIdleDistributionCalls(): ContractRawCall[] {
+    if (!this.idleController) return []
+    return [this.idleController.getRawCall('idleSpeeds', [this.id], this.id)]
   }
 
   public getAprsCalls(): ContractRawCall[] {

@@ -254,34 +254,35 @@ export type Asset = {
   protocol?: string
   variant?: string
   status?: VaultStatus
-  lastHarvest?: Harvest | null
   underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber
+  fee?: BigNumber
+  tvl?: BigNumber
   apy7?: BigNumber
   apy30?: BigNumber
-  fee?: BigNumber
+  tvlUsd?: BigNumber
+  rewards?: Balances
   balance?: BigNumber
+  totalTvl?: BigNumber
   aprRatio?: BigNumber
   baseApr?: BigNumber
   apyBoost?: BigNumber
   priceUsd?: BigNumber
-  balanceUsd?: BigNumber
-  protocolsAprs?: Balances
-  vaultPrice?: BigNumber
-  totalSupply?: BigNumber
-  additionalApr?: BigNumber
-  aprBreakdown?: Balances
-  apyBreakdown?: Balances
-  tvl?: BigNumber
-  tvlUsd?: BigNumber
-  rewards?: Balances
-  totalTvl?: BigNumber
+  gaugeData?: GaugeData
   rates?: HistoryData[]
   prices?: HistoryData[]
-  pricesUsd?: HistoryData[]
-  gaugeData?: GaugeData
   allocations?: Balances
+  balanceUsd?: BigNumber
+  vaultPrice?: BigNumber
+  totalSupply?: BigNumber
+  aprBreakdown?: Balances
+  apyBreakdown?: Balances
+  protocolsAprs?: Balances
+  pricesUsd?: HistoryData[]
+  additionalApr?: BigNumber
+  lastHarvest?: Harvest | null
+  idleDistribution?: BigNumber
   vaultPosition?: VaultPosition
 }
 

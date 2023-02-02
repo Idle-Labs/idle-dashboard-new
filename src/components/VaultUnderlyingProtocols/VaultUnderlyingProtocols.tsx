@@ -65,12 +65,12 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
 
           return (
             <AssetProvider
-              assetId={protocol.address}
               wrapFlex={false}
+              assetId={protocol.address}
+              key={`protocol_${protocol.name}`}
             >
               <Card
                 p={6}
-                key={`protocol_${protocol.name}`}
               >
                 <VStack
                   spacing={6}
@@ -82,7 +82,12 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                     width={'full'}
                     justifyContent={'space-between'}
                   >
-                    <ProtocolLabel protocolId={protocol.name} size={'xs'} />
+                    <HStack
+                      spacing={2}
+                    >
+                      <ProtocolLabel protocolId={protocol.name} size={'xs'} />
+                      <AssetProvider.Strategy prefix={'('} suffix={')'} color={'primary'} />
+                    </HStack>
                     <AssetProvider.StrategyBadge width={6} height={6} />
                   </HStack>
                   <HStack

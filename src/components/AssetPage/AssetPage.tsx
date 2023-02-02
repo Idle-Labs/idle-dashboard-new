@@ -175,8 +175,10 @@ export const AssetPage: React.FC = () => {
       )
     }
 
+    const statsEnabled = (!vault?.flags || vault.flags.statsEnabled === undefined || vault.flags.statsEnabled)
+
     // Add stats tab
-    if (checkSectionEnabled('stats', environment) && (!vault?.flags || vault.flags.statsEnabled === undefined || vault.flags.statsEnabled)){
+    if (checkSectionEnabled('stats', environment) && statsEnabled){
       tabs.push({
         id:'stats',
         label:'navBar.stats',
@@ -192,18 +194,6 @@ export const AssetPage: React.FC = () => {
     return tabs
   }, [vault, vaultGauge, assetGauge, timeframe, environment])
 
-  const vaultId = useMemo(() => {
-    return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id
-  }, [tabs, selectedTabIndex, asset, vaultGauge])
-
-  const selectedTab = useMemo(() => {
-    return tabs[selectedTabIndex]
-  }, [tabs, selectedTabIndex])
-
-  const TabComponent = useMemo(() => {
-    return selectedTab.component
-  }, [selectedTab])
-
   // Get selected tab id from search params
   const selectedTabId = useMemo(() => {
     return getSearchParams.get('tab')
@@ -218,11 +208,26 @@ export const AssetPage: React.FC = () => {
         const tabIndex = tabs.indexOf(foundTab)
         // console.log('setSelectedTabIndex', selectedTabId, foundTab, tabIndex)
         setSelectedTabIndex(tabIndex)
+      } else {
+        setSelectedTabIndex(0)
       }
     } else {
       setSelectedTabIndex(0)
     }
   }, [tabs, selectedTabId, setSelectedTabIndex])
+
+  const vaultId = useMemo(() => {
+    if (!tabs[selectedTabIndex]) return asset?.id
+    return tabs[selectedTabIndex].id === 'gauge' && vaultGauge ? vaultGauge.id : asset?.id
+  }, [tabs, selectedTabIndex, asset, vaultGauge])
+
+  const selectedTab = useMemo(() => {
+    return tabs[selectedTabIndex]
+  }, [tabs, selectedTabIndex])
+
+  const TabComponent = useMemo(() => {
+    return selectedTab.component
+  }, [selectedTab])
 
   // Change url and select tab
   const selectTab = useCallback((tabIndex: number) => {

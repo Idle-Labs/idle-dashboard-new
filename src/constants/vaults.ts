@@ -93,7 +93,7 @@ export interface TrancheConfig {
   Strategy: Strategy
   description?: string
   messages?: VaultMessages
-  flags?: Record<string, boolean>
+  flags?: Record<string, any>
   Tranches: Record<string, Tranche>
 }
 
@@ -1844,8 +1844,8 @@ export type BestYieldConfig = {
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
+  flags?: Record<string, any>
   protocols: IdleTokenProtocol[]
-  flags?: Record<string, boolean>
 }
 
 export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
@@ -1913,8 +1913,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
-
-        // statsEnabled:false,
+        apyType:'juniorRates',
         referralEnabled:true
       },
       underlyingToken: 'USDC',
@@ -1959,7 +1958,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
-        statsEnabled:false,
+        apyType:'juniorRates',
         referralEnabled:true
       },
       underlyingToken: 'USDT',
@@ -2004,8 +2003,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       enabledEnvs: ['beta'],
       blockNumber: 16519501,
       flags:{
-        statsEnabled:false,
-        referralEnabled:true
+        statsEnabled: false,
+        referralEnabled:true,
+        apyType:'juniorRates'
       },
       underlyingToken: 'DAI',
       idle: {

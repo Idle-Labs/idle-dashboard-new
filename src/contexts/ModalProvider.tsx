@@ -22,11 +22,14 @@ const initialState: ContextProps = {
   openModal: () => {}
 }
 
+type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
+
 const ModalContext = React.createContext<ContextProps>(initialState)
 export const useModalProvider = () => useContext(ModalContext)
 
 export function ModalProvider({ children }: ProviderProps) {
   const translate = useTranslate()
+  const [ size, setSize ] = useState<ModalSize>('lg')
   const [ modalProps, setModalProps ] = useState<ModalProps>({
     cta:'',
     text:'',
@@ -36,7 +39,7 @@ export function ModalProvider({ children }: ProviderProps) {
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const openModal = useCallback((props: ModalProps, translateProps: boolean = true) => {
+  const openModal = useCallback((props: ModalProps, size: ModalSize = 'lg', translateProps: boolean = true) => {
 
     const modalProps = translateProps ? (Object.keys(props) as Array<keyof ModalProps>).reduce( (modalProps: ModalProps, prop: keyof ModalProps) => {
       modalProps[prop] = translate(props[prop])
@@ -48,6 +51,7 @@ export function ModalProvider({ children }: ProviderProps) {
       subtitle:''
     }) : props
 
+    setSize(size)
     setModalProps(modalProps)
     onOpen()
   }, [onOpen, setModalProps, translate])
@@ -55,7 +59,7 @@ export function ModalProvider({ children }: ProviderProps) {
   return (
     <ModalContext.Provider value={{openModal}}>
       {children}
-      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>
+      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose} size={size}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>

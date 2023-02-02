@@ -164,8 +164,8 @@ export const theme = extendTheme({
         color: 'white',
       },
       '.earn-best-yield': {
-        background:`url(${strategies.BY.bg}) no-repeat -50% 0`,
-        backgroundSize:'cover'
+        background:`url(${strategies.BY.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
       },
       '.earn-protected-yield': {
         background:`url(${strategies.AA.bg}) no-repeat top right`,

@@ -3,20 +3,21 @@ import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
-import { MAX_STAKING_DAYS } from 'constants/vars'
+import { defaultChainId } from 'constants/chains'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
-import { selectProtocol } from 'selectors/selectProtocol'
 import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
-import { BNify, abbreviateNumber, formatDate } from 'helpers/'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
+import { selectProtocol, selectUnderlyingToken } from 'selectors/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate } from 'helpers/'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
+import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
@@ -788,6 +789,27 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+export type IdleDistributionProps = TextProps & {
+  defaultText?: string
+}
+
+const IdleDistribution: React.FC<IdleDistributionProps> = ({defaultText, ...props}) => {
+  const { asset } = useAssetProvider()
+  const IDLE = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+
+  const dailyDistribution = bnOrZero(asset?.idleDistribution).times(BNify(BLOCKS_PER_YEAR).div(365))
+  
+  return bnOrZero(dailyDistribution).gt(0) && IDLE ? (
+    <HStack
+      spacing={0}
+      alignItems={'center'}
+    >
+      <TokenAmount assetId={IDLE.address} showIcon={true} size={'2xs'} fontSize={'sm'} prefix={'+'} amount={dailyDistribution} {...props} />
+      <Translation translation={'common.day'} prefix={'/'} fontSize={'85%'} fontWeight={400} textTransform={'lowercase'} />
+    </HStack>
+  ) : (defaultText ? (<Text {...props}>{defaultText}</Text>) : null)
+}
+
 const StakingAPY: React.FC<AmountProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
@@ -1034,7 +1056,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <Icon size={'sm'} {...props} />
+          <Icon {...props} />
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )
@@ -1052,6 +1074,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'strategies':
       return (
         <Strategies />
+      )
+    case 'idleDistribution':
+      return (
+        <IdleDistribution textStyle={'tableCell'} {...props} />
       )
     case 'stakingTvl':
       return (<StakingTvl textStyle={'tableCell'} />)
