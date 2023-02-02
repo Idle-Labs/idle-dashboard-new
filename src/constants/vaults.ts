@@ -1892,6 +1892,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         }
       ]
     },
+    /*
     USDCBBOld: {
       status:'deprecated',
       enabledEnvs: ['beta'],
@@ -1909,6 +1910,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       },
       protocols: []
     },
+    */
     USDCBB: {
       enabledEnvs: ['beta'],
       blockNumber: 16277063,
