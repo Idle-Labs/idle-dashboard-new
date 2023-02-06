@@ -649,9 +649,59 @@ const ApyBoost: React.FC<AmountProps> = (props) => {
 
 const RealizedApy: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
+
+  let totalApy = bnOrZero(asset?.vaultPosition?.realizedApy)
+
+  // Add gauge APY to realized APY
+  if (asset?.apyBreakdown?.gauge && bnOrZero(asset?.apyBreakdown?.gauge).gt(0) && bnOrZero(asset?.vaultPosition?.underlying.staked).gt(0)){
+    totalApy = totalApy.plus(asset?.apyBreakdown.gauge)
+
+    const tooltipLabel = (
+      <VStack
+        py={1}
+        spacing={1}
+      >
+        <VStack
+          pb={0}
+          spacing={1}
+        >
+          <HStack
+            spacing={3}
+            width={'100%'}
+            alignItems={'baseline'}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={`defi.realizedApy`} />
+            <Amount.Percentage value={asset?.vaultPosition?.realizedApy} {...props} fontSize={'md'} />
+          </HStack>
+          <HStack
+            spacing={3}
+            width={'100%'}
+            alignItems={'baseline'}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={`assets.assetDetails.apyBreakdown.gauge`} />
+            <Amount.Percentage value={asset?.apyBreakdown?.gauge} {...props} fontSize={'md'} />
+          </HStack>
+        </VStack>
+      </VStack>
+    )
+
+    return (
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        label={tooltipLabel}
+      >
+        <TooltipContent>
+          <Amount.Percentage value={totalApy} borderBottom={'1px dashed'} borderBottomColor={'cta'} {...props} />
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
   
   return asset?.vaultPosition?.realizedApy ? (
-    <Amount.Percentage value={asset?.vaultPosition?.realizedApy} {...props} />
+    <Amount.Percentage value={totalApy} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
