@@ -1238,12 +1238,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       DAIStaking:{
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'euler',
         variant:'staking',
-        enabledEnvs:['beta'],
         blockNumber:16375825,
         underlyingToken:'DAI',
-        status:'experimental',
         adaptiveYieldSplitEnabled:true,
         CDO:{
           abi:IdleCDO as Abi,
@@ -2002,7 +2001,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     DAIBB: {
-      enabledEnvs: ['beta'],
+      enabledEnvs: [],
       blockNumber: 16519501,
       flags:{
         statsEnabled: false,
