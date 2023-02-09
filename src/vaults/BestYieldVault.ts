@@ -122,7 +122,9 @@ export class BestYieldVault {
     const transactions: Transaction[] = await asyncReduce<Transaction[], Transaction[]>(
       (Object.values(transactionsByHash) as Transaction[][]),
       async (internalTxs: Transaction[]) => {
+        const insertedTxs: Record<string, any> = {}
         const transactions = []
+        // const transactions = new Set()
 
         for (const tx of internalTxs) {
 
@@ -176,23 +178,42 @@ export class BestYieldVault {
               idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
 
               underlyingAmount = idlePrice.times(idleAmount)
-              // console.log('tokenPrice', this.id, tx.blockNumber, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
             } else {
               underlyingAmount = underlyingTokenTxAmount
             }
 
-            transactions.push({
-              ...tx,
-              action,
-              idlePrice,
-              idleAmount,
-              assetId:this.id,
-              underlyingAmount
-            })
+            if (tx.hash.toLowerCase() === '0xe0891010279401be3b42b89fec8a0abf67cdc86373cc20c9614877be8bbd3735'.toLowerCase()){
+              console.log(this.id, tx.blockNumber, idlePrice.toString(), idleAmount.toString(), underlyingAmount.toString())
+            }
+
+            // transactions.add({
+            //   ...tx,
+            //   action,
+            //   idlePrice,
+            //   idleAmount,
+            //   assetId:this.id,
+            //   underlyingAmount
+            // })
+
+            if (!insertedTxs[tx.hash]){
+              transactions.push({
+                ...tx,
+                action,
+                idlePrice,
+                idleAmount,
+                assetId:this.id,
+                underlyingAmount
+              })
+
+              // Save inserted txs to avoid duplicated
+              insertedTxs[tx.hash] = 1;
+            }
           }
         }
 
-        return transactions
+        // console.log('transactions', this.id, Array.from(transactions.values()))
+
+        return transactions; //Array.from(transactions.values())
       },
       (acc, val) => ([...acc, ...val]),
       []

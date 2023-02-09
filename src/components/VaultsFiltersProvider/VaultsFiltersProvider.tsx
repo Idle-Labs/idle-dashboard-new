@@ -512,6 +512,8 @@ export const VaultsFiltersProvider = ({ children, types }: VaultsFiltersProvider
     }
   }
 
+  console.log('filteredVaults', filteredVaults)
+
   return (
     <VaultsFiltersContext.Provider value={{vaults: filteredVaults}}>
       <VStack
