@@ -1013,6 +1013,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16246945,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -1090,6 +1093,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16375769,
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -1167,6 +1173,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16375825,
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -1244,6 +1253,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16375825,
         underlyingToken:'DAI',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,

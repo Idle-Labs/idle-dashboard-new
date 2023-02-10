@@ -248,7 +248,7 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
     if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig) return children
     const gaugeVault = ("gaugeConfig" in vault) && vault.gaugeConfig && selectVaultById(vault.gaugeConfig?.address)
 
-    const rewards = gaugeVault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
+    const rewards = gaugeVault?.enabled && gaugeVault?.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
         <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
@@ -305,7 +305,7 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
     
     // Add Gauge rewards
     const rewardTokens = [...vault.rewardTokens]
-    if (gaugeVault){
+    if (gaugeVault?.enabled){
       for (const rewardToken of gaugeVault.rewardTokens){
         if (!rewardTokens.includes(rewardToken)){
           rewardTokens.push(rewardToken)

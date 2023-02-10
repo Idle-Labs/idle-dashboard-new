@@ -1129,7 +1129,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
           additionalAprs[assetId] = BNify(0)
 
           // Add harvest apr
-          if (lastHarvests[assetId]) {
+          const addHarvestApy = !("flags" in vault) || vault.flags?.addHarvestApy === undefined || vault.flags.addHarvestApy
+          if (lastHarvests[assetId] && addHarvestApy) {
             additionalAprs[assetId] = additionalAprs[assetId].plus(BNify(lastHarvests[assetId]?.aprs[vault.type]).times(100))
             // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalAprs[assetId].toString()} = ${aprs[assetId].plus(additionalAprs[assetId]).toString()}`)
             aprs[assetId] = aprs[assetId].plus(additionalAprs[assetId])
