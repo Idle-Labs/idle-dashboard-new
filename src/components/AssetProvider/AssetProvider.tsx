@@ -242,14 +242,17 @@ const ProtocolIcon: React.FC<IconProps> = ({
 
 const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
   const {vault} = useAssetProvider();
-  const { selectors: { selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById, selectAssetById } } = usePortfolioProvider()
   
   const stakingRewards = useMemo(() => {
     if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig) return children
     const gaugeVault = ("gaugeConfig" in vault) && vault.gaugeConfig && selectVaultById(vault.gaugeConfig?.address)
+    const gaugeAsset = gaugeVault && selectAssetById(gaugeVault.id)
 
     const rewards = gaugeVault?.enabled && gaugeVault?.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
+      const rewardTokenRate = bnOrZero(gaugeAsset?.gaugeData?.rewards[rewardToken.address]?.rate)
+      if (!rewardTokenRate.gt(0)) return null
       return (
         <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
           <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
@@ -257,7 +260,7 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
       )
     }).filter( (reward: any) => !!reward )
     return rewards.length ? rewards : children
-  }, [children, vault, props, selectVaultById])
+  }, [children, vault, props, selectVaultById, selectAssetById])
 
   return (
     <Flex>
@@ -296,7 +299,7 @@ type RewardsProps = {
 
 const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
   const { vault } = useAssetProvider()
-  const { selectors: { selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById, selectAssetById } } = usePortfolioProvider()
   
   const rewardTokens = useMemo(() => {
     if (!vault || !("rewardTokens" in vault)) return children
@@ -306,8 +309,10 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
     // Add Gauge rewards
     const rewardTokens = [...vault.rewardTokens]
     if (gaugeVault?.enabled){
+      const gaugeAsset = selectAssetById(gaugeVault.id)
       for (const rewardToken of gaugeVault.rewardTokens){
-        if (!rewardTokens.includes(rewardToken)){
+        const rewardTokenRate = bnOrZero(gaugeAsset?.gaugeData?.rewards[rewardToken.address]?.rate)
+        if (!rewardTokens.includes(rewardToken) && rewardTokenRate.gt(0)){
           rewardTokens.push(rewardToken)
         }
       }
@@ -322,7 +327,7 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
       )
     }).filter( (reward: any) => !!reward )
     return rewards.length ? rewards : children
-  }, [children, vault, props, selectVaultById, iconMargin])
+  }, [children, vault, props, selectVaultById, selectAssetById, iconMargin])
 
   return (
     <Flex>
