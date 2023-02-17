@@ -39,6 +39,7 @@ export type StrategyProps = {
   title?: string
   image?: string
   visible: boolean
+  strategy?: string,
   banner?: BannerProps
   description?: string
   columns?: StrategyColumn[]
@@ -124,6 +125,7 @@ export const strategies: Record<string, StrategyProps> = {
     type:'BY',
     visible: true,
     color:'#6AE4FF',
+    strategy:'best',
     route:'best-yield',
     title:'strategies.best.title',
     label:'strategies.best.label',
@@ -243,6 +245,7 @@ export const strategies: Record<string, StrategyProps> = {
     type:'AA',
     visible: true,
     color:'#4DE3B0',
+    strategy:'tranches',
     route:'protected-yield',
     label:'strategies.protected.title',
     description:'strategies.protected.description',
@@ -371,6 +374,7 @@ export const strategies: Record<string, StrategyProps> = {
     type:'BB',
     visible: true,
     color:'#FFD15C',
+    strategy:'tranches',
     route:'boosted-yield',
     label:'strategies.boosted.title',
     description:'strategies.boosted.description',

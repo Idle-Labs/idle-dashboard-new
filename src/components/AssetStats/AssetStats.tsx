@@ -258,7 +258,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
             width={['full', 2/3]}
             alignItems={'flex-start'}
           >
-            <Translation translation={'stats.performances'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
+            <Translation translation={'stats.performances'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
             <Card.Dark
               p={6}
             >
@@ -288,7 +288,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
             width={['full', 'auto']}
             alignItems={'flex-start'}
           >
-            <Translation translation={'stats.tvlDistribution'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
+            <Translation translation={'stats.tvlDistribution'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
             <Card.Dark
               p={6}
               flex={1}
@@ -307,7 +307,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
             width={'full'}
             alignItems={'flex-start'}
           >
-            <Translation translation={'defi.tvl'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
+            <Translation translation={'defi.tvl'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
             <Card.Dark
               p={6}
             >
@@ -330,7 +330,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
             width={'full'}
             alignItems={'flex-start'}
           >
-            <Translation translation={'defi.apy'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
+            <Translation translation={'defi.apy'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
             <Card.Dark
               p={6}
             >
@@ -354,7 +354,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
             width={'full'}
             alignItems={'flex-start'}
           >
-            <Translation translation={'stats.volumes'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'xl'} />
+            <Translation translation={'stats.volumes'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
             <Card.Dark
               p={6}
               flex={1}

@@ -141,7 +141,7 @@ export const theme = extendTheme({
     md:'16px',
     lg:'20px',
     h3:'20px',
-    xl:'20px',
+    xl:'24px',
     h2:'36px',
     '2xl':'28px',
     '3xl':'36px',
