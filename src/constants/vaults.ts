@@ -1923,8 +1923,10 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     */
     USDCBB: {
+      status:'maintenance',
       blockNumber: 16277063,
       flags:{
+        depositsDisabled:true,
         apiType:'juniorRates',
         referralEnabled:true
       },
@@ -1968,10 +1970,12 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDTBB: {
+      status:'maintenance',
       blockNumber: 16277063,
       flags:{
         apiType:'juniorRates',
-        referralEnabled:true
+        referralEnabled:true,
+        depositsDisabled:true,
       },
       underlyingToken: 'USDT',
       idle: {
@@ -2014,11 +2018,13 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     DAIBB: {
       enabledEnvs: [],
+      status:'maintenance',
       blockNumber: 16519501,
       flags:{
         statsEnabled: false,
         referralEnabled:true,
-        apiType:'juniorRates'
+        apiType:'juniorRates',
+        depositsDisabled:true
       },
       underlyingToken: 'DAI',
       idle: {

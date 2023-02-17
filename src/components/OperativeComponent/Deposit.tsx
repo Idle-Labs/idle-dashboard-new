@@ -35,6 +35,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams]) 
 
   const referralEnabled = useMemo(() => vault && ("flags" in vault) && vault.flags?.referralEnabled, [vault])
+  const depositsDisabled = useMemo(() => vault && ("flags" in vault) && vault.flags?.depositsDisabled, [vault])
 
   // Get selected tab id from search params
   const _referral = useMemo((): string | undefined => {
@@ -70,7 +71,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const disabled = useMemo(() => {
     setError('')
-    if (!vaultEnabled) return true
+    if (!vaultEnabled || depositsDisabled) return true
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
@@ -78,7 +79,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       return true
     }
     return false
-  }, [amount, vaultEnabled, assetBalance, underlyingAsset, translate])
+  }, [amount, vaultEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   // console.log(Object.getOwnPropertyNames(vault))
   // console.log('vaultEnabled', vault, vaultEnabled)

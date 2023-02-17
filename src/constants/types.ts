@@ -227,7 +227,7 @@ export type Harvest ={
   totalValue: BigNumber
 }
 
-export type VaultStatus = 'production' | 'beta' | 'experimental' | 'deprecated'
+export type VaultStatus = 'production' | 'beta' | 'experimental' | 'deprecated' | 'maintenance'
 
 export type ModalProps = {
   title: string

@@ -782,7 +782,8 @@
         "messages": {
           "deprecated": "This Vault has been deprecated, redeem your funds.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
-          "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose."
+          "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose.",
+          "maintenance": "Deposits are momentarily disabled. We apologize for any inconvenience and we are working to resolve it as quickly as possible. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter."
         },
         "status": {
           "success": {
@@ -1683,6 +1684,7 @@
       },
       "tooltips": {
         "stkIDLESupply":"Total supply of stkIDLE minted",
+        "maintenance": "This vault is temporarily under maintenance",
         "totalSupply": "Total amount of assets staked in this gauge",
         "totalIDLEStaked":"The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
