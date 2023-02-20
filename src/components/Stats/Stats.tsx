@@ -6,9 +6,9 @@ import { useTranslate } from 'react-polyglot'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
-import React, { useMemo, useCallback } from 'react'
 import type { AssetId, Asset } from 'constants/types'
 import { bnOrZero, BNify, sortNumeric } from 'helpers/'
+import React, { useMemo, useCallback } from 'react'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
@@ -16,7 +16,6 @@ import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
 import { useTheme, SkeletonText, SimpleGrid, VStack, HStack, Flex, Tag, TagLabel, Text, Heading } from '@chakra-ui/react'
 
 type ApyRange = {
@@ -48,6 +47,12 @@ export const Stats: React.FC = () => {
     }
   } = usePortfolioProvider()
   const translate = useTranslate()
+
+  const onRowClick = useCallback((vaultId: AssetId | undefined) => {
+    if (!vaultId) return null
+    // sendSelectItem(item_list_id, item_list_name, row.original)
+    return navigate(`${location?.pathname.replace(/\/$/, '')}/${vaultId}`)
+  }, [navigate, location])
 
   const assetsByStrategy = useMemo(() => {
     if (!isPortfolioLoaded) return {}
@@ -162,6 +167,7 @@ export const Stats: React.FC = () => {
           </AssetProvider>
         ) : (
           <HStack
+            width={'full'}
             spacing={[10, 0]}
           >
             <Flex
@@ -203,29 +209,29 @@ export const Stats: React.FC = () => {
           </AssetProvider>
         ) : row.original.type === 'BY' ? (
           <AssetProvider assetId={row.original.id}>
-            <AssetProvider.Apy textStyle={'tableCell'} />
+            <AssetProvider.Apy showTooltip={false} textStyle={'tableCell'} />
           </AssetProvider>
         ) : (
           <HStack
-            justifyContent={'space-between'}
+            spacing={1}
           >
-            <HStack
-              spacing={1}
-            >
-              <Amount.Percentage value={value?.minApy || null} textStyle={'tableCell'} />
-              <Text>-</Text>
-              <Amount.Percentage value={value?.maxApy || null} textStyle={'tableCell'} />
-            </HStack>
-            <MdKeyboardArrowDown
-              size={24}
-              color={theme.colors.primary}
-            />
+            {
+              row.original.subRows.length === 1 && row.original.strategy === 'best' ? (
+                <Amount.Percentage value={value?.maxApy || null} textStyle={'tableCell'} />
+              ) : (
+                <>
+                  <Amount.Percentage value={value?.minApy || null} textStyle={'tableCell'} />
+                  <Text>-</Text>
+                  <Amount.Percentage value={value?.maxApy || null} textStyle={'tableCell'} />
+                </>
+              )
+            }
           </HStack>
         )
       },
       // sortType: sortNumeric
     },
-  ]), [translate, theme])
+  ]), [translate])
 
   const statsData = useMemo(() => {
     return Object.values(aggregatedUnderlyings)
@@ -239,12 +245,6 @@ export const Stats: React.FC = () => {
       }
     ]
   }
-
-  const onRowClick = useCallback((vaultId: AssetId | undefined) => {
-    if (!vaultId) return null
-    // sendSelectItem(item_list_id, item_list_name, row.original)
-    return navigate(`${location?.pathname.replace(/\/$/, '')}/${vaultId}`)
-  }, [navigate, location])
 
   return (
     <VStack

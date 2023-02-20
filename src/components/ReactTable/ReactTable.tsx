@@ -1,7 +1,7 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md'
 import { Column, Row, TableState, useSortBy, useTable } from 'react-table'
-import { Flex, Table, Tbody, Td, Th, Thead, Tr, useColorModeValue, useTheme } from '@chakra-ui/react'
+import { Flex, Table, Tbody, Td, Th, Thead, Tr, HStack, useColorModeValue, useTheme } from '@chakra-ui/react'
 
 type ReactTableProps<T extends {}> = {
   columns: Column<T>[]
@@ -10,6 +10,7 @@ type ReactTableProps<T extends {}> = {
   rowsPerPage?: number
   displayHeaders?: boolean
   onRowClick?: (row: Row<T>) => void
+  onToggleRow?: (row: Row<T>) => void
   initialState?: Partial<TableState<{}>>
 }
 
@@ -43,6 +44,7 @@ export const ReactTable = <T extends {}>({
   rowsPerPage,
   displayHeaders = true,
   onRowClick,
+  onToggleRow,
   initialState,
 }: ReactTableProps<T>) => {
   const theme = useTheme()
@@ -63,6 +65,12 @@ export const ReactTable = <T extends {}>({
     })
   }, [setSelectedRow])
 
+  useEffect(() => {
+    if (onToggleRow){
+      return onToggleRow(selectedRow)
+    }
+  }, [onToggleRow, selectedRow])
+
   const pageRows = useMemo(() => {
     if (!rowsPerPage || !page) return rows
     return rows.slice(rowsPerPage*(page-1), rowsPerPage*page)
@@ -72,7 +80,6 @@ export const ReactTable = <T extends {}>({
     return pageRows.map( row => {
       let firstCellFound = false
       prepareRow(row)
-      // console.log('row', row)
       const rowProps = row.getRowProps()
       return (
         <>
@@ -80,6 +87,7 @@ export const ReactTable = <T extends {}>({
             {...row.getRowProps()}
             tabIndex={row.index}
             layerStyle={'tableRow'}
+            backgroundColor={selectedRow === row ? 'card.bgLight' : 'initial'}
             onClick={() => row.subRows?.length>0 ? toggleSelectedRow(row) : onRowClick?.(row)}
             cursor={onRowClick ? 'pointer' : undefined}
           >
@@ -92,7 +100,28 @@ export const ReactTable = <T extends {}>({
               const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
               return (
                 <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
-                  {cell.render('Cell')}
+                  <HStack
+                    flex={1}
+                    width={'full'}
+                    justifyContent={'space-between'}
+                  >
+                    {cell.render('Cell')}
+                    {
+                      isLastCell && row.subRows?.length>0 && (
+                        selectedRow === row ? (
+                          <MdKeyboardArrowUp
+                            size={24}
+                            color={theme.colors.primary}
+                          />
+                        ) : (
+                          <MdKeyboardArrowDown
+                            size={24}
+                            color={theme.colors.primary}
+                          />
+                        )
+                      )
+                    }
+                  </HStack>
                 </Td>
               )
             })}
@@ -105,9 +134,9 @@ export const ReactTable = <T extends {}>({
                   {...subRow.getRowProps()}
                   tabIndex={subRow.index}
                   layerStyle={'tableRow'}
+                  backgroundColor={'button.bgHover'}
                   onClick={() => onRowClick?.(subRow)}
                   cursor={onRowClick ? 'pointer' : undefined}
-                  backgroundColor={theme.colors.card.bgLight}
                 >
                   {subRow.cells.map( (cell, cellIndex) => {
                     const isFirstCell = !firstCellFound && cell.column.display !== 'none'
@@ -129,7 +158,7 @@ export const ReactTable = <T extends {}>({
         </>
       )
     })
-  }, [toggleSelectedRow, selectedRow, prepareRow, pageRows, onRowClick, theme])
+  }, [toggleSelectedRow, selectedRow, prepareRow, theme, pageRows, onRowClick])
 
   return (
     <Table variant='clickable' size={{ base: 'sm', md: 'md' }} {...getTableProps()}>

@@ -578,9 +578,10 @@ const Apr: React.FC<PercentageProps> = (props) => {
 type ApyProps = {
   showGross?: boolean
   showNet?: boolean
+  showTooltip? : boolean
 } & PercentageProps
 
-const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, ...props}) => {
+const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, ...props}) => {
   const { asset } = useAssetProvider()
 
   const netApy = BNify(asset?.apy).minus(BNify(asset?.apy).times(BNify(asset?.fee)))
@@ -651,9 +652,10 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, ...props})
       hasArrow
       placement={'top'}
       label={tooltipLabel}
+      isDisabled={!showTooltip}
     >
       <TooltipContent>
-        <Amount.Percentage value={asset?.apy} {...props} borderBottom={'1px dashed'} borderBottomColor={'cta'} />
+        <Amount.Percentage value={asset?.apy} {...props} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
       </TooltipContent>
     </Tooltip>
   ) : <Spinner size={'sm'} />
