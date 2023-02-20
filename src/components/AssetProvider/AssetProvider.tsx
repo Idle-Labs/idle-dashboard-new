@@ -828,8 +828,8 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
 }
 
 const SeniorApy: React.FC<AmountProps> = (props) => {
-  const { vault, asset } = useAssetProvider()
-  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
   
   if (!vault || !("vaultConfig" in vault)) return null
 
@@ -841,8 +841,8 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
 }
 
 const JuniorApy: React.FC<AmountProps> = (props) => {
-  const { vault, asset } = useAssetProvider()
-  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   if (!vault || !("vaultConfig" in vault)) return null
 

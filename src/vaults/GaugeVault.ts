@@ -353,6 +353,7 @@ export class GaugeVault {
     return allowanceContract?.methods.approve(...params)
   }
 
+  // eslint-disable-next-line
   public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
     return [normalizeTokenAmount(amount, 18)]
   }

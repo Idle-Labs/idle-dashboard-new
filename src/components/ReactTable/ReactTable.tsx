@@ -80,7 +80,6 @@ export const ReactTable = <T extends {}>({
     return pageRows.map( row => {
       let firstCellFound = false
       prepareRow(row)
-      const rowProps = row.getRowProps()
       return (
         <>
           <Tr

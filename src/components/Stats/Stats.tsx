@@ -1,4 +1,3 @@
-import { Vault } from 'vaults/'
 import { BigNumber } from 'bignumber.js'
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
@@ -16,7 +15,7 @@ import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { useTheme, SkeletonText, SimpleGrid, VStack, HStack, Flex, Tag, TagLabel, Text, Heading } from '@chakra-ui/react'
+import { SkeletonText, VStack, HStack, Flex, Text } from '@chakra-ui/react'
 
 type ApyRange = {
   minApy: BigNumber | null
@@ -32,13 +31,10 @@ type AggregatedAsset = Asset & {
 type RowProps = Row<AggregatedAsset>
 
 export const Stats: React.FC = () => {
-
-  const theme = useTheme()
   const navigate = useNavigate()
   const { location } = useBrowserRouter()
 
   const {
-    vaults,
     assetsData,
     isPortfolioLoaded,
     selectors: {

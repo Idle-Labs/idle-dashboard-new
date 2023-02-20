@@ -182,19 +182,6 @@ export class BestYieldVault {
               underlyingAmount = underlyingTokenTxAmount
             }
 
-            if (tx.hash.toLowerCase() === '0xe0891010279401be3b42b89fec8a0abf67cdc86373cc20c9614877be8bbd3735'.toLowerCase()){
-              console.log(this.id, tx.blockNumber, idlePrice.toString(), idleAmount.toString(), underlyingAmount.toString())
-            }
-
-            // transactions.add({
-            //   ...tx,
-            //   action,
-            //   idlePrice,
-            //   idleAmount,
-            //   assetId:this.id,
-            //   underlyingAmount
-            // })
-
             if (!insertedTxs[tx.hash]){
               transactions.push({
                 ...tx,

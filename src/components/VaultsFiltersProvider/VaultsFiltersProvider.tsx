@@ -504,15 +504,15 @@ export const VaultsFiltersProvider = ({ children, types }: VaultsFiltersProvider
   const filteredVaults = useMemo(() => vaults.filter( (vault: Vault) => checkVaultFilters(vault) ), [checkVaultFilters, vaults])
 
   const selectorsProperties: Record<string, any> = {
-    'apy':{
+    apy: {
       isScrollable: false
     },
-    'tvl':{
+    tvl: {
       isScrollable: false
     }
   }
 
-  console.log('filteredVaults', filteredVaults)
+  // console.log('filteredVaults', filteredVaults)
 
   return (
     <VaultsFiltersContext.Provider value={{vaults: filteredVaults}}>
