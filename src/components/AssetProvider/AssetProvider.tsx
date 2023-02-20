@@ -825,6 +825,32 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const SeniorApy: React.FC<AmountProps> = (props) => {
+  const { vault, asset } = useAssetProvider()
+  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+  
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
+  
+  return !BNify(trancheAsset?.apy).isNaN() ? (
+    <Amount.Percentage value={trancheAsset?.apy} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const JuniorApy: React.FC<AmountProps> = (props) => {
+  const { vault, asset } = useAssetProvider()
+  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+  
+  return !BNify(trancheAsset?.apy).isNaN() ? (
+    <Amount.Percentage value={trancheAsset?.apy} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const TotalPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault, asset } = useAssetProvider()
   const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
@@ -1261,6 +1287,8 @@ AssetProvider.PoolUsd = PoolUsd
 AssetProvider.Earnings = Earnings
 AssetProvider.ApyRatio = ApyRatio
 AssetProvider.Strategy = Strategy
+AssetProvider.SeniorApy = SeniorApy
+AssetProvider.JuniorApy = JuniorApy
 AssetProvider.Protocols = Protocols
 AssetProvider.Deposited = Deposited
 AssetProvider.GaugeShare = GaugeShare

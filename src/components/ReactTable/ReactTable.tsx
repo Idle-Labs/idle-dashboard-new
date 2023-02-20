@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md'
 import { Column, Row, TableState, useSortBy, useTable } from 'react-table'
 import { Flex, Table, Tbody, Td, Th, Thead, Tr, useColorModeValue, useTheme } from '@chakra-ui/react'
@@ -45,7 +45,9 @@ export const ReactTable = <T extends {}>({
   onRowClick,
   initialState,
 }: ReactTableProps<T>) => {
+  const theme = useTheme()
   const hoverColor = useColorModeValue('black', 'white')
+  const [ selectedRow, setSelectedRow ] = useState<any>(null)
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable<T>(
     {
       columns,
@@ -54,6 +56,12 @@ export const ReactTable = <T extends {}>({
     },
     useSortBy,
   )
+
+  const toggleSelectedRow = useCallback( (row: any) => {
+    setSelectedRow( (selectedRow: any) => {
+      return selectedRow === row ? null : row
+    })
+  }, [setSelectedRow])
 
   const pageRows = useMemo(() => {
     if (!rowsPerPage || !page) return rows
@@ -64,31 +72,64 @@ export const ReactTable = <T extends {}>({
     return pageRows.map( row => {
       let firstCellFound = false
       prepareRow(row)
+      // console.log('row', row)
+      const rowProps = row.getRowProps()
       return (
-        <Tr
-          {...row.getRowProps()}
-          tabIndex={row.index}
-          layerStyle={'tableRow'}
-          onClick={() => onRowClick?.(row)}
-          cursor={onRowClick ? 'pointer' : undefined}
-        >
-          {row.cells.map( (cell, cellIndex) => {
-            const isFirstCell = !firstCellFound && cell.column.display !== 'none'
-            const isLastCell = cellIndex === row.cells.length-1
-            if (isFirstCell) {
-              firstCellFound = true
-            }
-            const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
-            return (
-              <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
-                {cell.render('Cell')}
-              </Td>
-            )
-          })}
-        </Tr>
+        <>
+          <Tr
+            {...row.getRowProps()}
+            tabIndex={row.index}
+            layerStyle={'tableRow'}
+            onClick={() => row.subRows?.length>0 ? toggleSelectedRow(row) : onRowClick?.(row)}
+            cursor={onRowClick ? 'pointer' : undefined}
+          >
+            {row.cells.map( (cell, cellIndex) => {
+              const isFirstCell = !firstCellFound && cell.column.display !== 'none'
+              const isLastCell = cellIndex === row.cells.length-1
+              if (isFirstCell) {
+                firstCellFound = true
+              }
+              const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
+              return (
+                <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
+                  {cell.render('Cell')}
+                </Td>
+              )
+            })}
+          </Tr>
+          {
+            selectedRow === row && row.subRows.map( subRow => {
+              prepareRow(subRow)
+              return (
+                <Tr
+                  {...subRow.getRowProps()}
+                  tabIndex={subRow.index}
+                  layerStyle={'tableRow'}
+                  onClick={() => onRowClick?.(subRow)}
+                  cursor={onRowClick ? 'pointer' : undefined}
+                  backgroundColor={theme.colors.card.bgLight}
+                >
+                  {subRow.cells.map( (cell, cellIndex) => {
+                    const isFirstCell = !firstCellFound && cell.column.display !== 'none'
+                    const isLastCell = cellIndex === subRow.cells.length-1
+                    if (isFirstCell) {
+                      firstCellFound = true
+                    }
+                    const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
+                    return (
+                      <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
+                        {cell.render('Cell')}
+                      </Td>
+                    )
+                  })}
+                </Tr>
+              )
+            })
+          }
+        </>
       )
     })
-  }, [prepareRow, pageRows, onRowClick])
+  }, [toggleSelectedRow, selectedRow, prepareRow, pageRows, onRowClick, theme])
 
   return (
     <Table variant='clickable' size={{ base: 'sm', md: 'md' }} {...getTableProps()}>

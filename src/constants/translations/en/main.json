@@ -153,6 +153,9 @@
     "gauge": {
       "title": "Gauge"
     },
+    "tranches": {
+      "label": "Tranches"
+    },
     "best": {
       "label": "Best Yield",
       "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",

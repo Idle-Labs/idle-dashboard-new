@@ -76,6 +76,8 @@ export class UnderlyingToken {
   }
 
   public getTotalSupplyCalls(): ContractRawCall[] {
+    return []
+    /*
     if (!this.contract) return []
     return [
       {
@@ -83,6 +85,7 @@ export class UnderlyingToken {
         call:this.contract.methods.totalSupply()
       }
     ]
+    */
   }
 
   public async getHistoricalData(): Promise<any> {

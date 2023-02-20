@@ -92,6 +92,10 @@ export const theme = extendTheme({
       production:'#00AE8F'
     },
     brightGreen: '#4DE3B0',
+    tags: {
+      best: '#04117B',
+      tranches: '#055050',
+    },
     strategies: {
       BY: '#6AE4FF',
       AA: '#4DE3B0',
