@@ -1682,6 +1682,9 @@
         "totalIDLEStaked":"Total staked",
         "lastHarvest":"Last Harvest"
       },
+      "requiredActions": {
+        "redeemFromGauge":"Please redeem your tranche tokens from the gauge"
+      },
       "tooltips": {
         "stkIDLESupply":"Total supply of stkIDLE minted",
         "maintenance": "This vault is temporarily under maintenance",

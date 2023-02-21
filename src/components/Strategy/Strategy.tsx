@@ -91,6 +91,7 @@ export const Strategy: React.FC = () => {
               spacing={2}
               width={'full'}
               direction={'row'}
+              alignItems={'center'}
               {...column.stackProps}
             >
               <TableField field={id} value={value} row={row} />
@@ -126,6 +127,7 @@ export const Strategy: React.FC = () => {
               spacing={2}
               width={'full'}
               direction={'row'}
+              alignItems={'center'}
               {...column.stackProps}
             >
               <TableField field={id} value={value} row={row} />

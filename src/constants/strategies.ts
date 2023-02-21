@@ -278,7 +278,7 @@ export const strategies: Record<string, StrategyProps> = {
         accessor:'id',
         sortType:'alpha',
         id:'protocolWithVariant',
-        extraFields:['statusBadge']
+        extraFields:['statusBadge', 'actionRequired']
       },
       {
         id:'asset',

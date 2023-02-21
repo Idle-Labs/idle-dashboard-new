@@ -171,6 +171,32 @@ const StatusBadge: React.FC<ImageProps> = (props) => {
   )
 }
 
+const ActionRequired: React.FC<ImageProps> = (props) => {
+  const { vault, asset, translate } = useAssetProvider()
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
+
+  let action = null
+
+  // Check Gauge disabled
+  const gaugeVault = vault && ("gaugeConfig" in vault) && vault.gaugeConfig?.address && selectVaultById(vault.gaugeConfig?.address)
+  const stakedBalance = bnOrZero(asset?.vaultPosition?.underlying.staked)
+  if (stakedBalance.gt(0) && gaugeVault && !gaugeVault.enabled){
+    action = 'redeemFromGauge'
+  }
+
+  if (!action) return null
+
+  return (
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate(`assets.assetDetails.requiredActions.${action}`)}
+    >
+      <Image src={`images/vaults/information.png`} {...props} />
+    </Tooltip>
+  )
+}
+
 export type IconProps = {
   showTooltip?: boolean
 } & AvatarProps
@@ -1185,6 +1211,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
     case 'statusBadge':
       return (<StatusBadge width={6} height={6} {...props} />)
+    case 'actionRequired':
+      return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
     case 'rewards':

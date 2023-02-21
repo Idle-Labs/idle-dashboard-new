@@ -2526,7 +2526,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].aprBreakdown =  state.aprsBreakdown[vault.id] || {}
 
       // Add gauge to vault apr breakdown
-      if (vault.type==='GG' && ("trancheVault" in vault)){
+      if (vault.type==='GG' && ("trancheVault" in vault) && vault.enabled){
         const trancheVault = vault.trancheVault
         if (trancheVault) {
           if (assetsData[vault.id].gaugeData?.rewards){

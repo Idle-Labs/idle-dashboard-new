@@ -72,6 +72,15 @@ export const GaugeStaking: React.FC = () => {
     return bnOrZero(assetBalance).times(bnOrZero(assetPriceUsd))
   }, [assetGauge, selectAssetBalance, selectAssetPriceUsd])
 
+  const strategyDescription = useMemo(() => {
+    if (!vaultGauge || !("description" in vaultGauge) || !vaultGauge.description) return null
+    return (
+      <Card.Dark>
+        <Text dangerouslySetInnerHTML={{__html: vaultGauge.description}} />
+      </Card.Dark>
+    )
+  }, [vaultGauge])
+
   // Update asset
   useEffect(() => {
     if (!assetGauge) return
@@ -94,6 +103,7 @@ export const GaugeStaking: React.FC = () => {
       spacing={10}
       width={'100%'}
     >
+      {strategyDescription}
       {
         assetGauge.vaultPosition && (
           <AssetProvider

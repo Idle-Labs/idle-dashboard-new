@@ -30,6 +30,7 @@ export class GaugeVault {
   readonly chainId: number
   public readonly type: string
   public readonly enabled: boolean
+  readonly description: string | undefined
 
   // Private attributes
   private readonly cacheProvider: CacheContextProps | undefined
@@ -68,6 +69,7 @@ export class GaugeVault {
     this.trancheVault = trancheVault
     this.enabled = gaugeConfig.enabled
     this.cacheProvider = cacheProvider
+    this.description = gaugeConfig.description
     this.trancheToken = gaugeConfig.trancheToken
     this.id = this.gaugeConfig.address.toLowerCase()
     this.gaugeDistributorProxy = gaugeDistributorProxy

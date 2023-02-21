@@ -2453,6 +2453,7 @@ export type GaugeConfig = {
   protocol:string
   enabled: boolean
   rewardToken:string
+  description?:string
   underlyingToken:string
   multiRewards?:MultiReward
   trancheToken:TrancheToken
@@ -2460,7 +2461,7 @@ export type GaugeConfig = {
 
 export const gauges: Record<string, GaugeConfig> = {
   stETH:{
-    enabled: true,
+    enabled: false,
     protocol:'lido',
     rewardToken:'IDLE',
     underlyingToken:'stETH',
@@ -2468,6 +2469,7 @@ export const gauges: Record<string, GaugeConfig> = {
     name: "LiquidityGauge_aa_lido_steth",
     token: "LiquidityGauge_aa_lido_steth",
     address:'0x675eC042325535F6e176638Dd2d4994F645502B9',
+    description:'Starting from February 21st 2023, LDO rewards are automatically harvested and distributed to both Senior and Junior Tranches. As a result, you will directly receive LDO rewards by just holding stETH-AA tokens.<br />Therefore, this Gauge won\'t distribute any reward. Please claim any remaining IDLE and LDO reward, and redeem your stETH-AA tokens.',
     multiRewards:{
       rewardTokens:['LDO'],
       abi:GaugeMultiRewards as Abi,
