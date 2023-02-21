@@ -190,7 +190,7 @@ export class GaugeVault {
     const rewardToken = this.rewardTokens.find( (rewardToken: UnderlyingTokenProps) => rewardToken.address?.toLowerCase() === rewardAddress.toLowerCase() )
     if (!rewardToken) return
 
-    const tokensPerSecond = rewardRate ? fixTokenDecimals(rewardRate, 18) : BNify(0)
+    const tokensPerSecond = this.enabled && rewardRate ? fixTokenDecimals(rewardRate, 18) : BNify(0)
     const balance = !rewardTokenBalance.isNaN() ? fixTokenDecimals(rewardTokenBalance, rewardToken.decimals) : BNify(0)
 
     return {

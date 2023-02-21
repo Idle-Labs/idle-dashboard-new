@@ -92,6 +92,11 @@ export const strategies: Record<string, StrategyProps> = {
     label:'strategies.gauge.title',
     generalDataFields:[
       {
+        field:'gaugeTotalSupply',
+        tooltip:'assets.assetDetails.tooltips.totalSupply',
+        label:'assets.assetDetails.generalData.totalSupply'
+      },
+      {
         field:'weight',
         tooltip:'assets.assetDetails.tooltips.weight',
         label:'assets.assetDetails.generalData.weight'
@@ -100,11 +105,6 @@ export const strategies: Record<string, StrategyProps> = {
         field:'nextWeight',
         tooltip:'assets.assetDetails.tooltips.nextWeight',
         label:'assets.assetDetails.generalData.nextWeight'
-      },
-      {
-        field:'gaugeTotalSupply',
-        tooltip:'assets.assetDetails.tooltips.totalSupply',
-        label:'assets.assetDetails.generalData.totalSupply'
       },
       {
         field:'rewards',

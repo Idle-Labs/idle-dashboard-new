@@ -1281,7 +1281,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             if (rewardData){
               const rewardTokenPriceUsd = pricesUsd[rewardTokenAddress] || selectAssetPriceUsd(rewardTokenAddress)
               const yearRewardsUsd = rewardTokenPriceUsd && rewardData.rate ? rewardData.rate.times(rewardTokenPriceUsd).times(365) : BNify(0)
-              const apr = yearRewardsUsd.div(gaugePoolUsd).times(100)
+              const apr = gaugeVault.enabled ? yearRewardsUsd.div(gaugePoolUsd).times(100) : BNify(0)
               // console.log('Reward token APR', rewardTokenAddress, rewardData.rate.toString(), rewardTokenPriceUsd, yearRewardsUsd.toFixed(), gaugePoolUsd.toFixed(), rewardTokenAPR.toFixed())
               rewards[rewardTokenAddress] = {
                 ...rewardData,
@@ -2427,11 +2427,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const gaugesRewards = gaugesVaultsAssets.reduce( (gaugesRewards: GaugesRewards, gauge: Asset) => {
       const gaugeData = gauge.gaugeData
       const gaugeVaultPosition = gauge.vaultPosition
-      const gaugeVault = selectVaultById(gauge.id as string)
 
-      if (!gaugeData || !gaugeVaultPosition || !gaugeVault) return gaugesRewards
-
-      const gaugeEnabled = "enabled" in gaugeVault && gaugeVault.enabled
+      if (!gaugeData || !gaugeVaultPosition) return gaugesRewards
 
       for (const rewardId in gaugeData.rewards) {
         const gaugeRewardData = gaugeData.rewards[rewardId]
@@ -2451,13 +2448,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
           gaugesRewards[rewardId].gauges.push(gauge.id as string)
           gaugesRewards[rewardId].deposited = BNify(gaugesRewards[rewardId].deposited).plus(gaugeVaultPosition.usd.deposited)
 
-          if (gaugeRewardData.rate && gaugeEnabled) {
+          if (gaugeRewardData.rate) {
             gaugesRewards[rewardId].rate = BNify(gaugesRewards[rewardId].rate).plus(BNify(gaugeRewardData.rate).times(gaugeShare))
           }
           if (gaugeRewardData.balance){
             gaugesRewards[rewardId].balance = BNify(gaugesRewards[rewardId].balance).plus(gaugeRewardData.balance)
           }
-          if (gaugeRewardData.apr && gaugeEnabled) {
+          if (gaugeRewardData.apr) {
             gaugesRewards[rewardId].apr = BNify(gaugesRewards[rewardId].apr).plus(BNify(gaugeRewardData.apr).times(gaugeVaultPosition.usd.deposited))
           }
         }
