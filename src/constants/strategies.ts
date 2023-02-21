@@ -321,11 +321,11 @@ export const strategies: Record<string, StrategyProps> = {
         },
         label: 'assets.assetDetails.generalData.protocol'
       },
-      {
-        field:'stakingRewards',
-        tooltip:'assets.assetDetails.tooltips.gaugeRewards',
-        label:'assets.assetDetails.generalData.stakingRewards'
-      },
+      // {
+      //   field:'stakingRewards',
+      //   tooltip:'assets.assetDetails.tooltips.gaugeRewards',
+      //   label:'assets.assetDetails.generalData.stakingRewards'
+      // },
       {
         field:'autoCompounding',
         tooltip:'assets.assetDetails.tooltips.autoCompounding',
@@ -336,6 +336,11 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.performanceFee'
       },
       {
+        field:'apy',
+        label:'assets.assetDetails.generalData.apy',
+        tooltip:'assets.assetDetails.tooltips.seniorTrancheApy'
+      },
+      {
         field:'status',
         label:'assets.assetDetails.generalData.status',
         tooltip:'assets.assetDetails.tooltips.vaultStatus'
@@ -343,11 +348,6 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field:'pool',
         label:'assets.assetDetails.generalData.pool'
-      },
-      {
-        field:'apy',
-        label:'assets.assetDetails.generalData.apy',
-        tooltip:'assets.assetDetails.tooltips.seniorTrancheApy'
       },
       {
         field:'coverage',
@@ -443,10 +443,10 @@ export const strategies: Record<string, StrategyProps> = {
         },
         label: 'assets.assetDetails.generalData.protocol'
       },
-      {
-        field:'stakingRewards',
-        label:'assets.assetDetails.generalData.stakingRewards'
-      },
+      // {
+      //   field:'stakingRewards',
+      //   label:'assets.assetDetails.generalData.stakingRewards'
+      // },
       {
         field:'autoCompounding',
         tooltip:'assets.assetDetails.tooltips.autoCompounding',
@@ -457,6 +457,11 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.performanceFee'
       },
       {
+        field:'apy',
+        label:'assets.assetDetails.generalData.apy',
+        tooltip:'assets.assetDetails.tooltips.juniorTrancheApy'
+      },
+      {
         field:'status',
         label:'assets.assetDetails.generalData.status',
         tooltip:'assets.assetDetails.tooltips.vaultStatus'
@@ -464,11 +469,6 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field:'pool',
         label:'assets.assetDetails.generalData.pool'
-      },
-      {
-        field:'apy',
-        label:'assets.assetDetails.generalData.apy',
-        tooltip:'assets.assetDetails.tooltips.juniorTrancheApy'
       },
       {
         field:'apyBoost',
