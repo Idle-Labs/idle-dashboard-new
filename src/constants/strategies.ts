@@ -184,6 +184,7 @@ export const strategies: Record<string, StrategyProps> = {
         extraFields:['idleDistribution'],
         stackProps:{
           direction:'column',
+          alignItems:'flex-start',
           justifyContent:'flex-start'
         },
       },

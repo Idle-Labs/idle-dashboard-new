@@ -1901,7 +1901,21 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
 
           }
-        }
+        },
+        {
+          decimals: 18,
+          name: 'euler',
+          enabled: true,
+          abi: IdleCDO as Abi,
+          token: 'AA_euler_DAIStaking',
+          address: '0x62Eb6a8c7A555eae3e0B17D42CA9A3299af2787E',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0x62Eb6a8c7A555eae3e0B17D42CA9A3299af2787E']
+            }
+          },
+        },
       ]
     },
     /*
