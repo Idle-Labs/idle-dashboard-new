@@ -82,6 +82,8 @@ export class VaultFunctionsHelper {
       this.web3.eth.getStorageAt(trancheVault.cdoConfig.address, 204)
     ]);
 
+    // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlockHex, multicallResults)
+
     if (!multicallResults) return lastHarvest
 
     const [
@@ -93,7 +95,7 @@ export class VaultFunctionsHelper {
 
     const lastHarvestBlock = this.web3.utils.hexToNumber(lastHarvestBlockHex)
 
-    // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlockHex, lastHarvestBlock, latestHarvestBlock)
+    // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlockHex, lastHarvestBlock)
 
     if (!lastHarvestBlock) return lastHarvest
 
@@ -108,6 +110,8 @@ export class VaultFunctionsHelper {
       // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlock, this.cacheProvider?.isLoaded, this.cacheProvider?.getCachedUrl(endpoint))
       const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
       const harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
+
+      // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlock, harvestTxs)
 
       if (!harvestTxs) return lastHarvest
 

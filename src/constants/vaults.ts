@@ -198,6 +198,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     lido:{
       stETH:{
         protocol:'lido',
+        autoFarming:['LDO'],
         blockNumber:13776954,
         underlyingToken:'stETH',
         CDO:{
@@ -213,7 +214,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           address:'0x0cac674ebD77bBD899f6079932768f6d59Da089A'
         },
 
-        description:'This strategy converts the stETH into native <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0">Lido wstETH</a> tokens. The APR is boosted by Gauge rewards and dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy converts the stETH into native <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0">Lido wstETH</a> tokens. The APR is boosted by LDO rewards and dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
           buyInstructions:'To get stETH token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://stake.lido.fi">Lido ETH staking</a>.',
         },
@@ -2455,6 +2456,7 @@ export type GaugeConfig = {
   rewardToken:string
   description?:string
   underlyingToken:string
+  messages?: VaultMessages
   multiRewards?:MultiReward
   trancheToken:TrancheToken
 }
@@ -2469,7 +2471,10 @@ export const gauges: Record<string, GaugeConfig> = {
     name: "LiquidityGauge_aa_lido_steth",
     token: "LiquidityGauge_aa_lido_steth",
     address:'0x675eC042325535F6e176638Dd2d4994F645502B9',
-    description:'Starting from February 21st 2023, LDO rewards are automatically harvested and distributed to both Senior and Junior Tranches. As a result, you will directly receive LDO rewards by just holding stETH-AA tokens.<br />Therefore, this Gauge won\'t distribute any reward. Please claim any remaining IDLE and LDO reward, and redeem your stETH-AA tokens.',
+    description:'Starting from February 21st 2023, LDO rewards are automatically harvested and distributed to both Senior and Junior Tranches.<br />Therefore, this Gauge won\'t distribute any reward. Please claim any remaining IDLE and LDO reward, and redeem your stETH-AA tokens, as you will receive incentives by just holding them.',
+    messages:{
+      withdraw:'This gauge has been decommissioned, please withdraw your tranche tokens'
+    },
     multiRewards:{
       rewardTokens:['LDO'],
       abi:GaugeMultiRewards as Abi,

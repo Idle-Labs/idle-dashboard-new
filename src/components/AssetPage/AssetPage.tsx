@@ -15,11 +15,11 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
-import { strategies, AssetId, imageFolder, HistoryTimeframe } from 'constants/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
+import { strategies, AssetId, imageFolder, HistoryTimeframe, GaugeRewardData, BigNumber } from 'constants/'
 
 type TabType = {
   id:string
@@ -97,6 +97,13 @@ export const AssetPage: React.FC = () => {
     return vaultGauge && selectAssetById && selectAssetById(vaultGauge.id)
   }, [selectAssetById, vaultGauge])
 
+  const claimableRewards = useMemo(() => {
+    if (!assetGauge || !("gaugeData" in assetGauge) || !assetGauge.gaugeData?.rewards) return BNify(0)
+    return (Object.values(assetGauge.gaugeData.rewards) as Array<GaugeRewardData>).reduce( (claimableRewards: BigNumber, gaugeRewardData: GaugeRewardData) => {
+      return claimableRewards.plus(bnOrZero(gaugeRewardData.balance))
+    }, BNify(0))
+  }, [assetGauge])
+
   // Check asset exists
   useEffect(() => {
     // console.log(isPortfolioLoaded, selectAssetById, location, asset)
@@ -144,7 +151,8 @@ export const AssetPage: React.FC = () => {
     ]
     
     const vaultDisabled = vaultGauge && ("enabled" in vaultGauge) && !vaultGauge.enabled
-    if (vaultGauge && (!vaultDisabled || bnOrZero(assetGauge?.balance).gt(0))){
+    
+    if (vaultGauge && (!vaultDisabled || bnOrZero(assetGauge?.balance).gt(0) || bnOrZero(claimableRewards).gt(0))){
       tabs.push(
         {
           id:'gauge',
@@ -192,7 +200,7 @@ export const AssetPage: React.FC = () => {
     }
 
     return tabs
-  }, [vault, vaultGauge, assetGauge, timeframe, environment])
+  }, [vault, vaultGauge, assetGauge, timeframe, environment, claimableRewards])
 
   // Get selected tab id from search params
   const selectedTabId = useMemo(() => {

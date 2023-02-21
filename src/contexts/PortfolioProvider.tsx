@@ -2427,10 +2427,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const gaugesRewards = gaugesVaultsAssets.reduce( (gaugesRewards: GaugesRewards, gauge: Asset) => {
       const gaugeData = gauge.gaugeData
       const gaugeVaultPosition = gauge.vaultPosition
-      if (!gaugeData || !gaugeVaultPosition) return gaugesRewards
+      const gaugeVault = selectVaultById(gauge.id as string)
+
+      if (!gaugeData || !gaugeVaultPosition || !gaugeVault) return gaugesRewards
+
+      const gaugeEnabled = "enabled" in gaugeVault && gaugeVault.enabled
 
       for (const rewardId in gaugeData.rewards) {
-
         const gaugeRewardData = gaugeData.rewards[rewardId]
         const gaugeShare = gauge.totalSupply ? BNify(gaugeVaultPosition.underlying.redeemable).div(gauge.totalSupply) : BNify(0)
 
@@ -2448,13 +2451,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
           gaugesRewards[rewardId].gauges.push(gauge.id as string)
           gaugesRewards[rewardId].deposited = BNify(gaugesRewards[rewardId].deposited).plus(gaugeVaultPosition.usd.deposited)
 
-          if (gaugeRewardData.rate) {
+          if (gaugeRewardData.rate && gaugeEnabled) {
             gaugesRewards[rewardId].rate = BNify(gaugesRewards[rewardId].rate).plus(BNify(gaugeRewardData.rate).times(gaugeShare))
           }
           if (gaugeRewardData.balance){
             gaugesRewards[rewardId].balance = BNify(gaugesRewards[rewardId].balance).plus(gaugeRewardData.balance)
           }
-          if (gaugeRewardData.apr) {
+          if (gaugeRewardData.apr && gaugeEnabled) {
             gaugesRewards[rewardId].apr = BNify(gaugesRewards[rewardId].apr).plus(BNify(gaugeRewardData.apr).times(gaugeVaultPosition.usd.deposited))
           }
         }
@@ -2473,7 +2476,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_GAUGES_REWARDS', payload: {}})
     }
 
-  }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType])
+  }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType, selectVaultById])
 
   // Generate Assets Data
   useEffect(() => {

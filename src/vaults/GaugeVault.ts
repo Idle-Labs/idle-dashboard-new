@@ -5,6 +5,7 @@ import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { selectUnderlyingToken } from 'selectors/'
+import type { VaultMessages } from 'constants/vaults'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -31,6 +32,7 @@ export class GaugeVault {
   public readonly type: string
   public readonly enabled: boolean
   readonly description: string | undefined
+  readonly messages: VaultMessages | undefined
 
   // Private attributes
   private readonly cacheProvider: CacheContextProps | undefined
@@ -69,6 +71,7 @@ export class GaugeVault {
     this.trancheVault = trancheVault
     this.enabled = gaugeConfig.enabled
     this.cacheProvider = cacheProvider
+    this.messages = gaugeConfig.messages
     this.description = gaugeConfig.description
     this.trancheToken = gaugeConfig.trancheToken
     this.id = this.gaugeConfig.address.toLowerCase()

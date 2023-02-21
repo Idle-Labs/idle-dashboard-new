@@ -1683,7 +1683,7 @@
         "lastHarvest":"Last Harvest"
       },
       "requiredActions": {
-        "redeemFromGauge":"Please redeem your tranche tokens from the gauge"
+        "redeemFromGauge":"Please unstake your tranche tokens from the Gauge"
       },
       "tooltips": {
         "stkIDLESupply":"Total supply of stkIDLE minted",
