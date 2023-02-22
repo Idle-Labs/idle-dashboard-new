@@ -813,6 +813,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
+      collectedFees,
       [
         balanceCallsResults,
         vaultsPricesCallsResults,
@@ -841,6 +842,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
+      vaultFunctionsHelper.getCollectedFees(vaults),
       multiCall.executeMultipleBatches(rawCalls)
     ])
 

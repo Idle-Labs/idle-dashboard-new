@@ -1040,6 +1040,20 @@ const Coverage: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const CoveragePercentage: React.FC<AmountProps> = (props) => {
+  const { asset, vault, translate } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
+
+  const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+  const coveragePercentage = bbTranche.tvl && asset?.tvl && BNify(asset?.tvl).gt(0) ? bbTranche.tvl.div(asset.tvl) : BNify(0);
+  
+  return asset?.tvlUsd ? (
+    <Amount.Percentage value={coveragePercentage.times(100)} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const HistoricalRates: React.FC<BoxProps> = (props) => {
   const { asset } = useAssetProvider()
   return asset?.id ? (
@@ -1223,6 +1237,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ApyBoost textStyle={'tableCell'} {...props} />)
     case 'coverage':
       return (<Coverage textStyle={'tableCell'} {...props} />)
+    case 'coveragePercentage':
+      return (<CoveragePercentage textStyle={'tableCell'} {...props} />)
     case 'performanceFee':
       return (<PerformanceFee textStyle={'tableCell'} {...props} />)
     case 'lastHarvest':

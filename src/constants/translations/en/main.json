@@ -636,6 +636,10 @@
   "stats":{
     "performances": "Performances",
     "volumes": "Volumes",
+    "totalVolume": "Total volume",
+    "apyBoost": "Boost",
+    "coverage": "Coverage",
+    "coveragePercentage": "Coverage",
     "tvlDistribution": "TVL distribution",
     "filters": {
       "strategies": "Strategies",

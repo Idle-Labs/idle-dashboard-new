@@ -4,6 +4,7 @@ import { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
 import stMATIC_abi from 'abis/lido/stMATIC.json'
+import { FEES_COLLECTORS } from 'constants/vars'
 import { selectUnderlyingToken } from 'selectors/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
@@ -11,7 +12,7 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import type { Abi, Asset, Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import type { Abi, Asset, AssetId, Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce } from 'helpers/'
 
 export interface CdoLastHarvest {
@@ -346,6 +347,53 @@ export class VaultFunctionsHelper {
     )
 
     return tokensAmounts
+  }
+
+  public async getCollectedFees(vaults: Vault[]): Promise<Record<AssetId, BigNumber>> {
+
+    if (!this.explorer) return {}
+
+    const allVaultsIds = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) ).map( (vault: Vault) => vault.id.toLowerCase() )
+
+    const allTxs = await asyncReduce<any, any>(
+      FEES_COLLECTORS,
+      async (feeCollectorAddress) => {
+        const endpoint = `${this.explorer?.endpoints[this.chainId]}?module=account&action=tokentx&address=${feeCollectorAddress}&sort=desc`
+        const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
+        const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
+
+        return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, BigNumber>, tx: EtherscanTransaction) => {
+          // Look for incoming txs
+          // if (!tx.to.toLowerCase() !== feeCollectorAddress.toLowerCase()) return vaultsCollectedFees
+          // Lookup for tranche vault
+          let foundVault = vaults.find( (vault: Vault) => vault.id === tx.contractAddress.toLowerCase())
+          if (foundVault) {
+            if (!vaultsCollectedFees[foundVault.id]){
+              vaultsCollectedFees[foundVault.id] = BNify(0)
+            }
+            vaultsCollectedFees[foundVault.id] = vaultsCollectedFees[foundVault.id].plus(fixTokenDecimals(tx.value, 18))
+            console.log(foundVault.id, tx.hash, tx.to, fixTokenDecimals(tx.value, 18).toString())
+          } else {
+            // Lookup for BY vault
+            foundVault = vaults.find( (vault: Vault) => vault.id === tx.from.toLowerCase())
+            if (foundVault && "underlyingToken" in foundVault){
+              const isSameUnderlying = foundVault.underlyingToken?.address?.toLowerCase() === tx.contractAddress.toLowerCase()
+              if (isSameUnderlying){
+                if (!vaultsCollectedFees[foundVault.id]){
+                  vaultsCollectedFees[foundVault.id] = BNify(0)
+                }
+                vaultsCollectedFees[foundVault.id] = vaultsCollectedFees[foundVault.id].plus(fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals))
+              }
+            }
+          }
+          return vaultsCollectedFees
+        }, {})
+      },
+      (acc, value) => value ? {...acc, ...value} : acc,
+      {}
+    )
+    console.log('allTxs', allTxs.map)
+    return allTxs
   }
 
   public async getVaultAdditionalApr(vault: Vault): Promise<VaultAdditionalApr> {

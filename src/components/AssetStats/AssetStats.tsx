@@ -6,29 +6,46 @@ import { SECONDS_IN_YEAR } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { HistoryTimeframe, AssetId } from 'constants/types'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { GenericChart } from 'components/GenericChart/GenericChart'
 import { VolumeChart } from 'components/VolumeChart/VolumeChart'
+import { GenericChart } from 'components/GenericChart/GenericChart'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
+import { HistoryData, HistoryTimeframe, AssetId } from 'constants/types'
 import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
+import { SimpleGrid, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
+import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
-import { SimpleGrid, Box, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
-import { BNify, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
+import { BNify, bnOrZero, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
+
+
+// type AssetDynamicCardProps = {
+//   assetId: AssetId
+// }
+
+// const AssetDynamicCard: React.FC<AssetDynamicCardProps> = ({ assetId }) => {
+//   const { selectors: { selectAssetById } } = usePortfolioProvider()
+//   const asset = useMemo(() => selectAssetById(asset.id), [assetId])
+//   const strategyConfig
+
+//   switch (asset.type){
+
+//   }
+// }
 
 type AssetStatsProps = {
   showHeader?: boolean
   showAssetStrategy?: boolean
   timeframe?: HistoryTimeframe
 }
-
 export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showAssetStrategy = false, timeframe: defaultTimeframe }) => {
   const translate = useTranslate()
   const { params } = useBrowserRouter()
@@ -45,9 +62,13 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
     return params.asset && selectVaultById && selectVaultById(params.asset)
   }, [selectVaultById, params.asset])
 
-  const strategyColor = useMemo(() => {
-    return asset && strategies[asset.type].color
+  const strategyConfig = useMemo(() => {
+    return asset && strategies[asset.type]
   }, [asset])
+
+  const strategyColor = useMemo(() => {
+    return strategyConfig && strategyConfig.color
+  }, [strategyConfig])
 
   const availableStrategies = useMemo(() => {
     if (!asset?.type) return
@@ -86,13 +107,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
     return defaultTimeframe || timeframe
   }, [timeframe, defaultTimeframe])
 
-  const { tvlChartData } = useTVLChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
+  const { volumeChartData } = useVolumeChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
+  const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
   const { performanceChartData } = usePerformanceChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
   const { rateChartData } = useRateChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
-
-  // console.log('tvlChartData', tvlChartData)
-  // console.log('rateChartData', rateChartData)
-  // console.log('performanceChartData', performanceChartData)
 
   const toggleStrategy = useCallback((strategy: string) => {
     // console.log('selectedStrategies', selectedStrategies)
@@ -119,7 +137,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
         {
           filteredAssetIds.map( (assetId: AssetId) => {
             const asset = selectAssetById(assetId)
-            const color = strategies[asset.type].color
+            const color = strategyConfig.color
             const startPoint: RainbowData = performanceChartData.rainbow[0]
             const endPoint: RainbowData = performanceChartData.rainbow[performanceChartData.rainbow.length-1]
             const gainSeconds = Math.round((endPoint.date-startPoint.date)/1000)
@@ -138,7 +156,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
         }
       </HStack>
     )
-  }, [filteredAssetIds, selectAssetById, performanceChartData])
+  }, [filteredAssetIds, selectAssetById, strategyConfig, performanceChartData])
 
   const compositionData: DonutChartInitialData = useMemo(() => {
     const initialData = {
@@ -150,7 +168,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
     return (filteredAssetIds as Array<AssetId>).reduce( (donutChartData: DonutChartInitialData, assetId: AssetId) => {
       const asset = selectAssetById(assetId)
       if (!asset) return donutChartData
-      donutChartData.colors[assetId] = strategies[asset.type].color as string
+      donutChartData.colors[assetId] = strategyConfig.color as string
       donutChartData.data.push({
         value: parseFloat(BNify(asset.tvlUsd).toFixed(2)),
         label: asset.id,
@@ -160,7 +178,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
       })
       return donutChartData
     }, initialData)
-  }, [filteredAssetIds, selectAssetById])
+  }, [filteredAssetIds, strategyConfig, selectAssetById])
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     const totalFunds = compositionData.data.reduce( (total: BigNumber, data: DonutChartData) => total.plus(data.value), BNify(0))
@@ -215,155 +233,271 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
     )
   }, [compositionData, asset, translate, isMobile])
 
+  const avgApy = useMemo((): BigNumber => {
+    return rateChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(data.value), BNify(0) ).div(rateChartData.total.length)
+  }, [rateChartData])
+
+  const assetsAvgApy = useMemo(() => {
+    const sums = rateChartData.rainbow.reduce( (totals: Record<AssetId, BigNumber>, data: RainbowData) => {
+      assetIds.forEach( (assetId: AssetId) => {
+        if (!totals[assetId]){
+          totals[assetId] = BNify(0)
+        }
+        totals[assetId] = totals[assetId].plus(data[assetId])
+      })
+      return totals
+    }, {})
+    return Object.keys(sums).reduce( (avgApys: Record<AssetId, BigNumber>, assetId: AssetId) => {
+      avgApys[assetId] = sums[assetId].div(rateChartData.rainbow.length)
+      return avgApys
+    }, {})
+  }, [assetIds, rateChartData])
+
+  // console.log('assetsAvgApy', assetIds, assetsAvgApy)
+
+  const tvlUsd = useMemo((): BigNumber => {
+    return bnOrZero(tvlUsdChartData.total[tvlUsdChartData.total.length-1]?.value)
+  }, [tvlUsdChartData])
+
+  const volume = useMemo((): BigNumber => {
+    return volumeChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(Math.abs(data.value)), BNify(0) )
+  }, [volumeChartData])
+
+  // console.log('filteredAssetIds', filteredAssetIds)
+  // console.log('asset', asset)
+  // console.log('rateChartData', rateChartData)
+  // console.log('tvlUsdChartData', tvlUsdChartData)
+  // console.log('volumeChartData', volumeChartData)
+  // console.log('performanceChartData', performanceChartData)
+
   return (
-    <Box
-      width={'100%'}
+    <AssetProvider
+      assetId={params.asset}
+      wrapFlex={false}
     >
-      {
-        showHeader && (
-          <Stack
-            mt={14}
-            mb={10}
-            spacing={10}
-            width={'100%'}
-            alignItems={['flex-start','center']}
-            justifyContent={'flex-start'}
-            direction={['column', 'row']}
-          >
-            <AssetLabel assetId={params.asset} fontSize={'h2'} />
-            <HStack
-              pb={3}
-              flex={1}
-              borderBottom={'1px solid'}
-              borderColor={'divider'}
-              justifyContent={'space-between'}
-            >
-              <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} availableStrategies={availableStrategies} />
-              <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-            </HStack>
-          </Stack>
-        )
-      }
       <VStack
-        spacing={20}
+        spacing={16}
         width={'full'}
       >
-        <Stack
-          spacing={6}
-          width={'full'}
-          direction={['column', 'row']}
-        >
-          <VStack
-            spacing={6}
-            width={['full', 2/3]}
-            alignItems={'flex-start'}
-          >
-            <Translation translation={'stats.performances'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
-            <Card.Dark
-              p={6}
+        {
+          showHeader && (
+            <Stack
+              mt={14}
+              width={'100%'}
+              spacing={[4, 10]}
+              alignItems={['flex-start','center']}
+              justifyContent={'flex-start'}
+              direction={['column', 'row']}
             >
-              <VStack
-                spacing={4}
-                width={'full'}
+              <AssetLabel assetId={params.asset} fontSize={'h2'} />
+              <Stack
+                pb={3}
+                flex={1}
+                spacing={[4, 0]}
+                borderBottom={'1px solid'}
+                borderColor={'divider'}
+                justifyContent={'space-between'}
+                direction={['column', 'row']}
+                alignItems={['flex-start','center']}
               >
-                {assetsApys}
+                <HStack
+                  spacing={4}
+                  width={['full', 'auto']}
+                  justifyContent={'flex-start'}
+                >
+                  <StrategyTag strategy={strategyConfig?.strategy as string} py={2} />
+                  {
+                    strategyConfig?.stats?.header?.fields?.map( (field: string) => (
+                      <AssetProvider.GeneralData field={field} />
+                    ))
+                  }
+                </HStack>
+                <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+              </Stack>
+            </Stack>
+          )
+        }
+        <SimpleGrid
+          spacing={4}
+          width={'full'}
+          columns={[1, 4]}
+        >
+          <Card>
+            <Translation mb={1} translation={'defi.tvl'} textStyle={'captionSmall'} />
+            <Amount.Usd value={tvlUsd} textStyle={'ctaStatic'} fontSize={'xl'} />
+          </Card>
+          <Card>
+            <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} />
+            <Amount.Percentage value={avgApy} textStyle={'ctaStatic'} fontSize={'xl'} />
+          </Card>
+          <Card>
+            <Translation mb={1} translation={'stats.totalVolume'} textStyle={'captionSmall'} />
+            <Amount.Usd value={volume} textStyle={'ctaStatic'} fontSize={'xl'} />
+          </Card>
+        </SimpleGrid>
+        {
+          strategyConfig?.strategy === 'tranches' && (
+            <SimpleGrid
+              spacing={4}
+              width={'full'}
+              columns={[1, 2]}
+            >
+              {
+                assetIds.map( (assetId: AssetId) => {
+                  const asset = selectAssetById(assetId)
+                  return (
+                    <VStack
+                      spacing={6}
+                      width={'full'}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={strategies[asset.type].label} textStyle={'ctaStatic'} fontWeight={600} fontSize={'lg'} />
+                      <SimpleGrid
+                        spacing={4}
+                        columns={2}
+                        width={'full'}
+                      >
+                        <Card>
+                          <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} color={`strategies.${asset.type}`} />
+                          <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} fontSize={'xl'} />
+                        </Card>
+                        {
+                          strategies[asset.type].stats?.strategyData?.fields.map( (field: string) => (
+                            <Card>
+                              <Translation mb={1} translation={`stats.${field}`} textStyle={'captionSmall'} />
+                              <AssetProvider.GeneralData field={field} textStyle={'ctaStatic'} fontSize={'xl'} />
+                            </Card>
+                          ))
+                        }
+                      </SimpleGrid>
+                    </VStack>
+                  )
+                })
+              }
+            </SimpleGrid>
+          )
+        }
+        <VStack
+          spacing={20}
+          width={'full'}
+        >
+          <Stack
+            spacing={6}
+            width={'full'}
+            direction={['column', 'row']}
+          >
+            <VStack
+              spacing={6}
+              width={['full', 2/3]}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'stats.performances'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
+              <Card.Dark
+                p={6}
+              >
+                <VStack
+                  spacing={4}
+                  width={'full'}
+                >
+                  {assetsApys}
+                  <GenericChart
+                    percentChange={0}
+                    assetIds={assetIds}
+                    color={strategyColor}
+                    isRainbowChart={true}
+                    data={performanceChartData}
+                    setPercentChange={() => {}}
+                    timeframe={selectedTimeframe}
+                    height={isMobile ? '300px' : '350px'}
+                    margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                    //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
+                  />
+                </VStack>
+              </Card.Dark>
+            </VStack>
+            <VStack
+              flex={1}
+              spacing={6}
+              width={['full', 'auto']}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'stats.tvlDistribution'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
+              <Card.Dark
+                p={6}
+                flex={1}
+              >
+                <DonutChart {...compositionData} getSliceData={getSliceData} />
+              </Card.Dark>
+            </VStack>
+          </Stack>
+          <SimpleGrid
+            spacing={6}
+            width={'full'}
+            columns={[1, 3]}
+          >
+            <VStack
+              spacing={6}
+              width={'full'}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.tvl'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
+              <Card.Dark
+                p={6}
+              >
                 <GenericChart
                   percentChange={0}
+                  data={tvlUsdChartData}
                   assetIds={assetIds}
                   color={strategyColor}
+                  maxMinEnabled={false}
                   isRainbowChart={true}
-                  data={performanceChartData}
                   setPercentChange={() => {}}
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
                   margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
-                  //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                 />
-              </VStack>
-            </Card.Dark>
-          </VStack>
-          <VStack
-            flex={1}
-            spacing={6}
-            width={['full', 'auto']}
-            alignItems={'flex-start'}
-          >
-            <Translation translation={'stats.tvlDistribution'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
-            <Card.Dark
-              p={6}
-              flex={1}
+              </Card.Dark>
+            </VStack>
+            <VStack
+              spacing={6}
+              width={'full'}
+              alignItems={'flex-start'}
             >
-              <DonutChart {...compositionData} getSliceData={getSliceData} />
-            </Card.Dark>
-          </VStack>
-        </Stack>
-        <SimpleGrid
-          spacing={6}
-          width={'full'}
-          columns={[1, 3]}
-        >
-          <VStack
-            spacing={6}
-            width={'full'}
-            alignItems={'flex-start'}
-          >
-            <Translation translation={'defi.tvl'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
-            <Card.Dark
-              p={6}
+              <Translation translation={'defi.apy'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
+              <Card.Dark
+                p={6}
+              >
+                <GenericChart
+                  percentChange={0}
+                  assetIds={assetIds}
+                  data={rateChartData}
+                  color={strategyColor}
+                  maxMinEnabled={false}
+                  isRainbowChart={true}
+                  setPercentChange={() => {}}
+                  timeframe={selectedTimeframe}
+                  height={isMobile ? '300px' : '350px'}
+                  formatFn={(n: any) => `${numberToPercentage(n)}`}
+                  margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                />
+              </Card.Dark>
+            </VStack>
+            <VStack
+              spacing={6}
+              width={'full'}
+              alignItems={'flex-start'}
             >
-              <GenericChart
-                percentChange={0}
-                data={tvlChartData}
-                assetIds={assetIds}
-                color={strategyColor}
-                maxMinEnabled={false}
-                isRainbowChart={true}
-                setPercentChange={() => {}}
-                timeframe={selectedTimeframe}
-                height={isMobile ? '300px' : '350px'}
-                margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
-              />
-            </Card.Dark>
-          </VStack>
-          <VStack
-            spacing={6}
-            width={'full'}
-            alignItems={'flex-start'}
-          >
-            <Translation translation={'defi.apy'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
-            <Card.Dark
-              p={6}
-            >
-              <GenericChart
-                percentChange={0}
-                assetIds={assetIds}
-                data={rateChartData}
-                color={strategyColor}
-                maxMinEnabled={false}
-                isRainbowChart={true}
-                setPercentChange={() => {}}
-                timeframe={selectedTimeframe}
-                height={isMobile ? '300px' : '350px'}
-                formatFn={(n: any) => `${numberToPercentage(n)}`}
-                margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
-              />
-            </Card.Dark>
-          </VStack>
-          <VStack
-            spacing={6}
-            width={'full'}
-            alignItems={'flex-start'}
-          >
-            <Translation translation={'stats.volumes'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
-            <Card.Dark
-              p={6}
-              flex={1}
-            >
-              <VolumeChart timeframe={selectedTimeframe} assetIds={filteredAssetIds} />
-            </Card.Dark>
-          </VStack>
-        </SimpleGrid>
+              <Translation translation={'stats.volumes'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
+              <Card.Dark
+                p={6}
+                flex={1}
+              >
+                <VolumeChart timeframe={selectedTimeframe} assetIds={filteredAssetIds} />
+              </Card.Dark>
+            </VStack>
+          </SimpleGrid>
+        </VStack>
       </VStack>
-    </Box>
+    </AssetProvider>
   )
 }

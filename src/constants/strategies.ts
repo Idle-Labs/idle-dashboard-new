@@ -28,6 +28,11 @@ export type StrategyColumn = {
   sortType?: 'alpha' | 'numeric'
 }
 
+type StatsProps = {
+  header: Record<string, any>
+  strategyData?: Record<string, any>
+}
+
 export type DynamicActionFields = Record<string, string[]>
 
 export type StrategyProps = {
@@ -40,6 +45,7 @@ export type StrategyProps = {
   image?: string
   visible: boolean
   strategy?: string,
+  stats?: StatsProps
   banner?: BannerProps
   description?: string
   columns?: StrategyColumn[]
@@ -163,6 +169,11 @@ export const strategies: Record<string, StrategyProps> = {
         description:'strategies.best.carousel.dynamicRebalance.description'
       }
     ],
+    stats:{
+      header:{
+        fields:['strategies', 'protocols']
+      }
+    },
     columns: [
       {
         accessor:'name',
@@ -254,6 +265,14 @@ export const strategies: Record<string, StrategyProps> = {
     dynamicActionFields:{
       deposit:['coverage' ,'newApy'],
       withdraw:['gain', 'fee', 'netGain']
+    },
+    stats:{
+      header:{
+        fields:['protocolWithVariant']
+      },
+      strategyData:{
+        fields:['coveragePercentage']
+      }
     },
     carouselItems: [
       {
@@ -383,6 +402,14 @@ export const strategies: Record<string, StrategyProps> = {
     dynamicActionFields:{
       deposit:['boost', 'overperformance', 'newApy'],
       withdraw:['gain', 'fee', 'netGain']
+    },
+    stats:{
+      header:{
+        fields:['protocolWithVariant']
+      },
+      strategyData:{
+        fields:['apyBoost']
+      }
     },
     carouselItems: [
       {
