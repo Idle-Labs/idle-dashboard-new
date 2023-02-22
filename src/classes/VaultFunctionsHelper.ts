@@ -349,40 +349,48 @@ export class VaultFunctionsHelper {
     return tokensAmounts
   }
 
-  public async getCollectedFees(vaults: Vault[]): Promise<Record<AssetId, BigNumber>> {
+  public async getVaultsCollectedFees(vaults: Vault[]): Promise<Record<AssetId, HistoryData[]>> {
 
     if (!this.explorer) return {}
 
-    const allVaultsIds = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) ).map( (vault: Vault) => vault.id.toLowerCase() )
+    const filteredVaults = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) )
+    const allVaultsIds = filteredVaults.map( (vault: Vault) => vault.id.toLowerCase() )
 
-    const allTxs = await asyncReduce<any, any>(
+    return await asyncReduce<any, any>(
       FEES_COLLECTORS,
       async (feeCollectorAddress) => {
         const endpoint = `${this.explorer?.endpoints[this.chainId]}?module=account&action=tokentx&address=${feeCollectorAddress}&sort=desc`
         const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
         const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
-        return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, BigNumber>, tx: EtherscanTransaction) => {
+        return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, HistoryData[]>, tx: EtherscanTransaction) => {
           // Look for incoming txs
-          // if (!tx.to.toLowerCase() !== feeCollectorAddress.toLowerCase()) return vaultsCollectedFees
+          if (tx.to.toLowerCase() !== feeCollectorAddress.toLowerCase()) return vaultsCollectedFees
           // Lookup for tranche vault
-          let foundVault = vaults.find( (vault: Vault) => vault.id === tx.contractAddress.toLowerCase())
+          let foundVault = filteredVaults.find( (vault: Vault) => vault.id === tx.contractAddress.toLowerCase())
           if (foundVault) {
             if (!vaultsCollectedFees[foundVault.id]){
-              vaultsCollectedFees[foundVault.id] = BNify(0)
+              vaultsCollectedFees[foundVault.id] = []
             }
-            vaultsCollectedFees[foundVault.id] = vaultsCollectedFees[foundVault.id].plus(fixTokenDecimals(tx.value, 18))
-            console.log(foundVault.id, tx.hash, tx.to, fixTokenDecimals(tx.value, 18).toString())
+            vaultsCollectedFees[foundVault.id].push({
+              date: +tx.timeStamp*1000,
+              value: fixTokenDecimals(tx.value, 18).toNumber()
+            })
+            console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, 18).toString())
           } else {
             // Lookup for BY vault
-            foundVault = vaults.find( (vault: Vault) => vault.id === tx.from.toLowerCase())
-            if (foundVault && "underlyingToken" in foundVault){
+            foundVault = filteredVaults.find( (vault: Vault) => vault.id === tx.from.toLowerCase())
+            if (foundVault && ("underlyingToken" in foundVault)){
               const isSameUnderlying = foundVault.underlyingToken?.address?.toLowerCase() === tx.contractAddress.toLowerCase()
               if (isSameUnderlying){
                 if (!vaultsCollectedFees[foundVault.id]){
-                  vaultsCollectedFees[foundVault.id] = BNify(0)
+                  vaultsCollectedFees[foundVault.id] = []
                 }
-                vaultsCollectedFees[foundVault.id] = vaultsCollectedFees[foundVault.id].plus(fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals))
+                vaultsCollectedFees[foundVault.id].push({
+                  date: +tx.timeStamp*1000,
+                  value: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toNumber()
+                })
+                // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toString())
               }
             }
           }
@@ -392,8 +400,6 @@ export class VaultFunctionsHelper {
       (acc, value) => value ? {...acc, ...value} : acc,
       {}
     )
-    console.log('allTxs', allTxs.map)
-    return allTxs
   }
 
   public async getVaultAdditionalApr(vault: Vault): Promise<VaultAdditionalApr> {

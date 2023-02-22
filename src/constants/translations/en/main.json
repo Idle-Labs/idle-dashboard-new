@@ -640,6 +640,7 @@
     "apyBoost": "Boost",
     "coverage": "Coverage",
     "coveragePercentage": "Coverage",
+    "collectedFees": "Collected fees",
     "tvlDistribution": "TVL distribution",
     "filters": {
       "strategies": "Strategies",

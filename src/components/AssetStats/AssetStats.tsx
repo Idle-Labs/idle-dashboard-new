@@ -9,6 +9,7 @@ import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { Translation } from 'components/Translation/Translation'
+import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { VolumeChart } from 'components/VolumeChart/VolumeChart'
@@ -23,8 +24,8 @@ import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
-import { BNify, bnOrZero, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
+import { BNify, bnOrZero, getTimeframeTimestamp, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
 
 
 // type AssetDynamicCardProps = {
@@ -263,11 +264,23 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
     return volumeChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(Math.abs(data.value)), BNify(0) )
   }, [volumeChartData])
 
-  // console.log('filteredAssetIds', filteredAssetIds)
+  const timeframeStartTimestamp = useMemo((): number => {
+    if (!selectedTimeframe) return 0
+    return getTimeframeTimestamp(selectedTimeframe)
+  }, [selectedTimeframe])
+
+  const collectedFees = useMemo((): BigNumber => {
+    if (!asset?.collectedFees) return BNify(0)
+    const collectedFeesFiltered = asset.collectedFees.filter( (data: HistoryData) => data.date>=timeframeStartTimestamp )
+    return collectedFeesFiltered.reduce( (total: BigNumber, data: HistoryData) => total.plus(data.value), BNify(0) )
+  }, [asset, timeframeStartTimestamp])
+
   // console.log('asset', asset)
   // console.log('rateChartData', rateChartData)
   // console.log('tvlUsdChartData', tvlUsdChartData)
   // console.log('volumeChartData', volumeChartData)
+  // console.log('filteredAssetIds', filteredAssetIds)
+  // console.log('collectedFees', collectedFees.toString())
   // console.log('performanceChartData', performanceChartData)
 
   return (
@@ -333,6 +346,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
           <Card>
             <Translation mb={1} translation={'stats.totalVolume'} textStyle={'captionSmall'} />
             <Amount.Usd value={volume} textStyle={'ctaStatic'} fontSize={'xl'} />
+          </Card>
+          <Card>
+            <Translation mb={1} translation={'stats.collectedFees'} textStyle={'captionSmall'} />
+            <TokenAmount assetId={asset?.id} amount={collectedFees} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
           </Card>
         </SimpleGrid>
         {

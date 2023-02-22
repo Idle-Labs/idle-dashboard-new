@@ -48,6 +48,7 @@ type VaultsOnchainData = {
   allocations: Record<AssetId, Balances>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
+  vaultsCollectedFees: Record<AssetId, HistoryData[]>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
 }
 
@@ -111,6 +112,7 @@ const initialState: InitialState = {
   idleDistributions: {},
   historicalTvlsUsd: {},
   historicalPricesUsd: {},
+  vaultsCollectedFees: {},
   isPortfolioLoaded: false,
   portfolioTimestamp: null,
   assetsDataTimestamp: null,
@@ -813,7 +815,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
-      collectedFees,
+      vaultsCollectedFees,
       [
         balanceCallsResults,
         vaultsPricesCallsResults,
@@ -842,7 +844,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
-      vaultFunctionsHelper.getCollectedFees(vaults),
+      vaultFunctionsHelper.getVaultsCollectedFees(vaults),
       multiCall.executeMultipleBatches(rawCalls)
     ])
 
@@ -853,6 +855,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     //     'claimable', claimable)
 
     // console.log('stkIdleResults', stkIdleResults)
+    console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
 
     const [
@@ -1346,7 +1349,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       protocolsAprs,
       vaultsRewards,
       additionalAprs,
-      idleDistributions
+      idleDistributions,
+      vaultsCollectedFees
     }
   }, [selectAssetById, protocolToken, stkIDLEToken, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
@@ -1415,7 +1419,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsBreakdown,
         // vaultsRewards,
         additionalAprs,
-        idleDistributions
+        idleDistributions,
+        vaultsCollectedFees
       } = vaultsOnChainData
 
       const newAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprs: Balances, vaultId: AssetId) => {
@@ -1430,7 +1435,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }, {...state.aprs})
 
       const newIdleDistributions = vaults.map( (vault: Vault) => vault.id ).reduce( (newIdleDistributions: Balances, vaultId: AssetId) => {
-        if (!aprs[vaultId]){
+        if (!idleDistributions[vaultId]){
           newIdleDistributions[vaultId] = BNify(0)
           return newIdleDistributions
         }
@@ -1438,7 +1443,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
           ...newIdleDistributions,
           [vaultId]: idleDistributions[vaultId]
         }
-      }, {...state.aprs})
+      }, {...state.idleDistributions})
+
+      const newVaultsCollectedFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newVaultsCollectedFees: Record<AssetId, HistoryData[]>, vaultId: AssetId) => {
+        if (!vaultsCollectedFees[vaultId]){
+          newVaultsCollectedFees[vaultId] = []
+          return newVaultsCollectedFees
+        }
+        return {
+          ...newVaultsCollectedFees,
+          [vaultId]: vaultsCollectedFees[vaultId]
+        }
+      }, {...state.vaultsCollectedFees})
 
       const newProtocolsAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newProtocolsAprs: Record<AssetId, Balances>, vaultId: AssetId) => {
         if (!protocolsAprs[vaultId]){
@@ -1644,7 +1660,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsBreakdown: newAprsBreakdown,
         totalSupplies: newTotalSupplies,
         additionalAprs: newAdditionalAprs,
-        idleDistributions: newIdleDistributions
+        idleDistributions: newIdleDistributions,
+        vaultsCollectedFees: newVaultsCollectedFees
       }
 
 
@@ -2175,7 +2192,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsRewards,
         totalSupplies,
         additionalAprs,
-        idleDistributions
+        idleDistributions,
+        vaultsCollectedFees
       } = vaultsOnChainData
 
       // const gaugeWeights = await getGaugesWeights(state.vaults)
@@ -2189,6 +2207,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       newState.stakingData = stakingData
       newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
+      newState.vaultsCollectedFees = {...state.vaultsCollectedFees, ...vaultsCollectedFees}
 
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
         const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
@@ -2496,6 +2515,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].lastHarvest =  state.lastHarvests[vault.id] || null
       assetsData[vault.id].totalSupply =  state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
+      assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
       assetsData[vault.id].additionalApr =  state.additionalAprs[vault.id] || BNify(0)
       assetsData[vault.id].protocolsAprs =  state.protocolsAprs[vault.id]
@@ -2641,7 +2661,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.additionalAprs,
     state.idleDistributions,
     state.vaultsPositions,
-    state.historicalPricesUsd
+    state.historicalPricesUsd,
+    state.vaultsCollectedFees
   ])
 
   return (
