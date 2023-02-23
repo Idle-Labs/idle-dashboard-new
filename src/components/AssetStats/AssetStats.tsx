@@ -254,8 +254,12 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   // console.log('assetsAvgApy', assetIds, assetsAvgApy)
 
   const tvlUsd = useMemo((): BigNumber => {
-    return bnOrZero(tvlUsdChartData.total[tvlUsdChartData.total.length-1]?.value)
-  }, [tvlUsdChartData])
+    return assetIds.reduce( (totalTvlUsd: BigNumber, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      totalTvlUsd = totalTvlUsd.plus(asset.tvlUsd)
+      return totalTvlUsd
+    }, BNify(0))
+  }, [assetIds, selectAssetById])
 
   const volume = useMemo((): BigNumber => {
     return volumeChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(Math.abs(data.value)), BNify(0) )
