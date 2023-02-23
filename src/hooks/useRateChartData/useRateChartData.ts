@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { getTimeframeTimestamp } from 'helpers/'
 import { useState, useMemo, useEffect } from 'react'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -60,8 +61,9 @@ export const useRateChartData: UseRateChartData = args => {
       const vault = selectVaultById(asset.id)
       rates.forEach( (rate: HistoryData) => {
         const date = rate.date
+        const value = rate.value
         const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
-        const startTimestampToUse = assetStartTimestamp || timeframeStartTimestamp
+        const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
 
         // Filter by selected timestamp
         if (date<startTimestampToUse) return 
@@ -73,13 +75,13 @@ export const useRateChartData: UseRateChartData = args => {
           }
         }
         if (asset.id) {
-          ratesByDate[date][asset.id] = rate.value
+          ratesByDate[date][asset.id] = value
 
           // Take the first asset to populate the total chart
           if (!assetIndex) {
             chartData.total.push({
               date,
-              value: rate.value
+              value
             })
           }
         }

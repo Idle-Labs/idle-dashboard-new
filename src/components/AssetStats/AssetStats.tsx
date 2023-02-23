@@ -126,7 +126,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   }, [selectedStrategies, setSelectedStrategies])
 
   const assetsApys = useMemo(() => {
-    if (!performanceChartData?.rainbow?.length) return null
+    if (!rateChartData?.rainbow?.length) return null
     return (
       <HStack
         spacing={4}
@@ -136,10 +136,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
           assetIds.map( (assetId: AssetId) => {
             const asset = selectAssetById(assetId)
             const color = strategies[asset.type].color
-            const startPoint: RainbowData = performanceChartData.rainbow[0]
-            const endPoint: RainbowData = performanceChartData.rainbow[performanceChartData.rainbow.length-1]
-            const gainSeconds = Math.round((endPoint.date-startPoint.date)/1000)
-            const apy = BNify(endPoint![assetId]).div(startPoint[assetId]).minus(1).times(SECONDS_IN_YEAR).div(gainSeconds).times(100)
+            const apy = rateChartData.rainbow.reduce( (total: BigNumber, data: RainbowData) => {
+              if (BNify(data[asset.id]).gt(9999)) return total
+              return total.plus(data[asset.id])
+            }, BNify(0)).div(rateChartData.rainbow.length)
             return (
               <HStack
                 spacing={1}
@@ -154,7 +154,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
         }
       </HStack>
     )
-  }, [assetIds, selectAssetById, performanceChartData])
+  }, [assetIds, selectAssetById, rateChartData])
 
   const compositionData: DonutChartInitialData = useMemo(() => {
     const initialData = {
@@ -232,7 +232,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   }, [compositionData, asset, translate, isMobile])
 
   const avgApy = useMemo((): BigNumber => {
-    return rateChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(BigNumber.minimum(9999, data.value)), BNify(0) ).div(rateChartData.total.length)
+    return rateChartData.total.reduce( (total: BigNumber, data: HistoryData) => {
+      if (BNify(data.value).gt(9999)) return total
+      return total.plus(data.value)
+    }, BNify(0) ).div(rateChartData.total.length)
   }, [rateChartData])
 
   const assetsAvgApy = useMemo(() => {

@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import { SECONDS_IN_YEAR } from 'constants/'
 import { useState, useMemo, useEffect } from 'react'
 import { getTimeframeTimestamp, BNify } from 'helpers/'
@@ -67,11 +68,11 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
           const date = d.date
           const rate = d.value
           const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
-          const startTimestampToUse = assetStartTimestamp || timeframeStartTimestamp
+          const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
           
           if (date<startTimestampToUse) return
 
-          if (prevRate){
+          if (prevRate && BNify(rate).lt(9999)){
             const secondsDiff = Math.round((date-prevRate.date)/1000)
             const annualGain = BNify(rate).div(100)
             const realGain = annualGain.times(secondsDiff).div(SECONDS_IN_YEAR)
@@ -113,7 +114,7 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
         prices.forEach( (price: HistoryData) => {
           const date = price.date
           const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
-          const startTimestampToUse = assetStartTimestamp || timeframeStartTimestamp
+          const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
           
           if (date<startTimestampToUse) return
 
