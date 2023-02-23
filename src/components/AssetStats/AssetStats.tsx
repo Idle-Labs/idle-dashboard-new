@@ -367,32 +367,37 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 assetIds.map( (assetId: AssetId) => {
                   const asset = selectAssetById(assetId)
                   return (
-                    <VStack
-                      spacing={6}
-                      width={'full'}
+                    <AssetProvider
+                      wrapFlex={false}
+                      assetId={asset.id}
                       key={`row_${assetId}`}
-                      alignItems={'flex-start'}
                     >
-                      <Translation translation={strategies[asset.type].label} textStyle={'ctaStatic'} fontWeight={600} fontSize={'lg'} />
-                      <SimpleGrid
-                        spacing={4}
-                        columns={2}
+                      <VStack
+                        spacing={6}
                         width={'full'}
+                        alignItems={'flex-start'}
                       >
-                        <Card>
-                          <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} color={`strategies.${asset.type}`} />
-                          <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} fontSize={'xl'} />
-                        </Card>
-                        {
-                          strategies[asset.type].stats?.strategyData?.fields.map( (field: string) => (
-                            <Card>
-                              <Translation mb={1} translation={`stats.${field}`} textStyle={'captionSmall'} />
-                              <AssetProvider.GeneralData field={field} textStyle={'ctaStatic'} fontSize={'xl'} />
-                            </Card>
-                          ))
-                        }
-                      </SimpleGrid>
-                    </VStack>
+                        <Translation translation={strategies[asset.type].label} textStyle={'ctaStatic'} fontWeight={600} fontSize={'lg'} />
+                        <SimpleGrid
+                          spacing={4}
+                          columns={2}
+                          width={'full'}
+                        >
+                          <Card>
+                            <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} color={`strategies.${asset.type}`} />
+                            <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} fontSize={'xl'} />
+                          </Card>
+                          {
+                            strategies[asset.type].stats?.strategyData?.fields.map( (field: string) => (
+                              <Card>
+                                <Translation mb={1} translation={`stats.${field}`} textStyle={'captionSmall'} />
+                                <AssetProvider.GeneralData field={field} textStyle={'ctaStatic'} fontSize={'xl'} />
+                              </Card>
+                            ))
+                          }
+                        </SimpleGrid>
+                      </VStack>
+                    </AssetProvider>
                   )
                 })
               }
