@@ -7,7 +7,9 @@ import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import type { AssetId, Asset } from 'constants/types'
 import { bnOrZero, BNify, sortNumeric } from 'helpers/'
-import React, { useMemo, useCallback } from 'react'
+import { useThemeProvider } from 'contexts/ThemeProvider'
+import { VaultCard } from 'components/VaultCard/VaultCard'
+import React, { useState, useMemo, useCallback } from 'react'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
@@ -15,14 +17,14 @@ import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { SkeletonText, VStack, HStack, Flex, Text } from '@chakra-ui/react'
+import { SkeletonText, Stack, VStack, HStack, Flex, Text } from '@chakra-ui/react'
 
 type ApyRange = {
   minApy: BigNumber | null
   maxApy: BigNumber | null
 }
 
-type AggregatedAsset = Asset & {
+export type AggregatedAsset = Asset & {
   apyRange: ApyRange
   strategy: string
   subRows: Asset[]
@@ -43,6 +45,8 @@ export const Stats: React.FC = () => {
     }
   } = usePortfolioProvider()
   const translate = useTranslate()
+  const { isMobile } = useThemeProvider()
+  const [ selectedAsset, setSelectedAsset ] = useState<AggregatedAsset | null>(null)
 
   const onRowClick = useCallback((vaultId: AssetId | undefined) => {
     if (!vaultId) return null
@@ -135,7 +139,7 @@ export const Stats: React.FC = () => {
     }, {})
   }, [assetsByStrategy, selectAssetById, selectVaultById])
 
-  // console.log('aggregatedUnderlyings', aggregatedUnderlyings)
+  const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
 
   const statsColumns: Column<AggregatedAsset>[] = useMemo(() => ([
     {
@@ -182,7 +186,7 @@ export const Stats: React.FC = () => {
       Header:translate('defi.tvl'),
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
         return (
-          <SkeletonText noOfLines={2} isLoaded={!!value}>
+          <SkeletonText noOfLines={1} isLoaded={!!value}>
             <Amount.Usd value={value} textStyle={'tableCell'} />
           </SkeletonText>
         )
@@ -233,23 +237,19 @@ export const Stats: React.FC = () => {
     return Object.values(aggregatedUnderlyings)
   }, [aggregatedUnderlyings])
 
-  const initialState = {
+  const initialState = useMemo(() => ({
     sortBy: [
       {
         id: 'tvlUsd',
         desc: false
       }
     ]
-  }
+  }), [])
 
-  return (
-    <VStack
-      mt={14}
-      spacing={10}
-      width={'full'}
-      alignItems={'flex-start'}
-    >
-      <Translation translation={'defi.chooseAsset'} component={Text} textStyle={'heading'} fontSize={'xl'} />
+  // console.log('statsData', statsData)
+
+  const vaultsList = useMemo(() => {
+    return !isMobile ? (
       <Card>
         <ReactTable<AggregatedAsset>
           data={statsData}
@@ -258,6 +258,46 @@ export const Stats: React.FC = () => {
           onRowClick={ (row) => onRowClick(row.original.id) }
         />
       </Card>
+    ) : (
+      <VStack
+        spacing={4}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        {
+          statsData.map( (asset: AggregatedAsset) => <VaultCard.Stats asset={asset} onRowClick={(asset: Asset) => onRowClick(asset.id)} handleClick={(asset: AggregatedAsset) => setSelectedAsset(asset)} isOpen={selectedAsset===asset} /> )
+        }
+      </VStack>
+    )
+  }, [isMobile, statsData, statsColumns, initialState, onRowClick, selectedAsset, setSelectedAsset])
+
+  return (
+    <VStack
+      mt={14}
+      width={'full'}
+      spacing={[4, 10]}
+      alignItems={'flex-start'}
+    >
+      <Stack
+        width={'full'}
+        spacing={[4, 0]}
+        justifyContent={'space-between'}
+        alignItems={['flex-start', 'flex-end']}
+        direction={['column-reverse', 'row']}
+      >
+        <Translation translation={'defi.chooseAsset'} textStyle={'heading'} fontSize={'xl'} />
+        <VStack
+          pr={[0, 8]}
+          spacing={1}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
+          <SkeletonText isLoaded={!!isPortfolioLoaded}>
+            <Amount.Usd value={totalTvlUsd} textStyle={'h2'} lineHeight={'normal'} />
+          </SkeletonText>
+        </VStack>
+      </Stack>
+      {vaultsList}
     </VStack>
   )
 }

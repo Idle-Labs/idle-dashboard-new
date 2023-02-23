@@ -43,15 +43,16 @@ import { BNify, bnOrZero, getTimeframeTimestamp, removeItemFromArray, abbreviate
 // }
 
 type AssetStatsProps = {
+  assetOnly?: boolean
   showHeader?: boolean
   showAssetStrategy?: boolean
   timeframe?: HistoryTimeframe
 }
-export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showAssetStrategy = false, timeframe: defaultTimeframe }) => {
+export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, assetOnly = false, showAssetStrategy = false, timeframe: defaultTimeframe }) => {
   const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["6MONTHS"])
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["WEEK"])
   const { vaults, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   const [ selectedStrategies, setSelectedStrategies ] = useState<string[] | undefined>(undefined)
 
@@ -85,6 +86,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
 
   const assetIds = useMemo(() => {
     if (!asset?.type) return []
+    if (assetOnly) return [asset.id]
     switch (asset.type){
       case 'AA':
       case 'BB':
@@ -94,24 +96,19 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
       default:
         return [asset.id]
     }
-  }, [asset, vault, vaults])
-
-  const filteredAssetIds: AssetId[] = useMemo(() => {
-    if (!selectedStrategies) return []
-    return assetIds.filter( (assetId: AssetId) => {
-      const asset = selectAssetById(assetId)
-      return asset && selectedStrategies.includes(asset.type)
-    })
-  }, [selectAssetById, assetIds, selectedStrategies])
+  }, [asset, vault, vaults, assetOnly])
 
   const selectedTimeframe = useMemo(() => {
     return defaultTimeframe || timeframe
   }, [timeframe, defaultTimeframe])
 
-  const { volumeChartData } = useVolumeChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
-  const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
-  const { performanceChartData } = usePerformanceChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
-  const { rateChartData } = useRateChartData({ assetIds: filteredAssetIds, timeframe: selectedTimeframe })
+  const useRatesForPerformanceChartData = asset?.type === 'BY'
+
+  const { volumeChartData } = useVolumeChartData({ assetIds, timeframe: selectedTimeframe })
+  const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds, timeframe: selectedTimeframe })
+  const { performanceChartData } = usePerformanceChartData({ useRates: useRatesForPerformanceChartData, assetIds, timeframe: selectedTimeframe })
+  const { rateChartData } = useRateChartData({ assetIds, timeframe: selectedTimeframe })
+  // console.log('performanceChartData', performanceChartData)
 
   const toggleStrategy = useCallback((strategy: string) => {
     // console.log('selectedStrategies', selectedStrategies)
@@ -136,9 +133,9 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
         width={'full'}
       >
         {
-          filteredAssetIds.map( (assetId: AssetId) => {
+          assetIds.map( (assetId: AssetId) => {
             const asset = selectAssetById(assetId)
-            const color = strategyConfig.color
+            const color = strategies[asset.type].color
             const startPoint: RainbowData = performanceChartData.rainbow[0]
             const endPoint: RainbowData = performanceChartData.rainbow[performanceChartData.rainbow.length-1]
             const gainSeconds = Math.round((endPoint.date-startPoint.date)/1000)
@@ -157,19 +154,19 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
         }
       </HStack>
     )
-  }, [filteredAssetIds, selectAssetById, strategyConfig, performanceChartData])
+  }, [assetIds, selectAssetById, performanceChartData])
 
   const compositionData: DonutChartInitialData = useMemo(() => {
     const initialData = {
       data:[],
       colors:{}
     }
-    // console.log('filteredAssetIds', filteredAssetIds)
-    if (!filteredAssetIds) return initialData
-    return (filteredAssetIds as Array<AssetId>).reduce( (donutChartData: DonutChartInitialData, assetId: AssetId) => {
+    // console.log('assetIds', assetIds)
+    if (!assetIds) return initialData
+    return (assetIds as Array<AssetId>).reduce( (donutChartData: DonutChartInitialData, assetId: AssetId) => {
       const asset = selectAssetById(assetId)
       if (!asset) return donutChartData
-      donutChartData.colors[assetId] = strategyConfig.color as string
+      donutChartData.colors[assetId] = strategies[asset.type].color as string
       donutChartData.data.push({
         value: parseFloat(BNify(asset.tvlUsd).toFixed(2)),
         label: asset.id,
@@ -179,7 +176,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
       })
       return donutChartData
     }, initialData)
-  }, [filteredAssetIds, strategyConfig, selectAssetById])
+  }, [assetIds, selectAssetById])
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     const totalFunds = compositionData.data.reduce( (total: BigNumber, data: DonutChartData) => total.plus(data.value), BNify(0))
@@ -235,7 +232,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
   }, [compositionData, asset, translate, isMobile])
 
   const avgApy = useMemo((): BigNumber => {
-    return rateChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(data.value), BNify(0) ).div(rateChartData.total.length)
+    return rateChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(BigNumber.minimum(9999, data.value)), BNify(0) ).div(rateChartData.total.length)
   }, [rateChartData])
 
   const assetsAvgApy = useMemo(() => {
@@ -279,7 +276,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
   // console.log('rateChartData', rateChartData)
   // console.log('tvlUsdChartData', tvlUsdChartData)
   // console.log('volumeChartData', volumeChartData)
-  // console.log('filteredAssetIds', filteredAssetIds)
+  // console.log('assetIds', assetIds)
   // console.log('collectedFees', collectedFees.toString())
   // console.log('performanceChartData', performanceChartData)
 
@@ -321,7 +318,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
                   <StrategyTag strategy={strategyConfig?.strategy as string} py={2} />
                   {
                     strategyConfig?.stats?.header?.fields?.map( (field: string) => (
-                      <AssetProvider.GeneralData field={field} />
+                      <AssetProvider.GeneralData key={`field_${field}`} field={field} />
                     ))
                   }
                 </HStack>
@@ -353,7 +350,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
           </Card>
         </SimpleGrid>
         {
-          strategyConfig?.strategy === 'tranches' && (
+          !assetOnly && strategyConfig?.strategy === 'tranches' && (
             <SimpleGrid
               spacing={4}
               width={'full'}
@@ -366,6 +363,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
                     <VStack
                       spacing={6}
                       width={'full'}
+                      key={`row_${assetId}`}
                       alignItems={'flex-start'}
                     >
                       <Translation translation={strategies[asset.type].label} textStyle={'ctaStatic'} fontWeight={600} fontSize={'lg'} />
@@ -427,6 +425,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
                     timeframe={selectedTimeframe}
                     height={isMobile ? '300px' : '350px'}
                     margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                    formatFn={(n: any) => `$${abbreviateNumber(n, 3)}`}
                     //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                   />
                 </VStack>
@@ -509,7 +508,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, showA
                 p={6}
                 flex={1}
               >
-                <VolumeChart timeframe={selectedTimeframe} assetIds={filteredAssetIds} />
+                <VolumeChart timeframe={selectedTimeframe} assetIds={assetIds} />
               </Card.Dark>
             </VStack>
           </SimpleGrid>

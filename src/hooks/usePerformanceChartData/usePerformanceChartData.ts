@@ -1,5 +1,6 @@
-import { getTimeframeTimestamp } from 'helpers/'
+import { SECONDS_IN_YEAR } from 'constants/'
 import { useState, useMemo, useEffect } from 'react'
+import { getTimeframeTimestamp, BNify } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetId, HistoryData, HistoryTimeframe, Asset } from 'constants/types'
 
@@ -22,17 +23,18 @@ type UsePerformanceChartDataReturn = {
 
 type UsePerformanceChartDataArgs = {
   assetIds: AssetId[]
+  useRates?: boolean
   timeframe?: HistoryTimeframe
 }
 
 type UsePerformanceChartData = (args: UsePerformanceChartDataArgs) => UsePerformanceChartDataReturn
 
-export const usePerformanceChartData: UsePerformanceChartData = args => {
-  
-  const [ performanceChartDataLoading, setPerformanceChartDataLoading ] = useState<boolean>(true)
-  const { historicalPrices, selectors: { selectAssetsByIds, selectAssetHistoricalPrices } } = usePortfolioProvider()
+export const usePerformanceChartData: UsePerformanceChartData = args => {    
 
-  const { assetIds, timeframe } = args
+  const [ performanceChartDataLoading, setPerformanceChartDataLoading ] = useState<boolean>(true)
+  const { historicalRates, historicalPrices, selectors: { selectAssetsByIds, selectVaultById, selectAssetHistoricalPrices, selectAssetHistoricalRates } } = usePortfolioProvider()
+
+  const { useRates = false, assetIds, timeframe } = args
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -51,43 +53,98 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
       rainbow: []
     }
 
-    if (!Object.keys(historicalPrices).length) return chartData
+    if (useRates){
+      if (!Object.keys(historicalRates).length) return chartData
+      const pricesByDate = assets.reduce( (pricesByDate: Record<number, RainbowData>, asset: Asset, assetIndex: number) => {
+        if (!asset.id) return pricesByDate
+        const rates = selectAssetHistoricalRates(asset.id)
+        if (!rates) return pricesByDate
+        const vault = selectVaultById(asset.id)
 
-    const pricesByDate = assets.reduce( (pricesByDate: Record<number, RainbowData>, asset: Asset, assetIndex: number) => {
-      if (!asset.id) return pricesByDate
-      const prices = selectAssetHistoricalPrices(asset.id)
-      if (!prices) return pricesByDate
-      prices.forEach( (price: HistoryData) => {
-        const date = price.date
-        
-        if (date<timeframeStartTimestamp) return
+        let price = BNify(1)
+        let prevRate: HistoryData | null = null
+        rates.forEach( (d: HistoryData) => {
+          const date = d.date
+          const rate = d.value
+          const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
+          const startTimestampToUse = assetStartTimestamp || timeframeStartTimestamp
+          
+          if (date<startTimestampToUse) return
 
-        const value = price.value
-
-        if (!pricesByDate[date]) {
-          pricesByDate[date] = {
-            date,
-            total: 0
+          if (prevRate){
+            const secondsDiff = Math.round((date-prevRate.date)/1000)
+            const annualGain = BNify(rate).div(100)
+            const realGain = annualGain.times(secondsDiff).div(SECONDS_IN_YEAR)
+            price = price.plus(price.times(realGain))
           }
-        }
-        if (asset.id) {
-          pricesByDate[date][asset.id] = value
 
-          // Take the first asset to populate the total chart
-          if (!assetIndex) {
-            chartData.total.push({
+          const value = price.toNumber()
+          if (!pricesByDate[date]) {
+            pricesByDate[date] = {
               date,
-              value
-            })
+              total: 0
+            }
           }
-        }
-      })
-      return pricesByDate
-    }, {})
+          if (asset.id) {
+            pricesByDate[date][asset.id] = value
 
-    chartData.rainbow = Object.values(pricesByDate)
+            // Take the first asset to populate the total chart
+            if (!assetIndex) {
+              chartData.total.push({
+                date,
+                value
+              })
+            }
+          }
+
+          prevRate = d
+        })
+        return pricesByDate
+      }, {})
+
+      chartData.rainbow = Object.values(pricesByDate)
+    } else {
+      if (!Object.keys(historicalPrices).length) return chartData
+      const pricesByDate = assets.reduce( (pricesByDate: Record<number, RainbowData>, asset: Asset, assetIndex: number) => {
+        if (!asset.id) return pricesByDate
+        const prices = selectAssetHistoricalPrices(asset.id)
+        if (!prices) return pricesByDate
+        const vault = selectVaultById(asset.id)
+        prices.forEach( (price: HistoryData) => {
+          const date = price.date
+          const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
+          const startTimestampToUse = assetStartTimestamp || timeframeStartTimestamp
+          
+          if (date<startTimestampToUse) return
+
+          const value = price.value
+
+          if (!pricesByDate[date]) {
+            pricesByDate[date] = {
+              date,
+              total: 0
+            }
+          }
+          if (asset.id) {
+            pricesByDate[date][asset.id] = value
+
+            // Take the first asset to populate the total chart
+            if (!assetIndex) {
+              chartData.total.push({
+                date,
+                value
+              })
+            }
+          }
+        })
+        return pricesByDate
+      }, {})
+
+      chartData.rainbow = Object.values(pricesByDate)
+    }
+
     return chartData
-  }, [assets, historicalPrices, selectAssetHistoricalPrices, timeframeStartTimestamp])
+  }, [assets, historicalPrices, selectAssetHistoricalPrices, selectAssetHistoricalRates, historicalRates, useRates, selectVaultById, timeframeStartTimestamp])
 
   useEffect(() => {
     if (!performanceChartData.rainbow.length) return

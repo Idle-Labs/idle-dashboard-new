@@ -1,21 +1,26 @@
 import React, { useMemo } from 'react'
-import { AssetId } from 'constants/types'
+import { strategies } from 'constants/'
 import { useNavigate } from 'react-router-dom'
+import { Asset, AssetId } from 'constants/types'
+import { Amount } from 'components/Amount/Amount'
+import { MdKeyboardArrowRight } from 'react-icons/md'
 import { CardProps, Card } from 'components/Card/Card'
+import type { AggregatedAsset } from 'components/Stats/Stats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { TextProps, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text } from '@chakra-ui/react'
+import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId
 }
 
 type VaultCardField = {
-  label: string
   field: string
+  label?: string
   props?: TextProps & AvatarProps & BoxProps & ThemingProps
 }
 
@@ -47,7 +52,6 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
             alignItems={'center'}
           >
             <AssetProvider.Icon size={'xs'} />
-            {/*<AssetProvider.Name textStyle={'tableCell'} />*/}
             {
               fields.map( (fieldInfo: VaultCardField, index: number) => (
                 <React.Fragment key={`field_${index}`}>
@@ -60,7 +64,11 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
                   <HStack
                     spacing={2}
                   >
-                    <Translation translation={fieldInfo.label} component={Text} textStyle={'captionSmall'} />
+                    {
+                      fieldInfo.label && (
+                        <Translation translation={fieldInfo.label} component={Text} textStyle={'captionSmall'} />
+                      )
+                    }
                     <AssetProvider.GeneralData field={fieldInfo.field} textStyle={'tableCell'} {...fieldInfo.props} />
                   </HStack>
                 </React.Fragment>
@@ -69,6 +77,150 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
           </HStack>
         </HStack>
       </Card>
+    </AssetProvider>
+  )
+}
+
+export type VaultCardStatsProps = {
+  asset: AggregatedAsset
+  handleClick: Function
+  onRowClick: Function
+  isOpen: boolean
+} & CardProps
+
+const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCardStatsProps) => {
+  const theme = useTheme()
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={asset.id}
+    >
+      <VStack
+        spacing={2}
+        width={'full'}
+      >
+        <Card
+          p={4}
+          onClick={() => handleClick(asset)}
+          backgroundColor={ isOpen ? 'card.bgLight' : 'card.bg'}
+        >
+          <VStack
+            spacing={3}
+            alignItems={'flex-start'}
+          >
+            <HStack
+              width={'full'}
+              justifyContent={'space-between'}
+            >
+              <AssetLabel assetId={asset.id} size={'sm'} />
+              {
+                asset?.strategy && (
+                  <StrategyTag strategy={asset.strategy as string} />
+                )
+              }
+            </HStack>
+            <HStack
+              pt={3}
+              px={4}
+              width={'100%'}
+              borderTop={'1px solid'}
+              borderTopColor={'divider'}
+              justifyContent={'space-between'}
+            >
+              <VStack
+                spacing={1}
+                alignItems={'flex-start'}
+              >
+                <Translation translation={'defi.pool'} textStyle={'captionSmall'} />
+                <Amount.Usd value={asset.tvlUsd} textStyle={'tableCell'} />
+              </VStack>
+              <VStack
+                spacing={1}
+                alignItems={'flex-end'}
+              >
+                <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
+                <HStack
+                  spacing={1}
+                >
+                  <Amount.Percentage value={asset.apyRange?.minApy || null} textStyle={'tableCell'} />
+                  <Text>-</Text>
+                  <Amount.Percentage value={asset.apyRange?.maxApy || null} textStyle={'tableCell'} />
+                </HStack>
+              </VStack>
+            </HStack>
+          </VStack>
+        </Card>
+        {
+          isOpen && (
+            <VStack
+              spacing={2}
+              width={'full'}
+            >
+              {
+                asset.subRows.map( (asset: Asset) => (
+                  <AssetProvider
+                    wrapFlex={false}
+                    assetId={asset.id as string}
+                  >
+                    <Card
+                      py={2}
+                      pr={1}
+                      pl={[4, 6]}
+                      layerStyle={['card']}
+                      backgroundColor={'card.bgLight'}
+                      onClick={() => onRowClick(asset)}
+                    >
+                      <HStack
+                        width={'100%'}
+                        justifyContent={'space-between'}
+                      >
+                      {
+                        ['AA', 'BB'].includes(asset.type as string) ? (
+                          <HStack
+                            width={'100%'}
+                            justifyContent={'space-between'}
+                          >
+                            <AssetProvider.GeneralData field={'protocolWithVariant'} size={'xs'} />
+                            <HStack
+                              spacing={1}
+                            >
+                              <AssetProvider.SeniorApy color={strategies.AA.color} textStyle={'tableCell'} />
+                              <Text>-</Text>
+                              <AssetProvider.JuniorApy color={strategies.BB.color} textStyle={'tableCell'} />
+                            </HStack>
+                          </HStack>
+                        ) : asset.type === 'BY' && (
+                          <HStack
+                            width={'100%'}
+                            justifyContent={'space-between'}
+                          >
+                            <HStack
+                              flex={1}
+                            >
+                              <Flex
+                                width={'40%'}
+                              >
+                                <AssetProvider.GeneralData field={'protocols'} size={'xs'} />
+                              </Flex>
+                              <AssetProvider.GeneralData field={'strategies'} />
+                            </HStack>
+                            <AssetProvider.Apy showTooltip={false} textStyle={'tableCell'} />
+                          </HStack>
+                        )
+                      }
+                      <MdKeyboardArrowRight
+                        size={24}
+                        color={theme.colors.primary}
+                      />
+                      </HStack>
+                    </Card>
+                  </AssetProvider>
+                ))
+              }
+            </VStack>
+          )
+        }
+      </VStack>
     </AssetProvider>
   )
 }
@@ -156,4 +308,5 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
   )
 }
 
+VaultCard.Stats = Stats
 VaultCard.Inline = Inline

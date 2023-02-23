@@ -104,7 +104,7 @@ export type AssetFieldProps = {
 const Name: React.FC<AssetFieldProps> = (props) => {
   const { asset } = useAssetProvider()
   return (
-    <SkeletonText minW={!asset ? '50px' : 'auto'} noOfLines={2} isLoaded={!!asset}>
+    <SkeletonText minW={!asset ? '50px' : 'auto'} noOfLines={1} isLoaded={!!asset}>
       <Text {...props}>{asset?.name}</Text>
     </SkeletonText>
   )

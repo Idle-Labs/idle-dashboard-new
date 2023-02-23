@@ -107,7 +107,7 @@ export class BestYieldVault {
     }
   }
 
-  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[]): Promise<Transaction[]> {
+  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
 
     const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
       if (!transactions[transaction.hash]) {
@@ -171,11 +171,13 @@ export class BestYieldVault {
             if (!underlyingTokenTxAmount){
               const pricesCalls = this.getPricesCalls()
 
-              const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
-              // @ts-ignore
-              const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
-              const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
-              idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+              if (getTokenPrice){
+                const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
+                // @ts-ignore
+                const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+                const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+                idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+              }
 
               underlyingAmount = idlePrice.times(idleAmount)
             } else {

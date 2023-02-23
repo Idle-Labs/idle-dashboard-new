@@ -60,7 +60,7 @@ export class StakedIdleVault {
     this.feeDistributorContract = new web3.eth.Contract(feeDistributorConfig.abi, feeDistributorConfig.address)
   }
 
-  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[]): Promise<Transaction[]> {
+  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
 
     const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
       if (!transactions[transaction.hash]) {

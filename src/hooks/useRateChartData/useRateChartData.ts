@@ -32,7 +32,7 @@ export const useRateChartData: UseRateChartData = args => {
   const { assetIds, timeframe } = args
 
   const [ rateChartDataLoading, setRateChartDataLoading ] = useState<boolean>(true)
-  const { historicalRates, selectors: { selectAssetsByIds, selectAssetHistoricalRates } } = usePortfolioProvider()
+  const { historicalRates, selectors: { selectAssetsByIds, selectAssetHistoricalRates, selectVaultById } } = usePortfolioProvider()
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -57,11 +57,14 @@ export const useRateChartData: UseRateChartData = args => {
       if (!asset.id) return ratesByDate
       const rates = selectAssetHistoricalRates(asset.id)
       if (!rates) return ratesByDate
+      const vault = selectVaultById(asset.id)
       rates.forEach( (rate: HistoryData) => {
         const date = rate.date
+        const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
+        const startTimestampToUse = assetStartTimestamp || timeframeStartTimestamp
 
         // Filter by selected timestamp
-        if (date<timeframeStartTimestamp) return 
+        if (date<startTimestampToUse) return 
 
         if (!ratesByDate[date]) {
           ratesByDate[date] = {
@@ -86,7 +89,7 @@ export const useRateChartData: UseRateChartData = args => {
 
     chartData.rainbow = Object.values(ratesByDate)
     return chartData
-  }, [assets, timeframeStartTimestamp, historicalRates, selectAssetHistoricalRates])
+  }, [assets, timeframeStartTimestamp, historicalRates, selectVaultById, selectAssetHistoricalRates])
 
   useEffect(() => {
     if (!rateChartData.rainbow.length) return

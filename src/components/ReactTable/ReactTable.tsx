@@ -183,6 +183,7 @@ export const ReactTable = <T extends {}>({
                       textAlign={column.textAlign}
                       _hover={{ color: column.canSort ? hoverColor : 'gray.500' }}
                       style={style}
+                      key={`th_${colIndex}`}
                     >
                       <TableHeader column={column} />
                     </Th>

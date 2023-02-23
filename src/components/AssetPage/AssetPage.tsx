@@ -193,6 +193,7 @@ export const AssetPage: React.FC = () => {
         component: AssetStats,
         componentProps: {
           timeframe,
+          assetOnly: true,
           showHeader: false,
           showAssetStrategy: true
         }

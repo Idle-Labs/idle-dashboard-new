@@ -75,6 +75,10 @@ export interface Tranche {
   address: string
 }
 
+export type StatsProps = {
+  startTimestamp: number
+}
+
 export interface TrancheConfig {
   protocol:string
   status?: VaultStatus
@@ -90,6 +94,7 @@ export interface TrancheConfig {
   variant?: string
   CDO: CDO
   Pool?: Pool
+  stats?: StatsProps
   Strategy: Strategy
   description?: string
   messages?: VaultMessages
@@ -290,6 +295,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'MATIC',
         flags:{
           showMaticNFTs: true
+        },
+        stats:{
+          startTimestamp: 1665360000000
         },
         CDO:{
           decimals:18,

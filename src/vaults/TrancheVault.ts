@@ -12,7 +12,7 @@ import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce } from 'helpers/'
-import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
+import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
   web3: Web3
@@ -32,6 +32,7 @@ export class TrancheVault {
   readonly web3: Web3
   readonly chainId: number
   readonly protocol: string
+  readonly stats: StatsProps | undefined
   readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
   readonly messages: VaultMessages | undefined
@@ -85,6 +86,7 @@ export class TrancheVault {
     this.flags = vaultConfig.flags
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
+    this.stats = vaultConfig.stats
     this.status = vaultConfig.status
     this.variant = vaultConfig.variant
     this.cacheProvider = cacheProvider
@@ -127,7 +129,7 @@ export class TrancheVault {
     this.trancheContract = new web3.eth.Contract(this.trancheConfig.abi, this.trancheConfig.address)
   }
 
-  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[]): Promise<Transaction[]> {
+  public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
 
     const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
       if (!transactions[transaction.hash]) {
@@ -173,7 +175,15 @@ export class TrancheVault {
             redeem: !!(isSendTransferTx || isRedeemTx || isSwapOutTx)
           }
 
+          const subActions: Record<string, boolean> = {
+            send: isSendTransferTx,
+            receive: isReceiveTransferTx,
+            swapIn: isSwapTx,
+            swapOut: isSwapOutTx,
+          }
+
           const action = Object.keys(actions).find( (action: string) => !!actions[action] )
+          const subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
 
           // if (tx.hash.toLowerCase() === '0x67db8b44103853451733ae2387a26a76476a94b11759e1e81d45999847ce4561'.toLowerCase()) {
           //   console.log('GAUGE?', isGaugeDeposit, isGaugeRedeem, isSendTransferTx, isRedeemTx, isSwapOutTx, action)
@@ -199,11 +209,13 @@ export class TrancheVault {
             if (!underlyingTokenTxAmount){
               const pricesCalls = this.getPricesCalls()
 
-              const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
-              // @ts-ignore
-              const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
-              const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
-              idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+              if (getTokenPrice){
+                const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
+                // @ts-ignore
+                const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+                const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+                idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+              }
 
               underlyingAmount = idlePrice.times(idleAmount)
               // console.log('tokenPrice', this.id, tx.blockNumber, tx.hash, tokenPrice, idlePrice.toString(), underlyingAmount.toString())
@@ -216,6 +228,7 @@ export class TrancheVault {
             transactions.push({
               ...tx,
               action,
+              subAction,
               idlePrice,
               idleAmount,
               assetId:this.id,

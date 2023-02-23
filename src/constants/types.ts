@@ -131,6 +131,7 @@ export type VaultsRewards = Record<AssetId, VaultRewards>
 
 export type Transaction = {
   action: string,
+  subAction?: string
   assetId: AssetId
   idlePrice: BigNumber
   idleAmount: BigNumber
@@ -287,8 +288,8 @@ export type Asset = {
   vaultPosition?: VaultPosition
 }
 
-export type Assets = Record<string, Asset>
-export type Vaults = Record<string, Vault>
+export type Assets = Record<AssetId, Asset>
+export type Vaults = Record<AssetId, Vault>
 
 export type VaultBalance = {
   vault: string

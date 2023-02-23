@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js'
 import { GaugeVault } from 'vaults/GaugeVault'
 import useLocalForge from 'hooks/useLocalForge'
+import { SECONDS_IN_YEAR } from 'constants/vars'
 import { useWeb3Provider } from './Web3Provider'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { selectUnderlyingToken } from 'selectors/'
@@ -20,7 +21,7 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
@@ -855,8 +856,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     //     'claimable', claimable)
 
     // console.log('stkIdleResults', stkIdleResults)
-    console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
+    // console.log('vaultsCollectedFees', vaultsCollectedFees)
 
     const [
       stkIdleTotalLocked,
@@ -2108,6 +2109,26 @@ export function PortfolioProvider({ children }:ProviderProps) {
           tvls[assetId] = vaultHistoricalData.tvls
           rates[assetId] = vaultHistoricalData.rates
           prices[assetId] = vaultHistoricalData.prices
+
+          const ratesSum = rates[assetId].reduce( (total: BigNumber, rate: HistoryData) => total.plus(rate.value), BNify(0) )
+          if (bnOrZero(ratesSum).lte(0)){
+            rates[assetId] = []
+            const firstPoint = prices[assetId][0] as HistoryData
+            prices[assetId].forEach( (data: HistoryData, index: number) => {
+              if (index>7){
+                const prevPoint = prices[assetId][index-7]
+                const gainPercentage = BNify(data.value).div(bnOrZero(prevPoint.value)).minus(1)
+                const secondsDiff = Math.round((data.date-prevPoint.date)/1000)
+                const apy = gainPercentage.times(SECONDS_IN_YEAR).div(secondsDiff).times(100)
+                rates[assetId].push({
+                  date: data.date,
+                  value: apy.toNumber()
+                })
+                // console.log(data.date, gainPercentage.toString(), secondsDiff, apy.toString())
+              }
+            })
+          }
+
           dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { tvls: tvls[assetId], rates: rates[assetId], prices: prices[assetId] } }})
         }
       })
@@ -2584,6 +2605,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // Set historical prices
       assetsData[vault.id].prices = state.historicalPrices[vault.id] || []
+
       if (assetsData[vault.id].prices?.length){
         // Calculate APY 7 days
         const prices7 = assetsData[vault.id].prices!.slice(assetsData[vault.id].prices!.length-7)
@@ -2608,6 +2630,29 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const avg_rate30 = BNify(avgArray(rates30))
 
         assetsData[vault.id].apy30 = avg_rate30.gt(0) ? avg_rate30 : price_apy30
+
+        // Calculate rates
+        /*
+        const ratesSum = assetsData[vault.id].rates?.reduce( (total: BigNumber, rate: HistoryData) => total.plus(rate.value), BNify(0) )
+        if (bnOrZero(ratesSum).lte(0)){
+          assetsData[vault.id].rates = []
+          const firstPoint = assetsData[vault.id].prices?.[0] as HistoryData
+          assetsData[vault.id].prices?.forEach( (data: HistoryData, index: number) => {
+            if (index){
+              const gainPercentage = BNify(data.value).div(bnOrZero(firstPoint.value)).minus(1)
+              const secondsDiff = Math.round((data.date-firstPoint.date)/1000)
+              const apy = gainPercentage.times(SECONDS_IN_YEAR).div(secondsDiff).times(100)
+              assetsData[vault.id].rates?.push({
+                date: data.date,
+                value: apy.toNumber()
+              })
+              // console.log(data.date, gainPercentage.toString(), secondsDiff, apy.toString())
+            }
+          })
+
+          console.log(vault.id, assetsData[vault.id].rates)
+        }
+        */
 
         // console.log('rates30', vault.id, rates30, BNify(rates30[0].value).toString(), rates30_last_rate.toString(), assetsData[vault.id].apy30.toString())
       } else {

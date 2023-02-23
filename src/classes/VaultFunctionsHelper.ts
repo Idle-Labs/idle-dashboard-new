@@ -12,8 +12,8 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import type { Abi, Asset, AssetId, Harvest, Explorer, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce } from 'helpers/'
+import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -363,12 +363,29 @@ export class VaultFunctionsHelper {
         const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
         const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
+        const vaultsTransactions = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
+          vaults,
+          async (vault: Vault) => {
+            return {
+              [vault.id]: await vault.getTransactions(feeCollectorAddress, etherscanTxlist)
+            }
+          },
+          (acc, value) => value ? {...acc, ...value} : acc,
+          {}
+        )
+
+        // console.log('vaultsTransactions', feeCollectorAddress, vaultsTransactions)
+
         return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, HistoryData[]>, tx: EtherscanTransaction) => {
           // Look for incoming txs
           if (tx.to.toLowerCase() !== feeCollectorAddress.toLowerCase()) return vaultsCollectedFees
           // Lookup for tranche vault
           let foundVault = filteredVaults.find( (vault: Vault) => vault.id === tx.contractAddress.toLowerCase())
           if (foundVault) {
+            // Look for vaults transactions (deposits/redeems)
+            const foundVaultTransaction = vaultsTransactions[foundVault.id].find( (vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn' )
+            if (foundVaultTransaction) return vaultsCollectedFees
+
             if (!vaultsCollectedFees[foundVault.id]){
               vaultsCollectedFees[foundVault.id] = []
             }
@@ -376,11 +393,16 @@ export class VaultFunctionsHelper {
               date: +tx.timeStamp*1000,
               value: fixTokenDecimals(tx.value, 18).toNumber()
             })
-            console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, 18).toString())
+            // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, 18).toString())
           } else {
             // Lookup for BY vault
             foundVault = filteredVaults.find( (vault: Vault) => vault.id === tx.from.toLowerCase())
             if (foundVault && ("underlyingToken" in foundVault)){
+
+              // Look for vaults transactions (deposits/redeems)
+              const foundVaultTransaction = vaultsTransactions[foundVault.id].find( (vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn' )
+              if (foundVaultTransaction) return vaultsCollectedFees
+
               const isSameUnderlying = foundVault.underlyingToken?.address?.toLowerCase() === tx.contractAddress.toLowerCase()
               if (isSameUnderlying){
                 if (!vaultsCollectedFees[foundVault.id]){
