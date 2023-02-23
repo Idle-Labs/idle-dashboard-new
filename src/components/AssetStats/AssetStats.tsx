@@ -389,7 +389,9 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                           </Card>
                           {
                             strategies[asset.type].stats?.strategyData?.fields.map( (field: string) => (
-                              <Card>
+                              <Card
+                                key={`field_${field}`}
+                              >
                                 <Translation mb={1} translation={`stats.${field}`} textStyle={'captionSmall'} />
                                 <AssetProvider.GeneralData field={field} textStyle={'ctaStatic'} fontSize={'xl'} />
                               </Card>
