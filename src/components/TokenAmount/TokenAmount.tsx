@@ -26,7 +26,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
       assetId={assetId}
     >
       <HStack
-        spacing={1}
+        spacing={2}
         alignItems={'center'}
       >
         {

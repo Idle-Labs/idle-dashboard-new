@@ -25,6 +25,7 @@
     "deposit": "Deposit",
     "redeem": "Redeem",
     "new": "New",
+    "about": "About",
     "token": "Token",
     "stake": "Stake",
     "unstake": "Unstake",
@@ -144,6 +145,18 @@
       "title": "Error loading data for %{symbol}",
       "description": "Your currency has been reset to USD"
     }
+  },
+  "about": {
+    "cdo":"CDO",
+    "BY":"Best Yield LP token",
+    "AA":"Senior LP token",
+    "BB":"Junior LP token",
+    "strategy":"Strategy token",
+    "governance": "Governance",
+    "guardian": "Guardian",
+    "rewards": "Rewards",
+    "timelock": "Timelock",
+    "feeCollector": "Fee collector"
   },
   "strategies": {
     "staking": {
@@ -643,6 +656,7 @@
     "coveragePercentage": "Coverage",
     "collectedFees": "Collected fees",
     "tvlDistribution": "TVL distribution",
+    "collectedFeesEmpty": "Collected fees will appear here",
     "filters": {
       "strategies": "Strategies",
       "assets": "Assets",
@@ -665,6 +679,7 @@
     "date": "Date",
     "txid": "Transaction ID",
     "fee": "Fee",
+    "collectedFees": "Collected fees",
     "status": "Status",
     "confirmed": "Confirmed",
     "pending": "Pending",

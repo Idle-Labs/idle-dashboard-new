@@ -30,7 +30,6 @@ export const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) 
           direction={'row'}
           alignItems={'center'}
         >
-          {/*<Icon IconComponent={transaction.icon} width={24} height={24} size={24} />*/}
           <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
         </HStack>
         <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>

@@ -4,11 +4,13 @@ import { selectProtocol } from 'selectors/'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
-import { strategies } from 'constants/strategies'
+import { FEES_COLLECTORS, strategies } from 'constants/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { GenericContract } from 'contracts/GenericContract'
+import { Scrollable } from 'components/Scrollable/Scrollable'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { AddressLink } from 'components/AddressLink/AddressLink'
 import { StrategyTag } from 'components/StrategyTag/StrategyTag'
-import { Translation } from 'components/Translation/Translation'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -16,16 +18,39 @@ import { VolumeChart } from 'components/VolumeChart/VolumeChart'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
-import { HistoryData, HistoryTimeframe, AssetId } from 'constants/types'
 import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
+import { TransactionList } from 'components/TransactionList/TransactionList'
 import { SimpleGrid, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
 import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
+import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+import { Transaction, HistoryData, HistoryTimeframe, AssetId } from 'constants/types'
 import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { BNify, getTimeframeTimestamp, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
+
+type AboutItemProps = {
+  translation: TranslationProps["translation"]
+  address: string
+}
+
+const AboutItem: React.FC<AboutItemProps> = ({
+  translation,
+  address
+}) => (
+  <HStack
+    py={4}
+    width={'full'}
+    justifyContent={'space-between'}
+    borderBottomWidth={'1px'}
+    borderBottomColor={'divider'}
+  >
+    <Translation translation={translation} textStyle={'tableCell'} />
+    <AddressLink address={address} />
+  </HStack>
+)
 
 type AssetStatsProps = {
   assetOnly?: boolean
@@ -38,8 +63,8 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["WEEK"])
-  const { vaults, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   const [ selectedStrategies, setSelectedStrategies ] = useState<string[] | undefined>(undefined)
+  const { vaults, contracts, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return params.asset && selectAssetById && selectAssetById(params.asset)
@@ -275,19 +300,81 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
     return getTimeframeTimestamp(selectedTimeframe)
   }, [selectedTimeframe])
 
-  const collectedFees = useMemo((): BigNumber => {
-    if (!asset?.collectedFees) return BNify(0)
-    const collectedFeesFiltered = asset.collectedFees.filter( (data: HistoryData) => data.date>=timeframeStartTimestamp )
-    return collectedFeesFiltered.reduce( (total: BigNumber, data: HistoryData) => total.plus(data.value), BNify(0) )
-  }, [asset, timeframeStartTimestamp])
+  const collectedFees = useMemo((): Transaction[] => {
+    const collectedFees = assetIds.reduce( ( collectedFees: Transaction[], assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      if (!asset || !asset.collectedFees) return collectedFees
+      return [
+        ...collectedFees,
+        ...asset.collectedFees
+      ]
+    }, [])
+    return collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp )
+  }, [assetIds, selectAssetById, timeframeStartTimestamp])
+
+  const collectedFeesUsd = useMemo((): BigNumber => {
+    // const collectedFeesFiltered = collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp )
+    return collectedFees.reduce( (total: BigNumber, tx: Transaction) => total.plus(tx.underlyingAmount), BNify(0) )
+  }, [collectedFees])
 
   // console.log('asset', asset)
   // console.log('rateChartData', rateChartData)
   // console.log('tvlUsdChartData', tvlUsdChartData)
   // console.log('volumeChartData', volumeChartData)
   // console.log('assetIds', assetIds)
-  // console.log('collectedFees', collectedFees.toString())
+  // console.log('collectedFees', collectedFees)
   // console.log('performanceChartData', performanceChartData)
+
+  const aboutItems = useMemo(() => {
+    const items = []
+    switch (strategyConfig?.strategy){
+      case 'tranches':
+        items.push({
+          address: vault.cdoConfig.address,
+          translation:'about.cdo',
+        })
+        items.push({
+          address: vault.strategyConfig.address,
+          translation:'about.strategy',
+        })
+      break;
+      default:
+      break;
+    }
+    assetIds.forEach((assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      if (!asset) return null
+      items.push({
+        address: asset.id,
+        translation:[`about.${asset.type}`],
+      })
+    })
+
+    FEES_COLLECTORS.forEach( (address: string) => {
+      items.push({
+        address,
+        translation:'about.feeCollector'
+      })
+    })
+
+    const timelockContract = contracts.find( (contract: GenericContract) => contract.name === 'Timelock' )
+    if (timelockContract){
+      items.push({
+        address: timelockContract.id,
+        translation:'about.timelock'
+      })
+    }
+
+    const governorBravoContract = contracts.find( (contract: GenericContract) => contract.name === 'GovernorBravo' )
+    if (governorBravoContract){
+      items.push({
+        address: governorBravoContract.id,
+        translation:'about.governance'
+      })
+    }
+
+    return items.map( (item, index) => <AboutItem key={index} {...item} /> )
+  }, [assetIds, strategyConfig, selectAssetById, vault, contracts])
 
   return (
     <AssetProvider
@@ -355,7 +442,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
           </Card>
           <Card>
             <Translation mb={1} translation={'stats.collectedFees'} textStyle={'captionSmall'} />
-            <TokenAmount assetId={asset?.id} amount={collectedFees} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
+            <TokenAmount assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
           </Card>
         </SimpleGrid>
         {
@@ -529,6 +616,27 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
             </VStack>
           </SimpleGrid>
         </VStack>
+        <SimpleGrid
+          width={'full'}
+          spacing={6}
+          columns={[1, 2]}
+        >
+          <TransactionList assetIds={assetIds} transactions={collectedFees} showTitleOnMobile={true} title={'stats.collectedFees'} emptyText={'stats.collectedFeesEmpty'} maxH={600} />
+          <Card>
+            <VStack
+              flex={1}
+              spacing={0}
+              height={'100%'}
+              alignItems={'flex-start'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Card.Heading} translation={'common.about'} />
+              <Scrollable maxH={600}>
+                {aboutItems}
+              </Scrollable>
+            </VStack>
+          </Card>
+        </SimpleGrid>
       </VStack>
     </AssetProvider>
   )

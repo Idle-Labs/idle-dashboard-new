@@ -163,10 +163,10 @@ export const ReactTable = <T extends {}>({
     <Table variant='clickable' size={{ base: 'sm', md: 'md' }} {...getTableProps()}>
       {displayHeaders && (
         <Thead>
-          {headerGroups.map(headerGroup => {
+          {headerGroups.map( (headerGroup, rowIndex) => {
             let firstColumnFound = false
             return (
-              <Tr {...headerGroup.getHeaderGroupProps()}>
+              <Tr {...headerGroup.getHeaderGroupProps()} key={rowIndex}>
                 {headerGroup.headers.map( (column, colIndex) => {
                   const isFirstCell = !firstColumnFound && column.display !== 'none'
                   const isLastCell = colIndex === headerGroup.headers.length-1

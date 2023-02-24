@@ -349,7 +349,7 @@ export class VaultFunctionsHelper {
     return tokensAmounts
   }
 
-  public async getVaultsCollectedFees(vaults: Vault[]): Promise<Record<AssetId, HistoryData[]>> {
+  public async getVaultsCollectedFees(vaults: Vault[]): Promise<Record<AssetId, Transaction[]>> {
 
     if (!this.explorer) return {}
 
@@ -375,7 +375,7 @@ export class VaultFunctionsHelper {
 
         // console.log('vaultsTransactions', feeCollectorAddress, vaultsTransactions)
 
-        return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, HistoryData[]>, tx: EtherscanTransaction) => {
+        return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, Transaction[]>, tx: EtherscanTransaction) => {
           // Look for incoming txs
           if (tx.to.toLowerCase() !== feeCollectorAddress.toLowerCase()) return vaultsCollectedFees
           // Lookup for tranche vault
@@ -388,9 +388,18 @@ export class VaultFunctionsHelper {
             if (!vaultsCollectedFees[foundVault.id]){
               vaultsCollectedFees[foundVault.id] = []
             }
+            // vaultsCollectedFees[foundVault.id].push({
+            //   date: +tx.timeStamp*1000,
+            //   value: fixTokenDecimals(tx.value, 18).toNumber()
+            // })
             vaultsCollectedFees[foundVault.id].push({
-              date: +tx.timeStamp*1000,
-              value: fixTokenDecimals(tx.value, 18).toNumber()
+              ...tx,
+              action: 'fee',
+              idlePrice: BNify(0),
+              idleAmount: BNify(0),
+              subAction: 'collected',
+              assetId: foundVault.id,
+              underlyingAmount: fixTokenDecimals(tx.value, 18)
             })
             // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, 18).toString())
           } else {
@@ -407,9 +416,18 @@ export class VaultFunctionsHelper {
                 if (!vaultsCollectedFees[foundVault.id]){
                   vaultsCollectedFees[foundVault.id] = []
                 }
+                // vaultsCollectedFees[foundVault.id].push({
+                //   date: +tx.timeStamp*1000,
+                //   value: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toNumber()
+                // })
                 vaultsCollectedFees[foundVault.id].push({
-                  date: +tx.timeStamp*1000,
-                  value: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toNumber()
+                  ...tx,
+                  action: 'fee',
+                  idlePrice: BNify(0),
+                  idleAmount: BNify(0),
+                  subAction: 'collected',
+                  assetId: foundVault.id,
+                  underlyingAmount: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals)
                 })
                 // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toString())
               }

@@ -49,7 +49,7 @@ type VaultsOnchainData = {
   allocations: Record<AssetId, Balances>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
-  vaultsCollectedFees: Record<AssetId, HistoryData[]>
+  vaultsCollectedFees: Record<AssetId, Transaction[]>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
 }
 
@@ -1449,7 +1449,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }, {...state.idleDistributions})
 
-      const newVaultsCollectedFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newVaultsCollectedFees: Record<AssetId, HistoryData[]>, vaultId: AssetId) => {
+      const newVaultsCollectedFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newVaultsCollectedFees: Record<AssetId, Transaction[]>, vaultId: AssetId) => {
         if (!vaultsCollectedFees[vaultId]){
           newVaultsCollectedFees[vaultId] = []
           return newVaultsCollectedFees

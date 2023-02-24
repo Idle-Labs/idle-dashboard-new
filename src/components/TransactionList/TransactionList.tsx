@@ -11,18 +11,22 @@ import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
 
 type TransactionListArgs = {
+  title?: string
+  emptyText?: string
   assetIds?: AssetId[]
+  transactions?: Transaction[]
   showTitleOnMobile?: boolean
   fullHeightOnMobile?: boolean
 } & CardProps
 
-export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showTitleOnMobile = false, fullHeightOnMobile = false, ...cardProps }) => {
+export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showTitleOnMobile = false, fullHeightOnMobile = false, title, transactions, emptyText, ...cardProps }) => {
   const { account } = useWalletProvider()
   const [ ref, dimensions ] = useBoundingRect()
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectVaultTransactions, selectVaultGauge } } = usePortfolioProvider()
 
-  const transactions: Transaction[] = useMemo(() => {
+  const assetsTransactions: Transaction[] = useMemo(() => {
     if (!account || !assetIds || !selectVaultTransactions || !selectVaultGauge) return []
+    if (transactions) return transactions
 
     return assetIds.reduce( (transactions: Transaction[], assetId: AssetId) => {
       const gaugeVault = selectVaultGauge(assetId)
@@ -35,9 +39,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
       ]
     }, [])
 
-  }, [account, assetIds, selectVaultTransactions, selectVaultGauge])
-
-  // console.log('TransactionList', assetIds, transactions)
+  }, [transactions, account, assetIds, selectVaultTransactions, selectVaultGauge])
 
   const isLoaded = useMemo(() => {
     return isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
@@ -45,9 +47,9 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
 
   const transactionsList = useMemo(() => {
     return isLoaded ?
-      transactions.length>0 ? 
-        sortArrayByKey(transactions, 'timeStamp', 'desc').map( (transaction: Transaction, index: number) => (
-          <TransactionItem key={`tx_${index}`} transaction={transaction} />
+      assetsTransactions.length>0 ? 
+        sortArrayByKey(assetsTransactions, 'timeStamp', 'desc').map( (transaction: Transaction, txIndex: number) => (
+          <TransactionItem key={`tx_${transaction.hash}_${txIndex}`} transaction={transaction} />
         ))
       : (
         <Flex
@@ -57,7 +59,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
           alignItems={'center'}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'assets.assetDetails.assetHistory.emptyTransactions'} />
+          <Translation component={Text} translation={emptyText || 'assets.assetDetails.assetHistory.emptyTransactions'} />
         </Flex>
       )
     : (
@@ -71,7 +73,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
         <Skeleton width={'100%'} height={10} />
       </VStack>
     )
-  }, [isLoaded, transactions])
+  }, [isLoaded, assetsTransactions, emptyText])
 
   return (
     <Card
@@ -86,7 +88,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
         ref={ref as typeof useRef}
         justifyContent={'flex-start'}
       >
-        <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} translation={'assets.assetDetails.assetHistory.transactionHistory'} />
+        <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} translation={title || 'assets.assetDetails.assetHistory.transactionHistory'} />
         <Scrollable maxH={[fullHeightOnMobile ? '100%' : 280, Math.max(dimensions?.height || 400)]}>
           {transactionsList}
         </Scrollable>
