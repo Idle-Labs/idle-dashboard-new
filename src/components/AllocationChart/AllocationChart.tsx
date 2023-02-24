@@ -3,15 +3,15 @@ import { BarChart } from 'components/BarChart/BarChart'
 import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
 
 type AllocationChartArgs = {
-  assetId: AssetId | undefined
+  assetIds: AssetId[]
 }
 
-export const AllocationChart: React.FC<AllocationChartArgs> = ({ assetId }) => {
+export const AllocationChart: React.FC<AllocationChartArgs> = ({ assetIds }) => {
   const {
     allocations,
     colors,
     labels
-  } = useAllocationChartData({assetId})
+   } = useAllocationChartData({ assetIds })
 
   return allocations ? (
     <BarChart

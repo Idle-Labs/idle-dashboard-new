@@ -103,6 +103,7 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
           p={4}
           onClick={() => handleClick(asset)}
           backgroundColor={ isOpen ? 'card.bgLight' : 'card.bg'}
+          {...cardProps}
         >
           <VStack
             spacing={3}

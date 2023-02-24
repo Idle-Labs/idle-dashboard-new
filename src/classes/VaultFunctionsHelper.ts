@@ -354,7 +354,6 @@ export class VaultFunctionsHelper {
     if (!this.explorer) return {}
 
     const filteredVaults = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) )
-    const allVaultsIds = filteredVaults.map( (vault: Vault) => vault.id.toLowerCase() )
 
     return await asyncReduce<any, any>(
       FEES_COLLECTORS,

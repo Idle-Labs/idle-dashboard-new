@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { SECONDS_IN_YEAR } from 'constants/'
 import { useState, useMemo, useEffect } from 'react'
 import { getTimeframeTimestamp, BNify } from 'helpers/'

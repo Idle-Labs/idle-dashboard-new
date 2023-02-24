@@ -1041,7 +1041,7 @@ const Coverage: React.FC<AmountProps> = (props) => {
 }
 
 const CoveragePercentage: React.FC<AmountProps> = (props) => {
-  const { asset, vault, translate } = useAssetProvider()
+  const { asset, vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
@@ -1132,7 +1132,7 @@ const Allocation: React.FC = () => {
         width={'100%'}
         height={'12px'}
       >
-        <AllocationChart assetId={asset?.id} />
+        <AllocationChart assetIds={[asset.id as string]} />
       </Flex>
     </Flex>
   ) : <Spinner size={'sm'} />

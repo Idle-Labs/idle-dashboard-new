@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import type { AssetId } from 'constants/types'
+import { BNify } from 'helpers/'
 import { protocols } from 'constants/protocols'
+import type { Asset, AssetId, Balances } from 'constants/types'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import type { BarChartKey, BarChartData, BarChartColors, BarChartLabels } from 'components/BarChart/BarChart'
 
 type UseAllocationChartDataArgs = {
-  assetId: AssetId | undefined
+  assetIds: AssetId[]
 }
 
 type ExtraData = {
@@ -19,21 +20,35 @@ type UseAllocationChartDataReturn = {
 
 type UseAllocationChartData = (args: UseAllocationChartDataArgs) => UseAllocationChartDataReturn
 
-export const useAllocationChartData: UseAllocationChartData = ({ assetId }) => {
+export const useAllocationChartData: UseAllocationChartData = ({ assetIds }) => {
 
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
 
-  const asset = useMemo(() => {
-    if (!selectAssetById) return
-    return selectAssetById(assetId)
-  }, [assetId, selectAssetById])
+  const assets = useMemo(() => {
+    if (!selectAssetsByIds) return []
+    return selectAssetsByIds(assetIds)
+  }, [assetIds, selectAssetsByIds])
+
+  const allocations = useMemo(() => {
+    return assets.reduce( (allocations: Balances, asset: Asset) => {
+      const assetAllocations = asset.allocations
+      if (!assetAllocations) return allocations
+      Object.keys(assetAllocations).forEach( (protocol: string) => {
+        if (!allocations[protocol]){
+          allocations[protocol] = BNify(0)
+        }
+        allocations[protocol] = allocations[protocol].plus(assetAllocations[protocol])
+      })
+      return allocations
+    }, {})
+  }, [assets])
 
   const extraData = useMemo((): ExtraData => {
-    if (!asset?.allocations) return {
+    if (!allocations || !Object.keys(allocations).length) return {
       labels: {},
       colors: {}
     }
-    return Object.keys(asset.allocations).reduce( (extraData: ExtraData, protocoKey: BarChartKey) => {
+    return Object.keys(allocations).reduce( (extraData: ExtraData, protocoKey: BarChartKey) => {
       return {
         ...extraData,
         labels: {
@@ -49,11 +64,11 @@ export const useAllocationChartData: UseAllocationChartData = ({ assetId }) => {
       labels: {},
       colors: {}
     })
-  }, [asset?.allocations])
+  }, [allocations])
 
   return {
     labels: extraData.labels,
     colors: extraData.colors,
-    allocations: asset?.allocations
+    allocations
   }
 }

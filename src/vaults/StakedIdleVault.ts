@@ -60,6 +60,7 @@ export class StakedIdleVault {
     this.feeDistributorContract = new web3.eth.Contract(feeDistributorConfig.abi, feeDistributorConfig.address)
   }
 
+  // eslint-disable-next-line
   public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
 
     const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {

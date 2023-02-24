@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import type { Vault } from 'vaults/'
+import { selectProtocol } from 'selectors/'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
-import { SECONDS_IN_YEAR } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
@@ -22,25 +22,10 @@ import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
 import { SimpleGrid, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
 import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
-import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
+import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { BNify, bnOrZero, getTimeframeTimestamp, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
-
-
-// type AssetDynamicCardProps = {
-//   assetId: AssetId
-// }
-
-// const AssetDynamicCard: React.FC<AssetDynamicCardProps> = ({ assetId }) => {
-//   const { selectors: { selectAssetById } } = usePortfolioProvider()
-//   const asset = useMemo(() => selectAssetById(asset.id), [assetId])
-//   const strategyConfig
-
-//   switch (asset.type){
-
-//   }
-// }
+import { BNify, getTimeframeTimestamp, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
 
 type AssetStatsProps = {
   assetOnly?: boolean
@@ -104,26 +89,12 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
 
   const useRatesForPerformanceChartData = asset?.type === 'BY'
 
+  const { rateChartData } = useRateChartData({ assetIds, timeframe: selectedTimeframe })
   const { volumeChartData } = useVolumeChartData({ assetIds, timeframe: selectedTimeframe })
   const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds, timeframe: selectedTimeframe })
+  const { allocations, colors: allocationColors, labels: allocationLabels } = useAllocationChartData({ assetIds })
   const { performanceChartData } = usePerformanceChartData({ useRates: useRatesForPerformanceChartData, assetIds, timeframe: selectedTimeframe })
-  const { rateChartData } = useRateChartData({ assetIds, timeframe: selectedTimeframe })
   // console.log('performanceChartData', performanceChartData)
-
-  const toggleStrategy = useCallback((strategy: string) => {
-    // console.log('selectedStrategies', selectedStrategies)
-    if (!selectedStrategies || (selectedStrategies.length === 1 && selectedStrategies.includes(strategy))) return
-
-    if (!selectedStrategies.includes(strategy)){
-      setSelectedStrategies([
-        ...selectedStrategies,
-        strategy
-      ])
-    // Remove strategy
-    } else {
-      setSelectedStrategies(selectedStrategies.filter( (s: string) => s !== strategy ))
-    }
-  }, [selectedStrategies, setSelectedStrategies])
 
   const assetsApys = useMemo(() => {
     if (!rateChartData?.rainbow?.length) return null
@@ -156,38 +127,77 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
     )
   }, [assetIds, selectAssetById, rateChartData])
 
+  const tvlUsd = useMemo((): BigNumber => {
+    return assetIds.reduce( (totalTvlUsd: BigNumber, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      totalTvlUsd = totalTvlUsd.plus(asset.tvlUsd)
+      return totalTvlUsd
+    }, BNify(0))
+  }, [assetIds, selectAssetById])
+
   const compositionData: DonutChartInitialData = useMemo(() => {
-    const initialData = {
+    const initialData: DonutChartInitialData = {
       data:[],
       colors:{}
     }
     // console.log('assetIds', assetIds)
     if (!assetIds) return initialData
-    return (assetIds as Array<AssetId>).reduce( (donutChartData: DonutChartInitialData, assetId: AssetId) => {
-      const asset = selectAssetById(assetId)
-      if (!asset) return donutChartData
-      donutChartData.colors[assetId] = strategies[asset.type].color as string
-      donutChartData.data.push({
-        value: parseFloat(BNify(asset.tvlUsd).toFixed(2)),
-        label: asset.id,
-        extraData: {
-          asset
-        }
+
+    if (strategyConfig?.strategy === 'best'){
+
+      const donutChartData = initialData
+
+      Object.keys(allocations).forEach( (protocol: string) => {
+        const protocolConfig = selectProtocol(protocol)
+        const allocationPercentage = BNify(allocations[protocol])
+        const allocationUsd = tvlUsd.times(allocationPercentage.div(100))
+        donutChartData.colors[protocol] = allocationColors[protocol] as string
+        donutChartData.data.push({
+          value: parseFloat(allocationUsd.toFixed(2)),
+          label: protocol,
+          extraData: {
+            icon: protocolConfig?.icon,
+            color: allocationColors[protocol],
+            label: allocationLabels[protocol]
+          }
+        })
       })
+
       return donutChartData
-    }, initialData)
-  }, [assetIds, selectAssetById])
+    } else {
+      return (assetIds as Array<AssetId>).reduce( (donutChartData: DonutChartInitialData, assetId: AssetId) => {
+        const asset = selectAssetById(assetId)
+        if (!asset) return donutChartData
+        donutChartData.colors[assetId] = strategies[asset.type].color as string
+        donutChartData.data.push({
+          value: parseFloat(BNify(asset.tvlUsd).toFixed(2)),
+          label: asset.id,
+          extraData: {
+            asset
+          }
+        })
+        return donutChartData
+      }, initialData)
+    }
+  }, [tvlUsd, assetIds, strategyConfig, selectAssetById, allocations, allocationColors, allocationLabels])
+
+  // console.log('allocations', allocations)
+  // console.log('compositionData', compositionData)
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     const totalFunds = compositionData.data.reduce( (total: BigNumber, data: DonutChartData) => total.plus(data.value), BNify(0))
     const formatFn = (n: any) => `$${abbreviateNumber(n)}`
     const selectedAsset = selectedSlice?.extraData?.asset
+
+    const customIcon = selectedSlice?.extraData?.icon
+    const customLabel = selectedSlice?.extraData?.label
+    const customColor = selectedSlice?.extraData?.color
     // console.log('selectedSlice', selectedSlice)
     // if (!asset) return null
-    const icon = selectedAsset?.icon || asset?.icon
-    const label = selectedAsset ? translate(strategies[selectedAsset.type].label) : translate('dashboard.portfolio.totalChart')
+    const icon = customIcon || selectedAsset?.icon || asset?.icon
+    const label = customLabel || (selectedAsset ? translate(strategies[selectedAsset.type].label) : translate('dashboard.portfolio.totalChart'))
     const value = selectedSlice ? formatFn(selectedSlice.value) : formatFn(totalFunds)
-    const color = selectedAsset ? strategies[selectedAsset?.type].color : '#ffffff'
+    const color = customColor || (selectedAsset ? strategies[selectedAsset?.type].color : '#ffffff')
 
     // if (selectedSlice && !asset) return null
 
@@ -255,14 +265,6 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   }, [assetIds, rateChartData])
 
   // console.log('assetsAvgApy', assetIds, assetsAvgApy)
-
-  const tvlUsd = useMemo((): BigNumber => {
-    return assetIds.reduce( (totalTvlUsd: BigNumber, assetId: AssetId) => {
-      const asset = selectAssetById(assetId)
-      totalTvlUsd = totalTvlUsd.plus(asset.tvlUsd)
-      return totalTvlUsd
-    }, BNify(0))
-  }, [assetIds, selectAssetById])
 
   const volume = useMemo((): BigNumber => {
     return volumeChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(Math.abs(data.value)), BNify(0) )

@@ -656,6 +656,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     output.vaultsPositions = vaultsPositions
     output.vaultsTransactions = vaultsTransactions
 
+    // eslint-disable-next-line
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return output
@@ -834,7 +835,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         gaugeClaimableMultiRewards,
         gaugeClaimableRewards,
         gaugesTimeWeights,
+        // eslint-disable-next-line
         gaugesWeights,
+        // eslint-disable-next-line
         gaugeTotalWeights,
         gaugesDistributionRate,
         stkIdleResults
@@ -2100,7 +2103,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const tvls: Record<AssetId, HistoryData[]> = {}
       const rates: Record<AssetId, HistoryData[]> = {}
       const prices: Record<AssetId, HistoryData[]> = {}
-      const tvlsUsd: Record<AssetId, HistoryData[]> = {}
+      // const tvlsUsd: Record<AssetId, HistoryData[]> = {}
 
       vaultsHistoricalData.forEach( (vaultHistoricalData: VaultHistoricalData) => {
         const assetId = vaultHistoricalData.vaultId
@@ -2113,7 +2116,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const ratesSum = rates[assetId].reduce( (total: BigNumber, rate: HistoryData) => total.plus(rate.value), BNify(0) )
           if (bnOrZero(ratesSum).lte(0)){
             rates[assetId] = []
-            const firstPoint = prices[assetId][0] as HistoryData
+            // const firstPoint = prices[assetId][0] as HistoryData
             prices[assetId].forEach( (data: HistoryData, index: number) => {
               if (index>7){
                 const prevPoint = prices[assetId][index-7]
@@ -2139,6 +2142,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
 
+      // eslint-disable-next-line
       console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
 
@@ -2323,6 +2327,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
       }
 
+      // eslint-disable-next-line
       console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
     })()
 
@@ -2427,6 +2432,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
+    // eslint-disable-next-line
     console.log('BALANCES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
 
     // Cleanup
