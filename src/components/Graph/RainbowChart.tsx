@@ -105,8 +105,8 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   // const totals = useMemo(() => data.map(d => d.total), [data])
   const minPrice = Math.min(...values.totals)
   const maxPrice = Math.max(...values.totals)
-  const minPriceDate = values.dates[minPrice]
-  const maxPriceDate = values.dates[maxPrice]
+  const minPriceDate = useMemo(() => data[data.length-1].date, [data]) //values.dates[minPrice]
+  const maxPriceDate = useMemo(() => data[data.length-1].date, [data]) //values.dates[maxPrice]
   const minTextColor = values.colors[minPrice]
   const maxTextColor = values.colors[maxPrice]
 
@@ -139,7 +139,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const yScale = useMemo(
     () => ({
       type: 'linear' as const,
-      range: [yMax + margins.top, margins.top], // values are reversed, y increases down - this is really [bottom, top] in cartersian coordinates
+      range: [yMax + margins.top, margins.top + 10], // values are reversed, y increases down - this is really [bottom, top] in cartersian coordinates
       domain: [minPrice, maxPrice],
       nice: true,
     }),
@@ -148,8 +148,8 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
 
   // console.log('yScale', yScale, yMax, margins)
 
-  const scaledMaxPriceY = getScaledY(maxPrice, minPrice, maxPrice, height - margins.bottom)
-  const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margins.bottom)
+  const scaledMaxPriceY = -15
+  const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margins.bottom) - 5
 
   const tooltipBg = useColorModeValue('white', theme.colors.card.bg)
   const tooltipBorder = useColorModeValue(colors.gray[200], colors.gray[600])
@@ -219,7 +219,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
             <VStack
               p={2}
               spacing={1}
-              borderWidth={1}
+              borderWidth={0}
               borderRadius={'lg'}
               color={tooltipColor}
               bgColor={tooltipBg}
@@ -247,10 +247,10 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
                           >
                             <AssetProvider.Icon size={'2xs'} />
                             <AssetProvider.Name fontSize={'sm'} fontWeight={'bold'} />
-                            <AssetProvider.Strategy fontSize={'sm'} color={strategies[asset?.type]?.color} fontWeight={'bold'} prefix={'('} suffix={')'} />
+                            <AssetProvider.Strategy fontSize={'sm'} color={'gray.500'} fontWeight={'500'} prefix={'('} suffix={')'} />
                           </HStack>
                         </AssetProvider>
-                        <Text fontWeight={'bold'}>{formatFn(datum[assetId])}</Text>
+                        <Text fontWeight={'bold'} color={strategies[asset?.type]?.color}>{formatFn(datum[assetId])}</Text>
                       </VStack>
                     )
                   })
@@ -268,7 +268,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
           <Group top={margins.top} left={margins.left}>
             <g>
               <VisxText
-                x={scaledMaxPriceX.x}
+                x={scaledMaxPriceX.x + 5}
                 textAnchor={scaledMaxPriceX.anchor}
                 y={scaledMaxPriceY}
                 fill={maxTextColor}
@@ -281,7 +281,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
             </g>
             <g>
               <VisxText
-                x={scaledMinPriceX.x}
+                x={scaledMinPriceX.x + 5}
                 textAnchor={scaledMinPriceX.anchor}
                 y={scaledMinPriceY}
                 fill={minTextColor}

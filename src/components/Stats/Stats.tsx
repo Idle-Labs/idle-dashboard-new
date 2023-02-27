@@ -153,12 +153,17 @@ export const Stats: React.FC = () => {
       Header:translate('defi.asset'),
       Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
         return (row.original.type === 'AA' || row.original.type === 'BB') ? (
-          <AssetProvider assetId={value}>
-            <AssetProvider.GeneralData field={'protocolWithVariant'} size={'xs'} />
-          </AssetProvider>
+          <Flex
+            pl={4}
+          >
+            <AssetProvider assetId={value}>
+              <AssetProvider.GeneralData field={'protocolWithVariant'} size={'xs'} />
+            </AssetProvider>
+          </Flex>
         ) : row.original.type === 'BY' ? (
           <AssetProvider assetId={value}>
             <Flex
+              pl={4}
               width={['auto','40%']}
             >
               <AssetProvider.GeneralData field={'protocols'} size={'xs'} />
@@ -195,15 +200,14 @@ export const Stats: React.FC = () => {
     },
     {
       accessor:'apyRange',
-      Header:translate('defi.apy'),
+      Header:translate('stats.apyRange'),
       Cell: ({ value, row }: { value: ApyRange | undefined; row: RowProps }) => {
         return (row.original.type === 'AA' || row.original.type === 'BB') ? (
           <AssetProvider assetId={row.original.id}>
             <HStack
-              spacing={1}
+              spacing={6}
             >
               <AssetProvider.SeniorApy color={strategies.AA.color} textStyle={'tableCell'} />
-              <Text>-</Text>
               <AssetProvider.JuniorApy color={strategies.BB.color} textStyle={'tableCell'} />
             </HStack>
           </AssetProvider>
@@ -292,7 +296,7 @@ export const Stats: React.FC = () => {
           alignItems={'flex-start'}
         >
           <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
-          <SkeletonText isLoaded={!!isPortfolioLoaded}>
+          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
             <Amount.Usd value={totalTvlUsd} textStyle={'h2'} lineHeight={'normal'} />
           </SkeletonText>
         </VStack>

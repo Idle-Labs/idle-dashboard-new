@@ -68,8 +68,10 @@ export const PrimaryChart = ({
 
   const minPrice = useMemo(() => Math.min(...data.map(getValue)), [data])
   const maxPrice = useMemo(() => Math.max(...data.map(getValue)), [data])
-  const minPriceIndex = useMemo(() => data.findIndex(x => getValue(x) === minPrice), [data, minPrice])
-  const maxPriceIndex = useMemo(() => data.findIndex(x => getValue(x) === maxPrice), [data, maxPrice])
+  // const minPriceIndex = useMemo(() => data.findIndex(x => getValue(x) === minPrice), [data, minPrice])
+  // const maxPriceIndex = useMemo(() => data.findIndex(x => getValue(x) === maxPrice), [data, maxPrice])
+  const minPriceIndex = useMemo(() => data.length-1, [data])
+  const maxPriceIndex = useMemo(() => data.length-1, [data])
   const minPriceDate = useMemo(() => getDate(data[minPriceIndex]), [data, minPriceIndex])
   const maxPriceDate = useMemo(() => getDate(data[maxPriceIndex]), [data, maxPriceIndex])
 
@@ -162,7 +164,7 @@ export const PrimaryChart = ({
           maxMinEnabled && (
             <Group top={margins.top} left={margins.left}>
               <MaxPrice
-                yText={priceScale(maxPrice)}
+                yText={15}
                 label={formatFn(maxPrice)}
                 xDate={maxPriceDate}
                 xScale={dateScale}
@@ -171,7 +173,7 @@ export const PrimaryChart = ({
                 stroke={chartColor}
               />
               <MinPrice
-                yText={priceScale(minPrice)}
+                yText={yMax + 5}
                 label={formatFn(minPrice)}
                 xScale={dateScale}
                 xDate={minPriceDate}
@@ -231,7 +233,7 @@ export const PrimaryChart = ({
               background: tooltipBg,
               padding: '0.5rem',
               borderRadius: '8px',
-              border: `1px solid ${tooltipBorder}`,
+              border: 0,
               color: tooltipColor,
             }}
           >

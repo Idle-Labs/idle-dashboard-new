@@ -35,7 +35,7 @@ export const MinPrice = ({ label, yText, xScale, stroke, width, xDate }: LineCha
   return (
     <g>
       <Text
-        x={handleTextPos(xPos || 0).x}
+        x={handleTextPos(xPos || 0).x + 5}
         y={yText}
         textAnchor={handleTextPos(xPos || 0).anchor}
         fill={stroke}

@@ -34,8 +34,9 @@ export const TimeframeSelector: React.FC<TimeframeSelectorArgs> = ({ timeframe: 
             case 'button':
               return (
                 <Button
-                  px={6}
+                  px={3}
                   border={0}
+                  textStyle={'cta'}
                   variant={'filter'}
                   aria-selected={selected}
                   key={`timeframe_${timeframe}`}

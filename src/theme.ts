@@ -566,7 +566,7 @@ export const theme = extendTheme({
             opacity:1,
             color:'primary',
             borderColor:'transparent',
-            backgroundColor:'button.bg',
+            backgroundColor:'tab.bgSelected',
           },
           _hover: {
             opacity:1,

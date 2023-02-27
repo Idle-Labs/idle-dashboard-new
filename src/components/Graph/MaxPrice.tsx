@@ -34,7 +34,7 @@ export const MaxPrice = ({ label, yText, xScale, stroke, width, xDate }: LineCha
   return (
     <g>
       <Text
-        x={handleTextPos(xScale(xDate) || 0).x}
+        x={handleTextPos(xScale(xDate) || 0).x + 5}
         y={yText}
         textAnchor={handleTextPos(xScale(xDate) || 0).anchor}
         fill={stroke}

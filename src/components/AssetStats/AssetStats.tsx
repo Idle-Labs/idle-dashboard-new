@@ -143,7 +143,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 key={`asset_${assetId}`}
               >
                 <Amount.Percentage textStyle={'heading'} fontSize={'lg'} color={color} value={apy} />
-                <Translation translation={'defi.apy'} fontSize={'sm'} color={color} />
+                <Translation translation={'defi.avgApy'} fontSize={'sm'} color={color} />
               </HStack>
             )
           })
@@ -245,7 +245,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
           y={'54%'}
           fontSize={26}
           fill={"white"}
-          fontWeight={600}
+          fontWeight={700}
           textAnchor={"middle"}
           pointerEvents={"none"}
         >
@@ -414,7 +414,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   <StrategyTag strategy={strategyConfig?.strategy as string} py={2} />
                   {
                     strategyConfig?.stats?.header?.fields?.map( (field: string) => (
-                      <AssetProvider.GeneralData key={`field_${field}`} field={field} />
+                      <AssetProvider.GeneralData key={`field_${field}`} field={field} color={'cta'} />
                     ))
                   }
                 </HStack>

@@ -25,8 +25,8 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
   const { isPortfolioLoaded, isVaultsPositionsLoaded, selectors: { selectVaultTransactions, selectVaultGauge } } = usePortfolioProvider()
 
   const assetsTransactions: Transaction[] = useMemo(() => {
-    if (!account || !assetIds || !selectVaultTransactions || !selectVaultGauge) return []
     if (transactions) return transactions
+    if (!account || !assetIds || !selectVaultTransactions || !selectVaultGauge) return []
 
     return assetIds.reduce( (transactions: Transaction[], assetId: AssetId) => {
       const gaugeVault = selectVaultGauge(assetId)

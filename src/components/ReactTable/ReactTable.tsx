@@ -77,9 +77,11 @@ export const ReactTable = <T extends {}>({
   }, [rows, page, rowsPerPage])
 
   const renderRows = useMemo(() => {
-    return pageRows.map( row => {
+    return pageRows.map( (row, rowIndex) => {
       let firstCellFound = false
       prepareRow(row)
+      const isLastRow = rowIndex === pageRows.length-1
+      const rowSx = isLastRow && !selectedRow ? {borderBottom: 0} : {}
       return (
         <>
           <Tr
@@ -89,6 +91,7 @@ export const ReactTable = <T extends {}>({
             backgroundColor={selectedRow === row ? 'card.bgLight' : 'initial'}
             onClick={() => row.subRows?.length>0 ? toggleSelectedRow(row) : onRowClick?.(row)}
             cursor={onRowClick ? 'pointer' : undefined}
+            sx={rowSx}
           >
             {row.cells.map( (cell, cellIndex) => {
               const isFirstCell = !firstCellFound && cell.column.display !== 'none'
@@ -98,7 +101,11 @@ export const ReactTable = <T extends {}>({
               }
               const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
               return (
-                <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
+                <Td
+                  {...cell.getCellProps()}
+                  display={cell.column.display}
+                  sx={sx}
+                >
                   <HStack
                     flex={1}
                     width={'full'}
@@ -126,8 +133,10 @@ export const ReactTable = <T extends {}>({
             })}
           </Tr>
           {
-            selectedRow === row && row.subRows.map( subRow => {
+            selectedRow === row && row.subRows.map( (subRow, subRowIndex) => {
               prepareRow(subRow)
+              const isLastSubRow = subRowIndex === row.subRows.length-1
+              const subRowSx = isLastRow && isLastSubRow ? {borderBottom: 0} : {}
               return (
                 <Tr
                   {...subRow.getRowProps()}
@@ -136,6 +145,7 @@ export const ReactTable = <T extends {}>({
                   backgroundColor={'button.bgHover'}
                   onClick={() => onRowClick?.(subRow)}
                   cursor={onRowClick ? 'pointer' : undefined}
+                  sx={subRowSx}
                 >
                   {subRow.cells.map( (cell, cellIndex) => {
                     const isFirstCell = !firstCellFound && cell.column.display !== 'none'

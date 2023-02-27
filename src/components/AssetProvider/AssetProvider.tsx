@@ -828,7 +828,7 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
 }
 
 const SeniorApy: React.FC<AmountProps> = (props) => {
-  const { vault } = useAssetProvider()
+  const { vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   
   if (!vault || !("vaultConfig" in vault)) return null
@@ -836,12 +836,20 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
   
   return !BNify(trancheAsset?.apy).isNaN() ? (
-    <Amount.Percentage value={trancheAsset?.apy} {...props} />
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate('stats.seniorApy')}
+    >
+      <TooltipContent>
+        <Amount.Percentage value={trancheAsset?.apy} {...props} />
+      </TooltipContent>
+    </Tooltip>
   ) : <Spinner size={'sm'} />
 }
 
 const JuniorApy: React.FC<AmountProps> = (props) => {
-  const { vault } = useAssetProvider()
+  const { vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   if (!vault || !("vaultConfig" in vault)) return null
@@ -849,7 +857,15 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
   
   return !BNify(trancheAsset?.apy).isNaN() ? (
-    <Amount.Percentage value={trancheAsset?.apy} {...props} />
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate('stats.juniorApy')}
+    >
+      <TooltipContent>
+        <Amount.Percentage value={trancheAsset?.apy} {...props} />
+      </TooltipContent>
+    </Tooltip>
   ) : <Spinner size={'sm'} />
 }
 
