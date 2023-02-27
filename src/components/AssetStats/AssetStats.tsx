@@ -522,12 +522,13 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     percentChange={0}
                     assetIds={assetIds}
                     color={strategyColor}
+                    maxMinEnabled={true}
                     isRainbowChart={true}
                     data={performanceChartData}
                     setPercentChange={() => {}}
                     timeframe={selectedTimeframe}
                     height={isMobile ? '300px' : '350px'}
-                    margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                    margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                     formatFn={(n: any) => `$${abbreviateNumber(n, 3)}`}
                     //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                   />
@@ -565,15 +566,15 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
               >
                 <GenericChart
                   percentChange={0}
-                  data={tvlUsdChartData}
                   assetIds={assetIds}
-                  color={strategyColor}
-                  maxMinEnabled={false}
+                  maxMinEnabled={true}
                   isRainbowChart={true}
+                  color={strategyColor}
+                  data={tvlUsdChartData}
                   setPercentChange={() => {}}
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
-                  margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                  margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                 />
               </Card.Dark>
             </VStack>
@@ -591,13 +592,13 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   assetIds={assetIds}
                   data={rateChartData}
                   color={strategyColor}
-                  maxMinEnabled={false}
+                  maxMinEnabled={true}
                   isRainbowChart={true}
                   setPercentChange={() => {}}
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
                   formatFn={(n: any) => `${numberToPercentage(n)}`}
-                  margins={{ top: 10, right: 0, bottom: 40, left: 0 }}
+                  margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                 />
               </Card.Dark>
             </VStack>

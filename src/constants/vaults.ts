@@ -2044,10 +2044,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       // status:'maintenance',
       blockNumber: 16519501,
       flags:{
-        statsEnabled: false,
         referralEnabled:true,
         apiType:'juniorRates',
-        // depositsDisabled:true
       },
       underlyingToken: 'DAI',
       idle: {
@@ -2495,7 +2493,7 @@ export const gauges: Record<string, GaugeConfig> = {
     address:'0x675eC042325535F6e176638Dd2d4994F645502B9',
     description:'Starting from February 21st 2023, LDO rewards are automatically harvested and distributed to both Senior and Junior Tranches.<br />Therefore, this Gauge won\'t distribute any reward. Please claim any remaining IDLE and LDO reward, and redeem your stETH-AA tokens, as you will receive incentives by just holding them.',
     messages:{
-      withdraw:'This gauge has been decommissioned, please withdraw your tranche tokens'
+      withdraw:'This gauge has been disabled since LDO rewards are automatically harvested by the strategy, please withdraw your stETH-AA tokens'
     },
     multiRewards:{
       rewardTokens:['LDO'],

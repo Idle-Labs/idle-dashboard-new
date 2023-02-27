@@ -1,5 +1,5 @@
 // import dayjs from 'dayjs'
-import { toDayjs } from 'helpers/'
+import { BNify, toDayjs } from 'helpers/'
 import { useColorModeValue } from '@chakra-ui/color-mode'
 import { useToken } from '@chakra-ui/system'
 import { useTheme } from '@chakra-ui/react'
@@ -33,7 +33,7 @@ export interface PrimaryChartProps {
 
 // accessors
 const getDate = (d: HistoryData): Date => d && new Date(d.date)
-const getValue = (d: HistoryData) => d?.value || 0
+const getValue = (d: HistoryData) => BNify(d?.value).toNumber() || 0
 const bisectDate = bisector<HistoryData, Date>(d => new Date(d.date)).left
 
 export const PrimaryChart = ({
@@ -66,12 +66,12 @@ export const PrimaryChart = ({
   const xMax = useMemo(() => Math.max(width - margins.left - margins.right, 0), [width, margins])
   const yMax = useMemo(() => Math.max(height - margins.top - margins.bottom, 0), [height, margins])
 
-  const minPrice = Math.min(...data.map(getValue))
-  const maxPrice = Math.max(...data.map(getValue))
-  const maxPriceIndex = data.findIndex(x => x.value === maxPrice)
-  const minPriceIndex = data.findIndex(x => x.value === minPrice)
-  const maxPriceDate = getDate(data[maxPriceIndex])
-  const minPriceDate = getDate(data[minPriceIndex])
+  const minPrice = useMemo(() => Math.min(...data.map(getValue)), [data])
+  const maxPrice = useMemo(() => Math.max(...data.map(getValue)), [data])
+  const minPriceIndex = useMemo(() => data.findIndex(x => getValue(x) === minPrice), [data, minPrice])
+  const maxPriceIndex = useMemo(() => data.findIndex(x => getValue(x) === maxPrice), [data, maxPrice])
+  const minPriceDate = useMemo(() => getDate(data[minPriceIndex]), [data, minPriceIndex])
+  const maxPriceDate = useMemo(() => getDate(data[maxPriceIndex]), [data, maxPriceIndex])
 
   // scales
   const dateScale = useMemo(() => {

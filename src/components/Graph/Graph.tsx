@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { isEmpty } from 'lodash'
 import { abbreviateNumber } from 'helpers/'
 import { ParentSize } from '@visx/responsive'
+import type { AssetId } from 'constants/types'
 import { Center, Fade, SlideFade } from '@chakra-ui/react'
 import { BalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
@@ -11,8 +12,9 @@ import { RainbowChart } from './RainbowChart'
 
 type GraphProps = {
   color: string
-  isLoaded?: boolean
   loading?: boolean
+  isLoaded?: boolean
+  assetIds?: AssetId[]
   formatFn?: Function
   axisEnabled?: boolean
   data: BalanceChartData
@@ -23,10 +25,11 @@ type GraphProps = {
 
 export const Graph: React.FC<GraphProps> = ({
     data,
-    isLoaded,
-    loading,
     color,
+    loading,
+    assetIds,
     formatFn,
+    isLoaded,
     isRainbowChart,
     axisEnabled = true,
     maxMinEnabled = true,
@@ -34,6 +37,8 @@ export const Graph: React.FC<GraphProps> = ({
   }) => {
   return useMemo(() => {
     const { total, rainbow } = data
+
+    // console.log('assetIds', assetIds)
 
     const formatValue = formatFn || ((n: any) => abbreviateNumber(n))
     return (
@@ -53,7 +58,7 @@ export const Graph: React.FC<GraphProps> = ({
             </Fade>
           ) : !isEmpty(data) ? (
             <SlideFade in={!loading}>
-              {isRainbowChart && rainbow.length>0 ? (
+              {isRainbowChart && rainbow.length>0 && assetIds && assetIds.length>1 ? (
                 <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
               ) : total.length>0 && (
                 <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
@@ -63,5 +68,5 @@ export const Graph: React.FC<GraphProps> = ({
         }}
       </ParentSize>
     )
-  }, [color, data, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, margins])
+  }, [color, data, assetIds, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, margins])
 }

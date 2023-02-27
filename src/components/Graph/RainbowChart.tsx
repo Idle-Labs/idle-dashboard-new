@@ -1,13 +1,14 @@
 import dayjs from 'dayjs'
 import omit from 'lodash/omit'
+import { BNify } from 'helpers/'
 import { Group } from '@visx/group'
-import { strategies } from 'constants/'
 import { curveLinear } from '@visx/curve'
 import { extent, Numeric } from 'd3-array'
 import { Text as VisxText } from '@visx/text'
+import { strategies, AssetId } from 'constants/'
 import React, { useCallback, useMemo } from 'react'
+import { useColorModeValue } from '@chakra-ui/system'
 import { useI18nProvider } from 'contexts/I18nProvider'
-import { useColorModeValue, useToken } from '@chakra-ui/system'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useTheme, HStack, VStack, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -36,10 +37,10 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   data,
   width,
   height,
-  color,
+  // color,
   formatFn,
   axisEnabled = true,
-  // maxMinEnabled = true,
+  maxMinEnabled = false,
   margins = { top: 0, right: 0, bottom: 0, left: 0 },
 }) => {
   const theme = useTheme()
@@ -47,14 +48,14 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const { locale } = useI18nProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   const assetIds = useMemo(() => Object.keys(omit(data[0], ['date', 'total'])), [data])
-  const magicXAxisOffset = 25
+  const magicXAxisOffset = 35
 
   type Accessor = (d: RainbowData) => number
   const accessors = useMemo(() => {
     const initial: Record<'x' | 'y', Record<string, Accessor>> = { x: {}, y: {} }
     return assetIds.reduce((acc, cur) => {
       acc.x[cur] = (d: RainbowData) => d.date
-      acc.y[cur] = (d: RainbowData) => d[cur]
+      acc.y[cur] = (d: RainbowData) => BNify(d[cur]).toNumber()
       return acc
     }, initial)
   }, [assetIds])
@@ -81,11 +82,35 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
     [labelColor],
   )
 
-  const totals = useMemo(() => data.map(d => d.total), [data])
-  const minPrice = Math.min(...totals)
-  const maxPrice = Math.max(...totals)
-  const maxPriceDate = data.find(x => x.total === maxPrice)!.date
-  const minPriceDate = data.find(x => x.total === minPrice)!.date
+  // console.log('data', data)
+
+  const values = useMemo(() => {
+    return assetIds.reduce( (values: {totals: number[], dates: Record<number, number>, colors: Record<number, string>}, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      data.forEach( (d: RainbowData) => {
+        const value = BNify(d[assetId]).toNumber()
+        values.totals.push(value)
+        values.dates[value] = d.date
+        values.colors[value] = strategies[asset?.type]?.color as string
+      })
+      return values
+    }, {
+      dates:{},
+      colors:{},
+      totals:[]
+    })
+  }, [assetIds, data, selectAssetById])
+
+  // console.log('values', values)
+  // const totals = useMemo(() => data.map(d => d.total), [data])
+  const minPrice = Math.min(...values.totals)
+  const maxPrice = Math.max(...values.totals)
+  const minPriceDate = values.dates[minPrice]
+  const maxPriceDate = values.dates[maxPrice]
+  const minTextColor = values.colors[minPrice]
+  const maxTextColor = values.colors[maxPrice]
+
+  // console.log('minPrice', minPrice, 'maxPrice', maxPrice, 'minPriceDate', minPriceDate, 'maxPriceDate', maxPriceDate)
 
   const handleTextPosition = useCallback(
     (x: number): { x: number; anchor: 'end' | 'start' | 'middle' } => {
@@ -108,23 +133,27 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const scaledMinPriceX = handleTextPosition(
     getScaledX(minPriceDate, xScale.domain[0].getTime(), xScale.domain[1].getTime(), width),
   )
-  const yMax = Math.max(height - margins.top - margins.bottom, 0)
+
+  const yMax = useMemo(() => Math.max(height - margins.top - margins.bottom, 0), [height, margins])
+
   const yScale = useMemo(
     () => ({
       type: 'linear' as const,
       range: [yMax + margins.top, margins.top], // values are reversed, y increases down - this is really [bottom, top] in cartersian coordinates
-      domain: [minPrice ?? 0, maxPrice ?? 0],
+      domain: [minPrice, maxPrice],
       nice: true,
     }),
     [margins.top, maxPrice, minPrice, yMax],
   )
+
+  // console.log('yScale', yScale, yMax, margins)
+
   const scaledMaxPriceY = getScaledY(maxPrice, minPrice, maxPrice, height - margins.bottom)
   const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margins.bottom)
 
   const tooltipBg = useColorModeValue('white', theme.colors.card.bg)
   const tooltipBorder = useColorModeValue(colors.gray[200], colors.gray[600])
   const tooltipColor = useColorModeValue(colors.gray[800], 'white')
-  const minMaxTextColor = useToken('colors', color)
 
   const areaLines = useMemo(
     () =>
@@ -134,8 +163,8 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
           <AreaSeries
             data={data}
             key={assetId}
-            fillOpacity={0.1}
             dataKey={assetId}
+            fillOpacity={0.1}
             xAccessor={accessors.x[assetId]}
             yAccessor={accessors.y[assetId]}
             fill={strategies[asset?.type]?.color}
@@ -234,35 +263,39 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
           )
         }}
       />
-      <Group top={margins.top} left={margins.left}>
-        <g>
-          <VisxText
-            x={scaledMaxPriceX.x}
-            textAnchor={scaledMaxPriceX.anchor}
-            y={scaledMaxPriceY}
-            fill={minMaxTextColor}
-            fontSize='12px'
-            dy='1rem'
-            dx='-0.5rem'
-          >
-            {formatFn(maxPrice)}
-          </VisxText>
-        </g>
-        <g>
-          <VisxText
-            x={scaledMinPriceX.x}
-            textAnchor={scaledMinPriceX.anchor}
-            y={scaledMinPriceY}
-            fill={minMaxTextColor}
-            fontSize='12px'
-            dy='1rem'
-            dx='-0.5rem'
-            width={100}
-          >
-            {formatFn(minPrice)}
-          </VisxText>
-        </g>
-      </Group>
+      {
+        maxMinEnabled && (
+          <Group top={margins.top} left={margins.left}>
+            <g>
+              <VisxText
+                x={scaledMaxPriceX.x}
+                textAnchor={scaledMaxPriceX.anchor}
+                y={scaledMaxPriceY}
+                fill={maxTextColor}
+                fontSize='12px'
+                dy='1rem'
+                dx='-0.5rem'
+              >
+                {formatFn(maxPrice)}
+              </VisxText>
+            </g>
+            <g>
+              <VisxText
+                x={scaledMinPriceX.x}
+                textAnchor={scaledMinPriceX.anchor}
+                y={scaledMinPriceY}
+                fill={minTextColor}
+                fontSize='12px'
+                dy='1rem'
+                dx='-0.5rem'
+                width={100}
+              >
+                {formatFn(minPrice)}
+              </VisxText>
+            </g>
+          </Group>
+        )
+      }
     </XYChart>
   )
 }

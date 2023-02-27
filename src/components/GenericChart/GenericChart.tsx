@@ -23,7 +23,7 @@ type GenericChartArgs = {
 
 export const GenericChart: React.FC<GenericChartArgs> = ({
   data,
-  // assetIds,
+  assetIds,
   // accountId,
   // timeframe,
   // percentChange,
@@ -54,6 +54,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
         data={chartData}
         loading={loading}
         margins={margins}
+        assetIds={assetIds}
         isLoaded={!loading}
         formatFn={formatFn}
         maxMinEnabled={maxMinEnabled}
