@@ -792,7 +792,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, new Map())
 
     const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'STK' ) as StakedIdleVault
-    const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(account?.address, stakedIdleVault)
+    const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(stakedIdleVault)
 
     // Get Matic NFTs
     const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
@@ -861,6 +861,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('stkIdleResults', stkIdleResults)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
+    console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
 
     const [
       stkIdleTotalLocked,

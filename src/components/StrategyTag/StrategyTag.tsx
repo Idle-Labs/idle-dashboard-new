@@ -8,6 +8,15 @@ type StrategyTagProps = {
 export const StrategyTag: React.FC<StrategyTagProps> = ({ strategy, ...textProps }) => {
   if (!strategy) return null
   return (
-    <Translation component={Tag} translation={`strategies.${strategy}.label`} bg={`tags.${strategy}`} fontWeight={600} color={'primary'} px={4} py={'5px'} {...textProps} />
+    <Translation
+      px={4}
+      py={'5.5px'}
+      component={Tag}
+      fontWeight={600}
+      color={'primary'}
+      bg={`tags.${strategy}`}
+      translation={`strategies.${strategy}.label`}
+      {...textProps}
+    />
   )
 }

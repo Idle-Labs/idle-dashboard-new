@@ -21,10 +21,10 @@ import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
 import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
 import { TransactionList } from 'components/TransactionList/TransactionList'
-import { SimpleGrid, Stack, HStack, VStack, Heading } from '@chakra-ui/react'
 import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
-import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+import { TranslationProps, Translation } from 'components/Translation/Translation'
+import { SimpleGrid, Stack, HStack, VStack, Heading, Flex } from '@chakra-ui/react'
 import { Transaction, HistoryData, HistoryTimeframe, AssetId } from 'constants/types'
 import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
@@ -407,11 +407,23 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 alignItems={['flex-start','center']}
               >
                 <HStack
-                  spacing={4}
+                  spacing={6}
                   width={['full', 'auto']}
                   justifyContent={'flex-start'}
                 >
-                  <StrategyTag strategy={strategyConfig?.strategy as string} py={2} />
+                  <HStack
+                    spacing={0}
+                    position={'relative'}
+                  >
+                    <StrategyTag strategy={strategyConfig?.strategy as string} py={2} />
+                    <Flex
+                      top={'-12px'}
+                      right={'-12px'}
+                      position={'absolute'}
+                    >
+                      <AssetProvider.Strategies />
+                    </Flex>
+                  </HStack>
                   {
                     strategyConfig?.stats?.header?.fields?.map( (field: string) => (
                       <AssetProvider.GeneralData key={`field_${field}`} field={field} color={'cta'} />

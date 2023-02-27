@@ -1329,6 +1329,7 @@ AssetProvider.GaugeShare = GaugeShare
 AssetProvider.Redeemable = Redeemable
 AssetProvider.Allocation = Allocation
 AssetProvider.BalanceUsd = BalanceUsd
+AssetProvider.Strategies = Strategies
 AssetProvider.GeneralData = GeneralData
 AssetProvider.RealizedApy = RealizedApy
 AssetProvider.EarningsUsd = EarningsUsd

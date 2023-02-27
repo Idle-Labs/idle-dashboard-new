@@ -171,7 +171,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     stats:{
       header:{
-        fields:['strategies', 'protocols']
+        fields:['protocols']
       }
     },
     columns: [
