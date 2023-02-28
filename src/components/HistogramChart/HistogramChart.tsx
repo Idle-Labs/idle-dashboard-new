@@ -272,10 +272,10 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
                         >
                           <AssetProvider.Icon size={'2xs'} />
                           <AssetProvider.Name fontWeight={'bold'} />
-                          <AssetProvider.Strategy color={colorScale(assetId)} fontWeight={'bold'} prefix={'('} suffix={')'} />
+                          <AssetProvider.Strategy color={'gray.500'} fontWeight={'bold'} prefix={'('} suffix={')'} />
                         </HStack>
                       </AssetProvider>
-                      <Amount.Usd abbreviate={false} fontWeight={'bold'} fontSize={'md'} value={tooltipData.bar.data[assetId]} />
+                      <Amount.Usd abbreviate={false} fontWeight={'bold'} fontSize={'md'} value={tooltipData.bar.data[assetId]} color={colorScale(assetId)} />
                     </VStack>
                   ))
                 }
