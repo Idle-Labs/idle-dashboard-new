@@ -557,6 +557,25 @@ export const theme = extendTheme({
             backgroundColor:'button.bgHover',
           }
         },
+        tab: {
+          borderRadius:8,
+          borderBottom:0,
+          textStyle:'cta',
+          color:'tab.color',
+          backgroundColor:'transparent',
+          _after: {
+            display:'none'
+          },
+          _selected: {
+            borderBottom:0,
+            color:'tab.colorSelected',
+            backgroundColor:'tab.bgSelected',
+          },
+          _hover: {
+            borderBottom:0,
+            color:'tab.colorSelected',
+          }
+        },
         filter:{
           opacity:0.3,
           border:'1px solid',

@@ -17,7 +17,7 @@ import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { SkeletonText, Stack, VStack, HStack, Flex, Text } from '@chakra-ui/react'
+import { SkeletonText, Stack, VStack, HStack, Flex, Text, Button } from '@chakra-ui/react'
 
 type ApyRange = {
   minApy: BigNumber | null
@@ -46,6 +46,7 @@ export const Stats: React.FC = () => {
   } = usePortfolioProvider()
   const translate = useTranslate()
   const { isMobile } = useThemeProvider()
+  const [ selectedStrategy, setSelectedStrategy ] = useState<string | null>(null)
   const [ selectedAsset, setSelectedAsset ] = useState<AggregatedAsset | null>(null)
 
   const onRowClick = useCallback((vaultId: AssetId | undefined) => {
@@ -75,7 +76,7 @@ export const Stats: React.FC = () => {
   }, [assetsData, isPortfolioLoaded])
 
   const aggregatedUnderlyings = useMemo(() => {
-    return Object.keys(assetsByStrategy).reduce( (aggregatedUnderlyings: Record<AssetId, AggregatedAsset>, strategy: string) => {
+    return Object.keys(assetsByStrategy).filter( (strategy: string) => (!selectedStrategy || selectedStrategy === strategy) ).reduce( (aggregatedUnderlyings: Record<AssetId, AggregatedAsset>, strategy: string) => {
       assetsByStrategy[strategy].forEach( (asset: Asset) => {
         const underlyingAsset = selectAssetById(asset.underlyingId)
         if (underlyingAsset){
@@ -137,7 +138,7 @@ export const Stats: React.FC = () => {
       })
       return aggregatedUnderlyings
     }, {})
-  }, [assetsByStrategy, selectAssetById, selectVaultById])
+  }, [assetsByStrategy, selectAssetById, selectVaultById, selectedStrategy])
 
   const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
 
@@ -252,15 +253,38 @@ export const Stats: React.FC = () => {
 
   // console.log('statsData', statsData)
 
+  const strategiesFilters = useMemo(() => {
+    return (
+      <HStack
+        spacing={2}
+        justifyContent={'flex-start'}
+      >
+        <Translation component={Button} variant={'tab'} translation={'common.all'} aria-selected={!selectedStrategy} onClick={() => setSelectedStrategy(null)} />
+        {
+          Object.keys(assetsByStrategy).map( (strategy: string) => (
+            <Translation component={Button} variant={'tab'} translation={`strategies.${strategy}.label`} aria-selected={selectedStrategy === strategy} onClick={() => setSelectedStrategy(strategy)} />
+          ))
+        }
+      </HStack>
+    )
+  }, [selectedStrategy, assetsByStrategy, setSelectedStrategy])
+
   const vaultsList = useMemo(() => {
     return !isMobile ? (
       <Card>
-        <ReactTable<AggregatedAsset>
-          data={statsData}
-          columns={statsColumns}
-          initialState={initialState}
-          onRowClick={ (row) => onRowClick(row.original.id) }
-        />
+        <VStack
+          spacing={6}
+          width={'full'}
+          alignItems={'flex-start'}
+        >
+          {strategiesFilters}
+          <ReactTable<AggregatedAsset>
+            data={statsData}
+            columns={statsColumns}
+            initialState={initialState}
+            onRowClick={ (row) => onRowClick(row.original.id) }
+          />
+        </VStack>
       </Card>
     ) : (
       <VStack
@@ -273,7 +297,7 @@ export const Stats: React.FC = () => {
         }
       </VStack>
     )
-  }, [isMobile, statsData, statsColumns, initialState, onRowClick, selectedAsset, setSelectedAsset])
+  }, [isMobile, strategiesFilters, statsData, statsColumns, initialState, onRowClick, selectedAsset, setSelectedAsset])
 
   return (
     <VStack
