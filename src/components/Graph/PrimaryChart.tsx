@@ -59,7 +59,6 @@ export const PrimaryChart = ({
 
   const [chartColor] = useToken('colors', [color])
   const tooltipBg = useColorModeValue('white', theme.colors.card.bg)
-  const tooltipBorder = useColorModeValue(theme.colors.gray[200], theme.colors.gray[700])
   const tooltipColor = useColorModeValue(theme.colors.gray[800], 'white')
 
   // bounds
