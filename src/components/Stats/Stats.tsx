@@ -272,7 +272,7 @@ export const Stats: React.FC = () => {
           <Translation component={Button} variant={'tab'} translation={'common.all'} aria-selected={!selectedStrategy} onClick={() => setSelectedStrategy(null)} />
           {
             Object.keys(assetsByStrategy).map( (strategy: string) => (
-              <Translation component={Button} variant={'tab'} translation={`strategies.${strategy}.label`} aria-selected={selectedStrategy === strategy} onClick={() => setSelectedStrategy(strategy)} />
+              <Translation key={strategy} component={Button} variant={'tab'} translation={`strategies.${strategy}.label`} aria-selected={selectedStrategy === strategy} onClick={() => setSelectedStrategy(strategy)} />
             ))
           }
         </HStack>

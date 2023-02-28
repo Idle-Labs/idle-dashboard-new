@@ -409,7 +409,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
           })
         }
       </VStack>
-      <Translation component={Button} translation={"common.close"} onClick={() => save()} variant={'ctaFull'} />
+      <Translation component={Button} translation={"common.save"} onClick={() => save()} variant={'ctaFull'} />
     </VStack>
   )
 }

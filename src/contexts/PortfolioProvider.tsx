@@ -861,7 +861,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('stkIdleResults', stkIdleResults)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
-    console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
+    // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
 
     const [
       stkIdleTotalLocked,

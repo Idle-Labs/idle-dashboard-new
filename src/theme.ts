@@ -432,6 +432,28 @@ export const theme = extendTheme({
         }
       }
     },
+    Radio: {
+      baseStyle: {
+        control: {
+          p:'1px',
+          borderWidth:'1px',
+          borderColor:'#ffffff',
+          background: 'transparent',
+          _checked:{
+            border: 0,
+            color:'brand.blue',
+            background: '#ffffff',
+            _hover: {
+              background: '#ffffff'
+            }
+          },
+          _hover:{
+            border: 0,
+            background: 'cta'
+          }
+        }
+      }
+    },
     Divider: {
       baseStyle: {
         borderColor: 'divider'
@@ -443,7 +465,13 @@ export const theme = extendTheme({
     },
     Switch: {
       baseStyle : {
-        outline: 'none'
+        outline: 'none',
+        track: {
+          backgroundColor: 'brand.blue',
+          _checked: {
+            backgroundColor: 'brand.blue'
+          }
+        }
       }
     },
     Input: {
