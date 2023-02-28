@@ -456,6 +456,15 @@ export const theme = extendTheme({
             textStyle: ['heading', 'h3'],
             backgroundColor: 'transparent',
           }
+        },
+        search: {
+          field: {
+            px: 4,
+            py: 2,
+            border: 0,
+            textStyle: 'cta',
+            backgroundColor: 'tab.bgSelected'
+          }
         }
       }
     },

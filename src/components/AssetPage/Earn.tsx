@@ -242,7 +242,7 @@ export const Earn: React.FC = () => {
         spacing={6}
         alignItems={'flex-start'}
       >
-        <Translation component={Heading} as={'h3'} size={'md'} translation={'defi.strategyDescription'} />
+        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
         <Card.Dark>
           <Text dangerouslySetInnerHTML={{__html: vault.description}} />
         </Card.Dark>
@@ -268,7 +268,7 @@ export const Earn: React.FC = () => {
           alignItems={'center'}
         >
           <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-            <Translation component={Heading} as={'h3'} size={'md'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
+            <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
           </SkeletonText>
           {
             userHasBalance && (

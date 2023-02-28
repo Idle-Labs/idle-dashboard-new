@@ -40,7 +40,6 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
 }
 
 export const Strategy: React.FC = () => {
-
   const navigate = useNavigate()
   const translate = useTranslate()
   const { account } = useWalletProvider()
@@ -291,7 +290,7 @@ export const Strategy: React.FC = () => {
       </VStack>
     ) : (
       <Card mt={10}>
-        <Translation translation={'defi.depositedAssets'} component={Card.Heading} />
+        <Translation translation={'defi.depositedAssets'} component={Card.Heading} fontSize={'lg'} />
         <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={ (row) => onRowClick(row, depositedListId, depositedListName) } />
       </Card>
     )
@@ -316,7 +315,7 @@ export const Strategy: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.availableAssets'} component={Heading} as={'h2'} fontSize={'lg'} />
+        <Translation translation={'defi.availableAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
         <VStack
           spacing={2}
           width={'100%'}
@@ -329,7 +328,7 @@ export const Strategy: React.FC = () => {
       </VStack>
     ) : (
       <Card mt={10}>
-        <Translation translation={'defi.availableAssets'} component={Card.Heading} />
+        <Translation translation={'defi.availableAssets'} component={Card.Heading} fontSize={'lg'} />
         {
           !availableAssetsData.length ? (
             <Stack

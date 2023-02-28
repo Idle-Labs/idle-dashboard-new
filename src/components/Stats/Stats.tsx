@@ -1,5 +1,6 @@
 import { BigNumber } from 'bignumber.js'
 import { Column, Row } from 'react-table'
+import { MdSearch } from 'react-icons/md'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import { useNavigate } from 'react-router-dom'
@@ -17,7 +18,7 @@ import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { SkeletonText, Stack, VStack, HStack, Flex, Text, Button } from '@chakra-ui/react'
+import { useTheme, SkeletonText, Stack, VStack, HStack, Flex, Text, Button, Input, InputGroup, InputRightElement } from '@chakra-ui/react'
 
 type ApyRange = {
   minApy: BigNumber | null
@@ -44,8 +45,10 @@ export const Stats: React.FC = () => {
       selectVaultById
     }
   } = usePortfolioProvider()
+  const theme = useTheme()
   const translate = useTranslate()
   const { isMobile } = useThemeProvider()
+  const [ searchQuery, setSearchQuery ] = useState<string>('')
   const [ selectedStrategy, setSelectedStrategy ] = useState<string | null>(null)
   const [ selectedAsset, setSelectedAsset ] = useState<AggregatedAsset | null>(null)
 
@@ -77,7 +80,7 @@ export const Stats: React.FC = () => {
 
   const aggregatedUnderlyings = useMemo(() => {
     return Object.keys(assetsByStrategy).filter( (strategy: string) => (!selectedStrategy || selectedStrategy === strategy) ).reduce( (aggregatedUnderlyings: Record<AssetId, AggregatedAsset>, strategy: string) => {
-      assetsByStrategy[strategy].forEach( (asset: Asset) => {
+      assetsByStrategy[strategy].filter( (asset: Asset) => (!searchQuery.trim().length || asset.name.toLowerCase().includes(searchQuery.toLowerCase())) ).forEach( (asset: Asset) => {
         const underlyingAsset = selectAssetById(asset.underlyingId)
         if (underlyingAsset){
           const strategyKey = `${underlyingAsset.id}_${strategy}`
@@ -138,7 +141,7 @@ export const Stats: React.FC = () => {
       })
       return aggregatedUnderlyings
     }, {})
-  }, [assetsByStrategy, selectAssetById, selectVaultById, selectedStrategy])
+  }, [assetsByStrategy, selectAssetById, selectVaultById, selectedStrategy, searchQuery])
 
   const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
 
@@ -251,23 +254,41 @@ export const Stats: React.FC = () => {
     ]
   }), [])
 
+  const handleSearchChange = useCallback(({target: { value }}: { target: {value: string} }) => {
+    setSearchQuery(value)
+  }, [setSearchQuery])
+
   // console.log('statsData', statsData)
 
   const strategiesFilters = useMemo(() => {
+    const searchText = translate('common.search')
     return (
       <HStack
         spacing={2}
-        justifyContent={'flex-start'}
+        width={'full'}
+        justifyContent={'space-between'}
       >
-        <Translation component={Button} variant={'tab'} translation={'common.all'} aria-selected={!selectedStrategy} onClick={() => setSelectedStrategy(null)} />
+        <HStack>
+          <Translation component={Button} variant={'tab'} translation={'common.all'} aria-selected={!selectedStrategy} onClick={() => setSelectedStrategy(null)} />
+          {
+            Object.keys(assetsByStrategy).map( (strategy: string) => (
+              <Translation component={Button} variant={'tab'} translation={`strategies.${strategy}.label`} aria-selected={selectedStrategy === strategy} onClick={() => setSelectedStrategy(strategy)} />
+            ))
+          }
+        </HStack>
         {
-          Object.keys(assetsByStrategy).map( (strategy: string) => (
-            <Translation component={Button} variant={'tab'} translation={`strategies.${strategy}.label`} aria-selected={selectedStrategy === strategy} onClick={() => setSelectedStrategy(strategy)} />
-          ))
+          !isMobile && (
+            <HStack>
+              <InputGroup>
+                <Input type={'text'} placeholder={searchText} variant={'search'} onChange={handleSearchChange} />
+                <InputRightElement children={<MdSearch size={24} color={theme.colors.cta} />} />
+              </InputGroup>
+            </HStack>
+          )
         }
       </HStack>
     )
-  }, [selectedStrategy, assetsByStrategy, setSelectedStrategy])
+  }, [selectedStrategy, isMobile, translate, assetsByStrategy, setSelectedStrategy, theme, handleSearchChange])
 
   const vaultsList = useMemo(() => {
     return !isMobile ? (
@@ -292,6 +313,7 @@ export const Stats: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
+        {strategiesFilters}
         {
           statsData.map( (asset: AggregatedAsset) => <VaultCard.Stats asset={asset} onRowClick={(asset: Asset) => onRowClick(asset.id)} handleClick={(asset: AggregatedAsset) => setSelectedAsset(asset)} isOpen={selectedAsset===asset} /> )
         }

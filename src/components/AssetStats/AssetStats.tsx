@@ -143,7 +143,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 key={`asset_${assetId}`}
               >
                 <Amount.Percentage textStyle={'heading'} fontSize={'lg'} color={color} value={apy} />
-                <Translation translation={'defi.avgApy'} fontSize={'sm'} color={color} />
+                <Translation translation={'defi.avgApy'} fontSize={'sm'} color={'cta'} />
               </HStack>
             )
           })

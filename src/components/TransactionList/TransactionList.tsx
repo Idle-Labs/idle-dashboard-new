@@ -88,7 +88,7 @@ export const TransactionList: React.FC<TransactionListArgs> = ({ assetIds, showT
         ref={ref as typeof useRef}
         justifyContent={'flex-start'}
       >
-        <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} translation={title || 'assets.assetDetails.assetHistory.transactionHistory'} />
+        <Translation display={showTitleOnMobile ? 'block' : ['none', 'block']} component={Card.Heading} fontSize={'lg'} translation={title || 'assets.assetDetails.assetHistory.transactionHistory'} />
         <Scrollable maxH={[fullHeightOnMobile ? '100%' : 280, Math.max(dimensions?.height || 400)]}>
           {transactionsList}
         </Scrollable>

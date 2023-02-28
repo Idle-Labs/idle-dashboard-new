@@ -133,7 +133,7 @@ export const StakingDistributedRewards: React.FC = () => {
           </VStack>
         ) : (
           <Card mt={10}>
-            <Translation translation={'staking.distributedRewards'} component={Card.Heading} />
+            <Translation translation={'staking.distributedRewards'} fontSize={'lg'} component={Card.Heading} />
             <ReactTable columns={columns} data={data} page={page} rowsPerPage={rowsPerPage} initialState={initialState} onRowClick={onRowClick} />
           </Card>
         )
