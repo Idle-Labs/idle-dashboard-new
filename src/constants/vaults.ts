@@ -1827,6 +1827,84 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             address:'0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967'
           }
         }
+      },
+      WETH:{
+        variant:'Aave',
+        autoFarming:[],
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16726342,
+        status:'experimental',
+        underlyingToken:'WETH',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_morpho_aave_WETH',
+          address:'0xb3F717a5064D2CBE1b8999Fdfd3F8f3DA98339a6'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_aave_WETH',
+          address:'0x9708B5398382EE064A8E718972670351F1c2c860'
+        },
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave WETH pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_aave_WETH_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16726342,
+            label:'morpho WETH AA',
+            name:'AA_morpho_aave_WETH',
+            token:'AA_morpho_aave_WETH',
+            address:'0x6c0c8708e2FD507B7057762739cb04cF01b98d7b'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_aave_WETH_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16726342,
+            label:'morpho WETH BB',
+            name:'BB_morpho_aave_WETH',
+            token:'BB_morpho_aave_WETH',
+            address:'0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B'
+          }
+        }
       }
     }
   }
