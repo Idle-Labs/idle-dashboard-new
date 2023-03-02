@@ -2390,6 +2390,43 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
       ]
     },
+    WETHBB: {
+      status:'experimental',
+      enabledEnvs: ['beta'],
+      blockNumber: 16733433,
+      underlyingToken: 'WETH',
+      idle: {
+        decimals: 18,
+        abi: IdleTokenV4 as Abi,
+        token: 'idleWETHJunior',
+        address: '0x62A0369c6BB00054E589D12aaD7ad81eD789514b',
+      },
+      flags:{
+        apiType:'juniorRates',
+        referralEnabled:true
+      },
+      description:'This Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources (see protocols below). As deposited funds provide first-loss capital to an array of different Junior Tranches, it represent an aggressive target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
+      protocols: [
+        {
+          decimals: 18,
+          functions: {},
+          enabled: true,
+          name: 'morpho',
+          abi: ERC20 as Abi,
+          token: 'BB_morpho_aave_WETH',
+          address: '0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B'
+        },
+        {
+          decimals: 18,
+          name: 'euler',
+          functions: {},
+          enabled: true,
+          abi: ERC20 as Abi,
+          token: 'BB_euler_WETHStaking',
+          address: '0x2e80225f383F858E8737199D3496c5Cf827670a5'
+        },
+      ]
+    },
     WBTC: {
       blockNumber: 10627962,
       underlyingToken: 'WBTC',

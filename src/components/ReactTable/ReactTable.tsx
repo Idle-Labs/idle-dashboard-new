@@ -92,6 +92,7 @@ export const ReactTable = <T extends {}>({
             onClick={() => row.subRows?.length>0 ? toggleSelectedRow(row) : onRowClick?.(row)}
             cursor={onRowClick ? 'pointer' : undefined}
             sx={rowSx}
+            key={rowIndex}
           >
             {row.cells.map( (cell, cellIndex) => {
               const isFirstCell = !firstCellFound && cell.column.display !== 'none'
@@ -105,6 +106,7 @@ export const ReactTable = <T extends {}>({
                   {...cell.getCellProps()}
                   display={cell.column.display}
                   sx={sx}
+                  key={cellIndex}
                 >
                   <HStack
                     flex={1}
@@ -146,6 +148,7 @@ export const ReactTable = <T extends {}>({
                   onClick={() => onRowClick?.(subRow)}
                   cursor={onRowClick ? 'pointer' : undefined}
                   sx={subRowSx}
+                  key={subRowIndex}
                 >
                   {subRow.cells.map( (cell, cellIndex) => {
                     const isFirstCell = !firstCellFound && cell.column.display !== 'none'
@@ -155,7 +158,12 @@ export const ReactTable = <T extends {}>({
                     }
                     const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
                     return (
-                      <Td {...cell.getCellProps()} display={cell.column.display} sx={sx}>
+                      <Td
+                        {...cell.getCellProps()}
+                        display={cell.column.display}
+                        sx={sx}
+                        key={cellIndex}
+                      >
                         {cell.render('Cell')}
                       </Td>
                     )
@@ -176,7 +184,10 @@ export const ReactTable = <T extends {}>({
           {headerGroups.map( (headerGroup, rowIndex) => {
             let firstColumnFound = false
             return (
-              <Tr {...headerGroup.getHeaderGroupProps()} key={rowIndex}>
+              <Tr
+                {...headerGroup.getHeaderGroupProps()}
+                key={rowIndex}
+              >
                 {headerGroup.headers.map( (column, colIndex) => {
                   const isFirstCell = !firstColumnFound && column.display !== 'none'
                   const isLastCell = colIndex === headerGroup.headers.length-1

@@ -1,4 +1,5 @@
 import React from 'react'
+import { BNify } from 'helpers/'
 import type { AssetId } from 'constants/types'
 import { ResponsiveValue, HStack } from '@chakra-ui/react'
 import { Amount, AmountProps } from 'components/Amount/Amount'
@@ -38,7 +39,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
           spacing={1}
           alignItems={'baseline'}
         >
-          <Amount value={amount} decimals={2} {...amountProps} />
+          <Amount value={amount} decimals={BNify(amount).lt(0.01) && BNify(amount).gt(0) ? 5 : 2} {...amountProps} />
           <AssetProvider.Name {...assetFieldProps} fontSize={'85%'} fontWeight={400} />
         </HStack>
       </HStack>

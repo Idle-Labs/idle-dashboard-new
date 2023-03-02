@@ -315,7 +315,7 @@ export const Stats: React.FC = () => {
       >
         {strategiesFilters}
         {
-          statsData.map( (asset: AggregatedAsset) => <VaultCard.Stats asset={asset} onRowClick={(asset: Asset) => onRowClick(asset.id)} handleClick={(asset: AggregatedAsset) => setSelectedAsset(asset)} isOpen={selectedAsset===asset} /> )
+          statsData.map( (asset: AggregatedAsset, vaultIndex: number) => <VaultCard.Stats key={vaultIndex} asset={asset} onRowClick={(asset: Asset) => onRowClick(asset.id)} handleClick={(asset: AggregatedAsset) => setSelectedAsset(asset)} isOpen={selectedAsset===asset} /> )
         }
       </VStack>
     )
