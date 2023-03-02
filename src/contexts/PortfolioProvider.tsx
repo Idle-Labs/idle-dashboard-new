@@ -49,7 +49,6 @@ type VaultsOnchainData = {
   allocations: Record<AssetId, Balances>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
-  vaultsCollectedFees: Record<AssetId, Transaction[]>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
 }
 
@@ -74,6 +73,7 @@ type InitialState = {
   historicalPrices: Record<AssetId, HistoryData[]>
   historicalTvlsUsd: Record<AssetId, HistoryData[]>
   historicalPricesUsd: Record<AssetId, HistoryData[]>
+  vaultsCollectedFees: Record<AssetId, Transaction[]>
 } & VaultsOnchainData
 
 type ContextProps = InitialState
@@ -169,6 +169,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, allocations: action.payload}
     case 'SET_LAST_HARVESTS':
       return {...state, lastHarvests: action.payload}
+    case 'SET_VAULTS_COLLECTED_FEES':
+      return {...state, vaultsCollectedFees: action.payload}
     case 'SET_HISTORICAL_RATES':
       return {...state, historicalRates: action.payload}
     case 'SET_HISTORICAL_TVLS':
@@ -817,7 +819,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
-      vaultsCollectedFees,
       [
         balanceCallsResults,
         vaultsPricesCallsResults,
@@ -848,7 +849,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
-      vaultFunctionsHelper.getVaultsCollectedFees(vaults),
       multiCall.executeMultipleBatches(rawCalls)
     ])
 
@@ -1354,8 +1354,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       protocolsAprs,
       vaultsRewards,
       additionalAprs,
-      idleDistributions,
-      vaultsCollectedFees
+      idleDistributions
     }
   }, [selectAssetById, protocolToken, stkIDLEToken, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
@@ -1425,7 +1424,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // vaultsRewards,
         additionalAprs,
         idleDistributions,
-        vaultsCollectedFees
       } = vaultsOnChainData
 
       const newAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newAprs: Balances, vaultId: AssetId) => {
@@ -1449,17 +1447,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: idleDistributions[vaultId]
         }
       }, {...state.idleDistributions})
-
-      const newVaultsCollectedFees = vaults.map( (vault: Vault) => vault.id ).reduce( (newVaultsCollectedFees: Record<AssetId, Transaction[]>, vaultId: AssetId) => {
-        if (!vaultsCollectedFees[vaultId]){
-          newVaultsCollectedFees[vaultId] = []
-          return newVaultsCollectedFees
-        }
-        return {
-          ...newVaultsCollectedFees,
-          [vaultId]: vaultsCollectedFees[vaultId]
-        }
-      }, {...state.vaultsCollectedFees})
 
       const newProtocolsAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newProtocolsAprs: Record<AssetId, Balances>, vaultId: AssetId) => {
         if (!protocolsAprs[vaultId]){
@@ -1665,8 +1652,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsBreakdown: newAprsBreakdown,
         totalSupplies: newTotalSupplies,
         additionalAprs: newAdditionalAprs,
-        idleDistributions: newIdleDistributions,
-        vaultsCollectedFees: newVaultsCollectedFees
+        idleDistributions: newIdleDistributions
       }
 
 
@@ -2148,7 +2134,27 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded])
+  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper])
+
+  // Get historical collected fees
+  useEffect(() => {
+
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees)) return
+
+    // Get Historical data
+    ;(async () => {
+      const startTimestamp = Date.now();
+
+      const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
+
+      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
+
+      // eslint-disable-next-line
+      console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+    })()
+
+  // eslint-disable-next-line
+  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper])
 
   // Calculate historical USD Tvls
   useEffect(() => {
@@ -2219,7 +2225,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         totalSupplies,
         additionalAprs,
         idleDistributions,
-        vaultsCollectedFees
       } = vaultsOnChainData
 
       // const gaugeWeights = await getGaugesWeights(state.vaults)
@@ -2233,7 +2238,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       newState.stakingData = stakingData
       newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
-      newState.vaultsCollectedFees = {...state.vaultsCollectedFees, ...vaultsCollectedFees}
 
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
         const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
