@@ -237,7 +237,7 @@ export const Stats: React.FC = () => {
           </HStack>
         )
       },
-      sortType: (a: any, b: any, field: any, sortAsc: boolean | undefined): number => {
+      sortType: (a: any, b: any, field: any): number => {
         const apyRange_a = getObjectPath(a.original, field)
         const apyRange_b = getObjectPath(b.original, field)
 

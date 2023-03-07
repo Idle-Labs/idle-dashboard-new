@@ -41,6 +41,7 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     if (!isLoaded || !isVersionLoaded || cacheVersion === CACHE_VERSION) return
     setCachedRequests(preCachedRequests)
     setCacheVersion(CACHE_VERSION)
+    // eslint-disable-next-line
     console.log('CACHE VERSION UPGRADE FROM %s to %s', cacheVersion, CACHE_VERSION)
   }, [cacheVersion, isLoaded, isVersionLoaded, setCachedRequests, setCacheVersion])
 

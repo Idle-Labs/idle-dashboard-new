@@ -114,6 +114,7 @@ export class  Multicall {
         try {
           decodedResult = (args && args.length > 0 ? strip0x(this.web3.eth.abi.encodeParameters(args.map(a => a[1]), args.map(a => a[0]))) : '')
         } catch (err) {
+          // eslint-disable-next-line
           console.log('prepareMulticallData - ERROR', method, args, err)
         }
 
@@ -212,6 +213,7 @@ export class  Multicall {
         from: contractAddress
       });
     } catch (err) {
+      // eslint-disable-next-line
       console.log('Multicall Error:', calls, err)
 
       if (!singleCallsEnabled) return null

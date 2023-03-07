@@ -2554,7 +2554,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
       // eslint-disable-next-line
-      // console.log('Collected Fees: ', state.vaultsCollectedFees, isEmpty(state.vaultsCollectedFees))
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
 
