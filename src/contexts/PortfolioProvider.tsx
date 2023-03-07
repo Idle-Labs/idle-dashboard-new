@@ -2490,7 +2490,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const gaugeData = gauge.gaugeData
       const gaugeVaultPosition = gauge.vaultPosition
 
-      if (!gaugeData/* || !gaugeVaultPosition*/) return gaugesRewards
+      if (!gaugeData) return gaugesRewards
 
       for (const rewardId in gaugeData.rewards) {
         const gaugeRewardData = gaugeData.rewards[rewardId]
@@ -2508,7 +2508,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
 
           gaugesRewards[rewardId].gauges.push(gauge.id as string)
-          
+
           if (gaugeVaultPosition){
             gaugesRewards[rewardId].deposited = BNify(gaugesRewards[rewardId].deposited).plus(gaugeVaultPosition.usd.deposited)
             if (gaugeRewardData.apr) {
