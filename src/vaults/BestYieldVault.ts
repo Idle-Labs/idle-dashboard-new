@@ -122,9 +122,8 @@ export class BestYieldVault {
     const transactions: Transaction[] = await asyncReduce<Transaction[], Transaction[]>(
       (Object.values(transactionsByHash) as Transaction[][]),
       async (internalTxs: Transaction[]) => {
-        const insertedTxs: Record<string, any> = {}
         const transactions = []
-        // const transactions = new Set()
+        const insertedTxs: Record<string, any> = {}
 
         for (const tx of internalTxs) {
 
@@ -143,15 +142,27 @@ export class BestYieldVault {
           const isSwapOutTx = !isSendTransferTx && !isWithdrawTx && !isRedeemInternalTx /*&& !etherscanTxs[tx.hash]*/ && tx.from.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
           const isSwapTx = !isReceiveTransferTx && !isDepositInternalTx /*&& !etherscanTxs[tx.hash]*/ && tx.to.toLowerCase() === account.toLowerCase() && tx.contractAddress.toLowerCase() === this.id;
 
+          const isMintTx = !isSwapTx && !!(internalTxs.find(iTx => iTx.from === ZERO_ADDRESS && iTx.to.toLowerCase() === account.toLowerCase() && iTx.contractAddress.toLowerCase() === this.id));
+
           // Get action by positive condition
           const actions: Record<string, boolean> = {
             deposit: !!(isReceiveTransferTx || isDepositTx || isSwapTx),
             redeem: !!(isSendTransferTx || isRedeemTx || isWithdrawTx || isSwapOutTx)
           }
 
+          const subActions: Record<string, boolean> = {
+            send: isSendTransferTx,
+            receive: isReceiveTransferTx,
+            swapIn: isSwapTx || isMintTx,
+            swapOut: isSwapOutTx,
+          }
+
           const action = Object.keys(actions).find( (action: string) => !!actions[action] )
+          const subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
+
 
           if (action) {
+            const txHashKey = `${tx.hash}_${action}`
 
             // Get idle token tx and underlying token tx
             const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : ZERO_ADDRESS) : account
@@ -184,10 +195,11 @@ export class BestYieldVault {
               underlyingAmount = underlyingTokenTxAmount
             }
 
-            if (!insertedTxs[tx.hash]){
+            if (!insertedTxs[txHashKey]){
               transactions.push({
                 ...tx,
                 action,
+                subAction,
                 idlePrice,
                 idleAmount,
                 assetId:this.id,
@@ -195,7 +207,7 @@ export class BestYieldVault {
               })
 
               // Save inserted txs to avoid duplicated
-              insertedTxs[tx.hash] = 1;
+              insertedTxs[txHashKey] = 1;
             }
           }
         }

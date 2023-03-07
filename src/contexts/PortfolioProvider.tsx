@@ -459,7 +459,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       
     const endBlock = test ? '14133495' : 'latest'
     const etherscanTransactions = await getUserTransactions(startBlock, endBlock)
-    // console.log('etherscanTransactions', test, startBlock, endBlock, etherscanTransactions)
+    // console.log('etherscanTransactions', test, account.address, startBlock, endBlock, etherscanTransactions)
 
     const vaultsTransactions: Record<string, Transaction[]> = await asyncReduce<Vault, Record<string, Transaction[]>>(
       vaults,
@@ -2163,27 +2163,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // eslint-disable-next-line
   }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper])
 
-  // Get historical collected fees
-  useEffect(() => {
-
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees)) return
-
-    // Get Historical data
-    ;(async () => {
-      const startTimestamp = Date.now();
-
-      const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
-
-      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
-
-      // eslint-disable-next-line
-      console.log('Collected Fees: ', state.vaultsCollectedFees, isEmpty(state.vaultsCollectedFees))
-      console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
-    })()
-
-  // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded])
-
   // Calculate historical USD Tvls
   useEffect(() => {
     if (isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalTvls)) return
@@ -2511,13 +2490,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const gaugeData = gauge.gaugeData
       const gaugeVaultPosition = gauge.vaultPosition
 
-      if (!gaugeData || !gaugeVaultPosition) return gaugesRewards
+      if (!gaugeData/* || !gaugeVaultPosition*/) return gaugesRewards
 
       for (const rewardId in gaugeData.rewards) {
         const gaugeRewardData = gaugeData.rewards[rewardId]
-        const gaugeShare = gauge.totalSupply ? BNify(gaugeVaultPosition.underlying.redeemable).div(gauge.totalSupply) : BNify(0)
+        const gaugeShare = gaugeVaultPosition && gauge.totalSupply ? BNify(gaugeVaultPosition.underlying.redeemable).div(gauge.totalSupply) : BNify(0)
 
-        if (gaugeShare.gt(0)){
+        if (BNify(gaugeRewardData.balance).gt(0)){
           if (!gaugesRewards[rewardId]){
             gaugesRewards[rewardId] = {
               deposited: BNify(0),
@@ -2529,16 +2508,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
 
           gaugesRewards[rewardId].gauges.push(gauge.id as string)
-          gaugesRewards[rewardId].deposited = BNify(gaugesRewards[rewardId].deposited).plus(gaugeVaultPosition.usd.deposited)
+          
+          if (gaugeVaultPosition){
+            gaugesRewards[rewardId].deposited = BNify(gaugesRewards[rewardId].deposited).plus(gaugeVaultPosition.usd.deposited)
+            if (gaugeRewardData.apr) {
+              gaugesRewards[rewardId].apr = BNify(gaugesRewards[rewardId].apr).plus(BNify(gaugeRewardData.apr).times(gaugeVaultPosition.usd.deposited))
+            }
+          }
 
-          if (gaugeRewardData.rate) {
+          if (gaugeRewardData.rate){
             gaugesRewards[rewardId].rate = BNify(gaugesRewards[rewardId].rate).plus(BNify(gaugeRewardData.rate).times(gaugeShare))
           }
           if (gaugeRewardData.balance){
             gaugesRewards[rewardId].balance = BNify(gaugesRewards[rewardId].balance).plus(gaugeRewardData.balance)
-          }
-          if (gaugeRewardData.apr) {
-            gaugesRewards[rewardId].apr = BNify(gaugesRewards[rewardId].apr).plus(BNify(gaugeRewardData.apr).times(gaugeVaultPosition.usd.deposited))
           }
         }
       }
@@ -2557,6 +2539,27 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
 
   }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType, selectVaultById])
+
+  // Get historical collected fees
+  useEffect(() => {
+
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees)) return
+
+    // Get Historical data
+    ;(async () => {
+      const startTimestamp = Date.now();
+
+      const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
+
+      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
+
+      // eslint-disable-next-line
+      // console.log('Collected Fees: ', state.vaultsCollectedFees, isEmpty(state.vaultsCollectedFees))
+      console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+    })()
+
+  // eslint-disable-next-line
+  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees])
 
   // Generate Assets Data
   useEffect(() => {

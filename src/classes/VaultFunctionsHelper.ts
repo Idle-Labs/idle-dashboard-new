@@ -388,10 +388,7 @@ export class VaultFunctionsHelper {
             if (!vaultsCollectedFees[foundVault.id]){
               vaultsCollectedFees[foundVault.id] = []
             }
-            // vaultsCollectedFees[foundVault.id].push({
-            //   date: +tx.timeStamp*1000,
-            //   value: fixTokenDecimals(tx.value, 18).toNumber()
-            // })
+
             vaultsCollectedFees[foundVault.id].push({
               ...tx,
               action: 'fee',
@@ -416,10 +413,7 @@ export class VaultFunctionsHelper {
                 if (!vaultsCollectedFees[foundVault.id]){
                   vaultsCollectedFees[foundVault.id] = []
                 }
-                // vaultsCollectedFees[foundVault.id].push({
-                //   date: +tx.timeStamp*1000,
-                //   value: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toNumber()
-                // })
+                
                 vaultsCollectedFees[foundVault.id].push({
                   ...tx,
                   action: 'fee',

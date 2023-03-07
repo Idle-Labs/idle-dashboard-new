@@ -147,6 +147,7 @@ export class TrancheVault {
       (Object.values(transactionsByHash) as Transaction[][]),
       async (internalTxs: Transaction[]) => {
         const transactions = []
+        const insertedTxs: Record<string, any> = {}
 
         for (const tx of internalTxs) {
 
@@ -191,6 +192,8 @@ export class TrancheVault {
 
           if (action) {
 
+            const txHashKey = `${tx.hash}_${action}`
+
             // Get idle token tx and underlying token tx
             const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : ZERO_ADDRESS) : account
             const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
@@ -225,15 +228,20 @@ export class TrancheVault {
 
             // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), tx)
 
-            transactions.push({
-              ...tx,
-              action,
-              subAction,
-              idlePrice,
-              idleAmount,
-              assetId:this.id,
-              underlyingAmount
-            })
+            if (!insertedTxs[txHashKey]){
+              transactions.push({
+                ...tx,
+                action,
+                subAction,
+                idlePrice,
+                idleAmount,
+                assetId:this.id,
+                underlyingAmount
+              })
+
+              // Save inserted txs to avoid duplicated
+              insertedTxs[txHashKey] = 1;
+            }
           }
         }
 
