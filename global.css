@@ -43,3 +43,7 @@
 .link:hover{
   text-decoration: underline;
 }
+.error{
+  color:#ffffff;
+  font-weight:bold;
+}
