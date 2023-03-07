@@ -2428,6 +2428,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     WBTC: {
+      status:'deprecated',
+      enabledEnvs: ['beta'],
       blockNumber: 10627962,
       underlyingToken: 'WBTC',
       idle: {

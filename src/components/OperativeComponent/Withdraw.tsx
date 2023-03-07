@@ -21,6 +21,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const [ gasEstimateError, setGasEstimateError ] = useState<string | null>(null)
 
   const { account } = useWalletProvider()
   const { searchParams } = useBrowserRouter()
@@ -126,10 +127,15 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   useEffect(() => {
     if (activeItem !== itemIndex) return
     ;(async () => {
-      const defaultGasLimit = await getDefaultGasLimit()
-      setGasLimit(defaultGasLimit)
+      try {
+        const defaultGasLimit = await getDefaultGasLimit()
+        setGasLimit(defaultGasLimit)
+      } catch (error: any) {
+        // console.log(typeof error, error.message)
+        setGasEstimateError(error.message.toString().split("\n")[0])
+      }
     })()
-  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
+  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
 
   // Update parent amount
   useEffect(() => {
@@ -221,7 +227,14 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             </VStack>
           </HStack>
           {
-            assetBalance.gt(0) && vaultMessages?.withdraw ? (
+            gasEstimateError ? (
+              <Card.Dark
+                p={2}
+                border={0}
+              >
+                <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.gasEstimateError'} params={{supportLink:'<a href="https://discord.com/channels/606071749657755668/606073687799627776">Discord channel</a>', error: gasEstimateError}} isHtml={true} textAlign={'center'} />
+              </Card.Dark>
+            ) : assetBalance.gt(0) && vaultMessages?.withdraw ? (
               <Card.Dark
                 p={2}
                 border={0}

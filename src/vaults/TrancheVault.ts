@@ -318,6 +318,15 @@ export class TrancheVault {
     ]
   }
 
+  public getPausedCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.cdoContract.methods.paused()
+      },
+    ]
+  }
+
   public getAprRatioCalls(): ContractRawCall[] {
     return [
       {

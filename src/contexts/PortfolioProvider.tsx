@@ -46,6 +46,7 @@ type VaultsOnchainData = {
   vaultsRewards: VaultsRewards
   stakingData: StakingData | null
   rewards: Record<AssetId, Balances>
+  pausedVaults: Record<AssetId, boolean>
   allocations: Record<AssetId, Balances>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
@@ -98,6 +99,7 @@ const initialState: InitialState = {
   lastHarvests: {},
   vaultsPrices: {},
   transactions: {},
+  pausedVaults: {},
   stakingData: null,
   totalSupplies: {},
   vaultsRewards: {},
@@ -735,6 +737,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     
     const rawCalls = vaults.filter( (vault: Vault) => checkAddress(vault.id) ).reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
       const aggregatedRawCalls = [
+        ("getPausedCalls" in vault) ? vault.getPausedCalls() : [],
         account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
         ("getPricesCalls" in vault) && checkEnabledCall('prices') ? vault.getPricesCalls() : [],
         ("getPricesUsdCalls" in vault) && checkEnabledCall('pricesUsd') ? vault.getPricesUsdCalls(state.contracts) : [],
@@ -820,6 +823,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
       [
+        pausedCallsResults,
         balanceCallsResults,
         vaultsPricesCallsResults,
         pricesUsdCallsResults,
@@ -859,6 +863,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     //     'claimable', claimable)
 
     // console.log('stkIdleResults', stkIdleResults)
+    // console.log('pausedCallsResults', pausedCallsResults)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
@@ -943,6 +948,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, {})
 
     // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
+
+    // Process paused vaults
+    const pausedVaults = pausedCallsResults.reduce( (pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
+      const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+      // console.log('idleDistribution', assetId, fixTokenDecimals(callResult.data.toString(), 18).toString())
+      pausedVaults[assetId] = !!callResult.data
+      return pausedVaults
+    }, {})
 
     // Process protocols Aprs
     const protocolsAprs = protocolsResults.reduce( (protocolsAprs: Record<AssetId, Balances>, callResult: DecodedResult) => {
@@ -1349,6 +1362,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       allocations,
       lastHarvests,
       vaultsPrices,
+      pausedVaults,
       totalSupplies,
       aprsBreakdown,
       protocolsAprs,
@@ -1417,6 +1431,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         allocations,
         stakingData,
         lastHarvests,
+        pausedVaults,
         vaultsPrices,
         totalSupplies,
         protocolsAprs,
@@ -1436,6 +1451,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: aprs[vaultId]
         }
       }, {...state.aprs})
+
+      const newPausedVaults = vaults.map( (vault: Vault) => vault.id ).reduce( (newPausedVaults: Record<AssetId, boolean>, vaultId: AssetId) => {
+        if (!pausedVaults[vaultId]){
+          newPausedVaults[vaultId] = false
+          return newPausedVaults
+        }
+        return {
+          ...newPausedVaults,
+          [vaultId]: pausedVaults[vaultId]
+        }
+      }, {...state.pausedVaults})
 
       const newIdleDistributions = vaults.map( (vault: Vault) => vault.id ).reduce( (newIdleDistributions: Balances, vaultId: AssetId) => {
         if (!idleDistributions[vaultId]){
@@ -1645,6 +1671,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprRatios: newAprRatios,
         pricesUsd: newPricesUsd,
         allocations: newAllocations,
+        pausedVaults: newPausedVaults,
         lastHarvests: newLastHarvests,
         vaultsPrices: newVaultsPrices,
         protocolsAprs: newProtocolsAprs,
@@ -2150,6 +2177,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
       // eslint-disable-next-line
+      console.log('Collected Fees: ', state.vaultsCollectedFees, isEmpty(state.vaultsCollectedFees))
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
 
@@ -2217,6 +2245,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         gaugesData,
         stakingData,
         allocations,
+        pausedVaults,
         lastHarvests,
         vaultsPrices,
         protocolsAprs,
@@ -2238,6 +2267,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       newState.stakingData = stakingData
       newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
+      newState.pausedVaults = {...state.pausedVaults, ...pausedVaults}
 
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
         const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
@@ -2534,6 +2564,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const assetsData = generateAssetsData(state.vaults)
     for (const vault of state.vaults){
+      if (state.pausedVaults[vault.id]){
+        assetsData[vault.id].status = 'paused'
+      }
       assetsData[vault.id].fee = state.fees[vault.id]
       assetsData[vault.id].rewards =  state.rewards[vault.id]
       assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
@@ -2704,6 +2737,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.pricesUsd,
     state.gaugesData,
     state.rewards,
+    state.pausedVaults,
     state.protocolsAprs,
     state.historicalRates,
     state.historicalPrices,

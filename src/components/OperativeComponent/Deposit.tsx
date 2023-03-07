@@ -71,7 +71,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const disabled = useMemo(() => {
     setError('')
-    if (!vaultEnabled || depositsDisabled) return true
+    if (!vaultEnabled || depositsDisabled || asset?.status === 'paused') return true
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
@@ -79,10 +79,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       return true
     }
     return false
-  }, [amount, vaultEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
+  }, [asset, amount, vaultEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   // console.log(Object.getOwnPropertyNames(vault))
-  // console.log('vaultEnabled', vault, vaultEnabled)
+  // console.log('vault', vault.status, asset.status)
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
   const getDepositAllowance = useCallback(async (): Promise<BigNumber> => {
@@ -230,15 +230,15 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
         </HStack>
       </Card.Dark>
-    ) : vault && ("status" in vault) && vault.status && (
+    ) : (asset && asset?.status !== 'production') && (
       <Card.Dark
         p={2}
         border={0}
       >
-        <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${vault?.status}`} textAlign={'center'} />
+        <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${asset.status}`} textAlign={'center'} />
       </Card.Dark>
     )
-  }, [asset, vault, vaultEnabled, assetBalance, setActionIndex])
+  }, [asset, vaultEnabled, assetBalance, setActionIndex])
 
   return (
     <AssetProvider

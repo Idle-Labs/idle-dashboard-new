@@ -796,8 +796,20 @@
     "depositGauge": "Stake your tokens in the Gauge to earn additional rewards",
     "vaults": {
       "GG": {
-        "disabled":"This gauge has been deactivated, unstake your tranche tokens",
+        "disabled":"This gauge has been deactivated, unstake your tranche tokens or claim your rewards",
         "disabledCta":"Unstake"
+      },
+      "BB": {
+        "disabled":"This vault has been deactivated, please withdraw your funds",
+        "disabledCta":"Withdraw"
+      },
+      "AA": {
+        "disabled":"This vault has been deactivated, please withdraw your funds",
+        "disabledCta":"Withdraw"
+      },
+      "BB": {
+        "disabled":"This vault has been deactivated, please withdraw your funds",
+        "disabledCta":"Withdraw"
       }
     },
     "actions": {
@@ -812,7 +824,8 @@
           "deprecated": "This Vault has been deprecated, redeem your funds.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
           "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose.",
-          "maintenance": "Deposits are momentarily disabled. We apologize for any inconvenience and we are working to resolve it as quickly as possible. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter."
+          "paused": "Deposits are momentarily disabled for maintenance purposes. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter.",
+          "maintenance": "Deposits are momentarily disabled for maintenance purposes. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter."
         },
         "status": {
           "success": {
@@ -870,8 +883,9 @@
         "confirm": "You are withdrawing",
         "confirmed": "You have withdrawed",
         "messages": {
+          "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",
-          "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first."
+          "gasEstimateError": "We have encountered an error during the gas estimate, you may not be able to withdraw your funds. This error may not be up to us, please <a href=\"https://discord.com/channels/606071749657755668/606073687799627776\" target=\"_blank\" class=\"link\">click here</a> to enter our Discord channel and communicate the following error:<br /><span class=\"error\">\"%{error}\"</span>"
         },
         "status": {
           "success": {

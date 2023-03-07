@@ -158,7 +158,7 @@ export const AssetPage: React.FC = () => {
           id:'gauge',
           label:'navBar.gauge',
           component: GaugeStaking,
-          icon: vaultDisabled && BNify(assetGauge?.balance).gt(0) ? {src:`${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props:{width:5, height:5}} : null,
+          icon: vaultDisabled && (BNify(assetGauge?.balance).gt(0) || bnOrZero(claimableRewards).gt(0)) ? {src:`${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props:{width:5, height:5}} : null,
           actions: [
             {
               type: 'stake',

@@ -294,6 +294,15 @@ export class BestYieldVault {
     ]
   }
 
+  public getPausedCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.contract.methods.paused()
+      },
+    ]
+  }
+
   public getAllocationsCalls(index: number, data?: any): ContractRawCall[] {
     return [
       {
