@@ -2182,7 +2182,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees])
+  }, [state.vaults, state.isPortfolioLoaded])
 
   // Calculate historical USD Tvls
   useEffect(() => {

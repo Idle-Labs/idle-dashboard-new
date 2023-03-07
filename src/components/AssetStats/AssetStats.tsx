@@ -318,11 +318,11 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   }, [collectedFees])
 
   // console.log('asset', asset)
+  // console.log('assetIds', assetIds)
   // console.log('rateChartData', rateChartData)
+  // console.log('collectedFees', collectedFees)
   // console.log('tvlUsdChartData', tvlUsdChartData)
   // console.log('volumeChartData', volumeChartData)
-  // console.log('assetIds', assetIds)
-  // console.log('collectedFees', collectedFees)
   // console.log('performanceChartData', performanceChartData)
 
   const aboutItems = useMemo(() => {
@@ -375,6 +375,57 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
 
     return items.map( (item, index) => <AboutItem key={index} {...item} /> )
   }, [assetIds, strategyConfig, selectAssetById, vault, contracts])
+
+  const aggregatedCards = useMemo(() => (
+    <SimpleGrid
+      spacing={4}
+      width={'full'}
+      columns={[1, 4]}
+    >
+      <Card>
+        <Translation mb={1} translation={'defi.tvl'} textStyle={'captionSmall'} />
+        <Amount.Usd value={tvlUsd} textStyle={'ctaStatic'} fontSize={'xl'} />
+      </Card>
+      {
+        strategyConfig?.strategy === 'tranches' ? (
+          <Card>
+            <Translation mb={1} translation={'defi.apyRatio'} textStyle={'captionSmall'} />
+            <HStack
+              spacing={5}
+            >
+            {
+              assetIds.map( (assetId: AssetId) => {
+                const asset = selectAssetById(assetId)
+                if (!asset) return null
+                return (
+                  <AssetProvider
+                    assetId={assetId}
+                    wrapFlex={false}
+                  >
+                    <AssetProvider.ApyRatio textStyle={'ctaStatic'} color={assetIds.length>1 ? `strategies.${asset.type}` : 'primary'} fontSize={'xl'} />
+                  </AssetProvider>
+                )
+              })
+            }
+            </HStack>
+          </Card>
+        ) : (
+          <Card>
+            <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} />
+            <Amount.Percentage value={avgApy} textStyle={'ctaStatic'} fontSize={'xl'} />
+          </Card>
+        )
+      }
+      <Card>
+        <Translation mb={1} translation={'stats.totalVolume'} textStyle={'captionSmall'} />
+        <Amount.Usd value={volume} textStyle={'ctaStatic'} fontSize={'xl'} />
+      </Card>
+      <Card>
+        <Translation mb={1} translation={'stats.collectedFees'} textStyle={'captionSmall'} />
+        <TokenAmount assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
+      </Card>
+    </SimpleGrid>
+  ), [tvlUsd, avgApy, volume, assetIds, asset, collectedFeesUsd, selectAssetById, strategyConfig])
 
   return (
     <AssetProvider
@@ -435,28 +486,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
             </Stack>
           )
         }
-        <SimpleGrid
-          spacing={4}
-          width={'full'}
-          columns={[1, 4]}
-        >
-          <Card>
-            <Translation mb={1} translation={'defi.tvl'} textStyle={'captionSmall'} />
-            <Amount.Usd value={tvlUsd} textStyle={'ctaStatic'} fontSize={'xl'} />
-          </Card>
-          <Card>
-            <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} />
-            <Amount.Percentage value={avgApy} textStyle={'ctaStatic'} fontSize={'xl'} />
-          </Card>
-          <Card>
-            <Translation mb={1} translation={'stats.totalVolume'} textStyle={'captionSmall'} />
-            <Amount.Usd value={volume} textStyle={'ctaStatic'} fontSize={'xl'} />
-          </Card>
-          <Card>
-            <Translation mb={1} translation={'stats.collectedFees'} textStyle={'captionSmall'} />
-            <TokenAmount assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
-          </Card>
-        </SimpleGrid>
+        {aggregatedCards}
         {
           !assetOnly && strategyConfig?.strategy === 'tranches' && (
             <SimpleGrid
@@ -485,8 +515,8 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                           width={'full'}
                         >
                           <Card>
-                            <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} color={`strategies.${asset.type}`} />
-                            <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} fontSize={'xl'} />
+                            <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} />
+                            <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} color={`strategies.${asset.type}`} fontSize={'xl'} />
                           </Card>
                           {
                             strategies[asset.type].stats?.strategyData?.fields.map( (field: string) => (

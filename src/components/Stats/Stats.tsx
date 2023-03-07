@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import type { AssetId, Asset } from 'constants/types'
-import { bnOrZero, BNify, sortNumeric } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import React, { useState, useMemo, useCallback } from 'react'
@@ -18,6 +17,7 @@ import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { bnOrZero, BNify, sortNumeric, getObjectPath } from 'helpers/'
 import { useTheme, SkeletonText, Stack, VStack, HStack, Flex, Text, Button, Input, InputGroup, InputRightElement } from '@chakra-ui/react'
 
 type ApyRange = {
@@ -237,6 +237,16 @@ export const Stats: React.FC = () => {
           </HStack>
         )
       },
+      sortType: (a: any, b: any, field: any, sortAsc: boolean | undefined): number => {
+        const apyRange_a = getObjectPath(a.original, field)
+        const apyRange_b = getObjectPath(b.original, field)
+
+        if (!apyRange_a || !apyRange_b) return 1
+
+        const n1 = BNify(apyRange_a.maxApy).isNaN() ? BNify(-1) : BNify(apyRange_a.maxApy)
+        const n2 = BNify(apyRange_b.maxApy).isNaN() ? BNify(-1) : BNify(apyRange_b.maxApy)
+        return n1.gt(n2) ? -1 : 1
+      }
       // sortType: sortNumeric
     },
   ]), [translate])
