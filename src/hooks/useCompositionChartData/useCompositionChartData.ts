@@ -51,10 +51,12 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
   const strategiesBalances = useMemo(() => {
     const filteredAssets = assets.filter( (asset: Asset) => asset.type && (!enabledStrategies || enabledStrategies.includes(asset.type)) )
     return filteredAssets.reduce( (strategiesBalances: Record<string, Balances>, asset: Asset) => {
-      if (!asset.type || !asset.vaultPosition || BNify(asset.vaultPosition?.realizedApy).isNaN()) return strategiesBalances
+      if (!asset.type || !asset.vaultPosition) return strategiesBalances
 
       strategiesBalances[asset.type].balance = strategiesBalances[asset.type].balance.plus(asset.vaultPosition.usd.redeemable)
-      strategiesBalances[asset.type].weightedRealizedApy = strategiesBalances[asset.type].weightedRealizedApy.plus(asset.vaultPosition.realizedApy.times(asset.vaultPosition.usd.redeemable))
+      if (BNify(asset.vaultPosition?.realizedApy).gt(0)){
+        strategiesBalances[asset.type].weightedRealizedApy = strategiesBalances[asset.type].weightedRealizedApy.plus(asset.vaultPosition.realizedApy.times(asset.vaultPosition.usd.redeemable))
+      }
 
       return strategiesBalances
     }, strategiesInitialBalances)
