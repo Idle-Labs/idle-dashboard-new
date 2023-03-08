@@ -2165,10 +2165,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // eslint-disable-next-line
       console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
-
-      return () => {
-        console.log('COMPONENT UNMOUNTED!!!')
-      }
     })()
 
   // eslint-disable-next-line
