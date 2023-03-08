@@ -1832,9 +1832,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         variant:'Aave',
         autoFarming:[],
         protocol:'morpho',
-        enabledEnvs:['beta'],
         blockNumber:16726342,
-        status:'experimental',
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
         CDO:{
