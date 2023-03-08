@@ -2085,7 +2085,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical vaults data
   useEffect(() => {
 
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !isEmpty(state.historicalRates)) return
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates)) return
 
     // Get Historical data
     ;(async () => {
@@ -2112,7 +2112,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
         return promises
       }, [])
 
-      const vaultsHistoricalData = await Promise.all(vaultsHistoricalDataPromises)
+      const [
+        vaultsHistoricalData,
+        vaultsCollectedFees
+      ] = await Promise.all([
+        Promise.all(vaultsHistoricalDataPromises),
+        vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
+      ])
 
       const tvls: Record<AssetId, HistoryData[]> = {}
       const rates: Record<AssetId, HistoryData[]> = {}
@@ -2155,13 +2161,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
+      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
       // eslint-disable-next-line
       console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+
+      return () => {
+        console.log('COMPONENT UNMOUNTED!!!')
+      }
     })()
 
   // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper])
+  }, [state.vaults, state.isPortfolioLoaded])
 
   // Calculate historical USD Tvls
   useEffect(() => {
@@ -2360,7 +2371,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('RESET PORTFOLIO')
     };
   // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts, multiCall])
+  }, [account, state.vaults, state.contracts])
 
   // Get user vaults positions
   useEffect(() => {
@@ -2541,6 +2552,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType, selectVaultById])
 
   // Get historical collected fees
+  /*
   useEffect(() => {
 
     if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees)) return
@@ -2559,6 +2571,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // eslint-disable-next-line
   }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper])
+  */
 
   // Generate Assets Data
   useEffect(() => {

@@ -779,8 +779,8 @@ export const Dashboard: React.FC = () => {
             <BalanceChart
               percentChange={0}
               color={chartColor}
-              assetIds={assetIds}
               timeframe={timeframe}
+              assetIds={allAssetIds}
               isRainbowChart={false}
               strategies={selectedStrategies}
               setPercentChange={setPercentChange}

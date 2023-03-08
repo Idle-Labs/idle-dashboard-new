@@ -401,6 +401,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   <AssetProvider
                     assetId={assetId}
                     wrapFlex={false}
+                    key={`asset_${assetId}`}
                   >
                     <AssetProvider.ApyRatio textStyle={'ctaStatic'} color={assetIds.length>1 ? `strategies.${asset.type}` : 'primary'} fontSize={'xl'} />
                   </AssetProvider>
