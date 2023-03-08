@@ -185,7 +185,7 @@ export const Strategy: React.FC = () => {
                       <Amount.Percentage value={value.realizedApy} textStyle={'tableCell'} />
                     </Flex>
                   </StatNumber>
-                  {/*<Amount.Usd value={value.usd.earnings} textStyle={'captionSmall'} />*/}
+                  <Amount.Usd prefix={'+'} value={value.usd.earnings} textStyle={'captionSmall'} />
                 </Stat>
               )
             }
