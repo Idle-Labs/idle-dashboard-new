@@ -2391,8 +2391,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     WETHBB: {
-      status:'experimental',
-      enabledEnvs: ['beta'],
       blockNumber: 16733433,
       underlyingToken: 'WETH',
       idle: {
