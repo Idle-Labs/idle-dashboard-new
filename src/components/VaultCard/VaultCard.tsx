@@ -277,7 +277,17 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
           spacing={3}
           alignItems={'flex-start'}
         >
-          <AssetLabel assetId={assetId} size={'sm'} />
+          <HStack
+            width={'full'}
+            justifyContent={'space-between'}
+          >
+            <AssetLabel assetId={assetId} size={'sm'} />
+            {
+              strategies[asset.type].strategy === 'tranches' && (
+                <AssetProvider.GeneralData size={'xs'} field={'protocolWithVariant'} />
+              )
+            }
+          </HStack>
           <SimpleGrid
             pt={3}
             pl={4}
