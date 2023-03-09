@@ -2,8 +2,8 @@ import { Location } from 'history'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
 import { sendPageview } from 'helpers/analytics'
-import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useLocation, useRoutes, useSearchParams } from 'react-router-dom'
+import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useMemo, createContext, useContext, useEffect } from 'react'
 
 export type BrowserRouterContextProps = {

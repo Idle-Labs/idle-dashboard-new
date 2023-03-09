@@ -276,7 +276,7 @@ export const AssetPage: React.FC = () => {
   const headerRightSide = useMemo(() => {
     if (selectedTab.id === 'stats'){
       return (
-        <TimeframeSelector style={{marginTop:'-20px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+        <TimeframeSelector style={isMobile ? {marginTop:'20px'} : {marginTop:'-20px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
       )
     } else {
       return !isMobile && (
@@ -310,13 +310,19 @@ export const AssetPage: React.FC = () => {
             <AssetLabel assetId={params.asset} fontSize={'h2'} />
             <Stack
               flex={1}
-              direction={'row'}
               width={['100%', 'auto']}
-              borderBottom={'1px solid'}
-              borderColor={'divider'}
+              direction={['column', 'row']}
               justifyContent={'space-between'}
+              borderBottom={[0, '1px solid']}
+              borderColor={['divider', 'divider']}
             >
-              {renderedTabs}
+              <HStack
+                width={['full', 'auto']}
+                borderBottom={['1px solid', 0]}
+                borderColor={'divider'}
+              >
+                {renderedTabs}
+              </HStack>
               {headerRightSide}
             </Stack>
           </Stack>
