@@ -20,6 +20,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       zIndex={999999}
       id={'mobile-menu'}
       bg={'card.bgDark'}
+      overflow={'auto'}
       layerStyle={'overlay'}
       left={isOpen ? '0' : '-100vw'}
       sx={{
