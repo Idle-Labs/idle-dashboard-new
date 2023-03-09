@@ -1596,6 +1596,164 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    clearpool:{
+      USDC:{
+        autoFarming:[],
+        variant:'portofino',
+        enabledEnvs:['beta'],
+        protocol:'clearpool',
+        blockNumber:16790250,
+        status:'experimental',
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_portofino_USDC',
+          address:'0x1329E8DB9Ed7a44726572D44729427F132Fa290D'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_portofino_USDC',
+          address:'0x931c080c7ed6b3c6988576654e5d56753dc92181'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.clearpool.finance/pool/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">clearpool Portofino USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_portofino_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'AA_clearpool_portofino_USDC',
+            label:'Clearpool Portofino USDC AA',
+            token:'AA_clearpool_portofino_USDC',
+            address:'0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_portofino_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'BB_clearpool_portofino_USDC',
+            token:'BB_clearpool_portofino_USDC',
+            label:'Clearpool Portofino USDC BB',
+            address:'0xf85Fd280B301c0A6232d515001dA8B6c8503D714'
+          }
+        }
+      },
+      DAI:{
+        autoFarming:[],
+        variant:'portofino',
+        enabledEnvs:['beta'],
+        protocol:'clearpool',
+        blockNumber:16790274,
+        status:'experimental',
+        underlyingToken:'DAI',
+        adaptiveYieldSplitEnabled:true,
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_portofino_DAI',
+          address:'0x5dcA0B3Ed7594A6613c1A2acd367d56E1f74F92D'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_portofino_DAI',
+          address:'0x3687c0F8760371fc1BD1c7bc28695c388CdEd5a0'
+        },
+        description:'This strategy converts 1:1 DAI into USDC via <a href="https://makerdao.world/en/learn/governance/module-psm/" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://app.clearpool.finance/pool/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">clearpool Portofino DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_portofino_DAI_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790274,
+            name:'AA_clearpool_portofino_DAI',
+            label:'Clearpool Portofino DAI AA',
+            token:'AA_clearpool_portofino_DAI',
+            address:'0x43eD68703006add5F99ce36b5182392362369C1c'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_portofino_DAI_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790274,
+            name:'BB_clearpool_portofino_DAI',
+            token:'BB_clearpool_portofino_DAI',
+            label:'Clearpool Portofino DAI BB',
+            address:'0x38D36353D07CfB92650822D9c31fB4AdA1c73D6E'
+          }
+        }
+      }
+    },
     morpho:{
       USDC:{
         variant:'Aave',
