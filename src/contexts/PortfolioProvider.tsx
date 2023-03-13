@@ -1012,6 +1012,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return allocations
     }, {}) : {}
 
+    // console.log('protocolsResults', protocolsResults)
+    // console.log('lastAllocationsCalls', lastAllocationsCalls)
+    // console.log('allocationsResults', allocationsResults)
+
     // Set allocations
     /*
     Object.keys(allocations).forEach( (assetId: AssetId) => {
@@ -2736,6 +2740,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }
     }
+
+    // console.log('assetsData', assetsData)
     
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [

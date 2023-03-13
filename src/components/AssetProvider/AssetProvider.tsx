@@ -157,16 +157,18 @@ const VaultVariant: React.FC<TextProps> = (props) => {
 }
 
 const StatusBadge: React.FC<ImageProps> = (props) => {
-  const { vault, translate } = useAssetProvider()
-  if (!vault || !("status" in vault) || !vault?.status?.length) return null
+  const { asset, translate } = useAssetProvider()
+  if (!asset || !("status" in asset) || !asset?.status?.length || asset?.status === 'production') return null
+
+  console.log('statusBadge', asset.id, asset.status)
 
   return (
     <Tooltip
       hasArrow
       placement={'top'}
-      label={translate(`assets.assetDetails.tooltips.${vault.status}`)}
+      label={translate(`assets.assetDetails.tooltips.${asset.status}`)}
     >
-      <Image src={`images/vaults/${vault.status}.png`} {...props} />
+      <Image src={`images/vaults/${asset.status}.png`} {...props} />
     </Tooltip>
   )
 }

@@ -823,8 +823,8 @@
         "messages": {
           "deprecated": "This Vault has been deprecated, redeem your funds.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
+          "paused": "Deposits are momentarily disabled for maintenance purposes. Redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter.",
           "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose.",
-          "paused": "Deposits are momentarily disabled for maintenance purposes. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter.",
           "maintenance": "Deposits are momentarily disabled for maintenance purposes. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter."
         },
         "status": {
@@ -1734,6 +1734,7 @@
         "totalSupply": "Total amount of assets staked in this gauge",
         "totalIDLEStaked":"The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
+        "paused": "This vault is paused, deposits are momentarily disabled",
         "deprecated": "This vaults has been deprecated, withdraw your assets",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
