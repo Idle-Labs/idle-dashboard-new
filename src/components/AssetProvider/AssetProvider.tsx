@@ -160,8 +160,6 @@ const StatusBadge: React.FC<ImageProps> = (props) => {
   const { asset, translate } = useAssetProvider()
   if (!asset || !("status" in asset) || !asset?.status?.length || asset?.status === 'production') return null
 
-  console.log('statusBadge', asset.id, asset.status)
-
   return (
     <Tooltip
       hasArrow
