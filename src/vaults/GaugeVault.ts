@@ -155,10 +155,14 @@ export class GaugeVault {
 
             if (getTokenPrice){
               const cacheKey = `tokenPrice_${this.chainId}_${this.trancheVault.id}_${tx.blockNumber}`
-              // @ts-ignore
-              const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
-              const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
-              idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+              try {
+                // @ts-ignore
+                const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+                const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
+                idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
+              } catch (err) {
+                
+              }
             }
 
             // const underlyingAmount = idlePrice.times(idleAmount)
