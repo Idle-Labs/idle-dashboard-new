@@ -328,18 +328,28 @@ export class BestYieldVault {
     ]
   }
 
-  public getProtocolsAllocationsCalls(): ContractRawCall[] {
-
-    return []
-
-    return this.tokenConfig.protocols.map( (protocolToken: IdleTokenProtocol) => {
+  public getInterestBearingTokensCalls(): ContractRawCall[] {
+    const calls = this.tokenConfig.protocols.map( (protocolToken: IdleTokenProtocol) => {
       const protocolTokenContract = new this.web3.eth.Contract(ERC20 as Abi, protocolToken.address)
       return {
-        assetId:this.id,
-        data:protocolToken,
-        call:protocolTokenContract.methods.balanceOf(this.id)
+        assetId: this.id,
+        data: protocolToken as any,
+        call: protocolTokenContract.methods.balanceOf(this.id)
       }
     })
+
+    if (this.underlyingToken?.address && this.underlyingContract){
+      calls.push({
+        assetId: this.id,
+        data: {
+          address: this.underlyingToken.address,
+          decimals: this.underlyingToken?.decimals || 18
+        },
+        call: this.underlyingContract.methods.balanceOf(this.id)
+      })
+    }
+
+    return calls
   }
 
   public getRewardTokensCalls(): ContractRawCall[] {
@@ -382,7 +392,7 @@ export class BestYieldVault {
         icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         underlyingId: this.underlyingToken?.address?.toLowerCase(),
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
-      },
+      }
     }
   }
 

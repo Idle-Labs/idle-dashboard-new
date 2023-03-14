@@ -1,13 +1,15 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
-import { BNify, estimateGasLimit } from 'helpers/'
-import type { VaultMessages } from 'constants/vaults'
+import { Amount } from 'components/Amount/Amount'
+import { BestYieldVault } from 'vaults/BestYieldVault'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import { bnOrZero, BNify, estimateGasLimit } from 'helpers/'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import type { VaultMessages, IdleTokenProtocol } from 'constants/vaults'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
@@ -33,7 +35,6 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
   const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
-  // console.log('asset', asset)
 
   const toggleRedeemInterestBearing = useCallback(() => {
     return setRedeemInterestBearing( prevState => !prevState )
@@ -215,6 +216,41 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [vaultBalance, redeemInterestBearing, toggleRedeemInterestBearing, redeemInterestBearingEnabled])
 
+  const interestBearingTokens = useMemo(() => {
+    if (!asset?.interestBearingTokens || !asset?.vaultPosition || !vault || !(vault instanceof BestYieldVault)) return null
+    return (
+      <VStack
+        spacing={2}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Translation mb={1} component={Text} translation={`dynamicActionFields.stkIDLE`} suffix={':'} textStyle={'titleSmall'} />
+        {
+          Object.keys(asset?.interestBearingTokens).map( (tokenAddress: string) => {
+            const protocolAsset = selectAssetById(tokenAddress) || vault.tokenConfig.protocols.find( (p: IdleTokenProtocol) => p.address === tokenAddress )
+            const interestBearingTotalBalance = bnOrZero(asset?.interestBearingTokens?.[tokenAddress])
+            const shareAmount = interestBearingTotalBalance.times(bnOrZero(asset?.vaultPosition?.poolShare))
+            return (
+              <HStack
+                pb={2}
+                px={4}
+                width={'100%'}
+                alignItems={'center'}
+                borderBottom={`1px solid`}
+                borderBottomColor={'divider'}
+                justifyContent={'space-between'}
+                key={`assetField_${tokenAddress}`}
+              >
+                <Text textStyle={'captionSmall'}>{protocolAsset?.token}</Text>
+                <Amount value={shareAmount} textStyle={'titleSmall'} color={'primary'} />
+              </HStack>
+            )
+          })
+        }
+      </VStack>
+    )
+  }, [asset, vault, selectAssetById])
+
   return (
     <AssetProvider
       flex={1}
@@ -313,7 +349,13 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               </Card.Dark>
             )
           }
-          <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
+          {
+            redeemInterestBearingEnabled && redeemInterestBearing ?
+              interestBearingTokens
+            : (
+              <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
+            )
+          }
         </VStack>
         <VStack
           spacing={4}

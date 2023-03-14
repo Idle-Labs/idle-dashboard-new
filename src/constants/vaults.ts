@@ -2125,7 +2125,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'compound',
           address: '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
           token: 'cDAI',
-          decimals: 28,
+          decimals: 8,
           functions: {
             exchangeRate: {
               name: 'exchangeRateStored',
@@ -2344,7 +2344,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'compound',
           address: '0x39aa39c021dfbae8fac545936693ac917d5e7563',
           token: 'cUSDC',
-          decimals: 16,
+          decimals: 8,
           functions: {
             exchangeRate: {
               name: 'exchangeRateStored',
@@ -2354,7 +2354,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
         {
           abi: aToken as Abi,
-          decimals: 18,
+          decimals: 6,
           enabled: true,
           name: 'aavev2',
           token: 'aUSDCv2',
@@ -2413,7 +2413,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           abi: cToken as Abi,
           address: '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
           token: 'cUSDT',
-          decimals: 16,
+          decimals: 8,
           functions: {
             exchangeRate: {
               name: 'exchangeRateStored',
@@ -2423,7 +2423,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
         {
           abi: aToken as Abi,
-          decimals: 18,
+          decimals: 6,
           name: 'aavev2',
           enabled: true,
           token: 'aUSDTv2',
@@ -2516,7 +2516,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'compound',
           address: '0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5',
           token: 'cETH',
-          decimals: 28,
+          decimals: 8,
           functions: {
             exchangeRate: {
               name: 'exchangeRateStored',
@@ -2606,7 +2606,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           abi: cToken as Abi,
           name: 'compound',
           address: '0xccF4429DB6322D5C611ee964527D42E5d685DD6a',
-          decimals: 18,
+          decimals: 8,
           functions: {
             exchangeRate: {
               name: 'exchangeRateStored',
@@ -2620,7 +2620,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'aavev2',
           token: 'aWBTCv2',
           address: '0x9ff58f4fFB29fA2266Ab25e75e2A8b3503311656',
-          decimals: 18,
+          decimals: 8,
           functions: {
 
           }

@@ -193,6 +193,7 @@ export type StakingData = {
 }
 
 export type VaultPosition = {
+  poolShare: BigNumber
   avgBuyPrice: BigNumber
   realizedApy: BigNumber
   depositDuration: number
@@ -286,6 +287,7 @@ export type Asset = {
   lastHarvest?: Harvest | null
   idleDistribution?: BigNumber
   vaultPosition?: VaultPosition
+  interestBearingTokens?: Balances
 }
 
 export type Assets = Record<AssetId, Asset>
