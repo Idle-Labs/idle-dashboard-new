@@ -183,8 +183,14 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       deposit(false)
       dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
     }
-
   }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
+
+  // Automatically switch to withdraw
+  // useEffect(() => {
+  //   if (asset && asset.status === 'paused'){
+  //     setActionIndex(1)
+  //   }
+  // }, [asset, setActionIndex])
 
   const depositButton = useMemo(() => {
     return account ? (
@@ -235,7 +241,20 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         p={2}
         border={0}
       >
-        <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${asset.status}`} textAlign={'center'} />
+        <VStack
+          spacing={2}
+          width={'full'}
+          justifyContent={'center'}
+        >
+          <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${asset.status}`} textAlign={'center'} />
+          {
+            /*
+            asset?.status === 'paused' && (
+              <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={2} px={7} onClick={ () => setActionIndex(1) } />
+            )
+            */
+          }
+        </VStack>
       </Card.Dark>
     )
   }, [asset, vaultEnabled, assetBalance, setActionIndex])

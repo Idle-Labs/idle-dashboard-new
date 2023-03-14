@@ -21,6 +21,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const [ inputDisabled, setInputDisabled ] = useState<boolean>(false)
   const [ gasEstimateError, setGasEstimateError ] = useState<string | null>(null)
   const [ redeemInterestBearing, setRedeemInterestBearing ] = useState<boolean>(false)
 
@@ -52,7 +53,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [selectAssetById, vaultGauge])
 
   const redeemInterestBearingEnabled = useMemo(() => {
-    return vault && ("getWithdrawInterestBearingContractSendMethod" in vault) && asset?.status === 'paused'
+    return vault && ("getWithdrawInterestBearingContractSendMethod" in vault) && asset?.status === 'paused' && (!("flags" in vault) || vault?.flags?.redeemInterestBearingEnabled === undefined || !!vault?.flags?.redeemInterestBearingEnabled)
   }, [vault, asset])
 
   const withdrawFunction = useMemo(() => {
@@ -72,6 +73,22 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     // console.log('assetBalance', balance.toString(), vaultPrice.toString())
     return balance.times(vaultPrice)
   }, [selectAssetBalance, selectVaultPrice, vault?.id])
+  
+  // Set max balance function
+  const setMaxBalance = useCallback(() => {
+    if (!assetBalance) return
+    setAmount(assetBalance.toString())
+  }, [assetBalance])
+
+  // Disable input and set max balance
+  useEffect(() => {
+    if (redeemInterestBearingEnabled && redeemInterestBearing){
+      setMaxBalance()
+      setInputDisabled(true)
+    } else {
+      setInputDisabled(false)
+    }
+  }, [setMaxBalance, setInputDisabled, redeemInterestBearingEnabled, redeemInterestBearing])
 
   const disabled = useMemo(() => {
     setError('')
@@ -119,12 +136,6 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     setAmountUsd(amountUsd)
   }, [underlyingAsset, vault, amount, selectVaultPrice, selectAssetPriceUsd, dispatch])
 
-  // Set max balance function
-  const setMaxBalance = useCallback(() => {
-    if (!assetBalance) return
-    setAmount(assetBalance.toString())
-  }, [assetBalance])
-
   const getDefaultGasLimit = useCallback(async () => {
     if (!vault || !(withdrawSendMethodFunction in vault) || !(withdrawParamsFunction in vault)) return
     const defaultGasLimit = "getMethodDefaultGasLimit" in vault ? vault.getMethodDefaultGasLimit('withdraw') : 0
@@ -139,9 +150,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const withdrawParams = vault[withdrawParamsFunction](vaultBalance.toFixed())
     // @ts-ignore
     const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
-
+    
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
-    // console.log('WITHDRAW - estimatedGasLimit', estimatedGasLimit)
+    
     return estimatedGasLimit
   }, [account, vaultBalance, vault, withdrawParamsFunction, withdrawSendMethodFunction])
 
@@ -250,7 +261,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                   spacing={2}
                   alignItems={'flex-start'}
                 >
-                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} isDisabled={inputDisabled} />
                   <HStack
                     width={'100%'}
                     justifyContent={'space-between'}

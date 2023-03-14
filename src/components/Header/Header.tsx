@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react'
 import { NavLink } from "react-router-dom"
+import { Card } from 'components/Card/Card'
 import { TopBarMenu } from './Menu/TopBarMenu'
-import { HStack, Stack } from '@chakra-ui/react'
 import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
 import { useWalletProvider } from 'contexts/WalletProvider'
 // import { useThemeProvider } from 'contexts/ThemeProvider'
+import { HStack, Stack, VStack, Image } from '@chakra-ui/react'
+import { Translation } from 'components/Translation/Translation'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 export const Header: React.FC = () => {
@@ -37,23 +39,45 @@ export const Header: React.FC = () => {
   }, [account, chainId])
 
   return (
-    <HStack
-      spacing={0}
-      justifyContent={'space-between'}
+    <VStack
+      spacing={5}
+      width={'full'}
     >
-      <TopBarMenu />
-      <Stack
-        flex={1}
-        spacing={[3, 4]}
-        direction={'row'}
-        alignItems={'center'}
-        justifyContent={'flex-end'}
+      <HStack
+        spacing={0}
+        width={'full'}
+        justifyContent={'space-between'}
       >
-        {assetBalance}
-        <NetworkSelector />
-        <AccountSelector />
-        {/*<NotificationList />*/}
-      </Stack>
-    </HStack>
+        <TopBarMenu />
+        <Stack
+          flex={1}
+          spacing={[3, 4]}
+          direction={'row'}
+          alignItems={'center'}
+          justifyContent={'flex-end'}
+        >
+          {assetBalance}
+          <NetworkSelector />
+          <AccountSelector />
+          {/*<NotificationList />*/}
+        </Stack>
+      </HStack>
+      <Card.Dark
+        p={[3, 5]}
+        borderColor={'yellow'}
+      >
+        <Stack
+          width={'full'}
+          spacing={[2, 3]}
+          alignItems={'center'}
+          justifyContent={'center'}
+          direction={['column','row']}
+        >
+          <Image src={`images/vaults/deprecated.png`} width={6} />
+          <Translation textAlign={'center'} translation={'announcements.eulerHack'} isHtml={true} textStyle={'caption'} />
+          <Image display={['none', 'block']} src={`images/vaults/deprecated.png`} width={6} />
+        </Stack>
+      </Card.Dark>
+    </VStack>
   )
 }

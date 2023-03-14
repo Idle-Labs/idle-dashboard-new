@@ -11,9 +11,10 @@ type InputAmountArgs = {
   amountUsd?: NumberType | null
   setAmount: Function
   inputHeight?: number
+  isDisabled?: boolean
 }
 
-export const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd, setAmount }) => {
+export const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, amountUsd, setAmount, isDisabled = false }) => {
   const { asset, underlyingAsset } = useAssetProvider()
   const { selectors: { selectAssetPriceUsd, selectVaultPrice } } = usePortfolioProvider()
   
@@ -39,7 +40,7 @@ export const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, am
       width={'100%'}
       justifyContent={'space-between'}
     >
-      <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} />
+      <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} disabled={isDisabled} />
       {
         amountUsd !== null && (
           <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={bnOrZero(amountUsdToDisplay).toString()} />

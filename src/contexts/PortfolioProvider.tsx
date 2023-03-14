@@ -748,6 +748,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : [],
         ("getIdleDistributionCalls" in vault) && checkEnabledCall('aprs') ? vault.getIdleDistributionCalls() : [],
         ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
+        ("getProtocolsAllocationsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsAllocationsCalls() : [],
         ("getRewardTokensCalls" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensCalls() : [],
         account && ("getRewardTokensAmounts" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensAmounts(account.address) : [],
         ("getMultiRewardsDataCalls" in vault) && checkEnabledCall('rewards') ? vault.getMultiRewardsDataCalls() : [],
@@ -834,6 +835,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         baseAprResults,
         idleDistributionResults,
         protocolsResults,
+        protocolsAllocationsResults,
         rewardTokensResults,
         rewardTokensAmountsResults,
         gaugeMultiRewardsData,
@@ -870,6 +872,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
     // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
+    // console.log('protocolsAllocationsResults', protocolsAllocationsResults)
 
     const [
       stkIdleTotalLocked,

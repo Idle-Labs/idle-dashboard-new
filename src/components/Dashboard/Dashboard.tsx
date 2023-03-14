@@ -694,14 +694,18 @@ export const Dashboard: React.FC = () => {
         direction={['column', 'row']}
       >
         <Translation translation={'navBar.dashboard'} component={Heading} as={'h2'} size={'3xl'} />
-        <HStack
-          pb={3}
-          flex={1}
-          borderBottom={'1px solid'}
-          borderColor={'divider'}
-        >
-          <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} checkUserFunds={true} showOnMobile={false} />
-        </HStack>
+        {
+          !isMobile && (
+            <HStack
+              pb={3}
+              flex={1}
+              borderBottom={'1px solid'}
+              borderColor={'divider'}
+            >
+              <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} checkUserFunds={true} showOnMobile={false} />
+            </HStack>
+          )
+        }
       </Stack>
       <Stack
         flex={1}

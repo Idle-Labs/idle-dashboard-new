@@ -501,19 +501,21 @@ export const useOperativeComponent = () => useContext(OperativeComponentContext)
 
 type OperativeComponentArgs = {
   assetId?: AssetId
+  defaultActiveIndex?: number
   actions: OperativeComponentAction[]
 } & CardProps
 
 export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   assetId,
   actions,
+  defaultActiveIndex = 0,
   ...cardProps
 }) => {
   const intervalId = useRef<any>(null)
   const translate = useTranslate()
   const [ activeItem, setActiveItem ] = useState<number>(0)
-  const [ actionIndex, setActionIndex ] = useState<number>(0)
   const [ state, dispatch ] = useReducer(reducer, initialState)
+  const [ actionIndex, setActionIndex ] = useState<number>(defaultActiveIndex)
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
 
   const { selectors: { selectAssetById } } = usePortfolioProvider()

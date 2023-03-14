@@ -92,6 +92,9 @@
     "loadingText": "Loading...",
     "txId": "Tx ID"
   },
+  "announcements": {
+    "eulerHack": "Vaults affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler Finance Incident</a> have been temporarily paused. Interest-bearing token withdrawals have been enabled - <a href='https://docs.idle.finance/products/best-yield/guides/redeem-funds-on-by#redeem-interest-bearing-tokens' class='link' target='_blank' rel='noopener'>Learn more</a>"
+  },
   "onboard": {
     "connect": {
       "selectingWallet": {
@@ -800,7 +803,7 @@
         "disabled":"This gauge has been deactivated, unstake your tranche tokens or claim your rewards",
         "disabledCta":"Unstake"
       },
-      "BB": {
+      "BY": {
         "disabled":"This vault has been deactivated, please withdraw your funds",
         "disabledCta":"Withdraw"
       },
@@ -882,7 +885,7 @@
       },
       "redeemInterestBearing":{
         "label":"Withdraw interest bearing tokens",
-        "description": "By enabling this feature you will receive the interest bearing tokens (idleTokens). This feature is only available when the vault is paused. Please use it knowledgeably and with caution."
+        "description": "This feature is only available when the vault is paused. By enabling it, you will receive the interest bearing tokens, representing your share in the pool. Please use it knowledgeably."
       },
       "withdraw": {
         "confirm": "You are withdrawing",

@@ -129,6 +129,7 @@ export const theme = extendTheme({
       axisLabel:'#555B67',
       headerHover:'#404F6A'
     },
+    yellow:'#FFD15C',
     orange:'#FF9859',
     divider:'#555B67',
     primary:'#FFFFFF',

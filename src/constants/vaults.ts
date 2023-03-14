@@ -2185,7 +2185,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       flags:{
         // depositsDisabled:true,
         apiType:'juniorRates',
-        referralEnabled:true
+        referralEnabled:true,
+        redeemInterestBearingEnabled:false
       },
       underlyingToken: 'USDC',
       idle: {
@@ -2232,7 +2233,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       flags:{
         apiType:'juniorRates',
         referralEnabled:true,
-        // depositsDisabled:true,
+        redeemInterestBearingEnabled:false
       },
       underlyingToken: 'USDT',
       idle: {
@@ -2280,6 +2281,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       flags:{
         referralEnabled:true,
         apiType:'juniorRates',
+        redeemInterestBearingEnabled:false
       },
       underlyingToken: 'DAI',
       idle: {
@@ -2557,7 +2559,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       },
       flags:{
         apiType:'juniorRates',
-        referralEnabled:true
+        referralEnabled:true,
+        redeemInterestBearingEnabled:false
       },
       description:'This Junior Best Yield Vaults seek to maximize yields across multiple Junior yield sources (see protocols below). As deposited funds provide first-loss capital to an array of different Junior Tranches, it represent an aggressive target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
       protocols: [

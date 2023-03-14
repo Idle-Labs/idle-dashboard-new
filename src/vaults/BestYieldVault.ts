@@ -3,7 +3,6 @@ import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
-import type { VaultMessages } from 'constants/vaults'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -11,6 +10,7 @@ import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
 import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import type { VaultMessages, IdleTokenProtocol } from 'constants/vaults'
 import { BNify, fixTokenDecimals, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
@@ -323,6 +323,20 @@ export class BestYieldVault {
         call:this.contract.methods.lastAllocations(index)
       }
     ]
+  }
+
+  public getProtocolsAllocationsCalls(): ContractRawCall[] {
+
+    return []
+
+    return this.tokenConfig.protocols.map( (protocolToken: IdleTokenProtocol) => {
+      const protocolTokenContract = new this.web3.eth.Contract(ERC20 as Abi, protocolToken.address)
+      return {
+        assetId:this.id,
+        data:protocolToken,
+        call:protocolTokenContract.methods.balanceOf(this.id)
+      }
+    })
   }
 
   public getRewardTokensCalls(): ContractRawCall[] {
