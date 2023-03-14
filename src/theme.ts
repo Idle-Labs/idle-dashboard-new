@@ -418,6 +418,10 @@ export const theme = extendTheme({
     },
     Checkbox: {
       baseStyle:{
+        label:{
+          color:'primary',
+          fontWeight:400,
+        },
         control:{
           outline:'none',
           borderWidth:'1px',

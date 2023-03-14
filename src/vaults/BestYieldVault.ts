@@ -366,14 +366,6 @@ export class BestYieldVault {
         underlyingId: this.underlyingToken?.address?.toLowerCase(),
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
       },
-      // ...(this.tokenConfig.protocols.reduce( (tokens: Assets, protocolToken) => {
-      //   tokens[protocolToken.address.toLowerCase()] = {
-      //     name:protocolToken.token,
-      //     token:protocolToken.token,
-      //     decimals:protocolToken.decimals,
-      //   }
-      //   return tokens
-      // }, {}))
     }
   }
 
@@ -423,6 +415,14 @@ export class BestYieldVault {
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
     return this.contract.methods.mintIdleToken(...params)
+  }
+
+  public getWithdrawInterestBearingParams(amount: NumberType): any[] {
+    return [normalizeTokenAmount(amount, this.idleConfig.decimals)]
+  }
+
+  public getWithdrawInterestBearingContractSendMethod(params: any[] = []): ContractSendMethod {
+    return this.contract.methods.redeemInterestBearingTokens(...params)
   }
 
   public getWithdrawParams(amount: NumberType): any[] {

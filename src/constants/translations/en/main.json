@@ -31,6 +31,7 @@
     "stake": "Stake",
     "unstake": "Unstake",
     "withdraw": "Withdraw",
+    "withdrawInterestBearing": "Withdraw interest bearing",
     "withdrawal": "Withdrawal",
     "claim": "Claim",
     "enter": "Enter",
@@ -878,6 +879,10 @@
             "button": "Back"
           }
         }
+      },
+      "redeemInterestBearing":{
+        "label":"Withdraw interest bearing tokens",
+        "description": "By enabling this feature you will receive the interest bearing tokens (idleTokens). This feature is only available when the vault is paused. Please use it knowledgeably and with caution."
       },
       "withdraw": {
         "confirm": "You are withdrawing",

@@ -8,11 +8,11 @@ import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
+import { Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -22,6 +22,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
   const [ gasEstimateError, setGasEstimateError ] = useState<string | null>(null)
+  const [ redeemInterestBearing, setRedeemInterestBearing ] = useState<boolean>(false)
 
   const { account } = useWalletProvider()
   const { searchParams } = useBrowserRouter()
@@ -32,6 +33,10 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
   // console.log('asset', asset)
+
+  const toggleRedeemInterestBearing = useCallback(() => {
+    return setRedeemInterestBearing( prevState => !prevState )
+  }, [setRedeemInterestBearing])
 
   const vaultBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -46,6 +51,20 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return vaultGauge && selectAssetById && selectAssetById(vaultGauge.id)
   }, [selectAssetById, vaultGauge])
 
+  const redeemInterestBearingEnabled = useMemo(() => {
+    return vault && ("getWithdrawInterestBearingContractSendMethod" in vault) && asset?.status === 'paused'
+  }, [vault, asset])
+
+  const withdrawFunction = useMemo(() => {
+    if (redeemInterestBearingEnabled && redeemInterestBearing){
+      return 'getWithdrawInterestBearing'
+    }
+    return 'getWithdraw'
+  }, [redeemInterestBearingEnabled, redeemInterestBearing])
+
+  const withdrawParamsFunction = useMemo(() => `${withdrawFunction}Params`, [withdrawFunction])
+  const withdrawSendMethodFunction = useMemo(() => `${withdrawFunction}ContractSendMethod`, [withdrawFunction])
+
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
     const balance = selectAssetBalance(vault?.id)
@@ -53,7 +72,6 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     // console.log('assetBalance', balance.toString(), vaultPrice.toString())
     return balance.times(vaultPrice)
   }, [selectAssetBalance, selectVaultPrice, vault?.id])
-
 
   const disabled = useMemo(() => {
     setError('')
@@ -69,17 +87,20 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   // Withdraw
   const withdraw = useCallback(() => {
     if (!account || disabled) return
-    if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault)) return
+    if (!vault || !(withdrawSendMethodFunction in vault) || !(withdrawParamsFunction in vault)) return
 
-    ;(async() => {
+    ;(async () => {
       const vaultPrice = selectVaultPrice(vault.id)
       const amountToWithdraw = BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice))
-      const withdrawParams = vault.getWithdrawParams(amountToWithdraw)
-      const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
-      // console.log('withdrawParams', withdrawParams, withdrawContractSendMethod)
+
+      // @ts-ignore
+      const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw)
+      // @ts-ignore
+      const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
+
       sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
     })()
-  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction])
+  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction, withdrawParamsFunction, withdrawSendMethodFunction])
 
   // Reset amount on transaction succeeded
   useEffect(() => {
@@ -105,9 +126,8 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [assetBalance])
 
   const getDefaultGasLimit = useCallback(async () => {
-    if (!vault || !("getWithdrawContractSendMethod" in vault) || !("getWithdrawParams" in vault)) return
-    
-    const defaultGasLimit = vault.getMethodDefaultGasLimit('withdraw')
+    if (!vault || !(withdrawSendMethodFunction in vault) || !(withdrawParamsFunction in vault)) return
+    const defaultGasLimit = "getMethodDefaultGasLimit" in vault ? vault.getMethodDefaultGasLimit('withdraw') : 0
     if (!account || vaultBalance.lte(0)){
       return defaultGasLimit
     }
@@ -115,16 +135,19 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const sendOptions = {
       from: account?.address
     }
-    const withdrawParams = vault.getWithdrawParams(vaultBalance.toFixed())
-    const withdrawContractSendMethod = vault.getWithdrawContractSendMethod(withdrawParams)
+    // @ts-ignore
+    const withdrawParams = vault[withdrawParamsFunction](vaultBalance.toFixed())
+    // @ts-ignore
+    const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
 
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('WITHDRAW - estimatedGasLimit', estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vaultBalance, vault])
+  }, [account, vaultBalance, vault, withdrawParamsFunction, withdrawSendMethodFunction])
 
   // Update gas fees
   useEffect(() => {
+    setGasEstimateError(null)
     if (activeItem !== itemIndex) return
     ;(async () => {
       try {
@@ -150,15 +173,36 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const withdrawButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={"common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'} />
+      <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'} />
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, withdraw])
+  }, [account, disabled, withdraw, redeemInterestBearing])
 
   const vaultMessages = useMemo((): VaultMessages | undefined => {
     return vault && ("messages" in vault) ? vault.messages : undefined
   }, [vault])
+
+  const withdrawInterestBearingToken = useMemo(() => {
+    if (!redeemInterestBearingEnabled || vaultBalance.lte(0)) return null
+    return (
+      <Card.Dark
+        px={2}
+        py={3}
+        border={0}
+      >
+        <VStack
+          spacing={2}
+          width={'full'}
+          justifyContent={'center'}
+        >
+          <Image src={`images/vaults/deprecated.png`} width={6} height={6} />
+          <Translation textAlign={'center'} textStyle={'captionSmaller'} translation={'trade.actions.redeemInterestBearing.description'} />
+          <Translation component={Checkbox} size={'md'} sx={{'>span':{fontSize:'sm'}}} translation={'trade.actions.redeemInterestBearing.label'} isChecked={redeemInterestBearing} onChange={() => toggleRedeemInterestBearing()} />
+        </VStack>
+      </Card.Dark>
+    )
+  }, [vaultBalance, redeemInterestBearing, toggleRedeemInterestBearing, redeemInterestBearingEnabled])
 
   return (
     <AssetProvider
@@ -281,6 +325,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             </Card.Outline>
             */
           }
+          {withdrawInterestBearingToken}
           <EstimatedGasFees />
           {withdrawButton}
         </VStack>

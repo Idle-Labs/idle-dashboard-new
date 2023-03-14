@@ -647,12 +647,14 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
     </VStack>
   ) : null
 
+  const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0)
+
   return asset?.apy ? (
     <Tooltip
       hasArrow
       placement={'top'}
       label={tooltipLabel}
-      isDisabled={!showTooltip}
+      isDisabled={tooltipDisabled}
     >
       <TooltipContent>
         <Amount.Percentage value={asset?.apy} {...props} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />

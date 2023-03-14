@@ -862,11 +862,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
     //     'tokenUserBalance', tokenUserBalance,
     //     'claimable', claimable)
 
+    // console.log('aprsCallsResults', aprsCallsResults)
+    // console.log('protocolsResults', protocolsResults)
     // console.log('stkIdleResults', stkIdleResults)
     // console.log('pausedCallsResults', pausedCallsResults)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
+    // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
 
     const [
       stkIdleTotalLocked,
@@ -1225,6 +1228,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
       return vaultsPrices
     }, {})
+
+    // console.log('vaultsPrices', vaultsPrices)
 
     const pricesUsd = pricesUsdCallsResults.reduce( (pricesUsd: Balances, callResult: DecodedResult) => {
       const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
