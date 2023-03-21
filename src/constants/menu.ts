@@ -1,6 +1,6 @@
 import { IconType } from './types'
 import { getLegacyDashboardUrl } from 'helpers/'
-import { StrategyProps, strategies } from 'constants/strategies'
+import { ProductProps, products } from 'constants/products'
 
 export type MenuListType = {
   path?: string
@@ -25,10 +25,10 @@ export const menu: MenuItemType[] = [
   },
   {
     label: 'navBar.earn',
-    children: Object.values(strategies).filter( (strategy: StrategyProps) => strategy.route ).map( (strategy: StrategyProps) => ({
-      path: `earn/${strategy.route}`,
-      label: strategy.label as string,
-      color: strategy.color as string
+    children: Object.values(products).map( (product: ProductProps) => ({
+      path: `earn/${product.route}`,
+      label: product.label as string,
+      color: product.color as string
     }))
   },
   {

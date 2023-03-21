@@ -9,6 +9,7 @@ import { RouteObject, Navigate } from 'react-router-dom'
 const Stats = lazyLoadComponent('Stats')
 const Staking = lazyLoadComponent('Staking')
 const Strategy = lazyLoadComponent('Strategy')
+const Tranches = lazyLoadComponent('Tranches')
 const Dashboard = lazyLoadComponent('Dashboard')
 const AssetPage = lazyLoadComponent('AssetPage')
 const AssetStats = lazyLoadComponent('AssetStats')
@@ -26,21 +27,19 @@ export const routes: RouteObject[] = [
         path:'earn',
         children:[
           {
+            path:'tranches',
+            element:<Tranches />,
+          },
+          {
             path:':strategy',
             children:[
               {
                 index: true,
-                element:<Strategy />,
+                element:<Strategy />
               },
               {
                 path:':asset',
-                element:<AssetPage />,
-                // children:[
-                //   {
-                //     path:'stats',
-                //     element: <Stats />,
-                //   }
-                // ]
+                element:<AssetPage />
               },
             ]
           },
@@ -55,11 +54,11 @@ export const routes: RouteObject[] = [
         children:[
           {
             index: true,
-            element:<Stats />,
+            element:<Stats />
           },
           {
             path:':asset',
-            element:<AssetStats />,
+            element:<AssetStats />
           }
         ]
       },

@@ -4,6 +4,7 @@ import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { strategies } from 'constants/strategies'
 import { defaultChainId } from 'constants/chains'
+import { TrancheVault } from 'vaults/TrancheVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
@@ -416,6 +417,9 @@ const Strategies: React.FC<ProtocolsProps> = ({children, iconMargin = 1, ...prop
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   const availableStrategies = useMemo(() => {
+
+    if (vault instanceof TrancheVault) return [vault.type]
+
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return []
     return vault.tokenConfig.protocols.reduce( (availableStrategies: string[], protocolConfig: IdleTokenProtocol) => {
       const asset = selectAssetById(protocolConfig.address)
@@ -836,7 +840,16 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
   if (!vault || !("vaultConfig" in vault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
-  
+
+  return (
+    <AssetProvider
+      assetId={trancheAsset?.id}
+    >
+      <AssetProvider.Apy {...props} />
+    </AssetProvider>
+  )
+    
+  /*
   return !BNify(trancheAsset?.apy).isNaN() ? (
     <Tooltip
       hasArrow
@@ -848,6 +861,7 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
       </TooltipContent>
     </Tooltip>
   ) : <Spinner size={'sm'} />
+  */
 }
 
 const JuniorApy: React.FC<AmountProps> = (props) => {
@@ -857,7 +871,16 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
   if (!vault || !("vaultConfig" in vault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+
+  return (
+    <AssetProvider
+      assetId={trancheAsset?.id}
+    >
+      <AssetProvider.Apy {...props} />
+    </AssetProvider>
+  )
   
+  /*
   return !BNify(trancheAsset?.apy).isNaN() ? (
     <Tooltip
       hasArrow
@@ -869,6 +892,7 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
       </TooltipContent>
     </Tooltip>
   ) : <Spinner size={'sm'} />
+  */
 }
 
 const TotalPoolUsd: React.FC<AmountProps> = (props) => {
@@ -1201,6 +1225,23 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )
+
+    case 'assetWithVariant':
+      return (
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+        >
+          <Icon size={'sm'} {...props} />
+          <VStack
+            spacing={0}
+            alignItems={'flex-start'}
+          >
+            <Name textStyle={'tableCell'} {...props} />
+            <VaultVariant textStyle={'vaultVariant'}  />
+          </VStack>
+        </HStack>
+      )
     case 'assetWithStatus':
       return (
         <HStack
@@ -1243,6 +1284,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'tvl':
     case 'pool':
       return (<PoolUsd textStyle={'tableCell'} {...props} />)
+    case 'juniorApy':
+      return (<JuniorApy textStyle={'tableCell'} {...props} />)
+    case 'seniorApy':
+      return (<SeniorApy textStyle={'tableCell'} {...props} />)
     case 'apy':
       return (<Apy showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
     case 'apy7':
