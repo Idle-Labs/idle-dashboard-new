@@ -272,7 +272,6 @@ export function getTimestampRange (startDate: (Date | number | string), endDate:
   })
 }
 
-
 export async function catchPromise (promise: Promise<any>) {
   return promise
     .then(data => data)

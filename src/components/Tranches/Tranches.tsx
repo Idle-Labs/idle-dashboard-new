@@ -10,7 +10,7 @@ import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { ReactTable, } from 'components/ReactTable/ReactTable'
+import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -18,6 +18,7 @@ import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
@@ -45,8 +46,8 @@ export const Tranches: React.FC = () => {
   const translate = useTranslate()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
+  const { location } = useBrowserRouter()
   const { openModal } = useModalProvider()
-  const { location, params, match, query } = useBrowserRouter()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
 
@@ -61,7 +62,7 @@ export const Tranches: React.FC = () => {
 
   const product = useMemo(() => products.find( product => product.route === 'tranches' ), [])
 
-  const productStrategies = useMemo(() => product?.strategies, [product])
+  const productStrategies = useMemo(() => (product?.strategies || []), [product])
   const strategy = useMemo(() => productStrategies?.[0], [productStrategies])
 
   const onRowClickDeposited = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
@@ -427,27 +428,28 @@ export const Tranches: React.FC = () => {
             width={['100%', '65%']}
             alignItems={['center', 'flex-start']}
           >
-            <Translation isHtml={true} translation={strategies[strategy].title || strategies[strategy].label} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} />
+            <Translation isHtml={true} translation={'strategies.tranches.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
             {
               !isMobile && (
                 <Flex
                   width={['100%', '80%']}
                 >
-                  <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+                  <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
                 </Flex>
               )
             }
+            <StrategyOverview strategies={productStrategies} />
           </VStack>
           <Image width={['70%', '33%']} src={strategies[strategy].image} />
           {
             isMobile && (
-              <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+              <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
             )
           }
         </Stack>
       </VStack>
     )
-  }, [strategy, banner, isMobile])
+  }, [strategy, productStrategies, banner, isMobile])
 
   return (
     <Flex

@@ -46,7 +46,15 @@ export const products: ProductProps[] = [
       {
         id:'tvl',
         accessor:'tvlUsd',
-        sortType: 'numeric'
+        sortType: 'numeric',
+        tables: ['Deposited']
+      },
+      {
+        title:'tvl',
+        accessor:'tvlUsd',
+        sortType: 'numeric',
+        id:'trancheTotalTvl',
+        tables: ['Available']
       },
       {
         id:'apy',

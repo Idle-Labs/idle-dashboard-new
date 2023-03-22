@@ -439,14 +439,14 @@ const Strategies: React.FC<ProtocolsProps> = ({children, iconMargin = 1, ...prop
         hasArrow
         placement={'top'}
         key={`icon_${index}`}
-        label={translate(`assets.assetDetails.tooltips.${strategy}`)}
+        label={translate(`assets.assetDetails.tooltips.riskProfiles.${vault?.type}_${strategy}`)}
       >
         <Image src={`images/strategies/${strategy}.svg`} ml={iconMargin} {...props} />
       </Tooltip>
     ))
 
     return protocolIcons
-  }, [translate, children, props, iconMargin, availableStrategies])
+  }, [translate, vault, children, props, iconMargin, availableStrategies])
 
   return (
     <Flex>
@@ -833,8 +833,24 @@ const PoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const TrancheTotalPoolUsd: React.FC<AmountProps> = (props) => {
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const aaTrancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
+  const bbTrancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+
+  const totalTvlUsd = bnOrZero(aaTrancheAsset?.tvlUsd).plus(bbTrancheAsset?.tvlUsd)
+  
+  return totalTvlUsd ? (
+    <Amount.Usd value={totalTvlUsd} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const SeniorApy: React.FC<AmountProps> = (props) => {
-  const { vault, translate } = useAssetProvider()
+  const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   
   if (!vault || !("vaultConfig" in vault)) return null
@@ -865,7 +881,7 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
 }
 
 const JuniorApy: React.FC<AmountProps> = (props) => {
-  const { vault, translate } = useAssetProvider()
+  const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   if (!vault || !("vaultConfig" in vault)) return null
@@ -1284,6 +1300,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'tvl':
     case 'pool':
       return (<PoolUsd textStyle={'tableCell'} {...props} />)
+    case 'trancheTotalTvl':
+      return (<TrancheTotalPoolUsd textStyle={'tableCell'} {...props} />)
     case 'juniorApy':
       return (<JuniorApy textStyle={'tableCell'} {...props} />)
     case 'seniorApy':

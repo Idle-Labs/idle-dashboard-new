@@ -43,6 +43,7 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
       ...balances,
       [strategy]: {
         balance:BNify(0),
+        deposited:BNify(0),
         weightedRealizedApy: BNify(0)
       }
     }
@@ -54,6 +55,7 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
       if (!asset.type || !asset.vaultPosition) return strategiesBalances
 
       strategiesBalances[asset.type].balance = strategiesBalances[asset.type].balance.plus(asset.vaultPosition.usd.redeemable)
+      strategiesBalances[asset.type].deposited = strategiesBalances[asset.type].deposited.plus(asset.vaultPosition.usd.deposited)
       if (BNify(asset.vaultPosition?.realizedApy).gt(0)){
         strategiesBalances[asset.type].weightedRealizedApy = strategiesBalances[asset.type].weightedRealizedApy.plus(asset.vaultPosition.realizedApy.times(asset.vaultPosition.usd.redeemable))
       }
@@ -92,6 +94,7 @@ export const useCompositionChartData: UseCompositionChartData = ({ assetIds, str
         extraData: {
           avgRealizedApy,
           strategy: strategies[strategy],
+          deposited: parseFloat(strategiesBalances[strategy].deposited)
         },
         value: parseFloat(strategiesBalances[strategy].balance)
       }

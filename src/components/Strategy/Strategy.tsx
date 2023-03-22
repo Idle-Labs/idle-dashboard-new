@@ -17,6 +17,7 @@ import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
@@ -423,6 +424,7 @@ export const Strategy: React.FC = () => {
                 </Flex>
               )
             }
+            <StrategyOverview strategies={[strategy]} />
           </VStack>
           <Image width={['70%', '33%']} src={strategies[strategy].image} />
           {

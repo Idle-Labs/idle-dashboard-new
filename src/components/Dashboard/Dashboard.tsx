@@ -20,6 +20,7 @@ import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import type { DonutChartData } from 'components/DonutChart/DonutChart'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
+import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 // import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
@@ -44,7 +45,7 @@ export const Dashboard: React.FC = () => {
   const { account, walletInitialized } = useWalletProvider()
   const { assetsData, stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType, selectVaultsByType } } = usePortfolioProvider()
 
-  const enabledStrategies = useMemo(() => Object.keys(strategies).filter( strategy => strategies[strategy].visible ), [])
+  const enabledStrategies = useMemo(() => selectVisibleStrategies(), [])
 
   const accountAndPortfolioLoaded = useMemo(() => {
     return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)

@@ -173,7 +173,9 @@
       "title": "Gauge"
     },
     "tranches": {
-      "label": "Tranches"
+      "label": "Tranches",
+      "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
+      "description": "Idle Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss.So far, in DeFi, users shared the risk and yield"
     },
     "best": {
       "label": "Best Yield",
@@ -427,6 +429,7 @@
         "claimYour": "Claim your %{opportunity}"
       }
     },
+    "yourWallet": "Your Wallet",
     "amountToStake": "Amount to Stake",
     "amountToUnstake": "Amount to Unstake",
     "confirmDetails": "Confirm Details",
@@ -1768,7 +1771,13 @@
         "lockEndDate": "This is the expiration date of your lock, after this date you will be able to withdraw your IDLE",
         "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution",
         "AA":"This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
-        "BB":"This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts"
+        "BB":"This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
+        "riskProfiles": {
+          "BY_AA": "This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
+          "BY_BB": "This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
+          "AA_AA": "The Senior class has built-in protection mechanism against losses provided by Junior liquidity, and a rather stable byt lower yield.",
+          "BB_BB": "The Junior class has higher yield and always overperform the underlying yield, as it protects the Senior class from losses."
+        }
       },
       "apyBreakdown": {
         "base": "Base APY",
