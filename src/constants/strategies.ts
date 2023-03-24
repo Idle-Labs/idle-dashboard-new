@@ -46,6 +46,7 @@ export type StrategyProps = {
   visible: boolean
   strategy?: string,
   stats?: StatsProps
+  features?: string[]
   banner?: BannerProps
   description?: string
   columns?: StrategyColumn[]
@@ -266,6 +267,11 @@ export const strategies: Record<string, StrategyProps> = {
       deposit:['coverage' ,'newApy'],
       withdraw:['gain', 'fee', 'netGain']
     },
+    features:[
+      "strategies.protected.features.builtInProtection",
+      "strategies.protected.features.minimumYield",
+      "strategies.protected.features.compoundedRewards"
+    ],
     stats:{
       header:{
         fields:['protocolWithVariant']
@@ -403,6 +409,11 @@ export const strategies: Record<string, StrategyProps> = {
       deposit:['boost', 'overperformance', 'newApy'],
       withdraw:['gain', 'fee', 'netGain']
     },
+    features:[
+      "strategies.boosted.features.higherYield",
+      "strategies.boosted.features.outperformUnderlying",
+      "strategies.boosted.features.compoundedRewards"
+    ],
     stats:{
       header:{
         fields:['protocolWithVariant']

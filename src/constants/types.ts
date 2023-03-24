@@ -236,6 +236,7 @@ export type ModalProps = {
   subtitle: string
   text: string
   cta: string
+  body?: JSX.Element | null
 }
 
 export type BannerProps = {

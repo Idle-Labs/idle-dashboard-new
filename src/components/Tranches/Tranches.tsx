@@ -6,21 +6,21 @@ import { products } from 'constants/products'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { MdArrowForwardIos } from 'react-icons/md'
+import { strategiesFolder } from 'constants/folders'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
-import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
-import { Box, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb } from 'helpers/'
+import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -46,14 +46,15 @@ export const Tranches: React.FC = () => {
   const translate = useTranslate()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const { location } = useBrowserRouter()
-  const { openModal } = useModalProvider()
+  const { openModal, closeModal } = useModalProvider()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
 
   const {
     isPortfolioLoaded,
     selectors: {
+      selectVaultById,
+      selectAssetById,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
       selectVaultsAssetsWithBalance
@@ -67,15 +68,165 @@ export const Tranches: React.FC = () => {
 
   const onRowClickDeposited = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
-    // console.log('onRowClickDeposited', location?.pathname, row.original)
     const strategyConfig = strategies[row.original.type as string]
     return navigate(`/earn/${strategyConfig.route}/${row.original.id}`)
   }, [navigate])
 
+  const getModalCards = useCallback((assetId: string) => {
+
+    const trancheVault = selectVaultById(assetId)
+    const tranchesAssets: Record<string, Asset | undefined> = {
+      AA: selectAssetById(trancheVault?.vaultConfig.Tranches.AA.address),
+      BB: selectAssetById(trancheVault?.vaultConfig.Tranches.BB.address)
+    }
+
+    return (
+      <SimpleGrid
+        mb={6}
+        columns={2}
+        spacing={6}
+        width={'full'}
+      >
+        {
+          productStrategies.map( (strategy: string) => {
+            const route = strategies[strategy].route
+            const assetId = tranchesAssets[strategy]?.id
+            return (
+              <AssetProvider
+                assetId={assetId}
+                wrapFlex={false}
+              >
+                <Card
+                  p={4}
+                  borderRadius={24}
+                  overflow={'hidden'}
+                  position={'relative'}
+                  layerStyle={'cardLight'}
+                >
+                  <Box
+                    sx={{
+                      zIndex: 0,
+                      top: "30%",
+                      width: "205%",
+                      right: "-115%",
+                      height: "125%",
+                      position: "absolute",
+                      background: `radial-gradient(circle, rgba(${hexToRgb(strategies[strategy]?.color as string).join(',')},0.8) 0%, rgba(50,61,83,0) 70%)`
+                    }}
+                  >
+                  </Box>
+                  <Box
+                    zIndex={1}
+                    width={'full'}
+                    position={'relative'}
+                  >
+                    <HStack
+                      width={'full'}
+                      justifyContent={'flex-end'}
+                    >
+                      <Image w={6} h={6} src={`${strategiesFolder}${strategy}.svg`} />
+                    </HStack>
+                    <VStack
+                      px={2}
+                      width={'full'}
+                      spacing={4}
+                    >
+                      <HStack
+                        width={'full'}
+                        justifyContent={'flex-start'}
+                      >
+                        <Translation translation={strategies[strategy].label} textStyle={'ctaStatic'} fontSize={'cardTitle'} lineHeight={'initial'} />
+                      </HStack>
+                      <VStack
+                        spacing={2}
+                      >
+                        {
+                          strategies[strategy].features?.map( (feature: string) => (
+                            <HStack
+                              spacing={1}
+                              alignItems={'flex-start'}
+                            >
+                              <Box
+                                pt={1}
+                              >
+                                <MdArrowForwardIos color={'white'} size={12} />
+                              </Box>
+                              <Translation translation={feature} textStyle={'captionSmall'} />
+                            </HStack>
+                          ))
+                        }
+                      </VStack>
+                      <VStack
+                        spacing={0}
+                        width={'full'}
+                        alignItems={'flex-start'}
+                      >
+                        <HStack
+                          spacing={1}
+                          width={'full'}
+                          alignItems={'baseline'}
+                        >
+                          <AssetProvider.Apy showTooltip={false} color={strategies[strategy].color} textStyle={'heading'} fontSize={'h3'} />
+                          <Translation translation={'defi.apy'} color={strategies[strategy].color} textStyle={'ctaStatic'} fontSize={'sm'} />
+                        </HStack>
+                        <HStack
+                          spacing={2}
+                          width={'full'}
+                        >
+                          <Translation translation={'defi.currentTVL'} textStyle={'captionSmall'} />
+                          <AssetProvider.PoolUsd textStyle={'captionSmall'} color={'primary'} fontSize={'md'} fontWeight={'700'} />
+                        </HStack>
+                      </VStack>
+                      {
+                        strategy === 'AA' ? (
+                          <VStack
+                            spacing={1}
+                            width={'full'}
+                            alignItems={'flex-start'}
+                          >
+                            <Translation translation={'defi.seniorCoverage'} textStyle={'ctaStatic'} />
+                            <AssetProvider.Coverage textStyle={'captionSmall'} color={'primary'} />
+                          </VStack>
+                        ) : (
+                          <VStack
+                            spacing={1}
+                            width={'full'}
+                            alignItems={'flex-start'}
+                          >
+                            <Translation translation={'defi.apyBoost'} textStyle={'ctaStatic'} />
+                            <HStack
+                              spacing={1}
+                            >
+                              <AssetProvider.ApyBoost textStyle={'captionSmall'} color={'primary'} />
+                              <Translation translation={'defi.moreThanUnderlying'} textStyle={'captionSmall'} color={'primary'} />
+                            </HStack>
+                          </VStack>
+                        )
+                      }
+                      <Box
+                        width={'full'}
+                      >
+                        <Translation translation={`trade.vaults.${strategy}.cta`} mt={4} component={Button} width={'full'} variant={'ctaPrimary'} onClick={() => { navigate(`/earn/${route}/${assetId}`); closeModal() }} />
+                      </Box>
+                    </VStack>
+                  </Box>
+                </Card>
+              </AssetProvider>
+            )
+          })
+        }
+      </SimpleGrid>
+    )
+  }, [navigate, closeModal, productStrategies, selectVaultById, selectAssetById])
+
   const onRowClickAvailable = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
-    return navigate(`${location?.pathname.replace(/\/$/, '')}/${row.original.id}`)
-  }, [navigate, location])
+    const modalProps = {
+      subtitle:'defi.chooseTranche',
+      body: getModalCards(row.original.id as string)
+    }
+    return openModal(modalProps as ModalProps, '2xl')
+  }, [openModal, getModalCards])
 
   const columns = useMemo(() => {
     return product?.columns || (strategy && strategies[strategy].columns)
@@ -359,53 +510,6 @@ export const Tranches: React.FC = () => {
     )
   }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
-  const banner = useMemo(() => {
-    if (!strategy || !strategies[strategy].banner) return null
-    const modalProps = strategies[strategy].banner?.modal
-    return (
-      <Card.Dark
-        p={[4, 5]}
-        border={0}
-        position={'relative'}
-      >
-        <Stack
-          width={'full'}
-          spacing={[2, 3]}
-          alignItems={'center'}
-          justifyContent={'center'}
-          direction={['column', 'row']}
-        >
-          <Translation component={Box} width={'auto'} textAlign={'center'} translation={'common.new'} layerStyle={'gradientBadge'} />
-          <Translation textAlign={'center'} translation={strategies[strategy].banner?.text} isHtml={true} textStyle={'caption'} />
-          {
-            strategy === 'BY' && (
-              <HStack
-                spacing={2}
-              >
-                <Image src={`images/strategies/AA.svg`} width={6} />
-                <Image src={`images/strategies/BB.svg`} width={6} />
-              </HStack>
-            )
-          }
-          {
-            strategies[strategy].banner?.cta && (
-              <HStack
-                spacing={2}
-                right={[0, 6]}
-                alignItems={'center'}
-                justifyContent={'center'}
-                position={['relative','absolute']}
-              >
-                <Translation translation={strategies[strategy].banner?.cta} textAlign={'center'} textStyle={'cta'} onClick={() => openModal(modalProps as ModalProps)} />
-                <MdArrowForwardIos />
-              </HStack>
-            )
-          }
-        </Stack>
-      </Card.Dark>
-    )
-  }, [strategy, openModal])
-
   const heading = useMemo(() => {
     if (!strategy) return null
     return (
@@ -413,26 +517,24 @@ export const Tranches: React.FC = () => {
         width={'full'}
         spacing={10}
       >
-        {banner}
         <Stack
           spacing={[10, 0]}
           direction={['column', 'row']}
           alignItems={['center', 'flex-start']}
-          width={['100%', '100%', '100%', '100%', '70%']}
+          width={['100%', '100%', '100%', '100%', '80%']}
         >
           <VStack
-            pr={[0, 14]}
-            pt={[0, 20]}
+            pr={[0, 0]}
             spacing={10}
             direction={'column'}
-            width={['100%', '65%']}
+            width={['100%', '50%']}
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.tranches.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
             {
               !isMobile && (
                 <Flex
-                  width={['100%', '80%']}
+                  width={['100%', '90%']}
                 >
                   <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
                 </Flex>
@@ -440,7 +542,7 @@ export const Tranches: React.FC = () => {
             }
             <StrategyOverview strategies={productStrategies} />
           </VStack>
-          <Image width={['70%', '33%']} src={strategies[strategy].image} />
+          <Image width={['70%', '50%']} src={product?.image} />
           {
             isMobile && (
               <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
@@ -449,7 +551,7 @@ export const Tranches: React.FC = () => {
         </Stack>
       </VStack>
     )
-  }, [strategy, productStrategies, banner, isMobile])
+  }, [strategy, product, productStrategies, isMobile])
 
   return (
     <Flex

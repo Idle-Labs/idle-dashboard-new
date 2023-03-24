@@ -1,9 +1,12 @@
+import { strategiesFolder } from 'constants/folders'
 import { strategies, StrategyColumn } from 'constants/strategies'
 
 export type ProductProps = {
+  bg?: string
   label: string
   color: string
   route: string
+  image?: string
   columns?: StrategyColumn[]
   strategies: (keyof typeof strategies)[]
 }
@@ -20,6 +23,8 @@ export const products: ProductProps[] = [
     route: `tranches`,
     strategies: ['AA', 'BB'],
     label: 'strategies.tranches.label',
+    bg: `${strategiesFolder}tranches-bg.png`,
+    image: `${strategiesFolder}tranches.png`,
     columns: [
       {
         accessor:'name',
@@ -64,16 +69,16 @@ export const products: ProductProps[] = [
       },
       {
         accessor:'id',
-        id:'juniorApy',
+        id:'seniorApy',
         sortType: 'numeric',
         tables: ['Available']
       },
       {
         accessor:'id',
-        id:'seniorApy',
+        id:'juniorApy',
         sortType: 'numeric',
         tables: ['Available']
       }
-    ],
+    ]
   }
 ]

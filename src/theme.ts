@@ -1,3 +1,4 @@
+import { products } from 'constants/products'
 import { extendTheme } from "@chakra-ui/react"
 import { strategies } from 'constants/strategies'
 
@@ -144,6 +145,7 @@ export const theme = extendTheme({
     xs:'13px',
     sm:'14px',
     md:'16px',
+    cardTitle:'18px',
     lg:'20px',
     h3:'20px',
     xl:'24px',
@@ -172,12 +174,20 @@ export const theme = extendTheme({
         background:`url(${strategies.BY.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
+      '.earn-tranches': {
+        background:`url(${products[1].bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
       '.earn-protected-yield': {
         background:`url(${strategies.AA.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
       '.earn-boosted-yield': {
         background:`url(${strategies.BB.bg}) no-repeat top right`,
+        backgroundSize:'100% auto'
+      },
+      '.earn-tranches.mobile': {
+        background:`url(${products[1].bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
       '.earn-best-yield.mobile': {
@@ -413,7 +423,14 @@ export const theme = extendTheme({
     Modal: {
       baseStyle:{
         dialog:{
-          bg:'card.bgDark'
+          bg:'card.bg'
+        }
+      },
+      variants:{
+        dark:{
+          dialog:{
+            bg:'card.bgDark'
+          }
         }
       }
     },

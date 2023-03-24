@@ -8,7 +8,9 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 export const Template: React.FC<ContainerProps> = () => {
   const { location } = useBrowserRouter()
   const { scrollLocked, isMobile } = useThemeProvider()
+
   let className = location?.pathname.replace(/\//g,'-').replace(/^-/,'')
+  // let className = params.strategy ? `earn-${params.strategy}` : location?.pathname.replace(/\//g,'-').replace(/^-/,'')
   if (isMobile){
     className += ' mobile'
   }

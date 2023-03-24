@@ -175,7 +175,7 @@
     "tranches": {
       "label": "Tranches",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
-      "description": "Idle Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss.So far, in DeFi, users shared the risk and yield"
+      "description": "Idle Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss. So far, in DeFi, users shared the risk and yield"
     },
     "best": {
       "label": "Best Yield",
@@ -223,10 +223,20 @@
       }
     },
     "protected": {
+      "features": {
+        "builtInProtection": "Built-in loss protection provided by Junior liquidity",
+        "minimumYield": "Minimum guaranteed yield as the underlying",
+        "compoundedRewards": "Automatically compounded rewards to increment yield"
+      },
       "title": "Senior Tranches",
       "description": "Senior Tranches provide a shielded access to any DeFi yield sources. The default coverage is provided by Junior Tranches and automatically enforced by design. This makes them perfect for high-profile users that want to access DeFi yields witouth compromising their risk profile."
     },
     "boosted": {
+      "features": {
+        "higherYield": "Higher yield in exchange of risk exposure to cover Senior liquidity",
+        "outperformUnderlying": "Always outperforming the underlying by design",
+        "compoundedRewards": "Automatically compounded rewards to increment yield"
+      },
       "title": "Junior Tranches",
       "description": "Junior Tranches are designed to overperform any DeFi yield source. In exchange for taking on potential losses for Senior Tranches, they get a proportionally larger share of yield. This makes them perfect for advanced users that can assess risks and take them in exchange of higher returns."
     }
@@ -455,6 +465,7 @@
     "stake": "Stake",
     "share": "Share",
     "gauges": "Gauges",
+    "seniorCoverage": "Senior Coverage",
     "govToken": "Gov. token",
     "protocol": "Protocol",
     "assetWithVariant": "Asset",
@@ -463,6 +474,8 @@
     "unstake": "Unstake",
     "seniorApy": "Senior APY",
     "juniorApy": "Junior APY",
+    "moreThanUnderlying": "more than the underlying",
+    "chooseTranche": "Choose your tranche",
     "chooseAsset": "Choose an asset",
     "goToGauge": "Go to Gauge",
     "stakeAsset": "Stake %{assetSymbol}",
@@ -535,6 +548,7 @@
     "poolAddress": "Pool Address",
     "currentValue": "Current Value",
     "currentAPY": "Current APY",
+    "currentTVL": "Current TVL",
     "currentAPR": "Current APR",
     "yearn": "Yearn Finance",
     "emptyEarn": "Earn opportunities will appear here.",
@@ -814,10 +828,12 @@
         "disabledCta":"Withdraw"
       },
       "AA": {
+        "cta": "Earn with Senior",
         "disabled":"This vault has been deactivated, please withdraw your funds",
         "disabledCta":"Withdraw"
       },
       "BB": {
+        "cta": "Earn with Junior",
         "disabled":"This vault has been deactivated, please withdraw your funds",
         "disabledCta":"Withdraw"
       }

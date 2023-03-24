@@ -29,6 +29,15 @@ export function fixTokenDecimals(tokenBalance: BNifyInput, tokenDecimals?: numbe
   return BNify(tokenBalance).div(`1e${tokenDecimals}`);
 }
 
+export function hexToRgb(hex: string): number[]{
+  const aRgbHex = hex.replace(/^#/,'').match(/.{1,2}/g)
+  return [
+    parseInt(aRgbHex?.[0]||'0', 16),
+    parseInt(aRgbHex?.[1]||'0', 16),
+    parseInt(aRgbHex?.[2]||'0', 16)
+  ]
+}
+
 export function apr2apy(apr: BNifyInput) {
   return BNify((BNify(1).plus(BNify(apr).div(365))).pow(365).minus(1).toFixed(18));
 }

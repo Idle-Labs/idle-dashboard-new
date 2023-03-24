@@ -16,10 +16,12 @@ import {
 
 type ContextProps = {
   openModal: Function
+  closeModal: Function
 }
 
 const initialState: ContextProps = {
-  openModal: () => {}
+  openModal: () => {},
+  closeModal: () => {}
 }
 
 type ModalSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
@@ -34,7 +36,8 @@ export function ModalProvider({ children }: ProviderProps) {
     cta:'',
     text:'',
     title:'',
-    subtitle:''
+    subtitle:'',
+    body: null
   })
 
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -42,13 +45,14 @@ export function ModalProvider({ children }: ProviderProps) {
   const openModal = useCallback((props: ModalProps, size: ModalSize = 'lg', translateProps: boolean = true) => {
 
     const modalProps = translateProps ? (Object.keys(props) as Array<keyof ModalProps>).reduce( (modalProps: ModalProps, prop: keyof ModalProps) => {
-      modalProps[prop] = translate(props[prop])
+      modalProps[prop] = typeof props[prop] === 'string' ? translate(props[prop]) : props[prop]
       return modalProps
     }, {
       cta:'',
       text:'',
       title:'',
-      subtitle:''
+      subtitle:'',
+      body: null
     }) : props
 
     setSize(size)
@@ -57,29 +61,47 @@ export function ModalProvider({ children }: ProviderProps) {
   }, [onOpen, setModalProps, translate])
 
   return (
-    <ModalContext.Provider value={{openModal}}>
+    <ModalContext.Provider value={{ openModal, closeModal: onClose}}>
       {children}
-      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose} size={size} isCentered>
+      <Modal
+        isCentered
+        size={size}
+        isOpen={isOpen}
+        onClose={onClose}
+        blockScrollOnMount={false}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Heading as={'h3'} fontSize={'lg'} mb={6}>
-              {modalProps.subtitle}
-            </Heading>
-            <Text color={'cta'} dangerouslySetInnerHTML={{__html: modalProps.text}} />
+            {
+              modalProps.subtitle.length>0 && (
+                <Heading as={'h3'} fontSize={'lg'} mb={6}>
+                  {modalProps.subtitle}
+                </Heading>
+              )
+            }
+            {
+              modalProps.body || (
+                <Text color={'cta'} dangerouslySetInnerHTML={{__html: modalProps.text}} />
+              )
+            }
           </ModalBody>
-          <ModalFooter>
-            <Flex
-              width={'full'}
-              justifyContent={'center'}
-            >
-              <Button variant={'ctaPrimary'} px={10} onClick={onClose}>
-                {modalProps.cta}
-              </Button>
-            </Flex>
-          </ModalFooter>
+          {
+            modalProps.cta.length>0 && (
+              <ModalFooter>
+                <Flex
+                  width={'full'}
+                  justifyContent={'center'}
+                >
+                  <Button variant={'ctaPrimary'} px={10} onClick={onClose}>
+                    {modalProps.cta}
+                  </Button>
+                </Flex>
+              </ModalFooter>
+            )
+          }
         </ModalContent>
       </Modal>
     </ModalContext.Provider>
