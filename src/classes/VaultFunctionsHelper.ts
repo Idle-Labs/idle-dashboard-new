@@ -269,7 +269,7 @@ export class VaultFunctionsHelper {
       tokenIds
     ] = multicallResults2.map( r => r.data )
 
-    // console.log('poLidoNFT_address', poLidoNFT_address, 'stakeManager_address', stakeManager_address, 'poLidoStakeManagerEpoch', poLidoStakeManagerEpoch, 'tokenIds', tokenIds, 'currentPolygonHeight', currentPolygonHeight)
+    console.log('poLidoNFT_address', poLidoNFT_address, 'stakeManager_address', stakeManager_address, 'poLidoStakeManagerEpoch', poLidoStakeManagerEpoch, 'tokenIds', tokenIds, 'currentPolygonHeight', currentPolygonHeight)
 
     // Decrease checkpoint
     let epochIntervalInSeconds = 2700;
@@ -305,23 +305,20 @@ export class VaultFunctionsHelper {
     const tokensAmounts = await asyncReduce<any, any>(
       tokenIds,
       async (tokenId) => {
-        const rawCalls: CallData[] = [
-          this.multiCall?.getCallData(stMaticContract.contract, 'getMaticFromTokenId', [tokenId]),
-          this.multiCall?.getCallData(stMaticContract.contract, 'token2WithdrawRequest', [tokenId]),
-        ].filter( (call): call is CallData => !!call )
-
-        const multicallResults = await this.multiCall?.executeMulticalls(rawCalls)
-
-        if (!multicallResults) return
 
         const [
           tokenAmount,
-          usersRequest
-        ] = multicallResults.map( r => r.data )
+          token2WithdrawRequests
+        ] = await Promise.all([
+          stMaticContract.contract.methods.getMaticFromTokenId(tokenId).call(),
+          stMaticContract.contract.methods.getToken2WithdrawRequests(tokenId).call()
+        ])
+        
+        const usersRequest = token2WithdrawRequests ? token2WithdrawRequests[0] : {
+          requestEpoch: 0
+        };
 
         const status = Math.round(usersRequest.requestEpoch)>=Math.round(poLidoStakeManagerEpoch) ? 'pending' : 'available';
-
-        // console.log('usersRequest', tokenId, usersRequest, epochIntervalInSeconds);
 
         const remainingEpochs = Math.max(0, Math.round(usersRequest.requestEpoch)-Math.round(currentPolygonEpoch));
 

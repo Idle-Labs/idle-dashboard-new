@@ -191,7 +191,7 @@ export class  Multicall {
     }, [])
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled = true): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, debug = false): Promise<DecodedResult[] | null> {
 
     if (calls.length > this.maxBatchSize) {
       return await this.executeMulticallsChunks(calls, singleCallsEnabled)
@@ -241,9 +241,11 @@ export class  Multicall {
     }
 
     const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results);
-    
-    // console.log('Multicall raw:', results)
-    // console.log('decodedResults', results, decodedResults)
+      
+    if (debug){
+      // console.log('Multicall raw:', results)
+      console.log('decodedResults', results, decodedResults)
+    }
 
     if (decodedResults && decodedResults[0].length){
 
@@ -260,10 +262,14 @@ export class  Multicall {
 
         const returnTypes = calls[index].returnTypes;
         const returnFields = calls[index].returnFields;
-        
-        // console.log(returnTypes, returnFields, decodedResult)
+
         try {
           const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
+
+          if (debug){
+            console.log(returnTypes, returnFields, decodedResult, decodedValues)
+          }
+
           if (returnTypes.length === 1){
             output.data = decodedValues[0];
           } else {
