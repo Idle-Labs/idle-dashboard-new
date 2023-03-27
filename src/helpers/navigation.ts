@@ -1,4 +1,6 @@
 import { routes } from 'constants/routes'
+import { AssetId } from 'constants/types'
+import { strategies } from 'constants/strategies'
 import { menu, MenuItemType } from 'constants/menu'
 import { LEGACY_DASHBOARD_URL } from 'constants/vars'
 
@@ -20,6 +22,11 @@ export function checkMenuItemEnabled(path: string, environment: string) {
 
 export function checkSectionEnabled(path: string, environment?: string) {
   return !!routes[0].children?.find( route => route.path?.toLowerCase() === path.toLowerCase() ) && (!environment || checkMenuItemEnabled(path, environment))
+}
+
+export function getVaultPath(type: string, assetId: AssetId) {
+  const strategy = strategies[type]
+  return `/earn/${strategy.route}/${assetId}`
 }
 
 export function openWindow(url: string) {

@@ -269,8 +269,6 @@ export class VaultFunctionsHelper {
       tokenIds
     ] = multicallResults2.map( r => r.data )
 
-    // console.log('poLidoNFT_address', poLidoNFT_address, 'stakeManager_address', stakeManager_address, 'poLidoStakeManagerEpoch', poLidoStakeManagerEpoch, 'tokenIds', tokenIds, 'currentPolygonHeight', currentPolygonHeight)
-
     // Decrease checkpoint
     let epochIntervalInSeconds = 2700;
     let currentEpochTimestamp = Date.now()/1000;

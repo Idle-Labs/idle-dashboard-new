@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { strategies } from 'constants/'
+import { getVaultPath } from 'helpers/'
 import { useNavigate } from 'react-router-dom'
 import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
@@ -226,6 +227,65 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
   )
 }
 
+export const Minimal = ({assetId}: VaultCardProps) => {
+  const navigate = useNavigate()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    if (!selectAssetById) return
+    return selectAssetById(assetId)
+  }, [assetId, selectAssetById])
+
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={assetId}
+    >
+      <Card
+        p={4}
+        layerStyle={['card','cardHover']}
+        onClick={() => navigate(getVaultPath(asset?.type, asset?.id))}
+      >
+        <VStack
+          spacing={3}
+          alignItems={'flex-start'}
+        >
+          <HStack
+            width={'full'}
+            justifyContent={'space-between'}
+          >
+            <AssetLabel assetId={assetId} size={'sm'} />
+            <AssetProvider.GeneralData size={'xs'} field={'strategies'} />
+          </HStack>
+          <SimpleGrid
+            pt={3}
+            columns={2}
+            width={'100%'}
+            borderTop={'1px solid'}
+            borderTopColor={'divider'}
+          >
+            <VStack
+              spacing={1}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
+              <AssetProvider.Apy showTooltip={false} textStyle={'tableCell'} />
+            </VStack>
+
+            <VStack
+              spacing={1}
+              alignItems={'flex-end'}
+            >
+              <Translation translation={'defi.pool'} textAlign={'right'} textStyle={'captionSmall'} />
+              <AssetProvider.PoolUsd textStyle={'tableCell'} textAlign={'right'} />
+            </VStack>
+          </SimpleGrid>
+        </VStack>
+      </Card>
+    </AssetProvider>
+  )
+}
+
 export const VaultCard = ({ assetId }: VaultCardProps) => {
   const navigate = useNavigate()
   const { location } = useBrowserRouter()
@@ -321,3 +381,4 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
 
 VaultCard.Stats = Stats
 VaultCard.Inline = Inline
+VaultCard.Minimal = Minimal

@@ -27,6 +27,7 @@
     "new": "New",
     "about": "About",
     "search": "Search",
+    "featured": "Featured",
     "token": "Token",
     "stake": "Stake",
     "unstake": "Unstake",
@@ -175,6 +176,7 @@
     "tranches": {
       "label": "Tranches",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
+      "descriptionShort": "Yield Tranches split any DeFi yield source into risk-adjusted classes, enabling users to construct a customized yield portfolio that suits their risk tolerance.",
       "description": "Idle Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss. So far, in DeFi, users shared the risk and yield"
     },
     "best": {
@@ -190,6 +192,7 @@
         "subtitle": "Best Yield meets Senior & Junior Tranches",
         "text": "Now Best Yield Vaults are integrated with Senior & Junior Tranches.<br /><br />Best Yield Vaults with Senior <img src='/images/strategies/AA.svg' style='width:24px;height:24px;display:inline;vertical-align:bottom' /> can deploy funds and optimize allocation into Senior Tranches, providing a wider and more fruitful yield spectrum while keeping a low-risk profile, thanks to Senior's built-in coverage.<br /><br />Best Yield Vaults with Junior <img src='/images/strategies/BB.svg' style='width:24px;height:24px;display:inline;vertical-align:bottom' /> route deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts. The Junior Best Yield Vaults represent an aggressive target risk allocation strategy, as users provide first-loss capital to an array of different Junior Tranches.<br /><br />Some Best Yield Vaults, will continue to traditionally route deposits across top-tier, over-collateralized lending protocols (Aave and Compound)."
       },
+      "descriptionShort": "Best Yield vaults are designed to maximize yields. Like robo-advisors, deposits are routed through different strategies which seek out the highest yield available in DeFi.",
       "description": "Best Yield vaults are designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
       "carousel": {
         "pooledDeposits":{
@@ -680,6 +683,8 @@
     "coverage": "Coverage",
     "apyRange": "APY range",
     "totalTVL": "Total TVL",
+    "minApy": "Min APY",
+    "maxApy": "Max APY",
     "seniorApy": "Senior APY",
     "juniorApy": "Junior APY",
     "coveragePercentage": "Coverage",

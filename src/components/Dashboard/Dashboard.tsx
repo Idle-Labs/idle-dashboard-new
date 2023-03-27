@@ -1,13 +1,14 @@
+import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
-import { VAULTS_MIN_TVL } from 'constants/vars'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
+import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { Scrollable } from 'components/Scrollable/Scrollable'
+import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
@@ -18,21 +19,21 @@ import React, { useRef, useState, useMemo, useCallback } from 'react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
-import type { DonutChartData } from 'components/DonutChart/DonutChart'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 // import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
+import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
-import { AssetId, BigNumber, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
-import { BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
-import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Center } from '@chakra-ui/react'
+import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
+// import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
+import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
+import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
   const { isMobile } = useThemeProvider()
@@ -43,7 +44,21 @@ export const Dashboard: React.FC = () => {
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
-  const { assetsData, stakingData, isVaultsPositionsLoaded, isPortfolioLoaded, vaultsPositions, gaugesRewards, vaultsRewards, selectors: { selectAssetById, selectAssetsByIds, selectVaultsAssetsByType, selectVaultsByType } } = usePortfolioProvider()
+  const {
+    assetsData,
+    stakingData,
+    isPortfolioAccountReady,
+    isVaultsPositionsLoaded,
+    isPortfolioLoaded,
+    vaultsPositions,
+    gaugesRewards,
+    vaultsRewards,
+    selectors: {
+      selectAssetsByIds,
+      selectVaultsAssetsByType,
+      selectVaultsByType
+    }
+  } = usePortfolioProvider()
 
   const enabledStrategies = useMemo(() => selectVisibleStrategies(), [])
 
@@ -88,7 +103,7 @@ export const Dashboard: React.FC = () => {
     return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
   }, [account, isVaultsPositionsLoaded, vaultsPositions])
 
-  const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
+  // const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 
   const toggleStrategy = useCallback((strategy: string) => {
     if (!selectedStrategies.includes(strategy)){
@@ -102,156 +117,140 @@ export const Dashboard: React.FC = () => {
     }
   }, [selectedStrategies, setSelectedStrategies])
 
-  const strategiesOverview = useMemo(() => {
-    if (!selectVaultsAssetsByType) return null
+  const productsOverview = useMemo(() => {
     return (
       <SimpleGrid
-        mt={6}
-        spacing={6}
-        width={'100%'}
-        columns={[1, 3]}
+        mt={20}
+        width={'full'}
+        spacing={120}
+        columns={products.length}
       >
-        {
-          compositions.strategies.filter( (strategyComposition: DonutChartData) => enabledStrategies.includes(strategyComposition.extraData.strategy.type) ).map( (strategyComposition: DonutChartData, index: number) => {
-            const strategy = strategyComposition.extraData.strategy
-            const strategyPath = getRoutePath('earn', [strategy.route])
-            const avgRealizedApy = strategyComposition.extraData.avgRealizedApy
-            const strategyAssets = selectVaultsAssetsByType(strategy.type).filter( (asset: Asset) => asset.tvlUsd?.gt(VAULTS_MIN_TVL) )
-            const strategyPositions = userHasFunds ? Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
-              const asset = selectAssetById(assetId)
-              return asset?.type === strategy.type
-            }) : []
+      {
+        products.map( (productConfig: ProductProps) => {
 
-            const CardComponent = strategyPositions.length>0 ? Card : Card.Dark
+          const productAssets = productConfig.strategies.reduce( (productAssets: Asset[], strategy: string) => {
+            return [
+              ...productAssets,
+              ...selectVaultsAssetsByType(strategy)
+            ]
+          }, [])
 
-            return (
-              <CardComponent
-                py={4}
-                px={6}
-                key={`strategy_${index}`}
+          const aggregatedData = productAssets.reduce( (aggregatedData: Record<string, BigNumber | null>, asset: Asset) => {
+            aggregatedData.totalTVL = bnOrZero(aggregatedData.totalTVL).plus(bnOrZero(asset.tvlUsd))
+            aggregatedData.minApy = bnOrZero(aggregatedData.minApy).lte(0) ? bnOrZero(asset.apy) : BigNumber.minimum(bnOrZero(aggregatedData.minApy), bnOrZero(asset.apy))
+            aggregatedData.maxApy = !aggregatedData.maxApy ? bnOrZero(asset.apy) : BigNumber.maximum(bnOrZero(aggregatedData.maxApy), bnOrZero(asset.apy))
+            return aggregatedData
+          }, {
+            minApy: null,
+            maxApy: null,
+            totalTVL: BNify(0)
+          })
+
+          return (
+            <VStack
+              spacing={6}
+              width={'full'}
+              key={`product_${productConfig.strategy}`}
+            >
+              <HStack
+                width={'full'}
+                alignItems={'flex-start'}
+                justifyContent={'space-between'}
               >
                 <VStack
-                  spacing={4}
-                  width={'100%'}
+                  mt={5}
+                  spacing={10}
+                  width={'auto'}
                 >
                   <HStack
-                    pb={4}
-                    width={'100%'}
-                    borderBottom={'1px solid'}
-                    borderColor={'divider'}
-                    justifyContent={'space-between'}
+                    spacing={4}
+                    width={'full'}
                   >
-                    <StrategyLabel strategy={strategy.type} fontSize={'h3'} />
-                    <Translation component={Button} translation={strategyComposition.value>0 ? 'common.manage' : `common.enter`} onClick={() => navigate(`${strategyPath}`)} variant={'ctaPrimary'} py={2} height={'auto'} />
+                    <Translation translation={productConfig.label} component={Heading} as={'h3'} size={'md'} />
+                    <StrategyTag strategy={productConfig.strategy} px={3} />
                   </HStack>
-                  {
-                    strategyPositions.length>0 ? (
-                      <HStack
-                        width={'100%'}
-                        justifyContent={'space-between'}
-                      >
-                        <HStack
-                          spacing={2}
-                          alignItems={'center'}
-                        >
-                          <Translation translation={'defi.balance'} component={Text} textStyle={'captionSmall'} />
-                          <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
-                            {
-                              strategyComposition.value>0 ? (
-                                <Amount.Usd value={strategyComposition.value} textStyle={['ctaStatic', 'h3']} />
-                              ) : (
-                                <Translation component={Text} translation={`common.noDeposits`} textStyle={['ctaStatic', 'h3']} />
-                              )
-                            }
-                          </SkeletonText>
-                        </HStack>
-                        <HStack
-                          spacing={2}
-                          alignItems={'center'}
-                        >
-                          <Translation translation={'defi.avgApy'} component={Text} textStyle={'captionSmall'} />
-                          <SkeletonText noOfLines={2} minWidth={'50px'} isLoaded={!!isVaultsPositionsLoaded}>
-                            {
-                              strategyComposition.value>0 ? (
-                                <Amount.Percentage value={avgRealizedApy} textStyle={['ctaStatic', 'h3']} />
-                              ) : (
-                                <Text textStyle={['ctaStatic', 'h3']}>-</Text>
-                              )
-                            }
-                          </SkeletonText>
-                        </HStack>
-                      </HStack>
-                    ) : (
-                      <HStack
-                        width={'100%'}
-                      >
-                        <Translation translation={'dashboard.strategies.bestPerforming'} component={Text} textStyle={'captionSmall'} />
-                      </HStack>
-                    )
-                  }
-                  <Scrollable
-                    minH={190}
-                    maxH={190}
+                  <HStack
+                    spacing={10}
+                    width={'full'}
                   >
                     <VStack
                       spacing={2}
-                      width={'100%'}
+                      alignItems={'flex-start'}
                     >
-                      {
-                        !isPortfolioLoaded || (account && !isVaultsPositionsLoaded) ? (
-                          <>
-                            <Skeleton width={'100%'} height={10} />
-                            <Skeleton width={'100%'} height={10} />
-                            <Skeleton width={'100%'} height={10} />
-                            <Skeleton width={'100%'} height={10} />
-                          </>
-                        ) : strategyPositions.length>0 ?
-                          strategyPositions.sort((a: AssetId, b: AssetId) => vaultsPositions[a].usd?.redeemable && vaultsPositions[b].usd?.redeemable ? (vaultsPositions[a].usd.redeemable.gt(vaultsPositions[b].usd.redeemable.toString()) ? -1 : 1) : 1 ).map( (assetId: AssetId) => (
-                            <VaultCard.Inline
-                              bg={'card.bgLight'}
-                              key={`vault_${assetId}`}
-                              onClick={() => navigate(`${strategyPath}/${assetId}`)}
-                              assetId={assetId}
-                              fields={[
-                                {
-                                  label:'defi.balance',
-                                  field:'balanceUsd'
-                                },
-                                {
-                                  label: isMobile ? 'defi.apy' : 'defi.realizedApy',
-                                  field:'realizedApy'
-                                }
-                              ]}
-                            />
-                          ))
-                        : strategyAssets.sort((a: Asset, b: Asset) => a.apy && b.apy ? (a.apy.gt(b.apy.toString()) ? -1 : 1) : 1 ).slice(0, 4).map( (asset: Asset) => (
-                          <VaultCard.Inline
-                            key={`vault_${asset.id}`}
-                            onClick={() => navigate(`${strategyPath}/${asset.id}`)}
-                            assetId={`${asset.id}`}
-                            fields={[
-                              {
-                                label:'defi.tvl',
-                                field:'tvl'
-                              },
-                              {
-                                label:'defi.apy',
-                                field:'apy'
-                              }
-                            ]}
-                          />
-                        ))
-                      }
+                      <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                        <Amount.Usd value={aggregatedData.totalTVL} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
+                      </SkeletonText>
                     </VStack>
-                  </Scrollable>
+                    <VStack
+                      spacing={2}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'stats.minApy'} textStyle={'captionSmall'} />
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                        <Amount.Percentage value={aggregatedData.minApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
+                      </SkeletonText>
+                    </VStack>
+                    <VStack
+                      spacing={2}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'stats.maxApy'} textStyle={'captionSmall'} />
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                        <Amount.Percentage value={aggregatedData.maxApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
+                      </SkeletonText>
+                    </VStack>
+                  </HStack>
                 </VStack>
-              </CardComponent>
-            )
-          })
-        }
+                <Image src={productConfig.image} height={'170px'} />
+              </HStack>
+              <Translation translation={`strategies.${productConfig.strategy}.descriptionShort`} textStyle={'caption'} />
+              <VStack
+                spacing={4}
+                width={'full'}
+                alignItems={'flex-start'}
+              >
+                <Translation translation={'common.featured'} textStyle={'ctaStatic'} />
+                <PausableChakraCarouselProvider delay={10000}>
+                  <PausableChakraCarouselProvider.Carousel
+                    showProgress={false}
+                    progressColor={'white'}
+                  >
+                    {
+                      productAssets.reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
+                        const arrayKey: number = parseInt(''+(index/3))
+                        if (!assetsGroups[arrayKey]){
+                          assetsGroups[arrayKey] = []
+                        }
+                        assetsGroups[arrayKey].push(asset)
+                        return assetsGroups
+                      }, []).map( (assets: Asset[], index: number) => {
+                        return (
+                          <HStack
+                            spacing={4}
+                            width={'full'}
+                            key={`container_${index}`}
+                          >
+                            {
+                              assets.map( (asset: Asset) => (
+                                <VaultCard.Minimal key={`asset_${asset.id}`} assetId={asset.id as string} />
+                              ))
+                            }
+                          </HStack>
+                        )
+                      })
+                    }
+                  </PausableChakraCarouselProvider.Carousel>
+                  <PausableChakraCarouselProvider.DotNav />
+                </PausableChakraCarouselProvider>
+              </VStack>
+            </VStack>
+          )
+        })
+      }
       </SimpleGrid>
     )
-  }, [userHasFunds, enabledStrategies, account, isMobile, isPortfolioLoaded, selectAssetById, navigate, compositions, vaultsPositions, isVaultsPositionsLoaded, selectVaultsAssetsByType])
+  }, [isPortfolioLoaded, selectVaultsAssetsByType])
   
   /*
   const products = useMemo(() => {
@@ -730,6 +729,7 @@ export const Dashboard: React.FC = () => {
             justifyContent={'space-between'}
           >
             {
+              /*
               totalFunds.lte(0) && (
                 <Center
                   layerStyle={'overlay'}
@@ -738,6 +738,7 @@ export const Dashboard: React.FC = () => {
                   <Translation translation={account ? 'dashboard.performanceChart.empty' : 'dashboard.performanceChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
                 </Center>
               )
+              */
             }
             <Stack
               pt={[6, 8]}
@@ -749,7 +750,7 @@ export const Dashboard: React.FC = () => {
               justifyContent={['center', 'space-between']}
             >
               {
-                userHasFunds && (
+                isPortfolioAccountReady && (
                   <VStack
                     width={'100%'}
                     spacing={[5, 1]}
@@ -786,6 +787,8 @@ export const Dashboard: React.FC = () => {
               color={chartColor}
               timeframe={timeframe}
               assetIds={allAssetIds}
+              allowFlatChart={true}
+              loadingEnabled={false}
               isRainbowChart={false}
               strategies={selectedStrategies}
               setPercentChange={setPercentChange}
@@ -809,6 +812,7 @@ export const Dashboard: React.FC = () => {
             alignItems={'center'}
           >
             {
+              /*
               totalFunds.lte(0) && (
                 <Center
                   layerStyle={'overlay'}
@@ -817,13 +821,14 @@ export const Dashboard: React.FC = () => {
                   <Translation translation={account ? 'dashboard.compositionChart.empty' : 'dashboard.compositionChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
                 </Center>
               )
+              */
             }
             <CompositionChart assetIds={assetIds} strategies={selectedStrategies} type={'assets'} />
           </Card.Dark>
         </VStack>
       </Stack>
       
-      {strategiesOverview}
+      {productsOverview}
 
       {
         account && (

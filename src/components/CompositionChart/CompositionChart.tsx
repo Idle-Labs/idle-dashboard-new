@@ -81,6 +81,23 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
     }
   }, [protocolToken, compositions, theme, translate, type, isMobile])
 
+  const getSliceDataEmpty = useCallback(() => {
+    const formatFn = (n: any) => `$${abbreviateNumber(n)}`
+    return (
+      <text
+        x={'50%'}
+        y={'54%'}
+        fill={"white"}
+        fontSize={26}
+        fontWeight={600}
+        textAnchor={"middle"}
+        pointerEvents={"none"}
+      >
+        {formatFn(0)}
+      </text>
+    )
+  }, [])
+
   // console.log('compositions', compositions)
 
   return (
@@ -97,16 +114,18 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
           />
         ) : (
           <DonutChart
+            getSliceData={getSliceDataEmpty}
             colors={{
-              placeholder1:'#4c515d',
-              placeholder2:'#2a3243',
-              placeholder3:'#727680'
+              placeholder1:'#555B67',
+              // placeholder2:'#2a3243',
+              // placeholder3:'#727680'
             }}
             data={[
               {
-                value:40,
+                value:100,
                 label:'placeholder1'
               },
+              /*
               {
                 value:60,
                 label:'placeholder2'
@@ -115,6 +134,7 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
                 value:30,
                 label:'placeholder3'
               }
+              */
             ]}
           />
         )

@@ -244,6 +244,7 @@ export class  Multicall {
       
     if (debug){
       // console.log('Multicall raw:', results)
+      // eslint-disable-next-line
       console.log('decodedResults', results, decodedResults)
     }
 
@@ -267,6 +268,7 @@ export class  Multicall {
           const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
 
           if (debug){
+            // eslint-disable-next-line
             console.log(returnTypes, returnFields, decodedResult, decodedValues)
           }
 

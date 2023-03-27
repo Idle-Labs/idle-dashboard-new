@@ -7,24 +7,31 @@ export type ProductProps = {
   color: string
   route: string
   image?: string
+  strategy: string
+  description?: string
   columns?: StrategyColumn[]
   strategies: (keyof typeof strategies)[]
 }
 
 export const products: ProductProps[] = [
   {
+    strategy:'best',
     color: '#6AE4FF',
     strategies: ['BY'],
     route: `best-yield`,
     label: 'strategies.best.label',
+    image: `${strategiesFolder}best-yield.png`,
+    description: 'strategies.best.description'
   },
   {
     color: '#4de3b0',
     route: `tranches`,
+    strategy:'tranches',
     strategies: ['AA', 'BB'],
     label: 'strategies.tranches.label',
     bg: `${strategiesFolder}tranches-bg.png`,
     image: `${strategiesFolder}tranches.png`,
+    description: 'strategies.tranches.description',
     columns: [
       {
         accessor:'name',

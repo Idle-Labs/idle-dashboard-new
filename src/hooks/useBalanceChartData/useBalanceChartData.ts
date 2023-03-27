@@ -27,6 +27,7 @@ type UseBalanceChartDataArgs = {
   assetIds: AssetId[]
   accountId?: string
   strategies?: string[]
+  allowFlatChart?: boolean
   timeframe?: HistoryTimeframe
   useDollarConversion?: boolean
 }
@@ -38,6 +39,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
   // accountId,
   strategies,
   timeframe,
+  allowFlatChart = false,
   useDollarConversion = true
 }) => {
 
@@ -128,7 +130,13 @@ export const useBalanceChartData: UseBalanceChartData = ({
       return assetsBalancesByDate
     }, {})
 
-    if (isEmpty(assetsBalancesByDate)) return chartData
+    if (isEmpty(assetsBalancesByDate)){
+      if (allowFlatChart){
+        assetsBalancesByDate[timeframeStartTimestamp] = 0
+      } else {
+        return chartData
+      }
+    }
 
     // console.log('assetsBalancesByDate', assetsBalancesByDate)
 
@@ -151,8 +159,6 @@ export const useBalanceChartData: UseBalanceChartData = ({
 
       prevTimestamp = timestamp
     }
-
-    // console.log('assetsBalancesByDateExtended', assetsBalancesByDateExtended)
 
     // Trailing prices
     const prevVaultPriceInfo: Record<AssetId, HistoryData> = {}
@@ -216,9 +222,9 @@ export const useBalanceChartData: UseBalanceChartData = ({
   // eslint-disable-next-line
   }, [assets, useDollarConversion, timeframeStartTimestamp, selectVaultTransactions, isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
 
-  // console.log('balanceChartData', balanceChartData)
 
   useEffect(() => {
+    // console.log('balanceChartData', balanceChartData)
     if (!balanceChartData.rainbow.length) return
     setBalanceChartDataLoading(false)
 

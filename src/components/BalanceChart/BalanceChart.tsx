@@ -12,6 +12,8 @@ type BalanceChartArgs = {
   strategies?: string[]
   percentChange: number
   isRainbowChart: boolean
+  loadingEnabled?: boolean
+  allowFlatChart?: boolean
   timeframe: HistoryTimeframe
   setPercentChange: (percentChange: number) => void
   margins?: { top: number; right: number; bottom: number; left: number }
@@ -25,15 +27,20 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
   // percentChange,
   isRainbowChart,
   setPercentChange,
+  allowFlatChart = true,
   color = 'chart.stroke',
+  loadingEnabled = true,
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
   const { balanceChartData, balanceChartDataLoading } = useBalanceChartData({
     assetIds,
     accountId,
     timeframe,
-    strategies
+    strategies,
+    allowFlatChart
   })
+
+  // console.log('balanceChartDataLoading', balanceChartDataLoading)
 
   const { total } = balanceChartData
 
@@ -57,8 +64,8 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
         formatFn={formatFn}
         data={balanceChartData}
         isRainbowChart={isRainbowChart}
-        loading={balanceChartDataLoading}
         isLoaded={!balanceChartDataLoading}
+        loading={balanceChartDataLoading && loadingEnabled}
       />
     </Box>
   )

@@ -160,7 +160,7 @@ export const PrimaryChart = ({
           onMouseLeave={() => hideTooltip()}
         />
         {
-          maxMinEnabled && (
+          maxMinEnabled && maxPrice>0 && (
             <Group top={margins.top} left={margins.left}>
               <MaxPrice
                 yText={15}
