@@ -5,6 +5,7 @@ import { IconTab } from 'components/IconTab/IconTab'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Deposit } from 'components/OperativeComponent/Deposit'
 import { Approve } from 'components/OperativeComponent/Approve'
 import { Translation } from 'components/Translation/Translation'
@@ -12,14 +13,13 @@ import { Withdraw } from 'components/OperativeComponent/Withdraw'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
-import { strategies, AssetId, imageFolder, HistoryTimeframe, GaugeRewardData, BigNumber } from 'constants/'
+import { /*strategies,*/ AssetId, imageFolder, HistoryTimeframe, GaugeRewardData, BigNumber } from 'constants/'
 
 type TabType = {
   id:string
@@ -57,9 +57,9 @@ export const AssetPage: React.FC = () => {
     }
   } = usePortfolioProvider()
 
-  const strategy = useMemo(() => {
-    return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
-  }, [params])
+  // const strategy = useMemo(() => {
+  //   return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
+  // }, [params])
 
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(params.asset)
@@ -279,11 +279,33 @@ export const AssetPage: React.FC = () => {
         <TimeframeSelector style={isMobile ? {marginTop:'20px'} : {marginTop:'-20px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
       )
     } else {
-      return !isMobile && (
-        <StrategyLabel strategy={strategy} color={'cta'} textStyle={'italic'} />
+      return (
+        <HStack
+          mb={'3 !important'}
+          spacing={4}
+          justifyContent={['center', 'flex-end']}
+        >
+          <HStack
+            spacing={1}
+          >
+            <ProductTag type={asset?.type} fontSize={'md'} h={8} />
+            <AssetProvider.Strategies h={8} w={8} />
+          </HStack>
+          {
+            asset?.type && asset?.type !== 'BY' && (
+              <HStack
+                pl={4}
+                borderLeft={'1px solid'}
+                borderLeftColor={'divider'}
+              >
+                <AssetProvider.ProtocolIcon size={'sm'} />
+              </HStack>
+            )
+          }
+        </HStack>
       )
     }
-  }, [selectedTab, strategy, isMobile, timeframe, setTimeframe])
+  }, [asset, selectedTab, isMobile, timeframe, setTimeframe])
 
   return (
     <AssetProvider
@@ -302,7 +324,7 @@ export const AssetPage: React.FC = () => {
         >
           <Stack
             width={'100%'}
-            spacing={[7, 10]}
+            spacing={[5, 10]}
             alignItems={'center'}
             justifyContent={'center'}
             direction={['column', 'row']}
@@ -311,9 +333,9 @@ export const AssetPage: React.FC = () => {
             <Stack
               flex={1}
               width={['100%', 'auto']}
-              direction={['column', 'row']}
               justifyContent={'space-between'}
               borderBottom={[0, '1px solid']}
+              direction={['column-reverse', 'row']}
               borderColor={['divider', 'divider']}
             >
               <HStack
