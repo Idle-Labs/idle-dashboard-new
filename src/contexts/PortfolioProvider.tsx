@@ -26,8 +26,8 @@ import { globalContracts, bestYield, tranches, gauges, underlyingTokens, default
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
-  vaultsPositions: Record<string, VaultPosition>
-  vaultsTransactions: Record<string, Transaction[]>
+  vaultsPositions: Record<AssetId, VaultPosition>
+  vaultsTransactions: Record<AssetId, Transaction[]>
 }
 
 type VaultsOnchainData = {
@@ -70,7 +70,7 @@ type InitialState = {
   selectors: Record<string, Function>
   transactions: Record<string, Transaction[]>
   historicalTvls: Record<AssetId, HistoryData[]>
-  vaultsPositions: Record<string, VaultPosition>
+  vaultsPositions: Record<AssetId, VaultPosition>
   historicalRates: Record<AssetId, HistoryData[]>
   historicalPrices: Record<AssetId, HistoryData[]>
   historicalTvlsUsd: Record<AssetId, HistoryData[]>
@@ -465,7 +465,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const etherscanTransactions = await getUserTransactions(startBlock, endBlock)
     // console.log('etherscanTransactions', test, account.address, startBlock, endBlock, etherscanTransactions)
 
-    const vaultsTransactions: Record<string, Transaction[]> = await asyncReduce<Vault, Record<string, Transaction[]>>(
+    const vaultsTransactions: Record<AssetId, Transaction[]> = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
       vaults,
       async (vault: Vault) => {
         if (!("getTransactions" in vault)) return {}
@@ -480,7 +480,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     )
     // console.log('vaultsTransactions', test, vaultsTransactions)
 
-    const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<string, VaultPosition>, assetId: AssetId) => {
+    const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<AssetId, VaultPosition>, assetId: AssetId) => {
       const transactions = vaultsTransactions[assetId]
 
       if (!transactions || !transactions.length) return vaultsPositions

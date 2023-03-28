@@ -1271,7 +1271,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       )
     case 'strategies':
       return (
-        <Strategies />
+        <Strategies {...props} />
       )
     case 'idleDistribution':
       return (

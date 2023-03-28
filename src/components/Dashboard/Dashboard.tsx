@@ -1,17 +1,19 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
-import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
+import { MdKeyboardArrowRight } from 'react-icons/md'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { StrategyTag } from 'components/StrategyTag/StrategyTag'
+import { Scrollable } from 'components/Scrollable/Scrollable'
+import { Link, LinkProps, useNavigate } from 'react-router-dom'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
+import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
@@ -23,6 +25,7 @@ import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 // import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
+import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
@@ -32,11 +35,11 @@ import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardO
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 // import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
 import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image } from '@chakra-ui/react'
+import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate, getAssetPath } from 'helpers/'
 
 export const Dashboard: React.FC = () => {
-  const { isMobile } = useThemeProvider()
+  const { theme, isMobile } = useThemeProvider()
   const [ ref, dimensions ] = useBoundingRect()
   const [ , setPercentChange ] = useState(0)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
@@ -54,6 +57,7 @@ export const Dashboard: React.FC = () => {
     gaugesRewards,
     vaultsRewards,
     selectors: {
+      selectAssetById,
       selectAssetsByIds,
       selectVaultsAssetsByType,
       selectVaultsByType
@@ -122,12 +126,13 @@ export const Dashboard: React.FC = () => {
       <SimpleGrid
         mt={20}
         width={'full'}
-        spacing={120}
-        columns={products.length}
+        spacing={[7, 120]}
+        columns={[1, products.length]}
       >
       {
         products.map( (productConfig: ProductProps) => {
-
+          
+          const strategyPath = getRoutePath('earn', [productConfig.route])
           const productAssets = productConfig.strategies.reduce( (productAssets: Asset[], strategy: string) => {
             return [
               ...productAssets,
@@ -146,10 +151,15 @@ export const Dashboard: React.FC = () => {
             totalTVL: BNify(0)
           })
 
+          const productPositions = Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
+            return productAssets.find( (asset: Asset) => asset.id === assetId )
+          })
+
           return (
             <VStack
               spacing={6}
               width={'full'}
+              alignItems={'flex-start'}
               key={`product_${productConfig.strategy}`}
             >
               <HStack
@@ -159,8 +169,8 @@ export const Dashboard: React.FC = () => {
               >
                 <VStack
                   mt={5}
-                  spacing={10}
                   width={'auto'}
+                  spacing={[6, 10]}
                 >
                   <HStack
                     spacing={4}
@@ -169,80 +179,197 @@ export const Dashboard: React.FC = () => {
                     <Translation translation={productConfig.label} component={Heading} as={'h3'} size={'md'} />
                     <StrategyTag strategy={productConfig.strategy} px={3} />
                   </HStack>
-                  <HStack
-                    spacing={10}
-                    width={'full'}
-                  >
-                    <VStack
-                      spacing={2}
-                      alignItems={'flex-start'}
-                    >
-                      <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
-                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
-                        <Amount.Usd value={aggregatedData.totalTVL} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
-                      </SkeletonText>
-                    </VStack>
-                    <VStack
-                      spacing={2}
-                      alignItems={'flex-start'}
-                    >
-                      <Translation translation={'stats.minApy'} textStyle={'captionSmall'} />
-                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
-                        <Amount.Percentage value={aggregatedData.minApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
-                      </SkeletonText>
-                    </VStack>
-                    <VStack
-                      spacing={2}
-                      alignItems={'flex-start'}
-                    >
-                      <Translation translation={'stats.maxApy'} textStyle={'captionSmall'} />
-                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
-                        <Amount.Percentage value={aggregatedData.maxApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
-                      </SkeletonText>
-                    </VStack>
-                  </HStack>
+                  {
+                    productPositions.length>0 ? (
+                      <StrategyOverview showHeader={false} strategies={productConfig.strategies} />
+                    ) : (
+                      <HStack
+                        spacing={10}
+                        width={'full'}
+                      >
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                        >
+                          <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
+                          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                            <Amount.Usd value={aggregatedData.totalTVL} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
+                          </SkeletonText>
+                        </VStack>
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                        >
+                          <Translation translation={'stats.minApy'} textStyle={'captionSmall'} />
+                          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                            <Amount.Percentage value={aggregatedData.minApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
+                          </SkeletonText>
+                        </VStack>
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                        >
+                          <Translation translation={'stats.maxApy'} textStyle={'captionSmall'} />
+                          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                            <Amount.Percentage value={aggregatedData.maxApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} />
+                          </SkeletonText>
+                        </VStack>
+                      </HStack>
+                    )
+                  }
                 </VStack>
-                <Image src={productConfig.image} height={'170px'} />
+                {
+                  !isMobile && (
+                    <Image src={productConfig.image} height={'170px'} />
+                  )
+                }
               </HStack>
-              <Translation translation={`strategies.${productConfig.strategy}.descriptionShort`} textStyle={'caption'} />
               <VStack
                 spacing={4}
                 width={'full'}
                 alignItems={'flex-start'}
               >
-                <Translation translation={'common.featured'} textStyle={'ctaStatic'} />
-                <PausableChakraCarouselProvider delay={10000}>
-                  <PausableChakraCarouselProvider.Carousel
-                    showProgress={false}
-                    progressColor={'white'}
-                  >
-                    {
-                      productAssets.reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
-                        const arrayKey: number = parseInt(''+(index/3))
-                        if (!assetsGroups[arrayKey]){
-                          assetsGroups[arrayKey] = []
-                        }
-                        assetsGroups[arrayKey].push(asset)
-                        return assetsGroups
-                      }, []).map( (assets: Asset[], index: number) => {
-                        return (
-                          <HStack
-                            spacing={4}
+                {
+                  productPositions.length>0 ? (
+                    <Card
+                      px={[3, 6]}
+                      py={[4, 7]}
+                    >
+                      <VStack
+                        spacing={2}
+                        width={'full'}
+                      >
+                        <Card.Light
+                          py={2}
+                          px={[3, 6]}
+                        >
+                          <SimpleGrid
                             width={'full'}
-                            key={`container_${index}`}
+                            columns={[3, 4]}
+                          >
+                            <Translation translation={'defi.asset'} textStyle={'captionSmall'} color={'primary'} />
+                            <Translation translation={'defi.totalFunds'} textStyle={'captionSmall'} color={'primary'} />
+                            <Translation translation={'defi.realizedApy'} textStyle={'captionSmall'} color={'primary'} />
+                          </SimpleGrid>
+                        </Card.Light>
+                        <Scrollable
+                          maxH={200}
+                        >
+                          {
+                            productPositions
+                            .sort( (a1: AssetId, a2: AssetId) => {
+                              const vaultPosition1 = vaultsPositions[a1]
+                              const vaultPosition2 = vaultsPositions[a2]
+                              return bnOrZero(vaultPosition1.usd.redeemable).lt(vaultPosition2.usd.redeemable) ? 1 : -1
+                            })
+                            .map( (assetId: AssetId) => {
+                              const asset = selectAssetById(assetId)
+                              return (
+                                <AssetProvider
+                                  wrapFlex={false}
+                                  assetId={assetId}
+                                >
+                                  <SimpleGrid
+                                    pr={1}
+                                    py={4}
+                                    pl={[2, 6]}
+                                    width={'full'}
+                                    columns={[3, 4]}
+                                    borderBottom={'1px solid'}
+                                    borderColor={'divider'}
+                                    sx={{
+                                      cursor:'pointer',
+                                      _hover:{
+                                        bg:'card.bgLight'
+                                      }
+                                    }}
+                                    onClick={() => navigate(getAssetPath(asset))}
+                                  >
+                                    <AssetProvider.GeneralData field={'asset'} size={'xs'} textStyle={'tableCell'} fontSize={['sm', 'md']} />
+                                    <AssetProvider.GeneralData field={'balanceUsd'} fontSize={['sm', 'md']} />
+                                    <HStack
+                                      pr={[2, 5]}
+                                      spacing={2}
+                                      width={'full'}
+                                      justifyContent={'space-between'}
+                                    >
+                                      <AssetProvider.GeneralData field={'realizedApy'} fontSize={['sm', 'md']} />
+                                      <AssetProvider.GeneralData field={'strategies'} />
+                                    </HStack>
+                                    {
+                                      !isMobile && (
+                                        <HStack
+                                          justifyContent={'flex-end'}
+                                        >
+                                          <Translation<LinkProps> component={Link} translation={`common.manage`} style={{fontSize:'16px',fontWeight:700,color:'white',fontFamily: `'Open Sans', sans-serif`}} to={getAssetPath(asset)} />
+                                          <MdKeyboardArrowRight
+                                            size={24}
+                                            color={theme.colors.primary}
+                                          />
+                                        </HStack>
+                                      )
+                                    }
+                                  </SimpleGrid>
+                                </AssetProvider>
+                              )
+                            })
+                          }
+                        </Scrollable>
+                      </VStack>
+                    </Card>
+                  ) : (
+                    <VStack
+                      spacing={6}
+                      width={'full'}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={`strategies.${productConfig.strategy}.descriptionShort`} textStyle={'caption'} />
+                      <VStack
+                        spacing={4}
+                        width={'full'}
+                        alignItems={'flex-start'}
+                      >
+                        <Translation translation={'common.featured'} textStyle={'ctaStatic'} />
+                        <PausableChakraCarouselProvider delay={10000}>
+                          <PausableChakraCarouselProvider.Carousel
+                            showProgress={false}
+                            progressColor={'white'}
                           >
                             {
-                              assets.map( (asset: Asset) => (
-                                <VaultCard.Minimal key={`asset_${asset.id}`} assetId={asset.id as string} />
-                              ))
+                              productAssets
+                                .sort( (a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1 )
+                                .slice(0, 9)
+                                .reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
+                                  const arrayKey: number = parseInt(''+(index/3))
+                                  if (!assetsGroups[arrayKey]){
+                                    assetsGroups[arrayKey] = []
+                                  }
+                                  assetsGroups[arrayKey].push(asset)
+                                  return assetsGroups
+                                }, []).map( (assets: Asset[], index: number) => {
+                                  return (
+                                    <HStack
+                                      spacing={4}
+                                      width={'full'}
+                                      key={`container_${index}`}
+                                    >
+                                      {
+                                        assets.map( (asset: Asset) => (
+                                          <VaultCard.Minimal key={`asset_${asset.id}`} assetId={asset.id as string} />
+                                        ))
+                                      }
+                                    </HStack>
+                                  )
+                                })
                             }
-                          </HStack>
-                        )
-                      })
-                    }
-                  </PausableChakraCarouselProvider.Carousel>
-                  <PausableChakraCarouselProvider.DotNav />
-                </PausableChakraCarouselProvider>
+                          </PausableChakraCarouselProvider.Carousel>
+                          <PausableChakraCarouselProvider.DotNav />
+                        </PausableChakraCarouselProvider>
+                      </VStack>
+                    </VStack>
+                  )
+                }
+                <Translation component={Button} translation={`common.deposit`} onClick={() => navigate(strategyPath)} variant={'ctaPrimary'} width={['full', 'auto']} px={10} py={2} />
               </VStack>
             </VStack>
           )
@@ -250,7 +377,7 @@ export const Dashboard: React.FC = () => {
       }
       </SimpleGrid>
     )
-  }, [isPortfolioLoaded, selectVaultsAssetsByType])
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, vaultsPositions, selectAssetById, isMobile, theme, navigate])
   
   /*
   const products = useMemo(() => {

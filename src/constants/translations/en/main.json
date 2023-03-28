@@ -467,6 +467,7 @@
     "assetStaking": "%{assetName} Staking",
     "stake": "Stake",
     "share": "Share",
+    "totalFunds": "Total funds",
     "gauges": "Gauges",
     "seniorCoverage": "Senior Coverage",
     "govToken": "Gov. token",

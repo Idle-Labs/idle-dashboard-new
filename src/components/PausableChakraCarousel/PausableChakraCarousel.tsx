@@ -143,7 +143,7 @@ export const DotNav: React.FC = () => {
       >
         {
           Array.from(Array(itemsLength).keys()).map( itemIndex => (
-            <Box w={2} h={2} borderRadius={'50%'} cursor={'pointer'} bg={ activeItem === itemIndex ? 'primary' : 'ctaDisabled' } onClick={() => { if (activeItem) stop(); goToItem(itemIndex) }} />
+            <Box key={`${Math.random()}`} w={2} h={2} borderRadius={'50%'} cursor={'pointer'} bg={ activeItem === itemIndex ? 'primary' : 'ctaDisabled' } onClick={() => { if (activeItem) stop(); goToItem(itemIndex) }} />
           ))
         }
       </HStack>

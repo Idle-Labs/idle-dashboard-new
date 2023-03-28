@@ -11,10 +11,11 @@ import { SimpleGrid, VStack, HStack, SkeletonText, Button } from '@chakra-ui/rea
 import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
 
 type StrategyOverviewProps = {
+  showHeader?: boolean
   strategies: (keyof typeof strategies)[]
 }
 
-export const StrategyOverview: React.FC<StrategyOverviewProps> = ({ strategies: enabledStrategies }) => {
+export const StrategyOverview: React.FC<StrategyOverviewProps> = ({ showHeader = true, strategies: enabledStrategies }) => {
   const [ walletVisible, setWalletVisible ] = useState<boolean>(true)
   const { isVaultsPositionsLoaded, vaultsPositions } = usePortfolioProvider()
   const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
@@ -43,20 +44,24 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({ strategies: 
       spacing={6}
       alignItems={'flex-start'}
     >
-      <HStack
-        spacing={2}
-      >
-        <Translation translation={'defi.yourWallet'} textStyle={'heading'} color={'primary'} fontSize={'lg'} />
-        <Button variant={'unstyled'} onClick={ () => setWalletVisible( prevVisible => !prevVisible ) }>
-          {
-            walletVisible ? (
-              <AiOutlineEye size={24} color={'white'} />
-            ) : (
-              <AiOutlineEyeInvisible size={24} color={'white'} />
-            )
-          }
-        </Button>
-      </HStack>
+      {
+        showHeader && (
+          <HStack
+            spacing={2}
+          >
+            <Translation translation={'defi.yourWallet'} textStyle={'heading'} color={'primary'} fontSize={'lg'} />
+            <Button variant={'unstyled'} onClick={ () => setWalletVisible( prevVisible => !prevVisible ) }>
+              {
+                walletVisible ? (
+                  <AiOutlineEye size={24} color={'white'} />
+                ) : (
+                  <AiOutlineEyeInvisible size={24} color={'white'} />
+                )
+              }
+            </Button>
+          </HStack>
+        )
+      }
       <SimpleGrid
         spacing={10}
         columns={3}

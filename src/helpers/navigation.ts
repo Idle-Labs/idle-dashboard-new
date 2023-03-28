@@ -1,7 +1,7 @@
 import { routes } from 'constants/routes'
-import { AssetId } from 'constants/types'
 import { strategies } from 'constants/strategies'
 import { menu, MenuItemType } from 'constants/menu'
+import type { Asset, AssetId } from 'constants/types'
 import { LEGACY_DASHBOARD_URL } from 'constants/vars'
 
 export function getRoutePath(path: string, params: string[] = []): string {
@@ -27,6 +27,11 @@ export function checkSectionEnabled(path: string, environment?: string) {
 export function getVaultPath(type: string, assetId: AssetId) {
   const strategy = strategies[type]
   return `/earn/${strategy.route}/${assetId}`
+}
+
+export function getAssetPath(asset: Asset) {
+  const strategy = strategies[asset.type as string]
+  return `/earn/${strategy.route}/${asset.id}`
 }
 
 export function openWindow(url: string) {

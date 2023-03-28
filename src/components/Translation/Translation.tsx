@@ -4,7 +4,7 @@ import { TextProps, HeadingProps, Text } from '@chakra-ui/react'
 type DefaultProps = TextProps & HeadingProps
 
 export type TranslationProps<T = DefaultProps> = {
-  component?: React.FC,
+  component?: any,
   prefix?: string
   suffix?: string
   joinChar?: string

@@ -5,6 +5,7 @@ import React, { useContext, useState } from 'react'
 import { useTheme, useMediaQuery } from "@chakra-ui/react"
 
 type ContextProps = {
+  theme: any
   scrollLocked: boolean
   screenSize: string | null
   setScrollLocked: Function
@@ -13,6 +14,7 @@ type ContextProps = {
 }
 
 const initialState: ContextProps = {
+  theme: null,
   isMobile: false,
   screenSize: null,
   environment: 'prod',
@@ -24,7 +26,8 @@ const ThemeProviderContext = React.createContext<ContextProps>(initialState)
 export const useThemeProvider = () => useContext(ThemeProviderContext)
 
 export function ThemeProvider({ children }: ProviderProps) {
-  const { breakpoints } = useTheme()
+  const theme = useTheme()
+  const { breakpoints } = theme
   const [ scrollLocked, setScrollLocked ] = useState<boolean>(false)
   const environment = useMemo(() => window.location.hostname === PROD_HOSTNAME ? 'prod' : 'beta', [])
 
@@ -37,7 +40,7 @@ export function ThemeProvider({ children }: ProviderProps) {
   const isMobile = screenSize === 'sm'
 
   return (
-    <ThemeProviderContext.Provider value={{screenSize, scrollLocked, setScrollLocked, isMobile, environment}}>
+    <ThemeProviderContext.Provider value={{theme, screenSize, scrollLocked, setScrollLocked, isMobile, environment}}>
       {children}
     </ThemeProviderContext.Provider>
   )
