@@ -22,6 +22,7 @@ export type VaultCardProps = {
 type VaultCardField = {
   field: string
   label?: string
+  labelPos?: 'left' | 'right'
   props?: TextProps & AvatarProps & BoxProps & ThemingProps
 }
 
@@ -71,11 +72,16 @@ const Inline = ({ assetId, fields, onClick, showDivider = true, ...cardProps }: 
                     spacing={2}
                   >
                     {
-                      fieldInfo.label && (
+                      fieldInfo.labelPos !== 'right' && fieldInfo.label && (
                         <Translation translation={fieldInfo.label} component={Text} textStyle={'captionSmall'} />
                       )
                     }
                     <AssetProvider.GeneralData field={fieldInfo.field} textStyle={'tableCell'} {...fieldInfo.props} />
+                    {
+                      fieldInfo.labelPos === 'right' && fieldInfo.label && (
+                        <Translation translation={fieldInfo.label} component={Text} textStyle={'captionSmall'} />
+                      )
+                    }
                   </HStack>
                 </React.Fragment>
               ))
