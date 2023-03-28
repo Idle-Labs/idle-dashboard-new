@@ -44,20 +44,26 @@ export const VaultsCarousel: React.FC = () => {
               const strategyPath = getRoutePath('earn', [strategy.route])
               return (
                 <VaultCard.Inline
+                  showDivider={false}
+                  assetId={`${vault.id}`}
                   key={`vault_${vault.id}`}
                   onClick={() => navigate(`${strategyPath}/${vault.id}`)}
-                  assetId={`${vault.id}`}
                   fields={[
-                    {
-                      label:'defi.tvl',
-                      field:'tvl'
-                    },
                     {
                       label:'defi.apy',
                       field:'apy',
                       props:{
-                        color: strategy.color
+                        // showTooltip: false
                       }
+                    },
+                    {
+                      field:'productTag',
+                      props:{
+                        px:3
+                      }
+                    },
+                    {
+                      field:'strategies'
                     }
                   ]}
                 />

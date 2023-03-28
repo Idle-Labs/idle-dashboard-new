@@ -17,6 +17,10 @@ export const ProductTag: React.FC<ProductTagProps> = ({ type, ...textProps }) =>
       component={Tag}
       fontWeight={600}
       color={'primary'}
+      sx={{
+        borderRadius:8,
+        whiteSpace:'nowrap'
+      }}
       bg={`tags.${foundProduct.strategy}`}
       translation={`strategies.${foundProduct.strategy}.label`}
       {...textProps}

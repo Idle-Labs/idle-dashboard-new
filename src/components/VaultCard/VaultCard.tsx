@@ -28,9 +28,10 @@ type VaultCardField = {
 export type VaultCardInlineProps = {
   fields: VaultCardField[]
   onClick?: Function
+  showDivider?: boolean
 } & VaultCardProps & CardProps
 
-const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps) => {
+const Inline = ({ assetId, fields, onClick, showDivider = true, ...cardProps }: VaultCardInlineProps) => {
   return (
     <AssetProvider
       wrapFlex={false}
@@ -38,7 +39,7 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
     >
       <Card
         py={2}
-        px={[4, 6]}
+        px={4}
         layerStyle={['card', 'cardHover']}
         onClick={onClick}
         {...cardProps}
@@ -56,12 +57,16 @@ const Inline = ({ assetId, fields, onClick, ...cardProps }: VaultCardInlineProps
             {
               fields.map( (fieldInfo: VaultCardField, index: number) => (
                 <React.Fragment key={`field_${index}`}>
-                  <Box
-                    width={1}
-                    height={1}
-                    bg={'divider'}
-                    borderRadius={'50%'}
-                  />
+                  {
+                    showDivider && (
+                      <Box
+                        width={1}
+                        height={1}
+                        bg={'divider'}
+                        borderRadius={'50%'}
+                      />
+                    )
+                  }
                   <HStack
                     spacing={2}
                   >

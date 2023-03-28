@@ -9,6 +9,7 @@ import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
 import { RateChart } from 'components/RateChart/RateChart'
+import { ProductTag } from 'components/ProductTag/ProductTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
@@ -102,7 +103,7 @@ export type AssetFieldProps = {
   value?: string | number | BigNumber
 } & TextProps
 
-const Name: React.FC<AssetFieldProps> = (props) => {
+const Name: React.FC<TextProps> = (props) => {
   const { asset } = useAssetProvider()
   return (
     <SkeletonText minW={!asset ? '50px' : 'auto'} noOfLines={1} isLoaded={!!asset}>
@@ -1306,6 +1307,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<JuniorApy textStyle={'tableCell'} {...props} />)
     case 'seniorApy':
       return (<SeniorApy textStyle={'tableCell'} {...props} />)
+    case 'productTag':
+      return (<ProductTag type={asset?.type} {...props} />)
     case 'apy':
       return (<Apy showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
     case 'apy7':

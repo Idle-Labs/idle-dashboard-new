@@ -268,6 +268,7 @@ export const Dashboard: React.FC = () => {
                                 <AssetProvider
                                   wrapFlex={false}
                                   assetId={assetId}
+                                  key={`asset_${assetId}`}
                                 >
                                   <SimpleGrid
                                     pr={1}
@@ -906,7 +907,14 @@ export const Dashboard: React.FC = () => {
                 )
               }
               {
-                userHasFunds && <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                userHasFunds && (
+                  <HStack
+                    width={'full'}
+                    justifyContent={'flex-end'}
+                  >
+                    <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                  </HStack>
+                )
               }
             </Stack>
             <BalanceChart
