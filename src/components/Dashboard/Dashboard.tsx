@@ -339,9 +339,9 @@ export const Dashboard: React.FC = () => {
                             {
                               productAssets
                                 .sort( (a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1 )
-                                .slice(0, 9)
+                                .slice(0, isMobile ? 8 : 9)
                                 .reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
-                                  const arrayKey: number = parseInt(''+(index/3))
+                                  const arrayKey: number = parseInt(''+(index/(isMobile ? 2 : 3)))
                                   if (!assetsGroups[arrayKey]){
                                     assetsGroups[arrayKey] = []
                                   }

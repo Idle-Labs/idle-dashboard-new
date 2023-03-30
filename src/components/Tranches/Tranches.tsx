@@ -83,9 +83,9 @@ export const Tranches: React.FC = () => {
     return (
       <SimpleGrid
         mb={6}
-        columns={2}
         spacing={6}
         width={'full'}
+        columns={[1, 2]}
       >
         {
           productStrategies.map( (strategy: string) => {
@@ -109,8 +109,8 @@ export const Tranches: React.FC = () => {
                       top: "30%",
                       width: "205%",
                       right: "-115%",
-                      height: "125%",
                       position: "absolute",
+                      height: isMobile ? "145%" : "125%",
                       background: `radial-gradient(circle, rgba(${hexToRgb(strategies[strategy]?.color as string).join(',')},0.8) 0%, rgba(50,61,83,0) 70%)`
                     }}
                   >
@@ -217,13 +217,13 @@ export const Tranches: React.FC = () => {
         }
       </SimpleGrid>
     )
-  }, [navigate, closeModal, productStrategies, selectVaultById, selectAssetById])
+  }, [navigate, closeModal, productStrategies, isMobile, selectVaultById, selectAssetById])
 
-  const onRowClickAvailable = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
-    sendSelectItem(item_list_id, item_list_name, row.original)
+  const onRowClickAvailable = useCallback((asset: Asset, item_list_id: string, item_list_name: string) => {
+    sendSelectItem(item_list_id, item_list_name, asset)
     const modalProps = {
       subtitle:'defi.chooseTranche',
-      body: getModalCards(row.original.id as string)
+      body: getModalCards(asset.id as string)
     }
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, getModalCards])
@@ -488,7 +488,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, availableListId, availableListName) } />)
           }
         </VStack>
       </VStack>
@@ -503,7 +503,7 @@ export const Tranches: React.FC = () => {
               <Skeleton />
             </Stack>
           ) : (
-            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row, availableListId, availableListName) } />
+            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row.original, availableListId, availableListName) } />
           )
         }
       </Card>
@@ -518,7 +518,7 @@ export const Tranches: React.FC = () => {
         spacing={10}
       >
         <Stack
-          spacing={[10, 0]}
+          spacing={[8, 0]}
           direction={['column', 'row']}
           alignItems={['center', 'flex-start']}
           width={['100%', '100%', '100%', '100%', '80%']}
@@ -540,12 +540,21 @@ export const Tranches: React.FC = () => {
                 </Flex>
               )
             }
-            <StrategyOverview strategies={productStrategies} />
+            {
+              !isMobile && (
+                <StrategyOverview strategies={productStrategies} />
+              )
+            }
           </VStack>
-          <Image width={['70%', '50%']} src={product?.image} />
+          <Image width={['100%', '50%']} src={product?.image} />
           {
             isMobile && (
               <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
+            )
+          }
+          {
+            isMobile && (
+              <StrategyOverview strategies={productStrategies} />
             )
           }
         </Stack>

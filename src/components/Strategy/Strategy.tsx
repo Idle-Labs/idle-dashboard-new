@@ -401,7 +401,7 @@ export const Strategy: React.FC = () => {
       >
         {banner}
         <Stack
-          spacing={[10, 0]}
+          spacing={[8, 0]}
           direction={['column', 'row']}
           alignItems={['center', 'flex-start']}
           width={['100%', '100%', '100%', '100%', '70%']}
@@ -424,12 +424,21 @@ export const Strategy: React.FC = () => {
                 </Flex>
               )
             }
-            <StrategyOverview strategies={[strategy]} />
+            {
+              !isMobile && (
+                <StrategyOverview strategies={[strategy]} />
+              )
+            }
           </VStack>
-          <Image width={['70%', '33%']} src={strategies[strategy].image} />
+          <Image width={['60%', '33%']} src={strategies[strategy].image} />
           {
             isMobile && (
               <Translation translation={strategies[strategy].description} textAlign={['center', 'left']} />
+            )
+          }
+          {
+            isMobile && (
+              <StrategyOverview strategies={[strategy]} />
             )
           }
         </Stack>

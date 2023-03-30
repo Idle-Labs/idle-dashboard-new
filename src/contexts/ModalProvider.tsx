@@ -1,6 +1,7 @@
 import { useTranslate } from 'react-polyglot'
 import type { ModalProps } from 'constants/types'
 import type { ProviderProps } from './common/types'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import React, { useCallback, useState, useContext } from 'react'
 import { useDisclosure, Text, Button, Flex, Heading } from "@chakra-ui/react"
 
@@ -31,6 +32,7 @@ export const useModalProvider = () => useContext(ModalContext)
 
 export function ModalProvider({ children }: ProviderProps) {
   const translate = useTranslate()
+  const { isMobile } = useThemeProvider()
   const [ size, setSize ] = useState<ModalSize>('lg')
   const [ modalProps, setModalProps ] = useState<ModalProps>({
     cta:'',
@@ -64,10 +66,10 @@ export function ModalProvider({ children }: ProviderProps) {
     <ModalContext.Provider value={{ openModal, closeModal: onClose}}>
       {children}
       <Modal
-        isCentered
         size={size}
         isOpen={isOpen}
         onClose={onClose}
+        isCentered={!isMobile}
         blockScrollOnMount={false}
       >
         <ModalOverlay />

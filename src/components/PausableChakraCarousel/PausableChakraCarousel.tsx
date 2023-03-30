@@ -37,10 +37,11 @@ export const usePausableChakraCarouselProvider = () => useContext(PausableChakra
 
 type PausableChakraCarouselArgs = {
   showProgress?: boolean
+  enableDragging?: boolean
   progressColor?: string
 } & ContainerProps
 
-const PausableChakraCarousel: React.FC<PausableChakraCarouselArgs> = ({ children, showProgress = true, progressColor = '#cccccc' }) => {
+const PausableChakraCarousel: React.FC<PausableChakraCarouselArgs> = ({ children, showProgress = true, enableDragging = false, progressColor = '#cccccc' }) => {
 
   const {
     delay,
@@ -115,7 +116,7 @@ const PausableChakraCarousel: React.FC<PausableChakraCarouselArgs> = ({ children
         }
         <ChakraCarousel
           gap={0}
-          enableDragging={false}
+          enableDragging={enableDragging}
           activeItem={activeItem}
         >
           {children}

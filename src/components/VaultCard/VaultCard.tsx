@@ -17,6 +17,7 @@ import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack,
 
 export type VaultCardProps = {
   assetId: AssetId
+  onClick?: Function
 }
 
 type VaultCardField = {
@@ -28,7 +29,6 @@ type VaultCardField = {
 
 export type VaultCardInlineProps = {
   fields: VaultCardField[]
-  onClick?: Function
   showDivider?: boolean
 } & VaultCardProps & CardProps
 
@@ -297,7 +297,7 @@ export const Minimal = ({assetId}: VaultCardProps) => {
   )
 }
 
-export const VaultCard = ({ assetId }: VaultCardProps) => {
+export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
   const navigate = useNavigate()
   const { location } = useBrowserRouter()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
@@ -342,7 +342,7 @@ export const VaultCard = ({ assetId }: VaultCardProps) => {
     >
       <Card
         p={4}
-        onClick={() => navigate(`${location?.pathname}/${assetId}`)}
+        onClick={() => onClick ? onClick() : navigate(`${location?.pathname}/${assetId}`)}
       >
         <VStack
           spacing={3}

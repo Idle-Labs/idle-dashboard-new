@@ -29,7 +29,7 @@ export const VaultsCarousel: React.FC = () => {
       <Marquee
         gradient={false}
         pauseOnHover={true}
-        speed={isMobile ? 40 : 10}
+        speed={isMobile ? 40 : 40}
       >
         <HStack
           ml={2}
