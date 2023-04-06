@@ -1686,6 +1686,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'experimental',
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
