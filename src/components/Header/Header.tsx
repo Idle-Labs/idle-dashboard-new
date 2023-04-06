@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react'
 import { NavLink } from "react-router-dom"
-import { Card } from 'components/Card/Card'
 import { TopBarMenu } from './Menu/TopBarMenu'
 import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
+import { HStack, Stack, VStack } from '@chakra-ui/react'
 import { useWalletProvider } from 'contexts/WalletProvider'
 // import { useThemeProvider } from 'contexts/ThemeProvider'
-import { HStack, Stack, VStack, Image } from '@chakra-ui/react'
-import { Translation } from 'components/Translation/Translation'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { EulerHackBanner } from 'components/EulerHackBanner/EulerHackBanner'
 
 export const Header: React.FC = () => {
   // const { screenSize } = useThemeProvider()
@@ -62,22 +61,7 @@ export const Header: React.FC = () => {
           {/*<NotificationList />*/}
         </Stack>
       </HStack>
-      <Card.Dark
-        p={[3, 5]}
-        borderColor={'yellow'}
-      >
-        <Stack
-          width={'full'}
-          spacing={[2, 3]}
-          alignItems={'center'}
-          justifyContent={'center'}
-          direction={['column','row']}
-        >
-          <Image src={`images/vaults/deprecated.png`} width={6} />
-          <Translation textAlign={'center'} translation={'announcements.eulerHack'} isHtml={true} textStyle={'caption'} />
-          <Image display={['none', 'block']} src={`images/vaults/deprecated.png`} width={6} />
-        </Stack>
-      </Card.Dark>
+      <EulerHackBanner />
     </VStack>
   )
 }

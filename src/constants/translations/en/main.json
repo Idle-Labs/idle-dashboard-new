@@ -93,7 +93,7 @@
     "txId": "Tx ID"
   },
   "announcements": {
-    "eulerHack": "Vaults affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler Finance Incident</a> have been temporarily paused. Interest-bearing token withdrawals have been enabled - <a href='https://docs.idle.finance/products/best-yield/guides/redeem-funds-on-by#redeem-interest-bearing-tokens' class='link' target='_blank' rel='noopener'>Learn more</a>"
+    "eulerHack": "Vaults affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler Finance Incident</a> have been temporarily paused. Euler Foundation will be soon proceed with the <a href='https://forum.euler.finance/t/plan-for-redemption-of-euler-funds/906' class='link' target='_blank' rel='noopener'>redemption of the recovered funds</a>."
   },
   "onboard": {
     "connect": {

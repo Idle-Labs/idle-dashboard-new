@@ -1599,13 +1599,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     clearpool:{
       USDC:{
         autoFarming:[],
+        enabledEnvs:[],
         variant:'portofino',
-        enabledEnvs:['beta'],
         protocol:'clearpool',
         blockNumber:16790250,
-        status:'experimental',
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -1755,12 +1757,14 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       DAI:{
         autoFarming:[],
+        enabledEnvs:[],
         variant:'portofino',
-        enabledEnvs:['beta'],
         protocol:'clearpool',
         blockNumber:16790274,
-        status:'experimental',
         underlyingToken:'DAI',
+        flags:{
+          addHarvestApy: false
+        },
         adaptiveYieldSplitEnabled:true,
         CDO:{
           abi:IdleCDO as Abi,

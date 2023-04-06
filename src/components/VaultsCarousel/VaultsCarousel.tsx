@@ -25,7 +25,6 @@ export const VaultsCarousel: React.FC = () => {
       width={'100%'}
       overflow={'hidden'}
       position={'absolute'}
-      top={['240px', '190px']}
     >
       <Marquee
         gradient={false}

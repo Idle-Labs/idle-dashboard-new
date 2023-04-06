@@ -686,7 +686,7 @@ export const Dashboard: React.FC = () => {
       <VaultsCarousel />
       <Stack
         mb={10}
-        pt={[16, 12]}
+        pt={[16, 20]}
         spacing={10}
         width={'100%'}
         alignItems={['flex-start','center']}
