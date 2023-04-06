@@ -8,7 +8,7 @@ type ProductTagProps = {
 
 export const ProductTag: React.FC<ProductTagProps> = ({ type, ...textProps }) => {
   if (!type) return null
-  const foundProduct = products.find( (p: ProductProps) => p.strategies.includes(type) )
+  const foundProduct = products.find( (p: ProductProps) => p.strategies.includes(type) || p.strategy === type )
   if (!foundProduct) return null
   return (
     <Translation
@@ -22,7 +22,7 @@ export const ProductTag: React.FC<ProductTagProps> = ({ type, ...textProps }) =>
         whiteSpace:'nowrap'
       }}
       bg={`tags.${foundProduct.strategy}`}
-      translation={`strategies.${foundProduct.strategy}.label`}
+      translation={`strategies.${foundProduct.strategy}.tag`}
       {...textProps}
     />
   )

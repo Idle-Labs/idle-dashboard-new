@@ -6,12 +6,10 @@ import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
 import { HStack, Stack, VStack } from '@chakra-ui/react'
 import { useWalletProvider } from 'contexts/WalletProvider'
-// import { useThemeProvider } from 'contexts/ThemeProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { EulerHackBanner } from 'components/EulerHackBanner/EulerHackBanner'
 
 export const Header: React.FC = () => {
-  // const { screenSize } = useThemeProvider()
   const { chainId, account } = useWalletProvider()
 
   const assetBalance = useMemo(() => {

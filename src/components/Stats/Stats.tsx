@@ -12,8 +12,8 @@ import { VaultCard } from 'components/VaultCard/VaultCard'
 import React, { useState, useMemo, useCallback } from 'react'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { ReactTable } from 'components/ReactTable/ReactTable'
+import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Translation } from 'components/Translation/Translation'
-import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -184,7 +184,7 @@ export const Stats: React.FC = () => {
             >
               <AssetLabel assetId={value} textStyle={'tableCell'} fontSize={'md'} />
             </Flex>
-            <StrategyTag strategy={row.original.strategy} />
+            <ProductTag type={row.original.strategy} />
           </HStack>
         )
       },

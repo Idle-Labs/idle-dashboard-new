@@ -15,6 +15,7 @@ import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, StrategyColumn } from 'constants/strategies'
+// import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
@@ -46,6 +47,7 @@ export const Tranches: React.FC = () => {
   const translate = useTranslate()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
+  // const { params } = useBrowserRouter()
   const { openModal, closeModal } = useModalProvider()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
@@ -61,7 +63,7 @@ export const Tranches: React.FC = () => {
     }
   } = usePortfolioProvider()
 
-  const product = useMemo(() => products.find( product => product.route === 'tranches' ), [])
+  const product = useMemo(() => products.find( product => product.route === 'yield-tranches' ), [])
 
   const productStrategies = useMemo(() => (product?.strategies || []), [product])
   const strategy = useMemo(() => productStrategies?.[0], [productStrategies])
@@ -512,6 +514,7 @@ export const Tranches: React.FC = () => {
 
   const heading = useMemo(() => {
     if (!strategy) return null
+    const modalProps = product?.modal
     return (
       <VStack
         width={'full'}
@@ -533,11 +536,23 @@ export const Tranches: React.FC = () => {
             <Translation isHtml={true} translation={'strategies.tranches.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
             {
               !isMobile && (
-                <Flex
+                <VStack
+                  spacing={1}
                   width={['100%', '90%']}
+                  alignItems={'flex-start'}
                 >
-                  <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
-                </Flex>
+                  <Translation isHtml={true} translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
+                  {
+                    modalProps && (
+                      <HStack
+                        spacing={2}
+                      >
+                        <Translation translation={'defi.modals.learnMore.cta.learnMore'} textStyle={'cta'} onClick={() => openModal(modalProps as ModalProps)} />
+                        <MdArrowForwardIos />
+                      </HStack>
+                    )
+                  }
+                </VStack>
               )
             }
             {
@@ -560,11 +575,11 @@ export const Tranches: React.FC = () => {
         </Stack>
       </VStack>
     )
-  }, [strategy, product, productStrategies, isMobile])
+  }, [strategy, product, productStrategies, isMobile, openModal])
 
   return (
     <Flex
-      mt={14}
+      mt={20}
       width={'100%'}
       direction={'column'}
       alignItems={'center'}

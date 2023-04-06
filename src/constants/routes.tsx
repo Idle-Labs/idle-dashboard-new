@@ -27,7 +27,7 @@ export const routes: RouteObject[] = [
         path:'earn',
         children:[
           {
-            path:'tranches',
+            path:'yield-tranches',
             element:<Tranches />,
           },
           {

@@ -1,3 +1,4 @@
+import type { ModalProps } from 'constants/types'
 import { strategiesFolder } from 'constants/folders'
 import { strategies, StrategyColumn } from 'constants/strategies'
 
@@ -8,6 +9,7 @@ export type ProductProps = {
   route: string
   image?: string
   strategy: string
+  modal?: ModalProps
   description?: string
   columns?: StrategyColumn[]
   strategies: (keyof typeof strategies)[]
@@ -25,13 +27,19 @@ export const products: ProductProps[] = [
   },
   {
     color: '#4de3b0',
-    route: `tranches`,
     strategy:'tranches',
+    route: `yield-tranches`,
     strategies: ['AA', 'BB'],
     label: 'strategies.tranches.label',
     bg: `${strategiesFolder}tranches-bg.png`,
     image: `${strategiesFolder}tranches.png`,
     description: 'strategies.tranches.description',
+    modal:{
+      cta:'strategies.tranches.modal.cta',
+      text:'strategies.tranches.modal.text',
+      title:'strategies.tranches.modal.title',
+      subtitle:'strategies.tranches.modal.subtitle'
+    },
     columns: [
       {
         accessor:'name',

@@ -174,12 +174,20 @@
       "title": "Gauge"
     },
     "tranches": {
-      "label": "Tranches",
+      "tag": "Tranches",
+      "label": "Yield Tranches",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
       "descriptionShort": "Yield Tranches split any DeFi yield source into risk-adjusted classes, enabling users to construct a customized yield portfolio that suits their risk tolerance.",
-      "description": "Idle Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss. So far, in DeFi, users shared the risk and yield"
+      "description": "Yield Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss.<br />Yield Tranches provide risk diversification, onchain default settlement and adaptive yield split to scale liquidity in any situation.",
+      "modal": {
+        "cta": "Got it",
+        "title": "How Yield Tranches work",
+        "subtitle": "Senior & Junior Duality",
+        "text": "So far, in DeFi, users shared the risk and yield pro rata, meaning they shared it entirely corresponding to their deposit. With Yield Tranches, LPs do not share all risks and yields pro rata. Instead, users can build a yield porfolio using a composition of Senior & Junior adjusted to their own risk/yield ratio.<br /><br /><strong>Senior Tranches <img src='/images/strategies/AA.svg' style='width:24px;height:24px;display:inline;vertical-align:bottom' />:</strong> The Senior class usually has built-in protection mechanism against losses provided by Junior liquidity, and a rather stable but lower yield.<br /><br /><strong>Junior Tranches <img src='/images/strategies/BB.svg' style='width:24px;height:24px;display:inline;vertical-align:bottom' />:</strong> The Junior class has higher yield and always overperform the underlying yield, as it protects the Senior class from losses.<br /><br />Yield Tranches provide risk diversification, onchain default settlement and adaptive yield split to scale liquidity in any situation."
+      }
     },
     "best": {
+      "tag": "Best Yield",
       "label": "Best Yield",
       "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",
       "banner": {
@@ -834,12 +842,12 @@
         "disabledCta":"Withdraw"
       },
       "AA": {
-        "cta": "Earn with Senior",
+        "cta": "Deposit with Senior",
         "disabled":"This vault has been deactivated, please withdraw your funds",
         "disabledCta":"Withdraw"
       },
       "BB": {
-        "cta": "Earn with Junior",
+        "cta": "Deposit with Junior",
         "disabled":"This vault has been deactivated, please withdraw your funds",
         "disabledCta":"Withdraw"
       }

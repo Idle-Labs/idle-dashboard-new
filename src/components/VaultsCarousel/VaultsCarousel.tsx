@@ -19,6 +19,7 @@ export const VaultsCarousel: React.FC = () => {
 
   return (
     <HStack
+      mt={5}
       left={0}
       zIndex={1}
       spacing={2}

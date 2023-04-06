@@ -9,11 +9,11 @@ import { VaultCard } from 'components/VaultCard/VaultCard'
 import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
+import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Link, LinkProps, useNavigate } from 'react-router-dom'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
-import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
@@ -31,6 +31,7 @@ import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types
 import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
+import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
@@ -177,7 +178,7 @@ export const Dashboard: React.FC = () => {
                     width={'full'}
                   >
                     <Translation translation={productConfig.label} component={Heading} as={'h3'} size={'md'} />
-                    <StrategyTag strategy={productConfig.strategy} px={3} />
+                    <ProductTag type={productConfig.strategies[0]} px={3} />
                   </HStack>
                   {
                     productPositions.length>0 ? (
@@ -808,11 +809,13 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Box
-      mt={12}
+      mt={5}
       width={'100%'}
     >
+      <AnnouncementBanner text={'announcements.eulerHack'} />
       <VaultsCarousel />
       <Stack
+        mt={10}
         mb={10}
         pt={[16, 20]}
         spacing={10}
@@ -884,7 +887,7 @@ export const Dashboard: React.FC = () => {
                     spacing={[5, 1]}
                     alignItems={['center', 'flex-start']}
                   >
-                    <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded}>
+                    <SkeletonText noOfLines={2} isLoaded={!!accountAndPortfolioLoaded}>
                       <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
                       <HStack
                         spacing={[2, 4]}
