@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DASHBORD_URL } from 'constants/vars'
+import { PROD_HOSTNAME } from 'constants/vars'
 import type { ProviderProps } from './common/types'
 import React, { useContext, useState } from 'react'
 import { useTheme, useMediaQuery } from "@chakra-ui/react"
@@ -26,7 +26,7 @@ export const useThemeProvider = () => useContext(ThemeProviderContext)
 export function ThemeProvider({ children }: ProviderProps) {
   const { breakpoints } = useTheme()
   const [ scrollLocked, setScrollLocked ] = useState<boolean>(false)
-  const environment = useMemo(() => window.location.origin === DASHBORD_URL ? 'prod' : 'beta', [])
+  const environment = useMemo(() => window.location.hostname === PROD_HOSTNAME ? 'prod' : 'beta', [])
 
   const [isSmall] = useMediaQuery(`(min-width: ${breakpoints.base}) and (max-width: ${breakpoints.sm})`)
   const [isMedium] = useMediaQuery(`(min-width: ${breakpoints.sm}) and (max-width: ${breakpoints.md})`)

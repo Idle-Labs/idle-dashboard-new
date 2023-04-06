@@ -9,6 +9,7 @@ export const DATE_FORMAT = 'YYYY/MM/DD'
 export const SECONDS_IN_YEAR = 30879000
 export const MIN_STAKING_SECONDS = 1209600 // 2 weeks
 export const MAX_STAKING_SECONDS = 126144000 // 4 years
+export const PROD_HOSTNAME = 'app.idle.finance'
 export const MIN_STAKING_INCREASE_SECONDS = 604800 // 1 week
 export const DATETIME_FORMAT = 'YYYY/MM/DD HH:mm'
 export const DASHBORD_URL = 'https://app.idle.finance'
