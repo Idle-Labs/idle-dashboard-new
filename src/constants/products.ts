@@ -70,7 +70,7 @@ export const products: ProductProps[] = [
         tables: ['Deposited']
       },
       {
-        title:'tvl',
+        title:'defi.tvl',
         accessor:'tvlUsd',
         sortType: 'numeric',
         id:'trancheTotalTvl',

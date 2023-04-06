@@ -470,7 +470,7 @@ export const Tranches: React.FC = () => {
     const initialState = {
       sortBy: [
         {
-          id: 'tvl',
+          id: 'trancheTotalTvl',
           desc: false
         }
       ]
