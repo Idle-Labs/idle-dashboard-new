@@ -564,7 +564,7 @@ export const Tranches: React.FC = () => {
           <Image width={['100%', '50%']} src={product?.image} />
           {
             isMobile && (
-              <Translation translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
+              <Translation isHtml={true} translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
             )
           }
           {

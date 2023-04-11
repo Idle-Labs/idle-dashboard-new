@@ -366,9 +366,10 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
 
 type ProtocolsProps = {
  iconMargin?: number
+ tooltipDisabled?: boolean
 } & AvatarProps & BoxProps
 
-const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) => {
+const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisabled = false, ...props}) => {
   const { vault } = useAssetProvider()
   // const { selectors: { selectVaultById } } = usePortfolioProvider()
   
@@ -384,6 +385,7 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) =
           placement={'top'}
           key={`icon_${index}`}
           label={protocol.label}
+          isDisabled={tooltipDisabled}
         >
           <Avatar
             p={1}
@@ -404,7 +406,7 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, ...props}) =
     }, [])
 
     return protocolIcons.length ? protocolIcons : children
-  }, [children, vault, props, iconMargin])
+  }, [children, vault, props, iconMargin, tooltipDisabled])
 
   return (
     <Flex>

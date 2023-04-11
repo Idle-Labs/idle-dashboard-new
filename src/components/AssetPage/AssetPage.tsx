@@ -291,17 +291,15 @@ export const AssetPage: React.FC = () => {
             <ProductTag type={asset?.type} fontSize={'md'} h={8} />
             <AssetProvider.Strategies h={8} w={8} />
           </HStack>
-          {
-            asset?.type && asset?.type !== 'BY' && (
-              <HStack
-                pl={4}
-                borderLeft={'1px solid'}
-                borderLeftColor={'divider'}
-              >
-                <AssetProvider.ProtocolIcon size={'sm'} />
-              </HStack>
-            )
-          }
+          <HStack
+            pl={4}
+            borderLeft={'1px solid'}
+            borderLeftColor={'divider'}
+          >
+            <AssetProvider.Protocols tooltipDisabled={true} size={'sm'}>
+              <AssetProvider.ProtocolIcon size={'sm'} />
+            </AssetProvider.Protocols>
+          </HStack>
         </HStack>
       )
     }

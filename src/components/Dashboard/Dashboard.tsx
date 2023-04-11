@@ -36,8 +36,8 @@ import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardO
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 // import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
-import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image } from '@chakra-ui/react'
 import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate, getAssetPath } from 'helpers/'
+import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image, Flex } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
   const { theme, isMobile } = useThemeProvider()
@@ -248,8 +248,13 @@ export const Dashboard: React.FC = () => {
                             columns={[3, 4]}
                           >
                             <Translation translation={'defi.asset'} textStyle={'captionSmall'} color={'primary'} />
-                            <Translation translation={'defi.totalFunds'} textStyle={'captionSmall'} color={'primary'} />
-                            <Translation translation={'defi.realizedApy'} textStyle={'captionSmall'} color={'primary'} />
+                            {
+                              !isMobile && (
+                                <Translation pl={14} translation={'defi.protocols'} textStyle={'captionSmall'} color={'primary'} />
+                              )
+                            }
+                            <Translation pl={[8, 4]} translation={'defi.totalFunds'} textStyle={'captionSmall'} color={'primary'} />
+                            <Translation pl={[2, 4]} translation={'defi.realizedApy'} textStyle={'captionSmall'} color={'primary'} />
                           </SimpleGrid>
                         </Card.Light>
                         <Scrollable
@@ -286,19 +291,38 @@ export const Dashboard: React.FC = () => {
                                     }}
                                     onClick={() => navigate(getAssetPath(asset))}
                                   >
-                                    <AssetProvider.GeneralData field={'asset'} size={'xs'} textStyle={'tableCell'} fontSize={['sm', 'md']} />
-                                    <AssetProvider.GeneralData field={'balanceUsd'} fontSize={['sm', 'md']} />
                                     <HStack
-                                      pr={[2, 5]}
-                                      spacing={2}
                                       width={'full'}
                                       justifyContent={'space-between'}
                                     >
-                                      <AssetProvider.GeneralData field={'realizedApy'} fontSize={['sm', 'md']} />
-                                      <AssetProvider.GeneralData field={'strategies'} />
+                                      <AssetProvider.GeneralData field={'asset'} size={'xs'} textStyle={'tableCell'} fontSize={['xs', 'md']} />
+                                      <AssetProvider.GeneralData field={'strategies'} width={6} height={6} maxW={'initial'} />
                                     </HStack>
                                     {
                                       !isMobile && (
+                                        <Flex
+                                          pl={14}
+                                        >
+                                          <AssetProvider.Protocols size={'xs'}>
+                                            <AssetProvider.ProtocolIcon size={'xs'} />
+                                          </AssetProvider.Protocols>
+                                        </Flex>
+                                      )
+                                    }
+                                    <AssetProvider.GeneralData field={'balanceUsd'} pl={[10, 2]} fontSize={['sm', 'md']} />
+                                    <HStack
+                                      pr={2}
+                                      width={'full'}
+                                      justifyContent={'space-between'}
+                                    >
+                                      <AssetProvider.GeneralData field={'realizedApy'} pl={[2, 1]} fontSize={['sm', 'md']} />
+                                      <MdKeyboardArrowRight
+                                        size={24}
+                                        color={theme.colors.primary}
+                                      />
+                                    </HStack>
+                                    {
+                                      false && !isMobile && (
                                         <HStack
                                           justifyContent={'flex-end'}
                                         >
