@@ -1278,6 +1278,21 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (
         <IdleDistribution textStyle={'tableCell'} {...props} />
       )
+    /*
+    case 'fields':
+      console.log(field, fields, fieldsProps, props)
+      return (
+        <HStack
+          spacing={1}
+        >
+          {
+            fields?.map( (field: string) => (
+              <GeneralData key={`field_${field}`} field={field} {...props} {...fieldsProps?.[field]} />
+            ))
+          }
+        </HStack>
+      )
+    */
     case 'stakingTvl':
       return (<StakingTvl textStyle={'tableCell'} />)
     case 'stkIDLESupply':

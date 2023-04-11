@@ -25,6 +25,7 @@ type VaultCardField = {
   label?: string
   labelPos?: 'left' | 'right'
   props?: TextProps & AvatarProps & BoxProps & ThemingProps
+  parentProps?: TextProps & AvatarProps & BoxProps & ThemingProps
 }
 
 export type VaultCardInlineProps = {
@@ -70,6 +71,7 @@ const Inline = ({ assetId, fields, onClick, showDivider = true, ...cardProps }: 
                   }
                   <HStack
                     spacing={2}
+                    {...fieldInfo.parentProps}
                   >
                     {
                       fieldInfo.labelPos !== 'right' && fieldInfo.label && (
@@ -286,9 +288,11 @@ export const Minimal = ({assetId}: VaultCardProps) => {
             <VStack
               spacing={1}
               alignItems={'flex-end'}
+              justifyContent={'flex-end'}
             >
-              <Translation translation={'defi.pool'} textAlign={'right'} textStyle={'captionSmall'} />
-              <AssetProvider.PoolUsd textStyle={'tableCell'} textAlign={'right'} />
+              <AssetProvider.Protocols size={'xs'}>
+                <AssetProvider.ProtocolIcon size={'xs'} />
+              </AssetProvider.Protocols>
             </VStack>
           </SimpleGrid>
         </VStack>

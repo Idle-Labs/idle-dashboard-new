@@ -178,7 +178,6 @@ export const Dashboard: React.FC = () => {
                     width={'full'}
                   >
                     <Translation translation={productConfig.label} component={Heading} as={'h3'} size={'md'} />
-                    <ProductTag type={productConfig.strategies[0]} px={3} />
                   </HStack>
                   {
                     productPositions.length>0 ? (
@@ -339,6 +338,7 @@ export const Dashboard: React.FC = () => {
                           >
                             {
                               productAssets
+                                .filter( (a: Asset) => BNify(a.apy).gt(0) )
                                 .sort( (a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1 )
                                 .slice(0, isMobile ? 8 : 9)
                                 .reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {

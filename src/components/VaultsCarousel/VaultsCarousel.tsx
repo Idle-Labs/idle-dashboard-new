@@ -51,8 +51,8 @@ export const VaultsCarousel: React.FC = () => {
                   onClick={() => navigate(`${strategyPath}/${vault.id}`)}
                   fields={[
                     {
-                      label:'defi.apy',
                       field:'apy',
+                      label:'defi.apy',
                       labelPos:'right',
                       props:{
                         // showTooltip: false
@@ -65,7 +65,14 @@ export const VaultsCarousel: React.FC = () => {
                       }
                     },
                     {
-                      field:'strategies'
+                      field:'strategies',
+                      props:{
+                        ml:0,
+                        maxW:'initial'
+                      },
+                      parentProps:{
+                        ml:'1 !important'
+                      }
                     }
                   ]}
                 />
