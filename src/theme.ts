@@ -253,7 +253,7 @@ export const theme = extendTheme({
     cardHover:{
       cursor:'pointer',
       _hover:{
-        backgroundColor:'itemHover',
+        backgroundColor:'card.bgLight',
       }
     },
     cardOutline: {
