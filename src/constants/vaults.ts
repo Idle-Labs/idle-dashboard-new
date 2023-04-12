@@ -1679,11 +1679,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       USDT:{
         autoFarming:[],
+        enabledEnvs:[],
         variant:'fasanara',
-        enabledEnvs:['beta'],
         protocol:'clearpool',
         blockNumber:16790250,
-        status:'experimental',
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         flags:{
