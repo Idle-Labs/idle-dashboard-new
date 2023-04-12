@@ -274,16 +274,23 @@ export const AssetPage: React.FC = () => {
   }, [selectedTab, asset, vaultId])
 
   const headerRightSide = useMemo(() => {
-    if (selectedTab.id === 'stats'){
-      return (
-        <TimeframeSelector style={isMobile ? {marginTop:'20px'} : {marginTop:'-20px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-      )
-    } else {
-      return (
+    return (
+      <Stack
+        spacing={5}
+        direction={['column', 'row']}
+      >
+        {
+          selectedTab.id === 'stats' && (
+            <TimeframeSelector style={isMobile ? {marginTop:'15px'} : {marginTop:'-10px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+          )
+        }
         <HStack
           mb={'3 !important'}
           spacing={4}
+          pl={[0, selectedTab.id === 'stats' ? 5 : 0]}
           justifyContent={['center', 'flex-end']}
+          borderLeft={!isMobile && selectedTab.id === 'stats' ? '1px solid' : 'none'}
+          borderLeftColor={'divider'}
         >
           <HStack
             spacing={1}
@@ -301,8 +308,8 @@ export const AssetPage: React.FC = () => {
             </AssetProvider.Protocols>
           </HStack>
         </HStack>
-      )
-    }
+      </Stack>
+    )
   }, [asset, selectedTab, isMobile, timeframe, setTimeframe])
 
   return (

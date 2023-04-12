@@ -967,8 +967,8 @@ export const Dashboard: React.FC = () => {
         >
           <Translation translation={'dashboard.portfolio.composition'} component={Text} textStyle={'heading'} fontSize={'h3'} />
           <Card.Dark
-            p={0}
             flex={1}
+            py={[4, 0]}
             px={[6, 0]}
             display={'flex'}
             alignItems={'center'}
