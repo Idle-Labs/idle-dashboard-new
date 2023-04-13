@@ -1619,7 +1619,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_USDC',
           address:'0x931c080c7ed6b3c6988576654e5d56753dc92181'
         },
-        description:'This strategy deploys funds in the <a href="https://app.clearpool.finance/pool/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1699,7 +1699,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDT',
           address:'0xc8e2Fad99061407e947485c846bd05Eae9DE1991'
         },
-        description:'This strategy deploys funds in the <a href="https://app.clearpool.finance/pool/0x1a1d778776542c2efed161ba1fbcfe6e09ba99fb?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x1a1d778776542c2efed161ba1fbcfe6e09ba99fb?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1779,7 +1779,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_DAI',
           address:'0x3687c0F8760371fc1BD1c7bc28695c388CdEd5a0'
         },
-        description:'This strategy converts 1:1 DAI into USDC via <a href="https://makerdao.world/en/learn/governance/module-psm/" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://app.clearpool.finance/pool/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy converts 1:1 DAI into USDC via <a href="https://makerdao.world/en/learn/governance/module-psm/" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
