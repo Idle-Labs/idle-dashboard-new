@@ -75,6 +75,8 @@ export const Earn: React.FC = () => {
     return userHasBalance ? balanceChartData : performanceChartData
   }, [isPortfolioLoaded, userHasBalance, balanceChartData, performanceChartData])
 
+  // console.log('performanceChartData', timeframe, performanceChartData)
+
   // const onTabClick = useCallback((row: RowProps) => {
   //   return navigate(`${location?.pathname}/${row.original.id}`)
   // }, [navigate, location])
@@ -305,6 +307,7 @@ export const Earn: React.FC = () => {
             pt={[6, 8]}
             px={[6, 8]}
             pb={[4, 0]}
+            zIndex={99}
             width={'100%'}
             alignItems={'flex-start'}
             direction={['column', 'row']}
@@ -312,7 +315,7 @@ export const Earn: React.FC = () => {
           >
             {chartHeading}
             {
-              chartData && chartData.total?.length>0 && (
+              (!userHasBalance || (chartData && chartData.total?.length>0)) && (
                 <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
               )
             }

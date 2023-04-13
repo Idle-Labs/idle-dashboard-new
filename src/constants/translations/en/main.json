@@ -93,7 +93,7 @@
     "txId": "Tx ID"
   },
   "announcements": {
-    "eulerHack": "Vaults affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler Finance Incident</a> have been temporarily paused. Euler Foundation will be soon proceed with the <a href='https://forum.euler.finance/t/plan-for-redemption-of-euler-funds/906' class='link' target='_blank' rel='noopener'>redemption of the recovered funds</a>."
+    "eulerHack": "Vaults affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler Finance Incident</a> have been temporarily paused. Meanwhile 100% of the funds have been successfully recovered, deposits/redeems will soon be re-enabled. <a href='https://twitter.com/idlefinance/status/1646481412697083904' class='link' target='_blank' rel='noopener'>Read more</a>."
   },
   "onboard": {
     "connect": {
