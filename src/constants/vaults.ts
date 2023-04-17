@@ -1606,7 +1606,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: false
+          addHarvestApy: false,
+          referralEnabled: true
         },
         CDO:{
           abi:IdleCDO as Abi,
@@ -1686,7 +1687,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: false
+          addHarvestApy: false,
+          referralEnabled: true
         },
         CDO:{
           abi:IdleCDO as Abi,
@@ -1765,7 +1767,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16790274,
         underlyingToken:'DAI',
         flags:{
-          addHarvestApy: false
+          addHarvestApy: false,
+          referralEnabled: true
         },
         adaptiveYieldSplitEnabled:true,
         CDO:{

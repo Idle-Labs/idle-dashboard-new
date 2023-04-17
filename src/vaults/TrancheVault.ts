@@ -11,7 +11,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce } from 'helpers/'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
@@ -427,10 +427,18 @@ export class TrancheVault {
   // eslint-disable-next-line
   public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
     const decimals = this.underlyingToken?.decimals || 18
-    return [normalizeTokenAmount(amount, decimals)]
+    const params: any[] = [normalizeTokenAmount(amount, decimals)]
+    if (this.flags?.referralEnabled && checkAddress(_referral)){
+      params.push(_referral)
+    }
+    return params
   }
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
+    // Check enabled and valid referral
+    if (this.flags?.referralEnabled && checkAddress(params[1])){
+      return this.cdoContract.methods[`deposit${this.type}Ref`](...params)
+    }
     return this.cdoContract.methods[`deposit${this.type}`](...params)
   }
 

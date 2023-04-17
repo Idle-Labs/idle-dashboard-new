@@ -153,13 +153,16 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const sendOptions = {
       from: account?.address
     }
-    const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
+    // const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
+    const amount = balanceToDeposit.toFixed()
+    const depositParams = _referral && ("flags" in vault) && vault.flags?.referralEnabled ? vault.getDepositParams(amount, _referral) : vault.getDepositParams(amount)
+
     const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
 
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, getDepositAllowance, assetBalance])
+  }, [account, vault, _referral, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {
