@@ -23,12 +23,16 @@ export const StrategyLabel: React.FC<StrategyLabelArgs> = ({ strategy, customTex
           <Translation component={Text} translation={customText || strategyConfig?.label} textStyle={'ctaStatic'} {...props} />
         )
       }
-      <Box
-        width={2}
-        height={2}
-        borderRadius={'50%'}
-        bg={strategyConfig.color}
-      />
+      {
+        /*
+        <Box
+          width={2}
+          height={2}
+          borderRadius={'50%'}
+          bg={strategyConfig.color}
+        />
+        */
+      }
     </HStack>
   )
 }

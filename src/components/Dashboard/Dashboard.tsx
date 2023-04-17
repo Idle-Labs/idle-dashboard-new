@@ -850,6 +850,7 @@ export const Dashboard: React.FC = () => {
       >
         <Translation translation={'navBar.dashboard'} component={Heading} as={'h2'} size={'3xl'} />
         {
+          /*
           !isMobile && (
             <HStack
               pb={3}
@@ -860,6 +861,7 @@ export const Dashboard: React.FC = () => {
               <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} checkUserFunds={true} showOnMobile={false} />
             </HStack>
           )
+          */
         }
       </Stack>
       <Stack
@@ -992,31 +994,27 @@ export const Dashboard: React.FC = () => {
       
       {productsOverview}
 
-      {
-        account && (
-          <Stack
-            spacing={6}
-            mt={[10, 20]}
-            width={'100%'}
-            direction={['column', 'row']}
-          >
-            <VStack
-              flex={1}
-              alignItems={'flex-start'}
-              ref={ref as typeof useRef}
-            >
-              {strategiesRewards}
-            </VStack>
-            <VStack
-              spacing={6}
-              width={['100%', '500px']}
-              alignItems={'flex-start'}
-            >
-              <TransactionList assetIds={allAssetIds} maxH={[400, Math.max(400, dimensions?.height)]} showTitleOnMobile={true} />
-            </VStack>
-          </Stack>
-        )
-      }
+      <Stack
+        spacing={6}
+        mt={[10, 20]}
+        width={'100%'}
+        direction={['column', 'row']}
+      >
+        <VStack
+          flex={1}
+          alignItems={'flex-start'}
+          ref={ref as typeof useRef}
+        >
+          {strategiesRewards}
+        </VStack>
+        <VStack
+          spacing={6}
+          width={['100%', '500px']}
+          alignItems={'flex-start'}
+        >
+          <TransactionList assetIds={allAssetIds} maxH={[400, Math.max(400, dimensions?.height)]} showTitleOnMobile={true} />
+        </VStack>
+      </Stack>
 
       <JoinCommunity />
     </Box>
