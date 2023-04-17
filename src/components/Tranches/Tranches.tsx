@@ -29,10 +29,22 @@ type TableFieldProps = {
   row: RowProps
   field: string
   value: any
+  showLoader?: boolean
 }
 
-export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => {
+export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showLoader = true }) => {
   const assetId = row.original.id
+
+  if (!showLoader) {
+    return (
+      <AssetProvider
+        assetId={assetId}
+      >
+        <AssetProvider.GeneralData section={'strategy'} field={field} />
+      </AssetProvider>
+    )
+  }
+
   return (
     <SkeletonText noOfLines={2} isLoaded={!!value}>
       <AssetProvider assetId={assetId}>
@@ -256,11 +268,16 @@ export const Tranches: React.FC = () => {
               {...column.stackProps}
             >
               <TableField field={id} value={value} row={row} />
-              {
-                column.extraFields.map( (extraField: string) => (
-                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
-                ))
-              }
+              <Flex
+                flex={1}
+                {...column.stackProps}
+              >
+                {
+                  column.extraFields.map( (extraField: string) => (
+                    <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} showLoader={false} />
+                  ))
+                }
+              </Flex>
             </Stack>
           ) : (
             <TableField field={id} value={value} row={row} />
@@ -292,11 +309,16 @@ export const Tranches: React.FC = () => {
               {...column.stackProps}
             >
               <TableField field={id} value={value} row={row} />
-              {
-                column.extraFields.map( (extraField: string) => (
-                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
-                ))
-              }
+              <Flex
+                flex={1}
+                {...column.stackProps}
+              >
+                {
+                  column.extraFields.map( (extraField: string) => (
+                    <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} showLoader={false} />
+                  ))
+                }
+              </Flex>
             </Stack>
           ) : (
             <TableField field={id} value={value} row={row} />

@@ -1259,6 +1259,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
             <Name textStyle={'tableCell'} {...props} />
             <VaultVariant textStyle={'vaultVariant'}  />
           </VStack>
+          <StatusBadge width={6} height={6} />
         </HStack>
       )
     case 'assetWithStatus':

@@ -28,7 +28,7 @@ export const menu: MenuItemType[] = [
     children: Object.values(products).map( (product: ProductProps) => ({
       path: `earn/${product.route}`,
       label: product.label as string,
-      color: product.color as string
+      // color: product.color as string
     }))
   },
   {

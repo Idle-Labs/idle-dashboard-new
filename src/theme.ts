@@ -174,7 +174,7 @@ export const theme = extendTheme({
         background:`url(${strategies.BY.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
-      '.earn-tranches': {
+      '.earn-yield-tranches': {
         background:`url(${products[1].bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
@@ -186,7 +186,7 @@ export const theme = extendTheme({
         background:`url(${strategies.BB.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },
-      '.earn-tranches.mobile': {
+      '.earn-yield-tranches.mobile': {
         background:`url(${products[1].bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },

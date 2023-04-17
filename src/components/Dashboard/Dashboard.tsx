@@ -234,6 +234,7 @@ export const Dashboard: React.FC = () => {
                     <Card
                       px={[3, 6]}
                       py={[4, 7]}
+                      minHeight={['auto', '274px']}
                     >
                       <VStack
                         spacing={2}

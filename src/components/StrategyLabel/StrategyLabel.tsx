@@ -1,5 +1,6 @@
 import React from 'react'
 import { strategies } from 'constants/strategies'
+import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Translation } from 'components/Translation/Translation'
 import { TextProps, Box, Text, HStack } from '@chakra-ui/react'
 
@@ -24,6 +25,9 @@ export const StrategyLabel: React.FC<StrategyLabelArgs> = ({ strategy, customTex
         )
       }
       {
+        !!strategy && (
+          <ProductTag type={strategy} />
+        )
         /*
         <Box
           width={2}

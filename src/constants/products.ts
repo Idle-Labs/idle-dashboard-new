@@ -56,7 +56,7 @@ export const products: ProductProps[] = [
         sortType:'alpha',
         id:'assetWithVariant',
         tables: ['Available'],
-        extraFields:['statusBadge']
+        extraFields:[]
       },
       {
         accessor:'id',
