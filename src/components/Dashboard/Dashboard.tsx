@@ -305,7 +305,7 @@ export const Dashboard: React.FC = () => {
                                           pl={14}
                                         >
                                           <AssetProvider.Protocols size={'xs'}>
-                                            <AssetProvider.ProtocolIcon size={'xs'} />
+                                            <AssetProvider.ProtocolIcon size={'xs'} showTooltip={true} />
                                           </AssetProvider.Protocols>
                                         </Flex>
                                       )

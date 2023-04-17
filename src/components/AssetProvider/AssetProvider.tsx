@@ -245,27 +245,22 @@ const ProtocolIcon: React.FC<IconProps> = ({
     return protocols[vault?.protocol]
   }, [vault])
 
-  const avatar = useMemo(() => (
-    <Avatar
-      src={protocol?.icon}
-      icon={<BsQuestion size={24} />}
-      {...props}
-    />
-  ), [protocol, props])
+  if (!protocol) return null
 
-  const tooltip = useMemo(() => (
+  return (
     <Tooltip
       hasArrow
       placement={'top'}
       label={protocol?.label}
+      isDisabled={showTooltip}
     >
-      {avatar}
+      <Avatar
+        src={protocol?.icon}
+        icon={<BsQuestion size={24} />}
+        {...props}
+      />
     </Tooltip>
-  ), [avatar, protocol])
-
-  if (!protocol) return null
-
-  return showTooltip ? tooltip : avatar
+  )
 }
 
 const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
