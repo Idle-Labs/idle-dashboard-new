@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
-import useLocalForge from 'hooks/useLocalForge'
+// import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
@@ -17,7 +17,7 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import React, { useRef, useState, useMemo, useCallback } from 'react'
+import React, { useRef, useState, useMemo } from 'react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
@@ -28,7 +28,7 @@ import { TransactionList } from 'components/TransactionList/TransactionList'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
-import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
+// import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
@@ -43,8 +43,8 @@ export const Dashboard: React.FC = () => {
   const { theme, isMobile } = useThemeProvider()
   const [ ref, dimensions ] = useBoundingRect()
   const [ , setPercentChange ] = useState(0)
+  const selectedStrategies = useMemo(() => Object.keys(strategies), [])
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
-  const [ selectedStrategies, setSelectedStrategies ] = useLocalForge('selectedStrategies', Object.keys(strategies))
 
   const navigate = useNavigate()
   const { account, walletInitialized } = useWalletProvider()
@@ -110,6 +110,7 @@ export const Dashboard: React.FC = () => {
 
   // const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 
+  /*
   const toggleStrategy = useCallback((strategy: string) => {
     if (!selectedStrategies.includes(strategy)){
       setSelectedStrategies([
@@ -121,6 +122,7 @@ export const Dashboard: React.FC = () => {
       setSelectedStrategies(selectedStrategies.filter( (s: string) => s !== strategy ))
     }
   }, [selectedStrategies, setSelectedStrategies])
+  */
 
   const productsOverview = useMemo(() => {
     return (
