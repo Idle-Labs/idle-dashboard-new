@@ -2233,15 +2233,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
         {
           decimals: 18,
-          name: 'euler',
           enabled: true,
+          name: 'clearpool',
           abi: IdleCDO as Abi,
-          token: 'AA_euler_DAIStaking',
-          address: '0x62Eb6a8c7A555eae3e0B17D42CA9A3299af2787E',
+          token: 'AA_clearpool_portofino_DAI',
+          address: '0x43eD68703006add5F99ce36b5182392362369C1c',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0x62Eb6a8c7A555eae3e0B17D42CA9A3299af2787E']
+              params: ['0x43eD68703006add5F99ce36b5182392362369C1c']
             }
           },
         },
