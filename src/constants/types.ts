@@ -1,4 +1,5 @@
 import React from 'react'
+import * as moment from 'moment'
 import type { Vault } from 'vaults/'
 import type { AbiItem } from 'web3-utils'
 import type { BigNumber } from 'bignumber.js'
@@ -67,6 +68,11 @@ export type RainbowData = {
 }
 
 export type PlatformApiFilters = Record<string, string | number>
+
+export type DateRange = {
+  startDate: moment.Moment | null
+  endDate: moment.Moment | null
+}
 
 export enum HistoryTimeframe {
   // HOUR = "1H",

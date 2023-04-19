@@ -3,7 +3,7 @@ import { HistoryTimeframe } from 'constants/types'
 import { HStack, Text, Button, StackProps } from '@chakra-ui/react'
 
 type TimeframeSelectorArgs = {
-  timeframe: HistoryTimeframe
+  timeframe?: HistoryTimeframe | null
   setTimeframe: Function
   variant?: 'button' | 'text'
 } & StackProps

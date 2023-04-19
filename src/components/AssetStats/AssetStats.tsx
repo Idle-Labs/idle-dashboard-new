@@ -9,6 +9,7 @@ import { useThemeProvider } from 'contexts/ThemeProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AddressLink } from 'components/AddressLink/AddressLink'
 import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
@@ -25,8 +26,8 @@ import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { SimpleGrid, Stack, HStack, VStack, Heading, Flex } from '@chakra-ui/react'
-import { Transaction, HistoryData, HistoryTimeframe, AssetId } from 'constants/types'
 import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
+import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange } from 'constants/types'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { BNify, getTimeframeTimestamp, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
@@ -62,9 +63,29 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["WEEK"])
+  const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
   const [ selectedStrategies, setSelectedStrategies ] = useState<string[] | undefined>(undefined)
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["WEEK"])
   const { vaults, contracts, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+
+  const useDateRange = useMemo(() => {
+    return !!dateRange.startDate && !!dateRange.endDate
+  }, [dateRange])
+
+  useEffect(() => {
+    if (useDateRange){
+      setTimeframe(undefined)
+    }
+  }, [useDateRange, setTimeframe])
+
+  useEffect(() => {
+    if (timeframe){
+      setDateRange({
+        endDate: null,
+        startDate: null
+      })
+    }
+  }, [timeframe, setDateRange])
 
   const asset = useMemo(() => {
     return params.asset && selectAssetById && selectAssetById(params.asset)
@@ -482,7 +503,12 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     ))
                   }
                 </HStack>
-                <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                <HStack
+                  spacing={2}
+                >
+                  <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+                  <DatePicker selected={useDateRange} setDateRange={setDateRange} />
+                </HStack>
               </Stack>
             </Stack>
           )

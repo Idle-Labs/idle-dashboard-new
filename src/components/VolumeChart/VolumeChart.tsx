@@ -4,7 +4,7 @@ import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 
 type VolumeChartArgs = {
   assetIds: AssetId[]
-  timeframe: HistoryTimeframe
+  timeframe?: HistoryTimeframe
 }
 
 export const VolumeChart: React.FC<VolumeChartArgs> = ({ assetIds, timeframe }) => {
