@@ -3,6 +3,7 @@ import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { IconTab } from 'components/IconTab/IconTab'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { ProductTag } from 'components/ProductTag/ProductTag'
@@ -19,7 +20,7 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
-import { /*strategies,*/ AssetId, imageFolder, HistoryTimeframe, GaugeRewardData, BigNumber } from 'constants/'
+import { /*strategies,*/ AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber } from 'constants/'
 
 type TabType = {
   id:string
@@ -42,7 +43,28 @@ export const AssetPage: React.FC = () => {
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe["6MONTHS"])
+  const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["6MONTHS"])
+
+  const useDateRange = useMemo(() => {
+    return !!dateRange.startDate && !!dateRange.endDate
+  }, [dateRange])
+
+  useEffect(() => {
+    if (useDateRange){
+      setTimeframe(undefined)
+    }
+  }, [useDateRange, setTimeframe])
+
+  useEffect(() => {
+    if (timeframe){
+      setDateRange({
+        endDate: null,
+        startDate: null
+      })
+    }
+  }, [timeframe, setDateRange])
+
   const {
     isPortfolioLoaded,
     portfolioTimestamp,
@@ -193,6 +215,7 @@ export const AssetPage: React.FC = () => {
         component: AssetStats,
         componentProps: {
           timeframe,
+          dateRange,
           assetOnly: true,
           showHeader: false,
           showAssetStrategy: true
@@ -201,7 +224,7 @@ export const AssetPage: React.FC = () => {
     }
 
     return tabs
-  }, [vault, vaultGauge, assetGauge, timeframe, environment, claimableRewards])
+  }, [vault, vaultGauge, assetGauge, timeframe, dateRange, environment, claimableRewards])
 
   // Get selected tab id from search params
   const selectedTabId = useMemo(() => {
@@ -273,44 +296,62 @@ export const AssetPage: React.FC = () => {
     )
   }, [selectedTab, asset, vaultId])
 
+  const vaultDetails = useMemo(() => {
+    return (
+      <HStack
+        mb={[0, '3 !important']}
+        spacing={4}
+        pl={[0, selectedTab.id === 'stats' ? 5 : 0]}
+        justifyContent={['center', 'flex-end']}
+        borderLeft={!isMobile && selectedTab.id === 'stats' ? '1px solid' : 'none'}
+        borderLeftColor={'divider'}
+      >
+        <HStack
+          spacing={1}
+        >
+          <ProductTag type={asset?.type} fontSize={'md'} h={8} />
+          <AssetProvider.Strategies h={8} w={8} />
+        </HStack>
+        <HStack
+          pl={4}
+          borderLeft={'1px solid'}
+          borderLeftColor={'divider'}
+        >
+          <AssetProvider.Protocols tooltipDisabled={true} size={'sm'}>
+            <AssetProvider.ProtocolIcon size={'sm'} />
+          </AssetProvider.Protocols>
+        </HStack>
+      </HStack>
+    )
+  }, [selectedTab, asset, isMobile])
+
   const headerRightSide = useMemo(() => {
     return (
       <Stack
-        spacing={5}
+        spacing={[0, 5]}
         direction={['column', 'row']}
       >
         {
           selectedTab.id === 'stats' && (
-            <TimeframeSelector style={isMobile ? {marginTop:'15px'} : {marginTop:'-10px'}} variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+            <Stack
+              spacing={2}
+              mt={[3, '-15px']}
+              width={['full', 'auto']}
+              direction={['column', 'row']}
+              alignItems={['auto', 'center']}
+              justifyContent={['flex-start','center']}
+            >
+              <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+              <DatePicker selected={useDateRange} setDateRange={setDateRange} />
+            </Stack>
           )
         }
-        <HStack
-          mb={'3 !important'}
-          spacing={4}
-          pl={[0, selectedTab.id === 'stats' ? 5 : 0]}
-          justifyContent={['center', 'flex-end']}
-          borderLeft={!isMobile && selectedTab.id === 'stats' ? '1px solid' : 'none'}
-          borderLeftColor={'divider'}
-        >
-          <HStack
-            spacing={1}
-          >
-            <ProductTag type={asset?.type} fontSize={'md'} h={8} />
-            <AssetProvider.Strategies h={8} w={8} />
-          </HStack>
-          <HStack
-            pl={4}
-            borderLeft={'1px solid'}
-            borderLeftColor={'divider'}
-          >
-            <AssetProvider.Protocols tooltipDisabled={true} size={'sm'}>
-              <AssetProvider.ProtocolIcon size={'sm'} />
-            </AssetProvider.Protocols>
-          </HStack>
-        </HStack>
+        {
+          !isMobile && vaultDetails
+        }
       </Stack>
     )
-  }, [asset, selectedTab, isMobile, timeframe, setTimeframe])
+  }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
 
   return (
     <AssetProvider
@@ -329,18 +370,22 @@ export const AssetPage: React.FC = () => {
         >
           <Stack
             width={'100%'}
-            spacing={[5, 10]}
+            spacing={[4, 10]}
             alignItems={'center'}
             justifyContent={'center'}
             direction={['column', 'row']}
           >
             <AssetLabel assetId={params.asset} fontSize={'h2'} />
+            {
+              isMobile && vaultDetails
+            }
             <Stack
               flex={1}
+              spacing={0}
               width={['100%', 'auto']}
               justifyContent={'space-between'}
               borderBottom={[0, '1px solid']}
-              direction={['column-reverse', 'row']}
+              direction={['column', 'row']}
               borderColor={['divider', 'divider']}
             >
               <HStack

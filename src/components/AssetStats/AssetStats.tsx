@@ -7,11 +7,11 @@ import { Amount } from 'components/Amount/Amount'
 import { FEES_COLLECTORS, strategies } from 'constants/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { GenericContract } from 'contracts/GenericContract'
+import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AddressLink } from 'components/AddressLink/AddressLink'
-import { StrategyTag } from 'components/StrategyTag/StrategyTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -30,7 +30,7 @@ import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocati
 import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange } from 'constants/types'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { BNify, getTimeframeTimestamp, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
+import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
 
 type AboutItemProps = {
   translation: TranslationProps["translation"]
@@ -56,10 +56,11 @@ const AboutItem: React.FC<AboutItemProps> = ({
 type AssetStatsProps = {
   assetOnly?: boolean
   showHeader?: boolean
+  dateRange?: DateRange
   showAssetStrategy?: boolean
   timeframe?: HistoryTimeframe
 }
-export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, assetOnly = false, showAssetStrategy = false, timeframe: defaultTimeframe }) => {
+export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, assetOnly = false, showAssetStrategy = false, timeframe: defaultTimeframe, dateRange: defaultDateRange }) => {
   const translate = useTranslate()
   const { params } = useBrowserRouter()
   const { isMobile } = useThemeProvider()
@@ -133,13 +134,17 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
     return defaultTimeframe || timeframe
   }, [timeframe, defaultTimeframe])
 
+  const selectedDateRange = useMemo(() => {
+    return defaultDateRange || dateRange
+  }, [dateRange, defaultDateRange])
+
   const useRatesForPerformanceChartData = asset?.type === 'BY'
 
-  const { rateChartData } = useRateChartData({ assetIds, timeframe: selectedTimeframe })
-  const { volumeChartData } = useVolumeChartData({ assetIds, timeframe: selectedTimeframe })
-  const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds, timeframe: selectedTimeframe })
+  const { rateChartData } = useRateChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
+  const { volumeChartData } = useVolumeChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
+  const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   const { allocations, colors: allocationColors, labels: allocationLabels } = useAllocationChartData({ assetIds })
-  const { performanceChartData } = usePerformanceChartData({ useRates: useRatesForPerformanceChartData, assetIds, timeframe: selectedTimeframe })
+  const { performanceChartData } = usePerformanceChartData({ useRates: useRatesForPerformanceChartData, assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   // console.log('performanceChartData', performanceChartData)
 
   const assetsApys = useMemo(() => {
@@ -316,10 +321,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
     return volumeChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(Math.abs(data.value)), BNify(0) )
   }, [volumeChartData])
 
-  const timeframeStartTimestamp = useMemo((): number => {
-    if (!selectedTimeframe) return 0
-    return getTimeframeTimestamp(selectedTimeframe)
-  }, [selectedTimeframe])
+  const [
+    timeframeStartTimestamp,
+    timeframeEndTimestamp
+  ] = useMemo(() => getChartTimestampBounds(timeframe, dateRange), [timeframe, dateRange])
 
   const collectedFees = useMemo((): Transaction[] => {
     const collectedFees = assetIds.reduce( ( collectedFees: Transaction[], assetId: AssetId) => {
@@ -330,8 +335,8 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
         ...asset.collectedFees
       ]
     }, [])
-    return collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp )
-  }, [assetIds, selectAssetById, timeframeStartTimestamp])
+    return collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp && (!timeframeEndTimestamp || (+tx.timeStamp*1000)<=timeframeEndTimestamp) )
+  }, [assetIds, selectAssetById, timeframeStartTimestamp, timeframeEndTimestamp])
 
   const collectedFeesUsd = useMemo((): BigNumber => {
     // const collectedFeesFiltered = collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp )
@@ -473,6 +478,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 pb={3}
                 flex={1}
                 spacing={[4, 0]}
+                width={['full', 'auto']}
                 borderBottom={'1px solid'}
                 borderColor={'divider'}
                 justifyContent={'space-between'}
@@ -488,7 +494,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     spacing={0}
                     position={'relative'}
                   >
-                    <StrategyTag strategy={strategyConfig?.strategy as string} py={2} />
+                    <ProductTag type={strategyConfig?.strategy as string} py={2} />
                     <Flex
                       top={'-12px'}
                       right={'-12px'}
@@ -503,12 +509,15 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     ))
                   }
                 </HStack>
-                <HStack
+                <Stack
                   spacing={2}
+                  width={['full', 'auto']}
+                  direction={['column', 'row']}
+                  justifyContent={['flex-start','center']}
                 >
                   <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
                   <DatePicker selected={useDateRange} setDateRange={setDateRange} />
-                </HStack>
+                </Stack>
               </Stack>
             </Stack>
           )
@@ -681,7 +690,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 p={6}
                 flex={1}
               >
-                <VolumeChart timeframe={selectedTimeframe} assetIds={assetIds} />
+                <VolumeChart timeframe={selectedTimeframe} dateRange={dateRange} assetIds={assetIds} />
               </Card.Dark>
             </VStack>
           </SimpleGrid>

@@ -1,7 +1,7 @@
-import { getTimeframeTimestamp } from 'helpers/'
+import { getChartTimestampBounds } from 'helpers/'
 import { useState, useMemo, useEffect } from 'react'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { AssetId, HistoryData, HistoryTimeframe, Asset } from 'constants/types'
+import { AssetId, HistoryData, HistoryTimeframe, DateRange, Asset } from 'constants/types'
 
 export type RainbowData = {
   date: number
@@ -22,6 +22,7 @@ type UseTVLChartDataReturn = {
 
 type UseTVLChartDataArgs = {
   assetIds: AssetId[]
+  dateRange?: DateRange
   timeframe?: HistoryTimeframe
   useDollarConversion?: boolean
 }
@@ -30,6 +31,7 @@ type UseTVLChartData = (args: UseTVLChartDataArgs) => UseTVLChartDataReturn
 
 export const useTVLChartData: UseTVLChartData = ({
   assetIds,
+  dateRange,
   timeframe,
   useDollarConversion = true
 }) => {
@@ -42,10 +44,10 @@ export const useTVLChartData: UseTVLChartData = ({
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
-  const timeframeStartTimestamp = useMemo((): number => {
-    if (!timeframe) return 0
-    return getTimeframeTimestamp(timeframe)
-  }, [timeframe])
+  const [
+    timeframeStartTimestamp,
+    timeframeEndTimestamp
+  ] = useMemo(() => getChartTimestampBounds(timeframe, dateRange), [timeframe, dateRange])
 
   const tvlChartData = useMemo((): TVLChartData => {
 
@@ -63,7 +65,7 @@ export const useTVLChartData: UseTVLChartData = ({
       prices.forEach( (price: HistoryData) => {
         const date = price.date
         
-        if (date<timeframeStartTimestamp) return
+        if (date<timeframeStartTimestamp || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
 
         const value = price.value
 
@@ -90,7 +92,7 @@ export const useTVLChartData: UseTVLChartData = ({
 
     chartData.rainbow = Object.values(pricesByDate)
     return chartData
-  }, [assets, useDollarConversion, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp])
+  }, [assets, useDollarConversion, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp, timeframeEndTimestamp])
 
   useEffect(() => {
     if (!tvlChartData.rainbow.length) return

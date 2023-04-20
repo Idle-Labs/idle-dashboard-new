@@ -2,7 +2,7 @@ import { lazy } from 'react'
 import dayjs from 'classes/dayjs'
 import BigNumber from 'bignumber.js'
 import { Dayjs, ManipulateType } from 'dayjs'
-import { HistoryTimeframe } from 'constants/types'
+import { HistoryTimeframe, DateRange } from 'constants/types'
 
 type BNifyInput = any
 
@@ -73,6 +73,12 @@ export function getTimeframeTimestamp(timeframe: HistoryTimeframe): number {
   const value = parseInt(timeframe.substr(0, 1))
   const period = periods[timeframe.substr(1)]
   return dayjs().subtract(value, period).startOf('day').valueOf()
+}
+
+export function getChartTimestampBounds(timeframe?: HistoryTimeframe, dateRange?: DateRange): number[] {
+  const startTimestamp = dateRange?.startDate ? dateRange.startDate.startOf('day').valueOf() : (timeframe ? getTimeframeTimestamp(timeframe) : 0)
+  const endTimestamp = dateRange?.endDate ? dateRange.endDate.endOf('day').valueOf() : 0
+  return [startTimestamp, endTimestamp]
 }
 
 export function dayMax(d1: Dayjs, d2: Dayjs) {

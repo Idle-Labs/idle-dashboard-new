@@ -1,9 +1,9 @@
 import { strategies } from 'constants/'
 import { useState, useMemo, useEffect } from 'react'
-import { BNify, getTimeframeTimestamp } from 'helpers/'
+import { BNify, getChartTimestampBounds } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { AssetId, HistoryData, RainbowData, HistoryTimeframe, Asset } from 'constants/types'
 import { HistogramChartLabels, HistogramChartColors } from 'components/HistogramChart/HistogramChart'
+import { AssetId, HistoryData, RainbowData, HistoryTimeframe, DateRange, Asset } from 'constants/types'
 
 export type VolumeChartData = {
   total: HistoryData[]
@@ -22,6 +22,7 @@ type UseVolumeChartDataReturn = {
 
 type UseVolumeChartDataArgs = {
   assetIds: AssetId[]
+  dateRange?: DateRange
   timeframe?: HistoryTimeframe
   useDollarConversion?: boolean
 }
@@ -30,6 +31,7 @@ type UseVolumeChartData = (args: UseVolumeChartDataArgs) => UseVolumeChartDataRe
 
 export const useVolumeChartData: UseVolumeChartData = ({
   assetIds,
+  dateRange,
   timeframe,
   useDollarConversion = true
 }) => {
@@ -42,10 +44,10 @@ export const useVolumeChartData: UseVolumeChartData = ({
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
-  const timeframeStartTimestamp = useMemo((): number => {
-    if (!timeframe) return 0
-    return getTimeframeTimestamp(timeframe)
-  }, [timeframe])
+  const [
+    timeframeStartTimestamp,
+    timeframeEndTimestamp
+  ] = useMemo(() => getChartTimestampBounds(timeframe, dateRange), [timeframe, dateRange])
 
   const volumeChartData = useMemo((): VolumeChartData => {
 
@@ -65,7 +67,7 @@ export const useVolumeChartData: UseVolumeChartData = ({
       tvls.forEach( (tvl: HistoryData) => {
         const date = tvl.date
         
-        if (date<timeframeStartTimestamp) return
+        if (date<timeframeStartTimestamp || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
 
         if (prevTvl && asset.id) {
           if (!volumeByDate[date]) {
@@ -92,7 +94,7 @@ export const useVolumeChartData: UseVolumeChartData = ({
     chartData.rainbow = Object.values(volumeByDate)
 
     return chartData
-  }, [assets, useDollarConversion, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp])
+  }, [assets, useDollarConversion, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp, timeframeEndTimestamp])
 
   const extraData = useMemo((): ExtraData => {
     if (!assets.length) return {

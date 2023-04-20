@@ -1,8 +1,8 @@
 import { SECONDS_IN_YEAR } from 'constants/'
 import { useState, useMemo, useEffect } from 'react'
-import { getTimeframeTimestamp, BNify } from 'helpers/'
+import { BNify, getChartTimestampBounds } from 'helpers/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { AssetId, HistoryData, HistoryTimeframe, Asset } from 'constants/types'
+import { AssetId, HistoryData, HistoryTimeframe, DateRange, Asset } from 'constants/types'
 
 export type RainbowData = {
   date: number
@@ -24,6 +24,7 @@ type UsePerformanceChartDataReturn = {
 type UsePerformanceChartDataArgs = {
   assetIds: AssetId[]
   useRates?: boolean
+  dateRange?: DateRange
   timeframe?: HistoryTimeframe
 }
 
@@ -34,17 +35,17 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
   const [ performanceChartDataLoading, setPerformanceChartDataLoading ] = useState<boolean>(true)
   const { historicalRates, historicalPrices, selectors: { selectAssetsByIds, selectVaultById, selectAssetHistoricalPrices, selectAssetHistoricalRates } } = usePortfolioProvider()
 
-  const { useRates = false, assetIds, timeframe } = args
+  const { useRates = false, assetIds, timeframe, dateRange } = args
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
     return selectAssetsByIds(assetIds)
   }, [assetIds, selectAssetsByIds])
 
-  const timeframeStartTimestamp = useMemo((): number => {
-    if (!timeframe) return 0
-    return getTimeframeTimestamp(timeframe)
-  }, [timeframe])
+  const [
+    timeframeStartTimestamp,
+    timeframeEndTimestamp
+  ] = useMemo(() => getChartTimestampBounds(timeframe, dateRange), [timeframe, dateRange])
 
   const performanceChartData = useMemo((): PerformanceChartData => {
 
@@ -66,10 +67,10 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
         rates.forEach( (d: HistoryData) => {
           const date = d.date
           const rate = d.value
-          const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
+          const assetStartTimestamp = ("stats" in vault) && vault.stats?.startTimestamp
           const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
           
-          if (date<startTimestampToUse) return
+          if (date<startTimestampToUse || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
 
           if (prevRate && BNify(rate).lt(9999)){
             const secondsDiff = Math.round((date-prevRate.date)/1000)
@@ -115,7 +116,7 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
           const assetStartTimestamp = "stats" in vault && vault.stats?.startTimestamp
           const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
           
-          if (date<startTimestampToUse) return
+          if (date<startTimestampToUse || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
 
           const value = price.value
 
@@ -144,7 +145,7 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
     }
 
     return chartData
-  }, [assets, historicalPrices, selectAssetHistoricalPrices, selectAssetHistoricalRates, historicalRates, useRates, selectVaultById, timeframeStartTimestamp])
+  }, [assets, historicalPrices, selectAssetHistoricalPrices, selectAssetHistoricalRates, historicalRates, useRates, selectVaultById, timeframeStartTimestamp, timeframeEndTimestamp])
 
   useEffect(() => {
     if (!performanceChartData.rainbow.length) return

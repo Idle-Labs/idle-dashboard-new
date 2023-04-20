@@ -4,9 +4,9 @@ import type { DateRange } from 'constants/types'
 import { MdCalendarToday } from 'react-icons/md'
 import React, { useCallback, useState } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { useDisclosure, Button, Flex } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 import { FocusedInputShape, DayPickerRangeController } from 'react-dates'
+import { useDisclosure, Button, Flex, HStack, Box } from '@chakra-ui/react'
 
 import 'react-dates/lib/css/_datepicker.css'
 import './datepicker_overwrite.css'
@@ -55,7 +55,22 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         leftIcon={<MdCalendarToday />}
         onClick={() => onOpen()}
       >
-        <Translation translation={'common.calendar'} />
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+        >
+          <Translation translation={'common.calendar'} />
+          {
+            selected && (
+              <Box
+                width={2}
+                height={2}
+                bg={'cta'}
+                borderRadius={'50%'}
+              />
+            )
+          }
+        </HStack>
       </Button>
       <Modal
         size={'2xl'}
