@@ -85,11 +85,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           <ModalCloseButton />
           <ModalBody>
             <DayPickerRangeController
-              numberOfMonths={2}
               endDate={dayRange.endDate}
               maxDate={moment.default()}
               focusedInput={focusedInput}
               startDate={dayRange.startDate}
+              numberOfMonths={isMobile ? 1 : 2}
               renderKeyboardShortcutsButton={() => null}
               onDatesChange={(dayRange) => setDayRange(dayRange)}
               initialVisibleMonth={() => moment.default().subtract(1, "M")} 
