@@ -34,6 +34,17 @@ export type ReducerActionTypes = {
   payload: any
 }
 
+export type HistoryData = {
+  value: number
+  date: number
+}
+
+export type RainbowData = {
+  date: number
+  total: number
+  [k: AssetId]: number
+}
+
 export type VaultHistoricalTvls = {
   vaultId: string
   tvls: HistoryData[]
@@ -56,15 +67,9 @@ export type VaultHistoricalData = {
   prices: HistoryData[]
 }
 
-export type HistoryData = {
-  value: number
-  date: number
-}
-
-export type RainbowData = {
-  date: number
-  total: number
-  [k: AssetId]: number
+export type ChartData = {
+  total: HistoryData[]
+  rainbow: RainbowData[]
 }
 
 export type PlatformApiFilters = Record<string, string | number>

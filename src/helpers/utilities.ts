@@ -38,6 +38,23 @@ export function hexToRgb(hex: string): number[]{
   ]
 }
 
+export function downloadFile(content: BlobPart[], name: string) {
+  const file = new File(content, name, {
+    type: 'text/plain',
+  })
+
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(file)
+
+  link.href = url
+  link.download = file.name
+  document.body.appendChild(link)
+  link.click()
+
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
 export function apr2apy(apr: BNifyInput) {
   return BNify((BNify(1).plus(BNify(apr).div(365))).pow(365).minus(1).toFixed(18));
 }
