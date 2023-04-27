@@ -92,6 +92,7 @@ export const theme = extendTheme({
     status:{
       production:'#00AE8F'
     },
+    darkGreen: '#00AE8F',
     brightGreen: '#4DE3B0',
     tags: {
       best: '#04117B',

@@ -96,7 +96,7 @@
     "txId": "Tx ID"
   },
   "announcements": {
-    "eulerHack": "Vaults affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler Finance Incident</a> have been temporarily paused. Meanwhile 100% of the funds have been successfully recovered, deposits/redeems will soon be re-enabled. <a href='https://twitter.com/idlefinance/status/1646481412697083904' class='link' target='_blank' rel='noopener'>Read more</a>."
+    "eulerHack": "Funds affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler incident</a> have been successfully restored. Best Yield is now fully functional while Euler Yield Tranches are re-enabled for redeem only. <a href='https://twitter.com/idlefinance/status/1646481412697083904' class='link' target='_blank' rel='noopener'>Read more</a>."
   },
   "onboard": {
     "connect": {

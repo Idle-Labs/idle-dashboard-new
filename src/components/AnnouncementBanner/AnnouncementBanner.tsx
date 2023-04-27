@@ -1,5 +1,6 @@
 import { Card } from 'components/Card/Card'
-import { Stack, Image } from '@chakra-ui/react'
+import { MdCheckCircle } from 'react-icons/md'
+import { useTheme, Stack, Image } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 
 type AnnouncementBannerProps = {
@@ -7,10 +8,11 @@ type AnnouncementBannerProps = {
 }
 
 export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text }) => {
+  const theme = useTheme()
   return (
     <Card.Dark
       p={[3, 5]}
-      borderColor={'yellow'}
+      borderColor={'darkGreen'}
     >
       <Stack
         width={'full'}
@@ -19,9 +21,8 @@ export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text }) 
         justifyContent={'center'}
         direction={['column','row']}
       >
-        <Image src={`images/vaults/deprecated.png`} width={6} />
+        <MdCheckCircle size={24} color={theme.colors.darkGreen} />
         <Translation textAlign={'center'} translation={text} isHtml={true} textStyle={'caption'} />
-        <Image display={['none', 'block']} src={`images/vaults/deprecated.png`} width={6} />
       </Stack>
     </Card.Dark>
   )

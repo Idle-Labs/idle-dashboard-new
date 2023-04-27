@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
+import { MdCheckCircle } from 'react-icons/md'
 import { Stack, Image } from '@chakra-ui/react'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { BestYieldVault } from 'vaults/BestYieldVault'
@@ -34,7 +35,7 @@ export const EulerHackBanner: React.FC = () => {
   return (
     <Card.Dark
       p={[3, 5]}
-      borderColor={'yellow'}
+      borderColor={'brightGreen'}
     >
       <Stack
         width={'full'}
@@ -43,9 +44,9 @@ export const EulerHackBanner: React.FC = () => {
         justifyContent={'center'}
         direction={['column','row']}
       >
-        <Image src={`images/vaults/deprecated.png`} width={6} />
+        <MdCheckCircle width={24} height={24} color={'brightGreen'} />
         <Translation textAlign={'center'} translation={'announcements.eulerHack'} isHtml={true} textStyle={'caption'} />
-        <Image display={['none', 'block']} src={`images/vaults/deprecated.png`} width={6} />
+        <MdCheckCircle width={24} height={24} color={'brightGreen'} />
       </Stack>
     </Card.Dark>
   )
