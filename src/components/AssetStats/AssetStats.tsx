@@ -141,10 +141,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
 
   const useRatesForPerformanceChartData = asset?.type === 'BY'
 
+  const { allocations, colors: allocationColors, labels: allocationLabels } = useAllocationChartData({ assetIds })
   const { rateChartData } = useRateChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   const { volumeChartData } = useVolumeChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
-  const { allocations, colors: allocationColors, labels: allocationLabels } = useAllocationChartData({ assetIds })
   const { performanceChartData } = usePerformanceChartData({ useRates: useRatesForPerformanceChartData, assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   // console.log('performanceChartData', performanceChartData)
 
@@ -601,7 +601,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     justifyContent={'space-between'}
                   >
                     {assetsApys}
-                    <DownloadCsvData chartData={performanceChartData} isRainbowChart={true} />
+                    <DownloadCsvData chartData={performanceChartData} isRainbowChart={true} fileName={`performances_${asset?.id}_${selectedTimeframe}.csv`} />
                   </HStack>
                   <GenericChart
                     percentChange={0}
@@ -660,6 +660,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
+                  fileName={`tvls_${asset?.id}_${selectedTimeframe}.csv`}
                 />
               </Card.Dark>
             </VStack>
@@ -684,6 +685,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   height={isMobile ? '300px' : '350px'}
                   formatFn={(n: any) => `${numberToPercentage(n)}`}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
+                  fileName={`rates_${asset?.id}_${selectedTimeframe}.csv`}
                 />
               </Card.Dark>
             </VStack>
@@ -697,7 +699,20 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 p={6}
                 flex={1}
               >
-                <VolumeChart timeframe={selectedTimeframe} dateRange={dateRange} assetIds={assetIds} />
+                <VStack
+                  flex={1}
+                  spacing={4}
+                  width={'full'}
+                  height={'full'}
+                  alignItems={'flex-end'}
+                >
+                  <DownloadCsvData chartData={volumeChartData} isRainbowChart={true} fileName={`volumes_${asset?.id}_${selectedTimeframe}.csv`} />
+                  <VolumeChart
+                    assetIds={assetIds}
+                    dateRange={dateRange}
+                    timeframe={selectedTimeframe}
+                  />
+                </VStack>
               </Card.Dark>
             </VStack>
           </SimpleGrid>
