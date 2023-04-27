@@ -37,8 +37,6 @@ export const rainbowDataToCsv = (data: RainbowData[]): string | null => {
 
   const keys = Object.keys(data[0]).filter( (key: string) => !['date', 'total'].includes(key) )
 
-  console.log('keys', keys)
-
   const rows = data.reduce( (rows: string[][], d: RainbowData) => {
     const date = formatDate(d.date)
     const total = BNify(d.total).toString()
@@ -46,11 +44,11 @@ export const rainbowDataToCsv = (data: RainbowData[]): string | null => {
     keys.forEach( (key: string) => {
       row.push(BNify(d[key]).toString())
     })
-    row.push(BNify(d.total).toString())
+    // row.push(BNify(d.total).toString())
     rows.push(row)
     return rows
   }, [
-    ['Date'].concat(keys).concat(['Total'])
+    ['Date'].concat(keys)//.concat(['Total'])
   ])
 
   const csv = rows.reduce( (text: string, row: string[]) => {

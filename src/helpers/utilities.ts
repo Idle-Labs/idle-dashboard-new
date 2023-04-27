@@ -38,8 +38,8 @@ export function hexToRgb(hex: string): number[]{
   ]
 }
 
-export function downloadFile(content: BlobPart[], name: string) {
-  const file = new File(content, name, {
+export function downloadFile(content: any, name: string) {
+  const file = new File([content as BlobPart], name, {
     type: 'text/plain',
   })
 

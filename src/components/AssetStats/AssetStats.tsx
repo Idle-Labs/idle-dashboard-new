@@ -21,6 +21,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { useTVLChartData } from 'hooks/useTVLChartData/useTVLChartData'
 import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import { useRateChartData } from 'hooks/useRateChartData/useRateChartData'
+import { DownloadCsvData } from 'components/DownloadCsvData/DownloadCsvData'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
@@ -595,7 +596,13 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   spacing={4}
                   width={'full'}
                 >
-                  {assetsApys}
+                  <HStack
+                    width={'full'}
+                    justifyContent={'space-between'}
+                  >
+                    {assetsApys}
+                    <DownloadCsvData chartData={performanceChartData} isRainbowChart={true} />
+                  </HStack>
                   <GenericChart
                     percentChange={0}
                     assetIds={assetIds}
