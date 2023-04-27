@@ -50,6 +50,7 @@ type VaultsOnchainData = {
   allocations: Record<AssetId, Balances>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
+  withdrawAllowed: Record<AssetId, boolean>
   interestBearingTokens: Record<AssetId, Balances>
   lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]>
 }
@@ -110,6 +111,7 @@ const initialState: InitialState = {
   additionalAprs: {},
   historicalTvls: {},
   protocolToken: null,
+  withdrawAllowed: {},
   vaultsPositions: {},
   historicalRates: {},
   historicalPrices: {},
@@ -746,6 +748,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const rawCalls = vaults.filter( (vault: Vault) => checkAddress(vault.id) ).reduce( (rawCalls: CallData[][], vault: Vault): CallData[][] => {
       const aggregatedRawCalls = [
         ("getPausedCalls" in vault) ? vault.getPausedCalls() : [],
+        ("getWithdrawAllowedCalls" in vault) ? vault.getWithdrawAllowedCalls() : [],
         account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
         ("getPricesCalls" in vault) && checkEnabledCall('prices') ? vault.getPricesCalls() : [],
         ("getPricesUsdCalls" in vault) && checkEnabledCall('pricesUsd') ? vault.getPricesUsdCalls(state.contracts) : [],
@@ -833,6 +836,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsLastHarvests,
       [
         pausedCallsResults,
+        withdrawAllowedCallsResults,
         balanceCallsResults,
         vaultsPricesCallsResults,
         pricesUsdCallsResults,
@@ -880,6 +884,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
     // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
+    // console.log('withdrawAllowedCallsResults', withdrawAllowedCallsResults)
     // console.log('interestBearingTokensCallsResults', interestBearingTokensCallsResults)
 
     const [
@@ -955,7 +960,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const idleDistributions = idleDistributionResults.reduce( (idleDistributions: Balances, callResult: DecodedResult) => {
       if (callResult.data) {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-        // console.log('idleDistribution', assetId, fixTokenDecimals(callResult.data.toString(), 18).toString())
         idleDistributions[assetId] = fixTokenDecimals(callResult.data.toString(), 18)
       }
       return idleDistributions
@@ -966,9 +970,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Process paused vaults
     const pausedVaults = pausedCallsResults.reduce( (pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
       const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-      // console.log('idleDistribution', assetId, fixTokenDecimals(callResult.data.toString(), 18).toString())
       pausedVaults[assetId] = !!callResult.data
       return pausedVaults
+    }, {})
+
+    // Process withdraw allowed
+    const withdrawAllowed = withdrawAllowedCallsResults.reduce( (withdrawAllowed: Record<AssetId, boolean>, callResult: DecodedResult) => {
+      const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+      withdrawAllowed[assetId] = !!callResult.data
+      return withdrawAllowed
     }, {})
 
     // Process protocols Aprs
@@ -1401,6 +1411,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       protocolsAprs,
       vaultsRewards,
       additionalAprs,
+      withdrawAllowed,
       idleDistributions,
       interestBearingTokens
     }
@@ -1472,6 +1483,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsBreakdown,
         // vaultsRewards,
         additionalAprs,
+        withdrawAllowed,
         idleDistributions,
         interestBearingTokens
       } = vaultsOnChainData
@@ -1497,6 +1509,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: pausedVaults[vaultId]
         }
       }, {...state.pausedVaults})
+
+      const newWithdrawAllowed = vaults.map( (vault: Vault) => vault.id ).reduce( (newWithdrawAllowed: Record<AssetId, boolean>, vaultId: AssetId) => {
+        if (!withdrawAllowed[vaultId]){
+          newWithdrawAllowed[vaultId] = false
+          return newWithdrawAllowed
+        }
+        return {
+          ...newWithdrawAllowed,
+          [vaultId]: withdrawAllowed[vaultId]
+        }
+      }, {...state.withdrawAllowed})
 
       const newIdleDistributions = vaults.map( (vault: Vault) => vault.id ).reduce( (newIdleDistributions: Balances, vaultId: AssetId) => {
         if (!idleDistributions[vaultId]){
@@ -1725,6 +1748,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsBreakdown: newAprsBreakdown,
         totalSupplies: newTotalSupplies,
         additionalAprs: newAdditionalAprs,
+        withdrawAllowed: newWithdrawAllowed,
         idleDistributions: newIdleDistributions,
         interestBearingTokens: newInterestBearingTokens
       }
@@ -2285,6 +2309,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsRewards,
         totalSupplies,
         additionalAprs,
+        withdrawAllowed,
         idleDistributions,
         interestBearingTokens
       } = vaultsOnChainData
@@ -2301,6 +2326,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       newState.stakingData = stakingData
       newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
       newState.pausedVaults = {...state.pausedVaults, ...pausedVaults}
+      newState.withdrawAllowed = {...state.withdrawAllowed, ...withdrawAllowed}
       newState.interestBearingTokens = {...state.interestBearingTokens, ...interestBearingTokens}
 
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
@@ -2623,7 +2649,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const assetsData = generateAssetsData(state.vaults)
     for (const vault of state.vaults){
-      if (state.pausedVaults[vault.id]){
+      if (state.pausedVaults[vault.id]) {
         assetsData[vault.id].status = 'paused'
       }
       assetsData[vault.id].tvl = BNify(0)
@@ -2631,23 +2657,24 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].totalTvl = BNify(0)
       assetsData[vault.id].fee = state.fees[vault.id]
       assetsData[vault.id].rewards =  state.rewards[vault.id]
+      assetsData[vault.id].aprRatio =  state.aprRatios[vault.id]
+      assetsData[vault.id].gaugeData =  state.gaugesData[vault.id]
+      assetsData[vault.id].allocations =  state.allocations[vault.id]
+      assetsData[vault.id].protocolsAprs =  state.protocolsAprs[vault.id]
       assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
       assetsData[vault.id].balance =  state.balances[vault.id] || BNify(0)
-      assetsData[vault.id].aprRatio =  state.aprRatios[vault.id]
-      assetsData[vault.id].priceUsd =  state.pricesUsd[vault.id] || BNify(1)
-      assetsData[vault.id].gaugeData =  state.gaugesData[vault.id]
-      assetsData[vault.id].balanceUsd =  state.balancesUsd[vault.id] || BNify(0)
-      assetsData[vault.id].allocations =  state.allocations[vault.id]
-      assetsData[vault.id].vaultPrice =  state.vaultsPrices[vault.id] || BNify(1)
-      assetsData[vault.id].lastHarvest =  state.lastHarvests[vault.id] || null
-      assetsData[vault.id].totalSupply =  state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
-      assetsData[vault.id].protocolsAprs =  state.protocolsAprs[vault.id]
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
+      assetsData[vault.id].priceUsd =  state.pricesUsd[vault.id] || BNify(1)
+      assetsData[vault.id].lastHarvest =  state.lastHarvests[vault.id] || null
+      assetsData[vault.id].balanceUsd =  state.balancesUsd[vault.id] || BNify(0)
+      assetsData[vault.id].vaultPrice =  state.vaultsPrices[vault.id] || BNify(1)
+      assetsData[vault.id].totalSupply =  state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].additionalApr =  state.additionalAprs[vault.id] || BNify(0)
       assetsData[vault.id].idleDistribution =  state.idleDistributions[vault.id] || BNify(0)
       assetsData[vault.id].interestBearingTokens =  state.interestBearingTokens[vault.id] || {}
+      assetsData[vault.id].withdrawAllowed = state.withdrawAllowed[vault.id] !== undefined ? state.withdrawAllowed[vault.id] : true
 
       // Add protocol
       if ("protocol" in vault){
@@ -2786,7 +2813,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    // console.log('assetsData', assetsData)
+    console.log('assetsData', assetsData)
     
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
@@ -2807,6 +2834,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.balancesUsd,
     state.vaultsPrices,
     state.totalSupplies,
+    state.withdrawAllowed,
     state.allocations,
     state.lastHarvests,
     state.aprsBreakdown,

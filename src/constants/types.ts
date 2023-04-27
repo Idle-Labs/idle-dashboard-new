@@ -288,6 +288,7 @@ export type Asset = {
   aprBreakdown?: Balances
   apyBreakdown?: Balances
   protocolsAprs?: Balances
+  withdrawAllowed?: boolean
   pricesUsd?: HistoryData[]
   additionalApr?: BigNumber
   collectedFees?: Transaction[]

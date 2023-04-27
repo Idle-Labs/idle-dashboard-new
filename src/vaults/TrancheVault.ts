@@ -358,6 +358,15 @@ export class TrancheVault {
     ]
   }
 
+  public getWithdrawAllowedCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.cdoContract.methods[`allow${this.type}Withdraw`]()
+      },
+    ]
+  }
+
   public async getHistoricalData(filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
     return await this.vaultFunctionsHelper.getVaultHistoricalDataFromSubgraph(this, filters)
   }
