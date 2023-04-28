@@ -39,12 +39,11 @@ export const rainbowDataToCsv = (data: RainbowData[]): string | null => {
 
   const rows = data.reduce( (rows: string[][], d: RainbowData) => {
     const date = formatDate(d.date)
-    const total = BNify(d.total).toString()
+    // const total = BNify(d.total).toString()
     const row = [date]
     keys.forEach( (key: string) => {
       row.push(BNify(d[key]).toString())
     })
-    // row.push(BNify(d.total).toString())
     rows.push(row)
     return rows
   }, [

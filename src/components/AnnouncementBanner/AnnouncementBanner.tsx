@@ -1,6 +1,6 @@
 import { Card } from 'components/Card/Card'
 import { MdCheckCircle } from 'react-icons/md'
-import { useTheme, Stack, Image } from '@chakra-ui/react'
+import { useTheme, Stack } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 
 type AnnouncementBannerProps = {
