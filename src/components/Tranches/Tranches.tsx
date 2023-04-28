@@ -109,6 +109,7 @@ export const Tranches: React.FC = () => {
               <AssetProvider
                 assetId={assetId}
                 wrapFlex={false}
+                key={`vault_${assetId}`}
               >
                 <Card
                   p={4}
