@@ -370,12 +370,12 @@ export const AssetPage: React.FC = () => {
         >
           <Stack
             width={'100%'}
-            spacing={[4, 10]}
+            spacing={[4, 8]}
             alignItems={'center'}
             justifyContent={'center'}
             direction={['column', 'row']}
           >
-            <AssetLabel assetId={params.asset} fontSize={'h2'} />
+            <AssetLabel assetId={params.asset} fontSize={'h2'} extraFields={['statusBadge']} />
             {
               isMobile && vaultDetails
             }
