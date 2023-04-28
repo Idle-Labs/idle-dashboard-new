@@ -2697,7 +2697,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const assetsData = generateAssetsData(state.vaults)
     for (const vault of state.vaults){
-      if (state.pausedVaults[vault.id]){
+      if (state.pausedVaults[vault.id] && assetsData[vault.id].status !== 'deprecated'){
         assetsData[vault.id].status = 'paused'
       }
       assetsData[vault.id].tvl = BNify(0)

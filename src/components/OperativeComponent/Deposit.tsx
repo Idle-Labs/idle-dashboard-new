@@ -66,8 +66,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [executeAction, transaction.status, activeStep, itemIndex])
 
   const vaultEnabled = useMemo(() => {
-    return vault && (!("enabled" in vault) || vault.enabled)
-  }, [vault])
+    return (vault && (!("enabled" in vault) || vault.enabled)) && (asset && asset?.status !== 'deprecated')
+  }, [vault, asset])
 
   const disabled = useMemo(() => {
     setError('')
