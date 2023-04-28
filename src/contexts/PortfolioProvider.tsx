@@ -18,7 +18,7 @@ import { historicalPricesUsd } from 'constants/historicalData'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import React, { useContext, useEffect, useMemo, useCallback, useReducer } from 'react'
+import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
@@ -44,7 +44,7 @@ type VaultsOnchainData = {
   additionalAprs: Balances
   idleDistributions: Balances
   vaultsRewards: VaultsRewards
-  stakingData: StakingData | null
+  // stakingData: StakingData | null
   rewards: Record<AssetId, Balances>
   pausedVaults: Record<AssetId, boolean>
   allocations: Record<AssetId, Balances>
@@ -63,6 +63,7 @@ type InitialState = {
   protocolToken: Asset | null
   contracts: GenericContract[]
   gaugesRewards: GaugesRewards
+  stakingData: StakingData | null
   isPortfolioAccountReady: boolean
   isVaultsPositionsLoaded: boolean
   portfolioTimestamp: number | null
@@ -238,7 +239,7 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
   }
 }
 
-const PortfolioProviderContext = React.createContext<ContextProps>(initialContextState)
+const PortfolioProviderContext = createContext<ContextProps>(initialContextState)
 
 export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 
@@ -246,6 +247,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const cacheProvider = useCacheProvider()
   const { environment } = useThemeProvider()
   const { web3, web3Rpc, multiCall } = useWeb3Provider()
+  const runningEffects = useRef<Record<string, boolean>>({})
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
   const { walletInitialized, connecting, account, prevAccount, chainId, explorer } = useWalletProvider()
@@ -805,8 +807,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return promises
     }, new Map())
 
-    const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'STK' ) as StakedIdleVault
-    const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(stakedIdleVault)
+    // const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'STK' ) as StakedIdleVault
+    // const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(stakedIdleVault)
 
     // Get Matic NFTs
     const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
@@ -819,15 +821,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       gaugesWeightsCalls.map( (calls: CallData[]) => rawCalls.push(calls) )
     }
 
-    const stkIdleCalls = getStkIdleCalls()
-    rawCalls.push(stkIdleCalls)
+    // const stkIdleCalls = getStkIdleCalls()
+    // rawCalls.push(stkIdleCalls)
     
     // console.log('stkIdleCalls', stkIdleCalls)
     // console.log('rawCalls', enabledCalls, rawCalls)
 
     const [
       maticNFTs,
-      stakedIdleVaultRewards,
+      // stakedIdleVaultRewards,
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
@@ -855,11 +857,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // eslint-disable-next-line
         gaugeTotalWeights,
         gaugesDistributionRate,
-        stkIdleResults
+        // stkIdleResults
       ]
     ] = await Promise.all([
       maticNFTsPromise,
-      stakedIdleVaultRewardsPromise,
+      // stakedIdleVaultRewardsPromise,
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
@@ -882,6 +884,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
     // console.log('interestBearingTokensCallsResults', interestBearingTokensCallsResults)
 
+    /*
     const [
       stkIdleTotalLocked,
       stkIdleTotalSupply,
@@ -921,6 +924,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         totalSupply: fixTokenDecimals(stkIdleTotalSupply, 18),
       }
     }
+    */
 
     // console.log('stakingData', stkIdleResults, stakingData)
 
@@ -1391,7 +1395,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       maticNFTs,
       // assetsData,
       gaugesData,
-      stakingData,
+      // stakingData,
       allocations,
       lastHarvests,
       vaultsPrices,
@@ -1404,7 +1408,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       idleDistributions,
       interestBearingTokens
     }
-  }, [selectAssetById, protocolToken, stkIDLEToken, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, getStkIdleCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -1463,7 +1467,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         maticNFTs,
         gaugesData,
         allocations,
-        stakingData,
+        // stakingData,
         lastHarvests,
         pausedVaults,
         vaultsPrices,
@@ -1708,7 +1712,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const newState: any = {
         maticNFTs,
         gaugesData,
-        stakingData,
+        // stakingData,
         fees: newFees,
         aprs: newAprs,
         rewards: newRewards,
@@ -2043,6 +2047,187 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return historicalPricesUsd
   }, [chainId, web3, multiCall, selectAssetById])
 
+  // Get tokens prices, balances, rates
+  useEffect(() => {
+    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading) return
+
+    // Avoid refreshing if disconnected
+    if (!isEmpty(state.aprs) && !account?.address) {
+      return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
+    }
+
+    // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
+
+    ;(async () => {
+
+      runningEffects.current.portfolioLoading = true
+
+      const startTimestamp = Date.now()
+
+      // Update balances only if account changed
+      const enabledCalls = isEmpty(state.aprs) ? [] : ['balances', 'rewards']
+
+      // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls)
+
+      const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
+      if (!vaultsOnChainData) return
+      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
+
+      const {
+        fees,
+        aprs,
+        rewards,
+        balances,
+        baseAprs,
+        pricesUsd,
+        aprRatios,
+        maticNFTs,
+        // assetsData,
+        gaugesData,
+        // stakingData,
+        allocations,
+        pausedVaults,
+        lastHarvests,
+        vaultsPrices,
+        protocolsAprs,
+        aprsBreakdown,
+        vaultsRewards,
+        totalSupplies,
+        additionalAprs,
+        idleDistributions,
+        interestBearingTokens
+      } = vaultsOnChainData
+
+      // const gaugeWeights = await getGaugesWeights(state.vaults)
+
+      // Always update assets data
+      // dispatch({type: 'SET_ASSETS_DATA', payload: {...state.assetsData, ...assetsData}})
+      const newState: any = {}
+      
+      // dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
+      // dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
+
+      // newState.stakingData = stakingData
+      newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
+      newState.pausedVaults = {...state.pausedVaults, ...pausedVaults}
+      newState.interestBearingTokens = {...state.interestBearingTokens, ...interestBearingTokens}
+
+      if (!enabledCalls.length || enabledCalls.includes('fees')) {
+        const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
+        newState.fees = payload
+        // dispatch({type: 'SET_FEES', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? aprRatios : {...state.aprRatios, ...aprRatios}
+        newState.aprRatios = payload
+        // dispatch({type: 'SET_APR_RATIOS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? baseAprs : {...state.baseAprs, ...baseAprs}
+        newState.baseAprs = payload
+        // dispatch({type: 'SET_BASE_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? idleDistributions : {...state.idleDistributions, ...idleDistributions}
+        newState.idleDistributions = payload
+        // dispatch({type: 'SET_BASE_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
+        const payload = !enabledCalls.length || accountChanged ? protocolsAprs : {...state.protocolsAprs, ...protocolsAprs}
+        newState.protocolsAprs = payload
+        // dispatch({type: 'SET_ALLOCATIONS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
+        const payload = !enabledCalls.length || accountChanged ? allocations : {...state.allocations, ...allocations}
+        newState.allocations = payload
+        // dispatch({type: 'SET_ALLOCATIONS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? aprs : {...state.aprs, ...aprs}
+        newState.aprs = payload
+        // dispatch({type: 'SET_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? additionalAprs : {...state.additionalAprs, ...additionalAprs}
+        newState.additionalAprs = payload
+        // dispatch({type: 'SET_ADDITIONAL_APRS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
+        const payload = !enabledCalls.length || accountChanged ? aprsBreakdown : {...state.aprsBreakdown, ...aprsBreakdown}
+        newState.aprsBreakdown = payload
+        // dispatch({type: 'SET_APRS_BREAKDOWN', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('rewards')) {
+        const payload = !enabledCalls.length || accountChanged ? rewards : {...state.rewards, ...rewards}
+        newState.rewards = payload
+        // dispatch({type: 'SET_REWARDS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('rewards')) {
+        // console.log('SET_VAULTS_REWARDS', enabledCalls, state.vaultsRewards, vaultsRewards)
+        const payload = !enabledCalls.length || accountChanged ? vaultsRewards : {...state.vaultsRewards, ...vaultsRewards}
+        newState.vaultsRewards = payload
+        // dispatch({type: 'SET_VAULTS_REWARDS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('balances')) {
+        const payload = !enabledCalls.length || accountChanged ? balances : {...state.balances, ...balances}
+        newState.balances = payload
+        // dispatch({type: 'SET_BALANCES', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('balances')) {
+        newState.maticNFTs = maticNFTs
+        // dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('balances')) {
+        const payload = !enabledCalls.length || accountChanged ? gaugesData : {...state.gaugesData, ...gaugesData}
+        newState.gaugesData = payload
+        // dispatch({type: 'SET_GAUGES_DATA', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
+        const payload = !enabledCalls.length || accountChanged ? pricesUsd : {...state.pricesUsd, ...pricesUsd}
+        newState.pricesUsd = payload
+        // dispatch({type: 'SET_PRICES_USD', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('prices')) {
+        const payload = !enabledCalls.length || accountChanged ? vaultsPrices : {...state.vaultsPrices, ...vaultsPrices}
+        newState.vaultsPrices = payload
+        // dispatch({type: 'SET_VAULTS_PRICES', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('totalSupplies')) {
+        const payload = !enabledCalls.length || accountChanged ? totalSupplies : {...state.totalSupplies, ...totalSupplies}
+        newState.totalSupplies = payload
+        // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
+      }
+
+      dispatch({type: 'SET_STATE', payload: newState})
+
+      // Don't update if partial loading
+      if (!state.isPortfolioLoaded || accountChanged) {
+        dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
+      }
+
+      runningEffects.current.portfolioLoading = false
+
+      // eslint-disable-next-line
+      console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
+    })()
+
+    // Cleanup
+    return () => {
+      // dispatch({type: 'SET_APRS', payload: {}})
+      dispatch({type: 'SET_REWARDS', payload: {}})
+      dispatch({type: 'SET_BALANCES', payload: {}})
+      dispatch({type: 'SET_MATIC_NTFS', payload: []})
+      // dispatch({type: 'SET_GAUGES_DATA', payload: {}})
+      dispatch({type: 'SET_VAULTS_REWARDS', payload: {}})
+      // dispatch({type: 'SET_PRICES_USD', payload: {}})
+      // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
+      // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
+      // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
+      // console.log('RESET PORTFOLIO')
+    };
+  // eslint-disable-next-line
+  }, [account, state.vaults, state.contracts])
+
   // Get historical underlying prices from chainlink
   useEffect(() => {
 
@@ -2160,10 +2345,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const [
         vaultsHistoricalData,
-        vaultsCollectedFees
+        // vaultsCollectedFees
       ] = await Promise.all([
         Promise.all(vaultsHistoricalDataPromises),
-        vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
+        // vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
       ])
 
       const tvls: Record<AssetId, HistoryData[]> = {}
@@ -2207,7 +2392,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
-      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
+      // dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
       // eslint-disable-next-line
       console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
@@ -2215,6 +2400,101 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // eslint-disable-next-line
   }, [state.vaults, state.isPortfolioLoaded])
+
+  // Get staking data
+  useEffect(() => {
+    if (!multiCall || isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.stakingData) || runningEffects.current.stakingData) return
+
+    ;(async () => {
+
+      runningEffects.current.stakingData = true
+
+      const startTimestamp = Date.now()
+      const stkIdleCalls = getStkIdleCalls()
+      const stakedIdleVault = state.vaults.find( (vault: Vault) => vault.type === 'STK' ) as StakedIdleVault
+
+      const [
+        stkIdleResults,
+        stakedIdleVaultRewards
+      ] = await Promise.all([
+        multiCall.executeMulticalls(stkIdleCalls),
+        vaultFunctionsHelper.getStakingRewards(stakedIdleVault)
+      ])
+
+      if (!stkIdleResults){
+        runningEffects.current.stakingData = false
+        return
+      }
+
+      const [
+        stkIdleTotalLocked,
+        stkIdleTotalSupply,
+        stkIdleLock,
+        stkIdleBalance,
+        stkIdleClaimable
+      ] = stkIdleResults.map( r => r.data )
+
+      const firstRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[0] as EtherscanTransaction).timeStamp : 0
+      const lastRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[stakedIdleVaultRewards.length-1] as EtherscanTransaction).timeStamp : 0
+      const stkIdletotalRewardsDays = stakedIdleVaultRewards?.length ? Math.abs(lastRewardTimestamp-firstRewardTimestamp)/86400 : 0
+      const stkIdleTotalRewards: BigNumber = stakedIdleVaultRewards.reduce( ( total: BigNumber, tx: EtherscanTransaction) => total.plus(fixTokenDecimals(tx.value, 18)), BNify(0) )
+      const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(365.2425).div(stkIdletotalRewardsDays).times(100)
+      const avgLockTime = parseFloat(fixTokenDecimals(stkIdleTotalSupply, 18).div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(MAX_STAKING_DAYS).toFixed())
+
+      // console.log(`stkIdleTotalRewards: ${stkIdleTotalRewards.toFixed()}, stkIdleTotalLocked: ${fixTokenDecimals(stkIdleTotalLocked, 18).toFixed()}, stkIdletotalRewardsDays: ${stkIdletotalRewardsDays.toFixed()}`)
+
+      const stakingData: StakingData = {
+        maxApr,
+        avgLockTime,
+        rewards: stakedIdleVaultRewards,
+        rewardsDays: stkIdletotalRewardsDays,
+        position: {
+          lockEnd: +stkIdleLock.end*1000,
+          claimable: fixTokenDecimals(stkIdleClaimable, 18),
+          deposited: fixTokenDecimals(stkIdleLock.amount, 18),
+          balance: fixTokenDecimals(stkIdleBalance, 18),
+          share: fixTokenDecimals(stkIdleBalance, 18).div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(100)
+        },
+        IDLE: {
+          asset: protocolToken,
+          totalRewards: stkIdleTotalRewards,
+          totalSupply: fixTokenDecimals(stkIdleTotalLocked, 18)
+        },
+        stkIDLE: {
+          asset: stkIDLEToken,
+          totalSupply: fixTokenDecimals(stkIdleTotalSupply, 18),
+        }
+      }
+
+      dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
+
+      runningEffects.current.stakingData = false
+
+      // eslint-disable-next-line
+      console.log('STAKING DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+    })()
+  // eslint-disable-next-line
+  }, [multiCall, vaultFunctionsHelper, state.vaults, state.isPortfolioLoaded, state.stakingData])
+
+  // Get historical collected fees
+  useEffect(() => {
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current.vaultsCollectedFees) return
+
+    // Get Historical data
+    ;(async () => {
+
+      runningEffects.current.vaultsCollectedFees = true
+
+      const startTimestamp = Date.now();
+      const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
+      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
+
+      runningEffects.current.vaultsCollectedFees = false
+
+      // eslint-disable-next-line
+      console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
+    })()
+  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees, cacheProvider])
 
   // Calculate historical USD Tvls
   useEffect(() => {
@@ -2241,188 +2521,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // eslint-disable-next-line
   }, [state.historicalPricesUsd, state.historicalTvls])
 
-  // Get tokens prices, balances, rates
-  useEffect(() => {
-    if (!state.vaults.length || !state.contracts.length || !multiCall) return
-
-    // Avoid refreshing if disconnected
-    if (!isEmpty(state.aprs) && !account?.address) {
-      return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
-    }
-
-    // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
-
-    ;(async () => {
-      const startTimestamp = Date.now()
-
-      // Update balances only if account changed
-      const enabledCalls = isEmpty(state.aprs) ? [] : ['balances', 'rewards']
-
-      // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls)
-
-      const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
-      if (!vaultsOnChainData) return
-      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
-
-      const {
-        fees,
-        aprs,
-        rewards,
-        balances,
-        baseAprs,
-        pricesUsd,
-        aprRatios,
-        maticNFTs,
-        // assetsData,
-        gaugesData,
-        stakingData,
-        allocations,
-        pausedVaults,
-        lastHarvests,
-        vaultsPrices,
-        protocolsAprs,
-        aprsBreakdown,
-        vaultsRewards,
-        totalSupplies,
-        additionalAprs,
-        idleDistributions,
-        interestBearingTokens
-      } = vaultsOnChainData
-
-      // const gaugeWeights = await getGaugesWeights(state.vaults)
-
-      // Always update assets data
-      // dispatch({type: 'SET_ASSETS_DATA', payload: {...state.assetsData, ...assetsData}})
-      const newState: any = {}
-      
-      // dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
-      // dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
-
-      newState.stakingData = stakingData
-      newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
-      newState.pausedVaults = {...state.pausedVaults, ...pausedVaults}
-      newState.interestBearingTokens = {...state.interestBearingTokens, ...interestBearingTokens}
-
-      if (!enabledCalls.length || enabledCalls.includes('fees')) {
-        const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
-        newState.fees = payload
-        // dispatch({type: 'SET_FEES', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        const payload = !enabledCalls.length || accountChanged ? aprRatios : {...state.aprRatios, ...aprRatios}
-        newState.aprRatios = payload
-        // dispatch({type: 'SET_APR_RATIOS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        const payload = !enabledCalls.length || accountChanged ? baseAprs : {...state.baseAprs, ...baseAprs}
-        newState.baseAprs = payload
-        // dispatch({type: 'SET_BASE_APRS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        const payload = !enabledCalls.length || accountChanged ? idleDistributions : {...state.idleDistributions, ...idleDistributions}
-        newState.idleDistributions = payload
-        // dispatch({type: 'SET_BASE_APRS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
-        const payload = !enabledCalls.length || accountChanged ? protocolsAprs : {...state.protocolsAprs, ...protocolsAprs}
-        newState.protocolsAprs = payload
-        // dispatch({type: 'SET_ALLOCATIONS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
-        const payload = !enabledCalls.length || accountChanged ? allocations : {...state.allocations, ...allocations}
-        newState.allocations = payload
-        // dispatch({type: 'SET_ALLOCATIONS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        const payload = !enabledCalls.length || accountChanged ? aprs : {...state.aprs, ...aprs}
-        newState.aprs = payload
-        // dispatch({type: 'SET_APRS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        const payload = !enabledCalls.length || accountChanged ? additionalAprs : {...state.additionalAprs, ...additionalAprs}
-        newState.additionalAprs = payload
-        // dispatch({type: 'SET_ADDITIONAL_APRS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('aprs')) {
-        const payload = !enabledCalls.length || accountChanged ? aprsBreakdown : {...state.aprsBreakdown, ...aprsBreakdown}
-        newState.aprsBreakdown = payload
-        // dispatch({type: 'SET_APRS_BREAKDOWN', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('rewards')) {
-        const payload = !enabledCalls.length || accountChanged ? rewards : {...state.rewards, ...rewards}
-        newState.rewards = payload
-        // dispatch({type: 'SET_REWARDS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('rewards')) {
-        // console.log('SET_VAULTS_REWARDS', enabledCalls, state.vaultsRewards, vaultsRewards)
-        const payload = !enabledCalls.length || accountChanged ? vaultsRewards : {...state.vaultsRewards, ...vaultsRewards}
-        newState.vaultsRewards = payload
-        // dispatch({type: 'SET_VAULTS_REWARDS', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        const payload = !enabledCalls.length || accountChanged ? balances : {...state.balances, ...balances}
-        newState.balances = payload
-        // dispatch({type: 'SET_BALANCES', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        newState.maticNFTs = maticNFTs
-        // dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('balances')) {
-        const payload = !enabledCalls.length || accountChanged ? gaugesData : {...state.gaugesData, ...gaugesData}
-        newState.gaugesData = payload
-        // dispatch({type: 'SET_GAUGES_DATA', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
-        const payload = !enabledCalls.length || accountChanged ? pricesUsd : {...state.pricesUsd, ...pricesUsd}
-        newState.pricesUsd = payload
-        // dispatch({type: 'SET_PRICES_USD', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('prices')) {
-        const payload = !enabledCalls.length || accountChanged ? vaultsPrices : {...state.vaultsPrices, ...vaultsPrices}
-        newState.vaultsPrices = payload
-        // dispatch({type: 'SET_VAULTS_PRICES', payload })
-      }
-      if (!enabledCalls.length || enabledCalls.includes('totalSupplies')) {
-        const payload = !enabledCalls.length || accountChanged ? totalSupplies : {...state.totalSupplies, ...totalSupplies}
-        newState.totalSupplies = payload
-        // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
-      }
-
-      dispatch({type: 'SET_STATE', payload: newState})
-
-      // Don't update if partial loading
-      if (!state.isPortfolioLoaded || accountChanged) {
-        dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
-      }
-
-      // eslint-disable-next-line
-      console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
-    })()
-
-    // Cleanup
-    return () => {
-      // dispatch({type: 'SET_APRS', payload: {}})
-      dispatch({type: 'SET_REWARDS', payload: {}})
-      dispatch({type: 'SET_BALANCES', payload: {}})
-      dispatch({type: 'SET_MATIC_NTFS', payload: []})
-      // dispatch({type: 'SET_GAUGES_DATA', payload: {}})
-      dispatch({type: 'SET_VAULTS_REWARDS', payload: {}})
-      // dispatch({type: 'SET_PRICES_USD', payload: {}})
-      // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
-      // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})
-      // dispatch({type: 'SET_PORTFOLIO_LOADED', payload: false})
-      // console.log('RESET PORTFOLIO')
-    };
-  // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts])
-
   // Get user vaults positions
   useEffect(() => {
-    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting) return
+    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
     // console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
 
     ;(async () => {
+      runningEffects.current.vaultsPositions = true
 
       const test = false//!state.isVaultsPositionsLoaded
 
@@ -2437,24 +2542,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
       dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: vaultsTransactions})
+
+      runningEffects.current.vaultsPositions = false
     })()
 
     // Clean transactions and positions
     return () => {
-      // if (!account?.address || !state.isPortfolioLoaded || !walletInitialized || connecting){
-        dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
-        dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
-        dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
-      // }
-
-      // Reset all vaults positions
-      // const assetsData: Assets = {
-      //   ...state.assetsData
-      // }
-      // for (const assetId in assetsData){
-      //   delete assetsData[assetId].vaultPosition
-      // }
-      // dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+      dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
+      dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
     };
   // eslint-disable-next-line
   }, [account, state.isPortfolioLoaded, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
@@ -2594,28 +2690,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
 
   }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType, selectVaultById])
-
-  // Get historical collected fees
-  /*
-  useEffect(() => {
-
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees)) return
-
-    // Get Historical data
-    ;(async () => {
-      const startTimestamp = Date.now();
-
-      const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
-
-      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
-
-      // eslint-disable-next-line
-      console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
-    })()
-
-  // eslint-disable-next-line
-  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper])
-  */
 
   // Generate Assets Data
   useEffect(() => {
