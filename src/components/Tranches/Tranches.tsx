@@ -20,7 +20,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb } from 'helpers/'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -246,18 +246,55 @@ export const Tranches: React.FC = () => {
     return product?.columns || (strategy && strategies[strategy].columns)
   }, [product, strategy])
 
+  const sortTrancheApy = useCallback((a: any, b: any, field: any, id?: any): number => {
+
+    // console.log('sortTrancheApy', a, b, field, id);
+    const vault1 = selectVaultById(a.original.id)
+    const vault2 = selectVaultById(b.original.id)
+
+    switch (id){
+      case 'juniorApy':
+        const juniorAsset1 = selectAssetById(vault1?.vaultConfig.Tranches.BB.address)
+        const juniorAsset2 = selectAssetById(vault2?.vaultConfig.Tranches.BB.address)
+        const juniorApy1 = BNify(juniorAsset1.apy)
+        const juniorApy2 = BNify(juniorAsset2.apy)
+        return juniorApy1.gt(juniorApy2) ? -1 : 1
+      case 'seniorApy':
+        const seniorAsset1 = selectAssetById(vault1?.vaultConfig.Tranches.AA.address)
+        const seniorAsset2 = selectAssetById(vault2?.vaultConfig.Tranches.AA.address)
+        const seniorApy1 = BNify(seniorAsset1.apy)
+        const seniorApy2 = BNify(seniorAsset2.apy)
+        return seniorApy1.gt(seniorApy2) ? -1 : 1
+      default:
+        return 1
+    }
+  }, [selectVaultById, selectAssetById])
+
+  const getCellSorting = useCallback((sortType?: string): Function | undefined => {
+    switch (sortType){
+      case 'alpha':
+        return sortAlpha
+      case 'numeric':
+        return sortNumeric
+      case 'trancheApy':
+        return sortTrancheApy
+      default:
+        return undefined
+    }
+  }, [sortTrancheApy])
+
   const strategyColumns: Column<Asset>[] = useMemo(() => {
     if (!strategy || !columns) return []
     return columns.filter( (column: StrategyColumn) => !column.tables || column.tables.includes('Available') ).map( (column: StrategyColumn) => {
       const { id, accessor, sortType } = column
-      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      const sortTypeFn = getCellSorting(sortType)
       return {
         id,
         accessor,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
-        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor, id) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (
             <Stack
@@ -285,7 +322,7 @@ export const Tranches: React.FC = () => {
         }
       }
     })
-  }, [strategy, columns, translate])
+  }, [strategy, columns, translate, getCellSorting])
 
   const strategyColumnsDeposit: Column<Asset>[] = useMemo(() => {
     if (!strategy || !columns) return []

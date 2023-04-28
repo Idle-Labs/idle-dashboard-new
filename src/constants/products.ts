@@ -85,13 +85,13 @@ export const products: ProductProps[] = [
       {
         accessor:'id',
         id:'seniorApy',
-        sortType: 'numeric',
+        sortType: 'trancheApy',
         tables: ['Available']
       },
       {
         accessor:'id',
         id:'juniorApy',
-        sortType: 'numeric',
+        sortType: 'trancheApy',
         tables: ['Available']
       }
     ]

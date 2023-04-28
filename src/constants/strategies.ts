@@ -25,7 +25,7 @@ export type StrategyColumn = {
   tables?: Tables[]
   extraFields?: string[]
   stackProps?: StackProps
-  sortType?: 'alpha' | 'numeric'
+  sortType?: 'alpha' | 'numeric' | 'trancheApy'
 }
 
 type StatsProps = {

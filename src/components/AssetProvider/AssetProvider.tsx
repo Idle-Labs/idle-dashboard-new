@@ -862,20 +862,6 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
       <AssetProvider.Apy {...props} />
     </AssetProvider>
   )
-    
-  /*
-  return !BNify(trancheAsset?.apy).isNaN() ? (
-    <Tooltip
-      hasArrow
-      placement={'top'}
-      label={translate('stats.seniorApy')}
-    >
-      <TooltipContent>
-        <Amount.Percentage value={trancheAsset?.apy} {...props} />
-      </TooltipContent>
-    </Tooltip>
-  ) : <Spinner size={'sm'} />
-  */
 }
 
 const JuniorApy: React.FC<AmountProps> = (props) => {
@@ -893,20 +879,6 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
       <AssetProvider.Apy {...props} />
     </AssetProvider>
   )
-  
-  /*
-  return !BNify(trancheAsset?.apy).isNaN() ? (
-    <Tooltip
-      hasArrow
-      placement={'top'}
-      label={translate('stats.juniorApy')}
-    >
-      <TooltipContent>
-        <Amount.Percentage value={trancheAsset?.apy} {...props} />
-      </TooltipContent>
-    </Tooltip>
-  ) : <Spinner size={'sm'} />
-  */
 }
 
 const TotalPoolUsd: React.FC<AmountProps> = (props) => {
