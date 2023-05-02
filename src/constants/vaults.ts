@@ -202,8 +202,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   1:{
     lido:{
       stETH:{
+        autoFarming:[],
         protocol:'lido',
-        autoFarming:['LDO'],
         blockNumber:13776954,
         underlyingToken:'stETH',
         CDO:{
@@ -218,7 +218,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_lido_stETH',
           address:'0x0cac674ebD77bBD899f6079932768f6d59Da089A'
         },
-
+        flags:{
+          addHarvestApy: false
+        },
         description:'This strategy converts the stETH into native <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0">Lido wstETH</a> tokens. The APR is boosted by LDO rewards and dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
           buyInstructions:'To get stETH token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://stake.lido.fi">Lido ETH staking</a>.',
@@ -288,13 +290,14 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       MATIC:{
+        autoFarming:[],
         protocol:'lido',
         enabledEnvs: [],
-        autoFarming:['LDO'],
         blockNumber:15623682,
         underlyingToken:'MATIC',
         flags:{
-          showMaticNFTs: true
+          showMaticNFTs: true,
+          addHarvestApy: false
         },
         stats:{
           startTimestamp: 1665360000000

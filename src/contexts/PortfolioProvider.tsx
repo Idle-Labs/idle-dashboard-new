@@ -452,6 +452,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsTransactions: {}
     }
 
+    // console.log('getVaultsPositions', vaults, account?.address, explorer, chainId)
+
     if (!account?.address || !explorer || !chainId || test) return output
 
     const startTimestamp = Date.now()
@@ -480,7 +482,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       (acc, value) => ({...acc, ...value}),
       {}
     )
-    // console.log('vaultsTransactions', test, vaultsTransactions)
+    // console.log('vaultsTransactions', vaultsTransactions)
 
     const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<AssetId, VaultPosition>, assetId: AssetId) => {
       const transactions = vaultsTransactions[assetId]
@@ -2049,7 +2051,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading) return
+    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading !== account?.address) return
 
     // Avoid refreshing if disconnected
     if (!isEmpty(state.aprs) && !account?.address) {
@@ -2060,7 +2062,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     ;(async () => {
 
-      runningEffects.current.portfolioLoading = true
+      runningEffects.current.portfolioLoading = account?.address
 
       const startTimestamp = Date.now()
 
@@ -2070,7 +2072,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls)
 
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
-      if (!vaultsOnChainData) return
+      if (!vaultsOnChainData) {
+        runningEffects.current.portfolioLoading = false
+        return
+      }
       // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
 
       const {
@@ -2198,6 +2203,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
       }
 
+      // console.log('newState', newState)
+
       dispatch({type: 'SET_STATE', payload: newState})
 
       // Don't update if partial loading
@@ -2205,7 +2212,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
       }
 
-      runningEffects.current.portfolioLoading = false
+      // runningEffects.current.portfolioLoading = false
 
       // eslint-disable-next-line
       console.log('PORTFOLIO LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')    
@@ -2521,13 +2528,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get user vaults positions
   useEffect(() => {
-    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
-    // console.log('Load Vaults Positions', account?.address, state.isPortfolioLoaded, walletInitialized, connecting)
+    // console.log('Load Vaults Positions', account?.address, state.balances, state.isPortfolioLoaded, walletInitialized, connecting, runningEffects.current.vaultsPositions)
+    if (!account?.address || !state.isPortfolioLoaded/* || isEmpty(state.balances)*/ || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
 
     ;(async () => {
       runningEffects.current.vaultsPositions = true
 
-      const test = false//!state.isVaultsPositionsLoaded
+      const test = false
 
       const results = await getVaultsPositions(state.vaults, test)
       // console.log('getVaultsPositions', test, results)
