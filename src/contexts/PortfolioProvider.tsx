@@ -2051,7 +2051,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading !== account?.address) return
+    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === account?.address) return
 
     // Avoid refreshing if disconnected
     if (!isEmpty(state.aprs) && !account?.address) {
