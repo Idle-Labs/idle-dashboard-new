@@ -2051,7 +2051,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === account?.address) return
+    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === (account?.address || true)) return
 
     // Avoid refreshing if disconnected
     if (!isEmpty(state.aprs) && !account?.address) {
@@ -2062,7 +2062,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     ;(async () => {
 
-      runningEffects.current.portfolioLoading = account?.address
+      runningEffects.current.portfolioLoading = account?.address || true
 
       const startTimestamp = Date.now()
 
@@ -2410,11 +2410,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get staking data
   useEffect(() => {
-    if (!multiCall || isEmpty(state.vaults) || !state.isPortfolioAccountReady || !vaultFunctionsHelper || runningEffects.current.stakingData === account?.address) return
+    if (!multiCall || isEmpty(state.vaults) || !state.isPortfolioAccountReady || !vaultFunctionsHelper || runningEffects.current.stakingData === (account?.address || true)) return
 
     ;(async () => {
 
-      runningEffects.current.stakingData = account?.address
+      runningEffects.current.stakingData = account?.address || true
 
       const startTimestamp = Date.now()
       const stkIdleCalls = getStkIdleCalls()
