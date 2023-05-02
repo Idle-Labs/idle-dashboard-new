@@ -107,8 +107,8 @@ export const Tranches: React.FC = () => {
             const assetId = tranchesAssets[strategy]?.id
             return (
               <AssetProvider
-                assetId={assetId}
                 wrapFlex={false}
+                assetId={assetId}
                 key={`vault_${assetId}`}
               >
                 <Card
