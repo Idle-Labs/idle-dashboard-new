@@ -247,9 +247,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const cacheProvider = useCacheProvider()
   const { environment } = useThemeProvider()
   const { web3, web3Rpc, multiCall } = useWeb3Provider()
-  const runningEffects = useRef<Record<string, boolean>>({})
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
+  const runningEffects = useRef<Record<string, boolean | string | undefined>>({})
   const { walletInitialized, connecting, account, prevAccount, chainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
 
@@ -2403,11 +2403,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get staking data
   useEffect(() => {
-    if (!multiCall || isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.stakingData) || runningEffects.current.stakingData) return
+    if (!multiCall || isEmpty(state.vaults) || !state.isPortfolioAccountReady || !vaultFunctionsHelper || runningEffects.current.stakingData === account?.address) return
 
     ;(async () => {
 
-      runningEffects.current.stakingData = true
+      runningEffects.current.stakingData = account?.address
 
       const startTimestamp = Date.now()
       const stkIdleCalls = getStkIdleCalls()
@@ -2468,13 +2468,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       dispatch({type: 'SET_STAKING_DATA', payload: stakingData})
 
-      runningEffects.current.stakingData = false
-
       // eslint-disable-next-line
       console.log('STAKING DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
   // eslint-disable-next-line
-  }, [multiCall, vaultFunctionsHelper, state.vaults, state.isPortfolioLoaded, state.stakingData])
+  }, [multiCall, vaultFunctionsHelper, state.vaults, account, state.isPortfolioAccountReady])
 
   // Get historical collected fees
   useEffect(() => {
