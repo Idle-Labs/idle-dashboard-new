@@ -252,7 +252,7 @@ const ProtocolIcon: React.FC<IconProps> = ({
       hasArrow
       placement={'top'}
       label={protocol?.label}
-      isDisabled={showTooltip}
+      isDisabled={!showTooltip}
     >
       <Avatar
         src={protocol?.icon}
