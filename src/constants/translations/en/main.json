@@ -513,7 +513,7 @@
     "redeemable": "Redeemable",
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",
-    "deprecatedAssets": "Deprecated assets",
+    "deprecatedAssets": "Decommissioned assets",
     "claimable": "Claimable",
     "claimableNTFs": "Claimable NFTs",
     "estUnlockDate": "Estimated unlock date",
