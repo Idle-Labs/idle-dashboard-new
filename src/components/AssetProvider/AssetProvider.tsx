@@ -1294,6 +1294,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<SeniorApy textStyle={'tableCell'} {...props} />)
     case 'productTag':
       return (<ProductTag type={asset?.type} {...props} />)
+    case 'strategyBadge':
+      return (<StrategyBadge {...props} />)
     case 'apy':
       return (<Apy showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
     case 'apy7':

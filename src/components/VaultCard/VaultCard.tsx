@@ -438,7 +438,7 @@ export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
             width={'full'}
             justifyContent={'space-between'}
           >
-            <AssetLabel assetId={assetId} size={'sm'} />
+            <AssetLabel assetId={assetId} size={'sm'} extraFields={strategies[asset.type].strategy === 'tranches' ? ['strategyBadge'] : []} />
             {
               strategies[asset.type].strategy === 'tranches' && (
                 <AssetProvider.GeneralData size={'xs'} field={'protocolWithVariant'} />
