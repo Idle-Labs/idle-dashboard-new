@@ -2297,15 +2297,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       protocols: [
         {
           decimals: 18,
-          name: 'euler',
           enabled: true,
+          name: 'clearpool',
           abi: IdleCDO as Abi,
-          token: 'BB_euler_USDC',
-          address: '0x271db794317B44827EfE81DeC6193fFc277050F6',
+          token: 'BB_clearpool_portofino_USDC',
+          address: '0xf85Fd280B301c0A6232d515001dA8B6c8503D714',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0x271db794317B44827EfE81DeC6193fFc277050F6']
+              params: ['0xf85Fd280B301c0A6232d515001dA8B6c8503D714']
             }
           },
         },
@@ -2344,15 +2344,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       protocols: [
         {
           decimals: 18,
-          name: 'euler',
           enabled: true,
+          name: 'clearpool',
           abi: IdleCDO as Abi,
-          token: 'BB_euler_USDTStaking',
-          address: '0x00B80FCCA0fE4fDc3940295AA213738435B0f94e',
+          token: 'BB_clearpool_fasanara_USDT',
+          address: '0x3Eb6318b8D9f362a0e1D99F6032eDB1C4c602500',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0x00B80FCCA0fE4fDc3940295AA213738435B0f94e']
+              params: ['0x3Eb6318b8D9f362a0e1D99F6032eDB1C4c602500']
             }
           },
         },
