@@ -240,6 +240,89 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
   )
 }
 
+const Tranche = ({ assetId, onClick }: VaultCardProps) => {
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const { location } = useBrowserRouter()
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+
+  const vault = useMemo(() => {
+    if (!selectVaultById) return
+    return selectVaultById(assetId)
+  }, [assetId, selectVaultById])
+
+  const asset = useMemo(() => {
+    if (!selectAssetById) return
+    return selectAssetById(assetId)
+  }, [assetId, selectAssetById])
+
+  const aaTrancheAsset = useMemo(() => selectAssetById(vault?.vaultConfig.Tranches.AA.address), [vault, selectAssetById])
+  const bbTrancheAsset = useMemo(() => selectAssetById(vault?.vaultConfig.Tranches.BB.address), [vault, selectAssetById])
+  
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={asset.id}
+    >
+      <VStack
+        spacing={2}
+        width={'full'}
+      >
+        <Card
+          p={4}
+          onClick={() => onClick ? onClick() : navigate(`${location?.pathname}/${assetId}`)}
+        >
+          <VStack
+            spacing={3}
+            alignItems={'flex-start'}
+          >
+            <HStack
+              width={'full'}
+              justifyContent={'space-between'}
+            >
+              <AssetLabel assetId={asset.id} size={'sm'} extraFields={['statusBadge']} />
+              {
+                strategies[asset.type].strategy === 'tranches' && (
+                  <AssetProvider.GeneralData size={'xs'} field={'protocolWithVariant'} />
+                )
+              }
+            </HStack>
+            <HStack
+              pt={3}
+              px={4}
+              width={'100%'}
+              borderTop={'1px solid'}
+              borderTopColor={'divider'}
+              justifyContent={'space-between'}
+            >
+              <VStack
+                spacing={1}
+                alignItems={'flex-start'}
+              >
+                <Translation translation={'defi.pool'} textStyle={'captionSmall'} />
+                <AssetProvider.TrancheTotalPoolUsd textStyle={'tableCell'} />
+              </VStack>
+              <VStack
+                spacing={1}
+                alignItems={'flex-end'}
+              >
+                <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
+                <HStack
+                  spacing={1}
+                >
+                  <Amount.Percentage value={aaTrancheAsset?.apy || null} textStyle={'tableCell'} />
+                  <Text>-</Text>
+                  <Amount.Percentage value={bbTrancheAsset?.apy || null} textStyle={'tableCell'} />
+                </HStack>
+              </VStack>
+            </HStack>
+          </VStack>
+        </Card>
+      </VStack>
+    </AssetProvider>
+  )
+}
+
 export const Minimal = ({assetId}: VaultCardProps) => {
   const navigate = useNavigate()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
@@ -397,3 +480,4 @@ export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
 VaultCard.Stats = Stats
 VaultCard.Inline = Inline
 VaultCard.Minimal = Minimal
+VaultCard.Tranche = Tranche

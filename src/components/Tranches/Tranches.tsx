@@ -567,7 +567,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, availableListId, availableListName) } />)
+            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, availableListId, availableListName) } />)
           }
         </VStack>
       </VStack>
@@ -615,7 +615,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            deprecatedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, deprecatedListId, deprecatedListName) } />)
+            deprecatedAssetsData.map( (asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, deprecatedListId, deprecatedListName) } />)
           }
         </VStack>
       </VStack>

@@ -1401,4 +1401,5 @@ AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
+AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution
