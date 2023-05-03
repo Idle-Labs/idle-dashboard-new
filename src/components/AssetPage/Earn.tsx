@@ -28,7 +28,7 @@ export const Earn: React.FC = () => {
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.WEEK)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const {
     isPortfolioLoaded,
