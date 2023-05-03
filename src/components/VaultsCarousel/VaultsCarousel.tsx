@@ -41,7 +41,7 @@ export const VaultsCarousel: React.FC = () => {
               const strategy = strategies[vault.type]
               if (!strategy || !strategy.route) return null
               const asset = selectAssetById(vault.id)
-              if (!asset || bnOrZero(asset.apr).lte(0)) return null
+              if (!asset || bnOrZero(asset.apr).lte(0) || ['paused', 'deprecated'].includes(asset.status)) return null
               const strategyPath = getRoutePath('earn', [strategy.route])
               return (
                 <VaultCard.Inline

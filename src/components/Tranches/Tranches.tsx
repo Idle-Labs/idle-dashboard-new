@@ -441,7 +441,13 @@ export const Tranches: React.FC = () => {
   const availableAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) )
+    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status !== 'deprecated' )
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
+
+  const deprecatedAssetsData = useMemo(() => {
+    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
+    const vaultsAssets = selectVaultsAssetsByType(strategy)
+    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' )
   }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const depositedListId = useMemo(() => {
@@ -464,6 +470,17 @@ export const Tranches: React.FC = () => {
     if (!strategy) return ''
     const strategyName = translate(strategies[strategy].label)
     return `${strategyName} - ${translate('common.available')}`
+  }, [strategy, translate])
+
+  const deprecatedListId = useMemo(() => {
+    if (!strategy) return ''
+    return `${strategy}_deprecated`
+  }, [strategy])
+
+  const deprecatedListName = useMemo(() => {
+    if (!strategy) return ''
+    const strategyName = translate(strategies[strategy].label)
+    return `${strategyName} - ${translate('common.deprecated')}`
   }, [strategy, translate])
 
   // Send Deposited list
@@ -572,6 +589,54 @@ export const Tranches: React.FC = () => {
     )
   }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
+  const deprecatedAssets = useMemo(() => {
+    if (isPortfolioLoaded && !deprecatedAssetsData.length) return null
+
+    const initialState = {
+      sortBy: [
+        {
+          id: 'trancheTotalTvl',
+          desc: false
+        }
+      ]
+    }
+
+    return isMobile ? (
+      <VStack
+        mt={20}
+        spacing={6}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.deprecatedAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
+        <VStack
+          spacing={2}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+          {
+            deprecatedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, deprecatedListId, deprecatedListName) } />)
+          }
+        </VStack>
+      </VStack>
+    ) : (
+      <Card mt={10}>
+        <Translation translation={'defi.deprecatedAssets'} component={Card.Heading} fontSize={'lg'} />
+        {
+          !deprecatedAssetsData.length ? (
+            <Stack
+            >
+              <Skeleton />
+              <Skeleton />
+            </Stack>
+          ) : (
+            <ReactTable columns={availableAssetsColumns} data={deprecatedAssetsData} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row.original, deprecatedListId, deprecatedListName) } />
+          )
+        }
+      </Card>
+    )
+  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
+
   const heading = useMemo(() => {
     if (!strategy) return null
     const modalProps = product?.modal
@@ -647,6 +712,7 @@ export const Tranches: React.FC = () => {
       {heading}
       {depositedAssets}
       {availableAssets}
+      {deprecatedAssets}
     </Flex>
   )
 }
