@@ -241,7 +241,6 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
 }
 
 const Tranche = ({ assetId, onClick }: VaultCardProps) => {
-  const theme = useTheme()
   const navigate = useNavigate()
   const { location } = useBrowserRouter()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
