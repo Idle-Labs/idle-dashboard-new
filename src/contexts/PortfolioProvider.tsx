@@ -2519,8 +2519,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       })
       return historicalTvlsUsd
     }, {})
-
-    // console.log('historicalTvlsUsd', historicalTvlsUsd, state.historicalPricesUsd)
+    
     dispatch({type: 'SET_HISTORICAL_TVLS_USD', payload: historicalTvlsUsd})
 
   // eslint-disable-next-line

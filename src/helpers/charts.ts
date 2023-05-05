@@ -1,6 +1,6 @@
 // import sortedIndexBy from 'lodash/sortedIndexBy'
-import { HistoryData, RainbowData } from 'constants/types'
 import { bnOrZero, formatDate, BNify } from 'helpers/utilities'
+import { AssetId, HistoryData, RainbowData } from 'constants/types'
 
 type CalculatePercentChange = (data: HistoryData[]) => number
 
@@ -29,6 +29,24 @@ export const historyDataToCsv = (data: HistoryData[]): string | null => {
   }, '')
 
   return csv
+}
+
+export const calculateTotalHistoricalTvl = (historicalTvlsUsd: Record<AssetId, HistoryData[]>): string[] => {
+  const totalHistoricalTvl = Object.values(historicalTvlsUsd).reduce( (totalHistoricalTvl: Record<number, number>, assetTvls) => {
+    assetTvls.forEach( (historyData: HistoryData) => {
+      if (!totalHistoricalTvl[historyData.date]){
+        totalHistoricalTvl[historyData.date] = 0
+      }
+      totalHistoricalTvl[historyData.date] += parseFloat(BNify(historyData.value).toString())
+    })
+    return totalHistoricalTvl
+  }, {})
+
+  const totalHistoricalTvlCsv = Object.keys(totalHistoricalTvl).map( (date: any) => {
+    return [new Date(+date).toLocaleDateString(), totalHistoricalTvl[date]].join(',')
+  })
+
+  return totalHistoricalTvlCsv
 }
 
 export const rainbowDataToCsv = (data: RainbowData[]): string | null => {
