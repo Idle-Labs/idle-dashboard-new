@@ -21,8 +21,8 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, calculateTotalHistoricalTvl } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -46,8 +46,8 @@ type VaultsOnchainData = {
   vaultsRewards: VaultsRewards
   // stakingData: StakingData | null
   rewards: Record<AssetId, Balances>
-  pausedVaults: Record<AssetId, boolean>
   allocations: Record<AssetId, Balances>
+  pausedVaults: Record<AssetId, boolean>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
   interestBearingTokens: Record<AssetId, Balances>
@@ -671,6 +671,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     output.vaultsPositions = vaultsPositions
     output.vaultsTransactions = vaultsTransactions
+
+    // console.log('vaultsPositions', vaultsPositions)
 
     // eslint-disable-next-line
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
@@ -2340,7 +2342,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
           // Get vaults historical rates
           const historicalAprsFilters = {
-            frequency: 86400,
+            frequency: 86400, // A bit less than a whole day to avoid days skipping
             start,
             end
           }
@@ -2505,7 +2507,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     if (isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalTvls)) return
     const historicalTvlsUsd = Object.keys(state.historicalTvls).reduce( (historicalTvlsUsd: InitialState["historicalTvlsUsd"], assetId: AssetId) => {
-      // console.log('historicalTvls', assetId, state.historicalTvls)
       if (!state.historicalTvls[assetId]/* || !state.historicalPricesUsd[assetId]*/) return historicalTvlsUsd
       historicalTvlsUsd[assetId] = state.historicalTvls[assetId].map( (data: HistoryData) => {
         const asset = selectAssetById(assetId)
@@ -2519,8 +2520,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       })
       return historicalTvlsUsd
     }, {})
-    
+
     dispatch({type: 'SET_HISTORICAL_TVLS_USD', payload: historicalTvlsUsd})
+
+    // const totalTvl = calculateTotalHistoricalTvl(historicalTvlsUsd)
 
   // eslint-disable-next-line
   }, [state.historicalPricesUsd, state.historicalTvls])

@@ -43,7 +43,7 @@ export const calculateTotalHistoricalTvl = (historicalTvlsUsd: Record<AssetId, H
   }, {})
 
   const totalHistoricalTvlCsv = Object.keys(totalHistoricalTvl).map( (date: any) => {
-    return [new Date(+date).toLocaleDateString(), totalHistoricalTvl[date]].join(',')
+    return [date, new Date(+date).toLocaleDateString(), totalHistoricalTvl[date]].join(',')
   })
 
   return totalHistoricalTvlCsv

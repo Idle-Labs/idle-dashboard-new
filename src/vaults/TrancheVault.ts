@@ -280,8 +280,8 @@ export class TrancheVault {
       {
         assetId: this.id,
         decimals: this.underlyingToken?.decimals || 18,
-        // call: contract.methods.virtualPrice(this.trancheConfig.address)
-        call: contract.methods.tranchePrice(this.trancheConfig.address)
+        call: contract.methods.virtualPrice(this.trancheConfig.address)
+        // call: contract.methods.tranchePrice(this.trancheConfig.address)
       },
     ]
   }
