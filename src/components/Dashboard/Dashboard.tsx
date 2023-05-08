@@ -31,7 +31,7 @@ import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types
 // import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
-import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
+// import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 // import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
