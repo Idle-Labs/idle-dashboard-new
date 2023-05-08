@@ -4,20 +4,20 @@ import { Card } from 'components/Card/Card'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
+import React, { useRef, useState, useMemo } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { Link, LinkProps, useNavigate } from 'react-router-dom'
-// import { ProductTag } from 'components/ProductTag/ProductTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
+// import { ProductTag } from 'components/ProductTag/ProductTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import React, { useRef, useState, useMemo } from 'react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
@@ -708,8 +708,8 @@ export const Dashboard: React.FC = () => {
                 alignItems={'flex-start'}
                 justifyContent={'flex-start'}
               >
-                <Translation component={Text} translation={'staking.totalSupply'} textStyle={'captionSmall'} />
-                <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.stkIDLE.totalSupply} textStyle={'tableCell'} />
+                <Translation component={Text} translation={'defi.deposited'} textStyle={'captionSmall'} />
+                <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.deposited} textStyle={'tableCell'} />
               </VStack>
 
               <VStack
@@ -839,10 +839,10 @@ export const Dashboard: React.FC = () => {
       mt={5}
       width={'100%'}
     >
-      <AnnouncementBanner text={'announcements.eulerHack'} />
+      {/*<AnnouncementBanner text={'announcements.eulerHack'} />*/}
       <VaultsCarousel />
       <Stack
-        mt={10}
+        mt={0}
         mb={10}
         pt={[16, 20]}
         spacing={10}
