@@ -126,7 +126,7 @@ export function WalletProvider({ children }: ProviderProps) {
       if (connecting) return
       setWalletProvider(wallet.label)
       setAccount(wallet.accounts[0])
-      sendLogin(wallet.label)
+      sendLogin(wallet.label, wallet.accounts[0]?.address)
     }
   }, [wallet, customAddress, connecting, setWalletProvider])
 
