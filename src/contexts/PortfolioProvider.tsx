@@ -2710,6 +2710,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
+      assetsData[vault.id].flags = vault.flags
       assetsData[vault.id].fee = state.fees[vault.id]
       assetsData[vault.id].rewards =  state.rewards[vault.id]
       assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
