@@ -61,7 +61,11 @@ export const Stats: React.FC = () => {
   const assetsByStrategy = useMemo(() => {
     if (!isPortfolioLoaded) return {}
     return Object.values(assetsData).reduce( (assetsByStrategy: Record<string, Asset[]>, asset: Asset) => {
+      // Check type
       if (!("type" in asset)) return assetsByStrategy
+      // Check statsEnabled flag
+      if (("flags" in asset) && asset.flags?.statsEnabled === false) return assetsByStrategy
+
       const strategyConfig = strategies[asset.type as string]
       if (!strategyConfig || !("strategy" in strategyConfig)) return assetsByStrategy
 

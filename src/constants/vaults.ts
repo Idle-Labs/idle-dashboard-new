@@ -721,6 +721,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:14785127,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          statsEnabled:false,
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -798,6 +801,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:14961854,
         adaptiveYieldSplitEnabled:true,
         underlyingToken:'DAI',
+        flags:{
+          statsEnabled:false,
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -875,6 +881,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:14961973,
         adaptiveYieldSplitEnabled:true,
         underlyingToken:'USDT',
+        flags:{
+          statsEnabled:false,
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -952,6 +961,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:15055915,
         adaptiveYieldSplitEnabled:true,
         underlyingToken:'AGEUR',
+        flags:{
+          statsEnabled:false,
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -1031,6 +1043,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
+          statsEnabled:false,
           addHarvestApy: false
         },
         CDO:{
@@ -1112,6 +1125,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         flags:{
+          statsEnabled: false,
           addHarvestApy: false
         },
         CDO:{
@@ -1193,6 +1207,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
         flags:{
+          statsEnabled: false,
           addHarvestApy: false
         },
         CDO:{
@@ -1274,6 +1289,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'DAI',
         adaptiveYieldSplitEnabled:true,
         flags:{
+          statsEnabled: false,
           addHarvestApy: false
         },
         CDO:{

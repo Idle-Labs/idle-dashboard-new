@@ -299,6 +299,7 @@ export type Asset = {
   lastHarvest?: Harvest | null
   idleDistribution?: BigNumber
   vaultPosition?: VaultPosition
+  flags?: Record<string, boolean>
   interestBearingTokens?: Balances
 }
 
