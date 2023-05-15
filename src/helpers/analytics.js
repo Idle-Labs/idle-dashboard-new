@@ -88,11 +88,17 @@ export function sendPurchase(asset, value, tx){
   // })
 }
 
-export function sendLogin(method){
+export function sendLogin(method, address){
   window.gtag("event", "login", {
     method
   });
-  // console.log('Send event: login', method)
+
+  if (address) {
+    window.gtag('config', 'G-8ZKZ867JNC', {
+      'user_id': address
+    });
+  }
+  // console.log('Send event: login', method, address)
 }
 
 export function getAssetListItem(asset, item_list_id = '', item_list_name = ''){
