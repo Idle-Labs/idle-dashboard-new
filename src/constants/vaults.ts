@@ -2408,15 +2408,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       protocols: [
         {
           decimals: 18,
-          name: 'euler',
           enabled: true,
+          name: 'clearpool',
           abi: IdleCDO as Abi,
-          token: 'BB_euler_DAIStaking',
-          address: '0x56263BDE26b72b3e3D26d8e03399a275Aa8Bbfb2',
+          token: 'BB_clearpool_portofino_DAI',
+          address: '0x38D36353D07CfB92650822D9c31fB4AdA1c73D6E',
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
-              params: ['0x56263BDE26b72b3e3D26d8e03399a275Aa8Bbfb2']
+              params: ['0x38D36353D07CfB92650822D9c31fB4AdA1c73D6E']
             }
           },
         },
@@ -2479,11 +2479,11 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         },
         {
           decimals: 18,
-          name: 'euler',
           enabled: true,
+          name: 'clearpool',
           abi: ERC20 as Abi,
-          token: 'AA_euler_USDCStaking',
-          address: '0x1AF0294524093BFdF5DA5135853dC2fC678C12f7',
+          token: 'AA_clearpool_portofino_USDC',
+          address: '0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2',
           functions: {
 
           }
@@ -2522,12 +2522,12 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       description:'This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
       protocols: [
         {
-          name: 'compound',
+          decimals: 8,
           enabled: true,
+          token: 'cUSDT',
+          name: 'compound',
           abi: cToken as Abi,
           address: '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
-          token: 'cUSDT',
-          decimals: 8,
           functions: {
             exchangeRate: {
               name: 'exchangeRateStored',
@@ -2536,23 +2536,23 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           },
         },
         {
-          abi: aToken as Abi,
           decimals: 6,
           name: 'aavev2',
           enabled: true,
           token: 'aUSDTv2',
+          abi: aToken as Abi,
           address: '0x3ed3b47dd13ec9a98b44e6204a523e766b225811',
           functions: {
 
           }
         },
         {
-          abi: ERC20 as Abi,
-          name: 'euler',
-          enabled: true,
-          address: '0x6796FCd41e4fb26855Bb9BDD7Cad41128Da1Fd59',
-          token: 'AA_euler_USDTStaking',
           decimals: 18,
+          enabled: true,
+          name: 'clearpool',
+          abi: ERC20 as Abi,
+          token: 'AA_clearpool_fasanara_USDT',
+          address: '0x0a6f2449C09769950cFb76f905Ad11c341541f70',
           functions: {
 
           }
