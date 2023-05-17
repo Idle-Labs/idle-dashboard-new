@@ -157,6 +157,60 @@ export class VaultFunctionsHelper {
     return trancheLastHarvest.harvest.aprs[trancheVault.type]
   }
 
+  public async getStETHTrancheStrategyApr(): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'lido', 'stETH')
+    const callback = async () => (await callPlatformApis(this.chainId, 'lido', 'stETH'))
+    const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
+
+    if (!BNify(apr).isNaN()){
+      return BNify(apr).div(100);
+    }
+    return BNify(0);
+  }
+
+  public async getStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
+
+    if (!this.multiCall) return BNify(0)
+
+    const rawCalls: CallData[] = [
+      this.multiCall.getCallData(trancheVault.cdoContract, 'FULL_ALLOC'),
+      this.multiCall.getCallData(trancheVault.cdoContract, 'getCurrentAARatio'),
+      this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
+    ].filter( (call): call is CallData => !!call )
+
+    const [
+      stratApr,
+      multicallResults,
+      // harvestApy
+    ] = await Promise.all([
+      this.getStETHTrancheStrategyApr(),
+      this.multiCall.executeMulticalls(rawCalls),
+      // this.getTrancheHarvestApy(trancheVault)
+    ]);
+
+    if (!multicallResults) return BNify(0)
+
+    const [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map( r => BNify(r.data) )
+
+    const isAATranche = trancheVault.type === 'AA';
+
+    if (BNify(currentAARatio).eq(0)){
+      return isAATranche ? BNify(0) : BNify(stratApr);
+    }
+
+    if (BNify(stratApr).isNaN()){
+      return BNify(0);
+    }
+
+    const apr = isAATranche ? BNify(stratApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(stratApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
+    
+    // if (!BNify(harvestApy).isNaN()){
+    //   apr = apr.plus(harvestApy)
+    // }
+
+    return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
+  }
+
   public async getMaticTrancheStrategyApr(): Promise<BigNumber> {
     const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'lido', 'rates')
     const callback = async () => (await callPlatformApis(this.chainId, 'lido', 'rates'))
@@ -439,6 +493,12 @@ export class VaultFunctionsHelper {
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address,
             apr: await this.getMaticTrancheApy(vault)
+          }
+        case 'IdleCDO_lido_stETH':
+          return {
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
+            apr: await this.getStETHTrancheApy(vault)
           }
         default:
           return {

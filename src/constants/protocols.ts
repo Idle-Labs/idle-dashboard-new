@@ -146,6 +146,12 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         },
       },
+      stETH:{
+        path:'data.apr',
+        endpoint: {
+          1: 'https://eth-api.lido.fi/v1/protocol/steth/apr/last'
+        },
+      },
       checkpoints:{
         path:'result',
         endpoint: {
