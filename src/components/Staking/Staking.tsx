@@ -91,6 +91,7 @@ export const Staking: React.FC = () => {
       type: 'stake',
       component: Stake,
       label: 'common.stake',
+      chainIds: [defaultChainId],
       steps: [
         {
           type: 'approve',
@@ -104,8 +105,9 @@ export const Staking: React.FC = () => {
     },
     {
       type: 'unstake',
-      label: 'common.unstake',
       component: Unstake,
+      label: 'common.unstake',
+      chainIds: [defaultChainId],
       steps: []
     }
   ]
@@ -181,7 +183,7 @@ export const Staking: React.FC = () => {
     return isMobile ? (
       <AssetProvider
         wrapFlex={false}
-        assetId={protocolToken.id}
+        assetId={protocolToken?.id}
       >
         <Card
           p={6}
@@ -195,7 +197,7 @@ export const Staking: React.FC = () => {
               width={'full'}
               justifyContent={'space-between'}
             >
-              <AssetLabel assetId={protocolToken.id} />
+              <AssetLabel assetId={protocolToken?.id} />
             </HStack>
             <HStack
               width={'full'}
@@ -238,7 +240,7 @@ export const Staking: React.FC = () => {
           flexWrap={['wrap', 'nowrap']}
           justifyContent={['flex-start', 'space-between']}
         >
-          <AssetLabel assetId={protocolToken.id} />
+          <AssetLabel assetId={protocolToken?.id} />
 
           <VStack
             pb={[2, 0]}

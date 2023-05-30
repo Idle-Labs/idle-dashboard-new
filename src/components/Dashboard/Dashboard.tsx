@@ -117,6 +117,7 @@ export const Dashboard: React.FC = () => {
   }, [account, isVaultsPositionsLoaded, vaultsPositions])
 
   const productsOverview = useMemo(() => {
+    if (!selectVaultsAssetsByType) return null
     return (
       <SimpleGrid
         mt={20}
@@ -987,9 +988,7 @@ export const Dashboard: React.FC = () => {
           </Card.Dark>
         </VStack>
       </Stack>
-      
       {productsOverview}
-
       <Stack
         spacing={6}
         mt={[10, 20]}

@@ -113,7 +113,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         },
         Strategy:{
           abi:IdleStrategy as Abi,
-          name:'IdleStrategy_quickswap_CXETHWETH'
+          name:'IdleStrategy_quickswap_CXETHWETH',
+          address:'0xec470753b56ced3784ce29db7c297f0c1b75fc87'
         },
         messages:{
           buyInstructions:'To get CXETHWETH token your have to supply liquidity into the <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://quickswap.exchange/#/add/0xfe4546feFe124F30788c4Cc1BB9AA6907A7987F9/0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619">Quickswap cxETH-ETH pool</a>.',

@@ -142,7 +142,7 @@ export class  Multicall {
     return methodSignature+strip0x(calldata);
   }
 
-  async executeMultipleBatches(callBatches: CallData[][]): Promise<DecodedResult[][]> {
+  async executeMultipleBatches(callBatches: CallData[][], chainId?: number): Promise<DecodedResult[][]> {
     // Assign batch Id to every call
     const calls = callBatches.reduce( (calls, batchedCalls, batchId) => {
       batchedCalls.forEach( call => {
@@ -153,7 +153,7 @@ export class  Multicall {
     }, []);
       
     // Execute calls
-    const results = await this.executeMulticalls(calls);
+    const results = await this.executeMulticalls(calls, false, chainId);
 
     // Group by BatchID
     const output = Array.from(Array(callBatches.length).keys()).reduce( (output: BatchesResults, batchId: number) => {
@@ -181,9 +181,9 @@ export class  Multicall {
   }
 
   // Split multicall into smaller chunks and execute
-  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false): Promise<DecodedResult[] | null> {
+  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false, chainId?: number, web3?: Web3): Promise<DecodedResult[] | null> {
     const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
-    const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled) ))
+    const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled, chainId, web3) ))
     // console.log('chunksResults', callsChunks, chunksResults)
     return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
       // if (!chunkResults) return results
@@ -191,10 +191,14 @@ export class  Multicall {
     }, [])
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, debug = false): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, chainId?: number, web3?: Web3, debug: boolean = false): Promise<DecodedResult[] | null> {
+
+    // Get chainId
+    chainId = chainId || this.chainId
+    web3 = web3 || this.web3
 
     if (calls.length > this.maxBatchSize) {
-      return await this.executeMulticallsChunks(calls, singleCallsEnabled)
+      return await this.executeMulticallsChunks(calls, singleCallsEnabled, chainId, web3)
     }
 
     const calldata = this.prepareMulticallData(calls);
@@ -204,10 +208,10 @@ export class  Multicall {
     if (!calldata) return null;
 
     let results = null
-    const contractAddress = this.networksContracts[this.chainId];
+    const contractAddress = this.networksContracts[chainId];
 
     try {
-      results = await this.web3.eth.call({
+      results = await web3.eth.call({
         data: calldata,
         to: contractAddress,
         from: contractAddress

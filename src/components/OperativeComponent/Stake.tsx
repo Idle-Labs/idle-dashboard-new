@@ -22,7 +22,7 @@ import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS 
 import { Box, VStack, HStack, Text, Button, SimpleGrid, Center, Tabs, TabList, Tab } from '@chakra-ui/react'
 import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, toDayjs, bnOrZero, getBlock, formatDate, dayMax, dayMin, abbreviateNumber } from 'helpers/'
 
-export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
+export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds = [] }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
   const [ errorDate, setErrorDate ] = useState<string>('')
@@ -30,11 +30,15 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ lockEndDate, setLockEndDate ] = useState<any>(null)
 
   const { web3 } = useWeb3Provider()
-  const { account } = useWalletProvider()
+  const { account, chainId } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
+
+  const isChainEnabled = useMemo(() => {
+    return !chainIds.length || (chainId && chainIds.includes(chainId))
+  }, [chainIds, chainId])
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)

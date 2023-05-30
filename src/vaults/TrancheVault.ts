@@ -57,7 +57,7 @@ export class TrancheVault {
   // Contracts
   public readonly cdoContract: Contract
   public readonly trancheContract: Contract
-  public readonly strategyContract: Contract
+  public readonly strategyContract: Contract | undefined
   public readonly underlyingContract: Contract | undefined
 
   // Read only contracts
@@ -116,7 +116,9 @@ export class TrancheVault {
     }
 
     // Init Strategy contract
-    this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
+    if (this.strategyConfig.address){
+      this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
+    }
         
     // Init underlying token contract
     if (this.underlyingToken){
@@ -349,6 +351,7 @@ export class TrancheVault {
   }
 
   public getBaseAprCalls(): ContractRawCall[] {
+    if (!this.strategyContract) return []
     return [
       {
         assetId:this.id,
@@ -379,11 +382,12 @@ export class TrancheVault {
       [this.id]:{
         type: this.type,
         token: this.trancheConfig.token,
+        decimals: this.trancheConfig.decimals,
         color: this.underlyingToken?.colors.hex,
-        icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
+        // icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         underlyingId: this.underlyingToken?.address?.toLowerCase(),
+        icon: `${tokensFolder}${this.underlyingToken?.icon || `${this.underlyingToken?.token}.svg`}`,
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.trancheConfig.label || this.trancheConfig.token,
-        decimals: this.trancheConfig.decimals
       },
     }
   }

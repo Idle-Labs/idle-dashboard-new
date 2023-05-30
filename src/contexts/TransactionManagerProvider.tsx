@@ -310,7 +310,7 @@ const TransactionManagerContext = createContext<ContextProps>(initialContextStat
 export const useTransactionManager = () => useContext(TransactionManagerContext)
 
 export function TransactionManagerProvider({children}: ProviderProps) {
-  const { web3 }  = useWeb3Provider()
+  const { web3, web3Chains }  = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { account, chainId, explorer } = useWalletProvider()
 
@@ -389,18 +389,19 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Get chain token price
   useEffect(() => {
-    if (!chainId || !web3) return
+    if (!chainId || !web3 || !web3Chains) return
     ;(async () => {
-      const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
+      const chainToken = selectUnderlyingToken(1, chains[chainId].token)
       if (!chainToken || !chainToken.address) return
       
-      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3)
+      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(1, web3Chains[1])
       const chainTokenPriceUsd = await chainlinkHelper.getTokenPriceUsd(chainToken.address)
+
       if (!chainTokenPriceUsd) return
       dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
       // console.log('chainToken', chainToken, chainTokenPriceUsd)
     })()
-  }, [chainId, web3])
+  }, [chainId, web3, web3Chains])
 
   // Get latest block
   useEffect(() => {

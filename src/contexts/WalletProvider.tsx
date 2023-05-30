@@ -15,18 +15,19 @@ import { chains, networks, explorers, defaultChainId, Network, Explorer, Underly
 init(onboardInitParams)
 
 type ContextProps = {
-  account: Account | null
-  prevAccount: Account | null | undefined
   chainId: number
+  connect: Function
+  connecting: boolean
+  disconnect: Function
+  setChainId: Function
+  account: Account | null
   network: Network | null
   explorer: Explorer | null
   wallet: WalletState | null
-  connecting: boolean
-  connect: Function
-  disconnect: Function
-  setChainId: Function
   isNetworkCorrect: boolean
   walletInitialized: boolean
+  prevChainId: number | undefined
+  prevAccount: Account | null | undefined
   chainToken: UnderlyingTokenProps | null
 }
 
@@ -43,7 +44,8 @@ const initialState: ContextProps = {
   setChainId: () => {},
   isNetworkCorrect: true,
   chainId: defaultChainId,
-  walletInitialized: false
+  walletInitialized: false,
+  prevChainId: defaultChainId
 }
 
 const WalletProviderContext = React.createContext<ContextProps>(initialState)
@@ -58,9 +60,10 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
-  const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
+  const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
+  const prevChainId = usePrevious<number | undefined>(chainId)
 
   const customAddress = useMemo(() => {
     const walletAddress = getSearchParams.get('wallet')
@@ -147,7 +150,7 @@ export function WalletProvider({ children }: ProviderProps) {
   // console.log('wallet', wallet, 'account', account, 'network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainId', chainId, 'connecting', connecting)
 
   return (
-    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, prevChainId, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

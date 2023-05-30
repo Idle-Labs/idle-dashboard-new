@@ -20,6 +20,7 @@ import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio,
 export type ActionComponentArgs = {
   itemIndex: number
   goBack?: Function
+  chainIds?: (string|number)[]
 } & BoxProps
 
 
@@ -419,6 +420,7 @@ export type ActionStep = {
   label: string
   component: any
   props?: any
+  chainIds?: (string|number)[]
 }
 
 export type OperativeComponentAction = ActionStep & {
@@ -723,7 +725,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                 flex={1}
                 width={'100%'}
               >
-                {!!ActionComponent && <ActionComponent itemIndex={0} />}
+                {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
               </Flex>
             </Flex>
             {

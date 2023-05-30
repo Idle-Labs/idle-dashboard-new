@@ -9,12 +9,14 @@ type ContextProps = {
   web3: Web3 | null
   web3Rpc: Web3 | null
   multiCall: Multicall | null
+  web3Chains: Record<string, Web3> | null
 }
 
 const initialState: ContextProps = {
   web3: null,
   web3Rpc: null,
-  multiCall: null
+  multiCall: null,
+  web3Chains: null
 }
 
 const Web3ProviderContext = React.createContext<ContextProps>(initialState)
@@ -24,13 +26,22 @@ export const useWeb3Provider = () => useContext(Web3ProviderContext)
 export function Web3Provider({ children }: ProviderProps) {
   // const [ web3, setWeb3 ] = useState<Web3 | null>(null)
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
-  const { wallet, chainId, walletInitialized } = useWalletProvider()
+  const { wallet, chainId, walletInitialized, isNetworkCorrect } = useWalletProvider()
 
   const web3Rpc = useMemo(() => {
     const rpcUrl = chains[chainId]?.rpcUrl
     if (!chainId || !rpcUrl) return null
     return new Web3(new Web3.providers.HttpProvider(rpcUrl))
   }, [chainId])
+
+  const web3Chains = useMemo(() => {
+    return Object.keys(chains).reduce( (web3Chains: Record<string, Web3>, chainId: any) => {
+      return {
+        ...web3Chains,
+        [chainId]: new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl))
+      }
+    }, {})
+  }, []);
 
   const web3 = useMemo(() => {
     if (walletInitialized && wallet?.provider){
@@ -65,7 +76,7 @@ export function Web3Provider({ children }: ProviderProps) {
   }, [web3, web3Rpc, chainId])
 
   return (
-    <Web3ProviderContext.Provider value={{web3, web3Rpc, multiCall}}>
+    <Web3ProviderContext.Provider value={{web3, web3Rpc, web3Chains, multiCall}}>
       {children}
     </Web3ProviderContext.Provider>
   )
