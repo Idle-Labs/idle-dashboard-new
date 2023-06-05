@@ -1,11 +1,12 @@
 import './progress.css'
 import type { AssetId } from 'constants/types'
 import { ContractSendMethod } from 'web3-eth-contract'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
 import { Translation } from 'components/Translation/Translation'
+import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
 import { useTheme, ButtonProps, Button, Flex, Spinner, Text, TextProps, FlexProps } from '@chakra-ui/react'
 
 type TransactionButtonValueProps = {
@@ -182,6 +183,7 @@ type TransactionButtonProps = {
   assetId: AssetId
   vaultId: AssetId
   actionType?: string
+  chainIds?: (string|number)[]
   contractSendMethod: ContractSendMethod
 }
 
@@ -191,12 +193,16 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
   assetId,
   vaultId,
   actionType,
+  chainIds = [],
   contractSendMethod,
   ...props
 }) => {
   // @ts-ignore
   const [ref, { width }] = useBoundingRect()
+  const { checkChainEnabled } = useWalletProvider()
   const { sendTransaction, state: { transaction } } = useTransactionManager()
+
+  const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
   // @ts-ignore
   const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
@@ -219,6 +225,8 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
     }
   }, [isRightTransaction, transaction])
 
+  const isButtonDisabled = useMemo(() => !!props.disabled || !isChainEnabled, [props, isChainEnabled])
+
   return (
     <Button
       py={2}
@@ -232,6 +240,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
       variant={'ctaPrimaryOutline'}
       transition={'border 0.5s ease-in-out'}
       {...props}
+      disabled={isButtonDisabled}
     >
       <TransactionButtonValue text={text} contractSendMethod={contractSendMethod} width={width} />
     </Button>

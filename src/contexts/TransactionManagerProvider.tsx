@@ -8,7 +8,7 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import type { Transaction, TransactionReceipt } from 'web3-core'
 import { ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+import React, { createContext, useContext, useMemo, useReducer, useCallback, useEffect } from 'react'
 import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
@@ -60,9 +60,9 @@ type ContextProps = {
   retry: Function
   state: StateProps
   setGasLimit: Function
+  estimateGasFee: Function
   sendTransaction: Function
   updateGasPrices: Function
-  estimateGasFee: Function
   cleanTransaction: Function
   sendTransactionTest: Function
   setTransactionSpeed: Function
@@ -312,11 +312,16 @@ export const useTransactionManager = () => useContext(TransactionManagerContext)
 export function TransactionManagerProvider({children}: ProviderProps) {
   const { web3, web3Chains }  = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { account, chainId, explorer } = useWalletProvider()
+  const { account, chainId, prevChainId, explorer } = useWalletProvider()
+
+  const networkChanged = useMemo(() => {
+    return !!chainId && !!prevChainId && +chainId !== +prevChainId
+  }, [chainId, prevChainId])
 
   // Get estimated time
   const getEstimatedTime = useCallback( async (gasPrice: string): Promise<string | null> => {
     if (!explorer || !chainId) return null
+    if (+chainId === 137) return '120'
     const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${BNify(gasPrice).times(1e09).toString()}`
     return await makeEtherscanApiRequest(endpoint, explorer.keys)
   }, [explorer, chainId])
@@ -376,16 +381,26 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     }
   }, [explorer, chainId, getEstimatedTime])
 
+  // Reset gas oracle on network change
+  useEffect(() => {
+    if (networkChanged){
+      dispatch({type: 'SET_GAS_ORACLE', payload: null})
+    }
+  }, [networkChanged])
+
   // Set estimated time
   useEffect(() => {
     if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
     ;(async () => {
-      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
-      const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
-      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
+      // const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
+      // const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
+      const estimatedTime = await getEstimatedTime(BNify(state.transaction?.transaction?.gasPrice).div(1e09).toString())
+      if (estimatedTime){
+        // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
+        dispatch({type: 'SET_ESTIMATED_TIME', payload: +estimatedTime})
+      }
     })()
-  }, [state.transaction, explorer, chainId])
+  }, [state.transaction, explorer, chainId, getEstimatedTime])
 
   // Get chain token price
   useEffect(() => {
@@ -588,7 +603,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             dispatch({type: 'SET_STATUS', payload: 'failed'})
           });
       } catch (err) {
-        // console.log('error', error)
+        // console.log('error', err)
         dispatch({type: 'SET_ERROR', payload: err})
         dispatch({type: 'SET_STATUS', payload: 'failed'})
       }

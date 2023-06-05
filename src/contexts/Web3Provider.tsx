@@ -25,8 +25,8 @@ export const useWeb3Provider = () => useContext(Web3ProviderContext)
 
 export function Web3Provider({ children }: ProviderProps) {
   // const [ web3, setWeb3 ] = useState<Web3 | null>(null)
+  const { wallet, chainId, walletInitialized } = useWalletProvider()
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
-  const { wallet, chainId, walletInitialized, isNetworkCorrect } = useWalletProvider()
 
   const web3Rpc = useMemo(() => {
     const rpcUrl = chains[chainId]?.rpcUrl

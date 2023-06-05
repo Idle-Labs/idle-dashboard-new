@@ -690,10 +690,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [account, explorer, chainId, selectVaultPrice, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
-    if (!web3 || !multiCall || !state.contractsNetworks?.[1].length) return []
+    if (!web3 || !multiCall || !state.contractsNetworks?.[defaultChainId].length) return []
     
-    const StkIdleContract = state.contractsNetworks[1].find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
-    const StakingFeeDistributorContract = state.contractsNetworks[1].find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
+    const StkIdleContract = state.contractsNetworks[defaultChainId].find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
+    const StakingFeeDistributorContract = state.contractsNetworks[defaultChainId].find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
     
     if (!StkIdleContract || !StakingFeeDistributorContract) return []
 
@@ -752,7 +752,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [web3, chainId, multiCall, state.contracts])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
-    if (!multiCall || !isNetworkCorrect || !vaultFunctionsHelper || !genericContractsHelper) return null
+    if (!multiCall || !web3Chains || !isNetworkCorrect || !vaultFunctionsHelper || !genericContractsHelper) return null
 
     const checkEnabledCall = (call: string) => {
       return !enabledCalls.length || enabledCalls.includes(call)
@@ -904,7 +904,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
       multiCall.executeMultipleBatches(rawCalls),
-      multiCall.executeMultipleBatches(mainnetRawCalls, 1),
+      multiCall.executeMultipleBatches(mainnetRawCalls, defaultChainId, web3Chains[defaultChainId]),
     ])
 
     // console.log('totalSupply', totalSupply,
@@ -1455,7 +1455,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       idleDistributions,
       interestBearingTokens
     }
-  }, [selectAssetById, account, isNetworkCorrect, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, web3Chains, account, isNetworkCorrect, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -1895,16 +1895,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const allVaults: Vault[] = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
 
     if (stkIdleConfig){
-      const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: web3Chains[defaultChainId], chainId: defaultChainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
+
+      const defaultChainWeb3 = +chainId === defaultChainId ? web3 : web3Chains[defaultChainId]
+
+      const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: defaultChainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
       allVaults.push(stakedIdleVault)
 
       // Add staking reward token
       if (+defaultChainId !== chainId){
-        const rewardUnderlyingToken = new UnderlyingToken(web3Chains[defaultChainId], defaultChainId, rewardTokenConfig)
+        const rewardUnderlyingToken = new UnderlyingToken(defaultChainWeb3, defaultChainId, rewardTokenConfig)
         allVaults.push(rewardUnderlyingToken)
 
         const stkIDLEUnderlyingTokenConfig = selectUnderlyingToken(defaultChainId, stkIDLE_TOKEN) as UnderlyingTokenProps
-        const stkIDLEUnderlyingToken = new UnderlyingToken(web3Chains[defaultChainId], defaultChainId, stkIDLEUnderlyingTokenConfig)
+        const stkIDLEUnderlyingToken = new UnderlyingToken(defaultChainWeb3, defaultChainId, stkIDLEUnderlyingTokenConfig)
         allVaults.push(stkIDLEUnderlyingToken)
       }
     }
@@ -1988,11 +1991,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const getChainlinkHistoricalPrices = useCallback(async (vaults: Vault[], maxDays = 365): Promise<Record<AssetId, HistoryData[]> | undefined> => {
 
-    console.log('getChainlinkHistoricalPrices', chainId);
-
     if (!web3 || +chainId !== 1 || !multiCall) return
-
-    console.log('getChainlinkHistoricalPrices (DONE)');
 
     const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
 
@@ -2516,8 +2515,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         stkIdleResults,
         stakedIdleVaultRewards
       ] = await Promise.all([
-        multiCall.executeMulticalls(stkIdleCalls, true, 1, web3Chains[1]),
-        vaultFunctionsHelper.getStakingRewards(stakedIdleVault, 1)
+        multiCall.executeMulticalls(stkIdleCalls, true, defaultChainId, web3Chains[defaultChainId]),
+        vaultFunctionsHelper.getStakingRewards(stakedIdleVault, defaultChainId)
       ])
 
       if (!stkIdleResults){

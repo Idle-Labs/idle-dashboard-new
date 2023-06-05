@@ -142,7 +142,7 @@ export class  Multicall {
     return methodSignature+strip0x(calldata);
   }
 
-  async executeMultipleBatches(callBatches: CallData[][], chainId?: number): Promise<DecodedResult[][]> {
+  async executeMultipleBatches(callBatches: CallData[][], chainId?: number, web3?: Web3): Promise<DecodedResult[][]> {
     // Assign batch Id to every call
     const calls = callBatches.reduce( (calls, batchedCalls, batchId) => {
       batchedCalls.forEach( call => {
@@ -153,7 +153,7 @@ export class  Multicall {
     }, []);
       
     // Execute calls
-    const results = await this.executeMulticalls(calls, false, chainId);
+    const results = await this.executeMulticalls(calls, false, chainId, web3);
 
     // Group by BatchID
     const output = Array.from(Array(callBatches.length).keys()).reduce( (output: BatchesResults, batchId: number) => {

@@ -223,7 +223,7 @@ export const Staking: React.FC = () => {
                 <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} decimals={2} textStyle={'heading'} fontSize={'h3'} />
               </VStack>
             </HStack>
-            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} disabled={stakingData.position.claimable.lte(0)} />
+            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} chainIds={[defaultChainId]} disabled={stakingData.position.claimable.lte(0)} />
           </VStack>
         </Card>
       </AssetProvider>
@@ -264,7 +264,7 @@ export const Staking: React.FC = () => {
             <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} decimals={2} textStyle={'heading'} fontSize={'h3'} />
           </VStack>
 
-          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
+          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} chainIds={[defaultChainId]} disabled={stakingData.position.claimable.lte(0)} />
         </Stack>
       </Card>
     )

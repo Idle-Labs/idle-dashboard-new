@@ -1,3 +1,5 @@
+import { defaultChainId } from 'constants/chains'
+import { TbPlugConnectedX } from 'react-icons/tb'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { MdLockClock, MdLockOpen } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -12,12 +14,14 @@ import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalle
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { BNify, estimateGasLimit, bnOrZero, toDayjs, formatDate, abbreviateNumber } from 'helpers/'
 
-export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
-  const { account } = useWalletProvider()
+export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] }) => {
   const { asset, vault } = useAssetProvider()
+  const { account, setChainId, checkChainEnabled } = useWalletProvider()
   const { dispatch, activeItem, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectVaultPrice } } = usePortfolioProvider()
   const { sendTransaction, setGasLimit, state: { block } } = useTransactionManager()
+
+  const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
   const amount = useMemo(() => {
     return bnOrZero(stakingData?.position?.deposited)
@@ -110,7 +114,7 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         id={'withdraw-container'}
         alignItems={'space-between'}
         justifyContent={'flex-start'}
-        pt={stakingData?.position?.lockEnd ? 8 : 0}
+        pt={isChainEnabled && stakingData?.position?.lockEnd ? 8 : 0}
       >
         <VStack
           flex={1}
@@ -119,7 +123,26 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           alignItems={'flex-start'}
         >
           {
-            !stakingData?.position?.lockEnd ? (
+            !isChainEnabled ? (
+              <Center
+                px={10}
+                flex={1}
+                width={'100%'}
+              >
+                <VStack
+                  spacing={6}
+                >
+                  <TbPlugConnectedX size={72} />
+                  <VStack
+                    spacing={4}
+                  >
+                    <Translation component={Text} translation={"staking.networkNotSupported"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                    <Translation component={Text} translation={`staking.switchToMainnet`} textStyle={'captionSmall'} textAlign={'center'} />
+                    <Translation component={Button} translation={`common.switchNetwork`} onClick={() => setChainId(defaultChainId)} variant={'ctaPrimary'} px={10} />
+                  </VStack>
+                </VStack>
+              </Center>
+            ) : !stakingData?.position?.lockEnd ? (
               <Center
                 px={6}
                 flex={1}
