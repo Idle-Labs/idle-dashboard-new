@@ -440,9 +440,16 @@ export const Tranches: React.FC = () => {
 
   const availableAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
-    const vaultsAssets = selectVaultsAssetsByType(strategy)
+    const vaultsAssets = productStrategies.reduce( (vaultsAssets: Asset[], strategy: string) => {
+      const strategyAssets = selectVaultsAssetsByType(strategy)
+      return [
+        ...vaultsAssets,
+        ...strategyAssets
+      ]
+    }, [])
+
     return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status !== 'deprecated' )
-  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, productStrategies])
 
   const deprecatedAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []

@@ -1786,6 +1786,87 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
+      USDCFas:{
+        autoFarming:[],
+        enabledEnvs:[],
+        variant:'fasanara',
+        protocol:'clearpool',
+        blockNumber:17413683,
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_fasanara_USDC',
+          address:'0xE7C6A4525492395d65e736C3593aC933F33ee46e'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_fasanara_USDC',
+          address:'0x16F6bE72882B24527F94c7BCCabF77B62608083b'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_fasanara_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17413683,
+            name:'AA_clearpool_fasanara_USDC',
+            label:'Clearpool fasanara USDC AA',
+            token:'AA_clearpool_fasanara_USDC',
+            address:'0xdcA1daE87f5c733c84e0593984967ed756579BeE'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_fasanara_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17413683,
+            name:'BB_clearpool_fasanara_USDC',
+            token:'BB_clearpool_fasanara_USDC',
+            label:'Clearpool fasanara USDC BB',
+            address:'0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06'
+          }
+        }
+      },
       DAI:{
         autoFarming:[],
         enabledEnvs:[],
