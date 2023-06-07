@@ -1,20 +1,14 @@
 import { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
-import { MdCheckCircle } from 'react-icons/md'
 import { useSetChain } from '@web3-onboard/react'
-import { TrancheVault } from 'vaults/TrancheVault'
 import { selectChainByHexId } from 'constants/chains'
-import { BestYieldVault } from 'vaults/BestYieldVault'
 import { Stack, Image, Button } from '@chakra-ui/react'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
-import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
-import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 
 export const WrongNetworkBanner: React.FC = () => {
-  const { params } = useBrowserRouter()
   const [ { connectedChain }, setChain ] = useSetChain()
-  const { walletInitialized, isNetworkCorrect, wallet, chainId, chainIdHex, network, setChainId } = useWalletProvider()
+  const { isNetworkCorrect, wallet, chainIdHex, network } = useWalletProvider()
 
   const selectedChain = useMemo(() => connectedChain?.id ? selectChainByHexId(connectedChain.id) : null, [connectedChain])
 
