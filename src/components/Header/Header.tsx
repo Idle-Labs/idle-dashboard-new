@@ -7,7 +7,6 @@ import { AccountSelector } from './AccountSelector'
 import { HStack, Stack, VStack } from '@chakra-ui/react'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { EulerHackBanner } from 'components/EulerHackBanner/EulerHackBanner'
 
 export const Header: React.FC = () => {
   const { chainId, account } = useWalletProvider()
@@ -59,7 +58,7 @@ export const Header: React.FC = () => {
           {/*<NotificationList />*/}
         </Stack>
       </HStack>
-      <EulerHackBanner />
+      {/*<EulerHackBanner />*/}
     </VStack>
   )
 }

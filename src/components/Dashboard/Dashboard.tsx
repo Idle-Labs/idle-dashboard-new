@@ -98,20 +98,6 @@ export const Dashboard: React.FC = () => {
     return realizedApyData.num.div(realizedApyData.den)
   }, [assetIds, vaultsPositions])
 
-  // console.log('totalFunds', vaultsPositions, totalFunds.toString())
-
-  /*
-  const totalDeposited = useMemo(() => {
-    return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (amount: BigNumber, vaultPosition: VaultPosition) => {
-      return amount.plus(vaultPosition.usd.deposited)
-    }, BNify(0))
-  }, [assetIds, vaultsPositions])
-
-  const earningsPercentage = useMemo(() => {
-    return totalFunds.div(totalDeposited).minus(1).times(100)
-  }, [totalDeposited, totalFunds])
-  */
-
   const userHasFunds = useMemo(() => {
     return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
   }, [account, isVaultsPositionsLoaded, vaultsPositions])

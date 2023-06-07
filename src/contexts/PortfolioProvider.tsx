@@ -382,13 +382,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const protocolToken = useMemo(() => {
     if (!selectAssetById) return
-    const underlyingToken = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+    const underlyingToken = selectUnderlyingToken(GOVERNANCE_CHAINID, PROTOCOL_TOKEN)
     return underlyingToken && selectAssetById(underlyingToken.address)
   }, [selectAssetById])
 
   const stkIDLEToken = useMemo(() => {
     if (!selectAssetById) return
-    const underlyingToken = selectUnderlyingToken(defaultChainId, stkIDLE_TOKEN)
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, stkIDLE_TOKEN)
     return underlyingToken && selectAssetById(underlyingToken.token)
   }, [selectAssetById])
 
@@ -690,10 +690,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [account, explorer, chainId, selectVaultPrice, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
-    if (!web3 || !multiCall || !state.contractsNetworks?.[defaultChainId].length) return []
+    if (!web3 || !multiCall || !state.contractsNetworks?.[STAKING_CHAINID].length) return []
     
-    const StkIdleContract = state.contractsNetworks[defaultChainId].find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
-    const StakingFeeDistributorContract = state.contractsNetworks[defaultChainId].find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
+    const StkIdleContract = state.contractsNetworks[STAKING_CHAINID].find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
+    const StakingFeeDistributorContract = state.contractsNetworks[STAKING_CHAINID].find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
     
     if (!StkIdleContract || !StakingFeeDistributorContract) return []
 
@@ -904,7 +904,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
       multiCall.executeMultipleBatches(rawCalls),
-      multiCall.executeMultipleBatches(mainnetRawCalls, defaultChainId, web3Chains[defaultChainId]),
+      multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
     ])
 
     // console.log('totalSupply', totalSupply,
@@ -1886,9 +1886,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, [])
 
     // Init stkIDLE vault
-    const rewardTokenConfig = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN) as UnderlyingTokenProps
-    const stkIdleConfig = globalContracts[defaultChainId].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
-    const feeDistributorConfig = globalContracts[defaultChainId].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
+    const rewardTokenConfig = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN) as UnderlyingTokenProps
+    const stkIdleConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
+    const feeDistributorConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
 
     // console.log('stakedIdleVault', stakedIdleVault)
 
@@ -1896,18 +1896,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (stkIdleConfig){
 
-      const defaultChainWeb3 = +chainId === defaultChainId ? web3 : web3Chains[defaultChainId]
+      const defaultChainWeb3 = +chainId === STAKING_CHAINID ? web3 : web3Chains[STAKING_CHAINID]
 
-      const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: defaultChainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
+      const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: STAKING_CHAINID, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
       allVaults.push(stakedIdleVault)
 
       // Add staking reward token
-      if (+defaultChainId !== chainId){
-        const rewardUnderlyingToken = new UnderlyingToken(defaultChainWeb3, defaultChainId, rewardTokenConfig)
+      if (+STAKING_CHAINID !== chainId){
+        const rewardUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, rewardTokenConfig)
         allVaults.push(rewardUnderlyingToken)
 
-        const stkIDLEUnderlyingTokenConfig = selectUnderlyingToken(defaultChainId, stkIDLE_TOKEN) as UnderlyingTokenProps
-        const stkIDLEUnderlyingToken = new UnderlyingToken(defaultChainWeb3, defaultChainId, stkIDLEUnderlyingTokenConfig)
+        const stkIDLEUnderlyingTokenConfig = selectUnderlyingToken(STAKING_CHAINID, stkIDLE_TOKEN) as UnderlyingTokenProps
+        const stkIDLEUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, stkIDLEUnderlyingTokenConfig)
         allVaults.push(stkIDLEUnderlyingToken)
       }
     }
@@ -2515,8 +2515,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         stkIdleResults,
         stakedIdleVaultRewards
       ] = await Promise.all([
-        multiCall.executeMulticalls(stkIdleCalls, true, defaultChainId, web3Chains[defaultChainId]),
-        vaultFunctionsHelper.getStakingRewards(stakedIdleVault, defaultChainId)
+        multiCall.executeMulticalls(stkIdleCalls, true, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
+        vaultFunctionsHelper.getStakingRewards(stakedIdleVault, STAKING_CHAINID)
       ])
 
       if (!stkIdleResults){

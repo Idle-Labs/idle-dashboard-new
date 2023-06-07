@@ -4,6 +4,7 @@ import { Header } from 'components/Header/Header'
 import { ContainerProps, Box } from '@chakra-ui/react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
+import { WrongNetworkBanner } from 'components/WrongNetworkBanner/WrongNetworkBanner'
 
 export const Template: React.FC<ContainerProps> = () => {
   const { location } = useBrowserRouter()
@@ -35,6 +36,7 @@ export const Template: React.FC<ContainerProps> = () => {
           <Outlet />
         </Suspense>
       </Box>
+      <WrongNetworkBanner />
     </Box>
   )
 }

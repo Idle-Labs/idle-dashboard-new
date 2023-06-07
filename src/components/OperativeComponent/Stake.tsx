@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { ManipulateType } from 'dayjs'
 import { Card } from 'components/Card/Card'
 import { MdLockOpen } from 'react-icons/md'
-import { defaultChainId } from 'constants/chains'
+import { STAKING_CHAINID } from 'constants/'
 import { TbPlugConnectedX } from 'react-icons/tb'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWeb3Provider } from 'contexts/Web3Provider'
@@ -501,7 +501,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
               >
                 <Translation component={Text} translation={"staking.networkNotSupported"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
                 <Translation component={Text} translation={`staking.switchToMainnet`} textStyle={'captionSmall'} textAlign={'center'} />
-                <Translation component={Button} translation={`common.switchNetwork`} onClick={() => setChainId(defaultChainId)} variant={'ctaPrimary'} px={10} />
+                <Translation component={Button} translation={`common.switchNetwork`} onClick={() => setChainId(STAKING_CHAINID)} variant={'ctaPrimary'} px={10} />
               </VStack>
             </VStack>
           </Center>

@@ -365,6 +365,9 @@
     "cta": "Connect Wallet",
     "viewADemo": "View a Demo"
   },
+  "network": {
+    "wrongNetwork": "Your %{wallet} is connected to %{currentNetwork}, please switch to %{correctNetwork}."
+  },
   "connectWallet": {
     "menu": {
       "triggerButton": "Connect Wallet",

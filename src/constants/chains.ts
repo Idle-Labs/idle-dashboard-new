@@ -19,3 +19,11 @@ export const chains: Record<number, Chain> = {
     rpcUrl: `https://polygon-mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
   }
 }
+
+export function selectChainById(id: number){
+  return chains[id]
+}
+
+export function selectChainByHexId(hexId: string){
+  return Object.values(chains).find( (c: Chain) => c.id === hexId )
+}

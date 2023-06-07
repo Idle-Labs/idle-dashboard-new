@@ -23,6 +23,7 @@ type ContextProps = {
   account: Account | null
   network: Network | null
   explorer: Explorer | null
+  chainIdHex: string | null
   isNetworkCorrect: boolean
   wallet: WalletState | null
   walletInitialized: boolean
@@ -37,6 +38,7 @@ const initialState: ContextProps = {
   wallet: null,
   network: null,
   explorer: null,
+  chainIdHex: null,
   chainToken: null,
   connecting: false,
   prevAccount: null,
@@ -114,10 +116,10 @@ export function WalletProvider({ children }: ProviderProps) {
 
   // Set isNetworkCorrect
   useEffect(() => {
-    if (!connectedChain) return
-    const isNetworkCorrect = chainIdHex === connectedChain.id
+    // if (!connectedChain) return
+    const isNetworkCorrect = !wallet || chainIdHex === connectedChain?.id
     setIsNetworkCorrect(isNetworkCorrect)
-  }, [chainIdHex, connectedChain])
+  }, [chainIdHex, connectedChain, wallet])
 
   // Update wallet and provider
   useEffect(() => {
@@ -156,7 +158,7 @@ export function WalletProvider({ children }: ProviderProps) {
   // console.log('wallet', wallet, 'account', account, 'network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainId', chainId, 'connecting', connecting)
 
   return (
-    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, prevChainId, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )
