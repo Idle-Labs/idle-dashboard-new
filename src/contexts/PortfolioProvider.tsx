@@ -1991,7 +1991,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const getChainlinkHistoricalPrices = useCallback(async (vaults: Vault[], maxDays = 365): Promise<Record<AssetId, HistoryData[]> | undefined> => {
 
-    if (!web3 || +chainId !== 1 || !multiCall) return
+    if (!web3 || !multiCall) return
 
     const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
 
@@ -2012,8 +2012,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
       return assets
     }, {})
-
-    // console.log('vaultsUnderlyingTokens', vaultsUnderlyingTokens)
+    
+    // TODO: Get historical USD conversion rates for other chains than ethereum mainnet
+    if (+chainId !== 1){
+      return Object.keys(vaultsUnderlyingTokens).reduce( (historicalPricesUsd: Record<AssetId, HistoryData[]>, assetId: AssetId) => {
+        return {
+          ...historicalPricesUsd,
+          [assetId]: []
+        }
+      }, {})
+    }
 
     const feedsCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[][], assetId: AssetId): CallData[][] => {
       const underlyingToken = vaultsUnderlyingTokens[assetId]
@@ -2355,7 +2363,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // const startTimestamp = Date.now()
 
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
+      
       // console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
+
       if (!historicalPricesUsd) return
 
       // Merge new with stored prices

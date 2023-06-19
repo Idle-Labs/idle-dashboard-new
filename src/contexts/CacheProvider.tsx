@@ -2,6 +2,7 @@ import { hashCode } from 'helpers/'
 import { CACHE_VERSION } from 'constants/vars'
 import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
+import { useWalletProvider } from './WalletProvider'
 import { preCachedRequests } from 'constants/historicalData'
 import React, { useContext, useCallback, useMemo, useEffect } from 'react'
 
@@ -33,21 +34,22 @@ type CacheProviderProps = {
 } & ProviderProps
 
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
+  const { chainId, isChainLoaded } = useWalletProvider()
   const [ cacheVersion, setCacheVersion, , isVersionLoaded ] = useLocalForge('cacheVersion')
-  const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge('cachedRequests', preCachedRequests)
+  const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge(`cachedRequests`, preCachedRequests)
 
   // Check preCachedData version
   useEffect(() => {
-    if (!isLoaded || !isVersionLoaded || cacheVersion === CACHE_VERSION) return
+    if (!isLoaded || !isVersionLoaded || !isChainLoaded || cacheVersion === CACHE_VERSION) return
     setCachedRequests(preCachedRequests)
     setCacheVersion(CACHE_VERSION)
     // eslint-disable-next-line
     console.log('CACHE VERSION UPGRADE FROM %s to %s', cacheVersion, CACHE_VERSION)
-  }, [cacheVersion, isLoaded, isVersionLoaded, setCachedRequests, setCacheVersion])
+  }, [cacheVersion, chainId, isChainLoaded, isLoaded, isVersionLoaded, setCachedRequests, setCacheVersion])
 
   const cacheIsLoaded = useMemo(() => {
-    return isLoaded && isVersionLoaded && cacheVersion === CACHE_VERSION
-  }, [cacheVersion, isVersionLoaded, isLoaded])
+    return isLoaded && isChainLoaded && isVersionLoaded && cacheVersion === CACHE_VERSION
+  }, [cacheVersion, isChainLoaded, isVersionLoaded, isLoaded])
 
   // console.log('cacheIsLoaded', cacheIsLoaded)
 

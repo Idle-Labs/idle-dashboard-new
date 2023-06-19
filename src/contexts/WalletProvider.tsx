@@ -20,6 +20,7 @@ type ContextProps = {
   connecting: boolean
   disconnect: Function
   setChainId: Function
+  isChainLoaded: boolean
   account: Account | null
   network: Network | null
   explorer: Explorer | null
@@ -43,6 +44,7 @@ const initialState: ContextProps = {
   connecting: false,
   prevAccount: null,
   connect: () => {},
+  isChainLoaded: false,
   disconnect: () => {},
   setChainId: () => {},
   isNetworkCorrect: true,
@@ -66,7 +68,7 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
-  const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
+  const [ chainId, setChainId, , isChainLoaded ] = useLocalForge('selectedChain', defaultChainId)
   const prevChainId = usePrevious<number | undefined>(chainId)
 
   const customAddress = useMemo(() => {
@@ -158,7 +160,7 @@ export function WalletProvider({ children }: ProviderProps) {
   // console.log('wallet', wallet, 'account', account, 'network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainId', chainId, 'connecting', connecting)
 
   return (
-    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

@@ -933,8 +933,8 @@ export const Dashboard: React.FC = () => {
               percentChange={0}
               color={chartColor}
               timeframe={timeframe}
-              assetIds={allAssetIds}
               allowFlatChart={true}
+              assetIds={allAssetIds}
               loadingEnabled={false}
               isRainbowChart={false}
               strategies={selectedStrategies}

@@ -40,9 +40,10 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
     allowFlatChart
   })
 
-  // console.log('balanceChartDataLoading', balanceChartDataLoading)
-
   const { total } = balanceChartData
+
+  // console.log('balanceChartDataLoading', balanceChartDataLoading)
+  // console.log('balanceChartData', assetIds, strategies, balanceChartData)
 
   useEffect(() => setPercentChange(calculatePercentChange(total)), [total, setPercentChange])
 
