@@ -83,6 +83,9 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   const redeemable = bnOrZero(asset?.vaultPosition?.underlying.redeemable)
   const redeemableUsd = bnOrZero(asset?.vaultPosition?.usd.redeemable)
   const totalGain = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings))
+
+  // TODO: add fee to totalGain for tranches
+
   // const earningsPerc = bnOrZero(asset?.vaultPosition?.earningsPercentage)
   const redeemablePercentage = BigNumber.minimum(1, bnOrZero(amountUsd).div(redeemableUsd))
   const gain = BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain))

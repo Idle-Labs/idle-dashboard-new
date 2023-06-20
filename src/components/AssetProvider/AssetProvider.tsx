@@ -484,7 +484,12 @@ const Earnings: React.FC<AmountProps> = (props) => {
 const NetEarnings: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
-  const netEarnings = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset?.vaultPosition?.underlying.earnings).minus(BNify(asset.vaultPosition.underlying.earnings).times(asset.fee)) : BNify(0)
+  let netEarnings = asset?.vaultPosition?.underlying.earnings ? BNify(asset?.vaultPosition?.underlying.earnings) : BNify(0)
+
+  // Remove fees for BY
+  if (asset && !['AA', 'BB'].includes(asset.type as string)){
+    netEarnings = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset?.vaultPosition?.underlying.earnings).minus(BNify(asset.vaultPosition.underlying.earnings).times(asset.fee)) : BNify(0)
+  }
   
   return asset?.vaultPosition?.underlying.earnings ? (
     <Amount value={netEarnings} {...props} />
@@ -502,7 +507,12 @@ const EarningsUsd: React.FC<AmountProps> = (props) => {
 const NetEarningsUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
-  const netEarnings = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset?.vaultPosition?.usd.earnings).minus(BNify(asset.vaultPosition.usd.earnings).times(asset.fee)) : BNify(0)
+  let netEarnings = asset?.vaultPosition?.usd.earnings ? BNify(asset?.vaultPosition?.usd.earnings) : BNify(0)
+
+  // Remove fees for BY
+  if (asset && !['AA', 'BB'].includes(asset.type as string)){
+    netEarnings = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset?.vaultPosition?.usd.earnings).minus(BNify(asset.vaultPosition.usd.earnings).times(asset.fee)) : BNify(0)
+  }
   
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount.Usd value={netEarnings} {...props} />
