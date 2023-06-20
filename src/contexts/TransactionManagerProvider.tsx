@@ -545,8 +545,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
         }
 
-        // console.log('sendOptions', contractSendMethod, gas, baseFeePerGas, sendOptions)
-
         dispatch({type: 'CREATE', payload: {
           amount,
           assetId,

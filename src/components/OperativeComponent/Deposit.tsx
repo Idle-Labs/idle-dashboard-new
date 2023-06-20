@@ -108,7 +108,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
       const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
       
-      // console.log('allowance', vaultOwner, account.address, allowance)
+      // console.log('allowance', account.address, checkAllowance, BNify(allowance).toString(), BNify(amount).toString())
 
       if (allowance.gte(amount)){
 

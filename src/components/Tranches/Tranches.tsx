@@ -1,3 +1,4 @@
+import { Vault } from 'vaults/'
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
@@ -65,6 +66,7 @@ export const Tranches: React.FC = () => {
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
 
   const {
+    vaults,
     isPortfolioLoaded,
     selectors: {
       selectVaultById,
@@ -428,7 +430,7 @@ export const Tranches: React.FC = () => {
   ]), [strategyColumns])
 
   const depositedAssetsData = useMemo(() => {
-    if (!selectVaultsWithBalance || !isPortfolioLoaded || !productStrategies) return []
+    if (!selectVaultsWithBalance || !isPortfolioLoaded || !productStrategies || !account?.address) return []
     return productStrategies?.reduce( (depositedAssetsData: Asset[], strategy: string) => {
       const strategyDepositedAssets = selectVaultsAssetsWithBalance(strategy)
       return [
@@ -436,7 +438,7 @@ export const Tranches: React.FC = () => {
         ...(strategyDepositedAssets || [])
       ]
     }, [])
-  }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, productStrategies])
+  }, [isPortfolioLoaded, account, selectVaultsWithBalance, selectVaultsAssetsWithBalance, productStrategies])
 
   const availableAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
@@ -447,9 +449,37 @@ export const Tranches: React.FC = () => {
     //     ...strategyAssets
     //   ]
     // }, [])
+
+    const checkDepositedAsset = (vaultAsset: Asset) => depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id)
+
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status !== 'deprecated' )
-  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
+    // console.log('vaultsAssets', vaultsAssets)
+    // return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status !== 'deprecated' )
+
+    return vaultsAssets.reduce( (vaultsAssets: Asset[], vaultAsset: Asset) => {
+      if (vaultAsset.status === 'deprecated'){
+        return vaultsAssets
+      }
+      // Add other vault
+      if (checkDepositedAsset(vaultAsset)){
+        const vault = selectVaultById(vaultAsset.id)
+        if (vault){
+          const otherVaultType = vaultAsset.type === 'AA' ? 'BB' : 'AA'
+          const otherVault = vaults.find( (otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
+          if (otherVault){
+            const otherVaultAsset = selectAssetById(otherVault.id)
+            if (otherVaultAsset?.status !== 'deprecated' && !checkDepositedAsset(otherVaultAsset)){
+              vaultsAssets.push(otherVaultAsset)
+            }
+          }
+        }
+      } else {
+        vaultsAssets.push(vaultAsset)
+      }
+      return vaultsAssets
+    }, [])
+
+  }, [isPortfolioLoaded, vaults, selectAssetById, selectVaultById, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const deprecatedAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
