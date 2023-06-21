@@ -2578,7 +2578,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   
   // Update balances USD
   useEffect(() => {
-    if (isEmpty(state.balances) || isEmpty(state.vaultsPositions)) return
+    if (isEmpty(state.balances)/* || isEmpty(state.vaultsPositions)*/) return
 
     const startTimestamp = Date.now();
 
