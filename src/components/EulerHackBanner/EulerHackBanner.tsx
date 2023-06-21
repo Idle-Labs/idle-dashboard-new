@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
+import { Stack } from '@chakra-ui/react'
 import { Card } from 'components/Card/Card'
 import { MdCheckCircle } from 'react-icons/md'
-import { Stack, Image } from '@chakra-ui/react'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import { Translation } from 'components/Translation/Translation'

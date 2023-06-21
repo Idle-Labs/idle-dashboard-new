@@ -487,6 +487,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<AssetId, VaultPosition>, assetId: AssetId) => {
       const transactions = vaultsTransactions[assetId]
 
+      // console.log('transactions', assetId, transactions)
+
       if (!transactions || !transactions.length) return vaultsPositions
 
       let firstDepositTx: any = null
@@ -548,7 +550,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
 
           // if (index === transactions.length-1) {
-            // console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), duration, transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString())
+            // console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), duration, transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString(), transaction)
           // }
         }
 
@@ -596,7 +598,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // })
 
       const realizedAprParams = balancePeriods.reduce( (realizedAprParams: {weight: BigNumber, sumAmount: BigNumber}, balancePeriod: any) => {
-        const denom = balancePeriod.balance
+        const denom = BNify(balancePeriod.balance).times(balancePeriod.duration)
         realizedAprParams.weight = realizedAprParams.weight.plus(balancePeriod.realizedApr.times(denom))
         realizedAprParams.sumAmount = realizedAprParams.sumAmount.plus(denom)
         return realizedAprParams
@@ -626,7 +628,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const avgBuyPrice = BigNumber.maximum(1, vaultPrice.div(earningsPercentage.plus(1)))
 
       // const realizedApy2 = earningsPercentage && depositDuration ? apr2apy(earningsPercentage.times(31536000).div(depositDuration)).times(100) : BNify(0)
-      // console.log('realizedApy', assetId, realizedApyParams.weight.toString(), realizedApyParams.sumAmount.toString(), realizedEarnings.toString(), realizedApr.toString(), realizedApy.toString(), realizedApy2.toString())
+      // console.log('realizedApy', assetId, realizedAprParams.weight.toString(), realizedAprParams.sumAmount.toString(), realizedApr.toString(), realizedApy.toString())
 
       const idle = {
         staked: BNify(0),

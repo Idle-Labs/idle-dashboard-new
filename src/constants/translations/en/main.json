@@ -804,6 +804,7 @@
     "newApy": "New APY (after deposit)",
     "coverage": "Coverage",
     "gain": "Gain",
+    "totalGain": "Total gain",
     "fee": "Fee",
     "netGain": "Net gain"
   },

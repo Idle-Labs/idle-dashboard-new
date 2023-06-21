@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import type { AssetId } from 'constants/types'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
+import { TrancheVault } from 'vaults/TrancheVault'
 import { BNify, bnOrZero, apr2apy } from 'helpers/'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -82,15 +83,19 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
 
   const redeemable = bnOrZero(asset?.vaultPosition?.underlying.redeemable)
   const redeemableUsd = bnOrZero(asset?.vaultPosition?.usd.redeemable)
-  const totalGain = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings))
-
-  // TODO: add fee to totalGain for tranches
+  let totalGain = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings))
 
   // const earningsPerc = bnOrZero(asset?.vaultPosition?.earningsPercentage)
   const redeemablePercentage = BigNumber.minimum(1, bnOrZero(amountUsd).div(redeemableUsd))
-  const gain = BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain))
+  let gain = BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain))
   const maxFees = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings).times(asset?.fee))
-  const fees = BigNumber.minimum(maxFees, bnOrZero(gain).times(asset?.fee))
+  let fees = BigNumber.minimum(maxFees, bnOrZero(gain).times(asset?.fee))
+
+  // Add fee to totalGain and gain for tranches
+  if (vault instanceof TrancheVault){
+    totalGain = totalGain.plus(fees)
+    gain = gain.plus(fees)
+  }
 
   const redeemableAmountIsValid = amountIsValid && bnOrZero(amount).lte(redeemable)
   // console.log('redeemableAmountIsValid', bnOrZero(amountUsd).toString(), redeemable.toString(), redeemableAmountIsValid)
@@ -106,7 +111,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />
     case 'newApy':
       return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />
-    case 'gain':
+    case 'totalGain':
       return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? gain : null} />
     case 'fee':
       return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? fees : null} />

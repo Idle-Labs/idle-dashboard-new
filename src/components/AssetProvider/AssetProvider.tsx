@@ -481,6 +481,14 @@ const Earnings: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const EarningsUsd: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+  
+  return asset?.vaultPosition?.usd.earnings ? (
+    <Amount.Usd value={asset?.vaultPosition?.usd.earnings} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const NetEarnings: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
@@ -493,14 +501,6 @@ const NetEarnings: React.FC<AmountProps> = (props) => {
   
   return asset?.vaultPosition?.underlying.earnings ? (
     <Amount value={netEarnings} {...props} />
-  ) : <Spinner size={'sm'} />
-}
-
-const EarningsUsd: React.FC<AmountProps> = (props) => {
-  const { asset } = useAssetProvider()
-  
-  return asset?.vaultPosition?.usd.earnings ? (
-    <Amount.Usd value={asset?.vaultPosition?.usd.earnings} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

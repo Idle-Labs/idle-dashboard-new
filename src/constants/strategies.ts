@@ -151,7 +151,7 @@ export const strategies: Record<string, StrategyProps> = {
     image: `${strategiesFolder}best-yield.png`,
     dynamicActionFields:{
       // deposit:['coverage' ,'newApy'],
-      withdraw:['gain', 'fee', 'netGain']
+      withdraw:['totalGain', 'fee', 'netGain']
     },
     carouselItems: [
       {
@@ -265,7 +265,7 @@ export const strategies: Record<string, StrategyProps> = {
     image: `${strategiesFolder}protected-yield.png`,
     dynamicActionFields:{
       deposit:['coverage' ,'newApy'],
-      withdraw:['gain', 'fee', 'netGain']
+      withdraw:['totalGain', 'fee', 'netGain']
     },
     features:[
       "strategies.protected.features.builtInProtection",
@@ -407,7 +407,7 @@ export const strategies: Record<string, StrategyProps> = {
     bg: `${strategiesFolder}boosted-yield-bg.png`,
     dynamicActionFields:{
       deposit:['boost', 'overperformance', 'newApy'],
-      withdraw:['gain', 'fee', 'netGain']
+      withdraw:['totalGain', 'fee', 'netGain']
     },
     features:[
       "strategies.boosted.features.higherYield",
