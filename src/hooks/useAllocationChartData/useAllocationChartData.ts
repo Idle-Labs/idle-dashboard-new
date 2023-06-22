@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { BNify } from 'helpers/'
+import { BNify, cmpAddrs } from 'helpers/'
 import { protocols } from 'constants/protocols'
+import type { IdleTokenProtocol } from 'constants/vaults'
 import type { Asset, AssetId, Balances } from 'constants/types'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import type { BarChartKey, BarChartData, BarChartColors, BarChartLabels } from 'components/BarChart/BarChart'
@@ -22,7 +23,7 @@ type UseAllocationChartData = (args: UseAllocationChartDataArgs) => UseAllocatio
 
 export const useAllocationChartData: UseAllocationChartData = ({ assetIds }) => {
 
-  const { selectors: { selectAssetsByIds } } = usePortfolioProvider()
+  const { selectors: { selectAssetsByIds, selectVaultById } } = usePortfolioProvider()
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -31,17 +32,21 @@ export const useAllocationChartData: UseAllocationChartData = ({ assetIds }) => 
 
   const allocations = useMemo(() => {
     return assets.reduce( (allocations: Balances, asset: Asset) => {
+      const vault = selectVaultById(asset.id)
       const assetAllocations = asset.allocations
-      if (!assetAllocations) return allocations
-      Object.keys(assetAllocations).forEach( (protocol: string) => {
-        if (!allocations[protocol]){
-          allocations[protocol] = BNify(0)
+      if (!assetAllocations || !vault || !("tokenConfig" in vault)) return allocations
+      Object.keys(assetAllocations).forEach( (protocolAddress: string) => {
+        const foundProtocol = vault.tokenConfig.protocols.find( (pInfo: IdleTokenProtocol) => cmpAddrs(pInfo.address, protocolAddress) )
+        if (foundProtocol){
+          if (!allocations[foundProtocol.name]){
+            allocations[foundProtocol.name] = BNify(0)
+          }
+          allocations[foundProtocol.name] = allocations[foundProtocol.name].plus(assetAllocations[protocolAddress])
         }
-        allocations[protocol] = allocations[protocol].plus(assetAllocations[protocol])
       })
       return allocations
     }, {})
-  }, [assets])
+  }, [assets, selectVaultById])
 
   const extraData = useMemo((): ExtraData => {
     if (!allocations || !Object.keys(allocations).length) return {

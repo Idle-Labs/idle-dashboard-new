@@ -21,7 +21,7 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs } from 'helpers/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
@@ -1027,41 +1027,29 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Process allocations
     const allocations = allocationsResults ? allocationsResults.reduce( (allocations: Record<AssetId, Balances>, callResult: DecodedResult) => {
-      if (callResult.data) {
-        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-        const vault = selectVaultById(assetId)
-        if (vault && ("tokenConfig" in vault) && ("protocols" in vault.tokenConfig)){
-          const protocolAddress = callResult.extraData.data?.protocolAddress
-          if (!protocolAddress) return allocations
+      const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+      const vault = selectVaultById(assetId)
+      if (vault && ("tokenConfig" in vault) && ("protocols" in vault.tokenConfig)){
+        const protocolAddress = callResult.extraData.data?.protocolAddress.toLowerCase()
+        if (!protocolAddress) return allocations
 
-          const protocolInfo = vault.tokenConfig?.protocols.find( protocolInfo => protocolInfo.address.toLowerCase() === protocolAddress.toLowerCase() )
-          if (!protocolInfo) return allocations
+        const protocolInfo = vault.tokenConfig?.protocols.find( protocolInfo => cmpAddrs(protocolInfo.address, protocolAddress) )
+        if (!protocolInfo) return allocations
 
-          const protocolName = protocolInfo.name
-          const allocationPercentage = BNify(callResult.data.toString()).div(`1e03`)
+        const allocationPercentage = !BNify(callResult.data).isNaN() ? BNify(callResult.data.toString()).div(`1e03`) : BNify(0)
 
-          allocations[assetId] = {
-            ...allocations[assetId],
-            [protocolName]: allocationPercentage
-          }
+        allocations[assetId] = {
+          ...allocations[assetId],
+          [protocolAddress]: allocationPercentage
         }
       }
       return allocations
     }, {}) : {}
 
+    // console.log('allocations', allocations)
     // console.log('protocolsResults', protocolsResults)
-    // console.log('lastAllocationsCalls', lastAllocationsCalls)
     // console.log('allocationsResults', allocationsResults)
-
-    // Set allocations
-    /*
-    Object.keys(allocations).forEach( (assetId: AssetId) => {
-      assetsData[assetId] = {
-        ...assetsData[assetId],
-        allocations: allocations[assetId]
-      }
-    })
-    */
+    // console.log('lastAllocationsCalls', lastAllocationsCalls)
 
     // Process Apr Ratio
     const aprRatios = aprRatioResults.reduce( (aprRatios: Balances, callResult: DecodedResult) => {

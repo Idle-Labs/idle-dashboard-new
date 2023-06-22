@@ -540,6 +540,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         if (gas) {
           sendOptions.gas = gas
           // @ts-ignore
+          sendOptions.maxPriorityFeePerGas = 200000000
+          // @ts-ignore
           sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
         }
 

@@ -2569,6 +2569,17 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
 
           }
         },
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'clearpool',
+          abi: ERC20 as Abi,
+          token: 'AA_clearpool_fasanara_USDC',
+          address: '0xdcA1daE87f5c733c84e0593984967ed756579BeE',
+          functions: {
+
+          }
+        },
         /*
         {
           abi: IdleCDO as Abi,

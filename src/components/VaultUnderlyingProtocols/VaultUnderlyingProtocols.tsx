@@ -47,45 +47,43 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
       >
       {
         vault.tokenConfig?.protocols.map( (protocol: IdleTokenProtocol) => {
-          // const protocolConfig = selectProtocol(protocol.name)
-          const allocationPercentage = BNify(asset.allocations?.[protocol.name]).div(100)
+          const allocationPercentage = BNify(asset.allocations?.[protocol.address.toLowerCase()]).div(100)
           const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
           const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
-            
-          /*
-          const assetIds = protocolConfig?.govTokens?.reduce( (assetIds: string[], tokenName: string) => {
-            const underlyingToken = selectUnderlyingToken(chainId, tokenName)
-            if (underlyingToken?.address){
-              assetIds.push(underlyingToken.address)
-            }
-            return assetIds
-          }, [])
-          */
-          // console.log('protocolApr', asset, asset?.protocolsAprs, protocolApr)
+          const isIdleVault = selectVaultById(protocol.address) !== null
 
           return (
             <AssetProvider
               wrapFlex={false}
               assetId={protocol.address}
-              key={`protocol_${protocol.name}`}
+              key={`protocol_${protocol.address}`}
             >
               <Card
                 p={6}
               >
                 <VStack
-                  spacing={6}
+                  spacing={5}
                   width={'100%'}
-                  alignItems={'flex-start'}
+                  height={'100%'}
+                  justifyContent={'space-between'}
                 >
                   <HStack
                     spacing={2}
                     width={'full'}
+                    alignItems={'flex-start'}
                     justifyContent={'space-between'}
                   >
                     <HStack
                       spacing={2}
+                      alignItems={'flex-start'}
                     >
-                      <ProtocolLabel protocolId={protocol.name} size={'xs'} />
+                      {
+                        isIdleVault ? (
+                          <AssetProvider.GeneralData field={'protocolWithVariant'} size={'sm'} />
+                        ) : (
+                          <ProtocolLabel protocolId={protocol.name} size={'sm'} />
+                        )
+                      }
                       <AssetProvider.Strategy prefix={'('} suffix={')'} color={'primary'} />
                     </HStack>
                     <AssetProvider.StrategyBadge width={6} height={6} />
@@ -108,15 +106,6 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                     >
                       <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
                       <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
-                      {
-                        /*
-                        !assetIds ? (
-                          <Text textStyle={'captionSmall'}>-</Text>
-                        ) : (
-                          <AssetsIcons assetIds={assetIds} showTooltip={true} size={'xs'} />
-                        )
-                        */
-                      }
                     </VStack>
                     <VStack
                       spacing={1}

@@ -279,6 +279,10 @@ export function checkAddress(address: string) {
   return address && /^0x[a-fA-F0-9]{40}$/.test(address)
 }
 
+export function cmpAddrs(addr1: string, addr2: string) {
+  return addr1.toLowerCase() === addr2.toLowerCase()
+}
+
 export function lazyLoadComponent(component: string) {
   return lazy(() => {
     const promise = import(`components/${component}/${component}`)
