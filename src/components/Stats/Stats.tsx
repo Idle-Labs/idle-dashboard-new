@@ -6,7 +6,6 @@ import { useTranslate } from 'react-polyglot'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
-import type { AssetId, Asset } from 'constants/types'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import React, { useState, useMemo, useCallback } from 'react'
@@ -16,6 +15,7 @@ import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
+import type { AssetId, Asset, Transaction } from 'constants/types'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { bnOrZero, BNify, sortNumeric, getObjectPath } from 'helpers/'
 import { useTheme, SkeletonText, Stack, VStack, HStack, Flex, Text, Button, Input, InputGroup, InputRightElement } from '@chakra-ui/react'
@@ -42,7 +42,8 @@ export const Stats: React.FC = () => {
     isPortfolioLoaded,
     selectors: {
       selectAssetById,
-      selectVaultById
+      selectVaultById,
+      selectAssetPriceUsd
     }
   } = usePortfolioProvider()
   const theme = useTheme()
@@ -149,6 +150,25 @@ export const Stats: React.FC = () => {
 
   const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
   const avgApy = useMemo(() => Object.values(assetsData).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
+
+  const collectedFeesTxs = useMemo((): Transaction[] => {
+    return Object.values(assetsData).reduce( ( collectedFees: Transaction[], asset: Asset) => {
+      if (!asset?.collectedFees) return collectedFees
+      return [
+        ...collectedFees,
+        ...asset.collectedFees
+      ]
+    }, [])
+  }, [assetsData])
+
+  const totalCollectedFeesUsd = useMemo((): BigNumber => {
+    return collectedFeesTxs.reduce( (total: BigNumber, tx: Transaction) => {
+      const asset = selectAssetById(tx.assetId)
+      if (!asset) return total
+      const assetPriceUsd = selectAssetPriceUsd(asset.underlyingId)
+      return total.plus(bnOrZero(tx.underlyingAmount).times(assetPriceUsd))
+    }, BNify(0) )
+  }, [collectedFeesTxs, selectAssetById, selectAssetPriceUsd])
   // const avgFee = useMemo(() => Object.values(assetsData).reduce( (avgFee: BigNumber, asset: Asset) => avgFee.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.fee))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
 
   // console.log('totalTvlUsd', totalTvlUsd.toString())
@@ -358,19 +378,34 @@ export const Stats: React.FC = () => {
         <Translation translation={'defi.chooseAsset'} textStyle={'heading'} fontSize={'xl'} />
         <HStack
           pr={[0, 8]}
-          spacing={[0, 8]}
+          spacing={[0, 10]}
           width={['full', 'auto']}
           justifyContent={['space-between','flex-end']}
         >
           <VStack
             spacing={1}
             alignItems={'flex-start'}
+            display={['none', 'flex']}
           >
             <Translation translation={'defi.avgApy'} textStyle={'captionSmall'} />
             <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
               <Amount.Percentage value={avgApy} textStyle={'h2'} lineHeight={'normal'} />
             </SkeletonText>
           </VStack>
+          {
+            /*
+            <VStack
+              spacing={1}
+              alignItems={'flex-start'}
+              display={['none', 'flex']}
+            >
+              <Translation translation={'stats.collectedFees'} textStyle={'captionSmall'} />
+              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+                <Amount.Usd value={totalCollectedFeesUsd} textStyle={'h2'} lineHeight={'normal'} />
+              </SkeletonText>
+            </VStack>
+            */
+          }
           <VStack
             spacing={1}
             alignItems={'flex-start'}
