@@ -1943,14 +1943,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const assetsFeedsUsd = feedsUsd.reduce( (assetsFeedsUsd: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
       const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
       const underlyingToken = vaultsUnderlyingTokens[assetId]
-      const feedAddress = callResult.data || underlyingToken.chainlinkPriceFeed
+      const feedAddress = callResult.data || underlyingToken.chainlinkPriceFeed?.address
       return {
         ...assetsFeedsUsd,
         [assetId]: feedAddress
       }
     }, {})
-
-    // console.log('assetsFeedsUsd', assetsFeedsUsd)
 
     // Get feeds rounds bounds (timestamp, latestRound, latestTimestamp)
     const feedsUsdRoundBoundsCalls = Object.keys(assetsFeedsUsd).reduce( (calls: CallData[][], assetId: string) => {

@@ -55,6 +55,7 @@ export class ChainlinkHelper {
       name: 'chainlinkPriceFeed',
       abi: ChainlinkAggregatorV3 as Abi
     }
+
     const priceFeed: GenericContract = new GenericContract(this.web3, this.chainId, priceFeedContract)
 
     return [

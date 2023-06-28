@@ -148,6 +148,12 @@ export const Stats: React.FC = () => {
   }, [assetsByStrategy, selectAssetById, selectVaultById, selectedStrategy, searchQuery])
 
   const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
+  const avgApy = useMemo(() => Object.values(assetsData).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
+  // const avgFee = useMemo(() => Object.values(assetsData).reduce( (avgFee: BigNumber, asset: Asset) => avgFee.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.fee))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
+
+  // console.log('totalTvlUsd', totalTvlUsd.toString())
+  // console.log('avgApy', avgApy.toString())
+  // console.log('avgFee', avgFee.toString())
 
   const statsColumns: Column<AggregatedAsset>[] = useMemo(() => ([
     {
@@ -350,16 +356,31 @@ export const Stats: React.FC = () => {
         direction={['column-reverse', 'row']}
       >
         <Translation translation={'defi.chooseAsset'} textStyle={'heading'} fontSize={'xl'} />
-        <VStack
+        <HStack
           pr={[0, 8]}
-          spacing={1}
-          alignItems={'flex-start'}
+          spacing={[0, 8]}
+          width={['full', 'auto']}
+          justifyContent={['space-between','flex-end']}
         >
-          <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
-          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-            <Amount.Usd value={totalTvlUsd} textStyle={'h2'} lineHeight={'normal'} />
-          </SkeletonText>
-        </VStack>
+          <VStack
+            spacing={1}
+            alignItems={'flex-start'}
+          >
+            <Translation translation={'defi.avgApy'} textStyle={'captionSmall'} />
+            <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+              <Amount.Percentage value={avgApy} textStyle={'h2'} lineHeight={'normal'} />
+            </SkeletonText>
+          </VStack>
+          <VStack
+            spacing={1}
+            alignItems={'flex-start'}
+          >
+            <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} />
+            <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+              <Amount.Usd value={totalTvlUsd} textStyle={'h2'} lineHeight={'normal'} />
+            </SkeletonText>
+          </VStack>
+        </HStack>
       </Stack>
       {vaultsList}
     </VStack>
