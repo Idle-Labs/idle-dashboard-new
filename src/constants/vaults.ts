@@ -391,6 +391,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    /*
     convex:{
       FRAX3CRV:{
         protocol:'convex',
@@ -712,7 +713,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    */
     euler:{
+      /*
       USDC:{
         autoFarming:[],
         enabledEnvs: [],
@@ -950,86 +953,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_euler_USDT',
             label:'euler USDT BB',
             address:'0xb1EC065abF6783BCCe003B8d6B9f947129504854'
-          }
-        }
-      },
-      AGEUR:{
-        autoFarming:[],
-        enabledEnvs: [],
-        protocol:'euler',
-        status:'deprecated',
-        blockNumber:15055915,
-        adaptiveYieldSplitEnabled:true,
-        underlyingToken:'AGEUR',
-        flags:{
-          statsEnabled:false,
-        },
-        CDO:{
-          abi:IdleCDO as Abi,
-          decimals:18,
-          name:'IdleCDO_euler_AGEUR',
-          address:'0x2398Bc075fa62Ee88d7fAb6A18Cd30bFf869bDa4'
-        },
-        Strategy:{
-          abi:IdleStrategy as Abi,
-          name:'IdleStrategy_euler_AGEUR',
-          address:'0x8468B8Efe7eeA52978Ccfe3C0248Ca6F6895e166'
-        },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x1a7e4e63778b4f12a199c062f3efdd288afcbce8" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler AGEUR pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
-        Tranches:{
-          AA:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'AA',
-            functions:{
-              stake:'stake',
-              unstake:'exit',
-              rewards:'earned',
-              claim:'getReward',
-              deposit:'depositAA',
-              withdraw:'withdrawAA',
-              rewardsRate:'rewardRate',
-              stakedBalance:'balanceOf'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:false,
-              abi:TrancheStakingRewards as Abi,
-              name:'TrancheStakingRewards_euler_AGEUR_AA',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            name:'AA_euler_AGEUR',
-            blockNumber:15055915,
-            token:'AA_euler_AGEUR',
-            label:'euler AGEUR AA',
-            address:'0x624DfE05202b66d871B8b7C0e14AB29fc3a5120c'
-          },
-          BB:{
-            abi:ERC20 as Abi,
-            decimals:18,
-            tranche:'BB',
-            functions:{
-              stake:'stake',
-              claim:'claim',
-              unstake:'unstake',
-              deposit:'depositBB',
-              withdraw:'withdrawBB',
-              stakedBalance:'usersStakes'
-            },
-            CDORewards:{
-              decimals:18,
-              stakingRewards:[],
-              unstakeWithBalance:true,
-              abi:IdleCDOTrancheRewards as Abi,
-              name:'IdleCDOTrancheRewards_euler_AGEUR_BB',
-              address:'0x0000000000000000000000000000000000000000'
-            },
-            blockNumber:15055915,
-            name:'BB_euler_AGEUR',
-            token:'BB_euler_AGEUR',
-            label:'euler AGEUR BB',
-            address:'0xcf5FD05F72cA777d71FB3e38F296AAD7cE735cB7'
           }
         }
       },
@@ -1358,6 +1281,87 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             name:'BB_euler_DAIStaking',
             token:'BB_euler_DAIStaking',
             address:'0x56263BDE26b72b3e3D26d8e03399a275Aa8Bbfb2'
+          }
+        }
+      },
+      */
+      AGEUR:{
+        autoFarming:[],
+        enabledEnvs: [],
+        protocol:'euler',
+        status:'deprecated',
+        blockNumber:15055915,
+        adaptiveYieldSplitEnabled:true,
+        underlyingToken:'AGEUR',
+        flags:{
+          statsEnabled:false,
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_euler_AGEUR',
+          address:'0x2398Bc075fa62Ee88d7fAb6A18Cd30bFf869bDa4'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_euler_AGEUR',
+          address:'0x8468B8Efe7eeA52978Ccfe3C0248Ca6F6895e166'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x1a7e4e63778b4f12a199c062f3efdd288afcbce8" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler AGEUR pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_euler_AGEUR_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            name:'AA_euler_AGEUR',
+            blockNumber:15055915,
+            token:'AA_euler_AGEUR',
+            label:'euler AGEUR AA',
+            address:'0x624DfE05202b66d871B8b7C0e14AB29fc3a5120c'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_euler_AGEUR_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:15055915,
+            name:'BB_euler_AGEUR',
+            token:'BB_euler_AGEUR',
+            label:'euler AGEUR BB',
+            address:'0xcf5FD05F72cA777d71FB3e38F296AAD7cE735cB7'
           }
         }
       },
