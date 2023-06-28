@@ -125,6 +125,14 @@ export const protocols: Record<string, Protocol> = {
     stats: {
       showLegend: false,
     },
+    apis: {
+      stETH:{
+        // path:'4.apy.apyWithFee',
+        endpoint: {
+          1: 'https://api.instadapp.io/v2/mainnet/lite/users/0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE/vaults'
+        },
+      },
+    },
     enabled: true,
     colors: {
       rgb: [63, 118, 255],
