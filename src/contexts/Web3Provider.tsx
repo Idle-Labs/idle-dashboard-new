@@ -27,8 +27,9 @@ export function Web3Provider({ children }: ProviderProps) {
   const { wallet, chainId, walletInitialized } = useWalletProvider()
 
   const web3Rpc = useMemo(() => {
-    if (!chainId) return null
-    return new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl))
+    const rpcUrl = chains[chainId]?.rpcUrl
+    if (!chainId || !rpcUrl) return null
+    return new Web3(new Web3.providers.HttpProvider(rpcUrl))
   }, [chainId])
 
   const web3 = useMemo(() => {

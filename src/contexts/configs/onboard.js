@@ -55,6 +55,7 @@ export const onboardInitParams = {
   i18n: {
     en: translations.en.onboard
   },
+  theme: 'dark',
   appMetadata:{
     explore: 'explore',
     name: 'Idle Finance',

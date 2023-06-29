@@ -1,6 +1,7 @@
 import { underlyingTokens, UnderlyingTokenProps } from 'constants/'
 
-export function selectUnderlyingToken(chainId: number, token: string): UnderlyingTokenProps | undefined {
+export function selectUnderlyingToken(chainId: number, token: string | undefined): UnderlyingTokenProps | undefined {
+  if (!token) return
   return underlyingTokens && underlyingTokens[chainId][token.toUpperCase()];
 }
 
