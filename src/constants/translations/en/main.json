@@ -171,7 +171,8 @@
   "strategies": {
     "staking": {
       "title": "Staking",
-      "description": "In <a href='https://gov.idle.finance/t/iip-10-single-token-staking/543' class='link' target='_blank' rel='noopener'>IIP-10</a>, the Idle DAO community voted in favor of allowing long-term holders to stake their IDLE and receive a share of the recurrent IDLE buyback. Available only for Ethereum."
+      "description": "In <a href='https://gov.idle.finance/t/iip-10-single-token-staking/543' class='link' target='_blank' rel='noopener'>IIP-10</a>, the Idle DAO community voted in favor of allowing long-term holders to stake their IDLE and receive a share of the recurrent IDLE buyback. Available only for Ethereum.",
+      "feeSharingDisabled": "Since the execution of <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. Users can still lock their IDLE and get back stkIDLE for other purposes."
     },
     "gauge": {
       "title": "Gauge"

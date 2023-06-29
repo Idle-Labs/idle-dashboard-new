@@ -958,11 +958,14 @@ const IdleDistribution: React.FC<IdleDistributionProps> = ({defaultText, ...prop
 }
 
 const StakingAPY: React.FC<AmountProps> = (props) => {
-  const { stakingData } = usePortfolioProvider()
-  
+  // IIP-36
+  return (<Amount.Percentage value={0} {...props} />)
+  /*
+  // const { stakingData } = usePortfolioProvider()
   return stakingData?.maxApr ? (
     <Amount.Percentage value={stakingData.maxApr} {...props} />
   ) : <Spinner size={'sm'} />
+  */
 }
 
 const StakingTotalRewards: React.FC<AmountProps & AssetFieldProps> = (props) => {

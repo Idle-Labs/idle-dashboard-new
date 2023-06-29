@@ -1,18 +1,21 @@
+import { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
-import { MdCheckCircle } from 'react-icons/md'
 import { useTheme, Stack } from '@chakra-ui/react'
-import { Translation } from 'components/Translation/Translation'
+import { MdCheckCircle, MdWarning } from 'react-icons/md'
+import { TranslationProps, Translation } from 'components/Translation/Translation'
 
 type AnnouncementBannerProps = {
-  text: string
+  text: TranslationProps["translation"]
+  mode?: 'none' | 'success' | 'alert'
 }
 
-export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text }) => {
+export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text, mode = 'none' }) => {
   const theme = useTheme()
+  const color = useMemo(() => mode === 'success' ? theme.colors.darkGreen : (mode === 'alert' ? theme.colors.yellow : ''), [theme, mode])
   return (
     <Card.Dark
       p={[3, 5]}
-      borderColor={'darkGreen'}
+      borderColor={color}
     >
       <Stack
         width={'full'}
@@ -21,7 +24,13 @@ export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text }) 
         justifyContent={'center'}
         direction={['column','row']}
       >
-        <MdCheckCircle size={24} color={theme.colors.darkGreen} />
+        {
+          mode === 'success' ? (
+            <MdCheckCircle size={24} color={color} />
+          ) : mode === 'alert' && (
+            <MdWarning size={24} color={color} />
+          )
+        }
         <Translation textAlign={'center'} translation={text} isHtml={true} textStyle={'caption'} />
       </Stack>
     </Card.Dark>
