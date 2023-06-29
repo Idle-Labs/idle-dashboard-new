@@ -2744,18 +2744,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
 
           }
-        },
-        {
-          abi: ERC20 as Abi,
-          name: 'euler',
-          enabled: true,
-          address: '0x2B7Da260F101Fb259710c0a4f2EfEf59f41C0810',
-          token: 'AA_euler_WETHStaking',
-          decimals: 18,
-          functions: {
-
-          }
-        },
+        }
       ]
     },
     WETHBB: {
@@ -2782,15 +2771,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           abi: ERC20 as Abi,
           token: 'BB_morpho_aave_WETH',
           address: '0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B'
-        },
-        {
-          decimals: 18,
-          name: 'euler',
-          functions: {},
-          enabled: true,
-          abi: ERC20 as Abi,
-          token: 'BB_euler_WETHStaking',
-          address: '0x2e80225f383F858E8737199D3496c5Cf827670a5'
         },
       ]
     },
