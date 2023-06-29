@@ -15,7 +15,7 @@ import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
-import type { AssetId, Asset, Transaction } from 'constants/types'
+import type { AssetId, Asset/*, Transaction*/ } from 'constants/types'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { bnOrZero, BNify, sortNumeric, getObjectPath } from 'helpers/'
 import { useTheme, SkeletonText, Stack, VStack, HStack, Flex, Text, Button, Input, InputGroup, InputRightElement } from '@chakra-ui/react'
@@ -43,7 +43,7 @@ export const Stats: React.FC = () => {
     selectors: {
       selectAssetById,
       selectVaultById,
-      selectAssetPriceUsd
+      // selectAssetPriceUsd
     }
   } = usePortfolioProvider()
   const theme = useTheme()
@@ -151,24 +151,24 @@ export const Stats: React.FC = () => {
   const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
   const avgApy = useMemo(() => Object.values(assetsData).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
 
-  const collectedFeesTxs = useMemo((): Transaction[] => {
-    return Object.values(assetsData).reduce( ( collectedFees: Transaction[], asset: Asset) => {
-      if (!asset?.collectedFees) return collectedFees
-      return [
-        ...collectedFees,
-        ...asset.collectedFees
-      ]
-    }, [])
-  }, [assetsData])
+  // const collectedFeesTxs = useMemo((): Transaction[] => {
+  //   return Object.values(assetsData).reduce( ( collectedFees: Transaction[], asset: Asset) => {
+  //     if (!asset?.collectedFees) return collectedFees
+  //     return [
+  //       ...collectedFees,
+  //       ...asset.collectedFees
+  //     ]
+  //   }, [])
+  // }, [assetsData])
 
-  const totalCollectedFeesUsd = useMemo((): BigNumber => {
-    return collectedFeesTxs.reduce( (total: BigNumber, tx: Transaction) => {
-      const asset = selectAssetById(tx.assetId)
-      if (!asset) return total
-      const assetPriceUsd = selectAssetPriceUsd(asset.underlyingId)
-      return total.plus(bnOrZero(tx.underlyingAmount).times(assetPriceUsd))
-    }, BNify(0) )
-  }, [collectedFeesTxs, selectAssetById, selectAssetPriceUsd])
+  // const totalCollectedFeesUsd = useMemo((): BigNumber => {
+  //   return collectedFeesTxs.reduce( (total: BigNumber, tx: Transaction) => {
+  //     const asset = selectAssetById(tx.assetId)
+  //     if (!asset) return total
+  //     const assetPriceUsd = selectAssetPriceUsd(asset.underlyingId)
+  //     return total.plus(bnOrZero(tx.underlyingAmount).times(assetPriceUsd))
+  //   }, BNify(0) )
+  // }, [collectedFeesTxs, selectAssetById, selectAssetPriceUsd])
   // const avgFee = useMemo(() => Object.values(assetsData).reduce( (avgFee: BigNumber, asset: Asset) => avgFee.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.fee))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
 
   // console.log('totalTvlUsd', totalTvlUsd.toString())
