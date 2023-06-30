@@ -148,8 +148,9 @@ export const Stats: React.FC = () => {
     }, {})
   }, [assetsByStrategy, selectAssetById, selectVaultById, selectedStrategy, searchQuery])
 
-  const totalTvlUsd = useMemo(() => Object.values(assetsData).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0) ) , [assetsData])
-  const avgApy = useMemo(() => Object.values(assetsData).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [assetsData]).div(totalTvlUsd)
+  const visibleAssets = useMemo(() => Object.values(assetsData).filter( (asset: Asset) => !!strategies[asset.type as string]?.visible ), [assetsData])
+  const totalTvlUsd = useMemo(() => Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0)) , [visibleAssets])
+  const avgApy = useMemo(() => Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [visibleAssets]).div(totalTvlUsd)
 
   // const collectedFeesTxs = useMemo((): Transaction[] => {
   //   return Object.values(assetsData).reduce( ( collectedFees: Transaction[], asset: Asset) => {
