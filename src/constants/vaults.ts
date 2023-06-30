@@ -1455,6 +1455,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
     },
+    /*
     ribbon:{
       USDCFolk:{
         status:'experimental',
@@ -1716,6 +1717,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    */
     clearpool:{
       USDC:{
         autoFarming:[],
