@@ -807,6 +807,7 @@
     "gain": "Gain",
     "totalGain": "Total gain",
     "fee": "Fee",
+    "withdrawFee": "Withdraw fee",
     "netGain": "Net gain"
   },
   "trade": {

@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { Amount } from 'components/Amount/Amount'
 import { BestYieldVault } from 'vaults/BestYieldVault'
+import type { IdleTokenProtocol } from 'constants/vaults'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { bnOrZero, BNify, estimateGasLimit } from 'helpers/'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -9,7 +10,6 @@ import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import type { VaultMessages, IdleTokenProtocol } from 'constants/vaults'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
@@ -191,7 +191,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, withdraw, redeemInterestBearing])
 
-  const vaultMessages = useMemo((): VaultMessages | undefined => {
+  const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined
   }, [vault])
 
@@ -330,7 +330,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
                 p={2}
                 border={0}
               >
-                <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} textAlign={'center'} />
+                <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} isHtml={true} textAlign={'center'} />
               </Card.Dark>
             ) : BNify(assetGauge?.balance).gt(0) && (
               <Card.Dark

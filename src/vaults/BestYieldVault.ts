@@ -4,13 +4,13 @@ import { Contract } from 'web3-eth-contract'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
+import type { IdleTokenProtocol } from 'constants/vaults'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/vars'
 import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import type { VaultMessages, IdleTokenProtocol } from 'constants/vaults'
 import { BNify, fixTokenDecimals, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
@@ -32,7 +32,7 @@ export class BestYieldVault {
   readonly chainId: number
   readonly protocol: string
   readonly description: string | undefined
-  readonly messages: VaultMessages | undefined
+  readonly messages: Record<string, any>
   readonly vaultFunctionsHelper: VaultFunctionsHelper
   readonly flags: Record<string, boolean> | undefined
 

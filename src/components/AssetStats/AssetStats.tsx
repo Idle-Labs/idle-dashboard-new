@@ -340,7 +340,6 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   }, [assetIds, selectAssetById, timeframeStartTimestamp, timeframeEndTimestamp])
 
   const collectedFeesUsd = useMemo((): BigNumber => {
-    // const collectedFeesFiltered = collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp )
     return collectedFees.reduce( (total: BigNumber, tx: Transaction) => total.plus(tx.underlyingAmount), BNify(0) )
   }, [collectedFees])
 
@@ -614,7 +613,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     timeframe={selectedTimeframe}
                     height={isMobile ? '300px' : '350px'}
                     margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
-                    formatFn={(n: any) => `$${abbreviateNumber(n, 3)}`}
+                    formatFn={(n: any) => `$${abbreviateNumber(n, 8)}`}
                     //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                   />
                 </VStack>

@@ -162,6 +162,7 @@ export const Tranches: React.FC = () => {
                             <HStack
                               spacing={1}
                               alignItems={'flex-start'}
+                              key={`feature_${feature}`}
                             >
                               <Box
                                 pt={1}

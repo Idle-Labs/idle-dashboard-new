@@ -265,7 +265,7 @@ export const strategies: Record<string, StrategyProps> = {
     image: `${strategiesFolder}protected-yield.png`,
     dynamicActionFields:{
       deposit:['coverage' ,'newApy'],
-      withdraw:['totalGain', 'fee', 'netGain']
+      withdraw:['withdrawFee', 'totalGain', 'fee', 'netGain']
     },
     features:[
       "strategies.protected.features.builtInProtection",
@@ -407,7 +407,7 @@ export const strategies: Record<string, StrategyProps> = {
     bg: `${strategiesFolder}boosted-yield-bg.png`,
     dynamicActionFields:{
       deposit:['boost', 'overperformance', 'newApy'],
-      withdraw:['totalGain', 'fee', 'netGain']
+      withdraw:['withdrawFee', 'totalGain', 'fee', 'netGain']
     },
     features:[
       "strategies.boosted.features.higherYield",

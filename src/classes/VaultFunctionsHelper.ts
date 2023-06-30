@@ -579,22 +579,32 @@ export class VaultFunctionsHelper {
 
   public async getVaultAdditionalBaseApr(vault: Vault): Promise<VaultAdditionalApr> {
     if (vault instanceof TrancheVault) {
+      let apr = BNify(0)
+      let strategyApr = BNify(0)
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_lido_MATIC':
-          const maticTrancheBaseApr = await this.getMaticTrancheStrategyApr()
-          const maticApr = maticTrancheBaseApr ? BNify(maticTrancheBaseApr).times(100) : BNify(0)
+          strategyApr = await this.getMaticTrancheStrategyApr()
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
-            apr: maticApr,
+            apr,
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
           }
         case 'IdleCDO_lido_stETH':
-          const stETHTrancheBaseApr = await this.getStETHTrancheStrategyApr()
-          const stETHApr = stETHTrancheBaseApr ? BNify(stETHTrancheBaseApr).times(100) : BNify(0)
+          strategyApr = await this.getStETHTrancheStrategyApr()
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
-            apr: stETHApr,
+            apr,
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
+          }
+        case 'IdleCDO_instadapp_stETH':
+          strategyApr = await this.getInstadappStETHTrancheStrategyApr()
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
+          return {
+            apr,
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
           }
         default:
           return {
