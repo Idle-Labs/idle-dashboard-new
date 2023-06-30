@@ -12,7 +12,7 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import { BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce } from 'helpers/'
+import { bnOrZero, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce } from 'helpers/'
 import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
@@ -169,7 +169,30 @@ export class VaultFunctionsHelper {
   }
 
   public async getStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
+    const strategyApr = await this.getStETHTrancheStrategyApr();
+    return await this.getTrancheApy(strategyApr, trancheVault);
+  }
 
+  public async getInstadappStETHTrancheStrategyApr(): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'instadapp', 'stETH')
+    const callback = async () => (await callPlatformApis(this.chainId, 'instadapp', 'stETH'))
+    const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
+
+    const foundVault = results.find( (r: any) => r.vault === '0xA0D3707c569ff8C87FA923d3823eC5D81c98Be78' )
+    const apr = bnOrZero(foundVault?.apy?.apyWithFee)
+
+    if (!BNify(apr).isNaN()){
+      return BNify(apr).div(100);
+    }
+    return BNify(0);
+  }
+
+  public async getInstadappStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
+    const strategyApr = await this.getInstadappStETHTrancheStrategyApr();
+    return await this.getTrancheApy(strategyApr, trancheVault);
+  }
+
+  public async getTrancheApy(strategyApr: BigNumber, trancheVault: TrancheVault): Promise<BigNumber> {
     if (!this.multiCall) return BNify(0)
 
     const rawCalls: CallData[] = [
@@ -178,15 +201,7 @@ export class VaultFunctionsHelper {
       this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
     ].filter( (call): call is CallData => !!call )
 
-    const [
-      stratApr,
-      multicallResults,
-      // harvestApy
-    ] = await Promise.all([
-      this.getStETHTrancheStrategyApr(),
-      this.multiCall.executeMulticalls(rawCalls),
-      // this.getTrancheHarvestApy(trancheVault)
-    ]);
+    const multicallResults = await this.multiCall.executeMulticalls(rawCalls);
 
     if (!multicallResults) return BNify(0)
 
@@ -195,18 +210,14 @@ export class VaultFunctionsHelper {
     const isAATranche = trancheVault.type === 'AA';
 
     if (BNify(currentAARatio).eq(0)){
-      return isAATranche ? BNify(0) : BNify(stratApr);
+      return isAATranche ? BNify(0) : BNify(strategyApr);
     }
 
-    if (BNify(stratApr).isNaN()){
+    if (BNify(strategyApr).isNaN()){
       return BNify(0);
     }
 
-    const apr = isAATranche ? BNify(stratApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(stratApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
-    
-    // if (!BNify(harvestApy).isNaN()){
-    //   apr = apr.plus(harvestApy)
-    // }
+    const apr = isAATranche ? BNify(strategyApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(strategyApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
 
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
   }
@@ -545,6 +556,12 @@ export class VaultFunctionsHelper {
             cdoId: vault.cdoConfig.address,
             apr: await this.getStETHTrancheApy(vault)
           }
+        case 'IdleCDO_instadapp_stETH':
+          return {
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
+            apr: await this.getInstadappStETHTrancheApy(vault)
+          }
         default:
           return {
             apr: BNify(0),
@@ -562,22 +579,32 @@ export class VaultFunctionsHelper {
 
   public async getVaultAdditionalBaseApr(vault: Vault): Promise<VaultAdditionalApr> {
     if (vault instanceof TrancheVault) {
+      let apr = BNify(0)
+      let strategyApr = BNify(0)
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_lido_MATIC':
-          const maticTrancheBaseApr = await this.getMaticTrancheStrategyApr()
-          const maticApr = maticTrancheBaseApr ? BNify(maticTrancheBaseApr).times(100) : BNify(0)
+          strategyApr = await this.getMaticTrancheStrategyApr()
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
-            apr: maticApr,
+            apr,
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
           }
         case 'IdleCDO_lido_stETH':
-          const stETHTrancheBaseApr = await this.getStETHTrancheStrategyApr()
-          const stETHApr = stETHTrancheBaseApr ? BNify(stETHTrancheBaseApr).times(100) : BNify(0)
+          strategyApr = await this.getStETHTrancheStrategyApr()
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
-            apr: stETHApr,
+            apr,
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
+          }
+        case 'IdleCDO_instadapp_stETH':
+          strategyApr = await this.getInstadappStETHTrancheStrategyApr()
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
+          return {
+            apr,
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
           }
         default:
           return {

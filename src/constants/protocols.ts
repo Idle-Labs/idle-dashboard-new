@@ -119,6 +119,26 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     }
   },
+  instadapp: {
+    icon:`${protocolsFolder}instadapp.png`,
+    label: "Instadapp",
+    stats: {
+      showLegend: false,
+    },
+    apis: {
+      stETH:{
+        // path:'4.apy.apyWithFee',
+        endpoint: {
+          1: 'https://api.instadapp.io/v2/mainnet/lite/users/0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE/vaults'
+        },
+      },
+    },
+    enabled: true,
+    colors: {
+      rgb: [63, 118, 255],
+      hsl: ["223", "100%", "62%"]
+    }
+  },
   cream: {
     icon:`${protocolsFolder}cream.svg`,
     stats: {

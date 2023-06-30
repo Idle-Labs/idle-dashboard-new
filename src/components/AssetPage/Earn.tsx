@@ -307,7 +307,7 @@ export const Earn: React.FC = () => {
             pt={[6, 8]}
             px={[6, 8]}
             pb={[4, 0]}
-            zIndex={99}
+            zIndex={9}
             width={'100%'}
             alignItems={'flex-start'}
             direction={['column', 'row']}

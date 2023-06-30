@@ -4,7 +4,6 @@ import { Contract } from 'web3-eth-contract'
 import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
-import type { VaultMessages } from 'constants/vaults'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -35,7 +34,7 @@ export class TrancheVault {
   readonly stats: StatsProps | undefined
   readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
-  readonly messages: VaultMessages | undefined
+  readonly messages: TrancheConfig["messages"]
   readonly vaultFunctionsHelper: VaultFunctionsHelper
   readonly flags: Record<string, boolean> | undefined
 

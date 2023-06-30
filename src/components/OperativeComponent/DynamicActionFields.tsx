@@ -79,17 +79,25 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   
   // console.log('newApy', amount, asset, newApr.toString(), BNify(asset.additionalApr).toString(), newApy.toString())
 
-  const amountIsValid = bnOrZero(amountUsd).gt(0)
+  const amountIsValid = useMemo(() => bnOrZero(amountUsd).gt(0), [amountUsd])
 
-  const redeemable = bnOrZero(asset?.vaultPosition?.underlying.redeemable)
-  const redeemableUsd = bnOrZero(asset?.vaultPosition?.usd.redeemable)
-  let totalGain = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings))
+  const redeemable = useMemo(() => bnOrZero(asset?.vaultPosition?.underlying.redeemable), [asset])
+  const redeemableUsd = useMemo(() => bnOrZero(asset?.vaultPosition?.usd.redeemable), [asset])
+  
+  const withdrawFee = useMemo(() => {
+    if ("flags" in vault && bnOrZero(vault.flags?.withdrawFee).gt(0)){
+      return redeemableUsd.times(vault.flags?.withdrawFee)
+    }
+    return BNify(0)
+  }, [vault, redeemableUsd])
+
+  let totalGain = useMemo(() => BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings).minus(withdrawFee)), [withdrawFee, asset])
 
   // const earningsPerc = bnOrZero(asset?.vaultPosition?.earningsPercentage)
-  const redeemablePercentage = BigNumber.minimum(1, bnOrZero(amountUsd).div(redeemableUsd))
-  let gain = BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain))
-  const maxFees = BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings).times(asset?.fee))
-  let fees = BigNumber.minimum(maxFees, bnOrZero(gain).times(asset?.fee))
+  const redeemablePercentage = useMemo(() => BigNumber.minimum(1, bnOrZero(amountUsd).div(redeemableUsd)), [amountUsd, redeemableUsd])
+  let gain = useMemo(() => BigNumber.minimum(totalGain, redeemablePercentage.times(totalGain)), [totalGain, redeemablePercentage])
+  const maxFees = useMemo(() => BigNumber.maximum(0, bnOrZero(asset?.vaultPosition?.usd.earnings).times(asset?.fee)), [asset])
+  let fees = useMemo(() => BigNumber.minimum(maxFees, bnOrZero(gain).times(asset?.fee)), [maxFees, gain, asset])
 
   // Add fee to totalGain and gain for tranches
   if (vault instanceof TrancheVault){
@@ -100,42 +108,80 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   const redeemableAmountIsValid = amountIsValid && bnOrZero(amount).lte(redeemable)
   // console.log('redeemableAmountIsValid', bnOrZero(amountUsd).toString(), redeemable.toString(), redeemableAmountIsValid)
 
+  let textCta = 'cta'
+  let dynamicActionField = null
+
   switch (field){
     case 'boost':
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
-      return <Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.toFixed(2)}x</Text>
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.toFixed(2)}x</Text>)
+    break;
     case 'overperformance':
       const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
       const tranchePerformance = bnOrZero(amountUsd).times(BNify(asset?.apy).div(100))
       const overperformance = amountIsValid ? tranchePerformance.minus(basePerformance) : null
-      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />
+      dynamicActionField = (<Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />)
+    break;
     case 'newApy':
-      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />)
+    break;
     case 'totalGain':
-      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? gain : null} />
+      dynamicActionField = (<Amount.Usd decimals={gain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? gain : null} />)
+    break;
     case 'fee':
-      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? fees : null} />
+      dynamicActionField = (<Amount.Usd decimals={fees.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? -fees : null} />)
+    break;
+    case 'withdrawFee':
+      if (bnOrZero(vault.flags?.withdrawFee).gt(0)){
+        textCta = 'orange'
+        dynamicActionField = (<Amount.Usd decimals={withdrawFee.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'orange'} {...textProps} value={redeemableAmountIsValid ? -withdrawFee : null} />)
+      }
+    break;
     case 'netGain':
       const netGain = BigNumber.minimum(totalGain.minus(fees), bnOrZero(gain).minus(fees))
-      return <Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? netGain : null} />
+      dynamicActionField = (<Amount.Usd decimals={netGain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? netGain : null} />)
+    break;
     case 'coverage':
       const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
       const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
-      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={coverageAmount} />
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={coverageAmount} />)
+    break;
     case 'stakingPoolShare':
-      if (!stakingData) return null
-      const stakingPoolShare = bnOrZero(amount).div(stakingData.stkIDLE.totalSupply.plus(bnOrZero(amount))).times(100)
-      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingPoolShare} />
+      if (stakingData){
+        const stakingPoolShare = bnOrZero(amount).div(stakingData.stkIDLE.totalSupply.plus(bnOrZero(amount))).times(100)
+        dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingPoolShare} />)
+      }
+    break;
     case 'stkIDLE':
     case 'stkIDLEAfterIncrease':
-      return <Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />
+      dynamicActionField = (<Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />)
+    break;
     case 'stakingApy':
-      if (!stakingData) return null
-      const stakingApy = bnOrZero(stakingPower).times(stakingData.maxApr)
-      return <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingApy} />
+      if (stakingData){
+        const stakingApy = bnOrZero(stakingPower).times(stakingData.maxApr)
+        dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingApy} />)
+      }
+    break;
     default:
       return null
   }
+
+  if (!dynamicActionField) return null
+
+  return (
+    <HStack
+      pb={2}
+      px={4}
+      width={'100%'}
+      alignItems={'center'}
+      borderBottom={`1px solid`}
+      borderBottomColor={'divider'}
+      justifyContent={'space-between'}
+    >
+      <Translation component={Text} translation={`dynamicActionFields.${field}`} textStyle={'captionSmall'} color={textCta} />
+      {dynamicActionField}
+    </HStack>
+  )
 }
 
 export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) => {
@@ -151,9 +197,22 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     return vault?.type && strategies[vault.type]
   }, [vault])
 
-  if (!strategy?.dynamicActionFields?.[action]) return null
-
-  const dynamicActionFields = strategy?.dynamicActionFields[action]
+  const dynamicActionFields = useMemo(() => {
+    if (!strategy?.dynamicActionFields?.[action]) return null
+    let fields = strategy?.dynamicActionFields[action]
+    /*
+    // Add withdrawFee
+    if (action==='withdraw' && ("flags" in vault) && vault.flags?.withdrawFee && !fields.includes("withdrawFee")){
+      fields = [
+        ...fields,
+        'withdrawFee'
+      ]
+    }
+    */
+    return fields
+  }, [action, strategy])
+  
+  if (!dynamicActionFields) return null
 
   return (
     <VStack
@@ -162,19 +221,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     >
       {
         dynamicActionFields.map( (dynamicField: string) => (
-          <HStack
-            pb={2}
-            px={4}
-            width={'100%'}
-            alignItems={'center'}
-            borderBottom={`1px solid`}
-            borderBottomColor={'divider'}
-            justifyContent={'space-between'}
-            key={`dynamicField_${dynamicField}`}
-          >
-            <Translation component={Text} translation={`dynamicActionFields.${dynamicField}`} textStyle={'captionSmall'} />
-            <DynamicActionField {...props} field={dynamicField} />
-          </HStack>
+          <DynamicActionField key={`field_${dynamicField}`} {...props} field={dynamicField} />
         ))
       }
     </VStack>

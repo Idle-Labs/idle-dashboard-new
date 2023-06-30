@@ -41,12 +41,6 @@ export interface Pool {
   address?: string
 }
 
-export interface VaultMessages {
-  withdraw?: string
-  buyInstructions?: string
-  actions?: Record<string, string>
-}
-
 interface StakingReward {
   enabled:boolean
   token: string
@@ -97,8 +91,8 @@ export interface TrancheConfig {
   stats?: StatsProps
   Strategy: Strategy
   description?: string
-  messages?: VaultMessages
   flags?: Record<string, any>
+  messages?: Record<string, any>
   Tranches: Record<string, Tranche>
 }
 
@@ -200,6 +194,101 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     }
   },
   1:{
+    instadapp:{
+      stETH:{
+        autoFarming:[],
+        protocol:'instadapp',
+        blockNumber:17519660,
+        enabledEnvs: ['beta'],
+        status:'experimental',
+        underlyingToken:'stETH',
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_instadapp_stETH',
+          address:'0xf52834404A51f5af1CDbeEdaA95B60c8B2187ba0'
+        },
+        Strategy:{
+          harvestEnabled:false,
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_instadapp_stETH',
+          address:'0xBE0DACE8d62a14D2D872b20462B4725Cc50a1ff6'
+        },
+        flags:{
+          withdrawFee: 0.0005,
+          addHarvestApy: false
+        },
+        description:'This strategy deposits the stETH into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.instadapp.io/">Instadapp Lite stETH v2</a> vault which utilizes a recursive strategy with stETH on lending protocols, enabling borrowing against ETH. Instadapp Vaults have automation functions which automatically rebalance the vault during market changes. If vault gets risky it can first refinance into another protocol to maintain safety, or it can deleverage by selling stETH and paying back ETH debt. This kind of automation, if required or occurs, may incur losses caused by trading slippage. Please visit the <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/risks">Instadapp Lite Risks</a> page before using this vault.<br />The APR is boosted by LDO rewards and dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        messages:{
+          deposit:'Instadapp Lite charges a <strong>0.05% withdraw fee</strong> that is sent to the DAO as revenue. (<a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/fees">Instadapp Lite Fees</a>)',
+          withdraw:'Instadapp Lite charges a <strong>0.05% withdraw fee</strong> that is sent to the DAO as revenue. (<a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/fees">Instadapp Lite Fees</a>)',
+          buyInstructions:'To get stETH token your have to deposit first into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://stake.lido.fi">Lido ETH staking</a>.',
+        },
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf',
+              periodFinish:'periodFinish'
+            },
+            CDORewards:{
+              decimals:18,
+              unstakeWithBalance:false,
+              stakingRewards:[
+                {
+                  token:'LDO',
+                  enabled:true,
+                  address:'0x5a98fcbea516cf06857215779fd812ca3bef1b32'
+                }
+              ],
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_instadapp_stETH_AA',
+              address:'0xd7c1b48877a7dfa7d51cf1144c89c0a3f134f935'
+            },
+            blockNumber:17519660,
+            name:'AA_instadapp_stETH',
+            token:'AA_instadapp_stETH',
+            label:'instadapp stETH AA',
+            address:'0xbb26dD53dD37f2dC4b91E93C947d6b8683b85279'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_instadapp_stETH_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17519660,
+            name:'BB_instadapp_stETH',
+            token:'BB_instadapp_stETH',
+            label:'instadapp stETH BB',
+            address:'0xC136E01f74FB0DAEfA29f0AAc9c250EF069e684d'
+          }
+        }
+      }
+    },
     lido:{
       stETH:{
         autoFarming:[],
@@ -2940,9 +3029,9 @@ export type GaugeConfig = {
   rewardToken:string
   description?:string
   underlyingToken:string
-  messages?: VaultMessages
-  multiRewards?:MultiReward
   trancheToken:TrancheToken
+  multiRewards?:MultiReward
+  messages?: Record<string, any>
 }
 
 export const gauges: Record<string, GaugeConfig> = {

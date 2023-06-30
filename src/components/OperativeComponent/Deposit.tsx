@@ -108,7 +108,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
       const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
       
-      // console.log('allowance', vaultOwner, account.address, allowance)
+      // console.log('allowance', account.address, checkAllowance, BNify(allowance).toString(), BNify(amount).toString())
 
       if (allowance.gte(amount)){
 
@@ -222,6 +222,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [_referral])
 
+  const vaultMessages = useMemo(() => {
+    return vault && ("messages" in vault) ? vault.messages : undefined
+  }, [vault])
+
   const vaultMessage = useMemo(() => {
     return !vaultEnabled && assetBalance.gt(0) ? (
       <Card.Dark
@@ -239,7 +243,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
         </HStack>
       </Card.Dark>
-    ) : (asset && asset?.status !== 'production') && (
+    ) : (asset && asset?.status !== 'production') ? (
       <Card.Dark
         p={2}
         border={0}
@@ -259,8 +263,15 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           }
         </VStack>
       </Card.Dark>
+    ) : vaultMessages?.deposit && (
+      <Card.Dark
+        p={2}
+        border={0}
+      >
+        <Translation textStyle={'captionSmaller'} translation={vaultMessages.deposit} isHtml={true} textAlign={'center'} />
+      </Card.Dark>
     )
-  }, [asset, vaultEnabled, assetBalance, setActionIndex])
+  }, [asset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
   return (
     <AssetProvider
