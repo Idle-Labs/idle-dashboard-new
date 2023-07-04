@@ -36,9 +36,11 @@ export function Web3Provider({ children }: ProviderProps) {
 
   const web3Chains = useMemo(() => {
     return Object.keys(chains).reduce( (web3Chains: Record<string, Web3>, chainId: any) => {
+      const rpcUrl = chains[chainId]?.rpcUrl
+      if (!chainId || !rpcUrl) return web3Chains
       return {
         ...web3Chains,
-        [chainId]: new Web3(new Web3.providers.HttpProvider(chains[chainId].rpcUrl))
+        [chainId]: new Web3(new Web3.providers.HttpProvider(rpcUrl))
       }
     }, {})
   }, []);
