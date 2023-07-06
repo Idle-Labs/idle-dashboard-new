@@ -243,14 +243,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             },
             CDORewards:{
               decimals:18,
+              stakingRewards:[],
               unstakeWithBalance:false,
-              stakingRewards:[
-                {
-                  token:'LDO',
-                  enabled:true,
-                  address:'0x0000000000000000000000000000000000000000'
-                }
-              ],
               abi:TrancheStakingRewards as Abi,
               name:'TrancheStakingRewards_instadapp_stETH_AA',
               address:'0x0000000000000000000000000000000000000000'

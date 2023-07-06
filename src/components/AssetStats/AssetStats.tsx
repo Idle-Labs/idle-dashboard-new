@@ -182,8 +182,8 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   const tvlUsd = useMemo((): BigNumber => {
     return assetIds.reduce( (totalTvlUsd: BigNumber, assetId: AssetId) => {
       const asset = selectAssetById(assetId)
-      totalTvlUsd = totalTvlUsd.plus(asset.tvlUsd)
-      return totalTvlUsd
+      if (!asset) return totalTvlUsd
+      return totalTvlUsd.plus(asset.tvlUsd)
     }, BNify(0))
   }, [assetIds, selectAssetById])
 
@@ -370,20 +370,24 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
 
   const aboutItems = useMemo(() => {
     const items = []
-    switch (strategyConfig?.strategy){
-      case 'tranches':
-        items.push({
-          address: vault.cdoConfig.address,
-          translation:'about.cdo',
-        })
-        items.push({
-          address: vault.strategyConfig.address,
-          translation:'about.strategy',
-        })
-      break;
-      default:
-      break;
+    
+    if (vault){
+      switch (strategyConfig?.strategy){
+        case 'tranches':
+          items.push({
+            address: vault.cdoConfig.address,
+            translation:'about.cdo',
+          })
+          items.push({
+            address: vault.strategyConfig.address,
+            translation:'about.strategy',
+          })
+        break;
+        default:
+        break;
+      }
     }
+
     assetIds.forEach((assetId: AssetId) => {
       const asset = selectAssetById(assetId)
       if (!asset) return null
@@ -550,10 +554,11 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
               {
                 assetIds.map( (assetId: AssetId) => {
                   const asset = selectAssetById(assetId)
+                  if (!asset) return null
                   return (
                     <AssetProvider
                       wrapFlex={false}
-                      assetId={asset.id}
+                      assetId={asset?.id}
                       key={`row_${assetId}`}
                     >
                       <VStack
@@ -631,7 +636,6 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     height={isMobile ? '300px' : '350px'}
                     margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                     formatFn={(n: any) => `${abbreviateNumber(n, 8)} ${asset?.name}`}
-                    //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                   />
                 </VStack>
               </Card.Dark>

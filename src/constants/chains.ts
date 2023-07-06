@@ -2,7 +2,7 @@ import type { Chain } from '@web3-onboard/common';
 
 const env = process.env;
 
-export const defaultChainId = 137;
+export const defaultChainId = 1;
 
 export const chains: Record<number, Chain> = {
   1: {

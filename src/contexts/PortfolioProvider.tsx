@@ -559,6 +559,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
               balance: depositsInfo.depositedAmount
             })
           }
+
+          // if (index === transactions.length-1){
+          //   console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.duration, lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString(), transaction)
+          // }
         }
 
         return depositsInfo
@@ -2441,7 +2445,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
           // Get vaults historical rates
           const historicalAprsFilters = {
-            frequency: 86400, // A bit less than a whole day to avoid days skipping
+            frequency: 86400,
             start,
             end
           }

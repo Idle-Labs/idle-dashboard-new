@@ -118,26 +118,28 @@ export const Stats: React.FC = () => {
 
           const vault = selectVaultById(asset.id)
 
-          switch (strategy){
-            case 'tranches':
-              // console.log(asset, vault)
-              // Lookup for same tranches
-              const cdoConfig = vault.cdoConfig
-              const foundAsset = aggregatedUnderlyings[strategyKey].subRows.find( (foundAsset: Asset) => {
-                const vault = selectVaultById(foundAsset.id)
-                return ("cdoConfig" in vault) && vault.cdoConfig.address === cdoConfig.address && foundAsset.id !== asset.id
-              })
-              // Add Tvl to found asset
-              if (foundAsset){
-                foundAsset.tvlUsd = bnOrZero(foundAsset.tvlUsd).plus(bnOrZero(asset.tvlUsd))
-              // Add asset
-              } else {
+          if (vault){
+            switch (strategy){
+              case 'tranches':
+                // console.log(asset, vault)
+                // Lookup for same tranches
+                const cdoConfig = vault.cdoConfig
+                const foundAsset = aggregatedUnderlyings[strategyKey].subRows.find( (foundAsset: Asset) => {
+                  const vault = selectVaultById(foundAsset.id)
+                  return ("cdoConfig" in vault) && vault.cdoConfig.address === cdoConfig.address && foundAsset.id !== asset.id
+                })
+                // Add Tvl to found asset
+                if (foundAsset){
+                  foundAsset.tvlUsd = bnOrZero(foundAsset.tvlUsd).plus(bnOrZero(asset.tvlUsd))
+                // Add asset
+                } else {
+                  aggregatedUnderlyings[strategyKey].subRows.push({...asset})
+                }
+              break;
+              default:
                 aggregatedUnderlyings[strategyKey].subRows.push({...asset})
-              }
-            break;
-            default:
-              aggregatedUnderlyings[strategyKey].subRows.push({...asset})
-            break;
+              break;
+            }
           }
 
           // console.log(underlyingAsset, asset.name, bnOrZero(asset.tvlUsd).toString(), bnOrZero(aggregatedUnderlyings[underlyingAsset.id].tvl).toString(), aggregatedUnderlyings[underlyingAsset.id].tvlUsd?.toString())
