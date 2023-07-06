@@ -374,12 +374,13 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisab
     const protocolIcons = vault.tokenConfig.protocols.reduce( (protocols: JSX.Element[], protocolConfig: IdleTokenProtocol, index: number) => {
       const protocol = selectProtocol(protocolConfig.name)
       if (!protocol) return protocols
+      const label = protocolConfig.label || protocol.label
       protocols.push(
         <Tooltip
           hasArrow
+          label={label}
           placement={'top'}
           key={`icon_${index}`}
-          label={protocol.label}
           isDisabled={tooltipDisabled}
         >
           <Avatar

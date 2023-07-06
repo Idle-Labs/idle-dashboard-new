@@ -39,7 +39,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
           spacing={1}
           alignItems={'baseline'}
         >
-          <Amount value={amount} decimals={BNify(amount).lt(0.01) && BNify(amount).gt(0) ? 5 : 2} {...amountProps} />
+          <Amount value={amount} decimals={BNify(amount).lt(1) && BNify(amount).gt(0) ? 4 : 2} {...amountProps} />
           <AssetProvider.Name {...assetFieldProps} fontSize={'85%'} fontWeight={400} />
         </HStack>
       </HStack>

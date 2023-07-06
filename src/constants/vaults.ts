@@ -2089,9 +2089,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               address:'0x0000000000000000000000000000000000000000'
             },
             blockNumber:16420584,
-            name:'AA_morpho_USDC',
-            token:'AA_morpho_USDC',
-            label:'morpho USDC AA',
+            name:'AA_morpho_aave_USDC',
+            token:'AA_morpho_aave_USDC',
+            label:'Morpho Aave USDC AA',
             address:'0x376B2dCF9eBd3067BB89eb6D1020FbE604092212'
           },
           BB:{
@@ -2115,9 +2115,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               address:'0x0000000000000000000000000000000000000000'
             },
             blockNumber:16420584,
-            name:'BB_morpho_USDC',
-            token:'BB_morpho_USDC',
-            label:'morpho USDC BB',
+            name:'BB_morpho_aave_USDC',
+            token:'BB_morpho_aave_USDC',
+            label:'Morpho Aave USDC BB',
             address:'0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0'
           }
         }
@@ -2374,6 +2374,7 @@ export type IdleTokenProtocol = {
   name: string
   address: string
   token: string
+  label?: string
   decimals: number
   functions?: Record<string, ProtocolFunction>
 }
@@ -2440,6 +2441,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: IdleCDO as Abi,
           token: 'AA_clearpool_portofino_DAI',
+          label: 'Clearpool Portofino DAI (Senior)',
           address: '0x43eD68703006add5F99ce36b5182392362369C1c',
           functions: {
             exchangeRate: {
@@ -2493,6 +2495,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: IdleCDO as Abi,
           token: 'BB_clearpool_portofino_USDC',
+          label: 'Clearpool Portofino USDC (Junior)',
           address: '0xf85Fd280B301c0A6232d515001dA8B6c8503D714',
           functions: {
             exchangeRate: {
@@ -2504,9 +2507,25 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         {
           decimals: 18,
           enabled: true,
+          name: 'clearpool',
+          abi: IdleCDO as Abi,
+          token: 'BB_clearpool_fasanara_USDC',
+          label: 'Clearpool Fasanara USDC (Junior)',
+          address: '0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06']
+            }
+          },
+        },
+        {
+          decimals: 18,
+          enabled: true,
           name: 'morpho',
           abi: IdleCDO as Abi,
           token: 'BB_morpho_USDC',
+          label: 'Morpho Aave USDC (Junior)',
           address: '0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0',
           functions: {
             exchangeRate: {
@@ -2540,6 +2559,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: IdleCDO as Abi,
           token: 'BB_clearpool_fasanara_USDT',
+          label: 'Clearpool Fasanara USDT (Junior)',
           address: '0x3Eb6318b8D9f362a0e1D99F6032eDB1C4c602500',
           functions: {
             exchangeRate: {
@@ -2554,6 +2574,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'morpho',
           abi: IdleCDO as Abi,
           token: 'BB_morpho_aave_USDT',
+          label: 'Morpho Aave USDT (Junior)',
           address: '0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967',
           functions: {
             exchangeRate: {
@@ -2588,6 +2609,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: IdleCDO as Abi,
           token: 'BB_clearpool_portofino_DAI',
+          label: 'Clearpool Portofino DAI (Junior)',
           address: '0x38D36353D07CfB92650822D9c31fB4AdA1c73D6E',
           functions: {
             exchangeRate: {
@@ -2602,6 +2624,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'morpho',
           abi: IdleCDO as Abi,
           token: 'BB_morpho_aave_DAI',
+          label: 'Morpho Aave DAI (Junior)',
           address: '0xB098AF638aF0c4Fa3edb1A24f807E9c22dA0fE73',
           functions: {
             exchangeRate: {
@@ -2659,6 +2682,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: ERC20 as Abi,
           token: 'AA_clearpool_portofino_USDC',
+          label: 'Clearpool Portofino USDC (Senior)',
           address: '0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2',
           functions: {
 
@@ -2670,6 +2694,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: ERC20 as Abi,
           token: 'AA_clearpool_fasanara_USDC',
+          label: 'Clearpool Fasanara USDC (Senior)',
           address: '0xdcA1daE87f5c733c84e0593984967ed756579BeE',
           functions: {
 
@@ -2739,6 +2764,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'clearpool',
           abi: ERC20 as Abi,
           token: 'AA_clearpool_fasanara_USDT',
+          label: 'Clearpool Fasanara USDT (Senior)',
           address: '0x0a6f2449C09769950cFb76f905Ad11c341541f70',
           functions: {
 
@@ -2861,6 +2887,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           name: 'morpho',
           abi: ERC20 as Abi,
           token: 'BB_morpho_aave_WETH',
+          label: 'Morpho Aave WETH (Junior)',
           address: '0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B'
         },
       ]
