@@ -59,8 +59,8 @@ export const Tranches: React.FC = () => {
   const navigate = useNavigate()
   const translate = useTranslate()
   const { account } = useWalletProvider()
+  const { isMobile } = useThemeProvider()
   // const { params } = useBrowserRouter()
-  const { isMobile, environment } = useThemeProvider()
   const { openModal, closeModal } = useModalProvider()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
@@ -628,7 +628,7 @@ export const Tranches: React.FC = () => {
   }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
   const deprecatedAssets = useMemo(() => {
-    if (!isPortfolioLoaded || !deprecatedAssetsData.length || environment !== 'beta') return null
+    if (!isPortfolioLoaded || !deprecatedAssetsData.length) return null
 
     const initialState = {
       sortBy: [
@@ -673,7 +673,7 @@ export const Tranches: React.FC = () => {
         }
       </Card>
     )
-  }, [isMobile, environment, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
+  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
 
   const heading = useMemo(() => {
     if (!strategy) return null
