@@ -21,7 +21,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify } from 'helpers/'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -59,8 +59,8 @@ export const Tranches: React.FC = () => {
   const navigate = useNavigate()
   const translate = useTranslate()
   const { account } = useWalletProvider()
-  const { isMobile } = useThemeProvider()
   // const { params } = useBrowserRouter()
+  const { isMobile, environment } = useThemeProvider()
   const { openModal, closeModal } = useModalProvider()
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
@@ -485,7 +485,7 @@ export const Tranches: React.FC = () => {
   const deprecatedAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' )
+    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(500) )
   }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const depositedListId = useMemo(() => {
@@ -628,7 +628,7 @@ export const Tranches: React.FC = () => {
   }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
   const deprecatedAssets = useMemo(() => {
-    if (isPortfolioLoaded && !deprecatedAssetsData.length) return null
+    if (!isPortfolioLoaded || !deprecatedAssetsData.length || environment !== 'beta') return null
 
     const initialState = {
       sortBy: [
@@ -673,7 +673,7 @@ export const Tranches: React.FC = () => {
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
+  }, [isMobile, environment, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
 
   const heading = useMemo(() => {
     if (!strategy) return null

@@ -204,7 +204,7 @@ export function abbreviateNumber (value: any, decimals = 2, maxPrecision = 5, mi
     const decimalPart = decimals ? newValue.mod(1).toFixed(maxPrecision).substr(2, decimals) : null;
     newValue = parseInt(newValue).toString() + (decimalPart ? '.' + decimalPart : '');
   } else {
-    newValue = newValue.toFixed(decimals);
+    newValue = newValue.toFixed(decimals, 3);
   }
 
   // Adjust number precision

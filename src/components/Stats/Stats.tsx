@@ -85,7 +85,7 @@ export const Stats: React.FC = () => {
 
   const aggregatedUnderlyings = useMemo(() => {
     return Object.keys(assetsByStrategy).filter( (strategy: string) => (!selectedStrategy || selectedStrategy === strategy) ).reduce( (aggregatedUnderlyings: Record<AssetId, AggregatedAsset>, strategy: string) => {
-      assetsByStrategy[strategy].filter( (asset: Asset) => (!searchQuery.trim().length || asset.name.toLowerCase().includes(searchQuery.toLowerCase())) ).forEach( (asset: Asset) => {
+      assetsByStrategy[strategy].filter( (asset: Asset) => (asset.status !== 'deprecated' && (!searchQuery.trim().length || asset.name.toLowerCase().includes(searchQuery.toLowerCase()))) ).forEach( (asset: Asset) => {
         const underlyingAsset = selectAssetById(asset.underlyingId)
         if (underlyingAsset){
           const strategyKey = `${underlyingAsset.id}_${strategy}`

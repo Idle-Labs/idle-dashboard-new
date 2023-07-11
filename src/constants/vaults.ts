@@ -480,7 +480,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-    /*
     convex:{
       FRAX3CRV:{
         protocol:'convex',
@@ -802,9 +801,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
-    */
     euler:{
-      /*
       USDC:{
         autoFarming:[],
         enabledEnvs: [],
@@ -1373,7 +1370,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
-      */
       AGEUR:{
         autoFarming:[],
         enabledEnvs: [],
@@ -1797,6 +1793,170 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_clearpool_portofino_USDC',
             label:'Clearpool Portofino USDC BB',
             address:'0xf85Fd280B301c0A6232d515001dA8B6c8503D714'
+          }
+        }
+      },
+      USDCWin:{
+        autoFarming:[],
+        enabledEnvs:[],
+        status:'deprecated',
+        variant:'wintermute',
+        protocol:'clearpool',
+        blockNumber:16790250,
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_wintermute_USDC',
+          address:'0xDBCEE5AE2E9DAf0F5d93473e08780C9f45DfEb93'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_wintermute_USDC',
+          address:'0x54ae90be2dee0a960953c724839541e75bb1f471'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wintermute USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_wintermute_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'AA_clearpool_wintermute_USDC',
+            label:'Clearpool wintermute USDC AA',
+            token:'AA_clearpool_wintermute_USDC',
+            address:'0xb86264c21418aA75F7c337B1821CcB4Ff4d57673'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_wintermute_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'BB_clearpool_wintermute_USDC',
+            token:'BB_clearpool_wintermute_USDC',
+            label:'Clearpool wintermute USDC BB',
+            address:'0x4D9d9AA17c3fcEA05F20a87fc1991A045561167d'
+          }
+        }
+      },
+      USDCFolk:{
+        autoFarming:[],
+        enabledEnvs:[],
+        variant:'folkvang',
+        status:'deprecated',
+        protocol:'clearpool',
+        blockNumber:16790250,
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_folkvang_USDC',
+          address:'0xDBd47989647Aa73f4A88B51f2B5Ff4054De1276a'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_folkvang_USDC',
+          address:'0x84B2dEaF87A398F25ec5833000F72B6a4906b5AC'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe3d20a721522874d32548b4097d1afc6f024e45b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Folkvang USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_folkvang_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'AA_clearpool_folkvang_USDC',
+            label:'Clearpool folkvang USDC AA',
+            token:'AA_clearpool_folkvang_USDC',
+            address:'0xa0154A44C1C45bD007743FA622fd0Da4f6d67D57'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_folkvang_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'BB_clearpool_folkvang_USDC',
+            token:'BB_clearpool_folkvang_USDC',
+            label:'Clearpool folkvang USDC BB',
+            address:'0x7a625a2882C9Fc8DF1463d5E538a3F39B5DBD073'
           }
         }
       },
