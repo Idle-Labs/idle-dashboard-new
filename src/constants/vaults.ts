@@ -206,7 +206,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           decimals:18,
           abi:IdleCDO as Abi,
           name:'IdleCDO_instadapp_stETH',
-          address:'0xf52834404A51f5af1CDbeEdaA95B60c8B2187ba0'
+          address:'0x8E0A8A5c1e5B3ac0670Ea5a613bB15724D51Fc37'
         },
         Strategy:{
           harvestEnabled:false,
@@ -247,18 +247,18 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
                 {
                   token:'LDO',
                   enabled:true,
-                  address:'0x5a98fcbea516cf06857215779fd812ca3bef1b32'
+                  address:'0x0000000000000000000000000000000000000000'
                 }
               ],
               abi:TrancheStakingRewards as Abi,
               name:'TrancheStakingRewards_instadapp_stETH_AA',
-              address:'0xd7c1b48877a7dfa7d51cf1144c89c0a3f134f935'
+              address:'0x0000000000000000000000000000000000000000'
             },
             blockNumber:17519660,
             name:'AA_instadapp_stETH',
             token:'AA_instadapp_stETH',
             label:'instadapp stETH AA',
-            address:'0xbb26dD53dD37f2dC4b91E93C947d6b8683b85279'
+            address:'0xdf17c739b666B259DA3416d01f0310a6e429f592'
           },
           BB:{
             abi:ERC20 as Abi,
@@ -284,7 +284,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             name:'BB_instadapp_stETH',
             token:'BB_instadapp_stETH',
             label:'instadapp stETH BB',
-            address:'0xC136E01f74FB0DAEfA29f0AAc9c250EF069e684d'
+            address:'0x990b3aF34dDB502715E1070CE6778d8eB3c8Ea82'
           }
         }
       }

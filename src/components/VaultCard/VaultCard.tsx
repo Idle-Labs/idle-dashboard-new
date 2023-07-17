@@ -373,7 +373,8 @@ export const Minimal = ({assetId}: VaultCardProps) => {
               justifyContent={'flex-end'}
             >
               <AssetProvider.Protocols size={'xs'}>
-                <AssetProvider.ProtocolIcon size={'xs'} />
+                {/*<AssetProvider.ProtocolIcon size={'xs'} />*/}
+                <AssetProvider.GeneralData field={'protocol'} size={'xs'} fontSize={'sm'} />
               </AssetProvider.Protocols>
             </VStack>
           </SimpleGrid>
