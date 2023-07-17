@@ -299,7 +299,7 @@
         "title": "IDLE Staking",
         "cta": "Manage staking",
         "empty" : {
-          "body": "Stake your IDLE tokens and receive up to 17.62% APY on a 4 year deposit.",
+          "body": "Following <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. A revamp of stkIDLE introducing new use cases is in the work. <a href='https://gov.idle.finance/t/idle-staking-update/1165' class='link' target='_blank' rel='noopener'>Follow the discussion</a>.",
           "cta": "Go to Staking"
         }
       },
@@ -307,7 +307,7 @@
         "title": "Gauges Rewards",
         "cta": "Explore vaults",
         "empty" : {
-          "body": "Stake your Senior Tranches tokens to start earnings additional IDLE rewards.",
+          "body": "Gauges are no longer available since February 21st 2023.",
           "cta": "Explore vaults"
         }
       }
@@ -514,6 +514,7 @@
     "redeemable": "Redeemable",
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",
+    "searchToken": "Search token",
     "deprecatedAssets": "Decommissioned assets",
     "claimable": "Claimable",
     "claimableNTFs": "Claimable NFTs",

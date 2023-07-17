@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
-// import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
@@ -14,7 +13,6 @@ import { Link, LinkProps, useNavigate } from 'react-router-dom'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
-// import { ProductTag } from 'components/ProductTag/ProductTag'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BalanceChart } from 'components/BalanceChart/BalanceChart'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
@@ -23,19 +21,14 @@ import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
-// import { ProductUpdates } from 'components/ProductUpdates/ProductUpdates'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
-// import { StrategiesFilters } from 'components/StrategiesFilters/StrategiesFilters'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
-// import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
-// import { StrategyAssetsCarousel } from 'components/StrategyAssetsCarousel/StrategyAssetsCarousel'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
-// import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
 import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate, getAssetPath } from 'helpers/'
 import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image, Flex } from '@chakra-ui/react'
 
@@ -98,6 +91,19 @@ export const Dashboard: React.FC = () => {
     }, BNify(0))
   }, [assetIds, vaultsPositions])
 
+  const avgRealizedApy = useMemo(() => {
+    const realizedApyData = Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (realizedApyData: Record<string, BigNumber>, vaultPosition: VaultPosition) => {
+      realizedApyData.num = realizedApyData.num.plus(bnOrZero(vaultPosition.usd.redeemable).times(bnOrZero(vaultPosition.realizedApy)))
+      realizedApyData.den = realizedApyData.den.plus(vaultPosition.usd.redeemable)
+      // console.log('avgRealizedApy', vaultPosition.usd.redeemable.toString(), vaultPosition.realizedApy.toString())
+      return realizedApyData
+    }, {
+      num: BNify(0),
+      den: BNify(0)
+    })
+    return realizedApyData.num.div(realizedApyData.den)
+  }, [assetIds, vaultsPositions])
+
   // console.log('totalFunds', vaultsPositions, totalFunds.toString())
 
   const earningsPercentage = useMemo(() => {
@@ -107,22 +113,6 @@ export const Dashboard: React.FC = () => {
   const userHasFunds = useMemo(() => {
     return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
   }, [account, isVaultsPositionsLoaded, vaultsPositions])
-
-  // const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
-
-  /*
-  const toggleStrategy = useCallback((strategy: string) => {
-    if (!selectedStrategies.includes(strategy)){
-      setSelectedStrategies([
-        ...selectedStrategies,
-        strategy
-      ])
-    // Remove strategy
-    } else {
-      setSelectedStrategies(selectedStrategies.filter( (s: string) => s !== strategy ))
-    }
-  }, [selectedStrategies, setSelectedStrategies])
-  */
 
   const productsOverview = useMemo(() => {
     return (
@@ -673,7 +663,7 @@ export const Dashboard: React.FC = () => {
           direction={['column', 'row']}
           justifyContent={'space-between'}
         >
-          <Translation translation={'dashboard.rewards.staking.empty.body'} params={{apy: stakingData.maxApr.toFixed(2)}} component={Text} textAlign={['center', 'left']} />
+          <Translation translation={'dashboard.rewards.staking.empty.body'} params={{apy: stakingData.maxApr.toFixed(2)}} isHtml={true} component={Text} textAlign={['center', 'left']} />
           <Translation component={Button} translation={`dashboard.rewards.staking.empty.cta`} onClick={() => stakingEnabled ? navigate(strategyPath) : openWindow(strategyLegacyUrl) } variant={['ctaPrimaryOutline']} px={10} py={2} />
         </Stack>
       </Card>
@@ -773,6 +763,16 @@ export const Dashboard: React.FC = () => {
         <VStack
           spacing={6}
           width={'100%'}
+          id={'best-yield-rewards'}
+          alignItems={'flex-start'}
+        >
+          <StrategyLabel strategy={'BY'} customText={'dashboard.rewards.vaults.title'}  textStyle={'heading'} fontSize={'h3'} />
+          {vaultsRewardsOverview}
+        </VStack>
+        
+        <VStack
+          spacing={6}
+          width={'100%'}
           id={'staking-rewards'}
           alignItems={'flex-start'}
         >
@@ -789,16 +789,6 @@ export const Dashboard: React.FC = () => {
           <StrategyLabel strategy={'AA'} customText={'dashboard.rewards.gauges.title'}  textStyle={'heading'} fontSize={'h3'} />
           {/*<Translation translation={'dashboard.rewards.gauges.title'} component={Text} textStyle={'heading'} fontSize={'h3'} />*/}
           {gaugeRewards}
-        </VStack>
-
-        <VStack
-          spacing={6}
-          width={'100%'}
-          id={'best-yield-rewards'}
-          alignItems={'flex-start'}
-        >
-          <StrategyLabel strategy={'BY'} customText={'dashboard.rewards.vaults.title'}  textStyle={'heading'} fontSize={'h3'} />
-          {vaultsRewardsOverview}
         </VStack>
       </VStack>
     )
@@ -904,7 +894,7 @@ export const Dashboard: React.FC = () => {
               pt={[6, 8]}
               px={[6, 8]}
               pb={[4, 0]}
-              width={'100%'}
+              width={'full'}
               alignItems={'flex-start'}
               direction={['column', 'row']}
               justifyContent={['center', 'space-between']}
@@ -912,28 +902,29 @@ export const Dashboard: React.FC = () => {
               {
                 isPortfolioAccountReady && (
                   <VStack
-                    width={'100%'}
+                    width={'full'}
                     spacing={[5, 1]}
                     alignItems={['center', 'flex-start']}
                   >
-                    <SkeletonText noOfLines={2} isLoaded={!!accountAndPortfolioLoaded}>
+                    <SkeletonText width={'full'} noOfLines={2} isLoaded={!!accountAndPortfolioLoaded}>
                       <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
-                      <HStack
-                        spacing={[2, 4]}
+                      <Stack
+                        spacing={[1, 4]}
                         alignItems={'baseline'}
+                        direction={['column', 'row']}
                       >
                         <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
                         {
                           totalFunds.gt(0) && (
                             <Stat>
                               <HStack spacing={2}>
-                                <Amount.Percentage value={earningsPercentage} textStyle={'captionSmall'} />
-                                <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
+                                <Amount.Percentage value={avgRealizedApy} suffix={' APY'} textStyle={'captionSmall'} />
+                                <StatArrow type={avgRealizedApy.gt(0) ? 'increase' : 'decrease'} />
                               </HStack>
                             </Stat>
                           )
                         }
-                      </HStack>
+                      </Stack>
                     </SkeletonText>
                   </VStack>
                 )
