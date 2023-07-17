@@ -10,6 +10,7 @@ import { MdArrowForwardIos } from 'react-icons/md'
 import { strategiesFolder } from 'constants/folders'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { SearchBar } from 'components/SearchBar/SearchBar'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { ReactTable } from 'components/ReactTable/ReactTable'
@@ -62,6 +63,8 @@ export const Tranches: React.FC = () => {
   const { isMobile } = useThemeProvider()
   // const { params } = useBrowserRouter()
   const { openModal, closeModal } = useModalProvider()
+  const [ availableAssetsFilter, setAvailableAssetsFilter ] = useState<string | null>(null)
+  const [ depositedAssetsFilter, setDepositedAssetsFilter ] = useState<string | null>(null)
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
 
@@ -553,6 +556,10 @@ export const Tranches: React.FC = () => {
       ]
     }
 
+    const depositedAssetsDataFiltered = depositedAssetsData.filter( (vaultAsset: Asset) => {
+      return !depositedAssetsFilter || !depositedAssetsFilter.length || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
+    })
+
     return isMobile ? (
       <VStack
         mt={20}
@@ -567,17 +574,24 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            depositedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+            depositedAssetsDataFiltered.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>
     ) : (
       <Card mt={10}>
-        <Translation translation={'defi.depositedAssets'} component={Card.Heading} fontSize={'lg'} />
-        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} onRowClick={ (row) => onRowClickDeposited(row, depositedListId, depositedListName) } />
+        <HStack
+          width={'full'}
+          alignItems={'flex-start'}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'defi.depositedAssets'} component={Card.Heading} fontSize={'lg'} />
+          <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />
+        </HStack>
+        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsDataFiltered} initialState={initialState} onRowClick={ (row) => onRowClickDeposited(row, depositedListId, depositedListName) } />
       </Card>
     )
-  }, [isMobile, depositedAssetsColumns, depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
+  }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
 
   const availableAssets = useMemo(() => {
     if (isPortfolioLoaded && !availableAssetsData.length) return null
@@ -590,6 +604,10 @@ export const Tranches: React.FC = () => {
         }
       ]
     }
+
+    const availableAssetsDataFiltered = availableAssetsData.filter( (vaultAsset: Asset) => {
+      return !availableAssetsFilter || !availableAssetsFilter.length || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
+    })
 
     return isMobile ? (
       <VStack
@@ -605,27 +623,34 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            availableAssetsData.map( (asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, availableListId, availableListName) } />)
+            availableAssetsDataFiltered.map( (asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, availableListId, availableListName) } />)
           }
         </VStack>
       </VStack>
     ) : (
       <Card mt={10}>
-        <Translation translation={'defi.availableAssets'} component={Card.Heading} fontSize={'lg'} />
+        <HStack
+          width={'full'}
+          alignItems={'flex-start'}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'defi.availableAssets'} component={Card.Heading} fontSize={'lg'} />
+          <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setAvailableAssetsFilter} />
+        </HStack>
         {
-          !availableAssetsData.length ? (
+          !isPortfolioLoaded ? (
             <Stack
             >
               <Skeleton />
               <Skeleton />
             </Stack>
           ) : (
-            <ReactTable columns={availableAssetsColumns} data={availableAssetsData} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row.original, availableListId, availableListName) } />
+            <ReactTable columns={availableAssetsColumns} data={availableAssetsDataFiltered} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row.original, availableListId, availableListName) } />
           )
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
+  }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
   const deprecatedAssets = useMemo(() => {
     if (!isPortfolioLoaded || !deprecatedAssetsData.length) return null
