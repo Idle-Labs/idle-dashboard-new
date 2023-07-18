@@ -31,7 +31,7 @@ import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocati
 import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange } from 'constants/types'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage } from 'helpers/'
+import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage, bnOrZero, floorTimestamp } from 'helpers/'
 
 type AboutItemProps = {
   translation: TranslationProps["translation"]
@@ -68,7 +68,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
   const [ selectedStrategies, setSelectedStrategies ] = useState<string[] | undefined>(undefined)
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["WEEK"])
-  const { vaults, contracts, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { vaults, contracts, selectors: { selectAssetById, selectVaultById, selectAssetHistoricalPriceUsdByTimestamp } } = usePortfolioProvider()
 
   const useDateRange = useMemo(() => {
     return !!dateRange.startDate && !!dateRange.endDate
@@ -325,22 +325,39 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   const [
     timeframeStartTimestamp,
     timeframeEndTimestamp
-  ] = useMemo(() => getChartTimestampBounds(timeframe, dateRange), [timeframe, dateRange])
+  ] = useMemo(() => getChartTimestampBounds(selectedTimeframe, dateRange), [selectedTimeframe, dateRange])
+
+  // console.log('timeframe', timeframe)
+  // console.log('dateRange', dateRange)
+  // console.log('timeframeStartTimestamp', timeframeStartTimestamp)
+  // console.log('timeframeEndTimestamp', timeframeEndTimestamp)
 
   const collectedFees = useMemo((): Transaction[] => {
     const collectedFees = assetIds.reduce( ( collectedFees: Transaction[], assetId: AssetId) => {
       const asset = selectAssetById(assetId)
       if (!asset || !asset.collectedFees) return collectedFees
+
+      // console.log('asset.collectedFees', assetId, asset.collectedFees)
+
+      const collectedFeesWithAmountUsd = asset.collectedFees.map( (tx: Transaction) => {
+        tx.amountUsd = tx.underlyingAmount
+        const tokenPriceUsd = selectAssetHistoricalPriceUsdByTimestamp(tx.assetId, floorTimestamp(+tx.timeStamp*1000))
+        if (tokenPriceUsd?.value){
+          tx.amountUsd = tx.amountUsd.times(tokenPriceUsd.value)
+        }
+        return tx
+      })
+
       return [
         ...collectedFees,
-        ...asset.collectedFees
+        ...collectedFeesWithAmountUsd
       ]
     }, [])
     return collectedFees.filter( (tx: Transaction) => (+tx.timeStamp*1000)>=timeframeStartTimestamp && (!timeframeEndTimestamp || (+tx.timeStamp*1000)<=timeframeEndTimestamp) )
-  }, [assetIds, selectAssetById, timeframeStartTimestamp, timeframeEndTimestamp])
+  }, [assetIds, selectAssetById, selectAssetHistoricalPriceUsdByTimestamp, timeframeStartTimestamp, timeframeEndTimestamp])
 
   const collectedFeesUsd = useMemo((): BigNumber => {
-    return collectedFees.reduce( (total: BigNumber, tx: Transaction) => total.plus(tx.underlyingAmount), BNify(0) )
+    return collectedFees.reduce( (total: BigNumber, tx: Transaction) => total.plus(bnOrZero(tx.amountUsd)), BNify(0) )
   }, [collectedFees])
 
   // console.log('asset', asset)

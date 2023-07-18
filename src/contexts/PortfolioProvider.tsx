@@ -1918,11 +1918,20 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (underlyingTokenAddress && !assets[underlyingTokenAddress]) {
         assets[underlyingTokenAddress] = vault.underlyingToken
       }
+      // Add reward tokens
+      if (vault.rewardTokens.length){
+        vault.rewardTokens.forEach( (rewardUnderlyingToken: UnderlyingTokenProps) => {
+          if (rewardUnderlyingToken.address){
+            assets[rewardUnderlyingToken.address] = rewardUnderlyingToken
+          }
+        })
+      }
       return assets
     }, {})
 
-    const feedsCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[][], assetId: AssetId): CallData[][] => {
+    // console.log('vaultsUnderlyingTokens', vaultsUnderlyingTokens)
 
+    const feedsCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[][], assetId: AssetId): CallData[][] => {
       const underlyingToken = vaultsUnderlyingTokens[assetId]
       const address = underlyingToken.chainlinkPriceFeed?.address || assetId
 
@@ -1932,6 +1941,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       return calls
     }, [[],[]])
+
+    // console.log('feedsCalls', feedsCalls)
 
     const [
       feedsUsd
@@ -1943,12 +1954,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const assetsFeedsUsd = feedsUsd.reduce( (assetsFeedsUsd: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
       const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
       const underlyingToken = vaultsUnderlyingTokens[assetId]
-      const feedAddress = callResult.data || underlyingToken.chainlinkPriceFeed?.address
+      const feedAddress = callResult.data || underlyingToken.chainlinkPriceFeed?.feedUsdAddress
+      if (!feedAddress) return assetsFeedsUsd // Feed not found
       return {
         ...assetsFeedsUsd,
         [assetId]: feedAddress
       }
     }, {})
+
+    // console.log('assetsFeedsUsd', assetsFeedsUsd)
 
     // Get feeds rounds bounds (timestamp, latestRound, latestTimestamp)
     const feedsUsdRoundBoundsCalls = Object.keys(assetsFeedsUsd).reduce( (calls: CallData[][], assetId: string) => {

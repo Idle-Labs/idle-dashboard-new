@@ -16,4 +16,4 @@ export const DASHBORD_URL = 'https://app.idle.finance'
 export const LEGACY_DASHBOARD_URL = 'https://legacy.idle.finance/#/'
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 export const MAX_ALLOWANCE = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-export const FEES_COLLECTORS = ["0xbecc659bfc6edca552fa1a67451cc6b38a0108e4", "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814"]
+export const FEES_COLLECTORS = ["0xbecc659bfc6edca552fa1a67451cc6b38a0108e4", "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814", "0x69a62c24f16d4914a48919613e8ee330641bcb94"]

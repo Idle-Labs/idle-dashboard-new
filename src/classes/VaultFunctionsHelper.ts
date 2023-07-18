@@ -12,8 +12,8 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import { bnOrZero, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce } from 'helpers/'
-import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
+import { bnOrZero, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs } from 'helpers/'
+import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -411,7 +411,9 @@ export class VaultFunctionsHelper {
 
   public async getVaultsCollectedFees(vaults: Vault[]): Promise<Record<AssetId, Transaction[]>> {
 
-    if (!this.explorer) return {}
+    const vaultsCollectedFees = {}
+
+    if (!this.explorer) return vaultsCollectedFees
 
     const filteredVaults = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) )
 
@@ -422,6 +424,7 @@ export class VaultFunctionsHelper {
         const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
         const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
+        // Process transactions
         const vaultsTransactions = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
           vaults,
           async (vault: Vault) => {
@@ -468,12 +471,14 @@ export class VaultFunctionsHelper {
               const foundVaultTransaction = vaultsTransactions[foundVault.id].find( (vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn' )
               if (foundVaultTransaction) return vaultsCollectedFees
 
-              const isSameUnderlying = foundVault.underlyingToken?.address?.toLowerCase() === tx.contractAddress.toLowerCase()
-              if (isSameUnderlying){
-                if (!vaultsCollectedFees[foundVault.id]){
-                  vaultsCollectedFees[foundVault.id] = []
-                }
-                
+              // Init vault array
+              if (!vaultsCollectedFees[foundVault.id]){
+                vaultsCollectedFees[foundVault.id] = []
+              }
+
+              // Check for same vault underlying collected
+              const isSameUnderlying = cmpAddrs(foundVault.underlyingToken?.address as string, tx.contractAddress)
+              if (isSameUnderlying){ 
                 vaultsCollectedFees[foundVault.id].push({
                   ...tx,
                   action: 'fee',
@@ -484,13 +489,42 @@ export class VaultFunctionsHelper {
                   underlyingAmount: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals)
                 })
                 // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toString())
+              } else {
+                // Check for collected rewards tokens instead
+                const rewardToken = foundVault.rewardTokens.find( (rewardToken: UnderlyingTokenProps) => cmpAddrs(rewardToken.address as string, tx.contractAddress) )
+                if (rewardToken?.address){
+                  vaultsCollectedFees[foundVault.id].push({
+                    ...tx,
+                    action: 'fee',
+                    idlePrice: BNify(0),
+                    idleAmount: BNify(0),
+                    subAction: 'collected',
+                    assetId: rewardToken.address,
+                    underlyingAmount: fixTokenDecimals(tx.value, (rewardToken.decimals || 18))
+                  })
+                }
               }
             }
           }
           return vaultsCollectedFees
         }, {})
       },
-      (acc, value) => value ? {...acc, ...value} : acc,
+      // (acc, value) => value ? {...acc, ...value} : acc,
+      (acc, vaultsCollectedFees) => {
+        // value ? {...acc, ...value} : acc
+        if (vaultsCollectedFees){
+          Object.keys(vaultsCollectedFees).forEach( (vaultId: AssetId) => {
+            if (!acc[vaultId]){
+              acc[vaultId] = []
+            }
+            acc[vaultId] = [
+              ...acc[vaultId],
+              ...vaultsCollectedFees[vaultId]
+            ]
+          })
+        }
+        return acc
+      },
       {}
     )
   }

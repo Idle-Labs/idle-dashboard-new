@@ -432,6 +432,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [0, 211, 149],
         hsl: ["162", "100%", "41%"]
       },
+      chainlinkPriceFeed: {
+        feedUsdAddress: '0xdbd020CAeF83eFd542f4De03e3cF0C28A4428bd5'
+      },
       conversionRate: {
         field: "compDAIPrice"
       },

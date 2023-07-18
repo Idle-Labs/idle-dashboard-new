@@ -1,5 +1,6 @@
-import { formatDate } from 'helpers/'
+import { formatDate, BNify } from 'helpers/'
 import { DATETIME_FORMAT } from 'constants/vars'
+import { Amount } from 'components/Amount/Amount'
 import type { Transaction } from 'constants/types'
 import { VStack, HStack, Text } from '@chakra-ui/react'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
@@ -38,7 +39,17 @@ export const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) 
         width={'100%'}
         justifyContent={'space-between'}
       >
-        <TokenAmount assetId={transaction.assetId} amount={transaction.underlyingAmount} size={'xs'} textStyle={'tableCell'} />
+        <HStack
+          spacing={1}
+          alignItems={'center'}
+        >
+          <TokenAmount assetId={transaction.assetId} amount={transaction.underlyingAmount} size={'xs'} textStyle={'tableCell'} />
+          {
+            transaction.amountUsd && !BNify(transaction.amountUsd).eq(transaction.underlyingAmount) && (
+              <Amount.Usd prefix={'~'} value={transaction.amountUsd} color={'cta'} fontSize={'xs'} />
+            )
+          }
+        </HStack>
         <TransactionLink hash={transaction.hash} />
       </HStack>
     </VStack>

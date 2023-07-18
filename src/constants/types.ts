@@ -146,6 +146,7 @@ export type Transaction = {
   assetId: AssetId
   idlePrice: BigNumber
   idleAmount: BigNumber
+  amountUsd?: BigNumber
   underlyingAmount: BigNumber
 } & EtherscanTransaction
 

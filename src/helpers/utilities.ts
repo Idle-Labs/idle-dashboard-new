@@ -80,6 +80,10 @@ export function numberToPercentage(value: any, decimals = 2, maxValue = 9999, mi
   return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals)))+'%'
 }
 
+export function floorTimestamp(timestamp: Date | number | string): number {
+  return +(dayjs(timestamp).startOf('day').valueOf())
+}
+
 export function getTimeframeTimestamp(timeframe: HistoryTimeframe): number {
   if (timeframe === 'ALL') return 0
   const periods: Record<string, ManipulateType> = {
