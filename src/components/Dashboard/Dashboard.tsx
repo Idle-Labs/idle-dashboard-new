@@ -904,7 +904,7 @@ export const Dashboard: React.FC = () => {
                       >
                         <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
                         {
-                          totalFunds.gt(0) && (
+                          earningsPercentage.gte(0.01) && (
                             <Stat>
                               <HStack spacing={2}>
                                 <Amount.Percentage value={avgRealizedApy} suffix={' APY'} textStyle={'captionSmall'} />

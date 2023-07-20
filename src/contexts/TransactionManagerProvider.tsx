@@ -312,7 +312,7 @@ export const useTransactionManager = () => useContext(TransactionManagerContext)
 export function TransactionManagerProvider({children}: ProviderProps) {
   const { web3, web3Chains }  = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { account, chainId, prevChainId, explorer } = useWalletProvider()
+  const { account, chainId, prevChainId, explorer, network } = useWalletProvider()
 
   const networkChanged = useMemo(() => {
     return !!chainId && !!prevChainId && +chainId !== +prevChainId
@@ -321,7 +321,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   // Get estimated time
   const getEstimatedTime = useCallback( async (gasPrice: string): Promise<string | null> => {
     if (!explorer || !chainId) return null
-    if (+chainId === 137) return '120'
+    if (+chainId !== 1) return '120'
     const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${BNify(gasPrice).times(1e09).toString()}`
     return await makeEtherscanApiRequest(endpoint, explorer.keys)
   }, [explorer, chainId])
@@ -539,7 +539,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   // Send transaction
   const sendTransaction = useCallback(
     async (vaultId: AssetId, assetId: AssetId, contractSendMethod: ContractSendMethod, actionType?: string, amount?: string) => {
-      if (!account || !web3) return null
+      if (!account || !web3 || !network) return null
 
       try {
         const sendOptions: SendOptions = {
@@ -553,12 +553,19 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           getBlockBaseFeePerGas(web3)
         ])
 
+        // console.log('gas', gas)
+        // console.log('baseFeePerGas', baseFeePerGas)
+
         if (gas) {
           sendOptions.gas = gas
-          // @ts-ignore
-          sendOptions.maxPriorityFeePerGas = 200000000
-          // @ts-ignore
-          sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
+          if (network.supportEip1559 === undefined || network.supportEip1559){
+            // @ts-ignore
+            sendOptions.maxPriorityFeePerGas = 200000000
+            if (baseFeePerGas){
+              // @ts-ignore
+              sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
+            }
+          }
         }
 
         dispatch({type: 'CREATE', payload: {
@@ -568,6 +575,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           actionType,
           contractSendMethod
         }})
+
+        // console.log('sendOptions', sendOptions)
 
         contractSendMethod.send(sendOptions)
           .on("transactionHash", async (hash: string) => {
@@ -598,17 +607,17 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             }
           })
           .on("error", (error: ErrnoException) => {
-            // console.log('error', error)
+            console.log('error', error)
             dispatch({type: 'SET_ERROR', payload: error})
             dispatch({type: 'SET_STATUS', payload: 'failed'})
           });
       } catch (err) {
-        // console.log('error', err)
+        console.log('error', err)
         dispatch({type: 'SET_ERROR', payload: err})
         dispatch({type: 'SET_STATUS', payload: 'failed'})
       }
     }
-  , [account, web3, state.gasPrice])
+  , [account, web3, network, state.gasPrice])
 
   // Send again the transaction
   const retry = useCallback(() => {

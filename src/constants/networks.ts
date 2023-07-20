@@ -11,6 +11,7 @@ export interface Network {
   color: string
   network?: string
   provider: string
+  supportEip1559?: boolean
   explorer: string
   blocksPerCall: number
   chainName: string
@@ -67,6 +68,19 @@ export const networks: Record<number, Network> = {
     blocksPerCall: 1000000,
     explorer: 'polygonscan',
     chainName: 'Matic(Polygon) Mainnet',
+    icon: `${networksFolder}polygon.svg`,
+  },
+  1101: {
+    version: 'v1',
+    color: '#8247E5',
+    baseToken: 'ETH',
+    network: 'mainnet',
+    supportEip1559: false,
+    name: 'Polygon zkEVM',
+    blocksPerCall: 1000000,
+    provider: 'alchemyzkevm',
+    chainName: 'Polygon zkEVM',
+    explorer: 'zkevmpolygonscan',
     icon: `${networksFolder}polygon.svg`,
   },
   5: {
@@ -146,6 +160,14 @@ export const providers: Record<string, Provider> = {
       137: 'https://polygon-mainnet.infura.io/v3/',
       80001: 'https://polygon-mainnet.infura.io/v3/'
     }
+  },
+  alchemyzkevm: {
+    enabled: true,
+    networkPairs: {},
+    key: env.REACT_APP_ALCHEMY_ZK_KEY,
+    rpcs: {
+      1101: 'https://polygonzkevm-mainnet.g.alchemy.com/v2/'
+    }
   }
 }
 
@@ -171,6 +193,20 @@ export const explorers: Record<string, Explorer> = {
       baseUrl: {
         137: 'https://polygonscan.com',
         80001: 'https://polygonscan.com',
+      }
+    },
+    zkevmpolygonscan: {
+      enabled: true, // False for empty txs list (try new wallet)
+      keys: [
+        env.REACT_APP_POLYGONSCAN_KEY,
+        env.REACT_APP_POLYGONSCAN_KEY2,
+        env.REACT_APP_POLYGONSCAN_KEY3,
+      ],
+      endpoints: {
+        1101: 'https://api-zkevm.polygonscan.com/api',
+      },
+      baseUrl: {
+        1101: 'https://zkevm.polygonscan.com',
       }
     },
     etherscan: {

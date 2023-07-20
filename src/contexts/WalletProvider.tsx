@@ -157,7 +157,7 @@ export function WalletProvider({ children }: ProviderProps) {
     }
   }
 
-  // console.log('wallet', wallet, 'account', account, 'network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainId', chainId, 'connecting', connecting)
+  // console.log('network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainIdHex', chainIdHex, 'connectedChain', connectedChain?.id, 'chainId', chainId, 'connecting', connecting)
 
   return (
     <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>

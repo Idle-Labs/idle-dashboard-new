@@ -2175,11 +2175,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       
       // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls, vaultsOnChainData)
 
+      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
+      
       if (!vaultsOnChainData) {
         runningEffects.current.portfolioLoading = false
         return
       }
-      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
 
       const {
         fees,
@@ -2588,7 +2589,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get historical collected fees
   useEffect(() => {
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current.vaultsCollectedFees) return
+    if (isEmpty(state.vaults) || +chainId !== 1 || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current.vaultsCollectedFees) return
 
     // Get Historical data
     ;(async () => {
@@ -2604,7 +2605,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // eslint-disable-next-line
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
-  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees, cacheProvider])
+  }, [state.vaults, chainId, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees, cacheProvider])
 
   // Calculate historical USD Tvls
   useEffect(() => {

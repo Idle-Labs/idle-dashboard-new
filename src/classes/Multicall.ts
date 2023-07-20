@@ -36,10 +36,9 @@ export class  Multicall {
 
   constructor(chainId: number, web3: Web3) {
     this.networksContracts = {
-      // 1:'0xeefba1e63905ef1d7acba5a8513c70307c1ce441',
-      // 137:'0x11ce4B23bD875D7F5C6a31084f55fDe1e9A87507'
       1:'0xcA11bde05977b3631167028862bE2a173976CA11',
-      137:'0xcA11bde05977b3631167028862bE2a173976CA11'
+      137:'0xcA11bde05977b3631167028862bE2a173976CA11',
+      1101:'0xcA11bde05977b3631167028862bE2a173976CA11'
       
     };
     
