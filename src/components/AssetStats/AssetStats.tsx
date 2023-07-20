@@ -118,13 +118,13 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   }, [selectedStrategies, availableStrategies, setSelectedStrategies])
 
   const assetIds = useMemo(() => {
-    if (!asset?.type) return []
+    if (!vault || !asset?.type || !vaults.length) return []
     if (assetOnly) return [asset.id]
     switch (asset.type){
       case 'AA':
       case 'BB':
         const otherVaultType = removeItemFromArray<string>(['AA', 'BB'], asset.type)[0]
-        const otherVault = vaults.find( (otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address )
+        const otherVault = vaults.find( (otherVault: Vault) => otherVault && ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address )
         return [asset.id, otherVault?.id]
       default:
         return [asset.id]

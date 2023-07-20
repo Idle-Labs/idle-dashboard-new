@@ -607,12 +607,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             }
           })
           .on("error", (error: ErrnoException) => {
-            console.log('error', error)
+            // console.log('error', error)
             dispatch({type: 'SET_ERROR', payload: error})
             dispatch({type: 'SET_STATUS', payload: 'failed'})
           });
       } catch (err) {
-        console.log('error', err)
+        // console.log('error', err)
         dispatch({type: 'SET_ERROR', payload: err})
         dispatch({type: 'SET_STATUS', payload: 'failed'})
       }

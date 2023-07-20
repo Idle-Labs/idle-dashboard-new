@@ -71,9 +71,9 @@ const buildSubgraphQuery = (entity: string, fields: string[], params: Record<str
 export const getSubgraphTrancheInfo = async (chainId: number, trancheAddress: string, start?: string | number, end?: string | number, fields?: string[], count: number = 0): Promise<any[] | null> => {
   const subgraphConfig = subgraphs.tranches
 
-  // console.log('getSubgraphTrancheInfo', chainId, trancheAddress, subgraphConfig, subgraphConfig.enabledChains.includes(+chainId))
+  // console.log('getSubgraphTrancheInfo', chainId, trancheAddress, subgraphConfig, subgraphConfig.endpoints[chainId])
 
-  if (!subgraphConfig.enabled || !subgraphConfig.enabledChains.includes(+chainId)){
+  if (!subgraphConfig.enabled || !subgraphConfig.endpoints[chainId]){
     return [];
   }
 
@@ -100,7 +100,8 @@ export const getSubgraphTrancheInfo = async (chainId: number, trancheAddress: st
     query: subgraphQuery
   }
 
-  const results = await makePostRequest(subgraphConfig.endpoint, postData);
+  const endpoint = subgraphConfig.endpoints[chainId]
+  const results = await makePostRequest(endpoint, postData);
 
   // Handle errors
   if (results?.errors){

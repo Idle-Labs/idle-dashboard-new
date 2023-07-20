@@ -21,8 +21,8 @@ import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID } from 'constants/
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -1468,6 +1468,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Clear running effects on network changed
   useEffect(() => {
+    if (!networkChanged) return
     runningEffects.current = {}
     dispatch({type: 'RESET_STATE', payload: {}})
     // console.log('NETWORK CHANGED - RESET STATE');
@@ -2176,7 +2177,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls, vaultsOnChainData)
 
       // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
-      
+
       if (!vaultsOnChainData) {
         runningEffects.current.portfolioLoading = false
         return
@@ -2307,7 +2308,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
       }
 
-      // console.log('newState', newState)
+      // console.log('postfolioLoaded', newState)
 
       dispatch({type: 'SET_STATE', payload: newState})
 
@@ -2428,6 +2429,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
   
   // Get historical vaults data
   useEffect(() => {
+
+    // console.log('Load historical data', state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.historicalRates)
 
     if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates)) return
 
