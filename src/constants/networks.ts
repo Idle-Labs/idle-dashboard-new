@@ -206,6 +206,8 @@ export const explorers: Record<string, Explorer> = {
         1101: 'https://api-zkevm.polygonscan.com/api',
       },
       baseUrl: {
+        1: 'https://etherscan.io',
+        137: 'https://polygonscan.com',
         1101: 'https://zkevm.polygonscan.com',
       }
     },

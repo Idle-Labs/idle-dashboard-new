@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md'
 import { Column, Row, TableState, useSortBy, useTable } from 'react-table'
 import { Flex, Table, Tbody, Td, Th, Thead, Tr, HStack, useColorModeValue, useTheme } from '@chakra-ui/react'
@@ -83,7 +83,9 @@ export const ReactTable = <T extends {}>({
       const isLastRow = rowIndex === pageRows.length-1
       const rowSx = isLastRow && !selectedRow ? {borderBottom: 0} : {}
       return (
-        <>
+        <React.Fragment
+          key={rowIndex}
+        >
           <Tr
             {...row.getRowProps()}
             tabIndex={row.index}
@@ -92,7 +94,6 @@ export const ReactTable = <T extends {}>({
             onClick={() => row.subRows?.length>0 ? toggleSelectedRow(row) : onRowClick?.(row)}
             cursor={onRowClick ? 'pointer' : undefined}
             sx={rowSx}
-            key={rowIndex}
           >
             {row.cells.map( (cell, cellIndex) => {
               const isFirstCell = !firstCellFound && cell.column.display !== 'none'
@@ -172,7 +173,7 @@ export const ReactTable = <T extends {}>({
               )
             })
           }
-        </>
+        </React.Fragment>
       )
     })
   }, [toggleSelectedRow, selectedRow, prepareRow, theme, pageRows, onRowClick])
@@ -204,7 +205,7 @@ export const ReactTable = <T extends {}>({
                       textAlign={column.textAlign}
                       _hover={{ color: column.canSort ? hoverColor : 'gray.500' }}
                       style={style}
-                      key={`th_${colIndex}`}
+                      key={colIndex}
                     >
                       <TableHeader column={column} />
                     </Th>

@@ -2716,7 +2716,7 @@ export type BestYieldConfig = {
 
 export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   1101:{
-
+    
   },
   1: { // Mainnet
     DAI: {
