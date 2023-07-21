@@ -14,10 +14,10 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
-import { Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { Spinner, Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
 
 export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
@@ -99,8 +99,12 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
     }
+
+    // Transaction is started, disable button
+    if (transaction.status === 'started') return true
+
     return false
-  }, [amount, assetBalance, underlyingAsset, translate])
+  }, [amount, transaction, assetBalance, underlyingAsset, translate])
 
   // Withdraw
   const withdraw = useCallback(() => {
@@ -185,11 +189,17 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const withdrawButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'} />
+      <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
+        {
+          transaction.status === 'started' && (
+            <Spinner size={'sm'} />
+          )
+        }
+      </Translation>
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, withdraw, redeemInterestBearing])
+  }, [account, disabled, transaction, withdraw, redeemInterestBearing])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined

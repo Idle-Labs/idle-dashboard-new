@@ -1,5 +1,5 @@
 import { useTranslate } from 'react-polyglot'
-import { TextProps, HeadingProps, Text } from '@chakra-ui/react'
+import { FlexProps, TextProps, HeadingProps, Text } from '@chakra-ui/react'
 
 type DefaultProps = TextProps & HeadingProps
 
@@ -11,6 +11,7 @@ export type TranslationProps<T = DefaultProps> = {
   isHtml?: boolean
   params?: Record<string, any>
   translation: string | null | undefined | [string, number] | string[]
+  children?: FlexProps["children"]
 } & T
 
 export const Translation = <T = void>({
@@ -21,6 +22,7 @@ export const Translation = <T = void>({
   suffix='',
   joinChar=' ',
   isHtml = false,
+  children,
   ...props
 }: TranslationProps<T>) => {
   const translate = useTranslate()
@@ -38,6 +40,10 @@ export const Translation = <T = void>({
   const formattedText = `${prefix}${translatedText}${suffix}`
   return isHtml ? (
     <Component {...props} dangerouslySetInnerHTML={{__html: formattedText}} />
+  ) : children ? (
+    <Component {...props}>
+      {children}
+    </Component>
   ) : (
     <Component {...props}>
       {formattedText}

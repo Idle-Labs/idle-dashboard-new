@@ -203,6 +203,19 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         ...state,
         tokenPriceUsd : action.payload
       }
+    case 'START':
+      return {
+        ...state,
+        transaction: {
+          ...initialState.transaction,
+          // assetId: action.payload.assetId,
+          // contractSendMethod: action.payload.contractSendMethod,
+          status: 'started',
+          created: lastUpdated,
+          lastUpdated,
+          ...action.payload
+        }
+      }
     case 'CREATE':
       return {
         ...state,
@@ -542,6 +555,15 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       if (!account || !web3 || !network) return null
 
       try {
+
+        dispatch({type: 'START', payload: {
+          amount,
+          assetId,
+          vaultId,
+          actionType,
+          contractSendMethod
+        }})
+
         const sendOptions: SendOptions = {
           from: account?.address
         }

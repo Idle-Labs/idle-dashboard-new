@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { NavLink } from "react-router-dom"
 import { TopBarMenu } from './Menu/TopBarMenu'
+import { GOVERNANCE_CHAINID } from 'constants/'
 import { selectUnderlyingToken } from 'selectors/'
 import { NetworkSelector } from './NetworkSelector'
 import { AccountSelector } from './AccountSelector'
@@ -9,11 +10,11 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 export const Header: React.FC = () => {
-  const { chainId, account } = useWalletProvider()
+  const { account } = useWalletProvider()
 
   const assetBalance = useMemo(() => {
     if (!account?.address) return null
-    const idleToken = selectUnderlyingToken(chainId, 'IDLE')
+    const idleToken = selectUnderlyingToken(GOVERNANCE_CHAINID, 'IDLE')
     return (
       <NavLink
         to={'stake'}
@@ -32,7 +33,7 @@ export const Header: React.FC = () => {
         </AssetProvider>
       </NavLink>
     )
-  }, [account, chainId])
+  }, [account])
 
   return (
     <VStack
