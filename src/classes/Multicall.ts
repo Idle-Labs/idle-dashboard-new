@@ -8,13 +8,13 @@ import { Contract, ContractSendMethod } from 'web3-eth-contract'
 type Param = any
 
 export type CallData = {
-  batchId: number
   args: Param[]
-  extraData: object
-  returnFields: string[]
-  returnTypes: string[]
   target: string
   method: string
+  batchId: number
+  extraData: object
+  returnTypes: string[]
+  returnFields: string[]
   rawCall: ContractSendMethod
 }
 
@@ -31,20 +31,15 @@ export class  Multicall {
   readonly web3: Web3
   readonly chainId: number
   readonly maxBatchSize: number
+  readonly networkContract: string
   readonly multicallContract: Contract
-  readonly networksContracts: Record<number, string>
 
   constructor(chainId: number, web3: Web3) {
-    this.networksContracts = {
-      1:'0xcA11bde05977b3631167028862bE2a173976CA11',
-      137:'0xcA11bde05977b3631167028862bE2a173976CA11',
-      1101:'0xcA11bde05977b3631167028862bE2a173976CA11'  
-    };
-    
     this.web3 = web3
     this.chainId = chainId
     this.maxBatchSize = 600
-    this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networksContracts[chainId])
+    this.networkContract = '0xcA11bde05977b3631167028862bE2a173976CA11'
+    this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networkContract)
   }
 
   getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
@@ -151,7 +146,7 @@ export class  Multicall {
     }, []);
       
     // Execute calls
-    const results = await this.executeMulticalls(calls, false, chainId, web3);
+    const results = await this.executeMulticalls(calls, true, chainId, web3);
 
     // Group by BatchID
     const output = Array.from(Array(callBatches.length).keys()).reduce( (output: BatchesResults, batchId: number) => {
@@ -206,7 +201,7 @@ export class  Multicall {
     if (!calldata) return null;
 
     let results = null
-    const contractAddress = this.networksContracts[chainId];
+    const contractAddress = this.networkContract;
 
     try {
       results = await web3.eth.call({
@@ -216,7 +211,7 @@ export class  Multicall {
       });
     } catch (err) {
       // eslint-disable-next-line
-      console.log('Multicall Error:', calls, err)
+      console.log('Multicall Error:', calls, err, singleCallsEnabled)
 
       if (!singleCallsEnabled) return null
 

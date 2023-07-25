@@ -865,7 +865,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // rawCalls.push(stkIdleCalls)
     
     // console.log('stkIdleCalls', stkIdleCalls)
-    // console.log('rawCalls', enabledCalls, rawCalls)
+    // console.log('rawCalls', rawCalls)
 
     const [
       maticNFTs,
@@ -1916,6 +1916,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         allVaults.push(stkIDLEUnderlyingToken)
       }
     }
+
+    // console.log('allVaults', allVaults)
     
     const assetsData = generateAssetsData(allVaults)
     dispatch({type: 'SET_VAULTS', payload: allVaults})
