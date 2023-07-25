@@ -356,9 +356,10 @@ export const Dashboard: React.FC = () => {
                                   return assetsGroups
                                 }, []).map( (assets: Asset[], index: number) => {
                                   return (
-                                    <HStack
+                                    <SimpleGrid
                                       spacing={4}
                                       width={'full'}
+                                      columns={[2, 3]}
                                       key={`container_${index}`}
                                     >
                                       {
@@ -366,7 +367,7 @@ export const Dashboard: React.FC = () => {
                                           <VaultCard.Minimal key={`asset_${asset.id}`} assetId={asset.id as string} />
                                         ))
                                       }
-                                    </HStack>
+                                    </SimpleGrid>
                                   )
                                 })
                             }
