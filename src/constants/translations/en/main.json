@@ -181,7 +181,7 @@
     "tranches": {
       "tag": "Tranches",
       "label": "Yield Tranches",
-      "noVaultsAvailable": "Yield Tranches vaults are currently not available %{network}. In the meantime you can switch to Ethereum mainnet.",
+      "noVaultsAvailable": "Yield Tranches vaults are currently not available %{network}. Switch to Ethereum mainnet to explore this strategy.",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
       "descriptionShort": "Yield Tranches split any DeFi yield source into risk-adjusted classes, enabling users to construct a customized yield portfolio that suits their risk tolerance.",
       "description": "Yield Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss.<br />Yield Tranches provide risk diversification, onchain default settlement and adaptive yield split to scale liquidity in any situation.",
@@ -196,7 +196,7 @@
       "tag": "Best Yield",
       "label": "Best Yield",
       "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",
-      "noVaultsAvailable": "Best Yield vaults are currently not available for %{network}. In the meantime you can switch to Ethereum mainnet.",
+      "noVaultsAvailable": "Best Yield vaults are currently not available for %{network}. Switch to Ethereum mainnet to explore this strategy.",
       "banner": {
         "text": "<strong style='color: white'>Best Yield meets Senior & Junior Tranches</strong> harnessing the full yield power",
         "cta": "How it works"

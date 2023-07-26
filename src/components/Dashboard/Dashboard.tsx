@@ -348,7 +348,7 @@ export const Dashboard: React.FC = () => {
                             width={'full'}
                             alignItems={'flex-start'}
                           >
-                            <Translation translation={'common.featured'} textStyle={'ctaStatic'} />
+                            <Translation translation={'dashboard.strategies.bestPerforming'} textStyle={'ctaStatic'} />
                             <PausableChakraCarouselProvider delay={10000}>
                               <PausableChakraCarouselProvider.Carousel
                                 showProgress={false}
@@ -356,8 +356,9 @@ export const Dashboard: React.FC = () => {
                               >
                                 {
                                   productAssets
-                                    .filter( (a: Asset) => BNify(a.apy).gt(0) )
-                                    .sort( (a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1 )
+                                    .filter( (a: Asset) => a.status !== 'deprecated' )
+                                    // .filter( (a: Asset) => BNify(a.apy).gt(0) )
+                                    .sort( (a1: Asset, a2: Asset) => BNify(a1.apy).lt(BNify(a2.apy)) ? 1 : -1 )
                                     .slice(0, isMobile ? 8 : 9)
                                     .reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
                                       const arrayKey: number = parseInt(''+(index/(isMobile ? 2 : 3)))
@@ -925,7 +926,7 @@ export const Dashboard: React.FC = () => {
                       >
                         <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
                         {
-                          earningsPercentage.gte(0.01) && (
+                          avgRealizedApy.gte(0.01) && (
                             <Stat>
                               <HStack spacing={2}>
                                 <Amount.Percentage value={avgRealizedApy} suffix={' APY'} textStyle={'captionSmall'} />

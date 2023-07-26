@@ -8,6 +8,7 @@ import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import React, { useState, useMemo, useCallback } from 'react'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { ReactTable } from 'components/ReactTable/ReactTable'
@@ -48,6 +49,7 @@ export const Stats: React.FC = () => {
   } = usePortfolioProvider()
   const theme = useTheme()
   const translate = useTranslate()
+  const { chainId } = useWalletProvider()
   const { isMobile } = useThemeProvider()
   const [ searchQuery, setSearchQuery ] = useState<string>('')
   const [ selectedStrategy, setSelectedStrategy ] = useState<string | null>(null)
@@ -59,9 +61,13 @@ export const Stats: React.FC = () => {
     return navigate(`${location?.pathname.replace(/\/$/, '')}/${vaultId}`)
   }, [navigate, location])
 
+  const chainAssets = useMemo(() => {
+    return Object.values(assetsData).filter( (asset: Asset) => !asset.chainId || +asset.chainId === +chainId )
+  }, [assetsData, chainId])
+
   const assetsByStrategy = useMemo(() => {
     if (!isPortfolioLoaded) return {}
-    return Object.values(assetsData).reduce( (assetsByStrategy: Record<string, Asset[]>, asset: Asset) => {
+    return chainAssets.reduce( (assetsByStrategy: Record<string, Asset[]>, asset: Asset) => {
       // Check type
       if (!("type" in asset)) return assetsByStrategy
       // Check statsEnabled flag
@@ -81,7 +87,7 @@ export const Stats: React.FC = () => {
         ]
       }
     }, {})
-  }, [assetsData, isPortfolioLoaded])
+  }, [chainAssets, isPortfolioLoaded])
 
   const aggregatedUnderlyings = useMemo(() => {
     return Object.keys(assetsByStrategy).filter( (strategy: string) => (!selectedStrategy || selectedStrategy === strategy) ).reduce( (aggregatedUnderlyings: Record<AssetId, AggregatedAsset>, strategy: string) => {
@@ -150,7 +156,7 @@ export const Stats: React.FC = () => {
     }, {})
   }, [assetsByStrategy, selectAssetById, selectVaultById, selectedStrategy, searchQuery])
 
-  const visibleAssets = useMemo(() => Object.values(assetsData).filter( (asset: Asset) => !!strategies[asset.type as string]?.visible ), [assetsData])
+  const visibleAssets = useMemo(() => Object.values(chainAssets).filter( (asset: Asset) => !!strategies[asset.type as string]?.visible ), [chainAssets])
   const totalTvlUsd = useMemo(() => Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0)) , [visibleAssets])
   const avgApy = useMemo(() => Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [visibleAssets]).div(totalTvlUsd)
 
