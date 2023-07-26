@@ -4,7 +4,7 @@ import { Amount } from 'components/Amount/Amount'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import type { IdleTokenProtocol } from 'constants/vaults'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { bnOrZero, BNify, estimateGasLimit } from 'helpers/'
+import { getDecodedError, bnOrZero, BNify, estimateGasLimit } from 'helpers/'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
@@ -170,11 +170,15 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         const defaultGasLimit = await getDefaultGasLimit()
         setGasLimit(defaultGasLimit)
       } catch (error: any) {
-        // console.log(typeof error, error.message)
-        setGasEstimateError(error.message.toString().split("\n")[0])
+        const errorHeader = error.message ? error.message.toString().split("\n")[0] : ''
+        const decodedError = getDecodedError(error)
+        const errorMessage = decodedError || errorHeader
+        const translatedError = translate(`trade.actions.withdraw.messages.decoded.${errorMessage}`)
+        const errorToShow = translatedError !== `trade.actions.withdraw.messages.decoded.${errorMessage}` ? translatedError : errorMessage
+        setGasEstimateError(errorToShow)
       }
     })()
-  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
+  }, [activeItem, translate, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
 
   // Update parent amount
   useEffect(() => {

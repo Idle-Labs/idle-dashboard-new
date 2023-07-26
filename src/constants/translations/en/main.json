@@ -181,6 +181,7 @@
     "tranches": {
       "tag": "Tranches",
       "label": "Yield Tranches",
+      "noVaultsAvailable": "Yield Tranches vaults are currently not available %{network}. In the meantime you can switch to Ethereum mainnet.",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
       "descriptionShort": "Yield Tranches split any DeFi yield source into risk-adjusted classes, enabling users to construct a customized yield portfolio that suits their risk tolerance.",
       "description": "Yield Tranches split any DeFi yield source into two new risk-adjusted classes: Senior, usually with a rather stable but lower return in exchange of a built-in coverage protection. On the other side, the Junior class usually has higher yield, as it protects the Senior class from any loss.<br />Yield Tranches provide risk diversification, onchain default settlement and adaptive yield split to scale liquidity in any situation.",
@@ -195,6 +196,7 @@
       "tag": "Best Yield",
       "label": "Best Yield",
       "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",
+      "noVaultsAvailable": "Best Yield vaults are currently not available for %{network}. In the meantime you can switch to Ethereum mainnet.",
       "banner": {
         "text": "<strong style='color: white'>Best Yield meets Senior & Junior Tranches</strong> harnessing the full yield power",
         "cta": "How it works"
@@ -366,6 +368,7 @@
     "viewADemo": "View a Demo"
   },
   "network": {
+    "switchTo": "Switch to %{network}",
     "wrongNetwork": "Your %{wallet} is connected to %{currentNetwork}, please switch to %{correctNetwork}."
   },
   "connectWallet": {
@@ -478,6 +481,7 @@
     "averageApr": "Average APR",
     "estimatedYearlyRewards": "Estimated Yearly Rewards",
     "staked": "Staked",
+    "noVaultsAvailable": "No vaults available",
     "depositWithReferral": "You are depositing with the following referral address:",
     "amountStaked": "Amount Staked",
     "assetStaking": "%{assetName} Staking",
@@ -944,7 +948,10 @@
         "messages": {
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",
-          "gasEstimateError": "We have encountered an error during the gas estimate, you may not be able to withdraw your funds. This error may not be up to us, please <a href=\"https://discord.com/channels/606071749657755668/606073687799627776\" target=\"_blank\" class=\"link\">click here</a> to enter our Discord channel and communicate the following error:<br /><span class=\"error\">\"%{error}\"</span>"
+          "gasEstimateError": "We have encountered an error during the gas estimate, you may not be able to withdraw your funds. This error may not be up to us, please <a href=\"https://discord.com/channels/606071749657755668/606073687799627776\" target=\"_blank\" class=\"link\">click here</a> to enter our Discord channel and communicate the following error:<br /><span class=\"error\">\"%{error}\"</span>",
+          "decoded": {
+            "execution reverted: NEC": "Not enough liquidity to withdraw from the lender"
+          }
         },
         "status": {
           "success": {
@@ -1005,6 +1012,9 @@
     }
   },
   "modals": {
+    "assets": {
+      "vaultWrongNetwork": "This vault is not available on %{network}. Please switch to %{correctNetwork} to use this vault."
+    },
     "keepKey": {
       "passphrase": {
         "errors": {
@@ -1337,7 +1347,7 @@
         "pending": "",
         "success": "",
         "long": "Your transaction is taking more time than expected... please hang on",
-        "failed": "There was a problem with the execution your transaction, make sure the gas limit is high enough and try again"
+        "failed": "We have encountered an error during the the execution of your transaction:<br /><strong>%{error}</strong>"
       },
       "depositTo": "Deposit To",
       "transactionId": "TX ID",

@@ -69,6 +69,7 @@ type InitialState = {
   portfolioTimestamp: number | null
   assetsDataTimestamp: number | null
   selectors: Record<string, Function>
+  vaultsNetworks: Record<string, Vault[]>
   transactions: Record<string, Transaction[]>
   historicalTvls: Record<AssetId, HistoryData[]>
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -110,6 +111,7 @@ const initialState: InitialState = {
   aprsBreakdown: {},
   protocolsAprs: {},
   additionalAprs: {},
+  vaultsNetworks: {},
   historicalTvls: {},
   protocolToken: null,
   vaultsPositions: {},
@@ -164,6 +166,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, vaultsPositions: action.payload}  
     case 'SET_VAULTS':
       return {...state, vaults: action.payload}
+    case 'SET_VAULTS_NETWORKS':
+      return {...state, vaultsNetworks: action.payload}
     case 'SET_APRS':
       return {...state, aprs: action.payload}
     case 'SET_INTEREST_BEARING_TOKENS':
@@ -271,13 +275,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
       const vaultAssetsData = vault.getAssetsData()
       const status = ("status" in vault) && vault.status ? vault.status : 'production'
+      const chainId = +vault.chainId
 
       // Add assets IDs
       const vaultAssetsDataWithIds = Object.keys(vaultAssetsData).reduce( (vaultAssetsDataWithIds: Assets, assetId: AssetId) => {
         vaultAssetsDataWithIds[assetId] = {
           id: assetId,
           ...vaultAssetsData[assetId],
-          status
+          status,
+          chainId
         }
         return vaultAssetsDataWithIds
       }, {})
@@ -293,6 +299,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const selectVaultById = useCallback( (vaultId: string): Vault | null => {
     return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
   }, [state.vaults])
+
+  const selectVaultNetworkById = useCallback( (chainId: any, vaultId: string): Vault | null => {
+    return state.vaultsNetworks && state.vaultsNetworks[chainId] ? state.vaultsNetworks[chainId].find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
+  }, [state.vaultsNetworks])
+
+  const selectNetworkByVaultId = useCallback( (vaultId: string): any | undefined => {
+    return Object.keys(state.vaultsNetworks).find( (chainId: any) => {
+      return state.vaultsNetworks[chainId].find( (vault: Vault) => vault.id.toLowerCase() === vaultId.toLowerCase() )
+    })
+  }, [state.vaultsNetworks])
 
   const selectAssetById = useCallback( (assetId: AssetId | undefined): Asset | null => {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
@@ -1827,7 +1843,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return new GenericContract(web3, chainId, contract)
     })
 
-    const contractsNetworks = Object.keys(globalContracts).reduce( (contractsNetworks: Record<string, GenericContract[]>, chainId: any) => {
+    const contractsNetworks = Object.keys(web3Chains).reduce( (contractsNetworks: Record<string, GenericContract[]>, chainId: any) => {
       contractsNetworks[chainId] = globalContracts[chainId].map( (contract: GenericContractConfig) => {
         return new GenericContract(web3Chains[chainId], chainId, contract)
       })
@@ -1841,42 +1857,84 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return false
     }
 
-    // Init underlying tokens vaults
-    const underlyingTokensVaults: UnderlyingToken[] = Object.keys(underlyingTokens[chainId]).reduce( ( vaultsContracts: UnderlyingToken[], token) => {
-      const tokenConfig = underlyingTokens[chainId][token]
-      if (tokenConfig) {
-        const underlyingToken = new UnderlyingToken(web3, chainId, tokenConfig)
-        vaultsContracts.push(underlyingToken)
-      }
-      return vaultsContracts
-    }, [])
+    // Init all vaults networks
+    const allVaultsNetworks: Record<string, Vault[]> = {}
 
-    // Init tranches vaults
-    const trancheVaults: TrancheVault[] = Object.keys(tranches[chainId]).reduce( (vaultsContracts: TrancheVault[], protocol) => {
-      Object.keys(tranches[chainId][protocol]).forEach( token => {
-        const vaultConfig = tranches[chainId][protocol][token]
-        if (checkVaultEnv(vaultConfig)){
-          const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
-          const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
-          const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
-          vaultsContracts.push(trancheVaultAA)
-          vaultsContracts.push(trancheVaultBB)
+    // Init underlying tokens vaults
+    const underlyingTokensVaultsNetworks: Record<string, UnderlyingToken[]> = Object.keys(web3Chains).reduce( ( vaultsContracts: Record<string, UnderlyingToken[]>, vaultChainId: any) => {
+      vaultsContracts[vaultChainId] = []
+      if (!allVaultsNetworks[vaultChainId]){
+        allVaultsNetworks[vaultChainId] = []
+      }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+
+      Object.keys(underlyingTokens[vaultChainId]).forEach( token => {
+        const tokenConfig = underlyingTokens[vaultChainId][token]
+        if (tokenConfig) {
+          const underlyingToken = new UnderlyingToken(web3ToUse, vaultChainId, tokenConfig)
+          vaultsContracts[vaultChainId].push(underlyingToken)
+          allVaultsNetworks[vaultChainId].push(underlyingToken)
         }
       })
       return vaultsContracts
-    }, [])
+    }, {})
+
+    const underlyingTokensVaults: UnderlyingToken[] = underlyingTokensVaultsNetworks[chainId]
+
+    // Init tranches vaults
+    const trancheVaultsNetworks = Object.keys(web3Chains).reduce( (vaultsContracts: Record<string, TrancheVault[]>, vaultChainId: any) => {
+      vaultsContracts[vaultChainId] = []
+      if (!allVaultsNetworks[vaultChainId]){
+        allVaultsNetworks[vaultChainId] = []
+      }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+      const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
+
+      Object.keys(tranches[vaultChainId]).forEach( protocol => {
+        Object.keys(tranches[vaultChainId][protocol]).forEach( token => {
+          const vaultConfig = tranches[vaultChainId][protocol][token]
+          if (checkVaultEnv(vaultConfig)){
+            const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
+            const trancheVaultAA = new TrancheVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
+            const trancheVaultBB = new TrancheVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
+            vaultsContracts[vaultChainId].push(trancheVaultAA)
+            vaultsContracts[vaultChainId].push(trancheVaultBB)
+            allVaultsNetworks[vaultChainId].push(trancheVaultAA)
+            allVaultsNetworks[vaultChainId].push(trancheVaultBB)
+          }
+        })
+      })
+      return vaultsContracts
+    }, {})
+
+    const trancheVaults: TrancheVault[] = trancheVaultsNetworks[chainId]
 
     const idleController = contracts.find(c => c.name === 'IdleController')
 
     // Init best yield vaults
-    const bestYieldVaults: BestYieldVault[] = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
-      const tokenConfig = bestYield[chainId][token]
-      if (checkVaultEnv(tokenConfig)){
-        const bestYieldVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', cacheProvider, idleController})
-        vaultsContracts.push(bestYieldVault)
+    const bestYieldVaultsNetworks = Object.keys(web3Chains).reduce( (vaultsContracts: Record<string, BestYieldVault[]>, vaultChainId: any) => {
+      vaultsContracts[vaultChainId] = []
+      if (!allVaultsNetworks[vaultChainId]){
+        allVaultsNetworks[vaultChainId] = []
       }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+      const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
+
+      Object.keys(bestYield[vaultChainId]).forEach( token => {
+        const tokenConfig = bestYield[vaultChainId][token]
+        if (checkVaultEnv(tokenConfig)){
+          const bestYieldVault = new BestYieldVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, tokenConfig, type: 'BY', cacheProvider, idleController})
+          vaultsContracts[vaultChainId].push(bestYieldVault)
+          allVaultsNetworks[vaultChainId].push(bestYieldVault)
+        }
+      })
       return vaultsContracts
-    }, [])
+    }, {})
+
+    const bestYieldVaults: BestYieldVault[] = bestYieldVaultsNetworks[chainId]
 
     const gaugeDistributorProxy = contracts.find(c => c.name === 'GaugeDistributorProxy')
 
@@ -1887,6 +1945,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!trancheVault) return vaultsContracts
       const gaugeVault = new GaugeVault({web3, chainId, gaugeConfig, trancheVault, cacheProvider, gaugeDistributorProxy})
       vaultsContracts.push(gaugeVault)
+      allVaultsNetworks[chainId].push(gaugeVault)
       return vaultsContracts
     }, [])
 
@@ -1896,6 +1955,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const feeDistributorConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
 
     // console.log('stakedIdleVault', stakedIdleVault)
+    // console.log('allVaultsNetworks', allVaultsNetworks)
 
     const allVaults: Vault[] = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
 
@@ -1905,15 +1965,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: STAKING_CHAINID, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
       allVaults.push(stakedIdleVault)
+      allVaultsNetworks[STAKING_CHAINID].push(stakedIdleVault)
 
       // Add staking reward token
       if (+STAKING_CHAINID !== chainId){
         const rewardUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, rewardTokenConfig)
         allVaults.push(rewardUnderlyingToken)
+        allVaultsNetworks[STAKING_CHAINID].push(rewardUnderlyingToken)
 
         const stkIDLEUnderlyingTokenConfig = selectUnderlyingToken(STAKING_CHAINID, stkIDLE_TOKEN) as UnderlyingTokenProps
         const stkIDLEUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, stkIDLEUnderlyingTokenConfig)
         allVaults.push(stkIDLEUnderlyingToken)
+        allVaultsNetworks[STAKING_CHAINID].push(stkIDLEUnderlyingToken)
       }
     }
 
@@ -1923,6 +1986,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
     dispatch({type: 'SET_ASSETS_DATA_IF_EMPTY', payload: assetsData})
+    dispatch({type: 'SET_VAULTS_NETWORKS', payload: allVaultsNetworks})
     dispatch({type: 'SET_CONTRACTS_NETWORKS', payload: contractsNetworks})
 
     // Cleanup
@@ -1949,6 +2013,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectVaultPosition,
       selectAssetPriceUsd,
       selectAssetBalanceUsd,
+      selectNetworkByVaultId,
+      selectVaultNetworkById,
       selectVaultTransactions,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
@@ -1973,6 +2039,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetPriceUsd,
     selectVaultPosition,
     selectAssetBalanceUsd,
+    selectNetworkByVaultId,
+    selectVaultNetworkById,
     selectVaultTransactions,
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
@@ -2809,13 +2877,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Generate Assets Data
   useEffect(() => {
-    if (isEmpty(state.vaults)) return
+    if (isEmpty(state.vaults) || isEmpty(state.vaultsNetworks)) return
 
-    const assetsData = generateAssetsData(state.vaults)
+    // Generate assets data 
+    const assetsData: Assets = Object.keys(state.vaultsNetworks).reduce( ( assetsData: Assets, chainId: any) => {
+      return {
+        ...assetsData,
+        ...generateAssetsData(state.vaultsNetworks[chainId])
+      }
+    }, {})
+
+    // console.log('assetsData', assetsData)
+
     for (const vault of state.vaults){
       if (state.pausedVaults[vault.id] && assetsData[vault.id].status !== 'deprecated'){
         assetsData[vault.id].status = 'paused'
       }
+
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
@@ -2984,6 +3062,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
     state.vaults,
+    state.vaultsNetworks,
     state.fees,
     state.aprs,
     state.baseAprs,

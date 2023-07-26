@@ -19,6 +19,7 @@ export const WrongNetworkBanner: React.FC = () => {
       left={0}
       p={[3, 5]}
       bottom={0}
+      zIndex={11}
       width={'full'}
       borderRadius={0}
       position={'fixed'}

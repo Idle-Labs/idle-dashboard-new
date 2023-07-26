@@ -9,7 +9,7 @@ import type { Transaction, TransactionReceipt } from 'web3-core'
 import { ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useMemo, useReducer, useCallback, useEffect } from 'react'
-import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
+import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeRequest, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
   FastGasPrice: string
@@ -361,14 +361,29 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   const updateGasPrices = useCallback( async () => {
     if (!explorer || !chainId) return
-    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
-    const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
+
+    const customGasOracle = explorer.gasOracle
+    const useCustomGasOracle = customGasOracle && customGasOracle?.endpoints[chainId]
+    const endpoint = customGasOracle?.endpoints[chainId] || `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
+    const gasOracle = useCustomGasOracle ? await makeRequest(endpoint) : await makeEtherscanApiRequest(endpoint, explorer.keys)
+
     if (gasOracle) {
       const gasPrices: GasPrices = {
-        [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
-        [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
-        [TransactionSpeed.Average]: (+gasOracle.SafeGasPrice+1).toString(),
-        [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice).toString()
+        [TransactionSpeed.VeryFast]: '0',
+        [TransactionSpeed.Fast]: '0',
+        [TransactionSpeed.Average]: '0',
+        [TransactionSpeed.Slow]: '0'
+      }
+
+      if (useCustomGasOracle){
+        (Object.keys(customGasOracle.mapping) as TransactionSpeed[]).forEach( (transactionSpeed: TransactionSpeed) => {
+          gasPrices[transactionSpeed] = (+gasOracle[customGasOracle.mapping[transactionSpeed]]).toString()
+        })
+      } else {
+        gasPrices[TransactionSpeed.VeryFast] = (+gasOracle.FastGasPrice+2).toString()
+        gasPrices[TransactionSpeed.Fast] = gasOracle.FastGasPrice
+        gasPrices[TransactionSpeed.Average] = (+gasOracle.SafeGasPrice+1).toString()
+        gasPrices[TransactionSpeed.Slow] = (+gasOracle.SafeGasPrice).toString()
       }
 
       const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
@@ -473,7 +488,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     const estimatedFeesUsd = (Object.keys(state.gasPrices) as Array<TransactionSpeed>).reduce( (estimatedFeesUsd: GasPrices, transactionSpeed: TransactionSpeed): GasPrices => {
       const estimatedFee = estimatedFees[transactionSpeed]
       const estimatedFeeUsd = BNify(estimatedFee).times(state.tokenPriceUsd).toString()
-
       return {
         ...estimatedFeesUsd,
         [transactionSpeed]: estimatedFeeUsd

@@ -294,11 +294,24 @@ export function lazyLoadComponent(component: string) {
   })
 }
 
-export function isEmpty (object: any) {
+export function isEmpty(object: any) {
   return !object || !Object.keys(object).length
 }
 
-export function getTimestampRange (startDate: (Date | number | string), endDate: (Date | number | string)) {
+export function getDecodedError(error: any) {
+  try {
+    if (error.message){
+      const decodedError = JSON.parse(error.message.toString().split("\n").splice(1).join(" "))
+      if (decodedError?.message){
+        return decodedError.message
+      }
+    }
+  } catch (error){
+  }
+  return null
+}
+
+export function getTimestampRange(startDate: (Date | number | string), endDate: (Date | number | string)) {
   const startDayTimestamp = +(dayjs(startDate).startOf('day').valueOf())
   const endDayTimestamp = +(dayjs(endDate).startOf('day').valueOf())
 
@@ -312,7 +325,7 @@ export function getTimestampRange (startDate: (Date | number | string), endDate:
   })
 }
 
-export async function catchPromise (promise: Promise<any>) {
+export async function catchPromise(promise: Promise<any>) {
   return promise
     .then(data => data)
     .catch(/*err => null*/)

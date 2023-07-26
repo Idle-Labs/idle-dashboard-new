@@ -1,5 +1,5 @@
-import { IconType } from './types'
 import { networksFolder } from 'constants/folders'
+import { IconType, TransactionSpeed } from './types'
 
 const env = process.env;
 
@@ -175,6 +175,10 @@ export interface Explorer {
   enabled: boolean
   keys: (string | undefined)[]
   endpoints: Record<number, string>
+  gasOracle?: {
+    endpoints: Record<number, string>
+    mapping: Record<TransactionSpeed, string>
+  }
   baseUrl: Record<number, string>
 }
 
@@ -202,6 +206,17 @@ export const explorers: Record<string, Explorer> = {
         env.REACT_APP_POLYGONSCAN_KEY2,
         env.REACT_APP_POLYGONSCAN_KEY3,
       ],
+      gasOracle:{
+        endpoints: {
+          1101: 'https://gasstation.polygon.technology/zkevm'
+        },
+        mapping: {
+          [TransactionSpeed.VeryFast]: 'fastest',
+          [TransactionSpeed.Fast]: 'fast',
+          [TransactionSpeed.Average]: 'standard',
+          [TransactionSpeed.Slow]: 'safeLow'
+        }
+      },
       endpoints: {
         1101: 'https://api-zkevm.polygonscan.com/api',
       },

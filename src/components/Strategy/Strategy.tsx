@@ -19,7 +19,8 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem } from 'helpers/'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, isEmpty } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -44,10 +45,10 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => 
 export const Strategy: React.FC = () => {
   const navigate = useNavigate()
   const translate = useTranslate()
-  const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
   const { openModal } = useModalProvider()
   const { location, params } = useBrowserRouter()
+  const { account, network } = useWalletProvider()
   const [ availableAssetsFilter, setAvailableAssetsFilter ] = useState<string | null>(null)
   const [ depositedAssetsFilter, setDepositedAssetsFilter ] = useState<string | null>(null)
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
@@ -213,6 +214,11 @@ export const Strategy: React.FC = () => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return []
     return selectVaultsAssetsWithBalance(strategy)
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
+
+  const strategyAssets = useMemo(() => {
+    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
+    return selectVaultsAssetsByType(strategy)
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, strategy])
 
   const availableAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
@@ -471,6 +477,24 @@ export const Strategy: React.FC = () => {
     )
   }, [strategy, banner, isMobile])
 
+  const noVaults = useMemo(() => {
+    if (!isPortfolioLoaded || !strategy) return null
+    if (!strategyAssets || isEmpty(strategyAssets)){
+      return (
+        <VStack
+          mt={10}
+          spacing={4}
+          width={['full', '35%']}
+          alignItems={'center'}
+        >
+          <Translation translation={'defi.noVaultsAvailable'} textStyle={'ctaStatic'} textAlign={'center'} />
+          <Translation translation={`strategies.${strategies[strategy].strategy}.noVaultsAvailable`} params={{network: network?.chainName}} textAlign={'center'} textStyle={'caption'} />
+          <SwitchNetworkButton chainId={1} />
+        </VStack>
+      )
+    }
+  }, [isPortfolioLoaded, strategyAssets, strategy, network])
+
   return (
     <Flex
       mt={14}
@@ -479,6 +503,7 @@ export const Strategy: React.FC = () => {
       alignItems={'center'}
     >
       {heading}
+      {noVaults}
       {depositedAssets}
       {availableAssets}
     </Flex>
