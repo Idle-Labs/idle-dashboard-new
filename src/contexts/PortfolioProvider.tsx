@@ -59,6 +59,7 @@ type InitialState = {
   assetsData: Assets
   balancesUsd: Balances
   helpers: Record<any, any>
+  vaultsChain: number | null
   isPortfolioLoaded: boolean
   protocolToken: Asset | null
   contracts: GenericContract[]
@@ -105,6 +106,7 @@ const initialState: InitialState = {
   transactions: {},
   pausedVaults: {},
   stakingData: null,
+  vaultsChain: null,
   totalSupplies: {},
   vaultsRewards: {},
   gaugesRewards: {},
@@ -166,6 +168,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, vaultsPositions: action.payload}  
     case 'SET_VAULTS':
       return {...state, vaults: action.payload}
+    case 'SET_VAULTS_CHAIN':
+      return {...state, vaultsChain: action.payload}
     case 'SET_VAULTS_NETWORKS':
       return {...state, vaultsNetworks: action.payload}
     case 'SET_APRS':
@@ -257,7 +261,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
   const { web3, web3Chains, web3Rpc, multiCall } = useWeb3Provider()
-  const runningEffects = useRef<Record<string, boolean | string | undefined>>({})
+  const runningEffects = useRef<Record<string, boolean | number | string | undefined>>({})
   const { walletInitialized, isNetworkCorrect, connecting, account, prevAccount, chainId, prevChainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
 
@@ -269,7 +273,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return !!chainId && !!prevChainId && +chainId !== +prevChainId
   }, [chainId, prevChainId])
 
-  // console.log('chainId', chainId, 'prevChainId', prevChainId, networkChanged)
+  // console.log('accountChanged', accountChanged, 'chainId', chainId, 'prevChainId', prevChainId, 'networkChanged', networkChanged)
 
   const generateAssetsData = (vaults: Vault[]) => {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
@@ -1961,14 +1965,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     if (stkIdleConfig){
 
-      const defaultChainWeb3 = +chainId === STAKING_CHAINID ? web3 : web3Chains[STAKING_CHAINID]
+      const defaultChainWeb3 = +chainId === +STAKING_CHAINID ? web3 : web3Chains[STAKING_CHAINID]
 
       const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: STAKING_CHAINID, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
       allVaults.push(stakedIdleVault)
       allVaultsNetworks[STAKING_CHAINID].push(stakedIdleVault)
 
       // Add staking reward token
-      if (+STAKING_CHAINID !== chainId){
+      if (+STAKING_CHAINID !== +chainId){
         const rewardUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, rewardTokenConfig)
         allVaults.push(rewardUnderlyingToken)
         allVaultsNetworks[STAKING_CHAINID].push(rewardUnderlyingToken)
@@ -1980,11 +1984,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    // console.log('allVaults', allVaults)
+    // console.log('allVaults', chainId, allVaults)
     
     const assetsData = generateAssetsData(allVaults)
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
+    dispatch({type: 'SET_VAULTS_CHAIN', payload: chainId})
     dispatch({type: 'SET_ASSETS_DATA_IF_EMPTY', payload: assetsData})
     dispatch({type: 'SET_VAULTS_NETWORKS', payload: allVaultsNetworks})
     dispatch({type: 'SET_CONTRACTS_NETWORKS', payload: contractsNetworks})
@@ -2662,23 +2667,30 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get historical collected fees
   useEffect(() => {
-    if (isEmpty(state.vaults) || +chainId !== 1 || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current.vaultsCollectedFees) return
+    if (isEmpty(state.vaults) || +chainId !== 1 || +chainId !== +state.vaultsChain || !isNetworkCorrect || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current?.vaultsCollectedFeesProcessing || +(runningEffects.current?.vaultsCollectedFees || 0)>5) return
 
     // Get Historical data
     ;(async () => {
 
-      runningEffects.current.vaultsCollectedFees = true
+      if (!runningEffects.current.vaultsCollectedFees){
+        runningEffects.current.vaultsCollectedFees = 0
+      }
+      runningEffects.current.vaultsCollectedFeesProcessing = true
+      runningEffects.current.vaultsCollectedFees = +runningEffects.current.vaultsCollectedFees+1
 
       const startTimestamp = Date.now();
       const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
       dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
-      runningEffects.current.vaultsCollectedFees = false
+      runningEffects.current.vaultsCollectedFeesProcessing = false
+
+      // console.log('vaultsCollectedFees', state.vaultsChain, runningEffects.current.vaultsCollectedFees, chainId, isNetworkCorrect, state.vaults, vaultsCollectedFees)
 
       // eslint-disable-next-line
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
-  }, [state.vaults, chainId, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees, cacheProvider])
+  // eslint-disable-next-line
+  }, [state.vaults, state.vaultsChain, isNetworkCorrect, state.isPortfolioLoaded, vaultFunctionsHelper])
 
   // Calculate historical USD Tvls
   useEffect(() => {

@@ -72,11 +72,15 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     setCachedRequests(Object.fromEntries(cachedRequestsMap))
   }, [requestQueue, setCachedRequests, cachedRequests])
 
-  const getUrlHash = (url: string) => hashCode(url.toLowerCase())
+  const getUrlHash = (url: string) => {
+    return url ? hashCode(url.toLowerCase()) : null
+  }
 
   const getCachedUrl = useCallback( (url: string, callback?: Function): any => {
 
     const urlHash = getUrlHash(url)
+    if (!urlHash) return null
+
     const timestamp = Date.now()
     const cachedRequest = cachedRequests[urlHash]
 

@@ -61,20 +61,29 @@ export const useWalletProvider = () => useContext(WalletProviderContext)
 export function WalletProvider({ children }: ProviderProps) {
   const searchParams = useSearchParams()
   const [ { connectedChain }, setChain ] = useSetChain()
+  
   const [ account, setAccount ] = useState<Account | null>(null)
   const prevAccount = usePrevious<Account | null>(account)
+
+  const [ chainId, setChainIdState ] = useState<number>(defaultChainId)
+  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
-  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
+  const [ chainSetFromStorage, setChainSetFromStorage ] = useState<boolean>(false)
+  const [ storedChainId, setStoredChainId, , isChainLoaded ] = useLocalForge('selectedChain', defaultChainId)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
-  const [ chainId, setChainId, , isChainLoaded ] = useLocalForge('selectedChain', defaultChainId)
-  const prevChainId = usePrevious<number | undefined>(chainId)
+  const prevChainId = usePrevious<number>(chainId)
 
   const customAddress = useMemo(() => {
     const walletAddress = getSearchParams.get('wallet')
     return walletAddress && checkAddress(walletAddress) ? walletAddress : null
   }, [getSearchParams])
+
+  const setChainId = useCallback((chainId: number) => {
+    setStoredChainId(+chainId)
+    setChainIdState(+chainId)
+  }, [setChainIdState, setStoredChainId])
 
   const chainIdHex = useMemo(() => {
     return chains[chainId].id
@@ -96,6 +105,15 @@ export function WalletProvider({ children }: ProviderProps) {
     return !chainIds.length || (chainId && chainIds.includes(+chainId))
   }, [chainId])
 
+  // Set chainId to stored chainId
+  useEffect(() => {
+    if (!isChainLoaded || chainSetFromStorage) return
+    if (+storedChainId && +chainId !== +storedChainId){
+      setChainIdState(storedChainId)
+    }
+    setChainSetFromStorage(true)
+  }, [chainId, setChainIdState, storedChainId, chainSetFromStorage, isChainLoaded])
+
   // Auto-connect wallet
   useEffect(() => {
     if (!isWalletProviderLoaded) return
@@ -110,7 +128,6 @@ export function WalletProvider({ children }: ProviderProps) {
   // Switch chain
   useEffect(() => {
     if (!wallet || connecting) return
-    // console.log(initChains, connectedChain, settingChain)
     setChain({
       chainId: chainIdHex
     })
@@ -143,6 +160,7 @@ export function WalletProvider({ children }: ProviderProps) {
     }
   }, [wallet, customAddress, connecting, setWalletProvider])
 
+  // Set walletInitialized
   useEffect(() => {
     if (connecting || !isWalletProviderLoaded) return
     const walletInitialized = !!(!walletProvider || account?.address)
@@ -156,8 +174,6 @@ export function WalletProvider({ children }: ProviderProps) {
       disconnect(wallet)
     }
   }
-
-  // console.log('network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainIdHex', chainIdHex, 'connectedChain', connectedChain?.id, 'chainId', chainId, 'connecting', connecting)
 
   return (
     <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>

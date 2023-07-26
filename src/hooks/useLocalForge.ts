@@ -11,7 +11,7 @@ type HookMethods = [
 
 export default function useLocalForge ( key: string, initialValue?: any ): HookMethods {
   const [isLoaded, setLoaded] = useState(false)
-  const [processing, setProcessing] = useState(false)
+  const [processing, setProcessing] = useState<any>(false)
   const [storedValue, setStoredValue] = useState(initialValue)
 
   const processingRef = useRef(processing)
@@ -25,6 +25,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
     await (new Promise( (resolve/*, reject*/) => {
       const checkProcessing = () => {
         if (processingRef.current){
+          // console.log('localforage still processing', key, processingRef.current)
           setTimeout(checkProcessing, 10)
         } else {
           resolve(true)
@@ -38,7 +39,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
   const set = useCallback(( value: any ) => {
     (async function () {
       await waitUntilProcessed()
-      setProcessing(true)
+      setProcessing('set')
       try {
         await localforage.setItem(key, value)
         setProcessing(false)
@@ -48,11 +49,12 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
         return initialValue
       }
     })()
+  // eslint-disable-next-line
   }, [key, initialValue])
   
   /** Removes value from local storage */
   const remove = useCallback(() => {
-    setProcessing(true)
+    setProcessing('remove')
     ;(async function () {
       try {
         await localforage.removeItem(key)

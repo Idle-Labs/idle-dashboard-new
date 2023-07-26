@@ -353,12 +353,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     return await getBlock(web3, 'latest')
   }, [web3])
 
-  // Track transaction changed
-  // useEffect(() => {
-  //   if (!state.transaction) return
-  //   console.log('Transaction CHANGED', state.transaction)
-  // }, [state.transaction])
-
   const updateGasPrices = useCallback( async () => {
     if (!explorer || !chainId) return
 
