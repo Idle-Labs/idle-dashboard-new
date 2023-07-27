@@ -841,8 +841,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return mainnetRawCalls
     }, [])
 
-    // console.log('vaults', vaults)
-    // console.log('rawCalls', rawCalls)
+    // Add gauges calls
+    const gaugesWeightsCalls = getGaugesCalls(vaults)
+    if (gaugesWeightsCalls){
+      gaugesWeightsCalls.map( (calls: CallData[]) => mainnetRawCalls.push(calls) )
+    }
 
     // Get vaults additional APRs
     const vaultsAdditionalAprsPromises = vaults.reduce( (promises: Map<AssetId, Promise<VaultAdditionalApr>>, vault: Vault): Map<AssetId, Promise<VaultAdditionalApr>> => {
@@ -874,12 +877,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
 
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
-    
-    // Add gauges calls
-    const gaugesWeightsCalls = getGaugesCalls(vaults)
-    if (gaugesWeightsCalls){
-      gaugesWeightsCalls.map( (calls: CallData[]) => rawCalls.push(calls) )
-    }
 
     // const stkIdleCalls = getStkIdleCalls()
     // rawCalls.push(stkIdleCalls)

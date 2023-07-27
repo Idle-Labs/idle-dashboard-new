@@ -193,6 +193,8 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(this.chainId, 'instadapp', 'stETH'))
     const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
+    if (!results) return BNify(0)
+
     const foundVault = results.find( (r: any) => r.vault === '0xA0D3707c569ff8C87FA923d3823eC5D81c98Be78' )
     const apr = bnOrZero(foundVault?.apy?.apyWithFee)
 
