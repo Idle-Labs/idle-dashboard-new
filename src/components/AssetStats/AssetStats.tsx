@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js'
 import type { Vault } from 'vaults/'
+import { strategies } from 'constants/'
 import { selectProtocol } from 'selectors/'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
-import { FEES_COLLECTORS, strategies } from 'constants/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { ProductTag } from 'components/ProductTag/ProductTag'
@@ -397,31 +397,33 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
       })
     })
 
-    FEES_COLLECTORS.forEach( (address: string) => {
+    strategyConfig.feesCollectors?.forEach( (address: string) => {
       items.push({
         address,
         translation:'about.feeCollector'
       })
     })
 
-    const timelockContract = contracts.find( (contract: GenericContract) => contract.name === 'Timelock' )
-    if (timelockContract){
-      items.push({
-        address: timelockContract.id,
-        translation:'about.timelock'
-      })
-    }
+    if (asset.type === 'BY'){
+      const timelockContract = contracts.find( (contract: GenericContract) => contract.name === 'Timelock' )
+      if (timelockContract){
+        items.push({
+          address: timelockContract.id,
+          translation:'about.timelock'
+        })
+      }
 
-    const governorBravoContract = contracts.find( (contract: GenericContract) => contract.name === 'GovernorBravo' )
-    if (governorBravoContract){
-      items.push({
-        address: governorBravoContract.id,
-        translation:'about.governance'
-      })
+      const governorBravoContract = contracts.find( (contract: GenericContract) => contract.name === 'GovernorBravo' )
+      if (governorBravoContract){
+        items.push({
+          address: governorBravoContract.id,
+          translation:'about.governance'
+        })
+      }
     }
 
     return items.map( (item, index) => <AboutItem key={index} {...item} /> )
-  }, [assetIds, strategyConfig, selectAssetById, vault, contracts])
+  }, [assetIds, strategyConfig, selectAssetById, asset, vault, contracts])
 
   const aggregatedCards = useMemo(() => (
     <SimpleGrid
