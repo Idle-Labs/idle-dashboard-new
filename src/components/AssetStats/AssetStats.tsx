@@ -630,7 +630,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     timeframe={selectedTimeframe}
                     height={isMobile ? '300px' : '350px'}
                     margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
-                    formatFn={(n: any) => `$${abbreviateNumber(n, 8)}`}
+                    formatFn={(n: any) => `${abbreviateNumber(n, 8)} ${asset?.name}`}
                     //formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
                   />
                 </VStack>
