@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { protocols, subgraphs } from 'constants/'
-import { getObjectPath } from 'helpers/utilities'
+import { getObjectPath, asyncWait } from 'helpers/'
 import type { Explorer, PlatformApiFilters } from 'constants/'
 
 export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
@@ -68,7 +68,7 @@ const buildSubgraphQuery = (entity: string, fields: string[], params: Record<str
   }`;
 }
 
-export const getSubgraphTrancheInfo = async (chainId: number, trancheAddress: string, start?: string | number, end?: string | number, fields?: string[]): Promise<any[]> => {
+export const getSubgraphTrancheInfo = async (chainId: number, trancheAddress: string, start?: string | number, end?: string | number, fields?: string[], count: number = 0): Promise<any[] | null> => {
   const subgraphConfig = subgraphs.tranches
 
   // console.log('getSubgraphTrancheInfo', chainId, trancheAddress, subgraphConfig, subgraphConfig.enabledChains.includes(+chainId))
@@ -101,6 +101,16 @@ export const getSubgraphTrancheInfo = async (chainId: number, trancheAddress: st
   }
 
   const results = await makePostRequest(subgraphConfig.endpoint, postData);
+
+  // Handle errors
+  if (results?.errors){
+    if (count<5){
+      await asyncWait(100)
+      // console.log('Subgraph fetching errors, try again', trancheAddress, count)
+      return await getSubgraphTrancheInfo(chainId, trancheAddress, start, end, fields, count+1)
+    }
+    return null
+  }
 
   let subgraphData = getObjectPath(results, 'data.trancheInfos');
   const lastTimestamp = subgraphData && subgraphData.length>0 ? parseInt(subgraphData[subgraphData.length-1].timeStamp) : null;

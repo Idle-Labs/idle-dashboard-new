@@ -28,6 +28,16 @@ type ConstructorProps = {
   cacheProvider?: CacheContextProps
 }
 
+type SubgraphData = {
+  filters: PlatformApiFilters | undefined
+  results: any
+  cacheKey: string
+  daysDiff: number
+  fetchData: boolean
+  cachedData: any
+  latestTimestamp: number
+}
+
 export class VaultFunctionsHelper {
 
   readonly web3: Web3
@@ -655,7 +665,7 @@ export class VaultFunctionsHelper {
     }
   }
 
-  private async getSubgraphData(vault: Vault, filters?: PlatformApiFilters) {
+  private async getSubgraphData(vault: Vault, filters?: PlatformApiFilters): Promise<SubgraphData> {
     const currTime = Math.ceil(Date.now()/1000)
 
     const cacheKey = `subgraph_${this.chainId}_${vault.id}`
@@ -683,10 +693,9 @@ export class VaultFunctionsHelper {
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
     let results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
 
-    // console.log('getSubgraphData', this.cacheProvider.getUrlHash(cacheKey), results)
-
     // Save fetched data
-    if (fetchData) {
+    if (fetchData && results) {
+
       const dataToCache = new Map()
 
       if (cachedData){
@@ -723,6 +732,15 @@ export class VaultFunctionsHelper {
     const {
       results
     } = await this.getSubgraphData(vault, filters)
+
+    if (!results){
+      return {
+        vaultId: vault.id,
+        tvls: [],
+        rates: [],
+        prices: []
+      }
+    }
 
     // console.log('getVaultHistoricalDataFromSubgraph', vault.id, results)
 
