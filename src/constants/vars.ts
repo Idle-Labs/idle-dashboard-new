@@ -1,5 +1,5 @@
 export const TILDE = "~"
-export const CACHE_VERSION = '2.0'
+export const CACHE_VERSION = '2.1'
 export const VAULTS_MIN_TVL = 1000
 export const PROTOCOL_TOKEN = 'IDLE'
 export const MAX_STAKING_DAYS = 1460
