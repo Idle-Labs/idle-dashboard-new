@@ -107,6 +107,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:17413683,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        stats:{
+          startTimestamp: 1690848000000
+        },
         flags:{
           addHarvestApy: false,
           referralEnabled: true
@@ -188,6 +191,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:2812768,
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
+        stats:{
+          startTimestamp: 1690848000000
+        },
         flags:{
           addHarvestApy: false,
           referralEnabled: true

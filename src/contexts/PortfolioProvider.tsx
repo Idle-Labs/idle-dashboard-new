@@ -2515,7 +2515,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const asset = selectAssetById(vault.id)
         if (asset) {
           // const firstDepositTimestamp = asset.vaultPosition?.firstDepositTx?.timeStamp
-          const startTime = /*firstDepositTimestamp ? firstDepositTimestamp : */dayjs().subtract(1, 'year').unix()
+          const startTime = ("stats" in vault) && vault.stats?.startTimestamp ? Math.round(+vault.stats?.startTimestamp/1000) : dayjs().subtract(1, 'year').unix()
           const start = Math.round(dayjs(+startTime*1000).startOf('day').valueOf()/1000)
           const end = Math.round(dayjs().endOf('day').valueOf()/1000)
 

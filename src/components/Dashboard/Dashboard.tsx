@@ -99,9 +99,9 @@ export const Dashboard: React.FC = () => {
     return realizedApyData.num.div(realizedApyData.den)
   }, [assetIds, vaultsPositions])
 
-  const userHasFunds = useMemo(() => {
-    return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
-  }, [account, isVaultsPositionsLoaded, vaultsPositions])
+  // const userHasFunds = useMemo(() => {
+  //   return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
+  // }, [account, isVaultsPositionsLoaded, vaultsPositions])
 
   const productsOverview = useMemo(() => {
     if (!selectVaultsAssetsByType) return null
@@ -940,16 +940,12 @@ export const Dashboard: React.FC = () => {
                   </VStack>
                 )
               }
-              {
-                userHasFunds && (
-                  <HStack
-                    width={'full'}
-                    justifyContent={'flex-end'}
-                  >
-                    <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-                  </HStack>
-                )
-              }
+              <HStack
+                width={'full'}
+                justifyContent={'flex-end'}
+              >
+                <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+              </HStack>
             </Stack>
             <BalanceChart
               percentChange={0}

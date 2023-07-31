@@ -26,7 +26,7 @@ import { TransactionList } from 'components/TransactionList/TransactionList'
 import { useVolumeChartData } from 'hooks/useVolumeChartData/useVolumeChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { SimpleGrid, Stack, HStack, VStack, Heading, Flex } from '@chakra-ui/react'
+import { Center, SimpleGrid, Stack, HStack, VStack, Heading, Flex } from '@chakra-ui/react'
 import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
 import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange } from 'constants/types'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
@@ -397,14 +397,14 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
       })
     })
 
-    strategyConfig.feesCollectors?.forEach( (address: string) => {
+    strategyConfig?.feesCollectors?.forEach( (address: string) => {
       items.push({
         address,
         translation:'about.feeCollector'
       })
     })
 
-    if (asset.type === 'BY'){
+    if (asset?.type === 'BY'){
       const timelockContract = contracts.find( (contract: GenericContract) => contract.name === 'Timelock' )
       if (timelockContract){
         items.push({
@@ -452,7 +452,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     wrapFlex={false}
                     key={`asset_${assetId}`}
                   >
-                    <AssetProvider.ApyRatio textStyle={'ctaStatic'} color={assetIds.length>1 ? `strategies.${asset.type}` : 'primary'} fontSize={'xl'} />
+                    <AssetProvider.ApyRatio textStyle={'ctaStatic'} color={assetIds.length>1 ? `strategies.${asset?.type}` : 'primary'} fontSize={'xl'} />
                   </AssetProvider>
                 )
               })
@@ -568,7 +568,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                         width={'full'}
                         alignItems={'flex-start'}
                       >
-                        <Translation translation={strategies[asset.type].label} textStyle={'ctaStatic'} fontWeight={600} fontSize={'lg'} />
+                        <Translation translation={strategies[asset?.type].label} textStyle={'ctaStatic'} fontWeight={600} fontSize={'lg'} />
                         <SimpleGrid
                           spacing={4}
                           columns={2}
@@ -576,10 +576,10 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                         >
                           <Card>
                             <Translation mb={1} translation={'defi.avgApy'} textStyle={'captionSmall'} />
-                            <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} color={`strategies.${asset.type}`} fontSize={'xl'} />
+                            <Amount.Percentage value={assetsAvgApy[assetId]} textStyle={'ctaStatic'} color={`strategies.${asset?.type}`} fontSize={'xl'} />
                           </Card>
                           {
-                            strategies[asset.type].stats?.strategyData?.fields.map( (field: string) => (
+                            strategies[asset?.type].stats?.strategyData?.fields.map( (field: string) => (
                               <Card
                                 key={`field_${field}`}
                               >
@@ -615,17 +615,31 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
               <Card.Dark
                 p={6}
               >
+                {
+                  performanceChartData && !performanceChartData.total?.length && (
+                    <Center
+                      layerStyle={'overlay'}
+                      bg={'rgba(0, 0, 0, 0.4)'}
+                    >
+                      <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                    </Center>
+                  )
+                }
                 <VStack
                   spacing={4}
                   width={'full'}
                 >
-                  <HStack
-                    width={'full'}
-                    justifyContent={'space-between'}
-                  >
-                    {assetsApys}
-                    <DownloadCsvData chartData={performanceChartData} isRainbowChart={true} fileName={`performances_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv`} />
-                  </HStack>
+                  {
+                    performanceChartData && performanceChartData.total?.length>0 && (
+                      <HStack
+                        width={'full'}
+                        justifyContent={'space-between'}
+                      >
+                        {assetsApys}
+                        <DownloadCsvData chartData={performanceChartData} isRainbowChart={true} fileName={`performances_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv`} />
+                      </HStack>
+                    )
+                  }
                   <GenericChart
                     percentChange={0}
                     assetIds={assetIds}
@@ -670,7 +684,18 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
               <Translation translation={'defi.tvl'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
               <Card.Dark
                 p={6}
+                flex={1}
               >
+                {
+                  tvlUsdChartData && !tvlUsdChartData.total?.length && (
+                    <Center
+                      layerStyle={'overlay'}
+                      bg={'rgba(0, 0, 0, 0.4)'}
+                    >
+                      <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                    </Center>
+                  )
+                }
                 <GenericChart
                   percentChange={0}
                   assetIds={assetIds}
@@ -682,7 +707,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
-                  fileName={`tvls_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv`}
+                  fileName={tvlUsdChartData && tvlUsdChartData.total?.length>0 ? `tvls_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
                 />
               </Card.Dark>
             </VStack>
@@ -694,7 +719,18 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
               <Translation translation={'defi.apy'} component={Heading} as={'h3'} textStyle={'heading'} fontSize={'lg'} />
               <Card.Dark
                 p={6}
+                flex={1}
               >
+                {
+                  rateChartData && !rateChartData.total?.length && (
+                    <Center
+                      layerStyle={'overlay'}
+                      bg={'rgba(0, 0, 0, 0.4)'}
+                    >
+                      <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                    </Center>
+                  )
+                }
                 <GenericChart
                   percentChange={0}
                   assetIds={assetIds}
@@ -707,7 +743,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   height={isMobile ? '300px' : '350px'}
                   formatFn={(n: any) => `${numberToPercentage(n)}`}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
-                  fileName={`rates_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv`}
+                  fileName={rateChartData && rateChartData.total?.length>0 ? `rates_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
                 />
               </Card.Dark>
             </VStack>
