@@ -8,6 +8,7 @@ import { FEES_COLLECTORS } from 'constants/vars'
 import { selectUnderlyingToken } from 'selectors/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
+import { explorers, networks } from 'constants/networks'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -54,19 +55,23 @@ export class VaultFunctionsHelper {
     this.cacheProvider = props.cacheProvider
   }
 
-  public async getStakingRewards(stakedIdleVault: StakedIdleVault | undefined): Promise<EtherscanTransaction[]> {
+  public async getStakingRewards(stakedIdleVault: StakedIdleVault | undefined, chainId?: number): Promise<EtherscanTransaction[]> {
 
-    if (!this.explorer || !stakedIdleVault) return []
+    if (!stakedIdleVault) return []
 
     const idleTokenConfig = stakedIdleVault.rewardTokenConfig
     const feeDistributorConfig = stakedIdleVault.feeDistributorConfig
 
-    const endpoint = `${this.explorer?.endpoints[this.chainId]}?module=account&action=tokentx&address=${feeDistributorConfig.address}&sort=desc`
+    chainId = chainId || this.chainId
+    const explorer = explorers[networks[chainId].explorer]
+    if (!explorer) return []
 
-    const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
+    const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${feeDistributorConfig.address}&sort=desc`
+
+    const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
     const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
-    // console.log('getIdleStakingRewardsTxs',etherscanEndpoint,etherscanTxlist);
+    // console.log('getIdleStakingRewardsTxs', endpoint, stakedIdleVault.rewardTokenConfig, stakedIdleVault.feeDistributorConfig, etherscanTxlist);
     return etherscanTxlist ? etherscanTxlist.filter( (tx: EtherscanTransaction) => (tx.contractAddress.toLowerCase() === idleTokenConfig.address?.toLowerCase() && tx.to.toLowerCase() === feeDistributorConfig.address.toLowerCase() && BNify(tx.value).gt(0))) : []
   }
 
@@ -188,6 +193,8 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(this.chainId, 'instadapp', 'stETH'))
     const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
+    if (!results) return BNify(0)
+
     const foundVault = results.find( (r: any) => r.vault === '0xA0D3707c569ff8C87FA923d3823eC5D81c98Be78' )
     const apr = bnOrZero(foundVault?.apy?.apyWithoutFee)
 
@@ -300,6 +307,8 @@ export class VaultFunctionsHelper {
 
     const MATIC = selectUnderlyingToken(this.chainId, 'MATIC')
     const stMATIC = selectUnderlyingToken(this.chainId, 'STMATIC')
+
+    if (!MATIC || !stMATIC) return []
 
     const stMaticContract = new GenericContract(this.web3, this.chainId, {
       name: 'stMATIC',

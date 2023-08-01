@@ -27,20 +27,21 @@ import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate, getAssetPath } from 'helpers/'
 import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image, Flex } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
+  const [ , setPercentChange ] = useState(0)
   const { theme, isMobile } = useThemeProvider()
   const [ ref, dimensions ] = useBoundingRect()
-  const [ , setPercentChange ] = useState(0)
   const selectedStrategies = useMemo(() => Object.keys(strategies), [])
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { account, walletInitialized } = useWalletProvider()
+  const { account, network, walletInitialized } = useWalletProvider()
   const {
     assetsData,
     stakingData,
@@ -98,25 +99,14 @@ export const Dashboard: React.FC = () => {
     return realizedApyData.num.div(realizedApyData.den)
   }, [assetIds, vaultsPositions])
 
-  // console.log('totalFunds', vaultsPositions, totalFunds.toString())
+  // const userHasFunds = useMemo(() => {
+  //   return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
+  // }, [account, isVaultsPositionsLoaded, vaultsPositions])
 
-  /*
-  const totalDeposited = useMemo(() => {
-    return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (amount: BigNumber, vaultPosition: VaultPosition) => {
-      return amount.plus(vaultPosition.usd.deposited)
-    }, BNify(0))
-  }, [assetIds, vaultsPositions])
-
-  const earningsPercentage = useMemo(() => {
-    return totalFunds.div(totalDeposited).minus(1).times(100)
-  }, [totalDeposited, totalFunds])
-  */
-
-  const userHasFunds = useMemo(() => {
-    return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
-  }, [account, isVaultsPositionsLoaded, vaultsPositions])
+  // console.log('vaultsPositions', vaultsPositions)
 
   const productsOverview = useMemo(() => {
+    if (!selectVaultsAssetsByType) return null
     return (
       <SimpleGrid
         mt={20}
@@ -344,53 +334,74 @@ export const Dashboard: React.FC = () => {
                       alignItems={'flex-start'}
                     >
                       <Translation translation={`strategies.${productConfig.strategy}.descriptionShort`} textStyle={'caption'} />
-                      <VStack
-                        spacing={4}
-                        width={'full'}
-                        alignItems={'flex-start'}
-                      >
-                        <Translation translation={'common.featured'} textStyle={'ctaStatic'} />
-                        <PausableChakraCarouselProvider delay={10000}>
-                          <PausableChakraCarouselProvider.Carousel
-                            showProgress={false}
-                            progressColor={'white'}
+                      {
+                        !productAssets.length ? (
+                          <VStack
+                            spacing={4}
+                            width={'full'}
+                            alignItems={'flex-start'}
                           >
-                            {
-                              productAssets
-                                .filter( (a: Asset) => BNify(a.apy).gt(0) )
-                                .sort( (a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1 )
-                                .slice(0, isMobile ? 8 : 9)
-                                .reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
-                                  const arrayKey: number = parseInt(''+(index/(isMobile ? 2 : 3)))
-                                  if (!assetsGroups[arrayKey]){
-                                    assetsGroups[arrayKey] = []
-                                  }
-                                  assetsGroups[arrayKey].push(asset)
-                                  return assetsGroups
-                                }, []).map( (assets: Asset[], index: number) => {
-                                  return (
-                                    <HStack
-                                      spacing={4}
-                                      width={'full'}
-                                      key={`container_${index}`}
-                                    >
-                                      {
-                                        assets.map( (asset: Asset) => (
-                                          <VaultCard.Minimal key={`asset_${asset.id}`} assetId={asset.id as string} />
-                                        ))
+                            <Translation translation={'defi.noVaultsAvailable'} textStyle={'ctaStatic'} />
+                            <Translation translation={`strategies.${productConfig.strategy}.noVaultsAvailable`} params={{network: network?.chainName}} textStyle={'caption'} />
+                          </VStack>
+                        ) : (
+                          <VStack
+                            spacing={4}
+                            width={'full'}
+                            alignItems={'flex-start'}
+                          >
+                            <Translation translation={'dashboard.strategies.bestPerforming'} textStyle={'ctaStatic'} />
+                            <PausableChakraCarouselProvider delay={10000}>
+                              <PausableChakraCarouselProvider.Carousel
+                                showProgress={false}
+                                progressColor={'white'}
+                              >
+                                {
+                                  productAssets
+                                    .filter( (a: Asset) => a.status !== 'deprecated' )
+                                    // .filter( (a: Asset) => BNify(a.apy).gt(0) )
+                                    .sort( (a1: Asset, a2: Asset) => BNify(a1.apy).lt(BNify(a2.apy)) ? 1 : -1 )
+                                    .slice(0, isMobile ? 8 : 9)
+                                    .reduce( (assetsGroups: Asset[][], asset: Asset, index: number) => {
+                                      const arrayKey: number = parseInt(''+(index/(isMobile ? 2 : 3)))
+                                      if (!assetsGroups[arrayKey]){
+                                        assetsGroups[arrayKey] = []
                                       }
-                                    </HStack>
-                                  )
-                                })
-                            }
-                          </PausableChakraCarouselProvider.Carousel>
-                          <PausableChakraCarouselProvider.DotNav />
-                        </PausableChakraCarouselProvider>
-                      </VStack>
+                                      assetsGroups[arrayKey].push(asset)
+                                      return assetsGroups
+                                    }, []).map( (assets: Asset[], index: number) => {
+                                      return (
+                                        <SimpleGrid
+                                          spacing={4}
+                                          width={'full'}
+                                          columns={[2, 3]}
+                                          key={`container_${index}`}
+                                        >
+                                          {
+                                            assets.map( (asset: Asset) => (
+                                              <VaultCard.Minimal key={`asset_${asset.id}`} assetId={asset.id as string} />
+                                            ))
+                                          }
+                                        </SimpleGrid>
+                                      )
+                                    })
+                                }
+                              </PausableChakraCarouselProvider.Carousel>
+                              <PausableChakraCarouselProvider.DotNav />
+                            </PausableChakraCarouselProvider>
+                          </VStack>
+                        )
+                      }
                     </VStack>
                   )
                 }
-                <Translation component={Button} translation={`common.deposit`} onClick={() => navigate(strategyPath)} variant={'ctaPrimary'} width={['full', 'auto']} px={10} py={2} />
+                {
+                  !productAssets.length ? (
+                    <SwitchNetworkButton chainId={1} />
+                  ) : (
+                    <Translation component={Button} translation={`common.deposit`} onClick={() => navigate(strategyPath)} variant={'ctaPrimary'} width={['full', 'auto']} px={10} py={2} />
+                  )
+                }
               </VStack>
             </VStack>
           )
@@ -398,7 +409,7 @@ export const Dashboard: React.FC = () => {
       }
       </SimpleGrid>
     )
-  }, [isPortfolioLoaded, selectVaultsAssetsByType, vaultsPositions, selectAssetById, isMobile, theme, navigate])
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, vaultsPositions, selectAssetById, isMobile, network, theme, navigate])
   
   /*
   const products = useMemo(() => {
@@ -917,7 +928,7 @@ export const Dashboard: React.FC = () => {
                       >
                         <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
                         {
-                          totalFunds.gt(0) && (
+                          avgRealizedApy.gte(0.01) && (
                             <Stat>
                               <HStack spacing={2}>
                                 <Amount.Percentage value={avgRealizedApy} suffix={' APY'} textStyle={'captionSmall'} />
@@ -931,23 +942,19 @@ export const Dashboard: React.FC = () => {
                   </VStack>
                 )
               }
-              {
-                userHasFunds && (
-                  <HStack
-                    width={'full'}
-                    justifyContent={'flex-end'}
-                  >
-                    <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-                  </HStack>
-                )
-              }
+              <HStack
+                width={'full'}
+                justifyContent={'flex-end'}
+              >
+                <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
+              </HStack>
             </Stack>
             <BalanceChart
               percentChange={0}
               color={chartColor}
               timeframe={timeframe}
-              assetIds={allAssetIds}
               allowFlatChart={true}
+              assetIds={allAssetIds}
               loadingEnabled={false}
               isRainbowChart={false}
               strategies={selectedStrategies}
@@ -987,9 +994,7 @@ export const Dashboard: React.FC = () => {
           </Card.Dark>
         </VStack>
       </Stack>
-      
       {productsOverview}
-
       <Stack
         spacing={6}
         mt={[10, 20]}

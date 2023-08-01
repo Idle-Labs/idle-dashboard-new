@@ -8,8 +8,8 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import type { Transaction, TransactionReceipt } from 'web3-core'
 import { ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
-import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
+import React, { createContext, useContext, useMemo, useReducer, useCallback, useEffect } from 'react'
+import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeRequest, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
   FastGasPrice: string
@@ -60,9 +60,9 @@ type ContextProps = {
   retry: Function
   state: StateProps
   setGasLimit: Function
+  estimateGasFee: Function
   sendTransaction: Function
   updateGasPrices: Function
-  estimateGasFee: Function
   cleanTransaction: Function
   sendTransactionTest: Function
   setTransactionSpeed: Function
@@ -203,6 +203,19 @@ const reducer = (state: StateProps, action: ReducerActionTypes) => {
         ...state,
         tokenPriceUsd : action.payload
       }
+    case 'START':
+      return {
+        ...state,
+        transaction: {
+          ...initialState.transaction,
+          // assetId: action.payload.assetId,
+          // contractSendMethod: action.payload.contractSendMethod,
+          status: 'started',
+          created: lastUpdated,
+          lastUpdated,
+          ...action.payload
+        }
+      }
     case 'CREATE':
       return {
         ...state,
@@ -310,13 +323,18 @@ const TransactionManagerContext = createContext<ContextProps>(initialContextStat
 export const useTransactionManager = () => useContext(TransactionManagerContext)
 
 export function TransactionManagerProvider({children}: ProviderProps) {
-  const { web3 }  = useWeb3Provider()
+  const { web3, web3Chains }  = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
-  const { account, chainId, explorer } = useWalletProvider()
+  const { account, chainId, prevChainId, explorer, network } = useWalletProvider()
+
+  const networkChanged = useMemo(() => {
+    return !!chainId && !!prevChainId && +chainId !== +prevChainId
+  }, [chainId, prevChainId])
 
   // Get estimated time
   const getEstimatedTime = useCallback( async (gasPrice: string): Promise<string | null> => {
     if (!explorer || !chainId) return null
+    if (+chainId !== 1) return '120'
     const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${BNify(gasPrice).times(1e09).toString()}`
     return await makeEtherscanApiRequest(endpoint, explorer.keys)
   }, [explorer, chainId])
@@ -335,22 +353,31 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     return await getBlock(web3, 'latest')
   }, [web3])
 
-  // Track transaction changed
-  // useEffect(() => {
-  //   if (!state.transaction) return
-  //   console.log('Transaction CHANGED', state.transaction)
-  // }, [state.transaction])
-
   const updateGasPrices = useCallback( async () => {
     if (!explorer || !chainId) return
-    const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
-    const gasOracle = await makeEtherscanApiRequest(endpoint, explorer.keys)
+
+    const customGasOracle = explorer.gasOracle
+    const useCustomGasOracle = customGasOracle && customGasOracle?.endpoints[chainId]
+    const endpoint = customGasOracle?.endpoints[chainId] || `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
+    const gasOracle = useCustomGasOracle ? await makeRequest(endpoint) : await makeEtherscanApiRequest(endpoint, explorer.keys)
+
     if (gasOracle) {
       const gasPrices: GasPrices = {
-        [TransactionSpeed.VeryFast]: (+gasOracle.FastGasPrice+2).toString(),
-        [TransactionSpeed.Fast]: gasOracle.FastGasPrice,
-        [TransactionSpeed.Average]: (+gasOracle.SafeGasPrice+1).toString(),
-        [TransactionSpeed.Slow]: (+gasOracle.SafeGasPrice).toString()
+        [TransactionSpeed.VeryFast]: '0',
+        [TransactionSpeed.Fast]: '0',
+        [TransactionSpeed.Average]: '0',
+        [TransactionSpeed.Slow]: '0'
+      }
+
+      if (useCustomGasOracle){
+        (Object.keys(customGasOracle.mapping) as TransactionSpeed[]).forEach( (transactionSpeed: TransactionSpeed) => {
+          gasPrices[transactionSpeed] = (+gasOracle[customGasOracle.mapping[transactionSpeed]]).toString()
+        })
+      } else {
+        gasPrices[TransactionSpeed.VeryFast] = (+gasOracle.FastGasPrice+2).toString()
+        gasPrices[TransactionSpeed.Fast] = gasOracle.FastGasPrice
+        gasPrices[TransactionSpeed.Average] = (+gasOracle.SafeGasPrice+1).toString()
+        gasPrices[TransactionSpeed.Slow] = (+gasOracle.SafeGasPrice).toString()
       }
 
       const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
@@ -376,31 +403,42 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     }
   }, [explorer, chainId, getEstimatedTime])
 
+  // Reset gas oracle on network change
+  useEffect(() => {
+    if (networkChanged){
+      dispatch({type: 'SET_GAS_ORACLE', payload: null})
+    }
+  }, [networkChanged])
+
   // Set estimated time
   useEffect(() => {
     if (state.transaction?.status !== 'pending' || !state.transaction?.transaction?.gasPrice || !explorer || !chainId || state.transaction?.estimatedTime) return
     ;(async () => {
-      const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
-      const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
-      // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
-      dispatch({type: 'SET_ESTIMATED_TIME', payload: parseInt(estimatedTime)})
+      // const endpoint = `${explorer.endpoints[chainId]}?module=gastracker&action=gasestimate&gasprice=${state.transaction?.transaction?.gasPrice}`
+      // const estimatedTime = await makeEtherscanApiRequest(endpoint, explorer.keys)
+      const estimatedTime = await getEstimatedTime(BNify(state.transaction?.transaction?.gasPrice).div(1e09).toString())
+      if (estimatedTime){
+        // console.log('Tx Estimated Time', state.transaction?.transaction?.gasPrice, estimatedTime)
+        dispatch({type: 'SET_ESTIMATED_TIME', payload: +estimatedTime})
+      }
     })()
-  }, [state.transaction, explorer, chainId])
+  }, [state.transaction, explorer, chainId, getEstimatedTime])
 
   // Get chain token price
   useEffect(() => {
-    if (!chainId || !web3) return
+    if (!chainId || !web3 || !web3Chains) return
     ;(async () => {
-      const chainToken = selectUnderlyingToken(chainId, chains[chainId].token)
+      const chainToken = selectUnderlyingToken(1, chains[chainId].token)
       if (!chainToken || !chainToken.address) return
       
-      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3)
+      const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(1, web3Chains[1])
       const chainTokenPriceUsd = await chainlinkHelper.getTokenPriceUsd(chainToken.address)
+
       if (!chainTokenPriceUsd) return
       dispatch({type: 'SET_TOKEN_PRICE', payload: chainTokenPriceUsd})
       // console.log('chainToken', chainToken, chainTokenPriceUsd)
     })()
-  }, [chainId, web3])
+  }, [chainId, web3, web3Chains])
 
   // Get latest block
   useEffect(() => {
@@ -444,7 +482,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     const estimatedFeesUsd = (Object.keys(state.gasPrices) as Array<TransactionSpeed>).reduce( (estimatedFeesUsd: GasPrices, transactionSpeed: TransactionSpeed): GasPrices => {
       const estimatedFee = estimatedFees[transactionSpeed]
       const estimatedFeeUsd = BNify(estimatedFee).times(state.tokenPriceUsd).toString()
-
       return {
         ...estimatedFeesUsd,
         [transactionSpeed]: estimatedFeeUsd
@@ -523,9 +560,18 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   // Send transaction
   const sendTransaction = useCallback(
     async (vaultId: AssetId, assetId: AssetId, contractSendMethod: ContractSendMethod, actionType?: string, amount?: string) => {
-      if (!account || !web3) return null
+      if (!account || !web3 || !network) return null
 
       try {
+
+        dispatch({type: 'START', payload: {
+          amount,
+          assetId,
+          vaultId,
+          actionType,
+          contractSendMethod
+        }})
+
         const sendOptions: SendOptions = {
           from: account?.address
         }
@@ -537,12 +583,19 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           getBlockBaseFeePerGas(web3)
         ])
 
+        // console.log('gas', gas)
+        // console.log('baseFeePerGas', baseFeePerGas)
+
         if (gas) {
           sendOptions.gas = gas
-          // @ts-ignore
-          sendOptions.maxPriorityFeePerGas = 200000000
-          // @ts-ignore
-          sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
+          if (network.supportEip1559 === undefined || network.supportEip1559){
+            // @ts-ignore
+            sendOptions.maxPriorityFeePerGas = 200000000
+            if (baseFeePerGas){
+              // @ts-ignore
+              sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
+            }
+          }
         }
 
         dispatch({type: 'CREATE', payload: {
@@ -552,6 +605,8 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           actionType,
           contractSendMethod
         }})
+
+        // console.log('sendOptions', sendOptions)
 
         contractSendMethod.send(sendOptions)
           .on("transactionHash", async (hash: string) => {
@@ -587,12 +642,12 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             dispatch({type: 'SET_STATUS', payload: 'failed'})
           });
       } catch (err) {
-        // console.log('error', error)
+        // console.log('error', err)
         dispatch({type: 'SET_ERROR', payload: err})
         dispatch({type: 'SET_STATUS', payload: 'failed'})
       }
     }
-  , [account, web3, state.gasPrice])
+  , [account, web3, network, state.gasPrice])
 
   // Send again the transaction
   const retry = useCallback(() => {

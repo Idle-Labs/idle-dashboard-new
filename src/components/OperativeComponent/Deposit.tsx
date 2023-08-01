@@ -12,9 +12,9 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
+import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -78,8 +78,12 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
     }
+
+    // Transaction is started, disable button
+    if (transaction.status === 'started') return true
+
     return false
-  }, [asset, amount, vaultEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
+  }, [asset, amount, vaultEnabled, transaction, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   // console.log(Object.getOwnPropertyNames(vault))
   // console.log('vault', vault.status, asset.status)
@@ -197,11 +201,17 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const depositButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
+      <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'}>
+        {
+          transaction.status === 'started' && (
+            <Spinner size={'sm'} />
+          )
+        }
+      </Translation>
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, deposit])
+  }, [account, disabled, transaction, deposit])
 
   const referralMessage = useMemo(() => {
     if (!_referral) return null

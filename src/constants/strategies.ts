@@ -49,6 +49,7 @@ export type StrategyProps = {
   features?: string[]
   banner?: BannerProps
   description?: string
+  feesCollectors?: string[]
   columns?: StrategyColumn[]
   generalDataFields: GeneralDataField[]
   carouselItems?: StrategyCarouselItem[]
@@ -146,6 +147,11 @@ export const strategies: Record<string, StrategyProps> = {
         subtitle:'strategies.best.modal.subtitle'
       }
     },
+    feesCollectors:[
+      "0xbecc659bfc6edca552fa1a67451cc6b38a0108e4",
+      "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",
+      "0x69a62c24f16d4914a48919613e8ee330641bcb94"
+    ],
     description:'strategies.best.description',
     bg: `${strategiesFolder}best-yield-bg.svg`,
     image: `${strategiesFolder}best-yield.png`,
@@ -267,6 +273,9 @@ export const strategies: Record<string, StrategyProps> = {
       deposit:['coverage' ,'newApy'],
       withdraw:['withdrawFee', 'totalGain', 'fee', 'netGain']
     },
+    feesCollectors:[
+      "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",
+    ],
     features:[
       "strategies.protected.features.builtInProtection",
       "strategies.protected.features.minimumYield",
@@ -290,11 +299,6 @@ export const strategies: Record<string, StrategyProps> = {
         image:`${strategiesCarouselFolder}AA-deposits-protection.gif`,
         title:'strategies.best.carousel.depositsProtection.title',
         description:'strategies.best.carousel.depositsProtection.description'
-      },
-      {
-        image:`${strategiesCarouselFolder}AA-gauges.gif`,
-        title:'strategies.best.carousel.gauges.title',
-        description:'strategies.best.carousel.gauges.description'
       },
       {
         image:`${strategiesCarouselFolder}AA-default-management.gif`,
@@ -409,6 +413,9 @@ export const strategies: Record<string, StrategyProps> = {
       deposit:['boost', 'overperformance', 'newApy'],
       withdraw:['withdrawFee', 'totalGain', 'fee', 'netGain']
     },
+    feesCollectors:[
+      "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",
+    ],
     features:[
       "strategies.boosted.features.higherYield",
       "strategies.boosted.features.outperformUnderlying",

@@ -19,7 +19,9 @@ export const NetworkSelector: React.FC = () => {
         const icon = networks[parseInt(cId)].icon || undefined
         return {
           icon,
-          onClick: () => setChainId(cId),
+          onClick: () => {
+            setChainId(cId)
+          },
           label: networks[parseInt(cId)].name
         }
       })

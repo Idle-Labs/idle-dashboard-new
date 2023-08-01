@@ -12,14 +12,15 @@ import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendPurchase } from 'helpers/'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
+import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendPurchase, getDecodedError } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
 
 export type ActionComponentArgs = {
   itemIndex: number
   goBack?: Function
+  chainIds?: (string|number)[]
 } & BoxProps
 
 
@@ -195,10 +196,16 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           </VStack>
         )
       case 'failed':
+        const errorHeader = transactionState?.error ? transactionState?.error?.message.toString().split("\n")[0] : null
+        const decodedError = getDecodedError(transactionState?.error)
+        const errorMessage = decodedError || errorHeader
+        const translationKey = `trade.actions.${txActionType}.messages.decoded.${errorMessage}`
+        const translatedError = errorMessage ? translate(translationKey) : null
+        const errorToShow = translatedError && translatedError !== translationKey ? translatedError : errorMessage
         return (
           <>
             <Translation component={Text} translation={`modals.${txActionType}.status.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
-            <Translation component={Text} translation={`modals.status.body.failed`} params={{asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'captionSmall'} textAlign={'center'} />
+            <Translation component={Text} isHtml={true} translation={`modals.status.body.failed`} params={{error: `"${errorToShow}"`, asset: assetToDisplay, amount: abbreviateNumber }} textStyle={'captionSmall'} textAlign={'center'} />
             <Translation component={Button} translation={"common.retry"} leftIcon={<MdOutlineRefresh size={24} />} onClick={() => { retry() }} variant={'ctaPrimary'} px={10} />
             <Translation component={Text} translation={`common.cancel`} textStyle={['cta', 'link']} onClick={() => resetAndGoBack()} />
           </>
@@ -206,7 +213,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       default:
         return null
     }
-  }, [transactionState?.status, vault, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
+  }, [transactionState, vault, translate, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
 
   const isLongTransaction = useMemo(() => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0
@@ -377,7 +384,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                     >
                       <Translation component={Text} whiteSpace={'nowrap'} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
                       <SkeletonText noOfLines={1} isLoaded={!!gasPrices} width={'100%'}>
-                        <Amount prefix={'('} suffix={')'} decimals={0} textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} value={gasPrices?.[transactionSpeed]}></Amount>
+                        <Amount prefix={'('} suffix={')'} decimals={bnOrZero(gasPrices?.[transactionSpeed]).mod(1).gt(0) ? 2 : 0} textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} value={gasPrices?.[transactionSpeed]}></Amount>
                       </SkeletonText>
                     </HStack>
                   </HStack>
@@ -419,6 +426,7 @@ export type ActionStep = {
   label: string
   component: any
   props?: any
+  chainIds?: (string|number)[]
 }
 
 export type OperativeComponentAction = ActionStep & {
@@ -723,7 +731,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                 flex={1}
                 width={'100%'}
               >
-                {!!ActionComponent && <ActionComponent itemIndex={0} />}
+                {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
               </Flex>
             </Flex>
             {

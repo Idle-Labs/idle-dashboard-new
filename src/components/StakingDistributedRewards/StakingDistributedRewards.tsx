@@ -1,12 +1,12 @@
 import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
-import { PROTOCOL_TOKEN } from 'constants/vars'
 import { selectUnderlyingToken } from 'selectors/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import React, { useState, useMemo, useCallback } from 'react'
+import { PROTOCOL_TOKEN, STAKING_CHAINID } from 'constants/vars'
 import { Translation } from 'components/Translation/Translation'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -25,17 +25,16 @@ export const StakingDistributedRewards: React.FC = () => {
   const { isMobile } = useThemeProvider()
   const [ page, setPage ] = useState<number>(1)
   const { stakingData } = usePortfolioProvider()
-  const { chainId, explorer } = useWalletProvider()
+  const { explorer } = useWalletProvider()
 
   const onRowClick = useCallback((row: RowProps) => {
-    const explorerTxUrl = getExplorerTxUrl(chainId, explorer, row.original.hash)
+    const explorerTxUrl = getExplorerTxUrl(STAKING_CHAINID, explorer, row.original.hash)
     return openWindow(explorerTxUrl)
-  }, [chainId, explorer])
+  }, [explorer])
 
   const protocolToken = useMemo(() => {
-    if (!chainId) return null
-    return selectUnderlyingToken(chainId, PROTOCOL_TOKEN)
-  }, [chainId])
+    return selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
+  }, [])
 
   const rowsPerPage = 5
 
@@ -83,7 +82,7 @@ export const StakingDistributedRewards: React.FC = () => {
       Cell: ({ value }: { value: string }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
-            <TransactionLink hash={value} />
+            <TransactionLink chainId={STAKING_CHAINID} hash={value} />
           </SkeletonText>
         )
       },

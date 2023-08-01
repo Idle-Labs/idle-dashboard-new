@@ -38,11 +38,13 @@ export const GaugeStaking: React.FC = () => {
     return asset && selectVaultGauge && selectVaultGauge(asset.id)
   }, [selectVaultGauge, asset])
 
+  // console.log('vaultGauge', vaultGauge)
+
   const assetGauge = useMemo(() => {
-    const asset = selectAssetById && vaultGauge && selectAssetById(vaultGauge.id)
-    // console.log('GaugeStaking - useMemo - assetGauge', asset)
-    return asset
+    return selectAssetById && vaultGauge && selectAssetById(vaultGauge.id)
   }, [vaultGauge, selectAssetById])
+
+  // console.log('assetGauge', assetGauge)
 
   const strategy = useMemo(() => {
     return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
@@ -161,7 +163,7 @@ export const GaugeStaking: React.FC = () => {
                   spacing={2}
                 >
                   {
-                    vaultGauge.multiRewardsTokens?.length>0 ? Object.keys(assetGauge.gaugeData?.rewards).map( rewardId => {
+                    vaultGauge.multiRewardsTokens?.length>0 && assetGauge.gaugeData ? Object.keys(assetGauge.gaugeData?.rewards).map( rewardId => {
                       const rewardData = assetGauge.gaugeData.rewards[rewardId]
                       if (rewardId === vaultGauge.rewardToken.address) return null
                       const rewardAsset = selectAssetById(rewardId)

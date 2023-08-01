@@ -262,6 +262,7 @@ export type Asset = {
   icon?: string
   vaultId?: string
   type?: string
+  chainId?: number
   name: string
   token: string
   decimals: number

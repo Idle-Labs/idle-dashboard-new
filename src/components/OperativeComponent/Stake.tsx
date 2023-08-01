@@ -2,6 +2,8 @@ import BigNumber from 'bignumber.js'
 import { ManipulateType } from 'dayjs'
 import { Card } from 'components/Card/Card'
 import { MdLockOpen } from 'react-icons/md'
+import { STAKING_CHAINID } from 'constants/'
+import { TbPlugConnectedX } from 'react-icons/tb'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
@@ -22,7 +24,7 @@ import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS 
 import { Box, VStack, HStack, Text, Button, SimpleGrid, Center, Tabs, TabList, Tab } from '@chakra-ui/react'
 import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, toDayjs, bnOrZero, getBlock, formatDate, dayMax, dayMin, abbreviateNumber } from 'helpers/'
 
-export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
+export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
   const [ errorDate, setErrorDate ] = useState<string>('')
@@ -30,11 +32,13 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ lockEndDate, setLockEndDate ] = useState<any>(null)
 
   const { web3 } = useWeb3Provider()
-  const { account } = useWalletProvider()
+  const { account, setChainId, checkChainEnabled } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
+
+  const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -482,7 +486,26 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       assetId={asset?.underlyingId}
     >
       {
-        lockExpired ? (
+        !isChainEnabled ? (
+          <Center
+            px={10}
+            flex={1}
+            width={'100%'}
+          >
+            <VStack
+              spacing={6}
+            >
+              <TbPlugConnectedX size={72} />
+              <VStack
+                spacing={4}
+              >
+                <Translation component={Text} translation={"staking.networkNotSupported"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                <Translation component={Text} translation={`staking.switchToMainnet`} textStyle={'captionSmall'} textAlign={'center'} />
+                <Translation component={Button} translation={`common.switchNetwork`} onClick={() => setChainId(STAKING_CHAINID)} variant={'ctaPrimary'} px={10} />
+              </VStack>
+            </VStack>
+          </Center>
+        ) : lockExpired ? (
           <Center
             px={10}
             flex={1}

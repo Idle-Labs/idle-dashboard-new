@@ -77,6 +77,8 @@ export const useBalanceChartData: UseBalanceChartData = ({
       rainbow: []
     }
 
+    // console.log('isPortfolioLoaded', isPortfolioLoaded, 'historicalPrices', historicalPrices, 'historicalPricesUsd', historicalPricesUsd)
+
     if (!isPortfolioLoaded || isEmpty(historicalPrices) || isEmpty(historicalPricesUsd)) return chartData
 
     // console.log('historicalPricesUsd', historicalPricesUsd)

@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js'
 import { GaugeVault } from 'vaults/GaugeVault'
 import useLocalForge from 'hooks/useLocalForge'
-import { SECONDS_IN_YEAR } from 'constants/vars'
 import { useWeb3Provider } from './Web3Provider'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { selectUnderlyingToken } from 'selectors/'
@@ -18,11 +17,12 @@ import { historicalPricesUsd } from 'constants/historicalData'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID } from 'constants/vars'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs } from 'helpers/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, defaultChainId, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -59,6 +59,7 @@ type InitialState = {
   assetsData: Assets
   balancesUsd: Balances
   helpers: Record<any, any>
+  vaultsChain: number | null
   isPortfolioLoaded: boolean
   protocolToken: Asset | null
   contracts: GenericContract[]
@@ -69,6 +70,7 @@ type InitialState = {
   portfolioTimestamp: number | null
   assetsDataTimestamp: number | null
   selectors: Record<string, Function>
+  vaultsNetworks: Record<string, Vault[]>
   transactions: Record<string, Transaction[]>
   historicalTvls: Record<AssetId, HistoryData[]>
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -77,6 +79,7 @@ type InitialState = {
   historicalTvlsUsd: Record<AssetId, HistoryData[]>
   historicalPricesUsd: Record<AssetId, HistoryData[]>
   vaultsCollectedFees: Record<AssetId, Transaction[]>
+  contractsNetworks: Record<string, GenericContract[]>
 } & VaultsOnchainData
 
 type ContextProps = InitialState
@@ -103,12 +106,14 @@ const initialState: InitialState = {
   transactions: {},
   pausedVaults: {},
   stakingData: null,
+  vaultsChain: null,
   totalSupplies: {},
   vaultsRewards: {},
   gaugesRewards: {},
   aprsBreakdown: {},
   protocolsAprs: {},
   additionalAprs: {},
+  vaultsNetworks: {},
   historicalTvls: {},
   protocolToken: null,
   vaultsPositions: {},
@@ -116,6 +121,7 @@ const initialState: InitialState = {
   historicalPrices: {},
   idleDistributions: {},
   historicalTvlsUsd: {},
+  contractsNetworks: {},
   historicalPricesUsd: {},
   vaultsCollectedFees: {},
   isPortfolioLoaded: false,
@@ -154,12 +160,18 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, helpers: action.payload}
     case 'SET_CONTRACTS':
       return {...state, contracts: action.payload}
+    case 'SET_CONTRACTS_NETWORKS':
+      return {...state, contractsNetworks: action.payload}
     case 'SET_VAULTS_TRANSACTIONS':
       return {...state, transactions: action.payload}
     case 'SET_VAULTS_POSITIONS':
       return {...state, vaultsPositions: action.payload}  
     case 'SET_VAULTS':
       return {...state, vaults: action.payload}
+    case 'SET_VAULTS_CHAIN':
+      return {...state, vaultsChain: action.payload}
+    case 'SET_VAULTS_NETWORKS':
+      return {...state, vaultsNetworks: action.payload}
     case 'SET_APRS':
       return {...state, aprs: action.payload}
     case 'SET_INTEREST_BEARING_TOKENS':
@@ -246,28 +258,36 @@ export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 export function PortfolioProvider({ children }:ProviderProps) {
   const cacheProvider = useCacheProvider()
   const { environment } = useThemeProvider()
-  const { web3, web3Rpc, multiCall } = useWeb3Provider()
   const [ state, dispatch ] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
-  const runningEffects = useRef<Record<string, boolean | string | undefined>>({})
-  const { walletInitialized, connecting, account, prevAccount, chainId, explorer } = useWalletProvider()
+  const { web3, web3Chains, web3Rpc, multiCall } = useWeb3Provider()
+  const runningEffects = useRef<Record<string, boolean | number | string | undefined>>({})
+  const { walletInitialized, isNetworkCorrect, connecting, account, prevAccount, chainId, prevChainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
 
   const accountChanged = useMemo(() => {
     return !!account && !!prevAccount && account.address !== prevAccount.address
   }, [account, prevAccount])
 
+  const networkChanged = useMemo(() => {
+    return !!chainId && !!prevChainId && +chainId !== +prevChainId
+  }, [chainId, prevChainId])
+
+  // console.log('accountChanged', accountChanged, 'chainId', chainId, 'prevChainId', prevChainId, 'networkChanged', networkChanged)
+
   const generateAssetsData = (vaults: Vault[]) => {
     const assetData = vaults.reduce( (assets: Assets, vault: Vault) => {
       const vaultAssetsData = vault.getAssetsData()
       const status = ("status" in vault) && vault.status ? vault.status : 'production'
+      const chainId = +vault.chainId
 
       // Add assets IDs
       const vaultAssetsDataWithIds = Object.keys(vaultAssetsData).reduce( (vaultAssetsDataWithIds: Assets, assetId: AssetId) => {
         vaultAssetsDataWithIds[assetId] = {
           id: assetId,
           ...vaultAssetsData[assetId],
-          status
+          status,
+          chainId
         }
         return vaultAssetsDataWithIds
       }, {})
@@ -283,6 +303,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const selectVaultById = useCallback( (vaultId: string): Vault | null => {
     return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
   }, [state.vaults])
+
+  const selectVaultNetworkById = useCallback( (chainId: any, vaultId: string): Vault | null => {
+    return state.vaultsNetworks && state.vaultsNetworks[chainId] ? state.vaultsNetworks[chainId].find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
+  }, [state.vaultsNetworks])
+
+  const selectNetworkByVaultId = useCallback( (vaultId: string): any | undefined => {
+    return Object.keys(state.vaultsNetworks).find( (chainId: any) => {
+      return state.vaultsNetworks[chainId].find( (vault: Vault) => vault.id.toLowerCase() === vaultId.toLowerCase() )
+    })
+  }, [state.vaultsNetworks])
 
   const selectAssetById = useCallback( (assetId: AssetId | undefined): Asset | null => {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
@@ -372,13 +402,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const protocolToken = useMemo(() => {
     if (!selectAssetById) return
-    const underlyingToken = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+    const underlyingToken = selectUnderlyingToken(GOVERNANCE_CHAINID, PROTOCOL_TOKEN)
     return underlyingToken && selectAssetById(underlyingToken.address)
   }, [selectAssetById])
 
   const stkIDLEToken = useMemo(() => {
     if (!selectAssetById) return
-    const underlyingToken = selectUnderlyingToken(defaultChainId, stkIDLE_TOKEN)
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, stkIDLE_TOKEN)
     return underlyingToken && selectAssetById(underlyingToken.token)
   }, [selectAssetById])
 
@@ -445,7 +475,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return userTransactions
   }, [account?.address, explorer, lastTransaction, chainId, cacheProvider])
 
-  const getVaultsPositions = useCallback( async (vaults: Vault[], test = false): Promise<VaultsPositions> => {
+  const getVaultsPositions = useCallback( async (vaults: Vault[]): Promise<VaultsPositions> => {
 
     const output: VaultsPositions = {
       vaultsPositions: {},
@@ -454,7 +484,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // console.log('getVaultsPositions', vaults, account?.address, explorer, chainId)
 
-    if (!account?.address || !explorer || !chainId || test) return output
+    if (!account?.address || !explorer || !chainId) return output
 
     const startTimestamp = Date.now()
 
@@ -465,9 +495,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return Math.min(startBlock, vaultBlockNumber)
     }, 0)
       
-    const endBlock = test ? '14133495' : 'latest'
+    const endBlock = 'latest'
     const etherscanTransactions = await getUserTransactions(startBlock, endBlock)
-    // console.log('etherscanTransactions', test, account.address, startBlock, endBlock, etherscanTransactions)
+    // console.log('etherscanTransactions', account.address, startBlock, endBlock, etherscanTransactions)
 
     const vaultsTransactions: Record<AssetId, Transaction[]> = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
       vaults,
@@ -482,6 +512,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       (acc, value) => ({...acc, ...value}),
       {}
     )
+
     // console.log('vaultsTransactions', vaultsTransactions)
 
     const vaultsPositions = Object.keys(vaultsTransactions).reduce( (vaultsPositions: Record<AssetId, VaultPosition>, assetId: AssetId) => {
@@ -549,8 +580,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
             })
           }
 
-          // if (index === transactions.length-1) {
-            // console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), dayjs(Date.now()).format('YYYY-MM-DD'), duration, transaction.idlePrice.toString(), vaultPrice.toString(), depositsInfo.depositedAmount.toString(), earningsPercentage.toString(), realizedApr.toString(), realizedApy.toString(), transaction)
+          // if (index === transactions.length-1){
+          //   console.log('Balance Period', assetId, dayjs(+transaction.timeStamp*1000).format('YYYY-MM-DD'), lastBalancePeriod.duration, lastBalancePeriod.idlePrice.toString(), transaction.idlePrice.toString(), lastBalancePeriod.balance.toString(), lastBalancePeriod.earningsPercentage.toString(), lastBalancePeriod.realizedApr.toString(), lastBalancePeriod.realizedApy.toString(), transaction)
           // }
         }
 
@@ -674,7 +705,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     output.vaultsPositions = vaultsPositions
     output.vaultsTransactions = vaultsTransactions
 
-    // console.log('vaultsPositions', vaultsPositions)
+    // console.log('Load vaults positions', vaultsPositions)
 
     // eslint-disable-next-line
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
@@ -683,10 +714,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [account, explorer, chainId, selectVaultPrice, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
-    if (!web3 || !chainId || !multiCall || !state.contracts.length) return []
+    if (!web3 || !multiCall || !state.contractsNetworks?.[STAKING_CHAINID].length) return []
     
-    const StkIdleContract = state.contracts.find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
-    const StakingFeeDistributorContract = state.contracts.find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
+    const StkIdleContract = state.contractsNetworks[STAKING_CHAINID].find( (Contract: GenericContract) => Contract.name === 'stkIDLE')
+    const StakingFeeDistributorContract = state.contractsNetworks[STAKING_CHAINID].find( (Contract: GenericContract) => Contract.name === 'StakingFeeDistributor')
     
     if (!StkIdleContract || !StakingFeeDistributorContract) return []
 
@@ -698,7 +729,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       multiCall.getCallData(StakingFeeDistributorContract.contract, 'claim', [account?.address])
     ].filter( (call): call is CallData => !!call )
 
-  }, [account, web3, chainId, multiCall, state.contracts])
+  }, [account, web3, multiCall, state.contractsNetworks])
 
   // const getGaugesWeightsCalls = useCallback(async (vaults: Vault[]): Promise<Record<AssetId, BigNumber> | undefined> => {
   const getGaugesCalls = useCallback((vaults: Vault[]): CallData[][] | undefined => {
@@ -745,7 +776,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [web3, chainId, multiCall, state.contracts])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
-    if (!multiCall || !vaultFunctionsHelper || !genericContractsHelper) return null
+    if (!multiCall || !web3Chains || !isNetworkCorrect || !vaultFunctionsHelper || !genericContractsHelper) return null
 
     const checkEnabledCall = (call: string) => {
       return !enabledCalls.length || enabledCalls.includes(call)
@@ -761,16 +792,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getTotalSupplyCalls" in vault) && checkEnabledCall('totalSupplies') ? vault.getTotalSupplyCalls() : [],
         ("getFeesCalls" in vault) && checkEnabledCall('fees') ? vault.getFeesCalls() : [],
         ("getAprRatioCalls" in vault) && checkEnabledCall('aprs') ? vault.getAprRatioCalls() : [],
-        ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : [],
-        ("getIdleDistributionCalls" in vault) && checkEnabledCall('aprs') ? vault.getIdleDistributionCalls() : [],
-        ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
-        ("getInterestBearingTokensCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensCalls() : [],
-        ("getRewardTokensCalls" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensCalls() : [],
-        account && ("getRewardTokensAmounts" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensAmounts(account.address) : [],
-        ("getMultiRewardsDataCalls" in vault) && checkEnabledCall('rewards') ? vault.getMultiRewardsDataCalls() : [],
-        ("getClaimableMultiRewardsCalls" in vault) && account && checkEnabledCall('balances') ? vault.getClaimableMultiRewardsCalls(account.address) : [],
-        ("getClaimableRewardsCalls" in vault) && account && checkEnabledCall('balances') ? vault.getClaimableRewardsCalls(account.address) : [],
-        // ("getAllowanceCalls" in vault) ? vault.getAllowanceCalls() : []
+        ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : []
       ]
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
@@ -789,6 +811,41 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       return rawCalls
     }, [])
+
+    const mainnetRawCalls = vaults.filter( (vault: Vault) => checkAddress(vault.id) ).reduce( (mainnetRawCalls: CallData[][], vault: Vault): CallData[][] => {
+      const aggregatedRawCalls = [
+        ("getIdleDistributionCalls" in vault) && checkEnabledCall('aprs') ? vault.getIdleDistributionCalls() : [],
+        ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
+        ("getInterestBearingTokensCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensCalls() : [],
+        ("getRewardTokensCalls" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensCalls() : [],
+        account && ("getRewardTokensAmounts" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensAmounts(account.address) : [],
+        ("getMultiRewardsDataCalls" in vault) && checkEnabledCall('rewards') ? vault.getMultiRewardsDataCalls() : [],
+        ("getClaimableMultiRewardsCalls" in vault) && account && checkEnabledCall('balances') ? vault.getClaimableMultiRewardsCalls(account.address) : [],
+        ("getClaimableRewardsCalls" in vault) && account && checkEnabledCall('balances') ? vault.getClaimableRewardsCalls(account.address) : [],
+      ]
+
+      aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
+        // Init array index
+        if (mainnetRawCalls.length<=index){
+          mainnetRawCalls.push([])
+        }
+
+        calls.forEach( (rawCall: ContractRawCall) => {
+          const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
+          if (callData){
+            mainnetRawCalls[index].push(callData)
+          }
+        })
+      })
+
+      return mainnetRawCalls
+    }, [])
+
+    // Add gauges calls
+    const gaugesWeightsCalls = getGaugesCalls(vaults)
+    if (gaugesWeightsCalls){
+      gaugesWeightsCalls.map( (calls: CallData[]) => mainnetRawCalls.push(calls) )
+    }
 
     // Get vaults additional APRs
     const vaultsAdditionalAprsPromises = vaults.reduce( (promises: Map<AssetId, Promise<VaultAdditionalApr>>, vault: Vault): Map<AssetId, Promise<VaultAdditionalApr>> => {
@@ -820,18 +877,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
 
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
-    
-    // Add gauges calls
-    const gaugesWeightsCalls = getGaugesCalls(vaults)
-    if (gaugesWeightsCalls){
-      gaugesWeightsCalls.map( (calls: CallData[]) => rawCalls.push(calls) )
-    }
 
     // const stkIdleCalls = getStkIdleCalls()
     // rawCalls.push(stkIdleCalls)
     
     // console.log('stkIdleCalls', stkIdleCalls)
-    // console.log('rawCalls', enabledCalls, rawCalls)
+    // console.log('rawCalls', rawCalls)
 
     const [
       maticNFTs,
@@ -849,6 +900,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         feesCallsResults,
         aprRatioResults,
         baseAprResults,
+      ],
+      [
         idleDistributionResults,
         protocolsResults,
         interestBearingTokensCallsResults,
@@ -871,7 +924,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
-      multiCall.executeMultipleBatches(rawCalls)
+      multiCall.executeMultipleBatches(rawCalls),
+      multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
     ])
 
     // console.log('totalSupply', totalSupply,
@@ -885,6 +939,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('stkIdleResults', stkIdleResults)
     // console.log('pausedCallsResults', pausedCallsResults)
     // console.log('vaultsLastHarvests', vaultsLastHarvests)
+    // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
     // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
@@ -1292,7 +1347,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Process Gauges data
     const gaugesRelativeWeights: Record<string, DecodedResult[]> | null = gaugesTimeWeights ? await genericContractsHelper.getGaugesRelativeWeights(gaugesTimeWeights) : {}
     
-    const gaugesData = gaugesRelativeWeights ? gaugesRelativeWeights.weights.reduce( (gaugesData: GaugesData, callResult: DecodedResult) => {
+    const gaugesData = gaugesRelativeWeights?.weights ? gaugesRelativeWeights.weights.reduce( (gaugesData: GaugesData, callResult: DecodedResult) => {
       const gaugeId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
       const gaugeVault = selectVaultById(gaugeId)
       if (!gaugeVault || !("getGaugeRewardData" in gaugeVault)) return gaugesData
@@ -1372,11 +1427,30 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('assetsData', assetsData)
     // Set assets data one time instead of updating for every asset
 
-    // console.log('aprs', aprs)
-    // console.log('balances', balances)
-    // console.log('pricesUsd', pricesUsd)
-    // console.log('prices', vaultsPrices)
-    // console.log('totalSupplies', totalSupplies)
+    // console.log('vaultsOnChainData', {
+    //   fees,
+    //   aprs,
+    //   rewards,
+    //   balances,
+    //   baseAprs,
+    //   pricesUsd,
+    //   aprRatios,
+    //   maticNFTs,
+    //   // assetsData,
+    //   gaugesData,
+    //   // stakingData,
+    //   allocations,
+    //   lastHarvests,
+    //   vaultsPrices,
+    //   pausedVaults,
+    //   totalSupplies,
+    //   aprsBreakdown,
+    //   protocolsAprs,
+    //   vaultsRewards,
+    //   additionalAprs,
+    //   idleDistributions,
+    //   interestBearingTokens
+    // })
 
     return {
       fees,
@@ -1402,12 +1476,20 @@ export function PortfolioProvider({ children }:ProviderProps) {
       idleDistributions,
       interestBearingTokens
     }
-  }, [selectAssetById, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, web3Chains, account, isNetworkCorrect, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
     dispatch({type:'SET_PROTOCOL_TOKEN', payload: protocolToken})
   }, [protocolToken])
+
+  // Clear running effects on network changed
+  useEffect(() => {
+    if (!networkChanged) return
+    runningEffects.current = {}
+    dispatch({type: 'RESET_STATE', payload: {}})
+    // console.log('NETWORK CHANGED - RESET STATE');
+  }, [networkChanged])
 
   // Update on-chain data of last transaction asset
   useEffect(() => {
@@ -1755,13 +1837,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Init underlying tokens and vaults contracts
   useEffect(() => {
-
-    if (!web3 || !chainId || !cacheProvider?.isLoaded) return
+    if (!web3 || !web3Chains || !isNetworkCorrect || !chainId || !cacheProvider?.isLoaded) return
 
     // Init global contracts
     const contracts = globalContracts[chainId].map( (contract: GenericContractConfig) => {
       return new GenericContract(web3, chainId, contract)
     })
+
+    const contractsNetworks = Object.keys(web3Chains).reduce( (contractsNetworks: Record<string, GenericContract[]>, chainId: any) => {
+      contractsNetworks[chainId] = globalContracts[chainId].map( (contract: GenericContractConfig) => {
+        return new GenericContract(web3Chains[chainId], chainId, contract)
+      })
+      return contractsNetworks
+    }, {})
 
     const checkVaultEnv = (vaultConfig: any) => {
       if (!("enabledEnvs" in vaultConfig)) return true
@@ -1770,42 +1858,84 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return false
     }
 
-    // Init underlying tokens vaults
-    const underlyingTokensVaults: UnderlyingToken[] = Object.keys(underlyingTokens[chainId]).reduce( ( vaultsContracts: UnderlyingToken[], token) => {
-      const tokenConfig = underlyingTokens[chainId][token]
-      if (tokenConfig) {
-        const underlyingToken = new UnderlyingToken(web3, chainId, tokenConfig)
-        vaultsContracts.push(underlyingToken)
-      }
-      return vaultsContracts
-    }, [])
+    // Init all vaults networks
+    const allVaultsNetworks: Record<string, Vault[]> = {}
 
-    // Init tranches vaults
-    const trancheVaults: TrancheVault[] = Object.keys(tranches[chainId]).reduce( (vaultsContracts: TrancheVault[], protocol) => {
-      Object.keys(tranches[chainId][protocol]).forEach( token => {
-        const vaultConfig = tranches[chainId][protocol][token]
-        if (checkVaultEnv(vaultConfig)){
-          const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
-          const trancheVaultAA = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
-          const trancheVaultBB = new TrancheVault({web3, web3Rpc, chainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
-          vaultsContracts.push(trancheVaultAA)
-          vaultsContracts.push(trancheVaultBB)
+    // Init underlying tokens vaults
+    const underlyingTokensVaultsNetworks: Record<string, UnderlyingToken[]> = Object.keys(web3Chains).reduce( ( vaultsContracts: Record<string, UnderlyingToken[]>, vaultChainId: any) => {
+      vaultsContracts[vaultChainId] = []
+      if (!allVaultsNetworks[vaultChainId]){
+        allVaultsNetworks[vaultChainId] = []
+      }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+
+      Object.keys(underlyingTokens[vaultChainId]).forEach( token => {
+        const tokenConfig = underlyingTokens[vaultChainId][token]
+        if (tokenConfig) {
+          const underlyingToken = new UnderlyingToken(web3ToUse, vaultChainId, tokenConfig)
+          vaultsContracts[vaultChainId].push(underlyingToken)
+          allVaultsNetworks[vaultChainId].push(underlyingToken)
         }
       })
       return vaultsContracts
-    }, [])
+    }, {})
+
+    const underlyingTokensVaults: UnderlyingToken[] = underlyingTokensVaultsNetworks[chainId]
+
+    // Init tranches vaults
+    const trancheVaultsNetworks = Object.keys(web3Chains).reduce( (vaultsContracts: Record<string, TrancheVault[]>, vaultChainId: any) => {
+      vaultsContracts[vaultChainId] = []
+      if (!allVaultsNetworks[vaultChainId]){
+        allVaultsNetworks[vaultChainId] = []
+      }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+      const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
+
+      Object.keys(tranches[vaultChainId]).forEach( protocol => {
+        Object.keys(tranches[vaultChainId][protocol]).forEach( token => {
+          const vaultConfig = tranches[vaultChainId][protocol][token]
+          if (checkVaultEnv(vaultConfig)){
+            const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
+            const trancheVaultAA = new TrancheVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
+            const trancheVaultBB = new TrancheVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
+            vaultsContracts[vaultChainId].push(trancheVaultAA)
+            vaultsContracts[vaultChainId].push(trancheVaultBB)
+            allVaultsNetworks[vaultChainId].push(trancheVaultAA)
+            allVaultsNetworks[vaultChainId].push(trancheVaultBB)
+          }
+        })
+      })
+      return vaultsContracts
+    }, {})
+
+    const trancheVaults: TrancheVault[] = trancheVaultsNetworks[chainId]
 
     const idleController = contracts.find(c => c.name === 'IdleController')
 
     // Init best yield vaults
-    const bestYieldVaults: BestYieldVault[] = Object.keys(bestYield[chainId]).reduce( (vaultsContracts: BestYieldVault[], token) => {
-      const tokenConfig = bestYield[chainId][token]
-      if (checkVaultEnv(tokenConfig)){
-        const bestYieldVault = new BestYieldVault({web3, web3Rpc, chainId, tokenConfig, type: 'BY', cacheProvider, idleController})
-        vaultsContracts.push(bestYieldVault)
+    const bestYieldVaultsNetworks = Object.keys(web3Chains).reduce( (vaultsContracts: Record<string, BestYieldVault[]>, vaultChainId: any) => {
+      vaultsContracts[vaultChainId] = []
+      if (!allVaultsNetworks[vaultChainId]){
+        allVaultsNetworks[vaultChainId] = []
       }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+      const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
+
+      Object.keys(bestYield[vaultChainId]).forEach( token => {
+        const tokenConfig = bestYield[vaultChainId][token]
+        if (checkVaultEnv(tokenConfig)){
+          const bestYieldVault = new BestYieldVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, tokenConfig, type: 'BY', cacheProvider, idleController})
+          vaultsContracts[vaultChainId].push(bestYieldVault)
+          allVaultsNetworks[vaultChainId].push(bestYieldVault)
+        }
+      })
       return vaultsContracts
-    }, [])
+    }, {})
+
+    const bestYieldVaults: BestYieldVault[] = bestYieldVaultsNetworks[chainId]
 
     const gaugeDistributorProxy = contracts.find(c => c.name === 'GaugeDistributorProxy')
 
@@ -1816,23 +1946,50 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!trancheVault) return vaultsContracts
       const gaugeVault = new GaugeVault({web3, chainId, gaugeConfig, trancheVault, cacheProvider, gaugeDistributorProxy})
       vaultsContracts.push(gaugeVault)
+      allVaultsNetworks[chainId].push(gaugeVault)
       return vaultsContracts
     }, [])
 
     // Init stkIDLE vault
-    const rewardTokenConfig = selectUnderlyingToken(chainId, PROTOCOL_TOKEN) as UnderlyingTokenProps
-    const stkIdleConfig = globalContracts[chainId].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
-    const feeDistributorConfig = globalContracts[chainId].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
+    const rewardTokenConfig = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN) as UnderlyingTokenProps
+    const stkIdleConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
+    const feeDistributorConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
 
-    const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3, chainId, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
     // console.log('stakedIdleVault', stakedIdleVault)
+    // console.log('allVaultsNetworks', allVaultsNetworks)
 
-    const allVaults = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults, stakedIdleVault]
+    const allVaults: Vault[] = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
+
+    if (stkIdleConfig){
+
+      const defaultChainWeb3 = +chainId === +STAKING_CHAINID ? web3 : web3Chains[STAKING_CHAINID]
+
+      const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: STAKING_CHAINID, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
+      allVaults.push(stakedIdleVault)
+      allVaultsNetworks[STAKING_CHAINID].push(stakedIdleVault)
+
+      // Add staking reward token
+      if (+STAKING_CHAINID !== +chainId){
+        const rewardUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, rewardTokenConfig)
+        allVaults.push(rewardUnderlyingToken)
+        allVaultsNetworks[STAKING_CHAINID].push(rewardUnderlyingToken)
+
+        const stkIDLEUnderlyingTokenConfig = selectUnderlyingToken(STAKING_CHAINID, stkIDLE_TOKEN) as UnderlyingTokenProps
+        const stkIDLEUnderlyingToken = new UnderlyingToken(defaultChainWeb3, STAKING_CHAINID, stkIDLEUnderlyingTokenConfig)
+        allVaults.push(stkIDLEUnderlyingToken)
+        allVaultsNetworks[STAKING_CHAINID].push(stkIDLEUnderlyingToken)
+      }
+    }
+
+    // console.log('allVaults', chainId, allVaults)
     
     const assetsData = generateAssetsData(allVaults)
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
+    dispatch({type: 'SET_VAULTS_CHAIN', payload: chainId})
     dispatch({type: 'SET_ASSETS_DATA_IF_EMPTY', payload: assetsData})
+    dispatch({type: 'SET_VAULTS_NETWORKS', payload: allVaultsNetworks})
+    dispatch({type: 'SET_CONTRACTS_NETWORKS', payload: contractsNetworks})
 
     // Cleanup
     return () => {
@@ -1843,7 +2000,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     };
 
   // eslint-disable-next-line
-  }, [web3, web3Rpc, chainId, environment, cacheProvider?.isLoaded])
+  }, [web3, web3Rpc, web3Chains, chainId, isNetworkCorrect, environment, cacheProvider?.isLoaded])
 
   // Set selectors
   useEffect(() => {
@@ -1858,6 +2015,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectVaultPosition,
       selectAssetPriceUsd,
       selectAssetBalanceUsd,
+      selectNetworkByVaultId,
+      selectVaultNetworkById,
       selectVaultTransactions,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
@@ -1882,6 +2041,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetPriceUsd,
     selectVaultPosition,
     selectAssetBalanceUsd,
+    selectNetworkByVaultId,
+    selectVaultNetworkById,
     selectVaultTransactions,
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
@@ -1907,7 +2068,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const getChainlinkHistoricalPrices = useCallback(async (vaults: Vault[], maxDays = 365): Promise<Record<AssetId, HistoryData[]> | undefined> => {
 
-    if (!web3 || !chainId || !multiCall) return
+    if (!web3 || !multiCall) return
 
     const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
 
@@ -1928,8 +2089,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
       return assets
     }, {})
-
-    // console.log('vaultsUnderlyingTokens', vaultsUnderlyingTokens)
+    
+    // TODO: Get historical USD conversion rates for other chains than ethereum mainnet
+    if (+chainId !== 1){
+      return Object.keys(vaultsUnderlyingTokens).reduce( (historicalPricesUsd: Record<AssetId, HistoryData[]>, assetId: AssetId) => {
+        return {
+          ...historicalPricesUsd,
+          [assetId]: []
+        }
+      }, {})
+    }
 
     const feedsCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[][], assetId: AssetId): CallData[][] => {
       const underlyingToken = vaultsUnderlyingTokens[assetId]
@@ -2055,9 +2224,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get tokens prices, balances, rates
   useEffect(() => {
-    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === (account?.address || true)) return
+    if (!state.vaults.length || !isNetworkCorrect || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === (account?.address || true)) return
 
-    // Avoid refreshing if disconnected
+    // console.log('Load portfolio', isEmpty(state.aprs), account?.address, runningEffects.current.portfolioLoading);
+
+    // Avoid refreshing if disconnected and already loaded data
     if (!isEmpty(state.aprs) && !account?.address) {
       return dispatch({type: 'SET_PORTFOLIO_LOADED', payload: true})
     }
@@ -2073,14 +2244,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Update balances only if account changed
       const enabledCalls = isEmpty(state.aprs) ? [] : ['balances', 'rewards']
 
-      // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls)
-
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
+      
+      // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls, vaultsOnChainData)
+
+      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
+
       if (!vaultsOnChainData) {
         runningEffects.current.portfolioLoading = false
         return
       }
-      // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
 
       const {
         fees,
@@ -2207,7 +2380,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
       }
 
-      // console.log('newState', newState)
+      // console.log('postfolioLoaded', newState)
 
       dispatch({type: 'SET_STATE', payload: newState})
 
@@ -2237,7 +2410,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // console.log('RESET PORTFOLIO')
     };
   // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts])
+  }, [account, isNetworkCorrect, state.vaults, state.contracts])
 
   // Get historical underlying prices from chainlink
   useEffect(() => {
@@ -2268,7 +2441,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // const startTimestamp = Date.now()
 
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
+      
       // console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
+
       if (!historicalPricesUsd) return
 
       // Merge new with stored prices
@@ -2327,6 +2502,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical vaults data
   useEffect(() => {
 
+    // console.log('Load historical data', state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.historicalRates)
+
     if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates)) return
 
     // Get Historical data
@@ -2338,13 +2515,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const asset = selectAssetById(vault.id)
         if (asset) {
           // const firstDepositTimestamp = asset.vaultPosition?.firstDepositTx?.timeStamp
-          const startTime = /*firstDepositTimestamp ? firstDepositTimestamp : */dayjs().subtract(1, 'year').unix()
+          const startTime = ("stats" in vault) && vault.stats?.startTimestamp ? Math.round(+vault.stats?.startTimestamp/1000) : dayjs().subtract(1, 'year').unix()
           const start = Math.round(dayjs(+startTime*1000).startOf('day').valueOf()/1000)
           const end = Math.round(dayjs().endOf('day').valueOf()/1000)
 
           // Get vaults historical rates
           const historicalAprsFilters = {
-            frequency: 86400, // A bit less than a whole day to avoid days skipping
+            frequency: 86400,
             start,
             end
           }
@@ -2414,7 +2591,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get staking data
   useEffect(() => {
-    if (!multiCall || isEmpty(state.vaults) || !state.isPortfolioAccountReady || !vaultFunctionsHelper || runningEffects.current.stakingData === (account?.address || true)) return
+    if (!multiCall || !web3Chains || isEmpty(state.vaults) || !state.isPortfolioAccountReady || !vaultFunctionsHelper || runningEffects.current.stakingData === (account?.address || true)) return
 
     ;(async () => {
 
@@ -2428,8 +2605,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         stkIdleResults,
         stakedIdleVaultRewards
       ] = await Promise.all([
-        multiCall.executeMulticalls(stkIdleCalls),
-        vaultFunctionsHelper.getStakingRewards(stakedIdleVault)
+        multiCall.executeMulticalls(stkIdleCalls, true, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
+        vaultFunctionsHelper.getStakingRewards(stakedIdleVault, STAKING_CHAINID)
       ])
 
       if (!stkIdleResults){
@@ -2483,27 +2660,34 @@ export function PortfolioProvider({ children }:ProviderProps) {
       console.log('STAKING DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
   // eslint-disable-next-line
-  }, [multiCall, vaultFunctionsHelper, state.vaults, account, state.isPortfolioAccountReady])
+  }, [multiCall, web3Chains, vaultFunctionsHelper, state.vaults, account, state.isPortfolioAccountReady])
 
   // Get historical collected fees
   useEffect(() => {
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current.vaultsCollectedFees) return
+    if (isEmpty(state.vaults) || +chainId !== 1 || +chainId !== +state.vaultsChain || !isNetworkCorrect || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current?.vaultsCollectedFeesProcessing || +(runningEffects.current?.vaultsCollectedFees || 0)>5) return
 
     // Get Historical data
     ;(async () => {
 
-      runningEffects.current.vaultsCollectedFees = true
+      if (!runningEffects.current.vaultsCollectedFees){
+        runningEffects.current.vaultsCollectedFees = 0
+      }
+      runningEffects.current.vaultsCollectedFeesProcessing = true
+      runningEffects.current.vaultsCollectedFees = +runningEffects.current.vaultsCollectedFees+1
 
       const startTimestamp = Date.now();
       const vaultsCollectedFees = await vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
       dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
-      runningEffects.current.vaultsCollectedFees = false
+      runningEffects.current.vaultsCollectedFeesProcessing = false
+
+      // console.log('vaultsCollectedFees', state.vaultsChain, runningEffects.current.vaultsCollectedFees, chainId, isNetworkCorrect, state.vaults, vaultsCollectedFees)
 
       // eslint-disable-next-line
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
-  }, [state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.vaultsCollectedFees, cacheProvider])
+  // eslint-disable-next-line
+  }, [state.vaults, state.vaultsChain, isNetworkCorrect, state.isPortfolioLoaded, vaultFunctionsHelper])
 
   // Calculate historical USD Tvls
   useEffect(() => {
@@ -2533,15 +2717,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get user vaults positions
   useEffect(() => {
     // console.log('Load Vaults Positions', account?.address, state.balances, state.isPortfolioLoaded, walletInitialized, connecting, runningEffects.current.vaultsPositions)
-    if (!account?.address || !state.isPortfolioLoaded/* || isEmpty(state.balances)*/ || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
+    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
 
     ;(async () => {
       runningEffects.current.vaultsPositions = true
 
-      const test = false
-
-      const results = await getVaultsPositions(state.vaults, test)
-      // console.log('getVaultsPositions', test, results)
+      const results = await getVaultsPositions(state.vaults)
+      // console.log('getVaultsPositions', state.balances, results)
 
       const {
         vaultsPositions,
@@ -2560,7 +2742,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
       dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
-    };
+    }
   // eslint-disable-next-line
   }, [account, state.isPortfolioLoaded, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
 
@@ -2702,13 +2884,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Generate Assets Data
   useEffect(() => {
-    if (isEmpty(state.vaults)) return
+    if (isEmpty(state.vaults) || isEmpty(state.vaultsNetworks)) return
 
-    const assetsData = generateAssetsData(state.vaults)
+    // Generate assets data 
+    const assetsData: Assets = Object.keys(state.vaultsNetworks).reduce( ( assetsData: Assets, chainId: any) => {
+      return {
+        ...assetsData,
+        ...generateAssetsData(state.vaultsNetworks[chainId])
+      }
+    }, {})
+
+    // console.log('assetsData', assetsData)
+
     for (const vault of state.vaults){
       if (state.pausedVaults[vault.id] && assetsData[vault.id].status !== 'deprecated'){
         assetsData[vault.id].status = 'paused'
       }
+
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
@@ -2751,7 +2943,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // Update staking vault priceUsd
       if (vault.type === 'STK' && ("rewardTokenConfig" in vault)){
         const underlyingToken = assetsData[vault.rewardTokenConfig.address.toLowerCase()]
-        assetsData[vault.id].priceUsd = underlyingToken.priceUsd
+        if (underlyingToken){
+          assetsData[vault.id].priceUsd = underlyingToken.priceUsd
+        }
       }
 
       assetsData[vault.id].aprBreakdown =  state.aprsBreakdown[vault.id] || {}
@@ -2875,6 +3069,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
     state.vaults,
+    state.vaultsNetworks,
     state.fees,
     state.aprs,
     state.baseAprs,

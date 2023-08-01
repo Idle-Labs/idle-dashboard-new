@@ -389,9 +389,9 @@ export class BestYieldVault {
         type: this.type,
         token: this.idleConfig.token,
         color: this.underlyingToken?.colors.hex,
-        icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         underlyingId: this.underlyingToken?.address?.toLowerCase(),
         name: this.underlyingToken?.label || this.underlyingToken?.token || this.idleConfig.token,
+        icon: `${tokensFolder}${this.underlyingToken?.icon || `${this.underlyingToken?.token}.svg`}`,
       }
     }
   }

@@ -7,26 +7,30 @@ import type { ProviderProps } from './common/types'
 import { onboardInitParams } from './configs/onboard'
 import type { WalletState } from '@web3-onboard/core'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
-import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
+import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
 
 // @ts-ignore
 init(onboardInitParams)
 
 type ContextProps = {
-  account: Account | null
-  prevAccount: Account | null | undefined
   chainId: number
-  network: Network | null
-  explorer: Explorer | null
-  wallet: WalletState | null
-  connecting: boolean
   connect: Function
+  connecting: boolean
   disconnect: Function
   setChainId: Function
+  isChainLoaded: boolean
+  account: Account | null
+  network: Network | null
+  explorer: Explorer | null
+  chainIdHex: string | null
   isNetworkCorrect: boolean
+  wallet: WalletState | null
   walletInitialized: boolean
+  checkChainEnabled: Function
+  prevChainId: number | undefined
+  prevAccount: Account | null | undefined
   chainToken: UnderlyingTokenProps | null
 }
 
@@ -35,15 +39,19 @@ const initialState: ContextProps = {
   wallet: null,
   network: null,
   explorer: null,
+  chainIdHex: null,
   chainToken: null,
   connecting: false,
   prevAccount: null,
   connect: () => {},
+  isChainLoaded: false,
   disconnect: () => {},
   setChainId: () => {},
   isNetworkCorrect: true,
   chainId: defaultChainId,
-  walletInitialized: false
+  walletInitialized: false,
+  prevChainId: defaultChainId,
+  checkChainEnabled: () => {}
 }
 
 const WalletProviderContext = React.createContext<ContextProps>(initialState)
@@ -53,19 +61,29 @@ export const useWalletProvider = () => useContext(WalletProviderContext)
 export function WalletProvider({ children }: ProviderProps) {
   const searchParams = useSearchParams()
   const [ { connectedChain }, setChain ] = useSetChain()
+  
   const [ account, setAccount ] = useState<Account | null>(null)
   const prevAccount = usePrevious<Account | null>(account)
+
+  const [ chainId, setChainIdState ] = useState<number>(defaultChainId)
+  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
-  const [ chainId, setChainId ] = useLocalForge('selectedChain', defaultChainId)
-  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
+  const [ chainSetFromStorage, setChainSetFromStorage ] = useState<boolean>(false)
+  const [ storedChainId, setStoredChainId, , isChainLoaded ] = useLocalForge('selectedChain', defaultChainId)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
+  const prevChainId = usePrevious<number>(chainId)
 
   const customAddress = useMemo(() => {
     const walletAddress = getSearchParams.get('wallet')
     return walletAddress && checkAddress(walletAddress) ? walletAddress : null
   }, [getSearchParams])
+
+  const setChainId = useCallback((chainId: number) => {
+    setStoredChainId(+chainId)
+    setChainIdState(+chainId)
+  }, [setChainIdState, setStoredChainId])
 
   const chainIdHex = useMemo(() => {
     return chains[chainId].id
@@ -83,6 +101,25 @@ export function WalletProvider({ children }: ProviderProps) {
     return selectUnderlyingToken(chainId, chains[chainId].token) || null
   }, [chainId])
 
+  const checkChainEnabled = useCallback((chainIds: (string|number)[]) => {
+    return !chainIds.length || (chainId && chainIds.includes(+chainId))
+  }, [chainId])
+
+  // Set chainId to stored chainId
+  useEffect(() => {
+    if (!isChainLoaded || chainSetFromStorage) return
+    if (+storedChainId && +chainId !== +storedChainId){
+      if (chains[+storedChainId]){
+        setChainIdState(storedChainId)
+      // Stored chainId not available, set default chainID
+      } else {
+        setStoredChainId(defaultChainId)
+        setChainIdState(defaultChainId)
+      }
+    }
+    setChainSetFromStorage(true)
+  }, [chainId, setChainIdState, storedChainId, setStoredChainId, chainSetFromStorage, isChainLoaded])
+
   // Auto-connect wallet
   useEffect(() => {
     if (!isWalletProviderLoaded) return
@@ -97,7 +134,6 @@ export function WalletProvider({ children }: ProviderProps) {
   // Switch chain
   useEffect(() => {
     if (!wallet || connecting) return
-    // console.log(initChains, connectedChain, settingChain)
     setChain({
       chainId: chainIdHex
     })
@@ -105,10 +141,10 @@ export function WalletProvider({ children }: ProviderProps) {
 
   // Set isNetworkCorrect
   useEffect(() => {
-    if (!connectedChain) return
-    const isNetworkCorrect = chainIdHex === connectedChain.id
+    // if (!connectedChain) return
+    const isNetworkCorrect = !wallet || chainIdHex === connectedChain?.id
     setIsNetworkCorrect(isNetworkCorrect)
-  }, [chainIdHex, connectedChain])
+  }, [chainIdHex, connectedChain, wallet])
 
   // Update wallet and provider
   useEffect(() => {
@@ -130,6 +166,7 @@ export function WalletProvider({ children }: ProviderProps) {
     }
   }, [wallet, customAddress, connecting, setWalletProvider])
 
+  // Set walletInitialized
   useEffect(() => {
     if (connecting || !isWalletProviderLoaded) return
     const walletInitialized = !!(!walletProvider || account?.address)
@@ -144,10 +181,8 @@ export function WalletProvider({ children }: ProviderProps) {
     }
   }
 
-  // console.log('wallet', wallet, 'account', account, 'network', network, 'walletInitialized', walletInitialized, 'isNetworkCorrect', isNetworkCorrect, 'chainId', chainId, 'connecting', connecting)
-
   return (
-    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

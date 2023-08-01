@@ -101,17 +101,17 @@ export class GenericContractsHelper {
 
   public getConversionRateParams(tokenConfig: UnderlyingTokenProps): ConversionRateParams | null {
 
-    const conversionRateProps = tokenConfig.conversionRate
-    if (!conversionRateProps || !tokenConfig.address) return null
+    const conversionRateParams = tokenConfig.conversionRate
+    if (!conversionRateParams || !tokenConfig.address || conversionRateParams.isPoolToken) return null
 
     const DAI = selectUnderlyingToken(this.chainId, 'DAI')
     const WETH = selectUnderlyingToken(this.chainId, 'WETH')
-    const conversionToken = conversionRateProps.addressFrom ? selectUnderlyingTokenByAddress(this.chainId, conversionRateProps.addressFrom) : DAI
+    const conversionToken = conversionRateParams.addressFrom ? selectUnderlyingTokenByAddress(this.chainId, conversionRateParams.addressFrom) : DAI
 
     if (!conversionToken || !WETH || !conversionToken.address || !WETH.address) return null
 
-    const addressFrom = conversionRateProps.address || tokenConfig.address
-    const defaultContractProtocol = conversionRateProps.protocolContract || 'UniswapRouter'
+    const addressFrom = conversionRateParams.address || tokenConfig.address
+    const defaultContractProtocol = conversionRateParams.protocolContract || 'UniswapRouter'
     const underlyingToken = tokenConfig.underlyingToken ? selectUnderlyingToken(this.chainId, tokenConfig.underlyingToken) : null
 
     const ProtocolContract = this.contracts.find( Contract => Contract.name === defaultContractProtocol )
@@ -119,8 +119,8 @@ export class GenericContractsHelper {
     if (!ProtocolContract) return null
 
     const useWETH = conversionToken?.address === DAI?.address
-    const invertTokens = !!conversionRateProps.invertTokens
-    const routerMethod = conversionRateProps.routerMethod || 'getAmountsIn'
+    const invertTokens = !!conversionRateParams.invertTokens
+    const routerMethod = conversionRateParams.routerMethod || 'getAmountsIn'
 
     const path = []
     path.push(routerMethod === 'getAmountsOut' || invertTokens ? addressFrom : conversionToken.address)

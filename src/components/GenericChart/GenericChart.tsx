@@ -17,7 +17,7 @@ type GenericChartArgs = {
   isRainbowChart: boolean
   data?: BalanceChartData
   maxMinEnabled?: boolean
-  fileName?: string
+  fileName?: string | null
   timeframe?: HistoryTimeframe
   setPercentChange: (percentChange: number) => void
   margins?: { top: number; right: number; bottom: number; left: number }

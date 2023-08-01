@@ -2,8 +2,8 @@
 import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
+import { GOVERNANCE_CHAINID } from 'constants/'
 import { strategies } from 'constants/strategies'
-import { defaultChainId } from 'constants/chains'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import type { IdleTokenProtocol } from 'constants/vaults'
@@ -943,7 +943,7 @@ export type IdleDistributionProps = TextProps & {
 
 const IdleDistribution: React.FC<IdleDistributionProps> = ({defaultText, ...props}) => {
   const { asset } = useAssetProvider()
-  const IDLE = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+  const IDLE = selectUnderlyingToken(GOVERNANCE_CHAINID, PROTOCOL_TOKEN)
 
   const dailyDistribution = bnOrZero(asset?.idleDistribution).times(BNify(BLOCKS_PER_YEAR).div(365))
   

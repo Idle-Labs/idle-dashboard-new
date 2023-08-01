@@ -2,7 +2,7 @@ import { BNify } from 'helpers/'
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
-import { defaultChainId } from 'constants/'
+import { STAKING_CHAINID } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import type { Transaction } from 'constants/types'
 import { selectUnderlyingToken } from 'selectors/'
@@ -32,7 +32,7 @@ export const Staking: React.FC = () => {
 
   const protocolToken = useMemo(() => {
     if (!selectAssetById) return
-    const underlyingToken = selectUnderlyingToken(defaultChainId, PROTOCOL_TOKEN)
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
     return underlyingToken && selectAssetById(underlyingToken.address)
   }, [selectAssetById])
 
@@ -91,6 +91,7 @@ export const Staking: React.FC = () => {
       type: 'stake',
       component: Stake,
       label: 'common.stake',
+      chainIds: [STAKING_CHAINID],
       steps: [
         {
           type: 'approve',
@@ -104,8 +105,9 @@ export const Staking: React.FC = () => {
     },
     {
       type: 'unstake',
-      label: 'common.unstake',
       component: Unstake,
+      label: 'common.unstake',
+      chainIds: [STAKING_CHAINID],
       steps: []
     }
   ]
@@ -181,7 +183,7 @@ export const Staking: React.FC = () => {
     return isMobile ? (
       <AssetProvider
         wrapFlex={false}
-        assetId={protocolToken.id}
+        assetId={protocolToken?.id}
       >
         <Card
           p={6}
@@ -195,7 +197,7 @@ export const Staking: React.FC = () => {
               width={'full'}
               justifyContent={'space-between'}
             >
-              <AssetLabel assetId={protocolToken.id} />
+              <AssetLabel assetId={protocolToken?.id} />
             </HStack>
             <HStack
               width={'full'}
@@ -221,7 +223,7 @@ export const Staking: React.FC = () => {
                 <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} decimals={2} textStyle={'heading'} fontSize={'h3'} />
               </VStack>
             </HStack>
-            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} disabled={stakingData.position.claimable.lte(0)} />
+            <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={'100%'} chainIds={[STAKING_CHAINID]} disabled={stakingData.position.claimable.lte(0)} />
           </VStack>
         </Card>
       </AssetProvider>
@@ -238,7 +240,7 @@ export const Staking: React.FC = () => {
           flexWrap={['wrap', 'nowrap']}
           justifyContent={['flex-start', 'space-between']}
         >
-          <AssetLabel assetId={protocolToken.id} />
+          <AssetLabel assetId={protocolToken?.id} />
 
           <VStack
             pb={[2, 0]}
@@ -262,7 +264,7 @@ export const Staking: React.FC = () => {
             <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.claimable} decimals={2} textStyle={'heading'} fontSize={'h3'} />
           </VStack>
 
-          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} disabled={stakingData.position.claimable.lte(0)} />
+          <TransactionButton text={'defi.claim'} vaultId={stakedIdleVault.id} assetId={stakedIdleVault.id} contractSendMethod={contractSendMethod} actionType={'claim'} amount={stakingData.position.claimable.toString()} width={['100%', '150px']} chainIds={[STAKING_CHAINID]} disabled={stakingData.position.claimable.lte(0)} />
         </Stack>
       </Card>
     )

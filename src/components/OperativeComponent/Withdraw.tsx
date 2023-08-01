@@ -4,7 +4,7 @@ import { Amount } from 'components/Amount/Amount'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import type { IdleTokenProtocol } from 'constants/vaults'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { bnOrZero, BNify, estimateGasLimit } from 'helpers/'
+import { getDecodedError, bnOrZero, BNify, estimateGasLimit } from 'helpers/'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
@@ -14,10 +14,10 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
-import { Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { Spinner, Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
 
 export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
@@ -99,8 +99,12 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
       return true
     }
+
+    // Transaction is started, disable button
+    if (transaction.status === 'started') return true
+
     return false
-  }, [amount, assetBalance, underlyingAsset, translate])
+  }, [amount, transaction, assetBalance, underlyingAsset, translate])
 
   // Withdraw
   const withdraw = useCallback(() => {
@@ -166,11 +170,15 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         const defaultGasLimit = await getDefaultGasLimit()
         setGasLimit(defaultGasLimit)
       } catch (error: any) {
-        // console.log(typeof error, error.message)
-        setGasEstimateError(error.message.toString().split("\n")[0])
+        const errorHeader = error.message ? error.message.toString().split("\n")[0] : ''
+        const decodedError = getDecodedError(error)
+        const errorMessage = decodedError || errorHeader
+        const translatedError = translate(`trade.actions.withdraw.messages.decoded.${errorMessage}`)
+        const errorToShow = translatedError !== `trade.actions.withdraw.messages.decoded.${errorMessage}` ? translatedError : errorMessage
+        setGasEstimateError(errorToShow)
       }
     })()
-  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
+  }, [activeItem, translate, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
 
   // Update parent amount
   useEffect(() => {
@@ -185,11 +193,17 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const withdrawButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'} />
+      <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
+        {
+          transaction.status === 'started' && (
+            <Spinner size={'sm'} />
+          )
+        }
+      </Translation>
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, withdraw, redeemInterestBearing])
+  }, [account, disabled, transaction, withdraw, redeemInterestBearing])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined

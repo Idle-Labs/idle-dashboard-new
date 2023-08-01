@@ -28,15 +28,16 @@ interface ChainlinkConfig {
 }
 
 export interface UnderlyingTokenProps {
-  token: string,
+  token: string
+  icon?: string
   label?: string
-  symbol?: string,
+  symbol?: string
   enabled: boolean
+  address?: string
+  abi?: Abi | null
   decimals?: number
   colors: TokenColors
   underlyingToken?: string
-  abi?: Abi | null
-  address?: string
   chainlinkPriceFeed?: ChainlinkConfig
   conversionRate?: ConversionRateProps
 }
@@ -569,7 +570,127 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     //   address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
     // }
   },
+  1101:{
+    ETH: {
+      abi: null,
+      symbol:'Ξ',
+      token:'ETH',
+      decimals: 18,
+      enabled: true,
+      colors: {
+        hex: '#333',
+        rgb: [51, 51, 51],
+        hsl: ['0, 0%, 20%']
+      },
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+    },
+    USDC: {
+      decimals: 6,
+      token: 'USDC',
+      enabled: true,
+      abi: USDC as Abi,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"]
+      },
+      address: '0xA8CE8aee21bC2A48a5EF670afCc9274C7bbbC035'
+    },
+    USDT: {
+      decimals: 6,
+      token: 'USDT',
+      enabled: true,
+      colors: {
+        hex: "#22a079",
+        rgb: [34, 160, 121],
+        hsl: ["161", "65%", "38%"]
+      },
+      address: "0x1E4a5963aBFD975d8c9021ce480b42188849D41d",
+    },
+  },
   137:{
+    DAI: {
+      token:'DAI',
+      decimals: 18,
+      enabled: true,
+      abi: DAI as Abi,
+      colors: {
+        hex: '#F7B24A',
+        rgb: [250, 184, 51],
+        hsl: ['40', '95%', '59%']
+      },
+      address: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'
+    },
+    USDC: {
+      decimals: 6,
+      token: 'USDC',
+      enabled: true,
+      abi: USDC as Abi,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"]
+      },
+      address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'
+    },
+    IDLE: {
+      decimals: 18,
+      token: 'IDLE',
+      enabled: true,
+      colors: {
+        hex: "#0d55bb",
+        rgb: [13, 85, 187],
+        hsl: ["215", "87%", "39%"]
+      },
+      conversionRate: {
+        field: "idleDAIPrice"
+      },
+      address: "0xc25351811983818c9fe6d8c580531819c8ade90f"
+    },
+    STKIDLE: {
+      decimals: 18,
+      token: 'stkIDLE',
+      enabled: true,
+      colors: {
+        hex: "#0d55bb",
+        rgb: [13, 85, 187],
+        hsl: ["215", "87%", "39%"]
+      }
+    },
+    WETH: {
+      decimals: 18,
+      token: 'WETH',
+      enabled: true,
+      abi: WETH as Abi,
+      colors: {
+        hex: "#ee1f79",
+        rgb: [238, 31, 121],
+        hsl: ["334", "86%", "53%"]
+      },
+      conversionRate: {
+        field: "wethDAIPrice"
+      },
+      chainlinkPriceFeed: {
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        feedUsdAddress: '0x37bC7498f4FF12C19678ee8fE19d713b87F6a9e6'
+      },
+      address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+    },
+    MATIC: {
+      decimals: 18,
+      enabled: true,
+      symbol:' MATIC',
+      token: 'MATIC',
+      colors: {
+        hex: '#8247E5',
+        rgb: [130, 71, 229],
+        hsl: ['262, 75%, 59%']
+      },
+      conversionRate: {
+        field: "maticDAIPrice"
+      },
+      address: '0x0000000000000000000000000000000000001010'
+    },
     DQUICK:{
       decimals: 18,
       enabled: true,
@@ -591,6 +712,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       enabled: true,
       label: 'CXETHWETH',
       token: 'CXETHWETH',
+      icon: 'CXETHWETH.png',
       conversionRate: {
         field: "ETHDAIPrice",
         isPoolToken: true, // Get Pool Token price for conversion rate

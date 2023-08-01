@@ -8,13 +8,13 @@ import { Contract, ContractSendMethod } from 'web3-eth-contract'
 type Param = any
 
 export type CallData = {
-  batchId: number
   args: Param[]
-  extraData: object
-  returnFields: string[]
-  returnTypes: string[]
   target: string
   method: string
+  batchId: number
+  extraData: object
+  returnTypes: string[]
+  returnFields: string[]
   rawCall: ContractSendMethod
 }
 
@@ -31,22 +31,15 @@ export class  Multicall {
   readonly web3: Web3
   readonly chainId: number
   readonly maxBatchSize: number
+  readonly networkContract: string
   readonly multicallContract: Contract
-  readonly networksContracts: Record<number, string>
 
   constructor(chainId: number, web3: Web3) {
-    this.networksContracts = {
-      // 1:'0xeefba1e63905ef1d7acba5a8513c70307c1ce441',
-      // 137:'0x11ce4B23bD875D7F5C6a31084f55fDe1e9A87507'
-      1:'0xcA11bde05977b3631167028862bE2a173976CA11',
-      137:'0xcA11bde05977b3631167028862bE2a173976CA11'
-      
-    };
-    
     this.web3 = web3
     this.chainId = chainId
     this.maxBatchSize = 600
-    this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networksContracts[chainId])
+    this.networkContract = '0xcA11bde05977b3631167028862bE2a173976CA11'
+    this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networkContract)
   }
 
   getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
@@ -142,7 +135,7 @@ export class  Multicall {
     return methodSignature+strip0x(calldata);
   }
 
-  async executeMultipleBatches(callBatches: CallData[][]): Promise<DecodedResult[][]> {
+  async executeMultipleBatches(callBatches: CallData[][], chainId?: number, web3?: Web3): Promise<DecodedResult[][]> {
     // Assign batch Id to every call
     const calls = callBatches.reduce( (calls, batchedCalls, batchId) => {
       batchedCalls.forEach( call => {
@@ -153,7 +146,7 @@ export class  Multicall {
     }, []);
       
     // Execute calls
-    const results = await this.executeMulticalls(calls);
+    const results = await this.executeMulticalls(calls, true, chainId, web3);
 
     // Group by BatchID
     const output = Array.from(Array(callBatches.length).keys()).reduce( (output: BatchesResults, batchId: number) => {
@@ -181,9 +174,9 @@ export class  Multicall {
   }
 
   // Split multicall into smaller chunks and execute
-  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false): Promise<DecodedResult[] | null> {
+  async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false, chainId?: number, web3?: Web3): Promise<DecodedResult[] | null> {
     const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
-    const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled) ))
+    const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled, chainId, web3) ))
     // console.log('chunksResults', callsChunks, chunksResults)
     return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
       // if (!chunkResults) return results
@@ -191,10 +184,14 @@ export class  Multicall {
     }, [])
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, debug = false): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, chainId?: number, web3?: Web3, debug: boolean = false): Promise<DecodedResult[] | null> {
+
+    // Get chainId
+    chainId = chainId || this.chainId
+    web3 = web3 || this.web3
 
     if (calls.length > this.maxBatchSize) {
-      return await this.executeMulticallsChunks(calls, singleCallsEnabled)
+      return await this.executeMulticallsChunks(calls, singleCallsEnabled, chainId, web3)
     }
 
     const calldata = this.prepareMulticallData(calls);
@@ -204,17 +201,17 @@ export class  Multicall {
     if (!calldata) return null;
 
     let results = null
-    const contractAddress = this.networksContracts[this.chainId];
+    const contractAddress = this.networkContract;
 
     try {
-      results = await this.web3.eth.call({
+      results = await web3.eth.call({
         data: calldata,
         to: contractAddress,
         from: contractAddress
       });
     } catch (err) {
       // eslint-disable-next-line
-      console.log('Multicall Error:', calls, err)
+      console.log('Multicall Error:', calls, err, singleCallsEnabled)
 
       if (!singleCallsEnabled) return null
 

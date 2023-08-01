@@ -118,7 +118,7 @@ export class UnderlyingToken {
         token: this.tokenConfig.token,
         color: this.tokenConfig?.colors.hex,
         decimals: this.tokenConfig.decimals || 18,
-        icon: `${tokensFolder}${this.tokenConfig.token}.svg`,
+        icon: `${tokensFolder}${this.tokenConfig.icon || `${this.tokenConfig.token}.svg`}`,
         name: this.tokenConfig.label||this.tokenConfig.token,
       }
     }

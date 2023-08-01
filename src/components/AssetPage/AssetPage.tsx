@@ -1,8 +1,12 @@
 import { Earn } from './Earn'
+import { networks } from 'constants/networks'
+import { useTranslate } from 'react-polyglot'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { IconTab } from 'components/IconTab/IconTab'
+import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -15,8 +19,8 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
-import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, isEmpty } from 'helpers/'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
@@ -37,10 +41,13 @@ type TabType = {
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
+  const translate = useTranslate()
+  const { openModal } = useModalProvider()
   const { isMobile, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
+  const { isChainLoaded, chainId, network, setChainId } = useWalletProvider()
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
   const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
@@ -66,6 +73,7 @@ export const AssetPage: React.FC = () => {
   }, [timeframe, setDateRange])
 
   const {
+    vaultsNetworks,
     isPortfolioLoaded,
     portfolioTimestamp,
     assetsDataTimestamp,
@@ -75,7 +83,8 @@ export const AssetPage: React.FC = () => {
       selectVaultById,
       selectVaultGauge,
       selectAssetBalance,
-      selectAssetPriceUsd
+      selectAssetPriceUsd,
+      selectNetworkByVaultId
     }
   } = usePortfolioProvider()
 
@@ -90,6 +99,49 @@ export const AssetPage: React.FC = () => {
   const vault = useMemo(() => {
     return selectVaultById && selectVaultById(params.asset)
   }, [selectVaultById, params.asset])
+
+  const checkVaultNetwork = useCallback(() => {
+    const foundNetworkId = selectNetworkByVaultId(params.asset)
+    if (foundNetworkId && +foundNetworkId !== +chainId){
+      setLatestAssetUpdate(0)
+      openModal({
+        cta:'network.switchTo',
+        title:'common.switchNetwork',
+        body:'modals.assets.vaultWrongNetwork'
+      }, 'lg', true, {
+        cta:{
+          network: networks[foundNetworkId].name
+        },
+        body:{
+          network: network?.chainName,
+          correctNetwork: networks[foundNetworkId].chainName
+        }
+      }, [
+        {
+          props:{
+            variant: 'ctaPrimary',
+          },
+          function:() => setChainId(foundNetworkId),
+          text:translate('network.switchTo', {network: networks[foundNetworkId].name}),
+        },
+        {
+          props:{
+            height:12
+          },
+          text:translate('common.close'),
+          function:() => location && navigate(location.pathname.replace(`/${params.asset}`, ''))
+        }
+      ])
+      return false
+    }
+    return true
+  }, [chainId, params.asset, selectNetworkByVaultId, setChainId, network, translate, openModal, location, navigate, setLatestAssetUpdate])
+
+  // Check vault network
+  useEffect(() => {
+    if (!isChainLoaded || !isPortfolioLoaded || isEmpty(vaultsNetworks)) return
+    checkVaultNetwork()
+  }, [checkVaultNetwork, isPortfolioLoaded, isChainLoaded, vaultsNetworks, vault, asset])
 
   // Update asset
   useEffect(() => {
@@ -128,12 +180,13 @@ export const AssetPage: React.FC = () => {
 
   // Check asset exists
   useEffect(() => {
-    // console.log(isPortfolioLoaded, selectAssetById, location, asset)
     if (!isPortfolioLoaded || !selectAssetById || !location || !latestAssetUpdate) return
-    if (!asset){
-      return navigate(location.pathname.replace(`/${params.asset}`, ''))
+    if (checkVaultNetwork()){
+      if (!asset){
+        return navigate(location.pathname.replace(`/${params.asset}`, ''))
+      }
     }
-  }, [isPortfolioLoaded, selectAssetById, latestAssetUpdate, asset, params.asset, location, navigate])
+  }, [isPortfolioLoaded, selectAssetById, checkVaultNetwork, latestAssetUpdate, asset, params.asset, location, navigate])
 
   // Send viewItem event
   useEffect(() => {
