@@ -189,7 +189,7 @@ export class VaultFunctionsHelper {
     const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     const foundVault = results.find( (r: any) => r.vault === '0xA0D3707c569ff8C87FA923d3823eC5D81c98Be78' )
-    const apr = bnOrZero(foundVault?.apy?.apyWithFee)
+    const apr = bnOrZero(foundVault?.apy?.apyWithoutFee)
 
     if (!BNify(apr).isNaN()){
       return BNify(apr).div(100);
@@ -215,19 +215,27 @@ export class VaultFunctionsHelper {
 
     if (!multicallResults) return BNify(0)
 
-    const [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map( r => BNify(r.data) )
+    let [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map( r => BNify(r.data) )
 
-    const isAATranche = trancheVault.type === 'AA';
+    const isAATranche = trancheVault.type === 'AA'
 
     if (BNify(currentAARatio).eq(0)){
-      return isAATranche ? BNify(0) : BNify(strategyApr);
+      return isAATranche ? BNify(0) : BNify(strategyApr)
     }
 
     if (BNify(strategyApr).isNaN()){
-      return BNify(0);
+      return BNify(0)
     }
 
-    const apr = isAATranche ? BNify(strategyApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(strategyApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
+    // BB tranche
+    if (!isAATranche) {
+      trancheAPRSplitRatio = FULL_ALLOC.minus(trancheAPRSplitRatio)
+      currentAARatio = FULL_ALLOC.minus(currentAARatio)
+    }
+
+    const apr = BNify(strategyApr).times(trancheAPRSplitRatio).div(currentAARatio)
+
+    // console.log('apr', trancheVault.id, isAATranche, strategyApr.toString(), trancheAPRSplitRatio.toString(), currentAARatio.toString())
 
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
   }
