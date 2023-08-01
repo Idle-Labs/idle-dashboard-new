@@ -109,10 +109,16 @@ export function WalletProvider({ children }: ProviderProps) {
   useEffect(() => {
     if (!isChainLoaded || chainSetFromStorage) return
     if (+storedChainId && +chainId !== +storedChainId){
-      setChainIdState(storedChainId)
+      if (chains[+storedChainId]){
+        setChainIdState(storedChainId)
+      // Stored chainId not available, set default chainID
+      } else {
+        setStoredChainId(defaultChainId)
+        setChainIdState(defaultChainId)
+      }
     }
     setChainSetFromStorage(true)
-  }, [chainId, setChainIdState, storedChainId, chainSetFromStorage, isChainLoaded])
+  }, [chainId, setChainIdState, storedChainId, setStoredChainId, chainSetFromStorage, isChainLoaded])
 
   // Auto-connect wallet
   useEffect(() => {
