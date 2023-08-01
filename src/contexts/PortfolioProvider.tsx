@@ -475,7 +475,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return userTransactions
   }, [account?.address, explorer, lastTransaction, chainId, cacheProvider])
 
-  const getVaultsPositions = useCallback( async (vaults: Vault[], test = false): Promise<VaultsPositions> => {
+  const getVaultsPositions = useCallback( async (vaults: Vault[]): Promise<VaultsPositions> => {
 
     const output: VaultsPositions = {
       vaultsPositions: {},
@@ -484,7 +484,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // console.log('getVaultsPositions', vaults, account?.address, explorer, chainId)
 
-    if (!account?.address || !explorer || !chainId || test) return output
+    if (!account?.address || !explorer || !chainId) return output
 
     const startTimestamp = Date.now()
 
@@ -495,9 +495,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return Math.min(startBlock, vaultBlockNumber)
     }, 0)
       
-    const endBlock = test ? '14133495' : 'latest'
+    const endBlock = 'latest'
     const etherscanTransactions = await getUserTransactions(startBlock, endBlock)
-    // console.log('etherscanTransactions', test, account.address, startBlock, endBlock, etherscanTransactions)
+    // console.log('etherscanTransactions', account.address, startBlock, endBlock, etherscanTransactions)
 
     const vaultsTransactions: Record<AssetId, Transaction[]> = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
       vaults,
@@ -705,7 +705,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     output.vaultsPositions = vaultsPositions
     output.vaultsTransactions = vaultsTransactions
 
-    // console.log('vaultsPositions', vaultsPositions)
+    // console.log('Load vaults positions', vaultsPositions)
 
     // eslint-disable-next-line
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
@@ -2717,15 +2717,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get user vaults positions
   useEffect(() => {
     // console.log('Load Vaults Positions', account?.address, state.balances, state.isPortfolioLoaded, walletInitialized, connecting, runningEffects.current.vaultsPositions)
-    if (!account?.address || !state.isPortfolioLoaded || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
+    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
 
     ;(async () => {
       runningEffects.current.vaultsPositions = true
 
-      const test = false
-
-      const results = await getVaultsPositions(state.vaults, test)
-      // console.log('getVaultsPositions', test, results)
+      const results = await getVaultsPositions(state.vaults)
+      // console.log('getVaultsPositions', state.balances, results)
 
       const {
         vaultsPositions,

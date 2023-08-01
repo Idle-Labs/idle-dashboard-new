@@ -103,6 +103,8 @@ export const Dashboard: React.FC = () => {
   //   return account && isVaultsPositionsLoaded && Object.keys(vaultsPositions).length>0
   // }, [account, isVaultsPositionsLoaded, vaultsPositions])
 
+  // console.log('vaultsPositions', vaultsPositions)
+
   const productsOverview = useMemo(() => {
     if (!selectVaultsAssetsByType) return null
     return (
