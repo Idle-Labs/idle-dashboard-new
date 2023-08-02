@@ -146,6 +146,7 @@ export const theme = extendTheme({
     xs:'13px',
     sm:'14px',
     md:'16px',
+    h4:'18px',
     cardTitle:'18px',
     lg:'20px',
     h3:'20px',

@@ -2,10 +2,10 @@ import aToken from 'abis/aave/AToken.json'
 import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
 import IdleCDO from 'abis/idle/IdleCDO.json'
-import type { Abi, VaultStatus } from './types'
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
 import IdleStrategy from 'abis/idle/IdleStrategy.json'
 // import RibbonPool from 'abis/ribbon/RibbonPool.json'
+import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
@@ -91,6 +91,7 @@ export interface TrancheConfig {
   stats?: StatsProps
   Strategy: Strategy
   description?: string
+  risks?: Paragraph[]
   flags?: Record<string, any>
   messages?: Record<string, any>
   Tranches: Record<string, Tranche>
@@ -390,7 +391,25 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           withdrawFee: 0.0005,
           addHarvestApy: false
         },
-        description:'This strategy deposits the stETH into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.instadapp.io/">Instadapp Lite stETH v2</a> vault which utilizes a recursive strategy with stETH on lending protocols, enabling borrowing against ETH. Instadapp Vaults have automation functions which automatically rebalance the vault during market changes. If vault gets risky it can first refinance into another protocol to maintain safety, or it can deleverage by selling stETH and paying back ETH debt. This kind of automation, if required or occurs, may incur losses caused by trading slippage: if the loss is less than or equal to 0.5%, the loss will be distributed proportionally among the funds present in the tranches, in case of a loss greater than 0.5%, the Junior tranche will absorb the entire loss. Please visit the <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/risks">Instadapp Lite Risks</a> page before using this vault.<br />The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        risks:[
+          {
+            title:'1) Loss less than of equal to 0.5%',
+            description: 'This scenario may occur when the borrow rate of WETH is higher than the lending rate of stETH, this usually don\'t last for a long time. In this case losses will be equally distributed between Junior and Senior and the vault continue to work as expected.'
+          },
+          {
+            title:'2) Loss between 0.5% and 5%',
+            description: 'In this scenario the Junior tranche will absorb the entire loss (if enough TVL) and the vault will continue to work as expected.'
+          },
+          {
+            title:'3) Loss higher than 5%',
+            description: 'We consider this as an hacking event. In this scenario both the Senior and Junior tranches are paused and further deposits and redeems prevented.'
+          },
+          {
+            title:'4) Withdraw fee',
+            description: 'Instadapp Lite charges a 0.05% withdraw fee that is sent to the DAO as revenue. (<a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/fees">Instadapp Lite Fees</a>)'
+          }
+        ],
+        description:'This strategy deposits the stETH into <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.instadapp.io/">Instadapp Lite stETH v2</a> vault which utilizes a recursive strategy with stETH on lending protocols, enabling borrowing against ETH. Instadapp Vaults have automation functions which automatically rebalance the vault during market changes. If vault gets risky it can first refinance into another protocol to maintain safety, or it can deleverage by selling stETH and paying back ETH debt. This kind of automation, if required or occurs, may incur losses caused by trading slippage. Please visit the <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/risks">Instadapp Lite Risks</a> page before using this vault.<br />The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
           deposit:'Instadapp Lite charges a <strong>0.05% withdraw fee</strong> that is sent to the DAO as revenue. (<a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/fees">Instadapp Lite Fees</a>)',
           withdraw:'Instadapp Lite charges a <strong>0.05% withdraw fee</strong> that is sent to the DAO as revenue. (<a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://lite.guides.instadapp.io/information/fees">Instadapp Lite Fees</a>)',

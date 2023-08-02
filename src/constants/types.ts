@@ -313,6 +313,11 @@ export type VaultBalance = {
   balance: BigNumber
 }
 
+export type Paragraph = {
+  title?: string
+  description?: string
+}
+
 export type Avatar = {
   url: string;
   linkage: Array<{

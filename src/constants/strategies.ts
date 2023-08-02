@@ -48,6 +48,7 @@ export type StrategyProps = {
   stats?: StatsProps
   features?: string[]
   banner?: BannerProps
+  riskProfile?: string
   description?: string
   feesCollectors?: string[]
   columns?: StrategyColumn[]
@@ -266,6 +267,7 @@ export const strategies: Record<string, StrategyProps> = {
     strategy:'tranches',
     route:'protected-yield',
     label:'strategies.protected.title',
+    riskProfile:'strategies.protected.riskProfile',
     description:'strategies.protected.description',
     bg: `${strategiesFolder}protected-yield-bg.png`,
     image: `${strategiesFolder}protected-yield.png`,
@@ -348,7 +350,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     generalDataFields:[
       {
-        field: 'protocol',
+        field: 'protocolWithVariant',
         props: {
           size:'xs'
         },
@@ -360,13 +362,16 @@ export const strategies: Record<string, StrategyProps> = {
       //   label:'assets.assetDetails.generalData.stakingRewards'
       // },
       {
-        field:'autoCompounding',
-        tooltip:'assets.assetDetails.tooltips.autoCompounding',
-        label:'assets.assetDetails.generalData.autoCompounding'
+        field:'strategies',
+        props:{
+          iconMargin: 0,
+          showLabel: true
+        },
+        label:'assets.assetDetails.generalData.riskProfile',
       },
       {
-        field:'performanceFee',
-        label:'assets.assetDetails.generalData.performanceFee'
+        field:'pool',
+        label:'assets.assetDetails.generalData.pool'
       },
       {
         field:'apy',
@@ -379,13 +384,18 @@ export const strategies: Record<string, StrategyProps> = {
         tooltip:'assets.assetDetails.tooltips.vaultStatus'
       },
       {
-        field:'pool',
-        label:'assets.assetDetails.generalData.pool'
+        field:'performanceFee',
+        label:'assets.assetDetails.generalData.performanceFee'
       },
       {
         field:'coverage',
         tooltip:'assets.assetDetails.tooltips.coverage',
         label:'assets.assetDetails.generalData.coverage'
+      },
+      {
+        field:'autoCompounding',
+        tooltip:'assets.assetDetails.tooltips.autoCompounding',
+        label:'assets.assetDetails.generalData.autoCompounding'
       },
       {
         field:'lastHarvest',
@@ -406,6 +416,7 @@ export const strategies: Record<string, StrategyProps> = {
     strategy:'tranches',
     route:'boosted-yield',
     label:'strategies.boosted.title',
+    riskProfile:'strategies.boosted.riskProfile',
     description:'strategies.boosted.description',
     image: `${strategiesFolder}boosted-yield.png`,
     bg: `${strategiesFolder}boosted-yield-bg.png`,
@@ -487,7 +498,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     generalDataFields:[
       {
-        field: 'protocol',
+        field: 'protocolWithVariant',
         props: {
           size:'xs'
         },
@@ -498,13 +509,16 @@ export const strategies: Record<string, StrategyProps> = {
       //   label:'assets.assetDetails.generalData.stakingRewards'
       // },
       {
-        field:'autoCompounding',
-        tooltip:'assets.assetDetails.tooltips.autoCompounding',
-        label:'assets.assetDetails.generalData.autoCompounding'
+        field:'strategies',
+        props:{
+          iconMargin: 0,
+          showLabel: true
+        },
+        label:'assets.assetDetails.generalData.riskProfile',
       },
       {
-        field:'performanceFee',
-        label:'assets.assetDetails.generalData.performanceFee'
+        field:'pool',
+        label:'assets.assetDetails.generalData.pool'
       },
       {
         field:'apy',
@@ -517,13 +531,18 @@ export const strategies: Record<string, StrategyProps> = {
         tooltip:'assets.assetDetails.tooltips.vaultStatus'
       },
       {
-        field:'pool',
-        label:'assets.assetDetails.generalData.pool'
+        field:'performanceFee',
+        label:'assets.assetDetails.generalData.performanceFee'
       },
       {
         field:'apyBoost',
         label:'assets.assetDetails.generalData.apyBoost',
         tooltip:'assets.assetDetails.tooltips.apyBoost',
+      },
+      {
+        field:'autoCompounding',
+        tooltip:'assets.assetDetails.tooltips.autoCompounding',
+        label:'assets.assetDetails.generalData.autoCompounding'
       },
       {
         field:'lastHarvest',

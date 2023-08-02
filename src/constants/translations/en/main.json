@@ -246,6 +246,7 @@
         "minimumYield": "Minimum guaranteed yield as the underlying",
         "compoundedRewards": "Automatically compounded rewards to increment yield"
       },
+      "riskProfile": "Senior",
       "title": "Senior Tranches",
       "description": "Senior Tranches provide a shielded access to any DeFi yield sources. The default coverage is provided by Junior Tranches and automatically enforced by design. This makes them perfect for high-profile users that want to access DeFi yields witouth compromising their risk profile."
     },
@@ -255,6 +256,7 @@
         "outperformUnderlying": "Always outperforming the underlying by design",
         "compoundedRewards": "Automatically compounded rewards to increment yield"
       },
+      "riskProfile": "Junior",
       "title": "Junior Tranches",
       "description": "Junior Tranches are designed to overperform any DeFi yield source. In exchange for taking on potential losses for Senior Tranches, they get a proportionally larger share of yield. This makes them perfect for advanced users that can assess risks and take them in exchange of higher returns."
     }
@@ -560,6 +562,7 @@
     "byFarming": " APR* by farming your ETH-FOX liquidity pool tokens",
     "overview": "Overview",
     "strategyDescription": "Strategy description",
+    "coveredRisks": "Covered risks",
     "underlyingProtocols": "Underlying protocols",
     "historicalPerformance": "Historical Performance",
     "fundsOverview": "Funds Overview",
@@ -1765,6 +1768,8 @@
       "generalData": {
         "protocol":"Protocol",
         "rewards":"Rewards",
+        "strategy": "Strategy",
+        "riskProfile": "Risk profile",
         "totalLocked":"Total locked",
         "allocation":"Allocation",
         "stkIDLESupply":"stkIDLE supply",

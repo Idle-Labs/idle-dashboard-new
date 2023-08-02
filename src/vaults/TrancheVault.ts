@@ -7,7 +7,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
-import type { Abi, NumberType, VaultStatus } from 'constants/types'
+import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress } from 'helpers/'
@@ -32,6 +32,7 @@ export class TrancheVault {
   readonly chainId: number
   readonly protocol: string
   readonly stats: StatsProps | undefined
+  readonly risks: Paragraph[] | undefined
   readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
   readonly messages: TrancheConfig["messages"]
@@ -86,6 +87,7 @@ export class TrancheVault {
     this.vaultConfig = vaultConfig
     this.gaugeConfig = gaugeConfig
     this.stats = vaultConfig.stats
+    this.risks = vaultConfig.risks
     this.status = vaultConfig.status
     this.variant = vaultConfig.variant
     this.cacheProvider = cacheProvider

@@ -7,7 +7,6 @@ import { Amount } from 'components/Amount/Amount'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MaticNFTs } from 'components/MaticNFTs/MaticNFTs'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { HistoryTimeframe, BigNumber } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -15,6 +14,7 @@ import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { bnOrZero, BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
@@ -95,7 +95,7 @@ export const Earn: React.FC = () => {
     return (
       <VStack
         spacing={1}
-        width={['100%','auto']}
+        width={['full','auto']}
         alignItems={['center','flex-start']}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
@@ -103,7 +103,7 @@ export const Earn: React.FC = () => {
           {/*<Translation translation={'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />*/}
           <HStack
             spacing={3}
-            width={['100%','auto']}
+            width={['full','auto']}
             alignItems={'baseline'}
           >
             {/*<Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} />*/}
@@ -159,7 +159,7 @@ export const Earn: React.FC = () => {
     if (!asset || !userHasBalance) return null
     return (
       <SimpleGrid
-        width={'100%'}
+        width={'full'}
         columns={[2, 4]}
         spacing={[10, 14]}
         alignItems={'flex-start'}
@@ -252,6 +252,48 @@ export const Earn: React.FC = () => {
     )
   }, [vault])
 
+  const coveredRisks = useMemo(() => {
+    if (!vault || !("risks" in vault) || !vault.risks) return null
+    return (
+      <VStack
+        pt={4}
+        spacing={6}
+        alignItems={'flex-start'}
+      >
+        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.coveredRisks'} />
+        <Card.Dark>
+          <VStack
+            spacing={4}
+          >
+            {
+              vault.risks.map( (paragraph: Paragraph, index: number) => {
+                return (
+                  <VStack
+                    spacing={2}
+                    width={'full'}
+                    alignItems={'flex-start'}
+                    key={`paragraph_${index}`}
+                  >
+                    {
+                      paragraph.title && (
+                        <Heading as={'h4'} fontSize={'h4'} dangerouslySetInnerHTML={{__html: paragraph.title}} />
+                      )
+                    }
+                    {
+                      paragraph.description && (
+                        <Text dangerouslySetInnerHTML={{__html: paragraph.description}} />
+                      )
+                    }
+                  </VStack>
+                )
+              })
+            }
+          </VStack>
+        </Card.Dark>
+      </VStack>
+    )
+  }, [vault])
+
   const vaultRewards = useMemo(() => {
     // console.log('vaultRewards', asset)
     if (!asset || isEmpty(asset.rewards)) return null
@@ -308,7 +350,7 @@ export const Earn: React.FC = () => {
             px={[6, 8]}
             pb={[4, 0]}
             zIndex={9}
-            width={'100%'}
+            width={'full'}
             alignItems={'flex-start'}
             direction={['column', 'row']}
             justifyContent={['center', 'space-between']}
@@ -316,7 +358,7 @@ export const Earn: React.FC = () => {
             {chartHeading}
             {
               (!userHasBalance || (chartData && chartData.total?.length>0)) && (
-                <TimeframeSelector width={['100%', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+                <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
               )
             }
           </Stack>
@@ -340,10 +382,11 @@ export const Earn: React.FC = () => {
       {vaultRewards}
       <VStack
         spacing={4}
-        width={'100%'}
+        width={'full'}
       >
         {strategyDescriptionCarousel}
         {strategyDescription}
+        {coveredRisks}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
       <VaultUnderlyingProtocols assetId={asset?.id} />

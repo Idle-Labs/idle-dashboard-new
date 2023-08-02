@@ -411,12 +411,20 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisab
   )
 }
 
-const Strategies: React.FC<ProtocolsProps> = ({children, iconMargin = 1, ...props}) => {
+type StrategiesProps = ProtocolsProps & {
+  showLabel?: boolean
+}
+
+const Strategies: React.FC<StrategiesProps> = ({
+  children,
+  iconMargin = 1,
+  showLabel = false,
+  ...props
+}) => {
   const { vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   const availableStrategies = useMemo(() => {
-
     if (vault instanceof TrancheVault) return [vault.type]
 
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return []
@@ -433,19 +441,31 @@ const Strategies: React.FC<ProtocolsProps> = ({children, iconMargin = 1, ...prop
   const protocols = useMemo(() => {
     if (!availableStrategies.length) return children
 
-    const protocolIcons: JSX.Element[] = availableStrategies.map( (strategy: string, index: number) => (
-      <Tooltip
-        hasArrow
-        placement={'top'}
-        key={`icon_${index}`}
-        label={translate(`assets.assetDetails.tooltips.riskProfiles.${vault?.type}_${strategy}`)}
-      >
-        <Image src={`images/strategies/${strategy}.svg`} ml={iconMargin} {...props} />
-      </Tooltip>
-    ))
+    const protocolIcons: JSX.Element[] = availableStrategies.map( (strategy: string, index: number) => {
+      const strategyConfig = strategies[strategy]
+      return (
+        <HStack
+          spacing={2}
+        >
+          <Tooltip
+            hasArrow
+            placement={'top'}
+            key={`icon_${index}`}
+            label={translate(`assets.assetDetails.tooltips.riskProfiles.${vault?.type}_${strategy}`)}
+          >
+            <Image src={`images/strategies/${strategy}.svg`} ml={iconMargin} {...props} />
+          </Tooltip>
+          {
+            showLabel && (
+              <Translation translation={strategyConfig.riskProfile} textStyle={'tableCell'} />
+            )
+          }
+        </HStack>
+      )
+    })
 
     return protocolIcons
-  }, [translate, vault, children, props, iconMargin, availableStrategies])
+  }, [translate, vault, children, props, showLabel, iconMargin, availableStrategies])
 
   return (
     <Flex>
