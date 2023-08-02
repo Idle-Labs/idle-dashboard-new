@@ -370,10 +370,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     instadapp:{
       stETH:{
         autoFarming:[],
+        enabledEnvs: [],
         protocol:'instadapp',
         blockNumber:17519660,
-        enabledEnvs: ['beta'],
-        status:'experimental',
         underlyingToken:'stETH',
         CDO:{
           decimals:18,
