@@ -314,7 +314,7 @@ export class BestYieldVault {
       {
         assetId:this.id,
         call:this.contract.methods.paused()
-      },
+      }
     ]
   }
 
@@ -328,15 +328,39 @@ export class BestYieldVault {
     ]
   }
 
+  public getInterestBearingTokensExchangeRatesCalls(): ContractRawCall[] {
+    return this.tokenConfig.protocols.reduce( (calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
+      const protocolAbi = protocolToken.abi ? protocolToken.abi as Abi : ERC20 as Abi
+      const protocolTokenContract = new this.web3.eth.Contract(protocolAbi, protocolToken.address)
+
+      // Exchange rate call
+      const exchangeRateFunction = protocolToken.functions?.exchangeRate
+      if (exchangeRateFunction && protocolTokenContract.methods[exchangeRateFunction.name]){
+        calls.push({
+          assetId: this.id,
+          data: protocolToken as any,
+          call: protocolTokenContract.methods[exchangeRateFunction.name](...exchangeRateFunction.params)
+        })
+      }
+
+      return calls
+    }, [])
+  }
+
   public getInterestBearingTokensCalls(): ContractRawCall[] {
-    const calls = this.tokenConfig.protocols.map( (protocolToken: IdleTokenProtocol) => {
-      const protocolTokenContract = new this.web3.eth.Contract(ERC20 as Abi, protocolToken.address)
-      return {
+    const calls = this.tokenConfig.protocols.reduce( (calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
+      const protocolAbi = protocolToken.abi ? protocolToken.abi as Abi : ERC20 as Abi
+      const protocolTokenContract = new this.web3.eth.Contract(protocolAbi, protocolToken.address)
+
+      // Balance call
+      calls.push({
         assetId: this.id,
         data: protocolToken as any,
         call: protocolTokenContract.methods.balanceOf(this.id)
-      }
-    })
+      })
+
+      return calls
+    }, [])
 
     if (this.underlyingToken?.address && this.underlyingContract){
       calls.push({

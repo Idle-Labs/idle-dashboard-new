@@ -792,7 +792,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getTotalSupplyCalls" in vault) && checkEnabledCall('totalSupplies') ? vault.getTotalSupplyCalls() : [],
         ("getFeesCalls" in vault) && checkEnabledCall('fees') ? vault.getFeesCalls() : [],
         ("getAprRatioCalls" in vault) && checkEnabledCall('aprs') ? vault.getAprRatioCalls() : [],
-        ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : []
+        ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : [],
+        ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
+        ("getInterestBearingTokensCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensCalls() : [],
+        ("getInterestBearingTokensExchangeRatesCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensExchangeRatesCalls() : [],
       ]
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
@@ -815,8 +818,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const mainnetRawCalls = vaults.filter( (vault: Vault) => checkAddress(vault.id) ).reduce( (mainnetRawCalls: CallData[][], vault: Vault): CallData[][] => {
       const aggregatedRawCalls = [
         ("getIdleDistributionCalls" in vault) && checkEnabledCall('aprs') ? vault.getIdleDistributionCalls() : [],
-        ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
-        ("getInterestBearingTokensCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensCalls() : [],
         ("getRewardTokensCalls" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensCalls() : [],
         account && ("getRewardTokensAmounts" in vault) && checkEnabledCall('rewards') ? vault.getRewardTokensAmounts(account.address) : [],
         ("getMultiRewardsDataCalls" in vault) && checkEnabledCall('rewards') ? vault.getMultiRewardsDataCalls() : [],
@@ -900,11 +901,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
         feesCallsResults,
         aprRatioResults,
         baseAprResults,
+        protocolsResults,
+        interestBearingTokensCallsResults,
+        interestBearingTokensExchangeRatesCallsResults,
       ],
       [
         idleDistributionResults,
-        protocolsResults,
-        interestBearingTokensCallsResults,
         rewardTokensResults,
         rewardTokensAmountsResults,
         gaugeMultiRewardsData,
@@ -943,7 +945,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
     // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
-    // console.log('interestBearingTokensCallsResults', interestBearingTokensCallsResults)
+    console.log('interestBearingTokensCallsResults', interestBearingTokensCallsResults)
+    console.log('interestBearingTokensExchangeRatesCallsResults', interestBearingTokensExchangeRatesCallsResults)
 
     /*
     const [
@@ -1062,7 +1065,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return interestBearingTokens
     }, {})
 
-    // console.log('interestBearingTokens', interestBearingTokens)
+    console.log('interestBearingTokens', interestBearingTokens)
 
     // Process protocols
     const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {

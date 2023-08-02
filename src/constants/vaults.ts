@@ -3028,24 +3028,30 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           decimals: 18,
           enabled: true,
           name: 'clearpool',
-          abi: ERC20 as Abi,
+          abi: IdleCDO as Abi,
           token: 'AA_clearpool_portofino_USDC',
           label: 'Clearpool Portofino USDC (Senior)',
           address: '0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2',
           functions: {
-
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2']
+            }
           }
         },
         {
           decimals: 18,
           enabled: true,
           name: 'clearpool',
-          abi: ERC20 as Abi,
+          abi: IdleCDO as Abi,
           token: 'AA_clearpool_fasanara_USDC',
           label: 'Clearpool Fasanara USDC (Senior)',
           address: '0xdcA1daE87f5c733c84e0593984967ed756579BeE',
           functions: {
-
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xdcA1daE87f5c733c84e0593984967ed756579BeE']
+            }
           }
         },
         /*
@@ -3115,7 +3121,10 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           label: 'Clearpool Fasanara USDT (Senior)',
           address: '0x0a6f2449C09769950cFb76f905Ad11c341541f70',
           functions: {
-
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0x0a6f2449C09769950cFb76f905Ad11c341541f70']
+            }
           }
         },
       ]
@@ -3230,13 +3239,18 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       protocols: [
         {
           decimals: 18,
-          functions: {},
           enabled: true,
           name: 'morpho',
           abi: ERC20 as Abi,
           token: 'BB_morpho_aave_WETH',
           label: 'Morpho Aave WETH (Junior)',
-          address: '0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B'
+          address: '0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B',
+          functions: {
+            exchangeRate: {
+              name: 'virtualPrice',
+              params: ['0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B']
+            }
+          },
         },
       ]
     },
