@@ -15,6 +15,7 @@ export interface Network {
   explorer: string
   blocksPerCall: number
   chainName: string
+  hostName?: string
 }
 
 export const networks: Record<number, Network> = {
@@ -29,6 +30,7 @@ export const networks: Record<number, Network> = {
     provider: 'infura',
     explorer: 'etherscan',
     blocksPerCall: 1000000,
+    hostName: 'app.idle.finance',
     chainName: 'Ethereum Mainnet',
   },
   42: {
@@ -67,6 +69,7 @@ export const networks: Record<number, Network> = {
     provider: 'polygon',
     blocksPerCall: 1000000,
     explorer: 'polygonscan',
+    hostName: 'polygon.idle.finance',
     chainName: 'Matic(Polygon) Mainnet',
     icon: `${networksFolder}polygon.svg`,
   },

@@ -65,13 +65,23 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ account, setAccount ] = useState<Account | null>(null)
   const prevAccount = usePrevious<Account | null>(account)
 
-  const [ chainId, setChainIdState ] = useState<number>(defaultChainId)
+  const hostnameChainId = useMemo(() : number => {
+    const hostnameChainId = Object.keys(networks).find( (chainId: string) => {
+      return networks[+chainId].hostName && networks[+chainId].hostName?.toLowerCase() === window.location.hostname.toLowerCase()
+    })
+    return hostnameChainId ? +hostnameChainId : defaultChainId
+  }, [])
+
+  console.log('defaultChainId', defaultChainId)
+  console.log('hostnameChainId', hostnameChainId)
+
+  const [ chainId, setChainIdState ] = useState<number>(hostnameChainId)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ chainSetFromStorage, setChainSetFromStorage ] = useState<boolean>(false)
-  const [ storedChainId, setStoredChainId, , isChainLoaded ] = useLocalForge('selectedChain', defaultChainId)
+  const [ storedChainId, setStoredChainId, , isChainLoaded ] = useLocalForge('selectedChain', hostnameChainId)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
   const prevChainId = usePrevious<number>(chainId)
 
@@ -113,12 +123,12 @@ export function WalletProvider({ children }: ProviderProps) {
         setChainIdState(storedChainId)
       // Stored chainId not available, set default chainID
       } else {
-        setStoredChainId(defaultChainId)
-        setChainIdState(defaultChainId)
+        setStoredChainId(hostnameChainId)
+        setChainIdState(hostnameChainId)
       }
     }
     setChainSetFromStorage(true)
-  }, [chainId, setChainIdState, storedChainId, setStoredChainId, chainSetFromStorage, isChainLoaded])
+  }, [chainId, hostnameChainId, setChainIdState, storedChainId, setStoredChainId, chainSetFromStorage, isChainLoaded])
 
   // Auto-connect wallet
   useEffect(() => {
