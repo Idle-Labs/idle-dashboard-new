@@ -74,6 +74,14 @@ export const Usd: React.FC<AmountProps> = ({
   ...props
 }) => {
   prefix = isBigNumberNaN(value) ? '' : `${prefix.replace(/\$/,'')}$`
+  // Check minus values
+  if (!isBigNumberNaN(value) && BNify(value).lt(0)){
+    // Show minus sign if parsed value is lower than 0.01
+    if (BNify(value).lte(-0.01)){
+      prefix = `-${prefix}`
+    }
+    value = BNify(value).abs()
+  }
   return (
     <Amount value={value} prefix={prefix} decimals={decimals} {...props} />
   )
