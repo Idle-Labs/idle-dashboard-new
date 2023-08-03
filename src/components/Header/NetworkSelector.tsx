@@ -1,3 +1,4 @@
+import { sendCustomEvent } from 'helpers/'
 import { Menu, Spinner } from '@chakra-ui/react'
 import React, { useState, useEffect } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
@@ -20,6 +21,7 @@ export const NetworkSelector: React.FC = () => {
         return {
           icon,
           onClick: () => {
+            sendCustomEvent('select_chain', {chainId: cId})
             setChainId(cId)
           },
           label: networks[parseInt(cId)].name

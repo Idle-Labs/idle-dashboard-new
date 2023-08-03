@@ -15,6 +15,10 @@ export function sendPageview(path = null) {
   })
 }
 
+export function sendCustomEvent(event_name, event_params){
+  window.gtag('event', event_name, event_params);
+}
+
 export function sendViewItemList(item_list_id, item_list_name, items){
   window.gtag("event", "view_item_list", {
     item_list_id,
