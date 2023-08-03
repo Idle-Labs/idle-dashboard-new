@@ -74,7 +74,6 @@ export function WalletProvider({ children }: ProviderProps) {
 
   const [ chainId, setChainIdState ] = useState<number>(hostnameChainId)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
-  const [ isNetworkCorrect, setIsNetworkCorrect ] = useState<boolean>(false)
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ chainSetFromStorage, setChainSetFromStorage ] = useState<boolean>(false)
@@ -112,6 +111,10 @@ export function WalletProvider({ children }: ProviderProps) {
     return !chainIds.length || (chainId && chainIds.includes(+chainId))
   }, [chainId])
 
+  const isNetworkCorrect = useMemo(() => {
+    return !wallet || chainIdHex === connectedChain?.id
+  }, [chainIdHex, connectedChain, wallet])
+
   // Set chainId to stored chainId
   useEffect(() => {
     if (!isChainLoaded || chainSetFromStorage) return
@@ -140,18 +143,11 @@ export function WalletProvider({ children }: ProviderProps) {
 
   // Switch chain
   useEffect(() => {
-    if (!wallet || connecting) return
+    if (!wallet || connecting || isNetworkCorrect) return
     setChain({
       chainId: chainIdHex
     })
-  }, [chainIdHex, setChain, wallet, connecting])
-
-  // Set isNetworkCorrect
-  useEffect(() => {
-    // if (!connectedChain) return
-    const isNetworkCorrect = !wallet || chainIdHex === connectedChain?.id
-    setIsNetworkCorrect(isNetworkCorrect)
-  }, [chainIdHex, connectedChain, wallet])
+  }, [chainIdHex, isNetworkCorrect, setChain, wallet, connecting, connectedChain])
 
   // Update wallet and provider
   useEffect(() => {
