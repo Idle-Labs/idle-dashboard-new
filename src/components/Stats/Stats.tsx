@@ -19,7 +19,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import type { AssetId, Asset/*, Transaction*/ } from 'constants/types'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { bnOrZero, BNify, sortNumeric, getObjectPath } from 'helpers/'
-import { useTheme, SkeletonText, Stack, VStack, HStack, Flex, Text, Button, Input, InputGroup, InputRightElement } from '@chakra-ui/react'
+import { useTheme, SkeletonText, Stack, VStack, HStack, Flex, Text, Button, Image, Input, InputGroup, InputRightElement } from '@chakra-ui/react'
 
 type ApyRange = {
   minApy: BigNumber | null
@@ -232,10 +232,33 @@ export const Stats: React.FC = () => {
     {
       accessor:'tvlUsd',
       Header:translate('defi.tvl'),
-      Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
+      Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={1} isLoaded={!!value}>
-            <Amount.Usd value={value} textStyle={'tableCell'} />
+            {
+              (row.original.type === 'AA' || row.original.type === 'BB') ? (
+                <AssetProvider assetId={row.original.id}>
+                  <HStack
+                    spacing={6}
+                    width={'full'}
+                  >
+                    <HStack
+                      minW={'fit-content'}
+                      width={['auto', '25%']}
+                    >
+                      <Image src={`images/strategies/AA.svg`} />
+                      <AssetProvider.SeniorPoolUsd color={strategies.AA.color} textStyle={'tableCell'} />
+                    </HStack>
+                    <HStack>
+                      <Image src={`images/strategies/BB.svg`} />
+                      <AssetProvider.JuniorPoolUsd color={strategies.BB.color} textStyle={'tableCell'} />
+                    </HStack>
+                  </HStack>
+                </AssetProvider>
+              ) : (
+                <Amount.Usd value={value} textStyle={'tableCell'} />
+              )
+            }
           </SkeletonText>
         )
       },
@@ -249,9 +272,19 @@ export const Stats: React.FC = () => {
           <AssetProvider assetId={row.original.id}>
             <HStack
               spacing={6}
+              width={'full'}
             >
-              <AssetProvider.SeniorApy color={strategies.AA.color} textStyle={'tableCell'} />
-              <AssetProvider.JuniorApy color={strategies.BB.color} textStyle={'tableCell'} />
+              <HStack
+                minW={'fit-content'}
+                width={['auto', '25%']}
+              >
+                <Image src={`images/strategies/AA.svg`} />
+                <AssetProvider.SeniorApy color={strategies.AA.color} textStyle={'tableCell'} />
+              </HStack>
+              <HStack>
+                <Image src={`images/strategies/BB.svg`} />
+                <AssetProvider.JuniorApy color={strategies.BB.color} textStyle={'tableCell'} />
+              </HStack>
             </HStack>
           </AssetProvider>
         ) : row.original.type === 'BY' ? (

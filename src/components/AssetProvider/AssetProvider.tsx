@@ -911,6 +911,39 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
     </AssetProvider>
   )
 }
+const SeniorPoolUsd: React.FC<AmountProps> = (props) => {
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
+
+  return (
+    <AssetProvider
+      assetId={trancheAsset?.id}
+    >
+      <AssetProvider.PoolUsd {...props} />
+    </AssetProvider>
+  )
+}
+
+const JuniorPoolUsd: React.FC<AmountProps> = (props) => {
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+
+  return (
+    <AssetProvider
+      assetId={trancheAsset?.id}
+    >
+      <AssetProvider.PoolUsd {...props} />
+    </AssetProvider>
+  )
+}
 
 const TotalPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault, asset } = useAssetProvider()
@@ -1431,6 +1464,8 @@ AssetProvider.EarningsPerc = EarningsPerc
 AssetProvider.DepositedUsd = DepositedUsd
 AssetProvider.ProtocolName = ProtocolName
 AssetProvider.ProtocolIcon = ProtocolIcon
+AssetProvider.SeniorPoolUsd = SeniorPoolUsd
+AssetProvider.JuniorPoolUsd = JuniorPoolUsd
 AssetProvider.StrategyBadge = StrategyBadge
 AssetProvider.ApyRatioChart = ApyRatioChart
 AssetProvider.NetEarningsUsd = NetEarningsUsd
