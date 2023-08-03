@@ -69,7 +69,6 @@ export const networks: Record<number, Network> = {
     provider: 'polygon',
     blocksPerCall: 1000000,
     explorer: 'polygonscan',
-    hostName: 'polygon.idle.finance',
     chainName: 'Matic(Polygon) Mainnet',
     icon: `${networksFolder}polygon.svg`,
   },
@@ -84,6 +83,7 @@ export const networks: Record<number, Network> = {
     provider: 'alchemyzkevm',
     chainName: 'Polygon zkEVM',
     explorer: 'zkevmpolygonscan',
+    hostName: 'polygon.idle.finance',
     icon: `${networksFolder}polygon.svg`,
   },
   5: {

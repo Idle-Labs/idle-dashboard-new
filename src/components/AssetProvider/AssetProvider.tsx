@@ -446,6 +446,7 @@ const Strategies: React.FC<StrategiesProps> = ({
       return (
         <HStack
           spacing={2}
+          key={`strategy_${index}`}
         >
           <Tooltip
             hasArrow

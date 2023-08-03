@@ -69,11 +69,8 @@ export function WalletProvider({ children }: ProviderProps) {
     const hostnameChainId = Object.keys(networks).find( (chainId: string) => {
       return networks[+chainId].hostName && networks[+chainId].hostName?.toLowerCase() === window.location.hostname.toLowerCase()
     })
-    return hostnameChainId ? +hostnameChainId : defaultChainId
+    return hostnameChainId && chains[+hostnameChainId] ? +hostnameChainId : defaultChainId
   }, [])
-
-  console.log('defaultChainId', defaultChainId)
-  console.log('hostnameChainId', hostnameChainId)
 
   const [ chainId, setChainIdState ] = useState<number>(hostnameChainId)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
