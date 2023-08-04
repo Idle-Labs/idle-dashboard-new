@@ -1,11 +1,11 @@
 import trezorModule from '@web3-onboard/trezor'
 import ledgerModule from '@web3-onboard/ledger'
 import gnosisModule from '@web3-onboard/gnosis'
-import { chains, DASHBORD_URL } from 'constants/'
 import { translations } from 'constants/translations'
 import coinbaseWalletModule from '@web3-onboard/coinbase'
 import injectedModule from '@web3-onboard/injected-wallets'
 import walletConnectModule from '@web3-onboard/walletconnect'
+import { defaultChainId, chains, DASHBORD_URL } from 'constants/'
 
 const env = process.env;
 
@@ -17,21 +17,14 @@ const trezor = trezorModule({
 const ledger = ledgerModule()
 const injected = injectedModule()
 
-const walletConnectV1InitOptions = {
-  bridge: "https://bridge.walletconnect.org",
-  qrcodeModalOptions: {
-    mobileLinks: ['rainbow', 'metamask', 'argent', 'trust', 'imtoken', 'pillar']
-  },
-  connectFirstChainId: true
-}
-
 const walletConnectV2InitOptions = {
   version: 2,
+  requiredChains: [defaultChainId],
   projectId: env.REACT_APP_WALLETCONNECT_KEY,
-  requiredChains: Object.keys(chains).map( cId => +cId )
+  optionalChains: Object.keys(chains).map( cId => +cId )
 }
 
-const walletConnect = walletConnectModule(walletConnectV2InitOptions || walletConnectV1InitOptions);
+const walletConnect = walletConnectModule(walletConnectV2InitOptions);
 const coinbaseWalletSdk = coinbaseWalletModule({ darkMode: true })
 
 export const onboardInitParams = {
