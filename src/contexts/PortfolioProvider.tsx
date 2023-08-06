@@ -22,7 +22,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -2760,9 +2760,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
   
   // Update balances USD
   useEffect(() => {
-    if (isEmpty(state.balances)/* || isEmpty(state.vaultsPositions)*/) return
+    if (!account?.address || isEmpty(state.balances)/* || isEmpty(state.vaultsPositions)*/) return
 
     const startTimestamp = Date.now();
+
+    const balances: Record<string, BigNumber> = {
+      total: BNify(0),
+    }
 
     const balancesUsd = Object.keys(state.balances).reduce( (balancesUsd: Balances, assetId) => {
       const asset = selectAssetById(assetId)
@@ -2779,12 +2783,30 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
         balancesUsd[assetId] = assetBalance.times(vaultPrice).times(assetPriceUsd)
 
+        balances.total = balances.total.plus(balancesUsd[assetId])
+
+        // Init balance type
+        if (!balances[asset.type as string]){
+          balances[asset.type as string] = BNify(0)
+        }
+        balances[asset.type as string] = balances[asset.type as string].plus(balancesUsd[assetId])
+
         // if (!asset.balanceUsd || !asset.balanceUsd.eq(balancesUsd[assetId])){
         //   dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: {balanceUsd: balancesUsd[assetId]} }})
         // }
       }
       return balancesUsd
     }, {})
+
+    sendCustomEvent('user_balances', {
+      address: account?.address.replace('0x', ''),
+      ...Object.keys(balances).reduce( (balancesParsed: Record<string, string>, type: string) => {
+        return {
+          ...balancesParsed,
+          [type]: bnOrZero(balances[type]).toFixed(2)
+        }
+      }, {})
+    })
 
     dispatch({type: 'SET_BALANCES_USD', payload: balancesUsd})
 
@@ -2797,7 +2819,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     };
 
   // eslint-disable-next-line
-  }, [state.balances, state.vaultsPositions, selectVaultPosition, selectAssetPriceUsd, selectAssetBalance, selectVaultPrice])
+  }, [account, state.balances, state.vaultsPositions, selectVaultPosition, selectAssetPriceUsd, selectAssetBalance, selectVaultPrice])
 
   // Update TVLs
   /*

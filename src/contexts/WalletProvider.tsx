@@ -1,12 +1,12 @@
 import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
-import { checkAddress, sendLogin } from 'helpers/'
 import { selectUnderlyingToken } from 'selectors/'
 import { useSearchParams } from 'react-router-dom'
 import type { ProviderProps } from './common/types'
 import { onboardInitParams } from './configs/onboard'
 import type { WalletState } from '@web3-onboard/core'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
+import { checkAddress, sendLogin, sendChainId } from 'helpers/'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
 import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
@@ -148,6 +148,12 @@ export function WalletProvider({ children }: ProviderProps) {
       chainId: chainIdHex
     })
   }, [chainIdHex, isNetworkCorrect, setChain, wallet, connecting, connectedChain])
+
+  // Send chainID
+  useEffect(() => {
+    if (!isChainLoaded || !isNetworkCorrect) return
+    sendChainId(chainIdHex, window.location.hostname)
+  }, [isChainLoaded, isNetworkCorrect, chainIdHex])
 
   // Update wallet and provider
   useEffect(() => {

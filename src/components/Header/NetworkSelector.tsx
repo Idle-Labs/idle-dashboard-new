@@ -21,8 +21,8 @@ export const NetworkSelector: React.FC = () => {
         return {
           icon,
           onClick: () => {
-            sendCustomEvent('select_chain', {chainId: cId})
             setChainId(cId)
+            sendCustomEvent('select_chain', {chainId: cId})
           },
           label: networks[parseInt(cId)].name
         }

@@ -1,6 +1,8 @@
 import { bnOrZero } from 'helpers/'
 import { protocols } from 'constants/protocols'
 
+export const GOOGLE_TAG_ID = 'G-8ZKZ867JNC'
+
 export function sendPageview(path = null) {
   const page_path = path || window.location.hash.substr(1)
   // console.log("Send event: page_view", {
@@ -92,17 +94,23 @@ export function sendPurchase(asset, value, tx){
   // })
 }
 
+export function sendChainId(chainId, hostname){
+  window.gtag('set', {chainId, hostname});
+}
+
 export function sendLogin(method, address){
-  window.gtag("event", "login", {
+  const eventParams = {
     method
-  });
+  }
 
   if (address) {
-    window.gtag('config', 'G-8ZKZ867JNC', {
+    window.gtag('config', GOOGLE_TAG_ID, {
       'user_id': address
     });
+    eventParams['address'] = address.replace('0x', '')
   }
-  // console.log('Send event: login', method, address)
+
+  sendCustomEvent('login', eventParams)
 }
 
 export function getAssetListItem(asset, item_list_id = '', item_list_name = ''){

@@ -13,8 +13,8 @@ import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
-import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendPurchase, getDecodedError } from 'helpers/'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
+import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError } from 'helpers/'
 import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
 
 export type ActionComponentArgs = {
@@ -41,6 +41,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
   const [ purchaseEventSent, setPurchaseEventSent ] = useState<string | undefined | null>(null)
   const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
+  const [ transactionEventSent, setTransactionEventSent ] = useState<string | undefined | null>(null)
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
   const { selectors: { selectAssetById, selectAssetPriceUsd, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
@@ -105,8 +106,18 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       setPurchaseEventSent(transactionState.transaction?.hash)
     }
 
+    // Send transaction event
+    if (asset?.id && transactionEventSent !== transactionState.transaction?.hash){
+      sendCustomEvent(txActionType, {
+        asset: asset.id,
+        transaction_id: transactionState.transaction?.hash,
+        amountUsd: bnOrZero(transactionAmountUsd).toFixed(2)
+      })
+      setTransactionEventSent(transactionState.transaction?.hash)
+    }
+
   // eslint-disable-next-line
-  }, [asset, transactionState?.status, purchaseEventSent, transactionAmountUsd, setProgressValue, progressMaxValue])
+  }, [asset, transactionState?.status, purchaseEventSent, transactionEventSent, transactionAmountUsd, setProgressValue, progressMaxValue])
 
   // Set progress max value
   useEffect(() => {
