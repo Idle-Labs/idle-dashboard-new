@@ -365,7 +365,7 @@ export class BestYieldVault {
 
       return calls
     }, [])
-
+    
     if (this.underlyingToken?.address && this.underlyingContract){
       calls.push({
         assetId: this.id,

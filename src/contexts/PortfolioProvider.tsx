@@ -4,7 +4,6 @@ import { GaugeVault } from 'vaults/GaugeVault'
 import useLocalForge from 'hooks/useLocalForge'
 import { useWeb3Provider } from './Web3Provider'
 import { TrancheVault } from 'vaults/TrancheVault'
-import { selectUnderlyingToken } from 'selectors/'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { BestYieldVault } from 'vaults/BestYieldVault'
@@ -17,6 +16,7 @@ import { historicalPricesUsd } from 'constants/historicalData'
 import type { CallData, DecodedResult } from 'classes/Multicall'
 import type { CdoLastHarvest } from 'classes/VaultFunctionsHelper'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors/'
 import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID } from 'constants/vars'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
@@ -1092,6 +1092,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('interestBearingTokens', interestBearingTokens)
 
     // Process protocols
+    /*
     const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
       if (callResult.data) {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -1127,6 +1128,25 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
       return allocations
     }, {}) : {}
+    */
+
+    const allocations = Object.keys(interestBearingTokens).reduce( (allocations: Record<AssetId, Balances>, assetId: AssetId) => {
+      const assetTotalAllocation = Object.keys(interestBearingTokens[assetId]).reduce( (total: BigNumber, protocolAddress: AssetId) => {
+        const underlyingToken = selectUnderlyingTokenByAddress(chainId, protocolAddress)
+        if (underlyingToken) return total
+        return total.plus(interestBearingTokens[assetId][protocolAddress])
+      }, BNify(0))
+
+      allocations[assetId] = Object.keys(interestBearingTokens[assetId]).reduce( (assetAllocations: Balances, protocolAddress: AssetId) => {
+        const allocationPercentage = BNify(interestBearingTokens[assetId][protocolAddress]).div(assetTotalAllocation).times(100)
+        return {
+          ...assetAllocations,
+          [protocolAddress]: allocationPercentage
+        }
+      }, {})
+
+      return allocations
+    }, {})
 
     // console.log('allocations', allocations)
     // console.log('protocolsResults', protocolsResults)
@@ -1483,7 +1503,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       idleDistributions,
       interestBearingTokens
     }
-  }, [selectAssetById, web3Chains, account, isNetworkCorrect, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, web3Chains, chainId, account, isNetworkCorrect, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
