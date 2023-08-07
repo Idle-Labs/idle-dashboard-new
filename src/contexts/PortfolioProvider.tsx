@@ -346,6 +346,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetId && state.historicalTvlsUsd[assetId.toLowerCase()] ? state.historicalTvlsUsd[assetId.toLowerCase()] : null
   }, [state.historicalTvlsUsd])
 
+  const selectAssetInterestBearingTokens = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
+    return assetId && state.interestBearingTokens[assetId.toLowerCase()] ? state.interestBearingTokens[assetId.toLowerCase()] : null
+  }, [state.interestBearingTokens])
+
   const selectAssetsByIds = useCallback( (assetIds: AssetId[]): Asset[] | null => {
     const assetIdsLowerCase = assetIds.map( assetId => assetId && assetId.toLowerCase() )
     return Object.keys(state.assetsData).filter( assetId => assetIdsLowerCase.includes(assetId) ).map( assetId => state.assetsData[assetId] )
@@ -945,8 +949,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('vaultsCollectedFees', vaultsCollectedFees)
     // console.log('stakedIdleVaultRewards', stakedIdleVaultRewards)
     // console.log('vaultsPricesCallsResults', vaultsPricesCallsResults)
-    console.log('interestBearingTokensCallsResults', interestBearingTokensCallsResults)
-    console.log('interestBearingTokensExchangeRatesCallsResults', interestBearingTokensExchangeRatesCallsResults)
+    // console.log('interestBearingTokensCallsResults', interestBearingTokensCallsResults)
+    // console.log('interestBearingTokensExchangeRatesCallsResults', interestBearingTokensExchangeRatesCallsResults)
 
     /*
     const [
@@ -1052,6 +1056,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return protocolsAprs
     }, {})
 
+    // Prices Usd
+    const pricesUsd = pricesUsdCallsResults.reduce( (pricesUsd: Balances, callResult: DecodedResult) => {
+      const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+      const asset = selectAssetById(assetId)
+      if (asset){
+        pricesUsd[assetId] = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
+      }
+      return pricesUsd
+    }, {})
+
     // Process interest bearing tokens
     const interestBearingTokens = interestBearingTokensCallsResults.reduce( (interestBearingTokens: Record<AssetId, Balances>, callResult: DecodedResult) => {
       if (callResult.data) {
@@ -1059,13 +1073,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
         if (!interestBearingTokens[assetId]){
           interestBearingTokens[assetId] =  {}
         }
-        const protocolAddress = callResult.extraData.data.address
+
+        const protocolAddress = callResult.extraData.data.address.toLowerCase()
         interestBearingTokens[assetId][protocolAddress] = fixTokenDecimals(callResult.data, callResult.extraData.data.decimals)
+
+        const interestBearingTokensExchangeRateResult = interestBearingTokensExchangeRatesCallsResults.find( (callResult: DecodedResult) => {
+          return cmpAddrs(callResult.extraData.data.address, protocolAddress)
+        })
+
+        if (interestBearingTokensExchangeRateResult){
+          const exchangeRate = fixTokenDecimals(interestBearingTokensExchangeRateResult.data, interestBearingTokensExchangeRateResult.extraData.data.decimals)
+          interestBearingTokens[assetId][protocolAddress] = interestBearingTokens[assetId][protocolAddress].times(exchangeRate)
+        }
       }
       return interestBearingTokens
     }, {})
 
-    console.log('interestBearingTokens', interestBearingTokens)
+    // console.log('interestBearingTokens', interestBearingTokens)
 
     // Process protocols
     const lastAllocationsCalls = protocolsResults.reduce( (calls: ContractRawCall[], callResult: DecodedResult) => {
@@ -1310,26 +1334,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, {})
 
     // console.log('vaultsPrices', vaultsPrices)
-
-    const pricesUsd = pricesUsdCallsResults.reduce( (pricesUsd: Balances, callResult: DecodedResult) => {
-      const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-      const asset = selectAssetById(assetId)
-      if (asset){
-        pricesUsd[assetId] = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
-        // console.log(`Asset Price Usd ${asset.name}: ${pricesUsd[assetId].toString()}`)
-        // assetsData[assetId] = {
-        //   ...assetsData[assetId],
-        //   priceUsd: pricesUsd[assetId]
-        // }
-        // if (asset.underlyingId){
-        //   assetsData[asset.underlyingId] = {
-        //     ...assetsData[asset.underlyingId],
-        //     priceUsd: pricesUsd[asset.underlyingId]
-        //   }
-        // }
-      }
-      return pricesUsd
-    }, {})
 
     const totalSupplies = totalSupplyCallsResults.reduce( (totalSupplies: Balances, callResult: DecodedResult) => {
       if (callResult.data) {
@@ -2028,6 +2032,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectAssetHistoricalPrices,
       selectAssetHistoricalTvlsUsd,
       selectVaultsAssetsWithBalance,
+      selectAssetInterestBearingTokens,
       selectAssetHistoricalPriceByTimestamp,
       selectAssetHistoricalPriceUsdByTimestamp
     }
@@ -2054,6 +2059,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetHistoricalPrices,
     selectAssetHistoricalTvlsUsd,
     selectVaultsAssetsWithBalance,
+    selectAssetInterestBearingTokens,
     selectAssetHistoricalPriceByTimestamp,
     selectAssetHistoricalPriceUsdByTimestamp,
   ])

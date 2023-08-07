@@ -330,17 +330,22 @@ export class BestYieldVault {
 
   public getInterestBearingTokensExchangeRatesCalls(): ContractRawCall[] {
     return this.tokenConfig.protocols.reduce( (calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
-      const protocolAbi = protocolToken.abi ? protocolToken.abi as Abi : ERC20 as Abi
-      const protocolTokenContract = new this.web3.eth.Contract(protocolAbi, protocolToken.address)
-
       // Exchange rate call
       const exchangeRateFunction = protocolToken.functions?.exchangeRate
-      if (exchangeRateFunction && protocolTokenContract.methods[exchangeRateFunction.name]){
-        calls.push({
-          assetId: this.id,
-          data: protocolToken as any,
-          call: protocolTokenContract.methods[exchangeRateFunction.name](...exchangeRateFunction.params)
-        })
+      if (exchangeRateFunction){
+        const protocolAbi = protocolToken.abi ? protocolToken.abi as Abi : ERC20 as Abi
+        const protocolAddress = exchangeRateFunction.target || protocolToken.address
+        const protocolTokenContract = new this.web3.eth.Contract(protocolAbi, protocolAddress)
+        if (protocolTokenContract.methods[exchangeRateFunction.name]){
+          calls.push({
+            assetId: this.id,
+            data: {
+              ...protocolToken as any,
+              decimals: exchangeRateFunction.decimals || protocolToken.decimals
+            },
+            call: protocolTokenContract.methods[exchangeRateFunction.name](...exchangeRateFunction.params)
+          })
+        }
       }
 
       return calls
@@ -349,8 +354,7 @@ export class BestYieldVault {
 
   public getInterestBearingTokensCalls(): ContractRawCall[] {
     const calls = this.tokenConfig.protocols.reduce( (calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
-      const protocolAbi = protocolToken.abi ? protocolToken.abi as Abi : ERC20 as Abi
-      const protocolTokenContract = new this.web3.eth.Contract(protocolAbi, protocolToken.address)
+      const protocolTokenContract = new this.web3.eth.Contract(ERC20 as Abi, protocolToken.address)
 
       // Balance call
       calls.push({

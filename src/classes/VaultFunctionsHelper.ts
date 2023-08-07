@@ -708,6 +708,9 @@ export class VaultFunctionsHelper {
     const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
 
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
+
+    // console.log('getSubgraphData', vault.id, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData)
+
     let results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
 
     // Save fetched data
@@ -881,10 +884,10 @@ export class VaultFunctionsHelper {
       }
     }
 
-    const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
+    const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=0.5)
     let results = fetchData ? await callPlatformApis(this.chainId, 'idle', apiType as string, address, filters) : cachedData.data
 
-    // console.log('getIdleRatesData', cacheKey, cachedData, latestTimestamp, results)
+    // console.log('getIdleRatesData', cacheKey, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData, results)
 
     // Replace if not valid
     results = results || []

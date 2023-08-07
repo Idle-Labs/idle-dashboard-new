@@ -1,4 +1,4 @@
-import { BNify } from 'helpers/'
+import { bnOrZero } from 'helpers/'
 import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
 // import { selectProtocol } from 'selectors/'
@@ -21,7 +21,7 @@ type VaultUnderlyingProtocolsProps = {
 
 export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> = ({ assetId }) => {
   // const { chainId } = useWalletProvider()
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultById, selectAssetPriceUsd, selectAssetInterestBearingTokens } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
@@ -30,6 +30,14 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
   const vault = useMemo(() => {
     return selectVaultById && selectVaultById(assetId)
   }, [selectVaultById, assetId])
+
+  const interestBearingTokens = useMemo(() => {
+    return selectAssetInterestBearingTokens && selectAssetInterestBearingTokens(assetId)
+  }, [selectAssetInterestBearingTokens, assetId])
+
+  const underlyingPriceUsd = useMemo(() => {
+    return asset && selectAssetPriceUsd && selectAssetPriceUsd(asset.underlyingId)
+  }, [selectAssetPriceUsd, asset])
 
   if (!vault || !(vault instanceof BestYieldVault)) return null
   if (!("tokenConfig" in vault) || !vault.tokenConfig?.protocols.length) return null
@@ -47,8 +55,9 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
       >
       {
         vault.tokenConfig?.protocols.map( (protocol: IdleTokenProtocol) => {
-          const allocationPercentage = BNify(asset.allocations?.[protocol.address.toLowerCase()]).div(100)
-          const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
+          // const allocationPercentage = BNify(asset.allocations?.[protocol.address.toLowerCase()]).div(100)
+          // const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
+          const allocationUsd = bnOrZero(interestBearingTokens?.[protocol.address.toLowerCase()]).times(underlyingPriceUsd)
           const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
           const isIdleVault = selectVaultById(protocol.address) !== null
 

@@ -2710,6 +2710,8 @@ export type IdleToken = {
 
 export type ProtocolFunction = {
   name: string
+  decimals?: number
+  target?: string
   params: any[]
 }
 
@@ -2759,14 +2761,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
-          enabled: true,
-          abi: cToken as Abi,
-          name: 'compound',
-          address: '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
-          token: 'cDAI',
           decimals: 8,
+          token: 'cDAI',
+          enabled: true,
+          name: 'compound',
+          abi: cToken as Abi,
+          address: '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
           functions: {
             exchangeRate: {
+              decimals: 28,
               name: 'exchangeRateStored',
               params: []
             }
@@ -2794,6 +2797,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
+              target:'0x5dcA0B3Ed7594A6613c1A2acd367d56E1f74F92D',
               params: ['0x43eD68703006add5F99ce36b5182392362369C1c']
             }
           },
@@ -2847,7 +2851,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0xf85Fd280B301c0A6232d515001dA8B6c8503D714',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target:'0x1329E8DB9Ed7a44726572D44729427F132Fa290D',
               params: ['0xf85Fd280B301c0A6232d515001dA8B6c8503D714']
             }
           },
@@ -2862,7 +2868,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target: '0xE7C6A4525492395d65e736C3593aC933F33ee46e',
               params: ['0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06']
             }
           },
@@ -2877,7 +2885,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target: '0x9C13Ff045C0a994AF765585970A5818E1dB580F8',
               params: ['0x86a40De6d77331788Ba24a85221fb8DBFcBC9bF0']
             }
           },
@@ -2911,7 +2921,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0x3Eb6318b8D9f362a0e1D99F6032eDB1C4c602500',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target:'0xc4574C60a455655864aB80fa7638561A756C5E61',
               params: ['0x3Eb6318b8D9f362a0e1D99F6032eDB1C4c602500']
             }
           },
@@ -2926,7 +2938,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target:'0x440ceAd9C0A0f4ddA1C81b892BeDc9284Fc190dd',
               params: ['0xF0C177229Ae1cd41BF48dF6241fae3e6A14A6967']
             }
           },
@@ -2962,6 +2976,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
+              target:'0x5dcA0B3Ed7594A6613c1A2acd367d56E1f74F92D',
               params: ['0x38D36353D07CfB92650822D9c31fB4AdA1c73D6E']
             }
           },
@@ -2977,6 +2992,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
+              target:'0xDB82dDcb7e2E4ac3d13eBD1516CBfDb7b7CE0ffc',
               params: ['0xB098AF638aF0c4Fa3edb1A24f807E9c22dA0fE73']
             }
           },
@@ -3000,14 +3016,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
-          enabled: true,
-          abi: cToken as Abi,
-          name: 'compound',
-          address: '0x39aa39c021dfbae8fac545936693ac917d5e7563',
-          token: 'cUSDC',
           decimals: 8,
+          enabled: true,
+          token: 'cUSDC',
+          name: 'compound',
+          abi: cToken as Abi,
+          address: '0x39aa39c021dfbae8fac545936693ac917d5e7563',
           functions: {
             exchangeRate: {
+              decimals: 16,
               name: 'exchangeRateStored',
               params: []
             }
@@ -3034,7 +3051,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target:'0x1329E8DB9Ed7a44726572D44729427F132Fa290D',
               params: ['0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2']
             }
           }
@@ -3049,7 +3068,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0xdcA1daE87f5c733c84e0593984967ed756579BeE',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target:'0xE7C6A4525492395d65e736C3593aC933F33ee46e',
               params: ['0xdcA1daE87f5c733c84e0593984967ed756579BeE']
             }
           }
@@ -3096,6 +3117,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
           functions: {
             exchangeRate: {
+              decimals: 16,
               name: 'exchangeRateStored',
               params: []
             }
@@ -3122,7 +3144,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           address: '0x0a6f2449C09769950cFb76f905Ad11c341541f70',
           functions: {
             exchangeRate: {
+              decimals: 6,
               name: 'virtualPrice',
+              target:'0xc4574C60a455655864aB80fa7638561A756C5E61',
               params: ['0x0a6f2449C09769950cFb76f905Ad11c341541f70']
             }
           }
@@ -3195,14 +3219,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       description:'This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
       protocols: [
         {
-          enabled: true,
-          abi: cToken as Abi,
-          name: 'compound',
-          address: '0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5',
-          token: 'cETH',
           decimals: 8,
+          token: 'cETH',
+          enabled: true,
+          name: 'compound',
+          abi: cToken as Abi,
+          address: '0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5',
           functions: {
             exchangeRate: {
+              decimals: 28,
               name: 'exchangeRateStored',
               params: []
             }
@@ -3248,6 +3273,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           functions: {
             exchangeRate: {
               name: 'virtualPrice',
+              target:'0xb3F717a5064D2CBE1b8999Fdfd3F8f3DA98339a6',
               params: ['0xd69c52E6AF3aE708EE4b3d3e7C0C5b4CF4d6244B']
             }
           },
@@ -3271,14 +3297,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {
+          decimals: 8,
           enabled: true,
           token: 'cWBTC',
-          abi: cToken as Abi,
           name: 'compound',
+          abi: cToken as Abi,
           address: '0xccF4429DB6322D5C611ee964527D42E5d685DD6a',
-          decimals: 8,
           functions: {
             exchangeRate: {
+              decimals: 18,
               name: 'exchangeRateStored',
               params: []
             }
