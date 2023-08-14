@@ -47,7 +47,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
       spacing={6}
       alignItems={'flex-start'}
     >
-      <Translation component={Heading} as={'h3'} size={'md'} translation={'defi.underlyingProtocols'} />
+      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.underlyingProtocols'} />
       <SimpleGrid
         spacing={6}
         width={'100%'}
