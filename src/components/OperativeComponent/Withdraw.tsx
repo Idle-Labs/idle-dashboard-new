@@ -71,7 +71,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!selectAssetBalance) return BNify(0)
     const balance = selectAssetBalance(vault?.id)
     const vaultPrice = selectVaultPrice(vault?.id)
-    // console.log('assetBalance', balance.toString(), vaultPrice.toString())
+    // console.log('assetBalance', balance.toString(), vaultPrice.toString(), balance.times(vaultPrice).toString())
     return balance.times(vaultPrice)
   }, [selectAssetBalance, selectVaultPrice, vault?.id])
   

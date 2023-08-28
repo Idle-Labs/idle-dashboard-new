@@ -16,6 +16,7 @@ export interface AreaChartProps {
   margin: { top: number; right: number; bottom: number; left: number }
   gradientColor: string
   stroke?: string
+  gradientEnabled?: boolean
   hideBottomAxis?: boolean
   hideLeftAxis?: boolean
   top?: number
@@ -31,6 +32,7 @@ export const AreaChart = ({
   xScale,
   yScale,
   gradientColor,
+  gradientEnabled = true,
   hideBottomAxis = false,
   hideLeftAxis = false,
   top,
@@ -65,13 +67,17 @@ export const AreaChart = ({
 
   return (
     <Group left={left || margin.left} top={top || margin.top}>
-      <LinearGradient
-        id={gradientId}
-        from={`${gradientColor}20`}
-        fromOpacity={1}
-        to={`${gradientColor}02`}
-        toOpacity={0.2}
-      />
+      {
+        gradientEnabled && (
+          <LinearGradient
+            id={gradientId}
+            from={`${gradientColor}20`}
+            fromOpacity={1}
+            to={`${gradientColor}02`}
+            toOpacity={0.2}
+          />
+        )
+      }
       <AreaClosed<HistoryData>
         data={data}
         x={d => xScale(getDate(d)) || 0}

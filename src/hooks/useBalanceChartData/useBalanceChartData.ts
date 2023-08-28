@@ -17,7 +17,7 @@ export type BalanceChartData = {
   rainbow: RainbowData[]
 }
 
-type UseBalanceChartDataReturn = {
+export type UseBalanceChartDataReturn = {
   assets?: Asset[]
   balanceChartData: BalanceChartData
   balanceChartDataLoading: boolean

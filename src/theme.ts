@@ -78,6 +78,8 @@ export const theme = extendTheme({
       500: '#144241',
       300: '#3F6D6C',
     },
+    gain:'#4DE3B0',
+    loss:'#D43B3B',
     cta:'#CDD0D6',
     ctaDisabled:'#555B67',
     link:'#6AE4FF',

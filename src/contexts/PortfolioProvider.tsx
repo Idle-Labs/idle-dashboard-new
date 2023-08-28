@@ -21,7 +21,7 @@ import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID } from 'constants/
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
-import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS } from 'constants/'
+import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
@@ -300,15 +300,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return assetData
   }
 
-  const selectVaultById = useCallback( (vaultId: string): Vault | null => {
+  const selectVaultById = useCallback( (vaultId: AssetId | undefined): Vault | null => {
     return state.vaults ? state.vaults.find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
   }, [state.vaults])
 
-  const selectVaultNetworkById = useCallback( (chainId: any, vaultId: string): Vault | null => {
+  const selectVaultNetworkById = useCallback( (chainId: any, vaultId: AssetId | undefined): Vault | null => {
     return state.vaultsNetworks && state.vaultsNetworks[chainId] ? state.vaultsNetworks[chainId].find( (vault: Vault) => vault.id.toLowerCase() === vaultId?.toLowerCase()) || null : null
   }, [state.vaultsNetworks])
 
-  const selectNetworkByVaultId = useCallback( (vaultId: string): any | undefined => {
+  const selectNetworkByVaultId = useCallback( (vaultId: AssetId): any | undefined => {
     return Object.keys(state.vaultsNetworks).find( (chainId: any) => {
       return state.vaultsNetworks[chainId].find( (vault: Vault) => vault.id.toLowerCase() === vaultId.toLowerCase() )
     })
@@ -321,6 +321,20 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const selectVaultTransactions = useCallback( (vaultId: AssetId | undefined): Transaction[] => {
     return vaultId && state.transactions ? state.transactions[vaultId.toLowerCase()] || [] : []
   }, [state.transactions])
+
+  const selectAssetStrategies = useCallback( (assetId: AssetId | undefined): string[] => {
+    const vault = selectVaultById(assetId)
+    
+    if (vault instanceof TrancheVault) return [vault.type]
+    if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return []
+    
+    return vault.tokenConfig.protocols.reduce( (availableStrategies: string[], protocolConfig: IdleTokenProtocol) => {
+      const asset = selectAssetById(protocolConfig.address)
+      if (!asset || !asset?.type) return availableStrategies
+      if (availableStrategies.includes(asset.type)) return availableStrategies
+      return [...availableStrategies, asset.type]
+    }, [])
+  }, [selectVaultById, selectAssetById])
 
   const selectAssetHistoricalPriceByTimestamp = useCallback( (assetId: AssetId | undefined, timestamp: string | number): HistoryData | null => {
     return assetId && state.historicalPrices[assetId.toLowerCase()] ? state.historicalPrices[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp ) : null
@@ -2041,6 +2055,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectAssetBalance,
       selectVaultPosition,
       selectAssetPriceUsd,
+      selectAssetStrategies,
       selectAssetBalanceUsd,
       selectNetworkByVaultId,
       selectVaultNetworkById,
@@ -2068,6 +2083,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetBalance,
     selectAssetPriceUsd,
     selectVaultPosition,
+    selectAssetStrategies,
     selectAssetBalanceUsd,
     selectNetworkByVaultId,
     selectVaultNetworkById,

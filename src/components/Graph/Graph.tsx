@@ -10,7 +10,7 @@ import { GraphLoading } from './GraphLoading'
 import { PrimaryChart } from './PrimaryChart'
 import { RainbowChart } from './RainbowChart'
 
-type GraphProps = {
+export type GraphProps = {
   color: string
   loading?: boolean
   isLoaded?: boolean
@@ -20,6 +20,7 @@ type GraphProps = {
   data: BalanceChartData
   maxMinEnabled?: boolean
   isRainbowChart?: boolean
+  gradientEnabled?: boolean
   margins?: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -33,6 +34,7 @@ export const Graph: React.FC<GraphProps> = ({
     isRainbowChart,
     axisEnabled = true,
     maxMinEnabled = true,
+    gradientEnabled = true,
     margins = { top: 0, right: 0, bottom: 0, left: 0 }
   }) => {
   return useMemo(() => {
@@ -59,14 +61,14 @@ export const Graph: React.FC<GraphProps> = ({
           ) : !isEmpty(data) ? (
             <SlideFade in={!loading}>
               {isRainbowChart && rainbow.length>0 && assetIds && assetIds.length>1 ? (
-                <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
+                <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} gradientEnabled={gradientEnabled} />
               ) : total.length>0 && (
-                <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} />
+                <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} gradientEnabled={gradientEnabled} />
               )}
             </SlideFade>
           ) : null
         }}
       </ParentSize>
     )
-  }, [color, data, assetIds, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, margins])
+  }, [color, data, assetIds, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, gradientEnabled, margins])
 }

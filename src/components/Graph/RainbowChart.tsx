@@ -22,6 +22,7 @@ export type RainbowChartProps = {
   color: string
   formatFn: Function
   margins?: Margin
+  gradientEnabled?: boolean
   axisEnabled?: boolean
   maxMinEnabled?: boolean
 }
