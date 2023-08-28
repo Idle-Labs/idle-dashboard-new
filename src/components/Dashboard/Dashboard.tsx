@@ -840,7 +840,7 @@ export const Dashboard: React.FC = () => {
       </Stack>
       <Stack
         flex={1}
-        spacing={10}
+        spacing={20}
         width={'100%'}
         direction={['column', 'row']}
       >
@@ -855,7 +855,7 @@ export const Dashboard: React.FC = () => {
             width={'full'}
             overflow={'hidden'}
             direction={'column'}
-            minH={['auto', 460]}
+            minH={['auto', 410]}
             position={'relative'}
             justifyContent={'space-between'}
           >
