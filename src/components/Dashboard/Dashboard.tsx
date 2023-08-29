@@ -18,7 +18,7 @@ import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
 import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
-import { TransactionList } from 'components/TransactionList/TransactionList'
+import { PartnersPrograms } from 'components/PartnersPrograms/PartnersPrograms'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
@@ -27,8 +27,8 @@ import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutCh
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
-import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
 import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Button, Image, Flex } from '@chakra-ui/react'
+import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
 
 export const Dashboard: React.FC = () => {
   const { theme } = useThemeProvider()
@@ -964,7 +964,20 @@ export const Dashboard: React.FC = () => {
           width={['100%', '500px']}
           alignItems={'flex-start'}
         >
-          <TransactionList assetIds={allAssetIds} maxH={[400, Math.max(400, dimensions?.height)]} showTitleOnMobile={true} />
+          <Card
+          >
+            <VStack
+              flex={1}
+              spacing={0}
+              height={'100%'}
+              alignItems={'flex-start'}
+              ref={ref as typeof useRef}
+              justifyContent={'flex-start'}
+            >
+              <Translation display={['none', 'block']} component={Card.Heading} fontSize={'lg'} translation={'dashboard.partnerPrograms'} />
+              <PartnersPrograms />
+            </VStack>
+          </Card>
         </VStack>
       </Stack>
 

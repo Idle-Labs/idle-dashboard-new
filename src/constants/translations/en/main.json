@@ -28,6 +28,7 @@
     "deposit": "Deposit",
     "redeem": "Redeem",
     "new": "New",
+    "readMore": "Read more",
     "about": "About",
     "search": "Search",
     "wallet": "Wallet",
@@ -262,7 +263,18 @@
       "description": "Junior Tranches are designed to overperform any DeFi yield source. In exchange for taking on potential losses for Senior Tranches, they get a proportionally larger share of yield. This makes them perfect for advanced users that can assess risks and take them in exchange of higher returns."
     }
   },
+  "partnerPrograms": {
+    "institutions": {
+      "title": "Institutional and<br />Organizations",
+      "body": "Avoid the need to integrate multiple yield sources, and achieve the best risk adjusted yield with just one integration, powered by ERC-4626."
+    },
+    "integrators": {
+      "title": "DeFi<br />integrators",
+      "body": "From DAOs to institutions, Idle DAO provides yield optimization and risk diversification solutions for any treasury manager."
+    }
+  },
   "dashboard": {
+    "partnerPrograms": "Partner programs",
     "portfolio": {
       "rainbowChart": "🌈 Rainbow",
       "performance": "Performance",
