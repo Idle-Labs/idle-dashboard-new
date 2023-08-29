@@ -2063,6 +2063,88 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       },
+      USDCWinc:{
+        autoFarming:[],
+        enabledEnvs:[],
+        variant:'wincent',
+        protocol:'clearpool',
+        blockNumber:16790250,
+        status:'experimental',
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_wincent_USDC',
+          address:'0xd12f9248dEb1D972AA16022B399ee1662d51aD22'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_wincent_USDC',
+          address:'0xB9c8d0A004772000eE199c4348f1933AcbFDC1bB'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_wincent_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'AA_clearpool_wincent_USDC',
+            label:'Clearpool wincent USDC AA',
+            token:'AA_clearpool_wincent_USDC',
+            address:'0x00b51Fc6384A120Eac68bEA38b889Ea92524ab93'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_wincent_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'BB_clearpool_wincent_USDC',
+            token:'BB_clearpool_wincent_USDC',
+            label:'Clearpool wincent USDC BB',
+            address:'0xe6De3A77B4e71356F4E5e52fd695EAD5E5DBcd27'
+          }
+        }
+      },
       USDCFolk:{
         autoFarming:[],
         enabledEnvs:[],
