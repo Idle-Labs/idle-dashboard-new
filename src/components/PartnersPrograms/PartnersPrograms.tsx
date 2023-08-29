@@ -23,6 +23,7 @@ export const PartnersPrograms: React.FC = () => {
             pb={4}
             spacing={6}
             width={'full'}
+            key={`program_${index}`}
             alignItems={'flex-start'}
             borderBottom={index<Object.keys(partnerPrograms).length-1 ? '1px solid' : 'none'}
             borderColor={'divider'}
