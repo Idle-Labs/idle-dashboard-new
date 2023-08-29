@@ -434,7 +434,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const vaultsWithBalance = state.vaults ? state.vaults.filter( (vault: Vault) => {
       const assetBalance = selectAssetBalance(vault.id)
       const assetVaultPosition = selectVaultPosition(vault.id)
-      const checkVaultType = !vaultType || vault.type.toLowerCase() === vaultType.toLowerCase()
+      const checkVaultType = vault.type !== 'underlying' && (!vaultType || vault.type.toLowerCase() === vaultType.toLowerCase())
       const vaultHasBalance = assetBalance.gt(0)
       const vaultHasStakedBalance = includeStakedAmount && BNify(assetVaultPosition?.underlying.staked).gt(0)
       return checkVaultType && (vaultHasBalance || vaultHasStakedBalance)

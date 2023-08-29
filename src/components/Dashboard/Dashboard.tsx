@@ -1,15 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
+import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
 import React, { useRef, useState, useMemo } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { VaultCard } from 'components/VaultCard/VaultCard'
 import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { Scrollable } from 'components/Scrollable/Scrollable'
-import { Link, LinkProps, useNavigate } from 'react-router-dom'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
@@ -22,27 +20,25 @@ import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 import { TransactionList } from 'components/TransactionList/TransactionList'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
-import { CompositionChart } from 'components/CompositionChart/CompositionChart'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
-import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
+import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
-import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
-import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
-import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate, getAssetPath } from 'helpers/'
-import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Stat, StatArrow, Heading, Button, Image, Flex } from '@chakra-ui/react'
+import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
+import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
+import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Button, Image, Flex } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
+  const { theme } = useThemeProvider()
   const [ , setPercentChange ] = useState(0)
-  const { theme, isMobile } = useThemeProvider()
   const [ ref, dimensions ] = useBoundingRect()
   const selectedStrategies = useMemo(() => Object.keys(strategies), [])
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { account, network, walletInitialized } = useWalletProvider()
+  const { account, walletInitialized } = useWalletProvider()
   const {
     assetsData,
     stakingData,
@@ -53,7 +49,6 @@ export const Dashboard: React.FC = () => {
     gaugesRewards,
     vaultsRewards,
     selectors: {
-      selectAssetById,
       selectAssetsByIds,
       selectAssetStrategies,
       selectVaultsAssetsByType,
@@ -165,12 +160,12 @@ export const Dashboard: React.FC = () => {
       }
     }
 
-    const getSliceData = (selectedSlice: DonutChartData) => {
+    // const getSliceData = (selectedSlice: DonutChartData) => {
       // console.log(selectedSlice)
-    }
+    // }
 
     return (
-      <DonutChart {...compositionData} getSliceData={getSliceData} donutThickness={6} />
+      <DonutChart {...compositionData} getSliceData={() => {}} donutThickness={6} />
     )
   }, [theme, totalFunds, riskExposures])
 
@@ -228,7 +223,7 @@ export const Dashboard: React.FC = () => {
       >
         {
           products.map( (productConfig: ProductProps) => {
-            const strategyPath = getRoutePath('earn', [productConfig.route])
+            // const strategyPath = getRoutePath('earn', [productConfig.route])
             const productAssets = productConfig.strategies.reduce( (productAssets: Asset[], strategy: string) => {
               return [
                 ...productAssets,
@@ -950,6 +945,7 @@ export const Dashboard: React.FC = () => {
           {productsOverview}
         </VStack>
       </Stack>
+      <DepositedAssetsTable />
       <Stack
         spacing={6}
         mt={[10, 20]}

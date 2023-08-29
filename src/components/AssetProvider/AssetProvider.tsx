@@ -1234,10 +1234,12 @@ const Allocation: React.FC = () => {
   ) : <Spinner size={'sm'} />
 }
 
+export type AssetProviderPropsType = TextProps & AvatarProps & BoxProps & ThemingProps
+
 type GeneralDataProps = {
   field: string
   section?: string
-} & TextProps & AvatarProps & BoxProps & ThemingProps
+} & AssetProviderPropsType
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) => {
   const { asset, vault } = useAssetProvider()
@@ -1362,6 +1364,15 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<SeniorApy textStyle={'tableCell'} {...props} />)
     case 'productTag':
       return (<ProductTag type={asset?.type} {...props} />)
+    case 'productTagWithRisk':
+      return (
+        <HStack
+          spacing={1}
+        >
+          <ProductTag type={asset?.type} {...props} />
+          <AssetProvider.Strategies h={6} w={6} />
+        </HStack>
+      )
     case 'strategyBadge':
       return (<StrategyBadge {...props} />)
     case 'apy':
@@ -1407,7 +1418,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'protocols':
       return (
         <Protocols size={'sm'} {...props}>
-          <Text textStyle={'tableCell'} {...props}>-</Text>
+          <GeneralData field={'protocolWithVariant'} {...props} />
         </Protocols>
       )
     case 'status':

@@ -2,9 +2,9 @@ import './progress.css'
 import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
 import { StrategyCarouselItem, strategies } from 'constants/'
+import { Pagination } from 'components/Pagination/Pagination'
 import { Translation } from 'components/Translation/Translation'
-import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md'
-import { useTheme, Button, Flex, Stack, HStack, Image, VStack, Text } from '@chakra-ui/react'
+import { useTheme, Stack, Image, VStack } from '@chakra-ui/react'
 import { usePausableChakraCarouselProvider, PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 
 type StrategyDescriptionCarouselArgs = {
@@ -18,23 +18,14 @@ const CarouselNav: React.FC = () => {
   const { activeItem, itemsLength, pausableTimer: { stop }, goBack, goNext } = usePausableChakraCarouselProvider()
   if (itemsLength<=1) return null
   return (
-    <Flex
-      width={'100%'}
-      alignItems={'center'}
-      justifyContent={'flex-end'}
-    >
-      <HStack
-        spacing={2}
-      >
-        <Button variant={'link'} minW={'auto'} onClick={() => { if (activeItem) stop(); goBack() }}>
-          <MdArrowBackIosNew color={!activeItem ? theme.colors.ctaDisabled : theme.colors.primary} />
-        </Button>
-        <Text textStyle={'ctaStatic'}>{activeItem+1}/{itemsLength}</Text>
-        <Button variant={'link'} minW={'auto'} onClick={() => { if (activeItem<itemsLength-1) stop(); goNext()}}>
-          <MdArrowForwardIos color={activeItem === itemsLength-1 ? theme.colors.ctaDisabled : theme.colors.primary} />
-        </Button>
-      </HStack>
-    </Flex>
+    <Pagination
+      activePage={activeItem+1}
+      pages={itemsLength}
+      onPrevArrowClick={() => { if (activeItem) stop(); goBack() }}
+      onNextArrowClick={() => { if (activeItem<itemsLength-1) stop(); goNext()}}
+      prevArrowColor={!activeItem ? theme.colors.ctaDisabled : theme.colors.primary}
+      nextArrowColor={activeItem === itemsLength-1 ? theme.colors.ctaDisabled : theme.colors.primary}
+    />
   )
 }
 
@@ -80,8 +71,8 @@ export const StrategyDescriptionCarousel: React.FC<StrategyDescriptionCarouselAr
                       justifyContent={'center'}
                       alignItems={'flex-start'}
                     >
-                      <Translation component={Text} translation={carouselItem.title} textStyle={'ctaStatic'} />
-                      <Translation component={Text} translation={carouselItem.description} textStyle={'caption'} />
+                      <Translation translation={carouselItem.title} textStyle={'ctaStatic'} />
+                      <Translation translation={carouselItem.description} textStyle={'caption'} />
                     </VStack>
                   </Stack>
                 )
