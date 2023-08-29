@@ -879,7 +879,7 @@ export const Dashboard: React.FC = () => {
             >
               <Stack
                 pt={0}
-                pb={[4, 0]}
+                pb={4}
                 width={'full'}
                 alignItems={'flex-start'}
                 direction={['column', 'row']}
@@ -926,6 +926,7 @@ export const Dashboard: React.FC = () => {
                 height={'300px'}
                 percentChange={0}
                 color={chartColor}
+                maxMinEnabled={false}
                 loadingEnabled={false}
                 isRainbowChart={false}
                 gradientEnabled={false}
