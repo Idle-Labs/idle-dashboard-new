@@ -1,11 +1,12 @@
 import BigNumber from 'bignumber.js'
-import { bnOrZero, BNify } from 'helpers/'
 import { Card } from 'components/Card/Card'
+import { useNavigate } from 'react-router-dom'
 import React, { useState, useMemo } from 'react'
 import { Footer } from 'components/Footer/Footer'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
+import { bnOrZero, BNify, getRoutePath } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { TwitterTimelineEmbed } from 'react-twitter-embed'
 import { products, ProductProps } from 'constants/products'
@@ -30,6 +31,7 @@ export const Dashboard: React.FC = () => {
   const selectedStrategies = useMemo(() => Object.keys(strategies), [])
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
+  const navigate = useNavigate()
   const { account, walletInitialized, setChainId } = useWalletProvider()
   const {
     assetsData,
@@ -207,7 +209,7 @@ export const Dashboard: React.FC = () => {
       >
         {
           products.map( (productConfig: ProductProps) => {
-            // const strategyPath = getRoutePath('earn', [productConfig.route])
+            const strategyPath = getRoutePath('earn', [productConfig.route])
             const productAssets = productConfig.strategies.reduce( (productAssets: Asset[], strategy: string) => {
               return [
                 ...productAssets,
@@ -234,8 +236,15 @@ export const Dashboard: React.FC = () => {
               <Card
                 px={[5, 7]}
                 py={[4, 6]}
+                cursor={'pointer'}
                 bg={productConfig.color}
+                sx={{
+                  ':hover':{
+                    backgroundColor:`${productConfig.color}CC`
+                  }
+                }}
                 key={`product_${productConfig.strategy}`}
+                onClick={() => navigate(strategyPath)}
               >
                 <VStack
                   spacing={6}
@@ -357,7 +366,7 @@ export const Dashboard: React.FC = () => {
         </Card>
       </VStack>
     )
-  }, [isPortfolioLoaded, selectVaultsAssetsByType, vaultsPositions, riskExposures, riskExposureDonutChart, theme])
+  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, vaultsPositions, riskExposures, riskExposureDonutChart, theme])
 
   const chartColor = useMemo(() => {
     if (selectedStrategies.length===1){
