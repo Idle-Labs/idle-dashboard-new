@@ -56,7 +56,7 @@ export const DepositedAssetsTable: React.FC = () => {
   const [ page, setPage ] = useState<number>(1)
   const { theme, isMobile } = useThemeProvider()
   const { account, prevAccount } = useWalletProvider()
-  const [ mode, setMode ] = useState<'Deposited'|'Available'>('Deposited')
+  const [ mode, setMode ] = useState<'Deposited'|'Available'>('Available')
 
   const columns: StrategyColumn[] = useMemo(() => {
     return [
