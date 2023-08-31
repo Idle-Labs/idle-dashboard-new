@@ -368,11 +368,26 @@ export const theme = extendTheme({
       fontWeight:700,
       cursor:'pointer',
       fontFamily: 'heading',
+      textDecoration:'none',
       _selected: {
         color:'primary'
       },
       _hover: {
         color:'primary'
+      }
+    },
+    ctaDark: {
+      fontSize:'md',
+      color:'divider',
+      fontWeight:700,
+      cursor:'pointer',
+      fontFamily: 'heading',
+      _selected: {
+        // color:'primary'
+      },
+      _hover: {
+        textDecoration:'none !important',
+        // color:'primary'
       }
     },
     breadcrumb: {

@@ -45,6 +45,7 @@ export const DepositedAssetsTable: React.FC = () => {
   const navigate = useNavigate()
   const {
     isPortfolioLoaded,
+    isPortfolioAccountReady,
     selectors: {
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
@@ -56,14 +57,6 @@ export const DepositedAssetsTable: React.FC = () => {
   const { theme, isMobile } = useThemeProvider()
   const { account, prevAccount } = useWalletProvider()
   const [ mode, setMode ] = useState<'Deposited'|'Available'>('Deposited')
-
-  // Disabled Deposited
-  useEffect(() => {
-    if (!account && mode === 'Deposited')
-      return setMode('Available')
-    else if (!prevAccount && account && mode === 'Available')
-      return setMode('Deposited')
-  }, [mode, account, prevAccount])
 
   const columns: StrategyColumn[] = useMemo(() => {
     return [
@@ -212,6 +205,7 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [])
 
   const featuredAssetsData = useMemo(() => {
+    if (!selectVaultsAssetsByType) return []
     const allVaultsAssets = allStrategies.reduce( (allVaults: Asset[], strategy: string) => {
       return [
         ...allVaults,
@@ -236,6 +230,16 @@ export const DepositedAssetsTable: React.FC = () => {
       return vaultsAssetsWithBalance
     }, [])
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, allStrategies])
+
+  // Disabled Deposited
+  useEffect(() => {
+    if (!account && mode === 'Deposited')
+      return setMode('Available')
+    else if (!prevAccount && account && mode === 'Available')
+      return setMode('Deposited')
+    else if (mode === 'Deposited' && isPortfolioAccountReady && !depositedAssetsData.length)
+      return setMode('Available')
+  }, [mode, account, prevAccount, isPortfolioAccountReady, depositedAssetsData])
 
   const onRowClick = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
@@ -397,7 +401,7 @@ export const DepositedAssetsTable: React.FC = () => {
       <HStack
         spacing={3}
       >
-        <Translation<ButtonProps> disabled={!account} component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode==='Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited') } />
+        <Translation<ButtonProps> disabled={!account || !depositedAssetsData.length} component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode==='Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited') } />
         <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode==='Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available') } />
       </HStack>
       {mode === 'Deposited' ? depositedAssets : featuredAssets}

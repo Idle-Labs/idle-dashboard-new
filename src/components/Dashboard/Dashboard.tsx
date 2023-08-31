@@ -1,59 +1,46 @@
 import BigNumber from 'bignumber.js'
+import { bnOrZero, BNify } from 'helpers/'
 import { Card } from 'components/Card/Card'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useMemo } from 'react'
+import { Footer } from 'components/Footer/Footer'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
-import React, { useRef, useState, useMemo } from 'react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { TwitterTimelineEmbed } from 'react-twitter-embed'
 import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { TokenAmount } from 'components/TokenAmount/TokenAmount'
-import { AssetsIcons } from 'components/AssetsIcons/AssetsIcons'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { JoinCommunity } from 'components/JoinCommunity/JoinCommunity'
-import { StrategyLabel } from 'components/StrategyLabel/StrategyLabel'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 import { PartnersPrograms } from 'components/PartnersPrograms/PartnersPrograms'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
-import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { DashboardNewsBanner } from 'components/DashboardNewsBanner/DashboardNewsBanner'
-import { VaultRewardOverview } from 'components/VaultRewardOverview/VaultRewardOverview'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
-import { Box, Text, Skeleton, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Button, Image, Flex } from '@chakra-ui/react'
-import { bnOrZero, BNify, getRoutePath, getLegacyDashboardUrl, checkSectionEnabled, openWindow, isEmpty, formatDate } from 'helpers/'
+import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Image, Flex } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
   const { theme } = useThemeProvider()
   const [ , setPercentChange ] = useState(0)
-  const [ ref, dimensions ] = useBoundingRect()
   const selectedStrategies = useMemo(() => Object.keys(strategies), [])
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
-  const navigate = useNavigate()
-  const { account, walletInitialized } = useWalletProvider()
+  const { account, walletInitialized, setChainId } = useWalletProvider()
   const {
     assetsData,
-    stakingData,
     isPortfolioAccountReady,
     isVaultsPositionsLoaded,
     isPortfolioLoaded,
     vaultsPositions,
-    gaugesRewards,
-    vaultsRewards,
     selectors: {
       selectAssetsByIds,
       selectAssetStrategies,
       selectVaultsAssetsByType,
-      selectVaultsByType
     }
   } = usePortfolioProvider()
 
@@ -62,10 +49,6 @@ export const Dashboard: React.FC = () => {
   const accountAndPortfolioLoaded = useMemo(() => {
     return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
   }, [walletInitialized, account, isPortfolioLoaded, isVaultsPositionsLoaded])
-
-  const stakedIdleVault = useMemo(() => {
-    return selectVaultsByType && selectVaultsByType('STK')?.[0]
-  }, [selectVaultsByType])
 
   const assetIds = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -349,6 +332,7 @@ export const Dashboard: React.FC = () => {
                       <VStack
                         spacing={2}
                         alignItems={'flex-start'}
+                        key={`profile_${strategy}`}
                       >
                         <Translation translation={strategies[strategy].riskProfile} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
                         <HStack
@@ -536,34 +520,60 @@ export const Dashboard: React.FC = () => {
       >
         <VStack
           flex={1}
+          spacing={[6, 14]}
           alignItems={'flex-start'}
-          ref={ref as typeof useRef}
         >
-          <DashboardNewsBanner announcement={'zkEVM'} />
+          <DashboardNewsBanner announcement={'zkEVM'} onClick={() => setChainId(1101)} />
+          <PartnersPrograms />
         </VStack>
         <VStack
-          spacing={6}
-          width={['100%', '500px']}
+          pl={4}
+          pt={4}
+          spacing={4}
+          borderRadius={8}
+          overflow={'hidden'}
           alignItems={'flex-start'}
+          width={['100%', '500px']}
+          backgroundColor={'black'}
         >
-          <Card
+          <Translation mb={0} component={Card.Heading} fontSize={'lg'} translation={'social.title'} />
+          <Box
+            pb={4}
+            flex={1}
+            width={'full'}
+            minH={['400px', 'auto']}
           >
-            <VStack
-              flex={1}
-              spacing={0}
-              height={'100%'}
-              alignItems={'flex-start'}
-              ref={ref as typeof useRef}
-              justifyContent={'flex-start'}
-            >
-              <Translation display={['none', 'block']} component={Card.Heading} fontSize={'lg'} translation={'dashboard.partnerPrograms'} />
-              <PartnersPrograms />
-            </VStack>
-          </Card>
+            <TwitterTimelineEmbed
+              theme={'dark'}
+              noHeader={true}
+              noBorders={true}
+              autoHeight={true}
+              sourceType={"profile"}
+              screenName={"idlefinance"}
+            />
+            {
+              /*
+              <Card
+              >
+                <VStack
+                  flex={1}
+                  spacing={0}
+                  height={'100%'}
+                  alignItems={'flex-start'}
+                  ref={ref as typeof useRef}
+                  justifyContent={'flex-start'}
+                >
+                  <Translation display={['none', 'block']} component={Card.Heading} fontSize={'lg'} translation={'partnerPrograms.title'} />
+                  <PartnersPrograms />
+                </VStack>
+              </Card>
+              */
+            }
+          </Box>
         </VStack>
       </Stack>
 
-      <JoinCommunity />
+      <Footer />
     </Box>
   )
 }
