@@ -457,7 +457,7 @@ export const Strategy: React.FC = () => {
             }
             {
               !isMobile && (
-                <StrategyOverview strategies={[strategy]} />
+                <StrategyOverview showLoading={false} strategies={[strategy]} />
               )
             }
           </VStack>
@@ -469,7 +469,7 @@ export const Strategy: React.FC = () => {
           }
           {
             isMobile && (
-              <StrategyOverview strategies={[strategy]} />
+              <StrategyOverview showLoading={false} strategies={[strategy]} />
             )
           }
         </Stack>

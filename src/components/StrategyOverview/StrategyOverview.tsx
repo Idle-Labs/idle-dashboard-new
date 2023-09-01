@@ -12,6 +12,7 @@ import { useCompositionChartData, UseCompositionChartDataReturn } from 'hooks/us
 
 type StrategyOverviewProps = {
   showHeader?: boolean
+  showLoading?: boolean
   textProps?: TextProps
   strategies: (keyof typeof strategies)[]
 }
@@ -19,6 +20,7 @@ type StrategyOverviewProps = {
 export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
   textProps,
   showHeader = true,
+  showLoading = true,
   strategies: enabledStrategies
 }) => {
   const [ walletVisible, setWalletVisible ] = useState<boolean>(true)
@@ -42,7 +44,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
 
   aggregatedData.realizedApy = aggregatedData.realizedApy.div(aggregatedData.redeemable)
 
-  // if (!isVaultsPositionsLoaded || aggregatedData.deposited.lte(0)) return null
+  if (!showLoading && (!isVaultsPositionsLoaded || aggregatedData.deposited.lte(0))) return null
 
   return (
     <VStack

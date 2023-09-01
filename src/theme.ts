@@ -98,7 +98,7 @@ export const theme = extendTheme({
     brightGreen: '#4DE3B0',
     tags: {
       best: '#04117B',
-      tranches: '#055050',
+      tranches: '#008970',
     },
     strategies: {
       BY: '#6AE4FF',

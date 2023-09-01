@@ -261,7 +261,7 @@ export const Dashboard: React.FC = () => {
                     >
                       <Translation translation={productConfig.label} component={Heading} as={'h3'} fontSize={'h3'} />
                       {
-                        !productAssets.length ? (
+                        isPortfolioLoaded && !productAssets.length ? (
                           <VStack
                             spacing={2}
                             width={'full'}
