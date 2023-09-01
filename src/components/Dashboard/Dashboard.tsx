@@ -32,11 +32,11 @@ export const Dashboard: React.FC = () => {
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { account, walletInitialized, setChainId } = useWalletProvider()
+  const { setChainId } = useWalletProvider()
   const {
     assetsData,
     isPortfolioAccountReady,
-    isVaultsPositionsLoaded,
+    // isVaultsPositionsLoaded,
     isPortfolioLoaded,
     vaultsPositions,
     selectors: {
@@ -47,10 +47,6 @@ export const Dashboard: React.FC = () => {
   } = usePortfolioProvider()
 
   const enabledStrategies = useMemo(() => selectVisibleStrategies(), [])
-
-  const accountAndPortfolioLoaded = useMemo(() => {
-    return walletInitialized && isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
-  }, [walletInitialized, account, isPortfolioLoaded, isVaultsPositionsLoaded])
 
   const assetIds = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -217,7 +213,7 @@ export const Dashboard: React.FC = () => {
               ]
             }, [])
 
-            const aggregatedData = productAssets.reduce( (aggregatedData: Record<string, BigNumber | null>, asset: Asset) => {
+            const aggregatedData = productAssets.filter( (asset: Asset) => asset.status !== 'deprecated' ).reduce( (aggregatedData: Record<string, BigNumber | null>, asset: Asset) => {
               aggregatedData.totalTVL = bnOrZero(aggregatedData.totalTVL).plus(bnOrZero(asset.tvlUsd))
               aggregatedData.minApy = bnOrZero(aggregatedData.minApy).lte(0) ? bnOrZero(asset.apy) : BigNumber.minimum(bnOrZero(aggregatedData.minApy), bnOrZero(asset.apy))
               aggregatedData.maxApy = !aggregatedData.maxApy ? bnOrZero(asset.apy) : BigNumber.maximum(bnOrZero(aggregatedData.maxApy), bnOrZero(asset.apy))
@@ -385,32 +381,9 @@ export const Dashboard: React.FC = () => {
       <Stack
         mt={0}
         mb={10}
-        pt={[16, 20]}
-        spacing={10}
-        width={'100%'}
-        alignItems={['flex-start','center']}
-        justifyContent={'flex-start'}
-        direction={['column', 'row']}
-      >
-        <Translation translation={'navBar.dashboard'} component={Heading} as={'h2'} size={'3xl'} />
-        {
-          /*
-          !isMobile && (
-            <HStack
-              pb={3}
-              flex={1}
-              borderBottom={'1px solid'}
-              borderColor={'divider'}
-            >
-              <StrategiesFilters toggleStrategy={toggleStrategy} selectedStrategies={selectedStrategies} checkUserFunds={true} showOnMobile={false} />
-            </HStack>
-          )
-          */
-        }
-      </Stack>
-      <Stack
         flex={1}
         spacing={20}
+        pt={[16, 100]}
         width={'100%'}
         direction={['column', 'row']}
       >
@@ -462,8 +435,8 @@ export const Dashboard: React.FC = () => {
                       spacing={[5, 1]}
                       alignItems={['center', 'flex-start']}
                     >
-                      <SkeletonText width={'full'} noOfLines={2} isLoaded={!!accountAndPortfolioLoaded}>
-                        <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                      <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                      <SkeletonText width={'full'} noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                         <VStack
                           spacing={[1, 3]}
                           alignItems={'baseline'}
@@ -531,6 +504,7 @@ export const Dashboard: React.FC = () => {
           flex={1}
           spacing={[6, 14]}
           alignItems={'flex-start'}
+          justifyContent={'space-between'}
         >
           <DashboardNewsBanner announcement={'zkEVM'} onClick={() => setChainId(1101)} />
           <PartnersPrograms />

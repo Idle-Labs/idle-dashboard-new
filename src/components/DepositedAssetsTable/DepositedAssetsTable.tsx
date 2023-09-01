@@ -9,6 +9,7 @@ import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { products, ProductProps } from 'constants/products'
 import type { Asset, VaultPosition } from 'constants/types'
+import { usePrevious } from 'hooks/usePrevious/usePrevious'
 import { Pagination } from 'components/Pagination/Pagination'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
@@ -57,10 +58,18 @@ export const DepositedAssetsTable: React.FC = () => {
   const { theme, isMobile } = useThemeProvider()
   const { account, prevAccount } = useWalletProvider()
   const [ mode, setMode ] = useState<'Deposited'|'Available'>('Available')
+  const prevMode = usePrevious<'Deposited'|'Available'>(mode)
+
+  useEffect(() => {
+    if (mode !== prevMode){
+      return setPage(1)
+    }
+  }, [mode, prevMode, setPage])
 
   const columns: StrategyColumn[] = useMemo(() => {
     return [
       {
+        width: '26%',
         accessor:'name',
         sortType:'alpha',
         id:'asset',
@@ -70,6 +79,7 @@ export const DepositedAssetsTable: React.FC = () => {
         extraFields:['productTagWithRisk']
       },
       {
+        width: '18%',
         accessor:'id',
         id:'protocols',
         sortType:'alpha',
@@ -79,22 +89,26 @@ export const DepositedAssetsTable: React.FC = () => {
       },
       {
         id:'tvl',
+        width: '14%',
         accessor:'tvlUsd',
         sortType: 'numeric',
       },
       {
         id:'apy',
+        width: '14%',
         accessor:'apy',
         sortType: 'numeric',
       },
       {
         id:'apy7',
+        width: '14%',
         accessor:'apy7',
         sortType: 'numeric',
         tables: ['Available']
       },
       {
         id:'apy30',
+        width: '14%',
         accessor:'apy30',
         sortType: 'numeric',
         tables: ['Available']
@@ -109,6 +123,7 @@ export const DepositedAssetsTable: React.FC = () => {
       return {
         id,
         accessor,
+        width: column.width,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
@@ -154,6 +169,7 @@ export const DepositedAssetsTable: React.FC = () => {
     },
     ...strategyColumnsDeposit,
     {
+      width: '14%',
       accessor:'balanceUsd',
       Header:translate('defi.balance'),
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
@@ -166,6 +182,7 @@ export const DepositedAssetsTable: React.FC = () => {
       sortType: sortNumeric
     },
     {
+      width: '14%',
       accessor:'vaultPosition',
       Header:translate('defi.realizedApy'),
       Cell: ({ value/*, row*/ }: { value: VaultPosition | undefined/*; row: RowProps*/ }) => {

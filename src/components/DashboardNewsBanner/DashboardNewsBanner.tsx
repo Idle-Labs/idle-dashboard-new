@@ -37,7 +37,7 @@ export const DashboardNewsBanner: React.FC<DashboardNewsBannerProps> = ({
         <HStack
           spacing={1}
         >
-          <Translation translation={`announcements.${announcement}.cta`} textStyle={['ctaStatic', 'clickable']} onClick={onClick} />
+          <Translation translation={`announcements.${announcement}.cta`} textStyle={['ctaStatic', 'clickable']} sx={{':hover':{textDecoration:'underline'}}} onClick={onClick} />
           <MdKeyboardArrowRight size={24} />
         </HStack>
       </Stack>

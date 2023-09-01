@@ -1,18 +1,21 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { HiChatAlt2 } from 'react-icons/hi'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Box, Stack, SimpleGrid, Link } from '@chakra-ui/react'
 import { SiMedium, SiTwitter, SiDiscord } from 'react-icons/si'
 import { Translation } from 'components/Translation/Translation'
 
 export const Footer: React.FC = () => {
 
-  const links: Record<string, string> = {
+  const { theme } = useThemeProvider()
+
+  const links: Record<string, string> = useMemo(() => ({
     terms: "https://idle.finance/terms-of-service",
     policy: "https://idle.finance/privacy-policy",
     faqs: "https://docs.idle.finance/other/faqs",
     support: "https://discord.gg/mpySAJp",
     docs: "https://docs.idle.finance/"
-  }
+  }), [])
 
   return (
     <Box
@@ -47,17 +50,17 @@ export const Footer: React.FC = () => {
           columns={4}
           width={['full', 'auto']}
         >
-          <Link display={'flex'} justifyContent={'center'} href={"https://medium.com/idle-finance"} isExternal>
-            <SiMedium size={24} />
+          <Link display={'flex'} justifyContent={'center'} href={"https://medium.com/idle-finance"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+            <SiMedium size={24} color={theme.colors.divider} />
           </Link>
-          <Link display={'flex'} justifyContent={'center'} href={"https://twitter.com/idlefinance"} isExternal>
-            <SiTwitter size={24} />
+          <Link display={'flex'} justifyContent={'center'} href={"https://twitter.com/idlefinance"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+            <SiTwitter size={24} color={theme.colors.divider} />
           </Link>
-          <Link display={'flex'} justifyContent={'center'} href={"https://discord.gg/mpySAJp"} isExternal>
-            <SiDiscord size={24} />
+          <Link display={'flex'} justifyContent={'center'} href={"https://discord.gg/mpySAJp"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+            <SiDiscord size={24} color={theme.colors.divider} />
           </Link>
-          <Link display={'flex'} justifyContent={'center'} href={"https://gov.idle.finance/"} isExternal>
-            <HiChatAlt2 size={24} />
+          <Link display={'flex'} justifyContent={'center'} href={"https://gov.idle.finance/"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+            <HiChatAlt2 size={24} color={theme.colors.divider} />
           </Link>
         </SimpleGrid>
       </Stack>

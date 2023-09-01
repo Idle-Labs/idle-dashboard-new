@@ -141,7 +141,10 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
   switch (action.type){
     case 'RESET_STATE':
-      return {...initialState}
+      return {
+        ...initialState,
+        selectors: state.selectors
+      }
     case 'SET_STATE':
       return {...state, ...action.payload}
     case 'SET_PROTOCOL_TOKEN':
@@ -1531,6 +1534,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
     dispatch({type: 'RESET_STATE', payload: {}})
     // console.log('NETWORK CHANGED - RESET STATE');
   }, [networkChanged])
+
+  // Clear portfolio when wallet changed
+  useEffect(() => {
+    if (!account && !!prevAccount){
+      // console.log('ACCOUNT CHANGED - RESET STATE')
+      dispatch({type: 'RESET_STATE', payload: {}})
+    }
+  }, [account, prevAccount])
 
   // Update on-chain data of last transaction asset
   useEffect(() => {

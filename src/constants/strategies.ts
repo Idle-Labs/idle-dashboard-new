@@ -21,6 +21,7 @@ type Tables = "Available" | "Deposited"
 export type StrategyColumn = {
   id?: any
   title?: any
+  width?: any
   accessor: any
   tables?: Tables[]
   extraFields?: string[]

@@ -195,7 +195,10 @@ export const ReactTable = <T extends {}>({
                   if (isFirstCell) {
                     firstColumnFound = true
                   }
-                  const style = isFirstCell ? {paddingLeft:0, paddingRight: 4} : (isLastCell ? {paddingLeft:4, paddingRight: 0} : {paddingLeft:4, paddingRight: 4})
+                  const style: Record<string, any> = isFirstCell ? {paddingLeft:0, paddingRight: 4} : (isLastCell ? {paddingLeft:4, paddingRight: 0} : {paddingLeft:4, paddingRight: 4})
+                  if (column.width){
+                    style.width = column.width
+                  }
                   return (
                     <Th
                       {...column.getHeaderProps(column.getSortByToggleProps({title: undefined /*remove mouse hover tooltip*/}))}
