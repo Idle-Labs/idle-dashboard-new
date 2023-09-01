@@ -20,6 +20,7 @@ import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutChart'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { DashboardNewsBanner } from 'components/DashboardNewsBanner/DashboardNewsBanner'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
@@ -32,7 +33,7 @@ export const Dashboard: React.FC = () => {
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { setChainId } = useWalletProvider()
+  const { network, setChainId } = useWalletProvider()
   const {
     assetsData,
     isPortfolioAccountReady,
@@ -240,7 +241,7 @@ export const Dashboard: React.FC = () => {
                   }
                 }}
                 key={`product_${productConfig.strategy}`}
-                onClick={() => navigate(strategyPath)}
+                onClick={() => productAssets.length ? navigate(strategyPath) : null}
               >
                 <VStack
                   spacing={6}
@@ -260,7 +261,16 @@ export const Dashboard: React.FC = () => {
                     >
                       <Translation translation={productConfig.label} component={Heading} as={'h3'} fontSize={'h3'} />
                       {
-                        productPositions.length>0 ? (
+                        !productAssets.length ? (
+                          <VStack
+                            spacing={2}
+                            width={'full'}
+                            alignItems={'flex-start'}
+                          >
+                            <Translation translation={`strategies.${productConfig.strategy}.noVaultsAvailable`} params={{network: network?.chainName}} textStyle={'caption'} />
+                            <SwitchNetworkButton chainId={1} size={'xs'} px={4} py={3} height={'auto'} />
+                          </VStack>
+                        ) : productPositions.length>0 ? (
                           <StrategyOverview showHeader={false} strategies={productConfig.strategies} textProps={{fontSize:['md', 'lg']}} />
                         ) : (
                           <HStack
@@ -298,10 +308,14 @@ export const Dashboard: React.FC = () => {
                         )
                       }
                     </VStack>
-                    <MdKeyboardArrowRight
-                      size={24}
-                      color={theme.colors.primary}
-                    />
+                    {
+                      productAssets.length>0 && (
+                        <MdKeyboardArrowRight
+                          size={24}
+                          color={theme.colors.primary}
+                        />
+                      )
+                    }
                   </HStack>
                 </VStack>
               </Card>
@@ -362,7 +376,7 @@ export const Dashboard: React.FC = () => {
         </Card>
       </VStack>
     )
-  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, vaultsPositions, riskExposures, riskExposureDonutChart, theme])
+  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, network, vaultsPositions, riskExposures, riskExposureDonutChart, theme])
 
   const chartColor = useMemo(() => {
     if (selectedStrategies.length===1){
@@ -428,35 +442,33 @@ export const Dashboard: React.FC = () => {
                 direction={['column', 'row']}
                 justifyContent={['center', 'space-between']}
               >
-                {
-                  isPortfolioAccountReady && (
+                <VStack
+                  width={'full'}
+                  spacing={[5, 1]}
+                  alignItems={['center', 'flex-start']}
+                >
+                  <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                  <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                     <VStack
-                      width={'full'}
-                      spacing={[5, 1]}
-                      alignItems={['center', 'flex-start']}
+                      spacing={[1, 3]}
+                      alignItems={'baseline'}
                     >
-                      <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
-                      <SkeletonText width={'full'} noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
-                        <VStack
-                          spacing={[1, 3]}
-                          alignItems={'baseline'}
-                        >
-                          <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
-                          {
-                            totalFunds.gt(0) && (
-                              <HStack
-                                spacing={2}
-                              >
-                                <BalanceChartProvider.BalanceChangeUsd textStyle={'captionSmall'} />
-                                <BalanceChartProvider.BalanceChangePercentage textStyle={'captionSmall'} />
-                              </HStack>
-                            )
-                          }
-                        </VStack>
-                      </SkeletonText>
+                      <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
+                      {
+                        /*
+                        totalFunds.gt(0) && (
+                          <HStack
+                            spacing={2}
+                          >
+                            <BalanceChartProvider.BalanceChangeUsd textStyle={'captionSmall'} />
+                            <BalanceChartProvider.BalanceChangePercentage textStyle={'captionSmall'} />
+                          </HStack>
+                        )
+                        */
+                      }
                     </VStack>
-                  )
-                }
+                  </SkeletonText>
+                </VStack>
                 <HStack
                   pt={[4, 9]}
                   width={'full'}
