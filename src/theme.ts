@@ -78,6 +78,8 @@ export const theme = extendTheme({
       500: '#144241',
       300: '#3F6D6C',
     },
+    gain:'#4DE3B0',
+    loss:'#D43B3B',
     cta:'#CDD0D6',
     ctaDisabled:'#555B67',
     link:'#6AE4FF',
@@ -96,7 +98,7 @@ export const theme = extendTheme({
     brightGreen: '#4DE3B0',
     tags: {
       best: '#04117B',
-      tranches: '#055050',
+      tranches: '#008970',
     },
     strategies: {
       BY: '#6AE4FF',
@@ -366,11 +368,26 @@ export const theme = extendTheme({
       fontWeight:700,
       cursor:'pointer',
       fontFamily: 'heading',
+      textDecoration:'none',
       _selected: {
         color:'primary'
       },
       _hover: {
         color:'primary'
+      }
+    },
+    ctaDark: {
+      fontSize:'md',
+      color:'divider',
+      fontWeight:700,
+      cursor:'pointer',
+      fontFamily: 'heading',
+      _selected: {
+        // color:'primary'
+      },
+      _hover: {
+        textDecoration:'none !important',
+        // color:'primary'
       }
     },
     breadcrumb: {

@@ -17,15 +17,17 @@ export type DonutChartInitialData = {
   getSliceData?: Function
   data: DonutChartData[]
   colors: DonutChartColors
+  donutThickness?: number
 }
 
 const defaultMargin = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export type PieProps = {
-  width: number;
-  height: number;
-  margin?: typeof defaultMargin;
-  animate?: boolean;
+  width: number
+  height: number
+  margin?: typeof defaultMargin
+  animate?: boolean
+  donutThickness?: number
 } & DonutChartInitialData
 
 export function PieChart({
@@ -34,6 +36,7 @@ export function PieChart({
   width,
   height,
   margin = defaultMargin,
+  donutThickness = 30,
   animate = true,
   getSliceData
 }: PieProps) {
@@ -44,7 +47,6 @@ export function PieChart({
   const radius = Math.min(innerWidth, innerHeight) / 2;
   const centerY = innerHeight / 2;
   const centerX = innerWidth / 2;
-  const donutThickness = 30;
 
   const keys = data.map( d => d.label )
   const keysColors = keys.map( key => colors[key] )
@@ -161,7 +163,8 @@ function AnimatedPie<Datum>({
 export const DonutChart = ({
   data,
   colors,
-  getSliceData
+  getSliceData,
+  ...props
 }: DonutChartInitialData) => {
   return (
     <ParentSize debounceTime={10}>
@@ -172,6 +175,7 @@ export const DonutChart = ({
           width={parent.width}
           height={parent.height}
           getSliceData={getSliceData}
+          {...props}
         />
       )}
     </ParentSize>

@@ -18,7 +18,7 @@ export type ProductProps = {
 export const products: ProductProps[] = [
   {
     strategy:'best',
-    color: '#6AE4FF',
+    color: '#04117B',
     strategies: ['BY'],
     route: `best-yield`,
     label: 'strategies.best.label',
@@ -26,7 +26,7 @@ export const products: ProductProps[] = [
     description: 'strategies.best.description'
   },
   {
-    color: '#4de3b0',
+    color: '#008970',
     strategy:'tranches',
     route: `yield-tranches`,
     strategies: ['AA', 'BB'],
@@ -44,7 +44,7 @@ export const products: ProductProps[] = [
       {
         accessor:'name',
         sortType:'alpha',
-        id:'assetWithVariant',
+        id:'asset',
         tables: ['Deposited'],
         stackProps:{
           justifyContent:'space-between'
@@ -54,13 +54,13 @@ export const products: ProductProps[] = [
       {
         accessor:'name',
         sortType:'alpha',
-        id:'assetWithVariant',
+        id:'asset',
         tables: ['Available'],
         extraFields:[]
       },
       {
         accessor:'id',
-        id:'protocol',
+        id:'protocolWithVariant',
         sortType:'alpha',
       },
       {

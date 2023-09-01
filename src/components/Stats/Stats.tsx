@@ -192,6 +192,7 @@ export const Stats: React.FC = () => {
     },
     {
       id:'asset',
+      width:'34%',
       accessor:'id',
       Header:translate('defi.asset'),
       Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
@@ -230,6 +231,7 @@ export const Stats: React.FC = () => {
       // sortType: sortNumeric
     },
     {
+      width:'33%',
       accessor:'tvlUsd',
       Header:translate('defi.tvl'),
       Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
@@ -246,7 +248,7 @@ export const Stats: React.FC = () => {
                       minW={'fit-content'}
                       width={['auto', '25%']}
                     >
-                      <Image src={`images/strategies/AA.svg`} />
+                        <Image src={`images/strategies/AA.svg`} />
                       <AssetProvider.SeniorPoolUsd color={strategies.AA.color} textStyle={'tableCell'} />
                     </HStack>
                     <HStack>
@@ -265,6 +267,7 @@ export const Stats: React.FC = () => {
       sortType: sortNumeric
     },
     {
+      width:'33%',
       accessor:'apyRange',
       Header:translate('stats.apyRange'),
       Cell: ({ value, row }: { value: ApyRange | undefined; row: RowProps }) => {

@@ -28,6 +28,7 @@ export interface PrimaryChartProps {
   color?: string
   axisEnabled?: boolean
   maxMinEnabled?: boolean
+  gradientEnabled?: boolean
   margins?: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -44,6 +45,7 @@ export const PrimaryChart = ({
   // axisEnabled = true,
   maxMinEnabled = true,
   color = 'chart.stroke',
+  gradientEnabled = true,
   margins = { top: 0, right: 0, bottom: 0, left: 0 },
 }: PrimaryChartProps) => {
   const {
@@ -145,6 +147,7 @@ export const PrimaryChart = ({
           xScale={dateScale}
           yScale={priceScale}
           gradientColor={chartColor}
+          gradientEnabled={gradientEnabled}
         />
         {/* a transparent ele that track the pointer event, allow us to display tooltup */}
         <Bar

@@ -21,10 +21,12 @@ type Tables = "Available" | "Deposited"
 export type StrategyColumn = {
   id?: any
   title?: any
+  width?: any
   accessor: any
   tables?: Tables[]
   extraFields?: string[]
   stackProps?: StackProps
+  fieldProps?: any
   sortType?: 'alpha' | 'numeric' | 'trancheApy'
 }
 
@@ -265,7 +267,7 @@ export const strategies: Record<string, StrategyProps> = {
     visible: true,
     color:'#4DE3B0',
     strategy:'tranches',
-    route:'protected-yield',
+    route:'yield-tranches',
     label:'strategies.protected.title',
     riskProfile:'strategies.protected.riskProfile',
     description:'strategies.protected.description',
@@ -414,7 +416,7 @@ export const strategies: Record<string, StrategyProps> = {
     visible: true,
     color:'#FFD15C',
     strategy:'tranches',
-    route:'boosted-yield',
+    route:'yield-tranches',
     label:'strategies.boosted.title',
     riskProfile:'strategies.boosted.riskProfile',
     description:'strategies.boosted.description',

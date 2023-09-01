@@ -745,7 +745,7 @@ export const Tranches: React.FC = () => {
             }
             {
               !isMobile && (
-                <StrategyOverview strategies={productStrategies} />
+                <StrategyOverview showLoading={false} strategies={productStrategies} />
               )
             }
           </VStack>
@@ -757,7 +757,7 @@ export const Tranches: React.FC = () => {
           }
           {
             isMobile && (
-              <StrategyOverview strategies={productStrategies} />
+              <StrategyOverview showLoading={false} strategies={productStrategies} />
             )
           }
         </Stack>
