@@ -465,7 +465,7 @@ export const DepositedAssetsTable: React.FC = () => {
       <HStack
         spacing={3}
       >
-        <Translation<ButtonProps> disabled={!account || !depositedAssetsData.length} component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode==='Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited') } />
+        <Translation<ButtonProps> component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode==='Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited') } />
         <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode==='Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available') } />
       </HStack>
       {mode === 'Deposited' ? depositedAssets : featuredAssets}

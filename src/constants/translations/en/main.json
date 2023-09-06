@@ -1074,7 +1074,7 @@
   },
   "modals": {
     "assets": {
-      "vaultWrongNetwork": "This vault is not available on %{network}. Please switch to %{correctNetwork} to use this vault."
+      "vaultWrongNetwork": "The selected network is not supported for this vault. Please switch to %{correctNetwork} to use this vault."
     },
     "keepKey": {
       "passphrase": {

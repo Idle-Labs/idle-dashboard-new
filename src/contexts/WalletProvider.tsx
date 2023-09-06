@@ -4,9 +4,9 @@ import { selectUnderlyingToken } from 'selectors/'
 import { useSearchParams } from 'react-router-dom'
 import type { ProviderProps } from './common/types'
 import { onboardInitParams } from './configs/onboard'
-import type { WalletState } from '@web3-onboard/core'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
 import { checkAddress, sendLogin, sendChainId } from 'helpers/'
+import type { WalletState, ConnectedChain } from '@web3-onboard/core'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
 import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
@@ -32,6 +32,7 @@ type ContextProps = {
   prevChainId: number | undefined
   prevAccount: Account | null | undefined
   chainToken: UnderlyingTokenProps | null
+  connectedChainId: number | null | undefined
 }
 
 const initialState: ContextProps = {
@@ -47,6 +48,7 @@ const initialState: ContextProps = {
   isChainLoaded: false,
   disconnect: () => {},
   setChainId: () => {},
+  connectedChainId: null,
   isNetworkCorrect: true,
   chainId: defaultChainId,
   walletInitialized: false,
@@ -94,6 +96,11 @@ export function WalletProvider({ children }: ProviderProps) {
   const chainIdHex = useMemo(() => {
     return chains[chainId].id
   }, [chainId])
+
+  const connectedChainId = useMemo(() => {
+    const connectedChainId = Object.keys(chains).find( (chainId: string) => (chains[+chainId].id === connectedChain?.id) )
+    return !!connectedChainId ? +connectedChainId : null
+  }, [connectedChain])
 
   const network = useMemo(() => {
     return networks[chainId]
@@ -191,7 +198,7 @@ export function WalletProvider({ children }: ProviderProps) {
   }
 
   return (
-    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, connectedChainId, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

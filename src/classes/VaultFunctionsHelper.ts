@@ -64,6 +64,10 @@ export class VaultFunctionsHelper {
     return [true, chainId, web3ToUse]
   }
 
+  private getExporerByChainId = (chainId: number): Explorer => {
+    return explorers[networks[chainId].explorer]
+  }
+
   public async getStakingRewards(stakedIdleVault: StakedIdleVault | undefined, chainId?: number): Promise<EtherscanTransaction[]> {
 
     if (!stakedIdleVault) return []
@@ -72,7 +76,7 @@ export class VaultFunctionsHelper {
     const feeDistributorConfig = stakedIdleVault.feeDistributorConfig
 
     chainId = chainId || this.chainId
-    const explorer = explorers[networks[chainId].explorer]
+    const explorer = this.getExporerByChainId(chainId)
     if (!explorer) return []
 
     const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${feeDistributorConfig.address}&sort=desc`
@@ -90,7 +94,9 @@ export class VaultFunctionsHelper {
       harvest: null
     }
 
-    if (!this.multiCall || !this.explorer) return lastHarvest
+    const explorer = this.getExporerByChainId(trancheVault.chainId)
+    
+    if (!this.multiCall || !explorer) return lastHarvest
 
     const rawCalls: CallData[] = [
       this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVAA'),
@@ -131,9 +137,9 @@ export class VaultFunctionsHelper {
     const aprRatioBB = BNify(100).minus(BNify(trancheAPRSplitRatio).div(1000))
 
     try {
-      const endpoint = `${this.explorer.endpoints[this.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
+      const endpoint = `${explorer.endpoints[trancheVault.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
       // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlock, this.cacheProvider?.isLoaded, this.cacheProvider?.getCachedUrl(endpoint))
-      const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
+      const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
       const harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
 
       // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlock, harvestTxs)
@@ -181,9 +187,9 @@ export class VaultFunctionsHelper {
     return trancheLastHarvest.harvest.aprs[trancheVault.type]
   }
 
-  public async getStETHTrancheStrategyApr(): Promise<BigNumber> {
-    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'lido', 'stETH')
-    const callback = async () => (await callPlatformApis(this.chainId, 'lido', 'stETH'))
+  public async getStETHTrancheStrategyApr(chainId: number): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'lido', 'stETH')
+    const callback = async () => (await callPlatformApis(chainId, 'lido', 'stETH'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     if (!BNify(apr).isNaN()){
@@ -193,13 +199,13 @@ export class VaultFunctionsHelper {
   }
 
   public async getStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
-    const strategyApr = await this.getStETHTrancheStrategyApr();
+    const strategyApr = await this.getStETHTrancheStrategyApr(trancheVault.chainId);
     return await this.getTrancheApy(strategyApr, trancheVault);
   }
 
-  public async getInstadappStETHTrancheStrategyApr(): Promise<BigNumber> {
-    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'instadapp', 'stETH')
-    const callback = async () => (await callPlatformApis(this.chainId, 'instadapp', 'stETH'))
+  public async getInstadappStETHTrancheStrategyApr(chainId: number): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'instadapp', 'stETH')
+    const callback = async () => (await callPlatformApis(chainId, 'instadapp', 'stETH'))
     const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     if (!results) return BNify(0)
@@ -214,7 +220,7 @@ export class VaultFunctionsHelper {
   }
 
   public async getInstadappStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
-    const strategyApr = await this.getInstadappStETHTrancheStrategyApr();
+    const strategyApr = await this.getInstadappStETHTrancheStrategyApr(trancheVault.chainId);
     return await this.getTrancheApy(strategyApr, trancheVault);
   }
 
@@ -256,9 +262,9 @@ export class VaultFunctionsHelper {
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
   }
 
-  public async getMaticTrancheStrategyApr(): Promise<BigNumber> {
-    const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'lido', 'rates')
-    const callback = async () => (await callPlatformApis(this.chainId, 'lido', 'rates'))
+  public async getMaticTrancheStrategyApr(chainId: number): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'lido', 'rates')
+    const callback = async () => (await callPlatformApis(chainId, 'lido', 'rates'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     if (!BNify(apr).isNaN()){
@@ -282,7 +288,7 @@ export class VaultFunctionsHelper {
       multicallResults,
       // harvestApy
     ] = await Promise.all([
-      this.getMaticTrancheStrategyApr(),
+      this.getMaticTrancheStrategyApr(trancheVault.chainId),
       this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault)),
       // this.getTrancheHarvestApy(trancheVault)
     ]);
@@ -314,12 +320,15 @@ export class VaultFunctionsHelper {
 
     if (!this.multiCall) return []
 
-    const MATIC = selectUnderlyingToken(this.chainId, 'MATIC')
-    const stMATIC = selectUnderlyingToken(this.chainId, 'STMATIC')
+    const chainId = 1
+    const web3ToUse = this.web3Chains ? this.web3Chains[chainId] : this.web3
+
+    const MATIC = selectUnderlyingToken(chainId, 'MATIC')
+    const stMATIC = selectUnderlyingToken(chainId, 'STMATIC')
 
     if (!MATIC || !stMATIC) return []
 
-    const stMaticContract = new GenericContract(this.web3, this.chainId, {
+    const stMaticContract = new GenericContract(web3ToUse, chainId, {
       name: 'stMATIC',
       abi: stMATIC_abi as Abi,
       address: stMATIC?.address as string
@@ -330,7 +339,7 @@ export class VaultFunctionsHelper {
       this.multiCall.getCallData(stMaticContract.contract, 'stakeManager'),
     ].filter( (call): call is CallData => !!call )
 
-    const multicallResults = await this.multiCall.executeMulticalls(rawCalls)
+    const multicallResults = await this.multiCall.executeMulticalls(rawCalls, true, chainId, web3ToUse)
     if (!multicallResults) return []
 
     const [
@@ -338,13 +347,13 @@ export class VaultFunctionsHelper {
       stakeManager_address
     ] = multicallResults.map( r => r.data as string )
 
-    const poLidoNFTContract = new GenericContract(this.web3, this.chainId, {
+    const poLidoNFTContract = new GenericContract(web3ToUse, chainId, {
       name: 'poLidoNFT',
       abi: PoLidoNFT_abi as Abi,
       address: poLidoNFT_address
     })
 
-    const poLidoStakeManagerContract = new GenericContract(this.web3, this.chainId, {
+    const poLidoStakeManagerContract = new GenericContract(web3ToUse, chainId, {
       name: 'poLidoStakeManager',
       abi: PoLidoStakeManager_abi as Abi,
       address: stakeManager_address
@@ -359,8 +368,8 @@ export class VaultFunctionsHelper {
       multicallResults2,
       currentPolygonHeight
     ] = await Promise.all([
-      this.multiCall.executeMulticalls(rawCalls2),
-      callPlatformApis(this.chainId, 'lido', 'checkpoints', 'count')
+      this.multiCall.executeMulticalls(rawCalls2, true, chainId, web3ToUse),
+      callPlatformApis(chainId, 'lido', 'checkpoints', 'count')
     ])
 
     if (!multicallResults2) return []
@@ -385,8 +394,8 @@ export class VaultFunctionsHelper {
         lastEpochInfo,
         currentEpochInfo
       ] = await Promise.all([
-        callPlatformApis(this.chainId, 'lido', 'checkpoints', (currentPolygonEpoch-1).toString()),
-        callPlatformApis(this.chainId, 'lido', 'checkpoints', currentPolygonEpoch.toString())
+        callPlatformApis(chainId, 'lido', 'checkpoints', (currentPolygonEpoch-1).toString()),
+        callPlatformApis(chainId, 'lido', 'checkpoints', currentPolygonEpoch.toString())
       ])
 
       if (currentEpochInfo && currentEpochInfo.result){
@@ -653,7 +662,7 @@ export class VaultFunctionsHelper {
       let strategyApr = BNify(0)
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_lido_MATIC':
-          strategyApr = await this.getMaticTrancheStrategyApr()
+          strategyApr = await this.getMaticTrancheStrategyApr(vault.chainId)
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
             apr,
@@ -661,7 +670,7 @@ export class VaultFunctionsHelper {
             cdoId: vault.cdoConfig.address
           }
         case 'IdleCDO_lido_stETH':
-          strategyApr = await this.getStETHTrancheStrategyApr()
+          strategyApr = await this.getStETHTrancheStrategyApr(vault.chainId)
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
             apr,
@@ -669,7 +678,7 @@ export class VaultFunctionsHelper {
             cdoId: vault.cdoConfig.address
           }
         case 'IdleCDO_instadapp_stETH':
-          strategyApr = await this.getInstadappStETHTrancheStrategyApr()
+          strategyApr = await this.getInstadappStETHTrancheStrategyApr(vault.chainId)
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
             apr,
@@ -694,7 +703,7 @@ export class VaultFunctionsHelper {
   private async getSubgraphData(vault: Vault, filters?: PlatformApiFilters): Promise<SubgraphData> {
     const currTime = Math.ceil(Date.now()/1000)
 
-    const cacheKey = `subgraph_${this.chainId}_${vault.id}`
+    const cacheKey = `subgraph_${vault.chainId}_${vault.id}`
     const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
     const lastFetchTimestamp = cachedData && cachedData.timestamp
     const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timeStamp), 0)
@@ -720,7 +729,7 @@ export class VaultFunctionsHelper {
 
     // console.log('getSubgraphData', vault.id, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData)
 
-    let results = fetchData ? await getSubgraphTrancheInfo(this.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
+    let results = fetchData ? await getSubgraphTrancheInfo(vault.chainId, vault.id, filters?.start, filters?.end) : cachedData.data
 
     // Save fetched data
     if (fetchData && results) {
@@ -870,7 +879,7 @@ export class VaultFunctionsHelper {
     const apiType = ("flags" in vault) && vault.flags?.apiType ? vault.flags?.apiType : 'rates'
     const address = apiType === 'rates' ? vault.underlyingToken?.address : vault.id
 
-    const cacheKey = `idleRates_${this.chainId}_${address}`
+    const cacheKey = `idleRates_${vault.chainId}_${address}`
     const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
 
     const lastFetchTimestamp = cachedData && cachedData.timestamp
@@ -894,7 +903,7 @@ export class VaultFunctionsHelper {
     }
 
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=0.5)
-    let results = fetchData ? await callPlatformApis(this.chainId, 'idle', apiType as string, address, filters) : cachedData.data
+    let results = fetchData ? await callPlatformApis(vault.chainId, 'idle', apiType as string, address, filters) : cachedData.data
 
     // console.log('getIdleRatesData', cacheKey, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData, results)
 

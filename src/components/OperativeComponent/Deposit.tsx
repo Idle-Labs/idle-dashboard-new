@@ -30,7 +30,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { searchParams } = useBrowserRouter()
-  const { account, network, chainId } = useWalletProvider()
+  const { account, network, chainId, isNetworkCorrect } = useWalletProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
@@ -38,9 +38,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams]) 
 
-  const isNetworkCorrect = useMemo(() => (vault && +vault.chainId === +chainId) , [vault, chainId])
   const referralEnabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.referralEnabled), [vault])
   const depositsDisabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.depositsDisabled), [vault])
+  const isVaultNetworkSelected = useMemo(() => (isNetworkCorrect && vault && +vault.chainId === +chainId) , [isNetworkCorrect, vault, chainId])
 
   // Get selected tab id from search params
   const _referral = useMemo((): string | undefined => {
@@ -161,8 +161,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     setAmount(underlyingAsset.balance.toString())
   }, [underlyingAsset])
 
-  const getDefaultGasLimit = useCallback(async () => {
-    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+  const getDefaultGasLimit = useCallback(async (): Promise<number|undefined> => {
+    if (!vault || !isNetworkCorrect || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
 
     const allowance = await getDepositAllowance()
@@ -188,14 +188,16 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, _referral, getDepositAllowance, assetBalance])
+  }, [account, isNetworkCorrect, vault, _referral, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {
     if (activeItem !== itemIndex) return
     ;(async () => {
       const defaultGasLimit = await getDefaultGasLimit()
-      setGasLimit(defaultGasLimit)
+      if (defaultGasLimit){
+        setGasLimit(defaultGasLimit)
+      }
     })()
   }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
 
@@ -222,7 +224,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   // }, [asset, setActionIndex])
 
   const depositButton = useMemo(() => {
-    return !isNetworkCorrect && vault ? (
+    return !isVaultNetworkSelected && vault ? (
       <SwitchNetworkButton chainId={+vault?.chainId} width={'full'} />
     ) : account ? (
       <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'}>
@@ -235,7 +237,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, vault, transaction, deposit, isNetworkCorrect])
+  }, [account, disabled, vault, transaction, deposit, isVaultNetworkSelected])
 
   const referralMessage = useMemo(() => {
     if (!_referral) return null
@@ -329,7 +331,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       assetId={asset?.underlyingId}
     >
       {
-        !isNetworkCorrect && vault ? (
+        !isVaultNetworkSelected && vault ? (
           <Center
             px={10}
             flex={1}
