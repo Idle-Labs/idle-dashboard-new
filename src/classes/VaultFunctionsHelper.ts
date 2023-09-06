@@ -22,11 +22,12 @@ export interface CdoLastHarvest {
 }
 
 type ConstructorProps = {
-  chainId: number
   web3: Web3
+  chainId: number
   explorer?: Explorer
   multiCall?: Multicall
   cacheProvider?: CacheContextProps
+  web3Chains?: Record<string, Web3> | null
 }
 
 type SubgraphData = {
@@ -46,13 +47,21 @@ export class VaultFunctionsHelper {
   readonly explorer: Explorer | undefined
   readonly multiCall: Multicall | undefined
   readonly cacheProvider: CacheContextProps | undefined
+  readonly web3Chains: Record<string, Web3> | null | undefined
 
   constructor(props: ConstructorProps) {
     this.web3 = props.web3
     this.chainId = props.chainId
     this.explorer = props.explorer
     this.multiCall = props.multiCall
+    this.web3Chains = props.web3Chains
     this.cacheProvider = props.cacheProvider
+  }
+
+  private getVaultMulticallParams = (vault: Vault): any[] => {
+    const chainId = vault.chainId || this.chainId
+    const web3ToUse = this.web3Chains ? this.web3Chains[chainId] : this.web3
+    return [true, chainId, web3ToUse]
   }
 
   public async getStakingRewards(stakedIdleVault: StakedIdleVault | undefined, chainId?: number): Promise<EtherscanTransaction[]> {
@@ -94,7 +103,7 @@ export class VaultFunctionsHelper {
       multicallResults,
       lastHarvestBlockHex
     ] = await Promise.all([
-      this.multiCall.executeMulticalls(rawCalls),
+      this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault)),
       this.web3.eth.getStorageAt(trancheVault.cdoConfig.address, 204)
     ]);
 
@@ -218,7 +227,7 @@ export class VaultFunctionsHelper {
       this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
     ].filter( (call): call is CallData => !!call )
 
-    const multicallResults = await this.multiCall.executeMulticalls(rawCalls);
+    const multicallResults = await this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault));
 
     if (!multicallResults) return BNify(0)
 
@@ -274,7 +283,7 @@ export class VaultFunctionsHelper {
       // harvestApy
     ] = await Promise.all([
       this.getMaticTrancheStrategyApr(),
-      this.multiCall.executeMulticalls(rawCalls),
+      this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault)),
       // this.getTrancheHarvestApy(trancheVault)
     ]);
 

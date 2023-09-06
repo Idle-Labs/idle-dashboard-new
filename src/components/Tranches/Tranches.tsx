@@ -298,6 +298,7 @@ export const Tranches: React.FC = () => {
       return {
         id,
         accessor,
+        width: column.width,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),

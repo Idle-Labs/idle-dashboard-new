@@ -99,6 +99,10 @@
     "loadingText": "Loading...",
     "txId": "Tx ID"
   },
+  "networks": {
+    "1": "Ethereum Mainnet",
+    "1101": "Polygon zkEVM"
+  },
   "announcements": {
     "zkEVM": {
       "title": "Yield Tranches expand to Polygon zkEVM",
@@ -535,7 +539,9 @@
     "govToken": "Gov. token",
     "protocol": "Protocol",
     "assetWithVariant": "Asset",
+    "assetWithStatus": "Asset",
     "protocolWithVariant": "Protocol",
+    "chainId": "Chain",
     "protocols": "Protocols",
     "unstake": "Unstake",
     "seniorApy": "Senior APY",

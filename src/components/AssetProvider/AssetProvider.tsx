@@ -2,6 +2,7 @@
 import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
+import { networks } from 'constants/networks'
 import { GOVERNANCE_CHAINID } from 'constants/'
 import { strategies } from 'constants/strategies'
 import { TrancheVault } from 'vaults/TrancheVault'
@@ -1213,6 +1214,20 @@ const ApyRatioChart: React.FC<BoxProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const ChainIcon: React.FC<ImageProps> = (props) => {
+  const { asset, translate } = useAssetProvider()
+
+  return asset?.chainId ? (
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate(`networks.${asset?.chainId}`)}
+    >
+      <Image src={networks[asset?.chainId].icon as string} {...props} />
+    </Tooltip>
+  ) : null
+}
+
 const Allocation: React.FC = () => {
 
   const { asset } = useAssetProvider()
@@ -1244,6 +1259,10 @@ type GeneralDataProps = {
 const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) => {
   const { asset, vault } = useAssetProvider()
   switch (field) {
+    case 'chainId':
+      return (
+        <ChainIcon width={8} height={8} {...props} />
+      )
     case 'protocolWithVariant':
       if (!vault || !("variant" in vault) || !vault?.variant?.length) return (<GeneralData field={'protocol'} section={section} {...props} />)
       return (
@@ -1461,6 +1480,7 @@ AssetProvider.SeniorApy = SeniorApy
 AssetProvider.JuniorApy = JuniorApy
 AssetProvider.Protocols = Protocols
 AssetProvider.Deposited = Deposited
+AssetProvider.ChainIcon = ChainIcon
 AssetProvider.GaugeShare = GaugeShare
 AssetProvider.Redeemable = Redeemable
 AssetProvider.Allocation = Allocation

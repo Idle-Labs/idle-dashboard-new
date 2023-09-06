@@ -100,6 +100,7 @@ export const AssetPage: React.FC = () => {
     return selectVaultById && selectVaultById(params.asset)
   }, [selectVaultById, params.asset])
 
+  /*
   const checkVaultNetwork = useCallback(() => {
     const foundNetworkId = selectNetworkByVaultId(params.asset)
     if (foundNetworkId && +foundNetworkId !== +chainId){
@@ -136,12 +137,13 @@ export const AssetPage: React.FC = () => {
     }
     return true
   }, [chainId, params.asset, selectNetworkByVaultId, setChainId, network, translate, openModal, location, navigate, setLatestAssetUpdate])
+  */
 
   // Check vault network
-  useEffect(() => {
-    if (!isChainLoaded || !isPortfolioLoaded || isEmpty(vaultsNetworks)) return
-    checkVaultNetwork()
-  }, [checkVaultNetwork, isPortfolioLoaded, isChainLoaded, vaultsNetworks, vault, asset])
+  // useEffect(() => {
+  //   if (!isChainLoaded || !isPortfolioLoaded || isEmpty(vaultsNetworks)) return
+  //   checkVaultNetwork()
+  // }, [checkVaultNetwork, isPortfolioLoaded, isChainLoaded, vaultsNetworks, vault, asset])
 
   // Update asset
   useEffect(() => {
@@ -181,12 +183,12 @@ export const AssetPage: React.FC = () => {
   // Check asset exists
   useEffect(() => {
     if (!isPortfolioLoaded || !selectAssetById || !location || !latestAssetUpdate) return
-    if (checkVaultNetwork()){
+    // if (checkVaultNetwork()){
       if (!asset){
         return navigate(location.pathname.replace(`/${params.asset}`, ''))
       }
-    }
-  }, [isPortfolioLoaded, selectAssetById, checkVaultNetwork, latestAssetUpdate, asset, params.asset, location, navigate])
+    // }
+  }, [isPortfolioLoaded, selectAssetById, latestAssetUpdate, asset, params.asset, location, navigate])
 
   // Send viewItem event
   useEffect(() => {
@@ -374,6 +376,17 @@ export const AssetPage: React.FC = () => {
             <AssetProvider.ProtocolIcon size={'sm'} />
           </AssetProvider.Protocols>
         </HStack>
+        {
+          /*
+          <HStack
+            pl={4}
+            borderLeft={'1px solid'}
+            borderLeftColor={'divider'}
+          >
+            <AssetProvider.ChainIcon width={8} height={8} />
+          </HStack>
+          */
+        }
       </HStack>
     )
   }, [selectedTab, asset, isMobile])
@@ -428,7 +441,13 @@ export const AssetPage: React.FC = () => {
             justifyContent={'center'}
             direction={['column', 'row']}
           >
-            <AssetLabel assetId={params.asset} fontSize={'h2'} extraFields={['statusBadge']} />
+            <HStack
+              spacing={2}
+              alignItems={'center'}
+            >
+              <AssetLabel assetId={params.asset} fontSize={'h2'} extraFields={['statusBadge']} />
+              <AssetProvider.ChainIcon width={7} height={7} />
+            </HStack>
             {
               isMobile && vaultDetails
             }

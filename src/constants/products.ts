@@ -44,7 +44,7 @@ export const products: ProductProps[] = [
       {
         accessor:'name',
         sortType:'alpha',
-        id:'asset',
+        id:'assetWithStatus',
         tables: ['Deposited'],
         stackProps:{
           justifyContent:'space-between'
@@ -54,7 +54,7 @@ export const products: ProductProps[] = [
       {
         accessor:'name',
         sortType:'alpha',
-        id:'asset',
+        id:'assetWithStatus',
         tables: ['Available'],
         extraFields:[]
       },
@@ -93,6 +93,14 @@ export const products: ProductProps[] = [
         id:'juniorApy',
         sortType: 'trancheApy',
         tables: ['Available']
+      },
+      {
+        width: '8%',
+        id:'chainId',
+        accessor:'id',
+        stackProps:{
+          justifyContent:'center'
+        },
       }
     ]
   }

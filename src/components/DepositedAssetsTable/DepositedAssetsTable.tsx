@@ -69,7 +69,7 @@ export const DepositedAssetsTable: React.FC = () => {
   const columns: StrategyColumn[] = useMemo(() => {
     return [
       {
-        width: '26%',
+        width: '25%',
         accessor:'name',
         sortType:'alpha',
         id:'asset',
@@ -89,32 +89,78 @@ export const DepositedAssetsTable: React.FC = () => {
       },
       {
         id:'tvl',
-        width: '14%',
+        width: '13%',
         accessor:'tvlUsd',
         sortType: 'numeric',
       },
       {
         id:'apy',
-        width: '14%',
+        width: '13%',
         accessor:'apy',
         sortType: 'numeric',
       },
       {
         id:'apy7',
-        width: '14%',
+        width: '13%',
         accessor:'apy7',
         sortType: 'numeric',
         tables: ['Available']
       },
       {
         id:'apy30',
-        width: '14%',
+        width: '13%',
         accessor:'apy30',
         sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
+        width:'5%',
+        accessor:'id',
+        id:'chainId',
+        stackProps:{
+          justifyContent:'center'
+        },
         tables: ['Available']
       }
     ]
   }, [])
+
+  const allColumnsById: Record<string, Column<Asset>> = useMemo(() => {
+    return columns.reduce( (allColumns: Record<string, Column<Asset>>, column: StrategyColumn) => {
+      const { id, accessor, sortType } = column
+      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      allColumns[id] = {
+        id,
+        accessor,
+        width: column.width,
+        disableSortBy: !sortTypeFn,
+        defaultCanSort: !!sortTypeFn,
+        Header: translate(column.title || `defi.${id}`),
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
+        Cell: ({ value, row }: { value: any; row: RowProps }) => {
+          return column.extraFields && column.extraFields.length>0 ? (
+            <Stack
+              spacing={2}
+              width={'full'}
+              direction={'row'}
+              alignItems={'center'}
+              {...column.stackProps}
+            >
+              <TableField field={id} value={value} row={row} props={column.fieldProps} />
+              {
+                column.extraFields.map( (extraField: string) => (
+                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
+                ))
+              }
+            </Stack>
+          ) : (
+            <TableField field={id} value={value} row={row} props={column.fieldProps} />
+          )
+        }
+      }
+      return allColumns
+    }, {})
+  }, [columns, translate])
 
   const strategyColumnsDeposit: Column<Asset>[] = useMemo(() => {
     return columns.filter( (col: StrategyColumn) => !col.tables || col.tables.includes(mode) ).map( (column: StrategyColumn) => {
@@ -169,7 +215,7 @@ export const DepositedAssetsTable: React.FC = () => {
     },
     ...strategyColumnsDeposit,
     {
-      width: '14%',
+      width: '13%',
       accessor:'balanceUsd',
       Header:translate('defi.balance'),
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
@@ -182,7 +228,7 @@ export const DepositedAssetsTable: React.FC = () => {
       sortType: sortNumeric
     },
     {
-      width: '14%',
+      width: '13%',
       accessor:'vaultPosition',
       Header:translate('defi.realizedApy'),
       Cell: ({ value/*, row*/ }: { value: VaultPosition | undefined/*; row: RowProps*/ }) => {
@@ -213,7 +259,8 @@ export const DepositedAssetsTable: React.FC = () => {
       },
       sortType: (a: any, b: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage')
     },
-  ], [translate, strategyColumnsDeposit])
+    allColumnsById['chainId']
+  ], [translate, strategyColumnsDeposit, allColumnsById])
 
   const allStrategies = useMemo(() => {
     return products.reduce( (allStrategies: (keyof typeof strategies)[], product: ProductProps) => {
