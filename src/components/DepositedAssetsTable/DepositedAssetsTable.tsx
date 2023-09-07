@@ -295,6 +295,13 @@ export const DepositedAssetsTable: React.FC = () => {
     }, [])
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, allStrategies])
 
+  // Set deposited if connected
+  useEffect(() => {
+    if (account && mode === 'Available')
+      return setMode('Deposited')
+  // eslint-disable-next-line
+  }, [])
+
   // Disabled Deposited
   useEffect(() => {
     if (!account && mode === 'Deposited')

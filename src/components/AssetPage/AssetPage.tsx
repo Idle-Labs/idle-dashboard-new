@@ -1,12 +1,8 @@
 import { Earn } from './Earn'
-import { networks } from 'constants/networks'
-import { useTranslate } from 'react-polyglot'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { IconTab } from 'components/IconTab/IconTab'
-import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -19,8 +15,8 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
-import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, isEmpty } from 'helpers/'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
@@ -41,13 +37,10 @@ type TabType = {
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
-  const translate = useTranslate()
-  const { openModal } = useModalProvider()
   const { isMobile, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
-  const { isChainLoaded, chainId, network, setChainId } = useWalletProvider()
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
   const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
@@ -73,7 +66,6 @@ export const AssetPage: React.FC = () => {
   }, [timeframe, setDateRange])
 
   const {
-    vaultsNetworks,
     isPortfolioLoaded,
     portfolioTimestamp,
     assetsDataTimestamp,
@@ -83,8 +75,7 @@ export const AssetPage: React.FC = () => {
       selectVaultById,
       selectVaultGauge,
       selectAssetBalance,
-      selectAssetPriceUsd,
-      selectNetworkByVaultId
+      selectAssetPriceUsd
     }
   } = usePortfolioProvider()
 
@@ -446,7 +437,7 @@ export const AssetPage: React.FC = () => {
               alignItems={'center'}
             >
               <AssetLabel assetId={params.asset} fontSize={'h2'} extraFields={['statusBadge']} />
-              <AssetProvider.ChainIcon width={7} height={7} />
+              {/*<AssetProvider.ChainIcon width={7} height={7} />*/}
             </HStack>
             {
               isMobile && vaultDetails

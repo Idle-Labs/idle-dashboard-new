@@ -268,7 +268,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const { state: { lastTransaction } } = useTransactionManager()
   const { web3, web3Chains, web3Rpc, multiCall } = useWeb3Provider()
   const runningEffects = useRef<Record<string, boolean | number | string | undefined>>({})
-  const { walletInitialized, isNetworkCorrect, connecting, account, prevAccount, chainId, prevChainId, explorer } = useWalletProvider()
+  const { walletInitialized, connecting, account, prevAccount, chainId, prevChainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
 
   const accountChanged = useMemo(() => {
@@ -531,7 +531,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const etherscanTransactions = await getUserTransactions(startBlock, endBlock, +chainId)
       // console.log('etherscanTransactions', account.address, startBlock, endBlock, etherscanTransactions)
 
-      const vaultsTransactions: Record<AssetId, Transaction[]> = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
+      await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
         chainVaults,
         async (vault: Vault) => {
           if (!("getTransactions" in vault)) return {}
@@ -1848,8 +1848,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Init underlying tokens vaults
     const underlyingTokensVaults: UnderlyingToken[] = []
-    const underlyingTokensVaultsNetworks: Record<string, UnderlyingToken[]> = Object.keys(web3Chains).reduce( ( vaultsContracts: Record<string, UnderlyingToken[]>, vaultChainId: any) => {
-      vaultsContracts[vaultChainId] = []
+    Object.keys(web3Chains).forEach( (vaultChainId: any) => {
       if (!allVaultsNetworks[vaultChainId]){
         allVaultsNetworks[vaultChainId] = []
       }
@@ -1860,20 +1859,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const tokenConfig = underlyingTokens[vaultChainId][token]
         if (tokenConfig) {
           const underlyingToken = new UnderlyingToken(web3ToUse, vaultChainId, tokenConfig)
-          vaultsContracts[vaultChainId].push(underlyingToken)
           allVaultsNetworks[vaultChainId].push(underlyingToken)
           underlyingTokensVaults.push(underlyingToken)
         }
       })
-      return vaultsContracts
-    }, {})
+    })
 
     // const underlyingTokensVaults: UnderlyingToken[] = underlyingTokensVaultsNetworks[chainId]
 
     // Init tranches vaults
     const trancheVaults: TrancheVault[] = []
-    const trancheVaultsNetworks = Object.keys(web3Chains).reduce( (vaultsContracts: Record<string, TrancheVault[]>, vaultChainId: any) => {
-      vaultsContracts[vaultChainId] = []
+    Object.keys(web3Chains).forEach( (vaultChainId: any) => {
       if (!allVaultsNetworks[vaultChainId]){
         allVaultsNetworks[vaultChainId] = []
       }
@@ -1888,8 +1884,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const gaugeConfig = Object.values(gauges).find( gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase() )
             const trancheVaultAA = new TrancheVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider})
             const trancheVaultBB = new TrancheVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider})
-            vaultsContracts[vaultChainId].push(trancheVaultAA)
-            vaultsContracts[vaultChainId].push(trancheVaultBB)
             allVaultsNetworks[vaultChainId].push(trancheVaultAA)
             allVaultsNetworks[vaultChainId].push(trancheVaultBB)
             trancheVaults.push(trancheVaultAA)
@@ -1897,8 +1891,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
         })
       })
-      return vaultsContracts
-    }, {})
+    })
 
     // const trancheVaults: TrancheVault[] = trancheVaultsNetworks[chainId]
 
@@ -1906,8 +1899,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Init best yield vaults
     const bestYieldVaults: BestYieldVault[] = []
-    const bestYieldVaultsNetworks = Object.keys(web3Chains).reduce( (vaultsContracts: Record<string, BestYieldVault[]>, vaultChainId: any) => {
-      vaultsContracts[vaultChainId] = []
+    Object.keys(web3Chains).forEach( (vaultChainId: any) => {
       if (!allVaultsNetworks[vaultChainId]){
         allVaultsNetworks[vaultChainId] = []
       }
@@ -1919,13 +1911,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const tokenConfig = bestYield[vaultChainId][token]
         if (checkVaultEnv(tokenConfig)){
           const bestYieldVault = new BestYieldVault({web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, tokenConfig, type: 'BY', cacheProvider, idleController})
-          vaultsContracts[vaultChainId].push(bestYieldVault)
           allVaultsNetworks[vaultChainId].push(bestYieldVault)
           bestYieldVaults.push(bestYieldVault)
         }
       })
-      return vaultsContracts
-    }, {})
+    })
 
     // const bestYieldVaults: BestYieldVault[] = bestYieldVaultsNetworks[chainId]
 

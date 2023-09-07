@@ -40,7 +40,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const referralEnabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.referralEnabled), [vault])
   const depositsDisabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.depositsDisabled), [vault])
-  const isVaultNetworkSelected = useMemo(() => (isNetworkCorrect && vault && +vault.chainId === +chainId) , [isNetworkCorrect, vault, chainId])
 
   // Get selected tab id from search params
   const _referral = useMemo((): string | undefined => {
@@ -224,9 +223,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   // }, [asset, setActionIndex])
 
   const depositButton = useMemo(() => {
-    return !isVaultNetworkSelected && vault ? (
-      <SwitchNetworkButton chainId={+vault?.chainId} width={'full'} />
-    ) : account ? (
+    return account ? (
       <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
@@ -237,7 +234,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, vault, transaction, deposit, isVaultNetworkSelected])
+  }, [account, disabled, transaction, deposit])
 
   const referralMessage = useMemo(() => {
     if (!_referral) return null
@@ -330,117 +327,94 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       width={'100%'}
       assetId={asset?.underlyingId}
     >
-      {
-        !isVaultNetworkSelected && vault ? (
-          <Center
-            px={10}
-            flex={1}
+      <VStack
+        pt={8}
+        flex={1}
+        spacing={6}
+        height={'100%'}
+        id={'deposit-container'}
+        alignItems={'space-between'}
+        justifyContent={'flex-start'}
+      >
+        <VStack
+          flex={1}
+          spacing={6}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+          <HStack
             width={'100%'}
+            spacing={[3, 4]}
+            alignItems={'flex-start'}
           >
-            <VStack
-              spacing={6}
+            <Box
+              pt={8}
             >
-              <TbPlugConnectedX size={72} />
-              <VStack
-                spacing={4}
-              >
-                <Translation component={Text} translation={"staking.networkNotSupported"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
-                <Translation component={Text} translation={`modals.assets.vaultWrongNetwork`} params={{network: network?.chainName, correctNetwork: networks[vault?.chainId].chainName }} textStyle={'captionSmall'} textAlign={'center'} />
-                <SwitchNetworkButton chainId={+vault?.chainId} width={'full'} />
-              </VStack>
-            </VStack>
-          </Center>
-        ) : (
-          <VStack
-            pt={8}
-            flex={1}
-            spacing={6}
-            height={'100%'}
-            id={'deposit-container'}
-            alignItems={'space-between'}
-            justifyContent={'flex-start'}
-          >
+              <AssetLabel assetId={asset?.id} />
+            </Box>
             <VStack
-              flex={1}
-              spacing={6}
+              spacing={1}
               width={'100%'}
               alignItems={'flex-start'}
             >
-              <HStack
-                width={'100%'}
-                spacing={[3, 4]}
-                alignItems={'flex-start'}
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
               >
-                <Box
-                  pt={8}
-                >
-                  <AssetLabel assetId={asset?.id} />
-                </Box>
                 <VStack
-                  spacing={1}
-                  width={'100%'}
+                  spacing={2}
                   alignItems={'flex-start'}
                 >
-                  <Card
-                    px={4}
-                    py={2}
-                    layerStyle={'cardLight'}
-                  >
-                    <VStack
-                      spacing={2}
-                      alignItems={'flex-start'}
-                    >
-                      <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
-                      <HStack
-                        width={'100%'}
-                        justifyContent={'space-between'}
-                      >
-                        <HStack
-                          spacing={1}
-                        >
-                          <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                          <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
-                        </HStack>
-                        <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
-                      </HStack>
-                    </VStack>
-                  </Card>
-                  {
-                    error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-                  }
-                </VStack>
-              </HStack>
-              {referralMessage}
-              {vaultMessage}
-              <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
-            </VStack>
-            <VStack
-              spacing={4}
-              id={'footer'}
-              alignItems={'flex-start'}
-            >
-              {
-                /*
-                <Card.Outline px={4} py={2}>
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
                   <HStack
-                    spacing={1}
+                    width={'100%'}
+                    justifyContent={'space-between'}
                   >
-                    <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                    <AssetProvider
-                      assetId={asset?.id}
+                    <HStack
+                      spacing={1}
                     >
-                      <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                    </AssetProvider>
+                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                      <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                    </HStack>
+                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
                   </HStack>
-                </Card.Outline>
-                */
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
               }
-              <EstimatedGasFees />
-              {depositButton}
             </VStack>
-          </VStack>
-        )
-      }
+          </HStack>
+          {referralMessage}
+          {vaultMessage}
+          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+        </VStack>
+        <VStack
+          spacing={4}
+          id={'footer'}
+          alignItems={'flex-start'}
+        >
+          {
+            /*
+            <Card.Outline px={4} py={2}>
+              <HStack
+                spacing={1}
+              >
+                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                <AssetProvider
+                  assetId={asset?.id}
+                >
+                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
+                </AssetProvider>
+              </HStack>
+            </Card.Outline>
+            */
+          }
+          <EstimatedGasFees />
+          {depositButton}
+        </VStack>
+      </VStack>
     </AssetProvider>
   )
 }
