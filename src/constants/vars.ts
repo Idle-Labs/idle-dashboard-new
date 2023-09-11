@@ -9,6 +9,7 @@ export const stkIDLE_TOKEN = 'STKIDLE'
 export const BLOCKS_PER_YEAR = 2613400
 export const DATE_FORMAT = 'YYYY/MM/DD'
 export const SECONDS_IN_YEAR = 30879000
+export const VAULT_LIMIT_MAX = 200000000
 export const MIN_STAKING_SECONDS = 1209600 // 2 weeks
 export const MAX_STAKING_SECONDS = 126144000 // 4 years
 export const PROD_HOSTNAME = 'app.idle.finance'

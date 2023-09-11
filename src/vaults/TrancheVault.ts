@@ -314,6 +314,16 @@ export class TrancheVault {
     ]
   }
 
+  public getLimitsCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId:this.id,
+        call:this.cdoContract.methods.limit(),
+        decimals: this.underlyingToken?.decimals || 18
+      }
+    ]
+  }
+
   public getAprsCalls(): ContractRawCall[] {
     const contract = this.cdoContractRpc || this.cdoContract
     return [

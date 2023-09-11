@@ -33,6 +33,7 @@ type VaultsPositions = {
 type VaultsOnchainData = {
   fees: Balances
   aprs: Balances
+  limits: Balances
   baseAprs: Balances
   balances: Balances
   aprRatios: Balances
@@ -87,6 +88,7 @@ type ContextProps = InitialState
 const initialState: InitialState = {
   fees: {},
   aprs: {},
+  limits: {},
   vaults: [],
   helpers: {},
   rewards: {},
@@ -812,6 +814,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getAprsCalls" in vault) && checkEnabledCall('aprs') ? vault.getAprsCalls() : [],
         ("getTotalSupplyCalls" in vault) && checkEnabledCall('totalSupplies') ? vault.getTotalSupplyCalls() : [],
         ("getFeesCalls" in vault) && checkEnabledCall('fees') ? vault.getFeesCalls() : [],
+        ("getLimitsCalls" in vault) && checkEnabledCall('limits') ? vault.getLimitsCalls() : [],
         ("getAprRatioCalls" in vault) && checkEnabledCall('aprs') ? vault.getAprRatioCalls() : [],
         ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : [],
         ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
@@ -920,6 +923,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsCallsResults,
         totalSupplyCallsResults,
         feesCallsResults,
+        limitsCallsResults,
         aprRatioResults,
         baseAprResults,
         protocolsResults,
@@ -1326,15 +1330,24 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const asset = selectAssetById(assetId)
         if (asset){
           const fee = BNify(callResult.data.toString()).div(`1e05`)
-          // assetsData[assetId] = {
-          //   ...assetsData[assetId],
-          //   fee
-          // }
-
           fees[assetId] = fee
         }
       }
       return fees
+    }, {})
+
+    // Process Limits
+    const limits = limitsCallsResults.reduce( (limits: Balances, callResult: DecodedResult) => {
+      if (callResult.data) {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        const asset = selectAssetById(assetId)
+        if (asset){
+          const decimals = callResult.extraData.decimals || asset.decimals
+          const limit = BNify(callResult.data.toString()).div(`1e${decimals}`)
+          limits[assetId] = limit
+        }
+      }
+      return limits
     }, {})
 
     const balances = balanceCallsResults.reduce( (balances: Balances, callResult: DecodedResult) => {
@@ -1499,6 +1512,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return {
       fees,
       aprs,
+      limits,
       rewards,
       balances,
       baseAprs,
@@ -1587,6 +1601,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const {
         fees,
         aprs,
+        limits,
         rewards,
         balances,
         baseAprs,
@@ -1662,6 +1677,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: fees[vaultId]
         }
       }, {...state.fees})
+
+      const newLimits = vaults.map( (vault: Vault) => vault.id ).reduce( (newLimits: Balances, vaultId: AssetId) => {
+        if (!limits[vaultId]){
+          newLimits[vaultId] = BNify(0)
+          return newLimits
+        }
+        return {
+          ...newLimits,
+          [vaultId]: limits[vaultId]
+        }
+      }, {...state.limits})
 
       const newRewards = vaults.map( (vault: Vault) => vault.id ).reduce( (newRewards: Record<AssetId, Balances>, vaultId: AssetId) => {
         if (!rewards[vaultId]){
@@ -1843,6 +1869,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // stakingData,
         fees: newFees,
         aprs: newAprs,
+        limits: newLimits,
         rewards: newRewards,
         balances: newBalances,
         baseAprs: newBaseAprs,
@@ -2314,6 +2341,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const {
         fees,
         aprs,
+        limits,
         rewards,
         balances,
         baseAprs,
@@ -2353,7 +2381,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
         const payload = !enabledCalls.length || accountChanged ? fees : {...state.fees, ...fees}
         newState.fees = payload
-        // dispatch({type: 'SET_FEES', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('limits')) {
+        const payload = !enabledCalls.length || accountChanged ? limits : {...state.limits, ...limits}
+        newState.limits = payload
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprRatios : {...state.aprRatios, ...aprRatios}
@@ -2984,6 +3015,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].totalTvl = BNify(0)
       assetsData[vault.id].flags = vault.flags
       assetsData[vault.id].fee = state.fees[vault.id]
+      assetsData[vault.id].limit = state.limits[vault.id] || BNify(0)
       assetsData[vault.id].rewards =  state.rewards[vault.id]
       assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
       assetsData[vault.id].balance =  state.balances[vault.id] || BNify(0)
@@ -3150,6 +3182,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.vaultsNetworks,
     state.fees,
     state.aprs,
+    state.limits,
     state.baseAprs,
     state.balances,
     state.aprRatios,

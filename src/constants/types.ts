@@ -276,6 +276,7 @@ export type Asset = {
   fee?: BigNumber
   tvl?: BigNumber
   apy7?: BigNumber
+  limit?: BigNumber
   apy30?: BigNumber
   tvlUsd?: BigNumber
   rewards?: Balances

@@ -859,6 +859,7 @@
     "noSupportedAssets": "No supported assets in portfolio."
   },
   "dynamicActionFields": {
+    "depositLimit": "Available to deposit",
     "stakingPoolShare": "Pool share",
     "stakingApy": "Estimated APY",
     "stkIDLE": "You will receive",
@@ -932,6 +933,7 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
+          "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
           "paused": "Deposits are momentarily disabled for maintenance purposes. Redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter.",
@@ -1030,6 +1032,7 @@
       "broadcastFailed": "An error occurred while broadcasting the transaction",
       "insufficientFundsForLimit": "Insufficient funds. The minimum trade amount for this pair is %{minLimit}",
       "insufficientFundsForAmount": "Insufficient funds. Your %{symbol} balance is less than the selected amount",
+      "limitCapReached": "This vault has a deposit limit, you can deposit up to %{limit} %{symbol}",
       "stakingIncreaseLockEndDateNotCorrect": "You can only increase the stake period for a maximum of 4 years.",
       "stakingLockEndDateNotCorrect": "Lock end date not correct. You can stake for a minimum of 2 weeks and a maximum of 4 years.",
       "invalidTradePair": "Invalid trade pair: %{sellAssetName} and %{buyAssetName}",

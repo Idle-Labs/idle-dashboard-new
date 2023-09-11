@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import type { AssetId } from 'constants/types'
+import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
 import { TrancheVault } from 'vaults/TrancheVault'
@@ -27,6 +28,10 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   const asset = useMemo(() => {
     return assetId && selectAssetById && selectAssetById(assetId)
   }, [assetId, selectAssetById])
+
+  const underlyingAsset = useMemo(() => {
+    return asset && selectAssetById && selectAssetById(asset.underlyingId)
+  }, [asset, selectAssetById])
 
   const vault = useMemo(() => {
     return assetId && selectVaultById && selectVaultById(assetId)
@@ -137,6 +142,11 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         dynamicActionField = (<Amount.Usd decimals={withdrawFee.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'orange'} {...textProps} value={redeemableAmountIsValid ? -withdrawFee : null} />)
       }
     break;
+    case 'depositLimit':
+      textCta = 'orange'
+      const remainingAmount = BigNumber.maximum(0, bnOrZero(asset.limit).minus(asset.totalTvl).minus(bnOrZero(amount)))
+      dynamicActionField = (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={remainingAmount} />)
+    break;
     case 'netGain':
       const netGain = BigNumber.minimum(totalGain.minus(fees), bnOrZero(gain).minus(fees))
       dynamicActionField = (<Amount.Usd decimals={netGain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? netGain : null} />)
@@ -185,9 +195,13 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
 }
 
 export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) => {
-  const { selectors: { selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const { assetId, action } = props
+
+  const asset = useMemo(() => {
+    return assetId && selectAssetById && selectAssetById(assetId)
+  }, [assetId, selectAssetById])
 
   const vault = useMemo(() => {
     return assetId && selectVaultById && selectVaultById(assetId)
@@ -197,9 +211,25 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     return vault?.type && strategies[vault.type]
   }, [vault])
 
+  const vaultLimitCap = useMemo(() => {
+    return bnOrZero(asset?.limit).lt(VAULT_LIMIT_MAX) ? bnOrZero(asset?.limit) : BNify(0)
+  }, [asset])
+
+  const limitCapReached = useMemo(() => {
+    return vaultLimitCap.gt(0) ? BNify(asset?.totalTvl).gte(vaultLimitCap) : false
+  }, [asset, vaultLimitCap])
+
   const dynamicActionFields = useMemo(() => {
     if (!strategy?.dynamicActionFields?.[action]) return null
     let fields = strategy?.dynamicActionFields[action]
+
+    // Add limit cap
+    if (action === 'deposit' && vaultLimitCap.gt(0) && !limitCapReached) {
+      fields = [
+        'depositLimit',
+        ...fields
+      ]
+    }
     /*
     // Add withdrawFee
     if (action==='withdraw' && ("flags" in vault) && vault.flags?.withdrawFee && !fields.includes("withdrawFee")){
@@ -210,7 +240,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     }
     */
     return fields
-  }, [action, strategy])
+  }, [action, strategy, limitCapReached, vaultLimitCap])
   
   if (!dynamicActionFields) return null
 

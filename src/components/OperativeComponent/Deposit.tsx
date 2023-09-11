@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { ZERO_ADDRESS } from 'constants/vars'
 import { imageFolder } from 'constants/folders'
+import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -18,7 +19,7 @@ import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/re
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BNify, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
+import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
@@ -69,9 +70,19 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return (vault && (!("enabled" in vault) || vault.enabled)) && (asset && asset?.status !== 'deprecated')
   }, [vault, asset])
 
+  const vaultLimitCap = useMemo(() => {
+    return bnOrZero(asset?.limit).lt(VAULT_LIMIT_MAX) ? bnOrZero(asset?.limit) : BNify(0)
+  }, [asset])
+
+  const limitCapReached = useMemo(() => {
+    return vaultLimitCap.gt(0) ? BNify(asset?.totalTvl).gte(vaultLimitCap) : false
+  }, [asset, vaultLimitCap])
+
   const disabled = useMemo(() => {
     setError('')
-    if (!vaultEnabled || depositsDisabled || asset?.status === 'paused') return true
+
+    if (limitCapReached || !vaultEnabled || depositsDisabled || asset?.status === 'paused') return true
+
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
@@ -79,11 +90,18 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       return true
     }
 
+    // Check vault limit cap
+    if (vaultLimitCap.gt(0) && BNify(asset?.totalTvl).plus(amount).gt(vaultLimitCap)){
+      const remainingAmount = vaultLimitCap.minus(BNify(asset?.totalTvl))
+      setError(translate('trade.errors.limitCapReached', {limit: remainingAmount.toFixed(2), symbol: underlyingAsset?.name}))
+      return true
+    }
+
     // Transaction is started, disable button
     if (transaction.status === 'started') return true
 
     return false
-  }, [asset, amount, vaultEnabled, transaction, depositsDisabled, assetBalance, underlyingAsset, translate])
+  }, [asset, amount, vaultLimitCap, limitCapReached, vaultEnabled, transaction, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   // console.log(Object.getOwnPropertyNames(vault))
   // console.log('vault', vault.status, asset.status)
@@ -273,6 +291,21 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           }
         </VStack>
       </Card.Dark>
+    ) : limitCapReached ? (
+      <Card.Dark
+        py={2}
+        pl={4}
+        pr={2}
+        border={0}
+      >
+        <HStack
+          spacing={4}
+          width={'full'}
+        >
+          <Image src={`${imageFolder}vaults/experimental.png`} width={6} height={6} />
+          <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.limitCapReached`} isHtml params={{limit: `${vaultLimitCap.toFixed(0)} ${underlyingAsset?.token}`}} textAlign={'left'} />
+        </HStack>
+      </Card.Dark>
     ) : vaultMessages?.deposit && (
       <Card.Dark
         p={2}
@@ -281,7 +314,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         <Translation textStyle={'captionSmaller'} translation={vaultMessages.deposit} isHtml={true} textAlign={'center'} />
       </Card.Dark>
     )
-  }, [asset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
+  }, [asset, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
   return (
     <AssetProvider
