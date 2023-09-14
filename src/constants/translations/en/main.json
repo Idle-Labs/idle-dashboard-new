@@ -933,9 +933,9 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
-          "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
+          "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault. Follow <a href='https://twitter.com/idlefinance' class='link' target='_blank' rel='noopener'>IdleDAO's Twitter page</a> to stay updated on future limit increases.",
           "paused": "Deposits are momentarily disabled for maintenance purposes. Redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter.",
           "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose.",
           "maintenance": "Deposits are momentarily disabled for maintenance purposes. Funds are safe and redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter."
