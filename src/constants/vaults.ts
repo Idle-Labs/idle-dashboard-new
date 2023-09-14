@@ -2065,11 +2065,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       USDCWinc:{
         autoFarming:[],
+        enabledEnvs:[],
         variant:'wincent',
         protocol:'clearpool',
-        enabledEnvs:['beta'],
         blockNumber:16790250,
-        status:'experimental',
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
