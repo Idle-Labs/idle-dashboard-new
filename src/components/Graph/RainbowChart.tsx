@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import omit from 'lodash/omit'
 import { BNify } from 'helpers/'
 import { Group } from '@visx/group'
+import { scaleLog } from "@visx/scale"
 import { curveLinear } from '@visx/curve'
 import { extent, Numeric } from 'd3-array'
 import { Text as VisxText } from '@visx/text'
@@ -13,7 +14,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useTheme, HStack, VStack, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { RainbowData } from 'hooks/useBalanceChartData/useBalanceChartData'
-import { AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
+import { LineSeries, AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
 
 export type RainbowChartProps = {
   data: RainbowData[]
@@ -160,15 +161,27 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
     () =>
       assetIds.map(assetId => {
         const asset = selectAssetById(assetId)
+        /*
         return (
           <AreaSeries
             data={data}
             key={assetId}
             dataKey={assetId}
             fillOpacity={0.1}
+            curve={curveLinear}
             xAccessor={accessors.x[assetId]}
             yAccessor={accessors.y[assetId]}
-            fill={strategies[asset?.type]?.color}
+            full={strategies[asset?.type]?.color as string}
+          />
+        )
+        */
+        return (
+          <LineSeries
+            data={data}
+            dataKey={assetId}
+            curve={curveLinear}
+            xAccessor={accessors.x[assetId]}
+            yAccessor={accessors.y[assetId]}
           />
         )
       }),
@@ -186,9 +199,9 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
 
   return (
     <XYChart margin={margins} height={height} width={width} xScale={xScale} yScale={yScale}>
-      <AreaStack order='ascending' curve={curveLinear}>
+      {/*<AreaStack order='ascending' curve={curveLinear}>*/}
         {areaLines}
-      </AreaStack>
+      {/*</AreaStack>*/}
       {
         axisEnabled && (
           <Axis

@@ -2,11 +2,11 @@ import { strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
-import React, { useMemo, useState } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MaticNFTs } from 'components/MaticNFTs/MaticNFTs'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -36,6 +36,7 @@ export const Earn: React.FC = () => {
     selectors: {
       selectAssetById,
       selectVaultById,
+      selectAssetBalance,
       selectAssetBalanceUsd
     }
   } = usePortfolioProvider()
@@ -56,6 +57,11 @@ export const Earn: React.FC = () => {
     return asset && selectVaultById && selectVaultById(asset.id)
   }, [selectVaultById, asset])
 
+  const assetBalanceUnderlying = useMemo(() => {
+    if (!asset?.id) return
+    return selectAssetBalance && selectAssetBalance(asset.id)
+  }, [asset, selectAssetBalance])
+
   const assetBalance = useMemo(() => {
     if (!asset?.id) return
     return selectAssetBalanceUsd && selectAssetBalanceUsd(asset.id)
@@ -74,6 +80,13 @@ export const Earn: React.FC = () => {
     if (!isPortfolioLoaded) return
     return userHasBalance ? balanceChartData : performanceChartData
   }, [isPortfolioLoaded, userHasBalance, balanceChartData, performanceChartData])
+
+  useEffect(() => {
+    if (!isPortfolioLoaded) return
+    if (useDollarConversion && !userHasBalance){
+      setUseDollarConversion(false)
+    }
+  }, [isPortfolioLoaded, useDollarConversion, userHasBalance, setUseDollarConversion])
 
   // console.log('performanceChartData', timeframe, performanceChartData)
 
@@ -303,6 +316,10 @@ export const Earn: React.FC = () => {
     ) : null
   }, [asset])
 
+  const decimals = useMemo(() => {
+    return !useDollarConversion && assetBalanceUnderlying.lt(1000) ? 3 : 2
+  }, [assetBalanceUnderlying, useDollarConversion])
+
   return (
     <>
       <Box>
@@ -372,7 +389,7 @@ export const Earn: React.FC = () => {
             setPercentChange={() => {}}
             height={isMobile ? '300px' : '350px'}
             margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n)} ${asset?.name}`) : undefined }
+            formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n, decimals)} ${asset?.name}`) : undefined }
             // formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
           />
         </Card.Flex>

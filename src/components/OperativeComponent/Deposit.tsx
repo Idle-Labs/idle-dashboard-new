@@ -302,7 +302,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           spacing={4}
           width={'full'}
         >
-          <Image src={`${imageFolder}vaults/experimental.png`} width={6} height={6} />
+          <Image src={`${imageFolder}vaults/experimental.png`} width={7} height={7} />
           <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.limitCapReached`} isHtml params={{limit: `${vaultLimitCap.toFixed(0)} ${underlyingAsset?.token}`}} textAlign={'left'} />
         </HStack>
       </Card.Dark>
