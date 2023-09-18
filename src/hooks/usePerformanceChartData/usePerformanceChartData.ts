@@ -80,6 +80,7 @@ export const usePerformanceChartData: UsePerformanceChartData = args => {
           }
 
           const value = price.toNumber()
+          
           if (!pricesByDate[date]) {
             pricesByDate[date] = {
               date,

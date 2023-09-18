@@ -2,11 +2,11 @@ import dayjs from 'dayjs'
 import omit from 'lodash/omit'
 import { BNify } from 'helpers/'
 import { Group } from '@visx/group'
-import { scaleLog } from "@visx/scale"
 import { curveLinear } from '@visx/curve'
 import { extent, Numeric } from 'd3-array'
 import { Text as VisxText } from '@visx/text'
 import { strategies, AssetId } from 'constants/'
+import { ContinuousScaleType } from "@visx/scale"
 import React, { useCallback, useMemo } from 'react'
 import { useColorModeValue } from '@chakra-ui/system'
 import { useI18nProvider } from 'contexts/I18nProvider'
@@ -14,18 +14,19 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useTheme, HStack, VStack, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { RainbowData } from 'hooks/useBalanceChartData/useBalanceChartData'
-import { LineSeries, AreaSeries, AreaStack, Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
+import { LineSeries, /*AreaSeries, AreaStack,*/ Axis, Margin, Tooltip, XYChart } from '@visx/xychart'
 
 export type RainbowChartProps = {
   data: RainbowData[]
   width: number
   height: number
   color: string
-  formatFn: Function
   margins?: Margin
-  gradientEnabled?: boolean
+  formatFn: Function
   axisEnabled?: boolean
   maxMinEnabled?: boolean
+  gradientEnabled?: boolean
+  scaleType?: ContinuousScaleType
 }
 
 const getScaledX = (date: number, start: number, end: number, width: number) =>
@@ -42,6 +43,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   // color,
   formatFn,
   axisEnabled = true,
+  scaleType = 'linear',
   maxMinEnabled = false,
   margins = { top: 0, right: 0, bottom: 0, left: 0 },
 }) => {
@@ -103,7 +105,16 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
     })
   }, [assetIds, data, selectAssetById])
 
-  // console.log('values', values)
+  const assetsColors = useMemo(() => {
+    return assetIds.reduce( (assetsColors: Record<AssetId, string>, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      assetsColors[assetId] = strategies[asset?.type]?.color as string
+      return assetsColors
+    }, {})
+  }, [assetIds, selectAssetById])
+
+  // console.log('assetsColors', assetsColors)
+
   // const totals = useMemo(() => data.map(d => d.total), [data])
   const minPrice = Math.min(...values.totals)
   const maxPrice = Math.max(...values.totals)
@@ -129,6 +140,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
     },
     [width],
   )
+
   const scaledMaxPriceX = handleTextPosition(
     getScaledX(maxPriceDate, xScale.domain[0].getTime(), xScale.domain[1].getTime(), width),
   )
@@ -140,15 +152,13 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
 
   const yScale = useMemo(
     () => ({
-      type: 'linear' as const,
+      type: scaleType,
       range: [yMax + margins.top, margins.top + 10], // values are reversed, y increases down - this is really [bottom, top] in cartersian coordinates
       domain: [minPrice, maxPrice],
-      nice: true,
+      // nice: true,
     }),
-    [margins.top, maxPrice, minPrice, yMax],
+    [margins.top, scaleType, maxPrice, minPrice, yMax],
   )
-
-  // console.log('yScale', yScale, yMax, margins)
 
   const scaledMaxPriceY = -15
   const scaledMinPriceY = getScaledY(minPrice, minPrice, maxPrice, height - margins.bottom) - 5
@@ -160,7 +170,7 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
   const areaLines = useMemo(
     () =>
       assetIds.map(assetId => {
-        const asset = selectAssetById(assetId)
+        // const asset = selectAssetById(assetId)
         /*
         return (
           <AreaSeries
@@ -182,10 +192,11 @@ export const RainbowChart: React.FC<RainbowChartProps> = ({
             curve={curveLinear}
             xAccessor={accessors.x[assetId]}
             yAccessor={accessors.y[assetId]}
+            colorAccessor={(dataKey: string) => assetsColors[dataKey]}
           />
         )
       }),
-    [selectAssetById, accessors, assetIds, data],
+    [accessors, assetIds, data, assetsColors],
   )
 
   const crosshairColor = colors.primary/*useMemo(() => {

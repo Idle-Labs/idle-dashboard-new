@@ -146,6 +146,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   const { volumeChartData } = useVolumeChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   const { tvlChartData: tvlUsdChartData } = useTVLChartData({ assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
   const { performanceChartData } = usePerformanceChartData({ useRates: useRatesForPerformanceChartData, assetIds, timeframe: selectedTimeframe, dateRange: selectedDateRange })
+  
   // console.log('performanceChartData', performanceChartData)
 
   const assetsApys = useMemo(() => {
@@ -641,6 +642,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     )
                   }
                   <GenericChart
+                    scaleType={'log'}
                     percentChange={0}
                     assetIds={assetIds}
                     color={strategyColor}

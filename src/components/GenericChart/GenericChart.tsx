@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { abbreviateNumber } from 'helpers/'
 import { Box, VStack } from '@chakra-ui/react'
 import { Graph } from 'components/Graph/Graph'
+import { ContinuousScaleType } from "@visx/scale"
 import type { AssetId, HistoryTimeframe } from 'constants/types'
 // import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { DownloadCsvData } from 'components/DownloadCsvData/DownloadCsvData'
@@ -19,6 +20,7 @@ type GenericChartArgs = {
   maxMinEnabled?: boolean
   fileName?: string | null
   timeframe?: HistoryTimeframe
+  scaleType?: ContinuousScaleType
   setPercentChange: (percentChange: number) => void
   margins?: { top: number; right: number; bottom: number; left: number }
 }
@@ -27,6 +29,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   data,
   assetIds,
   fileName,
+  scaleType,
   // accountId,
   // timeframe,
   // percentChange,
@@ -70,6 +73,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
           assetIds={assetIds}
           isLoaded={!loading}
           formatFn={formatFn}
+          scaleType={scaleType}
           maxMinEnabled={maxMinEnabled}
           isRainbowChart={isRainbowChart}
         />
