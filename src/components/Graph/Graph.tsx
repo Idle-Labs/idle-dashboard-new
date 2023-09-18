@@ -3,6 +3,7 @@ import { isEmpty } from 'lodash'
 import { abbreviateNumber } from 'helpers/'
 import { ParentSize } from '@visx/responsive'
 import type { AssetId } from 'constants/types'
+import { ContinuousScaleType } from "@visx/scale"
 import { Center, Fade, SlideFade } from '@chakra-ui/react'
 import { BalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 
@@ -21,6 +22,7 @@ export type GraphProps = {
   maxMinEnabled?: boolean
   isRainbowChart?: boolean
   gradientEnabled?: boolean
+  scaleType?: ContinuousScaleType
   margins?: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -31,6 +33,7 @@ export const Graph: React.FC<GraphProps> = ({
     assetIds,
     formatFn,
     isLoaded,
+    scaleType,
     isRainbowChart,
     axisEnabled = true,
     maxMinEnabled = true,
@@ -61,7 +64,7 @@ export const Graph: React.FC<GraphProps> = ({
           ) : !isEmpty(data) ? (
             <SlideFade in={!loading}>
               {isRainbowChart && rainbow.length>0 && assetIds && assetIds.length>1 ? (
-                <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} gradientEnabled={gradientEnabled} />
+                <RainbowChart {...primaryChartProps} data={rainbow} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} gradientEnabled={gradientEnabled} scaleType={scaleType} />
               ) : total.length>0 && (
                 <PrimaryChart {...primaryChartProps} data={total} formatFn={formatValue} axisEnabled={axisEnabled} maxMinEnabled={maxMinEnabled} gradientEnabled={gradientEnabled} />
               )}
@@ -70,5 +73,5 @@ export const Graph: React.FC<GraphProps> = ({
         }}
       </ParentSize>
     )
-  }, [color, data, assetIds, isLoaded, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, gradientEnabled, margins])
+  }, [color, data, assetIds, isLoaded, scaleType, loading, isRainbowChart, formatFn, axisEnabled, maxMinEnabled, gradientEnabled, margins])
 }
