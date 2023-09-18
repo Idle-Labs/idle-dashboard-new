@@ -617,7 +617,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 p={6}
               >
                 {
-                  performanceChartData && !performanceChartData.total?.length && (
+                  performanceChartData && !performanceChartData.rainbow?.length && (
                     <Center
                       layerStyle={'overlay'}
                       bg={'rgba(0, 0, 0, 0.4)'}
@@ -631,7 +631,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   width={'full'}
                 >
                   {
-                    performanceChartData && performanceChartData.total?.length>0 && (
+                    performanceChartData && performanceChartData.rainbow?.length>0 && (
                       <HStack
                         width={'full'}
                         justifyContent={'space-between'}
@@ -689,7 +689,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 flex={1}
               >
                 {
-                  tvlUsdChartData && !tvlUsdChartData.total?.length && (
+                  tvlUsdChartData && !tvlUsdChartData.rainbow?.length && (
                     <Center
                       layerStyle={'overlay'}
                       bg={'rgba(0, 0, 0, 0.4)'}
@@ -709,7 +709,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
-                  fileName={tvlUsdChartData && tvlUsdChartData.total?.length>0 ? `tvls_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
+                  fileName={tvlUsdChartData && tvlUsdChartData.rainbow?.length>0 ? `tvls_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
                 />
               </Card.Dark>
             </VStack>
@@ -724,7 +724,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                 flex={1}
               >
                 {
-                  rateChartData && !rateChartData.total?.length && (
+                  rateChartData && !rateChartData.rainbow?.length && (
                     <Center
                       layerStyle={'overlay'}
                       bg={'rgba(0, 0, 0, 0.4)'}
@@ -745,7 +745,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   height={isMobile ? '300px' : '350px'}
                   formatFn={(n: any) => `${numberToPercentage(n)}`}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
-                  fileName={rateChartData && rateChartData.total?.length>0 ? `rates_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
+                  fileName={rateChartData && rateChartData.rainbow?.length>0 ? `rates_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
                 />
               </Card.Dark>
             </VStack>
