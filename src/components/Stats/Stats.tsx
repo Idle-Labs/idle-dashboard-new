@@ -258,7 +258,7 @@ export const Stats: React.FC = () => {
             {
               row.original.chains.map( (chainId: number) => {
                 return (
-                  <Image key={`chain_${chainId}`} src={networks[chainId].icon as string} width={7} height={7} />
+                  <Image key={`chain_${chainId}`} src={networks[chainId].icon as string} width={8} height={8} />
                 )
               })
             }
