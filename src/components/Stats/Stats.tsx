@@ -3,16 +3,17 @@ import { Column, Row } from 'react-table'
 import { MdSearch } from 'react-icons/md'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
+import { networks } from 'constants/networks'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import React, { useState, useMemo, useCallback } from 'react'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import { ProductTag } from 'components/ProductTag/ProductTag'
+// import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
@@ -30,6 +31,7 @@ export type AggregatedAsset = Asset & {
   apyRange: ApyRange
   strategy: string
   subRows: Asset[]
+  chains: number[]
 }
 
 type RowProps = Row<AggregatedAsset>
@@ -49,7 +51,7 @@ export const Stats: React.FC = () => {
   } = usePortfolioProvider()
   const theme = useTheme()
   const translate = useTranslate()
-  const { chainId } = useWalletProvider()
+  // const { chainId } = useWalletProvider()
   const { isMobile } = useThemeProvider()
   const [ searchQuery, setSearchQuery ] = useState<string>('')
   const [ selectedStrategy, setSelectedStrategy ] = useState<string | null>(null)
@@ -62,8 +64,10 @@ export const Stats: React.FC = () => {
   }, [navigate, location])
 
   const chainAssets = useMemo(() => {
-    return Object.values(assetsData).filter( (asset: Asset) => !asset.chainId || +asset.chainId === +chainId )
-  }, [assetsData, chainId])
+    return Object.values(assetsData)//.filter( (asset: Asset) => !asset.chainId || +asset.chainId === +chainId )
+  }, [assetsData/*, chainId*/])
+
+  // console.log('chainAssets', chainAssets)
 
   const assetsByStrategy = useMemo(() => {
     if (!isPortfolioLoaded) return {}
@@ -89,16 +93,19 @@ export const Stats: React.FC = () => {
     }, {})
   }, [chainAssets, isPortfolioLoaded])
 
+  // console.log('assetsByStrategy', assetsByStrategy)
+
   const aggregatedUnderlyings = useMemo(() => {
     return Object.keys(assetsByStrategy).filter( (strategy: string) => (!selectedStrategy || selectedStrategy === strategy) ).reduce( (aggregatedUnderlyings: Record<AssetId, AggregatedAsset>, strategy: string) => {
       assetsByStrategy[strategy].filter( (asset: Asset) => (asset.status !== 'deprecated' && (!searchQuery.trim().length || asset.name.toLowerCase().includes(searchQuery.toLowerCase()))) ).forEach( (asset: Asset) => {
         const underlyingAsset = selectAssetById(asset.underlyingId)
         if (underlyingAsset){
-          const strategyKey = `${underlyingAsset.id}_${strategy}`
+          const strategyKey = `${underlyingAsset.name}_${strategy}`
           if (!aggregatedUnderlyings[strategyKey]){
             aggregatedUnderlyings[strategyKey] = {...underlyingAsset}
-            aggregatedUnderlyings[strategyKey].strategy = strategy
+            aggregatedUnderlyings[strategyKey].chains = []
             aggregatedUnderlyings[strategyKey].subRows = []
+            aggregatedUnderlyings[strategyKey].strategy = strategy
             aggregatedUnderlyings[strategyKey].apyRange = {
               minApy: asset.apy || null,
               maxApy: asset.apy || null
@@ -110,6 +117,7 @@ export const Stats: React.FC = () => {
               } else {
                 aggregatedUnderlyings[strategyKey].apyRange.minApy = BigNumber.minimum(aggregatedUnderlyings[strategyKey].apyRange.minApy as BigNumber, asset.apy)
               }
+
               if (!aggregatedUnderlyings[strategyKey].apyRange.maxApy){
                 aggregatedUnderlyings[strategyKey].apyRange.maxApy = BNify(asset.apy)
               } else {
@@ -121,6 +129,10 @@ export const Stats: React.FC = () => {
           // console.log(strategy, underlyingAsset.name, asset.type, bnOrZero(aggregatedUnderlyings[strategyKey].tvlUsd).toString(), bnOrZero(asset.tvl).toString(), bnOrZero(asset.tvlUsd).toString(), bnOrZero(aggregatedUnderlyings[strategyKey].tvlUsd).plus(bnOrZero(asset.tvlUsd)).toString())
           
           aggregatedUnderlyings[strategyKey].tvlUsd = bnOrZero(aggregatedUnderlyings[strategyKey].tvlUsd).plus(bnOrZero(asset.tvlUsd))
+
+          if (asset.chainId && aggregatedUnderlyings[strategyKey].chains.indexOf(+asset.chainId) === -1){
+            aggregatedUnderlyings[strategyKey].chains.push(+asset.chainId)
+          }
 
           const vault = selectVaultById(asset.id)
 
@@ -192,7 +204,7 @@ export const Stats: React.FC = () => {
     },
     {
       id:'asset',
-      width:'34%',
+      width:'30%',
       accessor:'id',
       Header:translate('defi.asset'),
       Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
@@ -231,7 +243,42 @@ export const Stats: React.FC = () => {
       // sortType: sortNumeric
     },
     {
-      width:'33%',
+      id:'chain',
+      width:'10%',
+      accessor:'id',
+      Header:translate('defi.chains'),
+      Cell: ({ value, row }: { value: AssetId | undefined; row: RowProps }) => {
+        return (row.original.type === 'underlying') ? (
+          <HStack
+            spacing={-1}
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'flex-start'}
+          >
+            {
+              row.original.chains.map( (chainId: number) => {
+                return (
+                  <Image key={`chain_${chainId}`} src={networks[chainId].icon as string} width={7} height={7} />
+                )
+              })
+            }
+          </HStack>
+        ) : (
+          <HStack
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'flex-start'}
+          >
+            <AssetProvider assetId={value}>
+              <AssetProvider.GeneralData field={'chainId'} width={6} height={6} />
+            </AssetProvider>
+          </HStack>
+        )
+      },
+      sortType: sortNumeric
+    },
+    {
+      width:'30%',
       accessor:'tvlUsd',
       Header:translate('defi.tvl'),
       Cell: ({ value, row }: { value: BigNumber | undefined; row: RowProps }) => {
@@ -267,7 +314,7 @@ export const Stats: React.FC = () => {
       sortType: sortNumeric
     },
     {
-      width:'33%',
+      width:'30%',
       accessor:'apyRange',
       Header:translate('stats.apyRange'),
       Cell: ({ value, row }: { value: ApyRange | undefined; row: RowProps }) => {
@@ -323,7 +370,7 @@ export const Stats: React.FC = () => {
         return n1.gt(n2) ? -1 : 1
       }
       // sortType: sortNumeric
-    },
+    }
   ]), [translate])
 
   const statsData = useMemo(() => {

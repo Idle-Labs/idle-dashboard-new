@@ -542,6 +542,7 @@
     "assetWithStatus": "Asset",
     "protocolWithVariant": "Protocol",
     "chainId": "Chain",
+    "chains": "Chains",
     "protocols": "Protocols",
     "unstake": "Unstake",
     "seniorApy": "Senior APY",
