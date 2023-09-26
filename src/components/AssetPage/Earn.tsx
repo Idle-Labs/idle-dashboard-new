@@ -317,7 +317,7 @@ export const Earn: React.FC = () => {
   }, [asset])
 
   const decimals = useMemo(() => {
-    return !useDollarConversion && assetBalanceUnderlying.lt(1000) ? 3 : 2
+    return !useDollarConversion && bnOrZero(assetBalanceUnderlying).lt(1000) ? 3 : 2
   }, [assetBalanceUnderlying, useDollarConversion])
 
   return (
