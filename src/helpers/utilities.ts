@@ -111,7 +111,8 @@ export function dayMin(d1: Dayjs, d2: Dayjs) {
 }
 
 export function dayDiff(t1: number, t2: number) {
-  return Math.abs(dayjs(t1).dayOfYear()-dayjs(t2).dayOfYear())
+  return dateDiff(t1, t2, 'day')
+  // return Math.abs(dayjs(t1).dayOfYear()-dayjs(t2).dayOfYear())
 }
 
 export function dateDiff(t1: number, t2: number, unit: any = 'ms', returnDecimals = false) {
