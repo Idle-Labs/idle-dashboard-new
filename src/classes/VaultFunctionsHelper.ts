@@ -841,6 +841,10 @@ export class VaultFunctionsHelper {
       }
     })
 
+    // if (vault.id === '0x077212c69a66261cf7bd1fd3b5c5db7cffa948ee'){
+    //   console.log('getVaultPricesFromSubgraph', vault, results, historicalPrices.prices)
+    // }
+
     return historicalPrices
   }
 
@@ -900,12 +904,18 @@ export class VaultFunctionsHelper {
       if (filters.end){
         filters.end = Math.min(currTime, +filters.end)
       }
+    }/* else {
+      filters = {}
     }
+    filters.order = 'desc'
+    */
 
     const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=0.5)
     let results = fetchData ? await callPlatformApis(vault.chainId, 'idle', apiType as string, address, filters) : cachedData.data
 
-    // console.log('getIdleRatesData', cacheKey, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData, results)
+    // if (vault.id === '0x3fe7940616e5bc47b0775a0dccf6237893353bb4'){
+    //   console.log('getIdleRatesData', cacheKey, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData, results)
+    // }
 
     // Replace if not valid
     results = results || []

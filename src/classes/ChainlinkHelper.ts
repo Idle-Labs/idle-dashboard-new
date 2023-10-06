@@ -10,6 +10,7 @@ export type FeedRoundBounds = {
   latestRound: string
   firstTimestamp: string
   latestTimestamp: string
+  pastRound: Record<string, string> | undefined
 }
 
 export class ChainlinkHelper {
@@ -65,8 +66,7 @@ export class ChainlinkHelper {
     ]
   }
 
-  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds, maxDays = 365): ContractRawCall[] {
-
+  public getRoundDataCall(address: string, feedAddress: string, roundNumber: string | number): ContractRawCall {
     const priceFeedContract: GenericContractConfig = {
       address: feedAddress,
       name: 'chainlinkPriceFeed',
@@ -74,32 +74,41 @@ export class ChainlinkHelper {
     }
     const priceFeed: GenericContract = new GenericContract(this.web3, this.chainId, priceFeedContract)
 
+    return {
+      assetId: address,
+      call: priceFeed.contract.methods.getRoundData(+roundNumber)
+    }
+  }
+
+  public getHistoricalPricesRawCalls(address: string, feedAddress: string, roundBounds: FeedRoundBounds, maxDays = 365): ContractRawCall[] {
+
+    // const priceFeedContract: GenericContractConfig = {
+    //   address: feedAddress,
+    //   name: 'chainlinkPriceFeed',
+    //   abi: ChainlinkAggregatorV3 as Abi
+    // }
+    // const priceFeed: GenericContract = new GenericContract(this.web3, this.chainId, priceFeedContract)
+
     const latestRound = +roundBounds.latestRound
-    const firstTimestamp = +roundBounds.firstTimestamp
     const latestTimestamp = +roundBounds.latestTimestamp
+
+    const firstRound = 1
+    const firstTimestamp = +roundBounds.firstTimestamp
     
-    const secondsBetweenInterval = Math.round((latestTimestamp-firstTimestamp)/latestRound)
+    const secondsBetweenInterval = Math.round((latestTimestamp-firstTimestamp)/(latestRound-1))
     const roundsPerDay = Math.max(1, Math.floor(86400/secondsBetweenInterval))
     const maxRounds = roundsPerDay*maxDays
     const firstRoundId = Math.max(1, latestRound-maxRounds)
-    const increment = Math.round(roundsPerDay/2)
+    const increment = roundsPerDay // Math.round(roundsPerDay/2)
 
     // const rawCalls: ContractRawCall[] = Array.from(Array(+latestRound).keys()).map( (roundId: number) => {
     const rawCalls: ContractRawCall[] = []
     for (let roundId = firstRoundId; roundId < +latestRound; roundId += increment) {
-      rawCalls.push({
-        assetId: address,
-        call: priceFeed.contract.methods.getRoundData(+roundId)
-      })
+      rawCalls.push(this.getRoundDataCall(address, feedAddress, roundId))
     }
 
     // Add latest round
-    rawCalls.push({
-      assetId: address,
-      call: priceFeed.contract.methods.getRoundData(+latestRound)
-    })
-    // console.log('getHistoricalPricesRawCalls', address, firstTimestamp, latestTimestamp, firstRoundId, latestRound, roundsPerDay, rawCalls)
-    // console.log('rawCalls', address, rawCalls.length)
+    rawCalls.push(this.getRoundDataCall(address, feedAddress, latestRound))
 
     return rawCalls
   }

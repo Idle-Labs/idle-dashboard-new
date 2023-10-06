@@ -1830,6 +1830,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })
 
     const contractsNetworks = Object.keys(web3Chains).reduce( (contractsNetworks: Record<string, GenericContract[]>, chainId: any) => {
+      if (!globalContracts[chainId]) return contractsNetworks
       contractsNetworks[chainId] = globalContracts[chainId].map( (contract: GenericContractConfig) => {
         return new GenericContract(web3Chains[chainId], chainId, contract)
       })
@@ -1903,6 +1904,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!allVaultsNetworks[vaultChainId]){
         allVaultsNetworks[vaultChainId] = []
       }
+
+      if (!bestYield[vaultChainId]) return
 
       const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
       const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
@@ -2054,13 +2057,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   const getChainlinkHistoricalPrices = useCallback(async (vaults: Vault[], maxDays = 365): Promise<Record<AssetId, HistoryData[]> | undefined> => {
 
-    if (!web3 || !multiCall) return
+    if (!web3 || !multiCall || !web3Chains) return
 
-    const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(chainId, web3, multiCall)
+    const chainlinkHelper: ChainlinkHelper = new ChainlinkHelper(1, web3Chains[1], multiCall)
 
     // Get assets chainlink feeds
     const vaultsUnderlyingTokens = vaults.reduce( ( assets: Record<AssetId, UnderlyingTokenProps>, vault: Vault): Record<AssetId, UnderlyingTokenProps> => {
-      if (!("underlyingToken" in vault) || !vault.underlyingToken) return assets
+      if (!("underlyingToken" in vault) || !vault.underlyingToken || +vault.chainId !== 1) return assets
       const underlyingTokenAddress = vault.underlyingToken?.address?.toLowerCase()
       if (underlyingTokenAddress && !assets[underlyingTokenAddress]) {
         assets[underlyingTokenAddress] = vault.underlyingToken
@@ -2077,21 +2080,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, {})
     
     // TODO: Get historical USD conversion rates for other chains than ethereum mainnet
-    if (+chainId !== 1){
-      return Object.keys(vaultsUnderlyingTokens).reduce( (historicalPricesUsd: Record<AssetId, HistoryData[]>, assetId: AssetId) => {
-        return {
-          ...historicalPricesUsd,
-          [assetId]: []
-        }
-      }, {})
-    }
+    // return Object.keys(vaultsUnderlyingTokens).reduce( (historicalPricesUsd: Record<AssetId, HistoryData[]>, assetId: AssetId) => {
+    //   return {
+    //     ...historicalPricesUsd,
+    //     [assetId]: []
+    //   }
+    // }, {})
 
     const feedsCalls = Object.keys(vaultsUnderlyingTokens).reduce( (calls: CallData[][], assetId: AssetId): CallData[][] => {
       const underlyingToken = vaultsUnderlyingTokens[assetId]
       const address = underlyingToken.chainlinkPriceFeed?.address || assetId
 
       const rawCallUsd = chainlinkHelper.getUsdFeedAddressRawCall(address, assetId)
-      const callDataUsd = rawCallUsd && multiCall.getDataFromRawCall(rawCallUsd.call, rawCallUsd)
+      const callDataUsd = rawCallUsd && multiCall && multiCall.getDataFromRawCall(rawCallUsd.call, rawCallUsd)
       if (callDataUsd) calls[0].push(callDataUsd)
 
       return calls
@@ -2101,7 +2102,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const [
       feedsUsd
-    ] = await multiCall.executeMultipleBatches(feedsCalls)
+    // @ts-ignore
+    ] = await multiCall.executeMultipleBatches(feedsCalls, 1, web3Chains[1])
 
     // console.log('feedsUsd', feedsUsd)
 
@@ -2122,7 +2124,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Get feeds rounds bounds (timestamp, latestRound, latestTimestamp)
     const feedsUsdRoundBoundsCalls = Object.keys(assetsFeedsUsd).reduce( (calls: CallData[][], assetId: string) => {
       const feedUsdAddress = assetsFeedsUsd[assetId]
-      if (!feedUsdAddress) return calls
+      if (!feedUsdAddress || !multiCall) return calls
       const feedRoundBoundsRawCalls = chainlinkHelper.getFeedRoundBoundsRawCalls(assetId, feedUsdAddress)
       const newCalls = multiCall.getCallsFromRawCalls(feedRoundBoundsRawCalls)
 
@@ -2139,9 +2141,21 @@ export function PortfolioProvider({ children }:ProviderProps) {
       feedsUsdTimestampResults,
       feedsUsdLatestRoundResults,
       feedsUsdLatestTimestampResults,
-    ] = await multiCall.executeMultipleBatches(feedsUsdRoundBoundsCalls)
+    // @ts-ignore
+    ] = await multiCall.executeMultipleBatches(feedsUsdRoundBoundsCalls, 1, web3Chains[1])
 
     // console.log('feedsUsdRoundBoundsResults', feedsUsdTimestampResults, feedsUsdLatestRoundResults, feedsUsdLatestTimestampResults)
+
+    // const pastRoundsCalls = Array.from(Array(feedsUsdTimestampResults.length).keys()).reduce( (pastRoundsCalls: ContractRawCall[], callIndex: number): ContractRawCall[] => {
+    //   const { data: latestRound } = feedsUsdLatestRoundResults[callIndex]
+    //   const assetId = feedsUsdTimestampResults[callIndex].extraData.assetId?.toString() || feedsUsdTimestampResults[callIndex].callData.target.toLowerCase()
+    //   const feedUsdAddress = assetsFeedsUsd[assetId] as string
+    //   pastRoundsCalls.push(chainlinkHelper.getRoundDataCall(assetId, feedUsdAddress, latestRound-10))
+    //   return pastRoundsCalls
+    // }, []);
+
+    // const pastRoundsResults = await multiCall.executeMulticalls(multiCall.getCallsFromRawCalls(pastRoundsCalls), true, 1, web3Chains[1])
+    // console.log('pastRoundsResults', pastRoundsResults)
 
     // Generate assets usd feeds rounds bounds (latestRound, firstTimestamp, latestTimestamp)
     const feedsUsdRoundBounds = Array.from(Array(feedsUsdTimestampResults.length).keys()).reduce( (feedsUsdRoundBounds: Record<AssetId, FeedRoundBounds>, callIndex: number): Record<AssetId, FeedRoundBounds> => {
@@ -2149,9 +2163,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const { data: latestRound } = feedsUsdLatestRoundResults[callIndex]
       const { data: latestTimestamp } = feedsUsdLatestTimestampResults[callIndex]
       const assetId = feedsUsdTimestampResults[callIndex].extraData.assetId?.toString() || feedsUsdTimestampResults[callIndex].callData.target.toLowerCase()
+      // const pastRoundData = pastRoundsResults?.find( (callResult: DecodedResult) => callResult.extraData.assetId === assetId )
+      // const pastRound = pastRoundData?.data
       return {
         ...feedsUsdRoundBounds,
         [assetId]: {
+          // pastRound,
           latestRound,
           firstTimestamp,
           latestTimestamp,
@@ -2166,18 +2183,21 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const feedUsdAddress = assetsFeedsUsd[assetId]
       const feedUsdRoundBounds = feedsUsdRoundBounds[assetId]
 
-      if (!feedUsdAddress || !feedUsdRoundBounds) return calls
+      if (!feedUsdAddress || !feedUsdRoundBounds || !multiCall) return calls
 
       const rawCalls = chainlinkHelper.getHistoricalPricesRawCalls(assetId, feedUsdAddress, feedUsdRoundBounds, maxDays)
       return [
         ...calls,
+        // @ts-ignore
         ...multiCall.getCallsFromRawCalls(rawCalls)
       ]
     }, [])
 
     // const startTimestamp = Date.now();
-    const results = await multiCall.executeMulticalls(historicalPricesCalls)
-    // console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, results)
+    // @ts-ignore
+    const results = await multiCall.executeMulticalls(historicalPricesCalls, true, 1, web3Chains[1])
+    
+    // console.log('historicalPricesCalls', results)
 
     const assetsPricesUsd: Record<AssetId, Record<number, HistoryData>> = {}
     results?.forEach( (callResult: DecodedResult) => {
@@ -2197,6 +2217,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }
     })
+
+    // console.log('assetsPricesUsd', assetsPricesUsd)
       
     const historicalPricesUsd: Record<AssetId, HistoryData[]> = Object.keys(assetsPricesUsd).reduce( (historicalPricesUsd: Record<AssetId, HistoryData[]>, assetId: AssetId) => {
       return {
@@ -2205,8 +2227,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }, {})
 
+    // console.log('historicalPricesUsd', historicalPricesUsd)
+
     return historicalPricesUsd
-  }, [chainId, web3, multiCall, selectAssetById])
+  }, [web3, web3Chains, multiCall, selectAssetById])
 
   // Get tokens prices, balances, rates
   useEffect(() => {
@@ -2414,8 +2438,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Prices are already stored
     if (!isEmpty(storedHistoricalPricesUsd) && storedHistoricalPricesUsd.timestamp){
-      const daysDiff = dayDiff(Date.now(), storedHistoricalPricesUsd.timestamp)
-      // console.log('storedHistoricalPricesUsd', Date.now(), storedHistoricalPricesUsd.timestamp, daysDiff)
+      const latestStoredTimestamp = Object.keys(storedHistoricalPricesUsd.historicalPricesUsd).reduce( (latestStoredTimestamp: number, assetId) => {
+        const latestAssetData: HistoryData = (Object.values(storedHistoricalPricesUsd.historicalPricesUsd[assetId]).pop() as HistoryData)
+        if (latestAssetData){
+          if (!latestStoredTimestamp || latestAssetData.date<latestStoredTimestamp){
+            latestStoredTimestamp = latestAssetData.date
+          }
+        }
+        return latestStoredTimestamp
+      }, Date.now())
+      const daysDiff = dayDiff(Date.now(), latestStoredTimestamp)
+      // console.log('storedHistoricalPricesUsd', Date.now(), latestStoredTimestamp, daysDiff)
       if (!daysDiff){
         // console.log('storedHistoricalPricesUsd', storedHistoricalPricesUsd.historicalPricesUsd)
         return dispatch({type: 'SET_HISTORICAL_PRICES_USD', payload: storedHistoricalPricesUsd.historicalPricesUsd})
@@ -2529,6 +2562,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
       ])
 
+      // console.log('vaultsHistoricalData', vaultsHistoricalData)
+
       const tvls: Record<AssetId, HistoryData[]> = {}
       const rates: Record<AssetId, HistoryData[]> = {}
       const prices: Record<AssetId, HistoryData[]> = {}
@@ -2565,7 +2600,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       })
 
-      // console.log('vaultsHistoricalData', vaultsHistoricalData)
+      // console.log('prices', prices)
 
       dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
