@@ -570,6 +570,44 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     //   address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
     // }
   },
+  10:{
+    ETH: {
+      abi: null,
+      symbol:'Ξ',
+      token:'ETH',
+      decimals: 18,
+      enabled: true,
+      colors: {
+        hex: '#333',
+        rgb: [51, 51, 51],
+        hsl: ['0, 0%, 20%']
+      },
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+    },
+    USDC: {
+      decimals: 6,
+      token: 'USDC',
+      enabled: true,
+      abi: USDC as Abi,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"]
+      },
+      address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607'
+    },
+    USDT: {
+      decimals: 6,
+      token: 'USDT',
+      enabled: true,
+      colors: {
+        hex: "#22a079",
+        rgb: [34, 160, 121],
+        hsl: ["161", "65%", "38%"]
+      },
+      address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+    }
+  },
   1101:{
     ETH: {
       abi: null,

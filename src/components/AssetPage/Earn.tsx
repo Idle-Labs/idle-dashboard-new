@@ -76,6 +76,8 @@ export const Earn: React.FC = () => {
   const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
   const { performanceChartData } = usePerformanceChartData({ assetIds: [asset?.id], timeframe })
 
+  // console.log('balanceChartData', balanceChartData)
+
   const chartData = useMemo(() => {
     if (!isPortfolioLoaded) return
     return userHasBalance ? balanceChartData : performanceChartData

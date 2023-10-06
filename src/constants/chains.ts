@@ -21,6 +21,14 @@ export const chains: Record<number, Chain> = {
     rpcUrl: `https://polygon-mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
   },
   */
+  10: {
+    id: '0xa',
+    token: 'ETH',
+    label: 'OP Mainnet',
+    rpcUrl: `https://mainnet.optimism.io`,
+    publicRpcUrl: `https://mainnet.optimism.io`,
+    // rpcUrl: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_ZK_KEY}`
+  },
   1101: {
     id: '0x44d',
     token: 'ETH',

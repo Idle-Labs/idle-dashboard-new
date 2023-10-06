@@ -86,6 +86,20 @@ export const networks: Record<number, Network> = {
     hostName: 'polygon.idle.finance',
     icon: `${networksFolder}polygon.svg`,
   },
+  10: {
+    version: 'v1',
+    color: '#8247E5',
+    baseToken: 'ETH',
+    name: 'OP Mainnet',
+    network: 'mainnet',
+    provider: 'optimism',
+    supportEip1559: true,
+    blocksPerCall: 1000000,
+    chainName: 'OP Mainnet',
+    explorer: 'optimismscan',
+    hostName: 'app.idle.finance',
+    icon: `${networksFolder}optimism.svg`,
+  },
   5: {
     name: 'Görli',
     color: '#3099f2',
@@ -164,6 +178,14 @@ export const providers: Record<string, Provider> = {
       80001: 'https://polygon-mainnet.infura.io/v3/'
     }
   },
+  optimism: {
+    enabled: true,
+    networkPairs: {},
+    key: env.REACT_APP_ALCHEMY_OPTIMISM_KEY,
+    rpcs: {
+      10: 'https://opt-mainnet.g.alchemy.com/v2/'
+    }
+  },
   alchemyzkevm: {
     enabled: true,
     networkPairs: {},
@@ -178,7 +200,7 @@ export interface Explorer {
   enabled: boolean
   keys: (string | undefined)[]
   endpoints: Record<number, string>
-  gasOracle?: {
+  gasOracle?: null | {
     endpoints: Record<number, string>
     mapping: Record<TransactionSpeed, string>
   }
@@ -227,6 +249,21 @@ export const explorers: Record<string, Explorer> = {
         1: 'https://etherscan.io',
         137: 'https://polygonscan.com',
         1101: 'https://zkevm.polygonscan.com',
+      }
+    },
+    optimismscan: {
+      enabled: true,
+      keys: [
+        env.REACT_APP_OPTIMISM_KEY,
+        env.REACT_APP_OPTIMISM_KEY2,
+        env.REACT_APP_OPTIMISM_KEY3,
+      ],
+      gasOracle: null,
+      endpoints: {
+        10: 'https://api-optimistic.etherscan.io/api',
+      },
+      baseUrl: {
+        10: 'https://optimistic.etherscan.io',
       }
     },
     etherscan: {
