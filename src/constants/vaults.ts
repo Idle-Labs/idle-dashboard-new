@@ -270,6 +270,178 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       }
     }
   },
+  10:{
+    clearpool:{
+      USDTFas:{
+        autoFarming:[],
+        enabledEnvs:[],
+        variant:'fasanara',
+        protocol:'clearpool',
+        blockNumber:17413683,
+        underlyingToken:'USDT',
+        adaptiveYieldSplitEnabled:true,
+        stats:{
+          startTimestamp: 1690848000000
+        },
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_fasanara_USDT',
+          address:'0x94e399Af25b676e7783fDcd62854221e67566b7f'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_fasanara_USDT',
+          address:'0x8A42DDE5040675C71C09499F63fBa8Ed98fee77B'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_fasanara_USDT_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17413683,
+            name:'AA_clearpool_fasanara_USDT',
+            label:'Clearpool fasanara USDT AA',
+            token:'AA_clearpool_fasanara_USDT',
+            address:'0x50BA0c3f940f0e851f8e30f95d2A839216EC5eC9'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_fasanara_USDT_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17413683,
+            name:'BB_clearpool_fasanara_USDT',
+            token:'BB_clearpool_fasanara_USDT',
+            label:'Clearpool fasanara USDT BB',
+            address:'0x7038D2A5323064f7e590EADc0E8833F2613F6317'
+          }
+        }
+      },
+      USDCPor:{
+        autoFarming:[],
+        enabledEnvs:[],
+        variant:'portofino',
+        protocol:'clearpool',
+        blockNumber:2812768,
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        // stats:{
+        //   startTimestamp: 1690848000000
+        // },
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_portofino_USDC',
+          address:'0x957572d61DD16662471c744837d4905bC04Bbaeb'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_portofino_USDC',
+          address:'0x2361130282a24421D9fdf2d1072C8edE2a79F108'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_portofino_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:2812768,
+            name:'AA_clearpool_portofino_USDC',
+            label:'Clearpool Portofino USDC AA',
+            token:'AA_clearpool_portofino_USDC',
+            address:'0xE422ca30eCC45Fc45e5ADD79E54505345F0cd482'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_portofino_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:2812768,
+            name:'BB_clearpool_portofino_USDC',
+            token:'BB_clearpool_portofino_USDC',
+            label:'Clearpool Portofino USDC BB',
+            address:'0x56A4283a4CE7202672A1518340732d5ffC511c0b'
+          }
+        }
+      }
+    }
+  },
   137:{
     quickswap:{
       CXETHWETH:{

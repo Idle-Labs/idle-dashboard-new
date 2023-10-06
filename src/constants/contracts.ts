@@ -62,6 +62,14 @@ export const globalContracts: Record<number, GenericContractConfig[]> = {
       address: '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff'
     }
   ],
+  10: [
+    {
+      networkId: 1,
+      name: 'UniswapRouter',
+      abi: UniswapV2Router02 as Abi,
+      address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+    }
+  ],
   1101: [
     {
       networkId: 1,

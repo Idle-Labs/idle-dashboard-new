@@ -91,8 +91,6 @@ export class ChainlinkHelper {
 
     const latestRound = +roundBounds.latestRound
     const latestTimestamp = +roundBounds.latestTimestamp
-
-    const firstRound = 1
     const firstTimestamp = +roundBounds.firstTimestamp
     
     const secondsBetweenInterval = Math.round((latestTimestamp-firstTimestamp)/(latestRound-1))

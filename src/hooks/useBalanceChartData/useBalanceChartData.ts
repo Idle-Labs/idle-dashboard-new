@@ -177,7 +177,9 @@ export const useBalanceChartData: UseBalanceChartData = ({
         const underlyingId: AssetId | undefined = asset?.underlyingId
 
         const vaultPriceInfo: HistoryData | null = selectAssetHistoricalPriceByTimestamp(assetId, timestamp) || prevVaultPriceInfo[assetId]
+        
         // console.log('vaultPriceInfo', assetId, timestamp, vaultPriceInfo, assetsBalances[assetId])
+        
         if (vaultPriceInfo) {
           assetsBalances[assetId] = parseFloat(BNify(assetsBalances[assetId]).times(BNify(vaultPriceInfo.value)).toFixed(8))
           prevVaultPriceInfo[assetId] = vaultPriceInfo
@@ -197,6 +199,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
       assetsBalances.total = Object.values(assetsBalances).reduce( (total: number, value: number) => (total+value), 0 )
     })
 
+    // console.log('historicalPrices', historicalPrices)
     // console.log('assetsBalancesByDateExtended', assetsBalancesByDateExtended)
 
     // Generate total array

@@ -101,6 +101,7 @@
   },
   "networks": {
     "1": "Ethereum Mainnet",
+    "10": "Optimism Mainnet",
     "1101": "Polygon zkEVM"
   },
   "announcements": {
