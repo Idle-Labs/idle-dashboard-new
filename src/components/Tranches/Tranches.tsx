@@ -290,6 +290,49 @@ export const Tranches: React.FC = () => {
     }
   }, [sortTrancheApy])
 
+  const allColumnsById: Record<string, Column<Asset>> = useMemo(() => {
+    if (!columns) return {}
+    return columns.reduce( (allColumns: Record<string, Column<Asset>>, column: StrategyColumn) => {
+      const { id, accessor, sortType } = column
+      const sortTypeFn = getCellSorting(sortType)
+      allColumns[id] = {
+        id,
+        accessor,
+        width: column.width,
+        disableSortBy: !sortTypeFn,
+        defaultCanSort: !!sortTypeFn,
+        Header: translate(column.title || `defi.${id}`),
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
+        Cell: ({ value, row }: { value: any; row: RowProps }) => {
+          return column.extraFields && column.extraFields.length>0 ? (
+            <Stack
+              spacing={2}
+              width={'full'}
+              direction={'row'}
+              alignItems={'center'}
+              {...column.stackProps}
+            >
+              <TableField field={id} value={value} row={row} />
+              <Flex
+                flex={1}
+                {...column.stackProps}
+              >
+                {
+                  column.extraFields.map( (extraField: string) => (
+                    <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} showLoader={false} />
+                  ))
+                }
+              </Flex>
+            </Stack>
+          ) : (
+            <TableField field={id} value={value} row={row} />
+          )
+        }
+      }
+      return allColumns
+    }, {})
+  }, [columns, translate, getCellSorting])
+
   const strategyColumns: Column<Asset>[] = useMemo(() => {
     if (!strategy || !columns) return []
     return columns.filter( (column: StrategyColumn) => !column.tables || column.tables.includes('Available') ).map( (column: StrategyColumn) => {
@@ -423,7 +466,8 @@ export const Tranches: React.FC = () => {
       },
       sortType: (a: any, b: any): number => sortNumeric(a, b, 'vaultPosition.earningsPercentage')
     },
-  ]), [translate, strategyColumnsDeposit])
+    allColumnsById['chainId']
+  ]), [translate, allColumnsById, strategyColumnsDeposit])
 
   const availableAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {

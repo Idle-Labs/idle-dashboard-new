@@ -16,6 +16,7 @@ export interface Network {
   blocksPerCall: number
   chainName: string
   hostName?: string
+  maxPriorityFeePerGas?: number
 }
 
 export const networks: Record<number, Network> = {
@@ -97,6 +98,7 @@ export const networks: Record<number, Network> = {
     blocksPerCall: 1000000,
     chainName: 'OP Mainnet',
     explorer: 'optimismscan',
+    maxPriorityFeePerGas: 1000,
     hostName: 'app.idle.finance',
     icon: `${networksFolder}optimism.svg`,
   },

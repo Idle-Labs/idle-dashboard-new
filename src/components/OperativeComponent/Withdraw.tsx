@@ -139,6 +139,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const amountUsd = parseFloat(BNify(amount).times(assetPriceUsd).toString()) || 0
     // console.log('withdraw', BNify(amount).toString(), BNify(assetPriceUsd).toString(), BNify(vaultPrice).toString(), amountUsd.toString())
     setAmountUsd(amountUsd)
+
+    // Estimate gas with new amount
+
   }, [underlyingAsset, vault, amount, selectVaultPrice, selectAssetPriceUsd, dispatch])
 
   const getDefaultGasLimit = useCallback(async () => {
@@ -151,15 +154,18 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const sendOptions = {
       from: account?.address
     }
+
+    const amountToWithdraw = bnOrZero(amount).gt(0) ? BNify(amount) : vaultBalance
+
     // @ts-ignore
-    const withdrawParams = vault[withdrawParamsFunction](vaultBalance.toFixed())
+    const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw.toFixed())
     // @ts-ignore
     const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
     
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
     
     return estimatedGasLimit
-  }, [account, vaultBalance, vault, withdrawParamsFunction, withdrawSendMethodFunction])
+  }, [account, amount, vaultBalance, vault, withdrawParamsFunction, withdrawSendMethodFunction])
 
   // Update gas fees
   useEffect(() => {
@@ -178,7 +184,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         setGasEstimateError(errorToShow)
       }
     })()
-  }, [activeItem, translate, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
+  }, [activeItem, amount, translate, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
 
   // Update parent amount
   useEffect(() => {

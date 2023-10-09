@@ -9,7 +9,7 @@ import type { Transaction, TransactionReceipt } from 'web3-core'
 import { ContractSendMethod, SendOptions } from 'web3-eth-contract'
 import type { ReducerActionTypes, ErrnoException, AssetId } from 'constants/types'
 import React, { createContext, useContext, useMemo, useReducer, useCallback, useEffect } from 'react'
-import { BNify, estimateGasLimit, getBlock, getBlockBaseFeePerGas, makeRequest, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
+import { BNify, bnOrZero, estimateGasLimit, getBlock, getGasPrice, getBlockBaseFeePerGas, makeRequest, makeEtherscanApiRequest, fixTokenDecimals, asyncReduce } from 'helpers/'
 
 type GasOracle = {
   FastGasPrice: string
@@ -354,54 +354,66 @@ export function TransactionManagerProvider({children}: ProviderProps) {
   }, [web3])
 
   const updateGasPrices = useCallback( async () => {
-    if (!explorer || !chainId) return
+    if (!explorer || !chainId || !web3) return
 
-    const customGasOracle = explorer.gasOracle
-    const useCustomGasOracle = customGasOracle && customGasOracle?.endpoints[chainId]
-    const endpoint = customGasOracle?.endpoints[chainId] || `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
-    const gasOracle = useCustomGasOracle ? await makeRequest(endpoint) : await makeEtherscanApiRequest(endpoint, explorer.keys)
-
-    if (gasOracle) {
-      const gasPrices: GasPrices = {
-        [TransactionSpeed.VeryFast]: '0',
-        [TransactionSpeed.Fast]: '0',
-        [TransactionSpeed.Average]: '0',
-        [TransactionSpeed.Slow]: '0'
-      }
-
-      if (useCustomGasOracle){
-        (Object.keys(customGasOracle.mapping) as TransactionSpeed[]).forEach( (transactionSpeed: TransactionSpeed) => {
-          gasPrices[transactionSpeed] = (+gasOracle[customGasOracle.mapping[transactionSpeed]]).toString()
-        })
-      } else {
-        gasPrices[TransactionSpeed.VeryFast] = (+gasOracle.FastGasPrice+2).toString()
-        gasPrices[TransactionSpeed.Fast] = gasOracle.FastGasPrice
-        gasPrices[TransactionSpeed.Average] = (+gasOracle.SafeGasPrice+1).toString()
-        gasPrices[TransactionSpeed.Slow] = (+gasOracle.SafeGasPrice).toString()
-      }
-
-      const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
-      const defaultEstimatedTimes = Object.keys(gasPrices).reduce( (gasPrices: Record<string, string>, transactionSpeed) => ({ ...gasPrices, [transactionSpeed]: '60' }), {}) as GasPrices
-      const estimatedTimes = await asyncReduce<TransactionSpeed, GasPrices>(
-        transactionSpeeds,
-        async (transactionSpeed: TransactionSpeed): Promise<any> => {
-          const gasPrice = gasPrices[transactionSpeed]
-          const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? '15' : await getEstimatedTime(gasPrice)
-          return {
-            [transactionSpeed]: estimatedTime
-          }
-        },
-        (acc, val) => ({...acc, ...val}),
-        defaultEstimatedTimes
-      )
-
-      // console.log('updateGasPrices', gasOracle, gasPrices, estimatedTimes)
-
-      dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
-      dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
-      dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
+    const gasPrices: GasPrices = {
+      [TransactionSpeed.VeryFast]: '0',
+      [TransactionSpeed.Fast]: '0',
+      [TransactionSpeed.Average]: '0',
+      [TransactionSpeed.Slow]: '0'
     }
-  }, [explorer, chainId, getEstimatedTime])
+
+    let gasOracle: any = null
+    const customGasOracle = explorer.gasOracle
+
+    if (customGasOracle === null) {
+      const gasPrice = await getGasPrice(web3);
+      if (gasPrice) {
+        gasPrices[TransactionSpeed.VeryFast] = gasPrice.times(3).toString()
+        gasPrices[TransactionSpeed.Fast] = gasPrice.times(1.5).toString()
+        gasPrices[TransactionSpeed.Average] = gasPrice.toString()
+        gasPrices[TransactionSpeed.Slow] = gasPrice.times(0.9).toString()
+      }
+    } else {
+      const useCustomGasOracle = customGasOracle && customGasOracle?.endpoints[chainId]
+      const endpoint = customGasOracle?.endpoints[chainId] || `${explorer.endpoints[chainId]}?module=gastracker&action=gasoracle`
+      gasOracle = useCustomGasOracle ? await makeRequest(endpoint) : await makeEtherscanApiRequest(endpoint, explorer.keys)
+
+      if (gasOracle) {
+        if (useCustomGasOracle){
+          (Object.keys(customGasOracle.mapping) as TransactionSpeed[]).forEach( (transactionSpeed: TransactionSpeed) => {
+            gasPrices[transactionSpeed] = bnOrZero(+gasOracle?.[customGasOracle.mapping[transactionSpeed]]).toString()
+          })
+        } else {
+          gasPrices[TransactionSpeed.VeryFast] = (+gasOracle.FastGasPrice+2).toString()
+          gasPrices[TransactionSpeed.Fast] = gasOracle.FastGasPrice
+          gasPrices[TransactionSpeed.Average] = (+gasOracle.SafeGasPrice+1).toString()
+          gasPrices[TransactionSpeed.Slow] = (+gasOracle.SafeGasPrice).toString()
+        }
+      }
+    }
+
+    const transactionSpeeds: TransactionSpeed[] = Object.keys(gasPrices) as TransactionSpeed[]
+    const defaultEstimatedTimes = Object.keys(gasPrices).reduce( (gasPrices: Record<string, string>, transactionSpeed) => ({ ...gasPrices, [transactionSpeed]: '60' }), {}) as GasPrices
+    const estimatedTimes = await asyncReduce<TransactionSpeed, GasPrices>(
+      transactionSpeeds,
+      async (transactionSpeed: TransactionSpeed): Promise<any> => {
+        const gasPrice = gasPrices[transactionSpeed]
+        const estimatedTime = transactionSpeed === TransactionSpeed.VeryFast ? '15' : await getEstimatedTime(gasPrice)
+        return {
+          [transactionSpeed]: estimatedTime
+        }
+      },
+      (acc, val) => ({...acc, ...val}),
+      defaultEstimatedTimes
+    )
+
+    // console.log('updateGasPrices', gasOracle, gasPrices, estimatedTimes)
+
+    dispatch({type: 'SET_GAS_ORACLE', payload: gasOracle})
+    dispatch({type: 'SET_GAS_PRICES', payload: gasPrices})
+    dispatch({type: 'SET_ESTIMATED_TIMES', payload: estimatedTimes})
+  }, [explorer, chainId, web3, getEstimatedTime])
 
   // Reset gas oracle on network change
   useEffect(() => {
@@ -572,7 +584,10 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           contractSendMethod
         }})
 
-        const sendOptions: SendOptions = {
+        const sendOptions: SendOptions & {
+          maxFeePerGas?: BigNumber | number
+          maxPriorityFeePerGas?: BigNumber | number
+        } = {
           from: account?.address
         }
         const [
@@ -583,17 +598,19 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           getBlockBaseFeePerGas(web3)
         ])
 
-        // console.log('gas', gas)
-        // console.log('baseFeePerGas', baseFeePerGas)
+        // console.log('gas', BNify(gas).toString())
+        // console.log('baseFeePerGas', BNify(baseFeePerGas).toString())
+        // console.log('gasPrice', BNify(state.gasPrice).toString())
 
         if (gas) {
           sendOptions.gas = gas
           if (network.supportEip1559 === undefined || network.supportEip1559){
-            // @ts-ignore
-            sendOptions.maxPriorityFeePerGas = 200000000
+            sendOptions.maxPriorityFeePerGas = network.maxPriorityFeePerGas || 200000000
             if (baseFeePerGas){
-              // @ts-ignore
-              sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed())
+              sendOptions.maxFeePerGas = BigNumber.maximum(baseFeePerGas, BNify(state.gasPrice).times(1e09).toFixed(0))
+              sendOptions.maxPriorityFeePerGas = BigNumber.minimum(sendOptions.maxFeePerGas, sendOptions.maxPriorityFeePerGas)
+              // console.log('maxFeePerGas', sendOptions.maxFeePerGas.toString())
+              // console.log('maxPriorityFeePerGas', sendOptions.maxPriorityFeePerGas.toString())
             }
           }
         }
@@ -605,8 +622,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
           actionType,
           contractSendMethod
         }})
-
-        // console.log('sendOptions', sendOptions)
 
         contractSendMethod.send(sendOptions)
           .on("transactionHash", async (hash: string) => {

@@ -29,6 +29,11 @@ export async function getBlock(web3: Web3, blockNumber: string | number = 'lates
   return await web3.eth.getBlock(blockNumber)
 }
 
+export async function getGasPrice(web3: Web3) {
+  const gasPrice = await web3.eth.getGasPrice()
+  return BNify(gasPrice).div(1e09);
+}
+
 export async function getBlockBaseFeePerGas(web3: Web3, blockNumber: string | number = 'latest'): Promise<number | null> {
   const block = await getBlock(web3, blockNumber)
   if (!block) return null
