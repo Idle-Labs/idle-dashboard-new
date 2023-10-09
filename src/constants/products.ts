@@ -98,6 +98,7 @@ export const products: ProductProps[] = [
         width: '8%',
         id:'chainId',
         accessor:'id',
+        tables: ['Available'],
         stackProps:{
           justifyContent:'center'
         },
