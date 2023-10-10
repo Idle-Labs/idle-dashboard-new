@@ -321,7 +321,7 @@ export class VaultFunctionsHelper {
     if (!this.multiCall) return []
 
     const chainId = 1
-    const web3ToUse = this.web3Chains ? this.web3Chains[chainId] : this.web3
+    const web3ToUse = +this.chainId === +chainId ? this.web3 : (this.web3Chains ? this.web3Chains[chainId] : this.web3)
 
     const MATIC = selectUnderlyingToken(chainId, 'MATIC')
     const stMATIC = selectUnderlyingToken(chainId, 'STMATIC')

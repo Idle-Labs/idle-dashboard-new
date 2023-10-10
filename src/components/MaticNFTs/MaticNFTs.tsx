@@ -4,17 +4,20 @@ import { Card } from 'components/Card/Card'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { AssetId, MaticNFT } from 'constants/types'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { HStack, VStack, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 
 type MaticNFTsProps = {
   assetId: AssetId
 }
 export const MaticNFTs: React.FC<MaticNFTsProps> = ({ assetId }) => {
+  const { chainId } = useWalletProvider()
   const { maticNFTs, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -69,7 +72,9 @@ export const MaticNFTs: React.FC<MaticNFTsProps> = ({ assetId }) => {
                     justifyContent={'space-between'}
                   >
                     {
-                      maticNFT.status === 'available' ? (
+                      chainId !== 1 ? (
+                        <SwitchNetworkButton chainId={1} size={'sm'} />
+                      ) : maticNFT.status === 'available' ? (
                         <TransactionButton text={'defi.claim'} vaultId={vault?.id} assetId={asset?.underlyingId} contractSendMethod={maticNFT.contractSendMethod} actionType={'claim'} amount={maticNFT.amount.toString()} disabled={maticNFT.amount.lte(0)} />
                       ) : (
                         <VStack
