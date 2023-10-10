@@ -22,7 +22,7 @@ export class GenericContract {
     this.chainId = chainId
     this.name = contractConfig.name
     this.contractConfig = contractConfig
-    this.id = contractConfig.address.toLowerCase()
+    this.id = contractConfig.address?.toLowerCase()
 
     // Init CDO contract
     this.contract = new web3.eth.Contract(contractConfig.abi, this.id)

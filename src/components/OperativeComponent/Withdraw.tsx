@@ -151,11 +151,13 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       return defaultGasLimit
     }
 
+    const vaultPrice = selectVaultPrice(vault?.id)
+
     const sendOptions = {
       from: account?.address
     }
 
-    const amountToWithdraw = bnOrZero(amount).gt(0) ? BNify(amount) : vaultBalance
+    const amountToWithdraw = bnOrZero(amount).gt(0) ? BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice)) : vaultBalance
 
     // @ts-ignore
     const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw.toFixed())
@@ -165,7 +167,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
     
     return estimatedGasLimit
-  }, [account, amount, vaultBalance, vault, withdrawParamsFunction, withdrawSendMethodFunction])
+  }, [account, amount, vaultBalance, vault, selectVaultPrice, withdrawParamsFunction, withdrawSendMethodFunction])
 
   // Update gas fees
   useEffect(() => {
