@@ -9,8 +9,8 @@ export const subgraphs: Record<string, SubgraphProps> = {
     enabled:true,
     endpoints:{
       1:"https://api.thegraph.com/subgraphs/name/samster91/idle-tranches",
-      1101:"https://api.studio.thegraph.com/query/12583/idle-tranches-zkevm/version/latest",
-      10:"https://api.studio.thegraph.com/query/12583/idle-tranches-optimism/version/latest"
+      10:"https://api.thegraph.com/subgraphs/name/samster91/idle-tranches-optimism",
+      1101:"https://api.studio.thegraph.com/query/12583/idle-tranches-zkevm/version/latest"
     },
     entities:{
       trancheInfos:[
