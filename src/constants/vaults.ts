@@ -274,9 +274,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     clearpool:{
       USDTFas:{
         autoFarming:[],
-        enabledEnvs:[],
         variant:'fasanara',
         protocol:'clearpool',
+        enabledEnvs:['beta'],
         blockNumber:17413683,
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
@@ -358,10 +358,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       USDCPor:{
         autoFarming:[],
-        enabledEnvs:[],
         variant:'portofino',
         protocol:'clearpool',
         blockNumber:2812768,
+        enabledEnvs:['beta'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         // stats:{
