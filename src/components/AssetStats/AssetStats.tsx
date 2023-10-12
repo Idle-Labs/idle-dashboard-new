@@ -642,7 +642,6 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     )
                   }
                   <GenericChart
-                    scaleType={'log'}
                     percentChange={0}
                     assetIds={assetIds}
                     color={strategyColor}
@@ -652,6 +651,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                     setPercentChange={() => {}}
                     timeframe={selectedTimeframe}
                     height={isMobile ? '300px' : '350px'}
+                    scaleType={assetIds.length>1 ? 'log' : 'linear'}
                     margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                     formatFn={(n: any) => `${abbreviateNumber(n, 8)} ${asset?.name}`}
                   />
@@ -708,6 +708,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   setPercentChange={() => {}}
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
+                  scaleType={assetIds.length>1 ? 'log' : 'linear'}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                   fileName={tvlUsdChartData && tvlUsdChartData.rainbow?.length>0 ? `tvls_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}
                 />
