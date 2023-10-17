@@ -76,7 +76,7 @@ export class VaultFunctionsHelper {
     const feeDistributorConfig = stakedIdleVault.feeDistributorConfig
 
     chainId = chainId || this.chainId
-    const explorer = this.getExporerByChainId(chainId)
+    const explorer = this.getExporerByChainId(stakedIdleVault.chainId)
     if (!explorer) return []
 
     const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${feeDistributorConfig.address}&sort=desc`
@@ -94,6 +94,7 @@ export class VaultFunctionsHelper {
       harvest: null
     }
 
+    // Get explorer by vault chainId
     const explorer = this.getExporerByChainId(trancheVault.chainId)
     
     if (!this.multiCall || !explorer) return lastHarvest
