@@ -1818,6 +1818,7 @@
   "assets": {
     "status": {
       "production": "Production",
+      "boosted": "Boosted",
       "paused": "Paused",
       "beta": "Beta",
       "experimental": "Experimental",
@@ -1864,6 +1865,7 @@
       },
       "tooltips": {
         "stkIDLESupply":"Total supply of stkIDLE minted",
+        "boosted": "This vault is boosted by additional rewards",
         "maintenance": "This vault is temporarily under maintenance",
         "totalSupply": "Total amount of assets staked in this gauge",
         "totalIDLEStaked":"The total amount of IDLE your have locked",

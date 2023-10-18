@@ -18,7 +18,8 @@ export const vaultsStatusSchemes: Record<string, string> = {
   'disabled' : 'gray',
   'beta' : 'blue',
   'experimental' : 'purple',
-  'deprecated' : 'gray'
+  'deprecated' : 'gray',
+  'boosted' : 'red'
 }
 
 export interface CDO {
@@ -187,6 +188,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDT:{
         autoFarming:[],
         enabledEnvs:[],
+        status:'boosted',
         variant:'portofino',
         protocol:'clearpool',
         blockNumber:2812768,
