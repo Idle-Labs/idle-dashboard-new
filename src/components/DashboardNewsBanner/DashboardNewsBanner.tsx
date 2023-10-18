@@ -5,12 +5,14 @@ import { Stack, HStack, Heading } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 
 type DashboardNewsBannerProps = {
+  banner?: string
   announcement: string
   hasBackgroundImage?: boolean
   onClick?: React.MouseEventHandler<HTMLElement> | Function
 }
 
 export const DashboardNewsBanner: React.FC<DashboardNewsBannerProps> = ({
+  banner,
   announcement,
   hasBackgroundImage = true,
   onClick
@@ -24,7 +26,7 @@ export const DashboardNewsBanner: React.FC<DashboardNewsBannerProps> = ({
       backgroundSize={'cover'}
       justifyContent={'center'}
       backgroundPosition={'center'}
-      backgroundImage={hasBackgroundImage ? `url(images/banners/${announcement}-bg.png)` : 'none'}
+      backgroundImage={hasBackgroundImage ? `url(images/banners/${banner || announcement}-bg.png)` : 'none'}
     >
       <Stack
         px={[5, 10]}

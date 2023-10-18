@@ -109,6 +109,10 @@
       "title": "Yield Tranches expand to Polygon zkEVM",
       "cta": "Discover more"
     },
+    "maticRewards": {
+      "title": "Fresh MATIC rewards for Yield Tranches 🚀",
+      "cta": "Explore now"
+    },
     "eulerHack": {
       "body": "Funds affected by the <a href='https://medium.com/@omniscia.io/euler-finance-incident-post-mortem-1ce077c28454' class='link' target='_blank' rel='noopener'>Euler incident</a> have been successfully restored. Best Yield is now fully operational while Euler Yield Tranches are enabled for redeem only. <a href='https://twitter.com/idlefinance/status/1651586912753180673' class='link' target='_blank' rel='noopener'>Read more</a>."
     }

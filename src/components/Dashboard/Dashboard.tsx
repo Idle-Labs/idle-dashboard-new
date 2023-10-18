@@ -33,7 +33,7 @@ export const Dashboard: React.FC = () => {
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { network, setChainId } = useWalletProvider()
+  const { network } = useWalletProvider()
   const {
     assetsData,
     isPortfolioAccountReady,
@@ -518,7 +518,7 @@ export const Dashboard: React.FC = () => {
           alignItems={'flex-start'}
           justifyContent={'space-between'}
         >
-          <DashboardNewsBanner announcement={'zkEVM'} onClick={() => setChainId(1101)} />
+          <DashboardNewsBanner banner={'zkEVM'} announcement={'maticRewards'} onClick={() => navigate(getRoutePath('earn', ['yield-tranches']))} />
           <PartnersPrograms />
         </VStack>
         <VStack
