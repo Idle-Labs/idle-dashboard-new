@@ -623,6 +623,8 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
 
   showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length>1
 
+  // console.log('apyBreakdown', asset?.id, asset?.apyBreakdown);
+
   const tooltipLabel = asset?.apyBreakdown ? (
     <VStack
       py={1}
@@ -840,7 +842,7 @@ const LastHarvest: React.FC<TextProps> = (props) => {
     >
       {/*<Text {...props}>+{harvestValue?.toFixed(4)} {harvestedAsset?.token}</Text>*/}
       <Text {...props}>{lastHarvest?.totalValue.toFixed(4)} {harvestedAsset?.token}</Text>
-      <TransactionLink hash={lastHarvest.hash} fontSize={'xs'} />
+      <TransactionLink chainId={asset.chainId} hash={lastHarvest.hash} fontSize={'xs'} />
       {/*<Amount.Percentage textStyle={'captionSmaller'} lineHeight={'normal'} prefix={'(+'} suffix={' APY)'} value={harvestAPY?.times(100)} />*/}
     </VStack>
   ) : <Spinner size={'sm'} />

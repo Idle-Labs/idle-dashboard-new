@@ -196,7 +196,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           startTimestamp: 1690848000000
         },
         flags:{
-          addHarvestApy: false,
+          addHarvestApy: true,
           referralEnabled: true
         },
         CDO:{

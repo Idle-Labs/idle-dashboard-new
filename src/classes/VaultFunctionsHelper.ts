@@ -94,10 +94,13 @@ export class VaultFunctionsHelper {
       harvest: null
     }
 
+    // User tranche chain
+    const chainId = trancheVault.chainId
+
     // Get explorer by vault chainId
-    const explorer = this.getExporerByChainId(trancheVault.chainId)
+    const explorer = this.getExporerByChainId(chainId)
     
-    if (!this.multiCall || !explorer) return lastHarvest
+    if (!this.multiCall || !explorer || !this.web3Chains?.[+chainId]) return lastHarvest
 
     const rawCalls: CallData[] = [
       this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVAA'),
@@ -111,10 +114,10 @@ export class VaultFunctionsHelper {
       lastHarvestBlockHex
     ] = await Promise.all([
       this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault)),
-      this.web3.eth.getStorageAt(trancheVault.cdoConfig.address, 204)
+      this.web3Chains[+chainId].eth.getStorageAt(trancheVault.cdoConfig.address, 204)
     ]);
 
-    // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlockHex, multicallResults)
+    // console.log('getTrancheLastHarvest', chainId, trancheVault.cdoConfig.address, lastHarvestBlockHex, multicallResults)
 
     if (!multicallResults) return lastHarvest
 
@@ -143,7 +146,7 @@ export class VaultFunctionsHelper {
       const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
       const harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
 
-      // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlock, harvestTxs)
+      // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, endpoint, lastHarvestBlock, harvestTxs)
 
       if (!harvestTxs) return lastHarvest
 
@@ -158,7 +161,7 @@ export class VaultFunctionsHelper {
       const tokenAprAA = harvestedValueAA.div(tranchePoolAA).times(52.1429)
       const tokenAprBB = harvestedValueBB.div(tranchePoolBB).times(52.1429)
       
-      // console.log('getTrancheHarvestApy', harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString())
+      // console.log('getTrancheHarvestApy', trancheVault.cdoConfig.address, totalValue.toString(), harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString())
 
       lastHarvest.harvest = {
         aprs: {
