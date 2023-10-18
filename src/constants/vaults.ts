@@ -186,12 +186,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDT:{
-        autoFarming:[],
         enabledEnvs:[],
         status:'boosted',
         variant:'portofino',
         protocol:'clearpool',
         blockNumber:2812768,
+        autoFarming:['MATIC'],
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         stats:{

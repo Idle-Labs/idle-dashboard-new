@@ -941,6 +941,7 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
+          "boosted": "The APY of tihs vault is boosted by additional rewards.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
           "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault. Follow <a href='https://twitter.com/idlefinance' class='link' target='_blank' rel='noopener'>IdleDAO's Twitter page</a> to stay updated on future limit increases.",

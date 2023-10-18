@@ -634,6 +634,17 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: '0xA8CE8aee21bC2A48a5EF670afCc9274C7bbbC035'
     },
+    MATIC: {
+      decimals: 18,
+      enabled: true,
+      token: 'MATIC',
+      colors: {
+        hex: '#8247E5',
+        rgb: [130, 71, 229],
+        hsl: ['262, 75%, 59%']
+      },
+      address: '0xa2036f0538221a77a3937f1379699f44945018d0'
+    },
     USDT: {
       decimals: 6,
       token: 'USDT',

@@ -223,8 +223,10 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     if (!strategy?.dynamicActionFields?.[action]) return null
     let fields = strategy?.dynamicActionFields[action]
 
+    const showLimitCap = vault && ("flags" in vault) && vault.flags?.showLimitCap
+
     // Add limit cap
-    if (action === 'deposit' && vaultLimitCap.gt(0) && !limitCapReached) {
+    if (showLimitCap && action === 'deposit' && vaultLimitCap.gt(0) && !limitCapReached) {
       fields = [
         'depositLimit',
         ...fields
@@ -240,7 +242,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     }
     */
     return fields
-  }, [action, strategy, limitCapReached, vaultLimitCap])
+  }, [action, vault, strategy, limitCapReached, vaultLimitCap])
   
   if (!dynamicActionFields) return null
 
