@@ -72,7 +72,7 @@ export const DepositedAssetsTable: React.FC = () => {
         width: '25%',
         accessor:'name',
         sortType:'alpha',
-        id:'asset',
+        id:'assetWithStatus',
         stackProps:{
           justifyContent:'space-between'
         },
