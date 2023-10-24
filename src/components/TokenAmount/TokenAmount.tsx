@@ -7,6 +7,7 @@ import { AssetFieldProps, AssetProvider } from 'components/AssetProvider/AssetPr
 
 export type TokenAmountProps = {
   assetId?: AssetId
+  spacing?: number
   amount: AmountProps["value"]
   size?: ResponsiveValue<string> | undefined
   showIcon?: boolean
@@ -16,6 +17,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
   assetId,
   amount,
   size = 'sm',
+  spacing = 2,
   showIcon = true,
   ...props
 }) => {
@@ -27,7 +29,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
       assetId={assetId}
     >
       <HStack
-        spacing={2}
+        spacing={spacing}
         alignItems={'center'}
       >
         {

@@ -2858,8 +2858,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Clean transactions and positions
     return () => {
-      runningEffects.current.distributedRewards = false
-      dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
+      // runningEffects.current.distributedRewards = false
+      // dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
     }
   }, [state.distributedRewards, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
 
