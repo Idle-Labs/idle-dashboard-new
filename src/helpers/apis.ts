@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { protocols, subgraphs } from 'constants/'
 import { getObjectPath, asyncWait } from 'helpers/'
 import type { Explorer, PlatformApiFilters } from 'constants/'
+import { protocols, subgraphs, explorers, networks } from 'constants/'
 
 export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
   const data = await axios
@@ -139,12 +139,18 @@ export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["
   return null;
 }
 
+export const getExplorerByChainId = (chainId: number): Explorer | null => {
+  const network = networks[+chainId]
+  return explorers[network?.explorer] || null
+}
+
 export const getExplorerAddressUrl = (chainId: number, explorer: Explorer | null, address: string): string => {
   if (!explorer) return ''
   return `${explorer.baseUrl[chainId]}/address/${address}`
 }
 
-export const getExplorerTxUrl = (chainId: number, explorer: Explorer | null, txHash: string): string => {
+export const getExplorerTxUrl = (chainId: number, txHash: string): string => {
+  const explorer = getExplorerByChainId(chainId)
   if (!explorer) return ''
   return `${explorer.baseUrl[chainId]}/tx/${txHash}`
 }

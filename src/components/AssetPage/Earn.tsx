@@ -19,6 +19,7 @@ import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
+import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
@@ -397,6 +398,7 @@ export const Earn: React.FC = () => {
         </Card.Flex>
       </Box>
       {fundsOverview}
+      <AssetDistributedRewards assetId={asset?.id} />
       <MaticNFTs assetId={asset?.id} />
       {vaultRewards}
       <VStack

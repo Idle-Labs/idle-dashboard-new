@@ -557,7 +557,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         address: '0x00000000000000000000000000000000000003d2'
       },
       address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'
-    },
+    }
     // WMATIC: {
     //   decimals: 18,
     //   enabled: true,
@@ -570,7 +570,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     //   address: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0'
     // }
   },
-  10:{
+  10: {
     ETH: {
       abi: null,
       symbol:'Ξ',
@@ -606,6 +606,46 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hsl: ["161", "65%", "38%"]
       },
       address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+    },
+    DAI: {
+      token:'DAI',
+      decimals: 18,
+      enabled: true,
+      abi: DAI as Abi,
+      colors: {
+        hex: '#F7B24A',
+        rgb: [250, 184, 51],
+        hsl: ['40', '95%', '59%']
+      },
+      address: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'
+    },
+    WETH: {
+      decimals: 18,
+      token: 'WETH',
+      enabled: true,
+      abi: WETH as Abi,
+      colors: {
+        hex: "#ee1f79",
+        rgb: [238, 31, 121],
+        hsl: ["334", "86%", "53%"]
+      },
+      address: "0x4200000000000000000000000000000000000006",
+    },
+    OP: {
+      decimals: 18,
+      token: 'OP',
+      enabled: true,
+      colors: {
+        hex: "#fe0221",
+        rgb: [254, 2, 33],
+        hsl: ["353, 99%, 50%"]
+      },
+      conversionRate:{
+        protocolContract: 'UniswapV3Quoter',
+        routerMethod: 'quoteExactInputSingle',
+        addressFrom: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58'
+      },
+      address: "0x4200000000000000000000000000000000000042",
     }
   },
   1101:{

@@ -1,15 +1,15 @@
 import Web3 from 'web3'
 import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
-import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
-import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
+import { MAX_ALLOWANCE, IDLE_MULTISIG_ADDRESS } from 'constants/vars'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
@@ -52,6 +52,7 @@ export class TrancheVault {
   public readonly poolConfig: Pool | undefined
   public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
 
@@ -97,13 +98,27 @@ export class TrancheVault {
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
-    this.rewardTokens = vaultConfig.autoFarming ? vaultConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
-      const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
-      if (underlyingToken){
-        rewards.push(underlyingToken)
-      }
-      return rewards
-    },[]) : []
+    this.rewardTokens = []
+    this.distributedTokens = []
+
+    if (vaultConfig.autoFarming){
+      vaultConfig.autoFarming.forEach( (rewardToken: string) => {
+        const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
+        if (underlyingToken){
+          this.rewardTokens.push(underlyingToken)
+        }
+      })
+    }
+
+    if (vaultConfig.distributedTokens){
+      vaultConfig.distributedTokens.forEach( (distributedToken: string) => {
+        const underlyingToken = selectUnderlyingToken(chainId, distributedToken)
+        if (underlyingToken){
+          // this.rewardTokens.push(underlyingToken)
+          this.distributedTokens.push(underlyingToken)
+        }
+      })
+    }
 
     // Init tranche configs
     this.cdoConfig = vaultConfig.CDO
@@ -130,6 +145,13 @@ export class TrancheVault {
 
     // Init tranche tokens contracts
     this.trancheContract = new web3.eth.Contract(this.trancheConfig.abi, this.trancheConfig.address)
+  }
+
+  public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
+    if (!this.distributedTokens.length) return []
+    return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
+      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && tx.from.toLowerCase() === IDLE_MULTISIG_ADDRESS.toLowerCase() && tx.to.toLowerCase() === account.toLowerCase()
+    })
   }
 
   public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
@@ -192,6 +214,7 @@ export class TrancheVault {
           // if (tx.hash.toLowerCase() === '0x67db8b44103853451733ae2387a26a76476a94b11759e1e81d45999847ce4561'.toLowerCase()) {
           //   console.log('GAUGE?', isGaugeDeposit, isGaugeRedeem, isSendTransferTx, isRedeemTx, isSwapOutTx, action)
           // }
+
 
           if (action) {
 

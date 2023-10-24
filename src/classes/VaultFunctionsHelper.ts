@@ -3,8 +3,8 @@ import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
-import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { FEES_COLLECTORS } from 'constants/vars'
+import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { selectUnderlyingToken } from 'selectors/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
@@ -67,6 +67,23 @@ export class VaultFunctionsHelper {
   private getExporerByChainId = (chainId: number): Explorer => {
     return explorers[networks[chainId].explorer]
   }
+
+  /*
+  public async getVaultDistributedRewards(vault: Vault, account: string): Promise<EtherscanTransaction[]> {
+    const chainId = vault.chainId || this.chainId
+    const explorer = this.getExporerByChainId(chainId)
+    if (!explorer || !("distributedTokens" in vault) || !vault.distributedTokens.length) return []
+
+    const distributedTokens = vault.distributedTokens
+
+    const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${IDLE_MULTISIG_ADDRESS}&sort=desc`
+
+    const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
+    const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
+
+    return etherscanTxlist ? etherscanTxlist.filter( (tx: EtherscanTransaction) => (distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && tx.to.toLowerCase() === account.toLowerCase() && BNify(tx.value).gt(0))) : []
+  }
+  */
 
   public async getStakingRewards(stakedIdleVault: StakedIdleVault | undefined, chainId?: number): Promise<EtherscanTransaction[]> {
 
@@ -160,8 +177,8 @@ export class VaultFunctionsHelper {
       const harvestedValueBB = totalValue.times(aprRatioBB.div(100))
       const tokenAprAA = harvestedValueAA.div(tranchePoolAA).times(52.1429)
       const tokenAprBB = harvestedValueBB.div(tranchePoolBB).times(52.1429)
-      
-      // console.log('getTrancheHarvestApy', trancheVault.cdoConfig.address, totalValue.toString(), harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString())
+      // const totalApr = totalValue.div(tranchePoolAA.plus(tranchePoolBB)).times(52.1429)
+      // console.log('getTrancheHarvest', trancheVault.cdoConfig.address, totalValue.toString(), harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString(), totalApr.toString())
 
       lastHarvest.harvest = {
         aprs: {
@@ -226,6 +243,19 @@ export class VaultFunctionsHelper {
   public async getInstadappStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
     const strategyApr = await this.getInstadappStETHTrancheStrategyApr(trancheVault.chainId);
     return await this.getTrancheApy(strategyApr, trancheVault);
+  }
+
+  public async getOptimismTrancheAdditionalApy(trancheVault: TrancheVault): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(trancheVault.chainId, 'optimism', 'additionalRewards')
+    const callback = async () => (await callPlatformApis(trancheVault.chainId, 'optimism', 'additionalRewards'))
+    const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
+
+    if (!results) return BNify(0)
+
+    const foundVault = results.find( (r: any) => r.address.toLowerCase() === trancheVault.id.toLowerCase() )
+
+    // console.log('getOptimismTrancheAdditionalApy', trancheVault.id, foundVault?.apr, trancheVault.underlyingToken?.decimals, BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), trancheVault.underlyingToken?.decimals || 18)).toString())
+    return BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), 18))
   }
 
   public async getTrancheApy(strategyApr: BigNumber, trancheVault: TrancheVault): Promise<BigNumber> {
@@ -625,33 +655,55 @@ export class VaultFunctionsHelper {
 
   public async getVaultAdditionalApr(vault: Vault): Promise<VaultAdditionalApr> {
     if (vault instanceof TrancheVault) {
-      // console.log('getVaultAdditionalApr', vault.cdoConfig.name, vault.type)
-      switch (vault.cdoConfig.name) {
-        case 'IdleCDO_lido_MATIC':
-          return {
-            vaultId: vault.id,
-            cdoId: vault.cdoConfig.address,
-            apr: await this.getMaticTrancheApy(vault)
+      switch (+vault.chainId) {
+        case 1:
+          switch (vault.cdoConfig.name) {
+            case 'IdleCDO_lido_MATIC':
+              return {
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+                apr: await this.getMaticTrancheApy(vault)
+              }
+            case 'IdleCDO_lido_stETH':
+              return {
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+                apr: await this.getStETHTrancheApy(vault)
+              }
+            case 'IdleCDO_instadapp_stETH':
+              return {
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+                apr: await this.getInstadappStETHTrancheApy(vault)
+              }
+            default:
+              return {
+                apr: BNify(0),
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+              }
           }
-        case 'IdleCDO_lido_stETH':
-          return {
-            vaultId: vault.id,
-            cdoId: vault.cdoConfig.address,
-            apr: await this.getStETHTrancheApy(vault)
-          }
-        case 'IdleCDO_instadapp_stETH':
-          return {
-            vaultId: vault.id,
-            cdoId: vault.cdoConfig.address,
-            apr: await this.getInstadappStETHTrancheApy(vault)
+        case 10:
+          switch (vault.cdoConfig.name) {
+            case 'IdleCDO_clearpool_fasanara_USDT':
+            case 'IdleCDO_clearpool_portofino_USDT':
+              return {
+                type: 'rewards',
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+                apr: await this.getOptimismTrancheAdditionalApy(vault)
+              }
+            default:
+              return {
+                apr: BNify(0),
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+              }
           }
         default:
-          return {
-            apr: BNify(0),
-            vaultId: vault.id,
-            cdoId: vault.cdoConfig.address,
-          }
+        break;
       }
+      // console.log('getVaultAdditionalApr', vault.cdoConfig.name, vault.type)
     }
 
     return {

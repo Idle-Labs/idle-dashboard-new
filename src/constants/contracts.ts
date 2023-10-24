@@ -15,6 +15,7 @@ import IdleController from 'abis/idle/IdleController.json';
 import GaugeController from 'abis/idle/GaugeController.json';
 import DepositManager from 'abis/polygon/DepositManager.json';
 import GaugeDistributor from 'abis/idle/GaugeDistributor.json';
+import UniswapV3Quoter from "abis/uniswap/UniswapV3Quoter.json";
 import RootChainManager from 'abis/polygon/RootChainManager.json';
 import SushiV2Router02 from "abis/sushiswap/SushiV2Router02.json";
 import UniswapV2Router02 from "abis/uniswap/UniswapV2Router02.json";
@@ -68,6 +69,11 @@ export const globalContracts: Record<number, GenericContractConfig[]> = {
       name: 'UniswapRouter',
       abi: UniswapV2Router02 as Abi,
       address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
+    },
+    {
+      name: 'UniswapV3Quoter',
+      abi: UniswapV3Quoter as Abi,
+      address: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
     }
   ],
   1101: [

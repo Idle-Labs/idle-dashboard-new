@@ -436,8 +436,8 @@ export const AssetPage: React.FC = () => {
               spacing={2}
               alignItems={'center'}
             >
-              <AssetLabel assetId={params.asset} fontSize={'h2'} extraFields={['statusBadge']} />
-              {/*<AssetProvider.ChainIcon width={7} height={7} />*/}
+              <AssetLabel assetId={params.asset} fontSize={'h2'} />
+              <AssetProvider.ChainIcon width={6} height={6} />
             </HStack>
             {
               isMobile && vaultDetails

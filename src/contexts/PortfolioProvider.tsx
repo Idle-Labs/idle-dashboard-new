@@ -21,14 +21,15 @@ import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors
 import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID } from 'constants/vars'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
-import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall } from 'constants/'
+import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, sortArrayByKey } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
   vaultsTransactions: Record<AssetId, Transaction[]>
+  distributedRewards: Record<AssetId, Asset["distributedRewards"]>
 }
 
 type VaultsOnchainData = {
@@ -82,6 +83,7 @@ type InitialState = {
   historicalPricesUsd: Record<AssetId, HistoryData[]>
   vaultsCollectedFees: Record<AssetId, Transaction[]>
   contractsNetworks: Record<string, GenericContract[]>
+  distributedRewards: VaultsPositions["distributedRewards"]
 } & VaultsOnchainData
 
 type ContextProps = InitialState
@@ -125,6 +127,7 @@ const initialState: InitialState = {
   idleDistributions: {},
   historicalTvlsUsd: {},
   contractsNetworks: {},
+  distributedRewards: {},
   historicalPricesUsd: {},
   vaultsCollectedFees: {},
   isPortfolioLoaded: false,
@@ -171,7 +174,9 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
     case 'SET_VAULTS_TRANSACTIONS':
       return {...state, transactions: action.payload}
     case 'SET_VAULTS_POSITIONS':
-      return {...state, vaultsPositions: action.payload}  
+      return {...state, vaultsPositions: action.payload}
+    case 'SET_DISTRIBUTED_REWARDS':
+      return {...state, distributedRewards: action.payload}
     case 'SET_VAULTS':
       return {...state, vaults: action.payload}
     case 'SET_VAULTS_CHAIN':
@@ -509,6 +514,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const output: VaultsPositions = {
       vaultsPositions: {},
+      distributedRewards: {},
       vaultsTransactions: {}
     }
 
@@ -531,21 +537,35 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const etherscanTransactions = await getUserTransactions(startBlock, endBlock, +chainId)
       // console.log('etherscanTransactions', account.address, startBlock, endBlock, etherscanTransactions)
 
-      await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
+      await asyncForEach(
         chainVaults,
         async (vault: Vault) => {
-          if (!("getTransactions" in vault)) return {}
-          const vaultTransactions = await vault.getTransactions(account.address, etherscanTransactions)
-
-          output.vaultsTransactions[vault.id] = vaultTransactions
-          return {
-            [vault.id]: vaultTransactions
+          if ("getTransactions" in vault){
+            output.vaultsTransactions[vault.id] = await vault.getTransactions(account.address, etherscanTransactions)
           }
-        },
-        (acc, value) => ({...acc, ...value}),
-        {}
+          if ("getDistributedRewards" in vault){
+            const distributedRewardsTxs = vault.getDistributedRewards(account.address, etherscanTransactions)
+            output.distributedRewards[vault.id] = distributedRewardsTxs.reduce( (distributedRewards: NonNullable<Asset["distributedRewards"]>, tx: EtherscanTransaction) => {
+              const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
+              if (!underlyingToken || !underlyingToken.address) return distributedRewards
+              const underlyingTokenId = underlyingToken.address.toLowerCase()
+              if (!distributedRewards[underlyingTokenId]){
+                distributedRewards[underlyingTokenId] = []
+              }
+              const distributedReward: DistributedReward = {
+                apr: null,
+                hash: tx.hash,
+                assetId: underlyingTokenId,
+                blockNumber: +tx.blockNumber,
+                timeStamp: +tx.timeStamp*1000,
+                value: fixTokenDecimals(tx.value, underlyingToken.decimals || 18)
+              }
+              distributedRewards[underlyingTokenId].push(distributedReward)
+              return distributedRewards
+            }, {})
+          }
+        }
       )
-      // console.log('vaultsTransactions', vaultsTransactions)
     })
 
     output.vaultsPositions = Object.keys(output.vaultsTransactions).reduce( (vaultsPositions: Record<AssetId, VaultPosition>, assetId: AssetId) => {
@@ -818,7 +838,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getPausedCalls" in vault) ? vault.getPausedCalls() : [],
         account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
         ("getPricesCalls" in vault) && checkEnabledCall('prices') ? vault.getPricesCalls() : [],
-        ("getPricesUsdCalls" in vault) && checkEnabledCall('pricesUsd') ? vault.getPricesUsdCalls(state.contracts) : [],
+        ("getPricesUsdCalls" in vault) && checkEnabledCall('pricesUsd') ? vault.getPricesUsdCalls(state.contractsNetworks[+vault.chainId]) : [],
         ("getAprsCalls" in vault) && checkEnabledCall('aprs') ? vault.getAprsCalls() : [],
         ("getTotalSupplyCalls" in vault) && checkEnabledCall('totalSupplies') ? vault.getTotalSupplyCalls() : [],
         ("getFeesCalls" in vault) && checkEnabledCall('fees') ? vault.getFeesCalls() : [],
@@ -1178,16 +1198,24 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const decimals = callResult.extraData.decimals || 18
             aprs[assetId] = BNify(callResult.data.toString()).div(`1e${decimals}`)
 
-            // Add additional Apr
-            const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId) )
-            if (vaultAdditionalApr){
-              const additionalApr = vaultAdditionalApr.apr.div(`1e${decimals}`)
-              // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalApr.toString()} = ${aprs[assetId].plus(additionalApr).toString()}`)
-              aprs[assetId] = aprs[assetId].plus(additionalApr)
-            }
-
             aprsBreakdown[assetId] = {
               base: aprs[assetId]
+            }
+
+            // Add additional Apr
+            const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find( (apr: VaultAdditionalApr) => (apr.vaultId === assetId) )
+            if (vaultAdditionalApr && vaultAdditionalApr.apr.gt(0)){
+              const additionalApr = vaultAdditionalApr.apr.div(`1e${decimals}`)
+              // console.log(`Additional Apr ${asset.id}: ${vaultAdditionalApr.apr.toString()}, decimals ${decimals} => ${additionalApr.toString()}`)
+              // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalApr.toString()} = ${aprs[assetId].plus(additionalApr).toString()}`)
+              aprs[assetId] = aprs[assetId].plus(additionalApr)
+
+              // Add to base APR if no type
+              if (!vaultAdditionalApr.type){
+                aprsBreakdown[assetId].base = aprsBreakdown[assetId].base.plus(additionalApr)
+              } else {
+                aprsBreakdown[assetId][vaultAdditionalApr.type] = additionalApr
+              }
             }
 
             additionalAprs[assetId] = BNify(0)
@@ -1440,7 +1468,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       idleDistributions,
       interestBearingTokens
     }
-  }, [selectAssetById, web3Chains, account, multiCall, selectVaultById, state.contracts, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, web3Chains, account, multiCall, selectVaultById, state.contractsNetworks, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -2752,11 +2780,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const {
         vaultsPositions,
+        distributedRewards,
         vaultsTransactions
       } = results
 
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: true})
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
+      dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: distributedRewards})
       dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: vaultsTransactions})
 
       runningEffects.current.vaultsPositions = false
@@ -2765,11 +2795,73 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Clean transactions and positions
     return () => {
       dispatch({type: 'SET_VAULTS_POSITIONS', payload: {}})
+      dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
       dispatch({type: 'SET_VAULTS_TRANSACTIONS', payload: []})
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
     }
   // eslint-disable-next-line
   }, [account, state.isPortfolioLoaded, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
+
+  // Calculate distributed rewards APYs
+  useEffect(() => {
+    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.distributedRewards) || runningEffects.current.distributedRewards === (account?.address || true)) return;
+    ;(async() => {
+
+      runningEffects.current.distributedRewards = account?.address || true
+
+      const distributedRewards = await asyncReduce<AssetId, VaultsPositions["distributedRewards"]>(
+        Object.keys(state.distributedRewards),
+        async (assetId) => {
+          const res = state.distributedRewards
+          const asset = selectAssetById(assetId)
+          const vaultPosition = selectVaultPosition(assetId);
+          if (!asset || !vaultPosition || !asset.chainId) return res
+          const assetChainId = +asset.chainId
+          await asyncForEach(Object.keys(state.distributedRewards[assetId]), async (rewardId: AssetId) => {
+            const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, rewardId)
+            if (!underlyingToken) return
+            const latestDistribution = sortArrayByKey(state.distributedRewards[assetId][rewardId], 'timeStamp', 'desc')[0]
+            // Check if tx is not older than a week
+            if (dayDiff(latestDistribution.timeStamp, Date.now())<=7){
+              const genericContractsHelper = new GenericContractsHelper({chainId: assetChainId, web3: web3Chains[assetChainId], contracts: state.contractsNetworks[assetChainId]})
+              const conversionRate = await genericContractsHelper.getConversionRate(underlyingToken, +latestDistribution.blockNumber)
+              const distributedReward = latestDistribution.value
+              const distributedRewardUsd = distributedReward.times(conversionRate)
+              const apr = distributedRewardUsd.div(vaultPosition.usd.redeemable).times(52.1429)
+              res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr
+            }
+          })
+          return res
+        },
+        (distributedRewards, assetRewards) => {
+          return {
+            ...distributedRewards,
+            ...assetRewards
+          }
+          // return Object.keys(assetRewards).reduce( (distributedRewards, assetId: AssetId) => {
+          //   Object(assetRewards[assetId]).forEach( (rewardId: AssetId) => {
+          //     const lastIndex = assetRewards[assetId][rewardId].index
+          //     distributedRewards[assetId][rewardId][lastIndex].apr = assetRewards[assetId][rewardId].apr
+          //   })
+          //   return distributedRewards
+          // }, distributedRewards)
+        },
+        {...state.distributedRewards}
+      )
+
+      // runningEffects.current.distributedRewards = false
+      // console.log('distributedRewards', distributedRewards)
+
+      dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: distributedRewards})
+
+    })()
+
+    // Clean transactions and positions
+    return () => {
+      runningEffects.current.distributedRewards = false
+      dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
+    }
+  }, [state.distributedRewards, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
 
   // Set isPortfolioAccountReady
   useEffect(() => {
@@ -2970,6 +3062,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
       assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].additionalApr =  state.additionalAprs[vault.id] || BNify(0)
+      assetsData[vault.id].distributedRewards = state.distributedRewards[vault.id] || {}
       assetsData[vault.id].idleDistribution =  state.idleDistributions[vault.id] || BNify(0)
       assetsData[vault.id].interestBearingTokens =  state.interestBearingTokens[vault.id] || {}
 
@@ -3116,31 +3209,32 @@ export function PortfolioProvider({ children }:ProviderProps) {
     
     dispatch({type: 'SET_ASSETS_DATA', payload: assetsData})
   }, [
-    state.vaults,
-    state.vaultsNetworks,
     state.fees,
     state.aprs,
+    state.vaults,
     state.limits,
+    state.rewards,
     state.baseAprs,
     state.balances,
     state.aprRatios,
     state.pricesUsd,
     state.gaugesData,
-    state.rewards,
-    state.pausedVaults,
-    state.protocolsAprs,
-    state.historicalRates,
-    state.historicalPrices,
-    state.vaultsRewards,
     state.balancesUsd,
-    state.vaultsPrices,
-    state.totalSupplies,
     state.allocations,
+    state.vaultsPrices,
     state.lastHarvests,
+    state.pausedVaults,
+    state.totalSupplies,
+    state.vaultsRewards,
     state.aprsBreakdown,
+    state.protocolsAprs,
     state.additionalAprs,
-    state.idleDistributions,
+    state.vaultsNetworks,
+    state.historicalRates,
     state.vaultsPositions,
+    state.historicalPrices,
+    state.idleDistributions,
+    state.distributedRewards,
     state.historicalPricesUsd,
     state.vaultsCollectedFees,
     state.interestBearingTokens

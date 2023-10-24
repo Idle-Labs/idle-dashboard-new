@@ -84,6 +84,7 @@ export interface TrancheConfig {
   blockNumber:number
   referralEnabled?:boolean
   autoFarming?:string[]
+  distributedTokens?:string[]
   underlyingToken:string
   modal?: any
   variant?: string
@@ -275,18 +276,19 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   10:{
     clearpool:{
       USDTFas:{
-        autoFarming:[],
+        autoFarming:['OP'],
         variant:'fasanara',
         protocol:'clearpool',
         enabledEnvs:['beta'],
         blockNumber:17413683,
         underlyingToken:'USDT',
+        distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
         stats:{
           startTimestamp: 1690848000000
         },
         flags:{
-          addHarvestApy: false,
+          addHarvestApy: true,
           referralEnabled: true
         },
         CDO:{
@@ -355,6 +357,87 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             token:'BB_clearpool_fasanara_USDT',
             label:'Clearpool fasanara USDT BB',
             address:'0x7038D2A5323064f7e590EADc0E8833F2613F6317'
+          }
+        }
+      },
+      USDTPor:{
+        autoFarming:['OP'],
+        variant:'portofino',
+        protocol:'clearpool',
+        blockNumber:2812768,
+        enabledEnvs:['beta'],
+        underlyingToken:'USDT',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: true,
+          referralEnabled: true
+        },
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_clearpool_portofino_USDT',
+          address:'0x8771128e9E386DC8E4663118BB11EA3DE910e528'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_portofino_USDT',
+          address:'0x5d4E705315ACa451Db40bf7c067077C768B3FFd0'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x462c4b2e69a59ff886980f36300c168234b63464?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_portofino_USDT_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:2812768,
+            name:'AA_clearpool_portofino_USDT',
+            label:'Clearpool Portofino USDT AA',
+            token:'AA_clearpool_portofino_USDT',
+            address:'0x8552801C75C4f2b1Cac088aF352193858B201D4E'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_portofino_USDT_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:2812768,
+            name:'BB_clearpool_portofino_USDT',
+            token:'BB_clearpool_portofino_USDT',
+            label:'Clearpool Portofino USDT BB',
+            address:'0xafbAeA12DE33bF6B44105Eceecec24B29163077c'
           }
         }
       },

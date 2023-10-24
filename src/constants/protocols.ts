@@ -119,6 +119,28 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     }
   },
+  optimism: {
+    icon: '',
+    label: "Optimism",
+    stats: {
+      showLegend: false,
+    },
+    apis: {
+      additionalRewards:{
+        endpoint: {
+          10: 'https://api-optimism.idle.finance/opDistributionAprs'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        },
+      },
+    },
+    enabled: true,
+    colors: {
+      rgb: [63, 118, 255],
+      hsl: ["223", "100%", "62%"]
+    }
+  },
   instadapp: {
     icon:`${protocolsFolder}instadapp.png`,
     label: "Instadapp",

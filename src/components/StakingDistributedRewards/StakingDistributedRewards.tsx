@@ -3,7 +3,6 @@ import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import { selectUnderlyingToken } from 'selectors/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import React, { useState, useMemo, useCallback } from 'react'
 import { PROTOCOL_TOKEN, STAKING_CHAINID } from 'constants/vars'
@@ -25,12 +24,11 @@ export const StakingDistributedRewards: React.FC = () => {
   const { isMobile } = useThemeProvider()
   const [ page, setPage ] = useState<number>(1)
   const { stakingData } = usePortfolioProvider()
-  const { explorer } = useWalletProvider()
 
   const onRowClick = useCallback((row: RowProps) => {
-    const explorerTxUrl = getExplorerTxUrl(STAKING_CHAINID, explorer, row.original.hash)
+    const explorerTxUrl = getExplorerTxUrl(STAKING_CHAINID, row.original.hash)
     return openWindow(explorerTxUrl)
-  }, [explorer])
+  }, [])
 
   const protocolToken = useMemo(() => {
     return selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)

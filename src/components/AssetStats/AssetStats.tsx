@@ -492,12 +492,18 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
             <Stack
               mt={14}
               width={'100%'}
-              spacing={[4, 10]}
+              spacing={[4, 8]}
               alignItems={['flex-start','center']}
               justifyContent={'flex-start'}
               direction={['column', 'row']}
             >
-              <AssetLabel assetId={params.asset} fontSize={'h2'} />
+              <HStack
+                spacing={2}
+                alignItems={'center'}
+              >
+                <AssetLabel assetId={params.asset} fontSize={'h2'} />
+                <AssetProvider.ChainIcon width={6} height={6} />
+              </HStack>
               <Stack
                 pb={3}
                 flex={1}

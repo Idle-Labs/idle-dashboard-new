@@ -30,6 +30,7 @@
     "new": "New",
     "readMore": "Read more",
     "about": "About",
+    "lastUpdate": "Last update",
     "search": "Search",
     "wallet": "Wallet",
     "featured": "Featured",
@@ -708,6 +709,7 @@
     "stkIDLESupply":"stkIDLE supply",
     "globalstkIDLE": "Global stkIDLE",
     "increaseAmount": "Increase amount",
+    "receivedRewards":"Received rewards",
     "lockExpired": "Your lock is expired",
     "noStake": "You haven't staked any IDLE",
     "distributedRewards":"Distributed rewards",
@@ -945,7 +947,7 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
-          "boosted": "The APY of tihs vault is boosted by additional rewards.",
+          "boosted": "The APY of this vault is boosted by additional rewards.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
           "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault. Follow <a href='https://twitter.com/idlefinance' class='link' target='_blank' rel='noopener'>IdleDAO's Twitter page</a> to stay updated on future limit increases.",
@@ -1908,6 +1910,7 @@
       },
       "apyBreakdown": {
         "base": "Base APY",
+        "rewards": "Rewards APY",
         "harvest": "Harvest APY",
         "gauge": "Gauge APY",
         "gross": "Gross APY",
@@ -1936,6 +1939,7 @@
         "showLess": "Show Less"
       },
       "assetHistory": {
+        "rewardsHistory": "View rewards history",
         "transactionHistory": "Transaction History",
         "recentTransactions": "Recent Transactions",
         "emptyTransactions": "Transactions will appear here"
@@ -1964,7 +1968,8 @@
         "currentAPY": "Current APY",
         "yourRewards": "Your Rewards",
         "currentAPYLabel": "The current APY for your rewards",
-        "claimRewards": "Claim Rewards"
+        "claimRewards": "Claim Rewards",
+        "distributedRewards": "By depositing is this vault you will receive additional rewards that are distributed weekly."
       },
       "accounts": "Accounts",
       "stakingVaults": "Staking & Vaults",

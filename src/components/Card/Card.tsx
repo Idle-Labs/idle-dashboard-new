@@ -13,7 +13,7 @@ export const Card = (props: CardProps) => {
   const { children, layerStyle, ...rest } = props
   return (
     <Box
-      width={'100%'}
+      width={'full'}
       position={'relative'}
       layerStyle={layerStyle || 'card'}
       {...rest}
@@ -27,7 +27,7 @@ export const CardFlex = (props: CardProps & FlexProps) => {
   const { children, layerStyle, ...rest } = props
   return (
     <Flex
-      width={'100%'}
+      width={'full'}
       layerStyle={layerStyle || 'card'}
       {...rest}
     >

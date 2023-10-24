@@ -9,15 +9,15 @@ type TransactionLinkArgs = {
 } & LinkProps
 
 export const TransactionLink: React.FC<TransactionLinkArgs> = ({ hash, chainId = null, ...props }) => {
-  const { chainId: currentChainId, explorer } = useWalletProvider()
+  const { chainId: currentChainId } = useWalletProvider()
 
   const selectedChainId = useMemo(() => {
     return chainId || currentChainId
   }, [chainId, currentChainId])
 
   const url = useMemo(() => {
-    return getExplorerTxUrl(selectedChainId, explorer, hash)
-  }, [selectedChainId, explorer, hash])
+    return getExplorerTxUrl(selectedChainId, hash)
+  }, [selectedChainId, hash])
 
   return (
     <Link href={url} textStyle={'tableCell'} color={'link'} isExternal {...props}>{shortenHash(hash)}</Link>

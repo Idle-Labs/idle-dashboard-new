@@ -19,6 +19,7 @@ export type VaultAdditionalApr = {
   vaultId: string
   apr: BigNumber
   cdoId?: string
+  type?: string
 }
 
 export interface ErrnoException extends Error {
@@ -231,7 +232,7 @@ export type VaultPosition = {
   }
 }
 
-export type Harvest ={
+export type Harvest = {
   hash: string
   aprs: Balances
   value: Balances
@@ -255,6 +256,15 @@ export type BannerProps = {
   text: string
   cta?: string
   modal?: ModalProps
+}
+
+export type DistributedReward = {
+  hash: string
+  assetId: AssetId
+  timeStamp: number
+  blockNumber: number
+  apr: BigNumber | null
+  value: BigNumber
 }
 
 export type Asset = {
@@ -304,6 +314,7 @@ export type Asset = {
   vaultPosition?: VaultPosition
   flags?: Record<string, boolean>
   interestBearingTokens?: Balances
+  distributedRewards?: Record<AssetId, DistributedReward[]>
 }
 
 export type Assets = Record<AssetId, Asset>

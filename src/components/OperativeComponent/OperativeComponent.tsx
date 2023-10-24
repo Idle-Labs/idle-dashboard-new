@@ -31,9 +31,9 @@ type TransactionStatusProps = {
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const translate = useTranslate()
+  const { chainId } = useWalletProvider()
   const countTimeoutId = useRef<any>(null)
   const { searchParams } = useBrowserRouter()
-  const { chainId, explorer } = useWalletProvider()
   const { underlyingAsset, theme, asset } = useAssetProvider()
   const [ progressValue, setProgressValue ] = useState<number>(0)
   // const [ countTimeoutId, setCountTimeoutId ] = useState<any>(null)
@@ -331,7 +331,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
             width={'100%'}
             justifyContent={'center'}
           >
-            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(chainId, explorer, transactionState.hash)} />
+            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(chainId, transactionState.hash)} />
           </HStack>
         )
       }
