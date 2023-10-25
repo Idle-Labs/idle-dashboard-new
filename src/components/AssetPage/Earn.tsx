@@ -100,14 +100,15 @@ export const Earn: React.FC = () => {
   const chartHeading = useMemo(() => {
     const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
     const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
-    const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
-
-    // const earningsPercentage = performanceChartData?.total?.length && BNify(performanceChartData.total[performanceChartData.total.length-1].value).div(performanceChartData.total[0].value).minus(1).times(100)
-    // const earningsDays = performanceChartData?.total?.length ? BNify(performanceChartData.total[performanceChartData.total.length-1].date).minus(performanceChartData.total[0].date).div(1000).div(86400) : BNify(0)
-    // const apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)    
-
     const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
     
+    let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
+    if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
+      apy = apy.plus(asset?.apyBreakdown?.harvest)
+    }
+    if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
+      apy = apy.plus(asset?.apyBreakdown?.rewards)
+    }
     return (
       <VStack
         spacing={1}
@@ -116,13 +117,11 @@ export const Earn: React.FC = () => {
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
           <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
-          {/*<Translation translation={'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />*/}
           <HStack
             spacing={3}
             width={['full','auto']}
             alignItems={'baseline'}
           >
-            {/*<Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} />*/}
             {
               userHasBalance ? (
                 useDollarConversion ? <AssetProvider.BalanceUsd textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
@@ -136,7 +135,9 @@ export const Earn: React.FC = () => {
                   {
                     asset?.apyBreakdown?.gauge && BNify(asset?.apyBreakdown?.gauge).gt(0) && (
                       <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.gauge} suffix={` (${translate('assets.assetDetails.apyBreakdown.gauge')})`} textStyle={'caption'} />
-                    )
+                    )/* : asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0) && (
+                      <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.harvest} suffix={` (${translate('assets.assetDetails.apyBreakdown.harvest')})`} textStyle={'caption'} />
+                    )*/
                   }
                 </Stack>
               )

@@ -437,7 +437,7 @@
       "opDistribution": {
         "cta": "Got it",
         "title": "OP distribution program",
-        "body": "To celebrate the launch on the OP Mainnet, the Optimism Foundation has granted 150,000 OP tokens to Idle, which will be used as rewards for early LP providers on Optimism Yield Tranches.<br /><br />The first campaign will start immediately and run for 60 days where both Senior and Junior liquidity providers will receive additional LP rewards paid in OP. The OP rewards will be distributed in addition to the interest paid by borrowers. On a weekly basis, Idle will airdrop the OP rewards to the users of any Senior/Junior Yield Tranches on Optimism, to the address used for providing liquidity. Every day a snapshot will be taken, and OP rewards will be calculated on the proportion of liquidity provided by the LP and the <a href='https://docs.idle.finance/products/yield-tranches/adaptive-yield-split' class='link' target='_blank' rel='noopener'>Senior/Junior Yield Split</a> at that specific time. The first snapshot will be taken on 25th October 2023 and the final one will be taken on 24th December 2023.<br /><br />Over the first 60 day campaign, the maximum weekly distribution will be set to 3125 OP tokens, leading to a total distribution of 40,000 OP tokens over the 2 months period."
+        "body": "To celebrate the launch on the OP Mainnet, the Optimism Foundation has granted 150,000 OP tokens to Idle, which will be used as rewards for early LP providers on Optimism Yield Tranches.<br /><br />The first campaign will start immediately and run for 60 days where both Senior and Junior liquidity providers will receive additional LP rewards paid in OP. The OP rewards will be distributed in addition to the interest paid by borrowers. On a weekly basis, Idle will airdrop the OP rewards to the users of any Senior/Junior Yield Tranches on Optimism, to the address used for providing liquidity. Every day a snapshot will be taken, and OP rewards will be calculated on the proportion of liquidity provided by the LP and the <a href='https://docs.idle.finance/products/yield-tranches/adaptive-yield-split' class='link' target='_blank' rel='noopener'>Senior/Junior Yield Split</a> at that specific time. The first snapshot will be taken on 25th October 2023 and the final one will be taken on 24th December 2023.<br /><br />Over the first 60 day campaign, the maximum weekly distribution will be set to 3125 OP tokens per vault, leading to a total distribution of 50,000 OP tokens over the 2 months period."
       },
       "learnMore": {
         "next": "Next",
@@ -1892,7 +1892,6 @@
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "idleDistribution": "The total amount of IDLE distributed daily for the entire pool",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
-        "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy",
         "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
         "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprected",
@@ -1905,6 +1904,7 @@
         "lockEndDate": "This is the expiration date of your lock, after this date you will be able to withdraw your IDLE",
         "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution",
         "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity",
+        "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy, rewards are distributed over a week",
         "AA":"This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
         "BB":"This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
         "riskProfiles": {

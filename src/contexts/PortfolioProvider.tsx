@@ -3114,6 +3114,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           const apr = assetsData[vault.id].aprBreakdown?.[type]
           if (apr){
             apyBreakdown[type] = apr2apy(BNify(apr).div(100)).times(100)
+            // console.log(vault.id, type, apr.toString(), apyBreakdown[type].toString())
           }
           return apyBreakdown
         }, {})
