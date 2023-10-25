@@ -31,7 +31,7 @@ import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocati
 import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange } from 'constants/types'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage, bnOrZero, floorTimestamp } from 'helpers/'
+import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage, bnOrZero, floorTimestamp, isEmpty } from 'helpers/'
 
 type AboutItemProps = {
   translation: TranslationProps["translation"]
@@ -149,8 +149,33 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   
   // console.log('performanceChartData', performanceChartData)
 
+  const assetsAvgApy = useMemo(() => {
+    const sums = rateChartData.rainbow.reduce( (totals: Record<AssetId, BigNumber>, data: RainbowData) => {
+      assetIds.forEach( (assetId: AssetId) => {
+        if (!totals[assetId]){
+          totals[assetId] = BNify(0)
+        }
+        totals[assetId] = totals[assetId].plus(data[assetId])
+      })
+      return totals
+    }, {})
+    return Object.keys(sums).reduce( (avgApys: Record<AssetId, BigNumber>, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+      avgApys[assetId] = sums[assetId].div(rateChartData.rainbow.length)
+      // console.log('apyBreakdown', asset?.apyBreakdown)
+      if (asset?.apyBreakdown){
+        Object.keys(asset.apyBreakdown).forEach( (apyType: string) => {
+          if (apyType !== 'base'){
+            avgApys[assetId] = avgApys[assetId].plus(asset.apyBreakdown[apyType])
+          }
+        })
+      }
+      return avgApys
+    }, {})
+  }, [assetIds, rateChartData, selectAssetById])
+
   const assetsApys = useMemo(() => {
-    if (!rateChartData?.rainbow?.length) return null
+    if (isEmpty(assetsAvgApy)) return null
     return (
       <HStack
         spacing={4}
@@ -160,10 +185,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
           assetIds.map( (assetId: AssetId) => {
             const asset = selectAssetById(assetId)
             const color = strategies[asset.type].color
-            const apy = rateChartData.rainbow.reduce( (total: BigNumber, data: RainbowData) => {
-              if (BNify(data[asset.id]).gt(9999)) return total
-              return total.plus(data[asset.id])
-            }, BNify(0)).div(rateChartData.rainbow.length)
+            const apy = assetsAvgApy[assetId]
             return (
               <HStack
                 spacing={1}
@@ -178,7 +200,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
         }
       </HStack>
     )
-  }, [assetIds, selectAssetById, rateChartData])
+  }, [assetIds, assetsAvgApy, selectAssetById])
 
   const tvlUsd = useMemo((): BigNumber => {
     return assetIds.reduce( (totalTvlUsd: BigNumber, assetId: AssetId) => {
@@ -301,24 +323,6 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
     }, BNify(0) ).div(rateChartData.total.length)
   }, [rateChartData])
 
-  const assetsAvgApy = useMemo(() => {
-    const sums = rateChartData.rainbow.reduce( (totals: Record<AssetId, BigNumber>, data: RainbowData) => {
-      assetIds.forEach( (assetId: AssetId) => {
-        if (!totals[assetId]){
-          totals[assetId] = BNify(0)
-        }
-        totals[assetId] = totals[assetId].plus(data[assetId])
-      })
-      return totals
-    }, {})
-    return Object.keys(sums).reduce( (avgApys: Record<AssetId, BigNumber>, assetId: AssetId) => {
-      avgApys[assetId] = sums[assetId].div(rateChartData.rainbow.length)
-      return avgApys
-    }, {})
-  }, [assetIds, rateChartData])
-
-  // console.log('assetsAvgApy', assetIds, assetsAvgApy)
-
   const volume = useMemo((): BigNumber => {
     return volumeChartData.total.reduce( (total: BigNumber, data: HistoryData) => total.plus(Math.abs(data.value)), BNify(0) )
   }, [volumeChartData])
@@ -435,6 +439,31 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
       <Card>
         <Translation mb={1} translation={'defi.tvl'} textStyle={'captionSmall'} />
         <Amount.Usd value={tvlUsd} textStyle={'ctaStatic'} fontSize={'xl'} />
+        {
+          /*
+          strategyConfig?.strategy === 'tranches' && (
+            <HStack
+              spacing={5}
+            >
+            {
+              assetIds.map( (assetId: AssetId) => {
+                const asset = selectAssetById(assetId)
+                if (!asset) return null
+                return (
+                  <AssetProvider
+                    assetId={assetId}
+                    wrapFlex={false}
+                    key={`asset_${assetId}`}
+                  >
+                    <AssetProvider.PoolUsd textStyle={'ctaStatic'} color={assetIds.length>1 ? `strategies.${asset?.type}` : 'primary'} fontSize={'sm'} />
+                  </AssetProvider>
+                )
+              })
+            }
+            </HStack>
+          )
+          */
+        }
       </Card>
       {
         strategyConfig?.strategy === 'tranches' ? (

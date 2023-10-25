@@ -170,7 +170,7 @@ export const Stats: React.FC = () => {
 
   const visibleAssets = useMemo(() => Object.values(chainAssets).filter( (asset: Asset) => !!strategies[asset.type as string]?.visible ), [chainAssets])
   const totalTvlUsd = useMemo(() => Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0)) , [visibleAssets])
-  const avgApy = useMemo(() => Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(bnOrZero(asset?.apy))), BNify(0) ) , [visibleAssets]).div(totalTvlUsd)
+  const avgApy = useMemo(() => Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0) ) , [visibleAssets]).div(totalTvlUsd)
 
   // const collectedFeesTxs = useMemo((): Transaction[] => {
   //   return Object.values(assetsData).reduce( ( collectedFees: Transaction[], asset: Asset) => {
