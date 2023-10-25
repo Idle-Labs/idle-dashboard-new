@@ -103,11 +103,15 @@ export const Earn: React.FC = () => {
     const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
     
     let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
+
     if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
       apy = apy.plus(asset?.apyBreakdown?.harvest)
     }
-    if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
-      apy = apy.plus(asset?.apyBreakdown?.rewards)
+
+    if (earningsPercentage && earningsDays.gt(0)){
+      if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
+        apy = apy.plus(asset?.apyBreakdown?.rewards)
+      }
     }
     return (
       <VStack
