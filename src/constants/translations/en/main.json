@@ -434,6 +434,10 @@
   },
   "defi": {
     "modals": {
+      "opDistribution": {
+        "title": "OP distribution program",
+        "body": "This vault is boosted by OP rewards"
+      },
       "learnMore": {
         "next": "Next",
         "close": "Close",

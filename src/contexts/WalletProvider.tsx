@@ -3,7 +3,7 @@ import useLocalForge from 'hooks/useLocalForge'
 import { selectUnderlyingToken } from 'selectors/'
 import { useSearchParams } from 'react-router-dom'
 import type { ProviderProps } from './common/types'
-import { onboardInitParams } from './configs/onboard'
+import { getOnBoardInitParams } from './configs/onboard'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
 import { checkAddress, sendLogin, sendChainId } from 'helpers/'
 import type { WalletState, ConnectedChain } from '@web3-onboard/core'
@@ -11,6 +11,7 @@ import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
 import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
 
+const onboardInitParams = getOnBoardInitParams()
 // @ts-ignore
 init(onboardInitParams)
 
@@ -62,7 +63,6 @@ export const useWalletProvider = () => useContext(WalletProviderContext)
 
 export function WalletProvider({ children }: ProviderProps) {
   const searchParams = useSearchParams()
-  const [ { connectedChain }, setChain ] = useSetChain()
   
   const [ account, setAccount ] = useState<Account | null>(null)
   const prevAccount = usePrevious<Account | null>(account)
@@ -74,6 +74,7 @@ export function WalletProvider({ children }: ProviderProps) {
     return hostnameChainId && chains[+hostnameChainId] ? +hostnameChainId : defaultChainId
   }, [])
 
+  const [ { connectedChain }, setChain ] = useSetChain()
   const [ chainId, setChainIdState ] = useState<number>(hostnameChainId)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
@@ -82,6 +83,12 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ storedChainId, setStoredChainId, , isChainLoaded ] = useLocalForge('selectedChain', hostnameChainId)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
   const prevChainId = usePrevious<number>(chainId)
+
+  useEffect(() => {
+    const onboardInitParams = getOnBoardInitParams(chainId)
+    // @ts-ignore
+    init(onboardInitParams)
+  }, [chainId])
 
   const customAddress = useMemo(() => {
     const walletAddress = getSearchParams.get('wallet')

@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
+import React, { useMemo, useCallback } from 'react'
+import { useModalProvider } from 'contexts/ModalProvider'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -9,13 +10,14 @@ import { BNify, sortArrayByKey, toDayjs, isEmpty } from 'helpers/'
 import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { selectUnderlyingTokenByAddress } from 'selectors/selectUnderlyingToken'
-import { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps } from 'constants/'
+import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps } from 'constants/'
 
 type AssetDistributedRewardsProps = {
   assetId?: AssetId
 }
 
 export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = ({assetId}) => {
+  const { openModal, closeModal } = useModalProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   
   const asset = useMemo(() => {
@@ -25,6 +27,15 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
   const vault = useMemo(() => {
     return selectVaultById && selectVaultById(assetId)
   }, [selectVaultById, assetId])
+
+  const openHowItWorksModal = useCallback(() => {
+    const modalProps = {
+      cta:'common.close',
+      subtitle:'defi.modals.opDistribution.title',
+      text:'defi.modals.opDistribution.body'
+    }
+    return openModal(modalProps as ModalProps, '2xl')
+  }, [openModal])
 
   if (!asset || !("distributedTokens" in vault) || !vault.distributedTokens.length) return null
 
@@ -58,6 +69,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                 py={6}
                 px={8}
                 width={'full'}
+                key={`row_${underlyingToken.address}`}
               >
                 <AssetProvider assetId={underlyingToken.address}>
                   <SimpleGrid
@@ -91,7 +103,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                         latestDistribution ? (
                           <Translation translation={`assets.assetDetails.assetHistory.rewardsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} />
                         ) : (
-                          <Translation translation={`common.howItWorks`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} />
+                          <Translation translation={`common.howItWorks`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} onClick={() => openHowItWorksModal()} />
                         )
                       }
                     </VStack>
