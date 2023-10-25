@@ -276,10 +276,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   10:{
     clearpool:{
       USDTFas:{
+        enabledEnvs:[],
+        status:'boosted',
         autoFarming:['OP'],
         variant:'fasanara',
         protocol:'clearpool',
-        enabledEnvs:['beta'],
         blockNumber:17413683,
         underlyingToken:'USDT',
         distributedTokens:['OP'],
@@ -361,11 +362,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDTPor:{
+        enabledEnvs:[],
+        status:'boosted',
         autoFarming:['OP'],
         variant:'portofino',
         protocol:'clearpool',
         blockNumber:2812768,
-        enabledEnvs:['beta'],
         underlyingToken:'USDT',
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
