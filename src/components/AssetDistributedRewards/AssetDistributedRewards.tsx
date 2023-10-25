@@ -3,13 +3,12 @@ import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import React, { useMemo, useCallback } from 'react'
 import { useModalProvider } from 'contexts/ModalProvider'
+import { BNify, sortArrayByKey, toDayjs } from 'helpers/'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { BNify, sortArrayByKey, toDayjs, isEmpty } from 'helpers/'
 import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { selectUnderlyingTokenByAddress } from 'selectors/selectUnderlyingToken'
 import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps } from 'constants/'
 
 type AssetDistributedRewardsProps = {
@@ -17,7 +16,7 @@ type AssetDistributedRewardsProps = {
 }
 
 export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = ({assetId}) => {
-  const { openModal, closeModal } = useModalProvider()
+  const { openModal } = useModalProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   
   const asset = useMemo(() => {
