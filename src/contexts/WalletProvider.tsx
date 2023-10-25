@@ -84,12 +84,6 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
   const prevChainId = usePrevious<number>(chainId)
 
-  useEffect(() => {
-    const onboardInitParams = getOnBoardInitParams(chainId)
-    // @ts-ignore
-    init(onboardInitParams)
-  }, [chainId])
-
   const customAddress = useMemo(() => {
     const walletAddress = getSearchParams.get('wallet')
     return walletAddress && checkAddress(walletAddress) ? walletAddress : null
@@ -168,6 +162,12 @@ export function WalletProvider({ children }: ProviderProps) {
     if (!isChainLoaded || !isNetworkCorrect) return
     sendChainId(chainIdHex, window.location.hostname)
   }, [isChainLoaded, isNetworkCorrect, chainIdHex])
+
+  useEffect(() => {
+    const onboardInitParams = getOnBoardInitParams(chainId)
+    // @ts-ignore
+    init(onboardInitParams)
+  }, [chainId])
 
   // Update wallet and provider
   useEffect(() => {

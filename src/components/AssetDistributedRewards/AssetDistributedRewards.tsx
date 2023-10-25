@@ -30,7 +30,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
 
   const openHowItWorksModal = useCallback(() => {
     const modalProps = {
-      cta:'common.close',
+      cta:'defi.modals.opDistribution.cta',
       subtitle:'defi.modals.opDistribution.title',
       text:'defi.modals.opDistribution.body'
     }

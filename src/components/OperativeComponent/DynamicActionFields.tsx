@@ -119,7 +119,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   switch (field){
     case 'boost':
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.toFixed(2)}x</Text>)
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.gt(9999) ? `>9999` : apyBoost.toFixed(2)}x</Text>)
     break;
     case 'overperformance':
       const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))

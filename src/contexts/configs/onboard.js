@@ -21,7 +21,7 @@ export const getOnBoardInitParams = (chainId) => {
   const walletConnectV2InitOptions = {
     version: 2,
     projectId: env.REACT_APP_WALLETCONNECT_KEY,
-    requiredChains: [chainId || 1],
+    requiredChains: [chainId || defaultChainId],
     optionalChains: Object.keys(chains).map( cId => +cId )
   }
 
