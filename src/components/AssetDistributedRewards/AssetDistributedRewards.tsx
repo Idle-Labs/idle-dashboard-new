@@ -52,7 +52,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
 
             const latestDistribution = asset.distributedRewards?.[underlyingToken.address] ? sortArrayByKey(asset.distributedRewards[underlyingToken.address], 'timeStamp', 'desc')[0] : null
 
-            const apr = latestDistribution?.apr || asset.apyBreakdown.rewards || BNify(0)
+            const apr = latestDistribution?.apr || asset.apyBreakdown?.rewards || BNify(0)
             return (
               <Card
                 py={6}
@@ -87,7 +87,13 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                       justifyContent={'center'}
                       alignItems={'flex-end'}
                     >
-                      <Translation translation={`assets.assetDetails.assetHistory.rewardsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} />
+                      {
+                        latestDistribution ? (
+                          <Translation translation={`assets.assetDetails.assetHistory.rewardsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} />
+                        ) : (
+                          <Translation translation={`common.howItWorks`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} />
+                        )
+                      }
                     </VStack>
                   </SimpleGrid>
                 </AssetProvider>
