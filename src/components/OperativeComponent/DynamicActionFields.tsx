@@ -68,13 +68,13 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
               }
               return total.plus(asset.apyBreakdown[type])
             case 'harvest':
-              const harvestApyCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
-              const newHarvestApy = asset.apyBreakdown[type].times(harvestApyCompressionFactor)
-              return total.plus(newHarvestApy)
+              const harvestAprCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
+              const newHarvestApr = asset.aprBreakdown[type].times(harvestAprCompressionFactor)
+              return total.plus(apr2apy(BNify(newHarvestApr).div(100)).times(100))
             case 'rewards':
-              const rewardsApyCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
-              const newRewardsApy = asset.apyBreakdown[type].times(rewardsApyCompressionFactor)
-              return total.plus(newRewardsApy)
+              const rewardsAprCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
+              const newRewardsApr = asset.aprBreakdown[type].times(rewardsAprCompressionFactor)
+              return total.plus(apr2apy(BNify(newRewardsApr).div(100)).times(100))
             default:
               return total.plus(asset.apyBreakdown[type])
           }
