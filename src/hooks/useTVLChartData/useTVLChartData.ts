@@ -37,7 +37,7 @@ export const useTVLChartData: UseTVLChartData = ({
 }) => {
   
   const [ tvlChartDataLoading, setTVLChartDataLoading ] = useState<boolean>(true)
-  const { historicalTvls, selectors: { selectAssetsByIds, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd } } = usePortfolioProvider()
+  const { historicalTvls, selectors: { selectAssetsByIds, selectVaultById, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd } } = usePortfolioProvider()
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -62,10 +62,15 @@ export const useTVLChartData: UseTVLChartData = ({
       if (!asset.id) return pricesByDate
       const prices = useDollarConversion ? selectAssetHistoricalTvlsUsd(asset.id) : selectAssetHistoricalTvls(asset.id)
       if (!prices) return pricesByDate
+      const vault = selectVaultById(asset.id)
+
       prices.forEach( (price: HistoryData) => {
         const date = price.date
         
-        if (date<timeframeStartTimestamp || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
+        const assetStartTimestamp = ("stats" in vault) && vault.stats?.startTimestamp
+        const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
+        
+        if (date<startTimestampToUse || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
 
         const value = price.value
 
@@ -92,7 +97,7 @@ export const useTVLChartData: UseTVLChartData = ({
 
     chartData.rainbow = Object.values(pricesByDate)
     return chartData
-  }, [assets, useDollarConversion, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp, timeframeEndTimestamp])
+  }, [assets, useDollarConversion, selectVaultById, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp, timeframeEndTimestamp])
 
   useEffect(() => {
     if (!tvlChartData.rainbow.length) return

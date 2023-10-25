@@ -286,7 +286,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
         stats:{
-          startTimestamp: 1690848000000
+          startTimestamp: 1698105600000
         },
         flags:{
           addHarvestApy: true,
@@ -371,6 +371,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
+        stats:{
+          startTimestamp: 1698105600000
+        },
         flags:{
           addHarvestApy: true,
           referralEnabled: true

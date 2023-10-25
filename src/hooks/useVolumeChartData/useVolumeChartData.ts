@@ -37,7 +37,7 @@ export const useVolumeChartData: UseVolumeChartData = ({
 }) => {
   
   const [ volumeChartDataLoading, setVolumeChartDataLoading ] = useState<boolean>(true)
-  const { historicalTvls, selectors: { selectAssetsByIds, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd } } = usePortfolioProvider()
+  const { historicalTvls, selectors: { selectAssetsByIds, selectVaultById, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd } } = usePortfolioProvider()
 
   const assets = useMemo(() => {
     if (!selectAssetsByIds) return []
@@ -62,12 +62,16 @@ export const useVolumeChartData: UseVolumeChartData = ({
       if (!asset.id) return volumeByDate
       const tvls = useDollarConversion ? selectAssetHistoricalTvlsUsd(asset.id) : selectAssetHistoricalTvls(asset.id)
       if (!tvls) return volumeByDate
+      const vault = selectVaultById(asset.id)
       
       let prevTvl: HistoryData | null = null
       tvls.forEach( (tvl: HistoryData) => {
         const date = tvl.date
         
-        if (date<timeframeStartTimestamp || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
+        const assetStartTimestamp = ("stats" in vault) && vault.stats?.startTimestamp
+        const startTimestampToUse = assetStartTimestamp && assetStartTimestamp>timeframeStartTimestamp ? assetStartTimestamp : timeframeStartTimestamp
+        
+        if (date<startTimestampToUse || (timeframeEndTimestamp && date>timeframeEndTimestamp)) return
 
         if (prevTvl && asset.id) {
           if (!volumeByDate[date]) {
@@ -94,7 +98,7 @@ export const useVolumeChartData: UseVolumeChartData = ({
     chartData.rainbow = Object.values(volumeByDate)
 
     return chartData
-  }, [assets, useDollarConversion, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp, timeframeEndTimestamp])
+  }, [assets, useDollarConversion, selectVaultById, historicalTvls, selectAssetHistoricalTvls, selectAssetHistoricalTvlsUsd, timeframeStartTimestamp, timeframeEndTimestamp])
 
   const extraData = useMemo((): ExtraData => {
     if (!assets.length) return {
