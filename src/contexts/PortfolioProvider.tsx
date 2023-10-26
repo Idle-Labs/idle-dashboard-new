@@ -3113,10 +3113,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
 
       if (assetsData[vault.id].aprBreakdown){
+        // Calculate APYs
         assetsData[vault.id].apyBreakdown = Object.keys(assetsData[vault.id].aprBreakdown || {}).reduce( (apyBreakdown: Balances, type: string): Balances => {
           const apr = assetsData[vault.id].aprBreakdown?.[type]
           if (apr){
-            apyBreakdown[type] = apr2apy(BNify(apr).div(100)).times(100)
+            if (type !== 'rewards'){
+              apyBreakdown[type] = apr2apy(BNify(apr).div(100)).times(100)
+            } else {
+              apyBreakdown[type] = apr
+            }
             // console.log(vault.id, type, apr.toString(), apyBreakdown[type].toString())
           }
           return apyBreakdown

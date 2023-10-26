@@ -619,7 +619,20 @@ type ApyProps = {
 const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, ...props}) => {
   const { asset } = useAssetProvider()
 
-  const netApy = BNify(asset?.apy).minus(BNify(asset?.apy).times(BNify(asset?.fee)))
+  const netApy = useMemo(() => {
+    if (asset?.apyBreakdown){
+      return Object.keys(asset.apyBreakdown).reduce( (totalNetApy: BigNumber, apyType: string) => {
+        let netApy = bnOrZero(asset.apyBreakdown?.[apyType])
+        // Remove fees on base and harvest apy
+        if (apyType !== 'rewards'){
+          netApy = netApy.minus(netApy.times(bnOrZero(asset?.fee)))
+        }
+        return totalNetApy.plus(netApy)
+      }, BNify(0))
+    } else {
+      return BNify(asset?.apy).minus(BNify(asset?.apy).times(bnOrZero(asset?.fee)))
+    }
+  }, [asset])
 
   showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length>1
 
