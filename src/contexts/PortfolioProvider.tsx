@@ -2457,9 +2457,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get historical underlying prices from chainlink
   useEffect(() => {
 
-    if (isEmpty(state.vaults) || !isEmpty(state.historicalPricesUsd) || !web3 || !multiCall || !storedHistoricalPricesUsdLoaded) return
+    if (isEmpty(state.vaults) || !isEmpty(state.historicalPricesUsd) || !web3 || !multiCall || !storedHistoricalPricesUsdLoaded || runningEffects.current.historicalPricesUsd === true) return
 
     // console.log('Check historicalPricesUsd', storedHistoricalPricesUsdLoaded, storedHistoricalPricesUsd)
+    runningEffects.current.historicalPricesUsd = true
 
     // Load 1 year by default
     let maxDays = 365
@@ -2487,7 +2488,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
 
     // Get Historical data
-    (async () => {
+    ;(async () => {
 
       // const startTimestamp = Date.now()
 
@@ -2541,6 +2542,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         timestamp: Date.now(),
         historicalPricesUsd: mergedHistoricalPricesUsd
       })
+
+      runningEffects.current.historicalPricesUsd = false
 
       // Pre-cached data
       // console.log('historicalPricesCalls - DECODED', (Date.now()-startTimestamp)/1000, mergedHistoricalPricesUsd)

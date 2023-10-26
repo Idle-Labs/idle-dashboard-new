@@ -1,9 +1,9 @@
 import Web3 from 'web3'
 import type { Abi } from 'constants/types'
 import { ContractRawCall } from 'constants/'
-import { splitArrayIntoChunks } from 'helpers/'
 import Multicall3 from 'abis/multicall/Multicall3.json'
 import { Contract, ContractSendMethod } from 'web3-eth-contract'
+import { splitArrayIntoChunks, hashCode, asyncWait } from 'helpers/'
 
 type Param = any
 
@@ -18,9 +18,14 @@ export type CallData = {
   rawCall: ContractSendMethod
 }
 
+export type CachedRequest = {
+  status: 'pending' | 'success' | 'error'
+  data: DecodedResult[] | null
+}
+
 export type DecodedResult = {
   data:any,
-  callData:CallData,
+  callData: CallData,
   extraData: Record<string, any>
 }
 
@@ -33,11 +38,13 @@ export class  Multicall {
   readonly maxBatchSize: number
   readonly networkContract: string
   readonly multicallContract: Contract
+  public cachedRequests: Record<string, CachedRequest>
 
   constructor(chainId: number, web3: Web3) {
     this.web3 = web3
     this.chainId = chainId
     this.maxBatchSize = 600
+    this.cachedRequests = {}
     this.networkContract = '0xcA11bde05977b3631167028862bE2a173976CA11'
     this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networkContract)
   }
@@ -184,6 +191,23 @@ export class  Multicall {
     }, [])
   }
 
+  async checkCachedRequests(hash: string, count: number = 1): Promise<DecodedResult[] | null> {
+    if (this.cachedRequests[hash]) {
+      const status = this.cachedRequests[hash].status
+      if (status === 'pending'){
+        if (count<=5){
+          await asyncWait(100)
+          return await this.checkCachedRequests(hash, count+1)
+        } else {
+          return null
+        }
+      } else if (status === 'success') {
+        return this.cachedRequests[hash].data
+      }
+    }
+    return null
+  }
+
   async executeMulticalls(calls: CallData[], singleCallsEnabled = true, chainId?: number, web3?: Web3, debug: boolean = false): Promise<DecodedResult[] | null> {
 
     // Get chainId
@@ -195,10 +219,22 @@ export class  Multicall {
     }
 
     const calldata = this.prepareMulticallData(calls);
-    
     // console.log('callData', calldata)
 
     if (!calldata) return null;
+
+    const hash = hashCode(`${calldata}_${chainId}`)
+
+    const cachedResults = await this.checkCachedRequests(hash);
+    if (cachedResults){
+      // console.warn('Multicall - TAKE CACHED DATA', hash, cachedResults)
+      return cachedResults
+    }
+
+    this.cachedRequests[hash] = {
+      status: 'pending',
+      data: null
+    }
 
     let results = null
     const contractAddress = this.networkContract;
@@ -213,14 +249,20 @@ export class  Multicall {
       // eslint-disable-next-line
       console.log('Multicall Error:', calls, err, singleCallsEnabled)
 
-      if (!singleCallsEnabled) return null
+      if (!singleCallsEnabled) {
+        this.cachedRequests[hash] = {
+          status: 'error',
+          data: null
+        }
+        return null
+      }
 
       const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
       const decodedCalls = await Promise.all(callPromises);
 
       // console.log('SingleCalls - decodedCalls', decodedCalls)
 
-      return decodedCalls.reduce( (decodedResults, decodedCall, i) => {
+      const decodedData = decodedCalls.reduce( (decodedResults, decodedCall, i) => {
         const output = {
           data:null,
           callData:calls[i],
@@ -235,15 +277,20 @@ export class  Multicall {
         decodedResults.push(output)
         return decodedResults
       },[])
+
+      this.cachedRequests[hash] = {
+        status: 'success',
+        data: decodedData
+      }
     }
 
-    const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results);
+    const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results as string);
       
-    if (debug){
+    // if (debug){
       // console.log('Multicall raw:', results)
       // eslint-disable-next-line
-      console.log('decodedResults', results, decodedResults)
-    }
+      // console.trace('decodedResults', Date.now(), results, decodedResults)
+    // }
 
     if (decodedResults && decodedResults[0].length){
 
@@ -287,6 +334,11 @@ export class  Multicall {
       });
 
       // console.log('Multicall decoded:', decodedData)
+
+      this.cachedRequests[hash] = {
+        status: 'success',
+        data: decodedData
+      }
 
       return decodedData
     }
