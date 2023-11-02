@@ -2834,7 +2834,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
               const distributedReward = latestDistribution.value
               const distributedRewardUsd = distributedReward.times(conversionRate)
               const apr = distributedRewardUsd.div(vaultPosition.usd.redeemable).times(52.1429)
-              res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr
+              res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr.times(100)
+
+              // Update realized apy on vaultPosition
+              // vaultPosition.realizedApy = vaultPosition.realizedApy.plus(apr.times(100));
+              vaultPosition.rewardsApy = apr.times(100);
+
+              // console.log(assetId, rewardId, conversionRate.toString(), distributedReward.toString(), distributedRewardUsd.toString(), vaultPosition.usd.redeemable.toString())
             }
           })
           return res
@@ -2844,22 +2850,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
             ...distributedRewards,
             ...assetRewards
           }
-          // return Object.keys(assetRewards).reduce( (distributedRewards, assetId: AssetId) => {
-          //   Object(assetRewards[assetId]).forEach( (rewardId: AssetId) => {
-          //     const lastIndex = assetRewards[assetId][rewardId].index
-          //     distributedRewards[assetId][rewardId][lastIndex].apr = assetRewards[assetId][rewardId].apr
-          //   })
-          //   return distributedRewards
-          // }, distributedRewards)
         },
         {...state.distributedRewards}
       )
-
-      // runningEffects.current.distributedRewards = false
-      // console.log('distributedRewards', distributedRewards)
-
       dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: distributedRewards})
-
     })()
 
     // Clean transactions and positions

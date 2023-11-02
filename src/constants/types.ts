@@ -211,6 +211,7 @@ export type VaultPosition = {
   avgBuyPrice: BigNumber
   realizedApy: BigNumber
   depositDuration: number
+  rewardsApy?: BigNumber
   earningsPercentage: BigNumber
   firstDepositTx?: Transaction | null
   idle: {
