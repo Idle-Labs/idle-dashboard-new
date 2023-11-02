@@ -76,7 +76,7 @@ export class VaultFunctionsHelper {
 
     const distributedTokens = vault.distributedTokens
 
-    const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${IDLE_MULTISIG_ADDRESS}&sort=desc`
+    const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${IDLE_MULTISIG_ADDRESS_OPTIMISM}&sort=desc`
 
     const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
     const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()

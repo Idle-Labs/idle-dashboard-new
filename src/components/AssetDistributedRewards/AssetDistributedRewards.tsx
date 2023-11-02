@@ -61,9 +61,9 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
               action: 'distributed',
               idlePrice: BNify(0),
               idleAmount: BNify(0),
-              underlyingAmount: BNify(0),
               chainId: distributedReward.chainId,
-              assetId: distributedReward.assetId
+              assetId: distributedReward.assetId,
+              underlyingAmount: distributedReward.value
             }
             return (
               <TransactionItem transaction={transaction} />
@@ -142,7 +142,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                         latestDistribution ? (
                           <Text textStyle={'tableCell'}>{toDayjs(latestDistribution.timeStamp).format(DATETIME_FORMAT)}</Text>
                         ) : (
-                          <Translation component={Text} translation={'common.inProgress'} suffix={'...'} textStyle={'titleSmall'} color={'primary'} />
+                          <Text textStyle={'tableCell'}>-</Text>
                         )
                       }
                     </VStack>

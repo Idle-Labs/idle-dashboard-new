@@ -7,7 +7,7 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
-import { MAX_ALLOWANCE, IDLE_MULTISIG_ADDRESS } from 'constants/vars'
+import { MAX_ALLOWANCE, IDLE_MULTISIG_ADDRESS_OPTIMISM } from 'constants/vars'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress } from 'helpers/'
@@ -150,7 +150,7 @@ export class TrancheVault {
   public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
     if (!this.distributedTokens.length) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && tx.from.toLowerCase() === IDLE_MULTISIG_ADDRESS.toLowerCase() && tx.to.toLowerCase() === account.toLowerCase()
+      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && tx.from.toLowerCase() === IDLE_MULTISIG_ADDRESS_OPTIMISM.toLowerCase() && tx.to.toLowerCase() === account.toLowerCase()
     })
   }
 

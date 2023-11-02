@@ -18,6 +18,6 @@ export const MIN_STAKING_INCREASE_SECONDS = 604800 // 1 week
 export const DASHBORD_URL = 'https://app.idle.finance'
 export const LEGACY_DASHBOARD_URL = 'https://legacy.idle.finance/#/'
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
-export const IDLE_MULTISIG_ADDRESS = "0xFb3bD022D5DAcF95eE28a6B07825D4Ff9C5b3814" // TESTING WITH MATCHA ADDR 0xa3128d9b7cca7d5af29780a56abeec12b05a6740
+export const IDLE_MULTISIG_ADDRESS_OPTIMISM = "0xfdbb4d606c199f091143bd604c85c191a526fbd0" // TESTING WITH MATCHA ADDR 0xa3128d9b7cca7d5af29780a56abeec12b05a6740
 export const MAX_ALLOWANCE = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 export const FEES_COLLECTORS = ["0xbecc659bfc6edca552fa1a67451cc6b38a0108e4", "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814", "0x69a62c24f16d4914a48919613e8ee330641bcb94"]
