@@ -139,7 +139,7 @@ export class GenericContractsHelper {
         invertTokens,
         routerMethod,
         processResults,
-        call:ProtocolContract.contract.methods[routerMethod](addressFrom, conversionToken.address, 100, one.toFixed(), 0)
+        call:ProtocolContract.contract.methods[routerMethod](addressFrom, conversionToken.address, 3000, one.toFixed(), 0)
       }
     } else {
       path.push(routerMethod === 'getAmountsOut' || invertTokens ? addressFrom : conversionToken.address)
