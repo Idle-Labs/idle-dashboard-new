@@ -176,7 +176,8 @@ export class GaugeVault {
               idlePrice,
               idleAmount,
               assetId:this.id,
-              underlyingAmount
+              underlyingAmount,
+              chainId: this.chainId
             })
           }
         }

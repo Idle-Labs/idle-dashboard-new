@@ -545,6 +545,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
           if ("getDistributedRewards" in vault){
             const distributedRewardsTxs = vault.getDistributedRewards(account.address, etherscanTransactions)
+            // console.log('distributedRewardsTxs', vault.id, distributedRewardsTxs)
             output.distributedRewards[vault.id] = distributedRewardsTxs.reduce( (distributedRewards: NonNullable<Asset["distributedRewards"]>, tx: EtherscanTransaction) => {
               const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
               if (!underlyingToken || !underlyingToken.address) return distributedRewards
@@ -553,8 +554,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
                 distributedRewards[underlyingTokenId] = []
               }
               const distributedReward: DistributedReward = {
+                tx,
                 apr: null,
                 hash: tx.hash,
+                chainId: +chainId,
                 assetId: underlyingTokenId,
                 blockNumber: +tx.blockNumber,
                 timeStamp: +tx.timeStamp*1000,

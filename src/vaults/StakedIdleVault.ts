@@ -117,7 +117,8 @@ export class StakedIdleVault {
               idlePrice,
               idleAmount,
               assetId:this.id,
-              underlyingAmount
+              underlyingAmount,
+              chainId: this.chainId
             })
           }
         }

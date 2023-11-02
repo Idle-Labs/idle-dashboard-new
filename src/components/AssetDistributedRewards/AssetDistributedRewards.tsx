@@ -3,13 +3,15 @@ import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import React, { useMemo, useCallback } from 'react'
 import { useModalProvider } from 'contexts/ModalProvider'
-import { BNify, sortArrayByKey, toDayjs } from 'helpers/'
+import { Scrollable } from 'components/Scrollable/Scrollable'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { BNify, sortArrayByKey, isEmpty, toDayjs } from 'helpers/'
 import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps } from 'constants/'
+import { TransactionItem } from 'components/TransactionItem/TransactionItem'
+import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps, Transaction } from 'constants/'
 
 type AssetDistributedRewardsProps = {
   assetId?: AssetId
@@ -29,16 +31,59 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
 
   const openHowItWorksModal = useCallback(() => {
     const modalProps = {
-      cta:'defi.modals.opDistribution.cta',
-      subtitle:'defi.modals.opDistribution.title',
-      text:'defi.modals.opDistribution.body'
+      cta: 'defi.modals.opDistribution.cta',
+      text: 'defi.modals.opDistribution.body',
+      subtitle: 'defi.modals.opDistribution.title'
     }
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal])
 
-  if (!asset || !("distributedTokens" in vault) || !vault.distributedTokens.length) return null
+  const distributedRewards: DistributedReward[] = useMemo(() => {
+    if (isEmpty(asset?.distributedRewards)) return []
+    const distributedRewards = Object.keys(asset.distributedRewards).reduce( (distributedRewards: DistributedReward[], assetId: AssetId) => {
+      return [
+        ...distributedRewards,
+        ...asset.distributedRewards[assetId]
+      ]
+    }, [])
 
-  // !asset.distributedRewards || !Object.keys(asset.distributedRewards).length
+    return sortArrayByKey(distributedRewards, 'timeStamp', 'desc')
+  }, [asset])
+
+  const rewardsHistory = useMemo(() => {
+    if (!distributedRewards?.length) return null
+    return (
+      <Scrollable maxH={400}>
+        {
+          distributedRewards.map( (distributedReward: DistributedReward) => {
+            const transaction: Transaction = {
+              ...distributedReward.tx,
+              action: 'distributed',
+              idlePrice: BNify(0),
+              idleAmount: BNify(0),
+              underlyingAmount: BNify(0),
+              chainId: distributedReward.chainId,
+              assetId: distributedReward.assetId
+            }
+            return (
+              <TransactionItem transaction={transaction} />
+            )
+          })
+        }
+      </Scrollable>
+    )
+  }, [distributedRewards])
+
+  const openRewardsHistoryModal = useCallback(() => {
+    const modalProps = {
+      cta: 'common.close',
+      body: rewardsHistory,
+      subtitle: 'defi.modals.opDistribution.rewardsHistory',
+    }
+    return openModal(modalProps as ModalProps, '2xl')
+  }, [openModal, rewardsHistory])
+
+  if (!asset || !("distributedTokens" in vault) || !vault.distributedTokens.length) return null
 
   return (
     <VStack
@@ -72,15 +117,16 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
               >
                 <AssetProvider assetId={underlyingToken.address}>
                   <SimpleGrid
-                    columns={4}
                     width={'full'}
+                    spacing={[4, 0]}
+                    columns={[2, 4]}
                     justifyContent={'center'}
                     alignItems={'space-between'}
                   >
-                    <TokenAmount assetId={underlyingToken.address} size={'md'} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
+                    <TokenAmount assetId={underlyingToken.address} size={['sm', 'md']} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
                     <VStack
                       spacing={1}
-                      alignItems={'flex-start'}
+                      alignItems={['flex-end', 'flex-start']}
                       justifyContent={'flex-start'}
                     >
                       <Translation component={Text} translation={'defi.apy'} textStyle={'titleSmall'} />
@@ -91,8 +137,14 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                       alignItems={'flex-start'}
                       justifyContent={'flex-start'}
                     >
-                      <Translation component={Text} translation={'common.lastUpdate'} textStyle={'titleSmall'} />
-                      <Text textStyle={'tableCell'}>{latestDistribution ? toDayjs(latestDistribution.timeStamp).format(DATETIME_FORMAT) : '-'}</Text>
+                      <Translation component={Text} translation={'common.lastDistribution'} textStyle={'titleSmall'} />
+                      {
+                        latestDistribution ? (
+                          <Text textStyle={'tableCell'}>{toDayjs(latestDistribution.timeStamp).format(DATETIME_FORMAT)}</Text>
+                        ) : (
+                          <Translation component={Text} translation={'common.inProgress'} suffix={'...'} textStyle={'titleSmall'} color={'primary'} />
+                        )
+                      }
                     </VStack>
                     <VStack
                       justifyContent={'center'}
@@ -100,7 +152,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                     >
                       {
                         latestDistribution ? (
-                          <Translation translation={`assets.assetDetails.assetHistory.rewardsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} />
+                          <Translation translation={`assets.assetDetails.assetHistory.rewardsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} onClick={() => openRewardsHistoryModal()} />
                         ) : (
                           <Translation translation={`common.howItWorks`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} onClick={() => openHowItWorksModal()} />
                         )

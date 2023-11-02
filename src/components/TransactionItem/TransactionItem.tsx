@@ -50,7 +50,7 @@ export const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) 
             )
           }
         </HStack>
-        <TransactionLink hash={transaction.hash} />
+        <TransactionLink hash={transaction.hash} chainId={transaction.chainId} />
       </HStack>
     </VStack>
   )

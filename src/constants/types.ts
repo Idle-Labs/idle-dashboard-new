@@ -142,8 +142,9 @@ export type MaticNFT = {
 export type VaultsRewards = Record<AssetId, VaultRewards>
 
 export type Transaction = {
-  action: string,
+  action: string
   subAction?: string
+  chainId?: number
   assetId: AssetId
   idlePrice: BigNumber
   idleAmount: BigNumber
@@ -261,10 +262,12 @@ export type BannerProps = {
 export type DistributedReward = {
   hash: string
   assetId: AssetId
+  chainId?: number
   timeStamp: number
   blockNumber: number
   apr: BigNumber | null
   value: BigNumber
+  tx: EtherscanTransaction
 }
 
 export type Asset = {

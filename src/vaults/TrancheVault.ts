@@ -266,7 +266,8 @@ export class TrancheVault {
                 idlePrice,
                 idleAmount,
                 assetId:this.id,
-                underlyingAmount
+                underlyingAmount,
+                chainId: this.chainId
               })
 
               // Save inserted txs to avoid duplicated
