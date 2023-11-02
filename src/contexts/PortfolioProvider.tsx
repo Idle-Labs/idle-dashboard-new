@@ -2815,12 +2815,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       runningEffects.current.distributedRewards = account?.address || true
 
+      const totalRedeemable = Object.keys(state.distributedRewards).reduce( (totalRedeemable: BigNumber, assetId: AssetId) => {
+        if (isEmpty(state.distributedRewards[assetId])) return totalRedeemable
+        const vaultPosition = selectVaultPosition(assetId)
+        if (!vaultPosition) return totalRedeemable
+        return totalRedeemable.plus(vaultPosition.usd.redeemable)
+      }, BNify(0))
+
       const distributedRewards = await asyncReduce<AssetId, VaultsPositions["distributedRewards"]>(
         Object.keys(state.distributedRewards),
         async (assetId) => {
           const res = state.distributedRewards
           const asset = selectAssetById(assetId)
-          const vaultPosition = selectVaultPosition(assetId);
+          const vaultPosition = selectVaultPosition(assetId)
           if (!asset || !vaultPosition || !asset.chainId) return res
           const assetChainId = +asset.chainId
           await asyncForEach(Object.keys(state.distributedRewards[assetId]), async (rewardId: AssetId) => {
@@ -2833,7 +2840,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
               const conversionRate = await genericContractsHelper.getConversionRate(underlyingToken, +latestDistribution.blockNumber)
               const distributedReward = latestDistribution.value
               const distributedRewardUsd = distributedReward.times(conversionRate)
-              const apr = distributedRewardUsd.div(vaultPosition.usd.redeemable).times(52.1429)
+              const apr = distributedRewardUsd.div(totalRedeemable).times(52.1429)
               res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr.times(100)
 
               // Update realized apy on vaultPosition
