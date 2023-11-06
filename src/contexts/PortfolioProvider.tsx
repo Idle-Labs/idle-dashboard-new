@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import type { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, sortArrayByKey } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -732,6 +732,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
 
       const usd = {
+        rewards: BNify(0),
         staked: stakedAmount.times(assetPriceUsd),
         earnings: earningsAmount.times(assetPriceUsd),
         deposited: depositedAmount.times(assetPriceUsd),
@@ -2815,12 +2816,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       runningEffects.current.distributedRewards = account?.address || true
 
-      const totalRedeemable = Object.keys(state.distributedRewards).reduce( (totalRedeemable: BigNumber, assetId: AssetId) => {
-        if (isEmpty(state.distributedRewards[assetId])) return totalRedeemable
+      const distributionVaults = Object.keys(state.distributedRewards).reduce( (distributionVaults: Record<string, BigNumber>, assetId: AssetId) => {
+        if (isEmpty(state.distributedRewards[assetId])) return distributionVaults
         const vaultPosition = selectVaultPosition(assetId)
-        if (!vaultPosition) return totalRedeemable
-        return totalRedeemable.plus(vaultPosition.usd.redeemable)
-      }, BNify(0))
+        if (!vaultPosition) return distributionVaults
+        distributionVaults.totalVaults = distributionVaults.totalVaults.plus(1)
+        distributionVaults.totalRedeemable = distributionVaults.totalRedeemable.plus(vaultPosition.usd.redeemable)
+        return distributionVaults
+      }, {
+        totalVaults: BNify(0),
+        totalRedeemable: BNify(0)
+      })
 
       const distributedRewards = await asyncReduce<AssetId, VaultsPositions["distributedRewards"]>(
         Object.keys(state.distributedRewards),
@@ -2833,6 +2839,33 @@ export function PortfolioProvider({ children }:ProviderProps) {
           await asyncForEach(Object.keys(state.distributedRewards[assetId]), async (rewardId: AssetId) => {
             const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, rewardId)
             if (!underlyingToken) return
+
+            const genericContractsHelper = new GenericContractsHelper({chainId: assetChainId, web3: web3Chains[assetChainId], contracts: state.contractsNetworks[assetChainId]})
+
+            if (state.distributedRewards[assetId][rewardId].length>0){
+              await asyncForEach(state.distributedRewards[assetId][rewardId], async (distributedReward: DistributedReward) => {
+                const rewardConversionRateAtBlock = await genericContractsHelper.getConversionRate(underlyingToken, +distributedReward.blockNumber)
+                const distributedRewardAmount = distributedReward.value
+                const distributedRewardUsd = distributedRewardAmount.times(rewardConversionRateAtBlock)
+                const apr = distributedRewardUsd.div(distributionVaults.totalRedeemable).times(52.1429)
+                res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr.times(100)
+
+                // Update realized apy on vaultPosition
+                vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).plus(apr.times(100));
+
+                // Add rewards and earnings
+                vaultPosition.usd.rewards = bnOrZero(vaultPosition.usd.rewards).plus(distributedRewardUsd.div(distributionVaults.totalVaults));
+                vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(distributedRewardUsd.div(distributionVaults.totalVaults));
+              })
+
+              // Calculate avg rewards apy
+              vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).div(state.distributedRewards[assetId][rewardId].length)
+
+              // Add realized apy
+              vaultPosition.realizedApy = vaultPosition.realizedApy.plus(vaultPosition.rewardsApy);
+            }
+
+            /*
             const latestDistribution = sortArrayByKey(state.distributedRewards[assetId][rewardId], 'timeStamp', 'desc')[0]
             // Check if tx is not older than a week
             if (dayDiff(latestDistribution.timeStamp, Date.now())<=7){
@@ -2846,9 +2879,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
               // Update realized apy on vaultPosition
               // vaultPosition.realizedApy = vaultPosition.realizedApy.plus(apr.times(100));
               vaultPosition.rewardsApy = apr.times(100);
+              vaultPosition.usd.rewards = distributedRewardUsd;
 
               // console.log(assetId, rewardId, conversionRate.toString(), distributedReward.toString(), distributedRewardUsd.toString(), vaultPosition.usd.redeemable.toString())
             }
+            */
           })
           return res
         },

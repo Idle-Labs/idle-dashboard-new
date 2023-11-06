@@ -438,7 +438,7 @@ export const Tranches: React.FC = () => {
     {
       accessor:'vaultPosition',
       Header:translate('defi.realizedApy'),
-      Cell: ({ value/*, row*/ }: { value: VaultPosition | undefined/*; row: RowProps*/ }) => {
+      Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
             {
@@ -454,7 +454,8 @@ export const Tranches: React.FC = () => {
                           <StatArrow type={'increase'} />
                         )
                       }
-                      <Amount.Percentage value={value.realizedApy} textStyle={'tableCell'} />
+                      {/*<Amount.Percentage value={value.realizedApy} textStyle={'tableCell'} />*/}
+                      <TableField field={'realizedApy'} value={value} row={row} />
                     </Flex>
                   </StatNumber>
                   <Amount.Usd prefix={'+'} value={value.usd.earnings} textStyle={'captionSmall'} />

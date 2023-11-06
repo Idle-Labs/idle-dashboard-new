@@ -229,6 +229,7 @@ export type VaultPosition = {
   usd: {
     staked: BigNumber
     earnings: BigNumber
+    rewards?: BigNumber
     deposited: BigNumber
     redeemable: BigNumber
   }

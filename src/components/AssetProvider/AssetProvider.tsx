@@ -536,9 +536,53 @@ const NetEarningsUsd: React.FC<AmountProps> = (props) => {
   if (asset && !['AA', 'BB'].includes(asset.type as string)){
     netEarnings = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset?.vaultPosition?.usd.earnings).minus(BNify(asset.vaultPosition.usd.earnings).times(asset.fee)) : BNify(0)
   }
+
+  let tooltipLabel = null
+  if (bnOrZero(asset?.vaultPosition?.usd.rewards).gt(0)){
+    const netEarningsWithoutRewards = netEarnings.minus(bnOrZero(asset?.vaultPosition?.usd.rewards))
+    tooltipLabel = (
+      <VStack
+        py={1}
+        spacing={1}
+      >
+        <VStack
+          pb={0}
+          spacing={1}
+        >
+          <HStack
+            spacing={3}
+            width={'100%'}
+            alignItems={'baseline'}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={`defi.netEarnings`} />
+            <Amount.Usd value={netEarningsWithoutRewards} {...props} fontSize={'md'} />
+          </HStack>
+          <HStack
+            spacing={3}
+            width={'100%'}
+            alignItems={'baseline'}
+            justifyContent={'space-between'}
+          >
+            <Translation translation={`defi.rewardsEarnings`} />
+            <Amount.Usd value={asset?.vaultPosition?.usd.rewards} {...props} fontSize={'md'} />
+          </HStack>
+        </VStack>
+      </VStack>
+    )
+  }
   
   return asset?.vaultPosition?.usd.earnings ? (
-    <Amount.Usd value={netEarnings} {...props} />
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={tooltipLabel}
+      isDisabled={!tooltipLabel}
+    >
+      <TooltipContent>
+        <Amount.Usd value={netEarnings} borderBottom={tooltipLabel ? '1px dashed' : 'none'} borderBottomColor={tooltipLabel ? 'cta' : 'none'} {...props} />
+      </TooltipContent>
+    </Tooltip>
   ) : <Spinner size={'sm'} />
 }
 
@@ -735,12 +779,13 @@ const ApyBoost: React.FC<AmountProps> = (props) => {
 const RealizedApy: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
 
+  let tooltipLabel = null
   let totalApy = bnOrZero(asset?.vaultPosition?.realizedApy)
-
   const rewardsApy = bnOrZero(asset?.vaultPosition?.rewardsApy)
   if (rewardsApy.gt(0)){
-    totalApy = totalApy.plus(rewardsApy)
-    const tooltipLabel = (
+    // totalApy = totalApy.plus(rewardsApy)
+    const netApy = totalApy.minus(rewardsApy)
+    tooltipLabel = (
       <VStack
         py={1}
         spacing={1}
@@ -756,7 +801,7 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
             justifyContent={'space-between'}
           >
             <Translation translation={`defi.realizedApy`} />
-            <Amount.Percentage value={asset?.vaultPosition?.realizedApy} {...props} fontSize={'md'} />
+            <Amount.Percentage value={netApy} {...props} fontSize={'md'} />
           </HStack>
           <HStack
             spacing={3}
@@ -770,25 +815,12 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
         </VStack>
       </VStack>
     )
-
-    return (
-      <Tooltip
-        hasArrow
-        placement={'top'}
-        label={tooltipLabel}
-      >
-        <TooltipContent>
-          <Amount.Percentage value={totalApy} borderBottom={'1px dashed'} borderBottomColor={'cta'} {...props} />
-        </TooltipContent>
-      </Tooltip>
-    )
   }
 
   // Add gauge APY to realized APY
   if (asset?.apyBreakdown?.gauge && bnOrZero(asset?.apyBreakdown?.gauge).gt(0) && bnOrZero(asset?.vaultPosition?.underlying.staked).gt(0)){
     totalApy = totalApy.plus(asset?.apyBreakdown.gauge)
-
-    const tooltipLabel = (
+    tooltipLabel = (
       <VStack
         py={1}
         spacing={1}
@@ -818,22 +850,18 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
         </VStack>
       </VStack>
     )
-
-    return (
-      <Tooltip
-        hasArrow
-        placement={'top'}
-        label={tooltipLabel}
-      >
-        <TooltipContent>
-          <Amount.Percentage value={totalApy} borderBottom={'1px dashed'} borderBottomColor={'cta'} {...props} />
-        </TooltipContent>
-      </Tooltip>
-    )
   }
   
   return asset?.vaultPosition?.realizedApy ? (
-    <Amount.Percentage value={totalApy} {...props} />
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={tooltipLabel}
+    >
+      <TooltipContent>
+        <Amount.Percentage value={totalApy} borderBottom={tooltipLabel ? '1px dashed' : 'none'} borderBottomColor={tooltipLabel ? 'cta' : 'none'} {...props} />
+      </TooltipContent>
+    </Tooltip>
   ) : <Spinner size={'sm'} />
 }
 
@@ -1478,6 +1506,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<BalanceUsd textStyle={'tableCell'} {...props} />)
     case 'realizedApy':
       return (<RealizedApy textStyle={'tableCell'} {...props} />)
+    case 'earningsUSd':
+      return (<EarningsUsd textStyle={'tableCell'} {...props} />)
     case 'weight':
       return (<GaugeWeight textStyle={'tableCell'} {...props} />)
     case 'nextWeight':
