@@ -1,16 +1,16 @@
 import Web3 from 'web3'
 import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
+import { MAX_ALLOWANCE } from 'constants/vars'
 import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
-import { MAX_ALLOWANCE, IDLE_MULTISIG_ADDRESS_OPTIMISM } from 'constants/vars'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
-import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress } from 'helpers/'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
@@ -52,6 +52,7 @@ export class TrancheVault {
   public readonly poolConfig: Pool | undefined
   public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly rewardsSenders: string[] | undefined
   public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
@@ -95,6 +96,7 @@ export class TrancheVault {
     this.messages = vaultConfig.messages
     this.description = vaultConfig.description
     this.trancheConfig = vaultConfig.Tranches[type]
+    this.rewardsSenders = vaultConfig.rewardsSenders
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
@@ -148,9 +150,9 @@ export class TrancheVault {
   }
 
   public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
-    if (!this.distributedTokens.length) return []
+    if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && tx.from.toLowerCase() === IDLE_MULTISIG_ADDRESS_OPTIMISM.toLowerCase() && tx.to.toLowerCase() === account.toLowerCase()
+      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && this.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
     })
   }
 

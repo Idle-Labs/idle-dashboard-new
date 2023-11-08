@@ -8,6 +8,7 @@ import IdleStrategy from 'abis/idle/IdleStrategy.json'
 import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
+import { IDLE_MULTISIG_ADDRESS_OPTIMISM } from 'constants/vars'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
@@ -85,6 +86,7 @@ export interface TrancheConfig {
   referralEnabled?:boolean
   autoFarming?:string[]
   distributedTokens?:string[]
+  rewardsSenders?:string[]
   underlyingToken:string
   modal?: any
   variant?: string
@@ -285,6 +287,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
+        rewardsSenders:[
+          IDLE_MULTISIG_ADDRESS_OPTIMISM,
+          '0xd152f549545093347a162dce210e7293f1452150' // Disperse App
+        ],
         stats:{
           startTimestamp: 1698105600000
         },
@@ -370,6 +376,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:2812768,
         underlyingToken:'USDT',
         distributedTokens:['OP'],
+        rewardsSenders:[
+          IDLE_MULTISIG_ADDRESS_OPTIMISM,
+          '0xd152f549545093347a162dce210e7293f1452150' // Disperse App
+        ],
         adaptiveYieldSplitEnabled:true,
         stats:{
           startTimestamp: 1698105600000
