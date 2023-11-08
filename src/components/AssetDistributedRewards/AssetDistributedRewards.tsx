@@ -66,7 +66,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
               underlyingAmount: distributedReward.value
             }
             return (
-              <TransactionItem transaction={transaction} />
+              <TransactionItem key={`tx_${transaction.hash}`} transaction={transaction} />
             )
           })
         }

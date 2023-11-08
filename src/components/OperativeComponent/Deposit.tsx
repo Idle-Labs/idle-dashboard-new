@@ -1,10 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { ZERO_ADDRESS } from 'constants/vars'
-import { networks } from 'constants/networks'
 import { imageFolder } from 'constants/folders'
 import { VAULT_LIMIT_MAX } from 'constants/vars'
-import { TbPlugConnectedX } from 'react-icons/tb'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -17,11 +15,10 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
+import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
-import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { Spinner, Image, Box, VStack, HStack, Text, Button, Center } from '@chakra-ui/react'
 import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
@@ -30,7 +27,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
 
   const { searchParams } = useBrowserRouter()
-  const { account, network, chainId, isNetworkCorrect } = useWalletProvider()
+  const { account, isNetworkCorrect } = useWalletProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
