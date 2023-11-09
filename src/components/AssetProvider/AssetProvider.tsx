@@ -1,7 +1,7 @@
 // import dayjs from 'dayjs'
+import { BigNumber } from 'bignumber.js'
 import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
-import type { BigNumber } from 'bignumber.js'
 import { networks } from 'constants/networks'
 import { GOVERNANCE_CHAINID } from 'constants/'
 import { strategies } from 'constants/strategies'
@@ -784,7 +784,7 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
   const rewardsApy = bnOrZero(asset?.vaultPosition?.rewardsApy)
   if (rewardsApy.gt(0)){
     // totalApy = totalApy.plus(rewardsApy)
-    const netApy = totalApy.minus(rewardsApy)
+    const netApy = BigNumber.maximum(0, totalApy.minus(rewardsApy))
     tooltipLabel = (
       <VStack
         py={1}

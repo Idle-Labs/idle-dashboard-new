@@ -252,9 +252,9 @@ export class VaultFunctionsHelper {
 
     if (!results) return BNify(0)
 
-    const foundVault = results.find( (r: any) => r.address.toLowerCase() === trancheVault.id.toLowerCase() )
+    const foundVault = results.find( (r: any) => cmpAddrs(r.address, trancheVault.id) )
 
-    // console.log('getOptimismTrancheAdditionalApy', trancheVault.id, foundVault?.apr, trancheVault.underlyingToken?.decimals, BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), trancheVault.underlyingToken?.decimals || 18)).toString())
+    // console.log('getOptimismTrancheAdditionalApy', trancheVault.id, foundVault?.apr, results, trancheVault.underlyingToken?.decimals, BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), trancheVault.underlyingToken?.decimals || 18)).toString())
     return BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), 18))
   }
 
@@ -687,6 +687,7 @@ export class VaultFunctionsHelper {
           switch (vault.cdoConfig.name) {
             case 'IdleCDO_clearpool_fasanara_USDT':
             case 'IdleCDO_clearpool_portofino_USDT':
+            case 'IdleCDO_clearpool_wincent_USDC':
               return {
                 type: 'rewards',
                 vaultId: vault.id,

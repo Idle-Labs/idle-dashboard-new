@@ -277,6 +277,96 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   },
   10:{
     clearpool:{
+      USDCWin:{
+        enabledEnvs:[],
+        status:'boosted',
+        variant:'wincent',
+        autoFarming:['OP'],
+        protocol:'clearpool',
+        blockNumber:17413683,
+        underlyingToken:'USDC',
+        distributedTokens:['OP'],
+        adaptiveYieldSplitEnabled:true,
+        rewardsSenders:[
+          IDLE_MULTISIG_ADDRESS_OPTIMISM,
+          '0xd152f549545093347a162dce210e7293f1452150' // Disperse App
+        ],
+        stats:{
+          startTimestamp: 1698105600000
+        },
+        flags:{
+          addHarvestApy: true,
+          referralEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_clearpool_wincent_USDC',
+          address:'0xa26b308B2386DBd906Cf1F8a653ca7d758f301B3'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_wincent_USDC',
+          address:'0x7bE5622b27ceb9f2f3776fa5c8e3BA23Db65Ced7'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x463a9fb7320834b7f8a5c4713434257c8971b9a8?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool wincent USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_wincent_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17413683,
+            name:'AA_clearpool_wincent_USDC',
+            label:'Clearpool wincent USDC AA',
+            token:'AA_clearpool_wincent_USDC',
+            address:'0xb00BbFD1bD0ee3EefF953FA02cdBe4A55BaaC55f'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_wincent_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:17413683,
+            name:'BB_clearpool_wincent_USDC',
+            token:'BB_clearpool_wincent_USDC',
+            label:'Clearpool wincent USDC BB',
+            address:'0x0BD3cC920926472606bAe4CE479430df18E99F75'
+          }
+        }
+      },
       USDTFas:{
         enabledEnvs:[],
         status:'boosted',
@@ -309,7 +399,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDT',
           address:'0x8A42DDE5040675C71C09499F63fBa8Ed98fee77B'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x87181362ba304fec7e5a82ad2b7b503d7ad62639?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
