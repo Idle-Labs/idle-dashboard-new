@@ -279,9 +279,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     clearpool:{
       USDCWin:{
         enabledEnvs:[],
-        status:'boosted',
         variant:'wincent',
         autoFarming:['OP'],
+        status:'deprecated',
         protocol:'clearpool',
         blockNumber:17413683,
         underlyingToken:'USDC',
@@ -296,7 +296,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         },
         flags:{
           addHarvestApy: true,
-          referralEnabled: true
+          referralEnabled: true,
+          depositsDisabled: true
         },
         CDO:{
           abi:IdleCDO as Abi,
