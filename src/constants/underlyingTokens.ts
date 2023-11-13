@@ -584,6 +584,19 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
     },
+    USDCE: {
+      decimals: 6,
+      token: 'USDCE',
+      label: 'USDC.e',
+      enabled: true,
+      abi: USDC as Abi,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"]
+      },
+      address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607'
+    },
     USDC: {
       decimals: 6,
       token: 'USDC',
@@ -594,7 +607,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [40, 117, 200],
         hsl: ["211", "67%", "47%"]
       },
-      address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607'
+      address: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'
     },
     USDT: {
       decimals: 6,
