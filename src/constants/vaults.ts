@@ -279,6 +279,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     clearpool:{
       USDCWin:{
         enabledEnvs:[],
+        status:'boosted',
         variant:'wincent',
         autoFarming:['OP'],
         protocol:'clearpool',
