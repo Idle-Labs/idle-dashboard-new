@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import type { AssetId } from 'constants/types'
-import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
 import { TrancheVault } from 'vaults/TrancheVault'
@@ -9,6 +8,7 @@ import { BNify, bnOrZero, apr2apy } from 'helpers/'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TextProps, VStack, HStack, Text } from '@chakra-ui/react'
+import { VAULT_LIMIT_MAX, IDLE_STAKING_TIERS } from 'constants/vars'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -169,6 +169,17 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     case 'stkIDLE':
     case 'stkIDLEAfterIncrease':
       dynamicActionField = (<Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />)
+    break;
+    case 'feeDiscount':
+      let feeDiscount = BNify(0)
+      const feeDiscountTierAmount: string | undefined = Object.keys(IDLE_STAKING_TIERS).reverse().find( tierAmount => BNify(tierAmount).lte(amount) )
+      if (feeDiscountTierAmount){
+        feeDiscount = BNify(IDLE_STAKING_TIERS[+feeDiscountTierAmount as number])
+      }
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={feeDiscount} />)
+    break;
+    case 'feeDiscountTier':
+      dynamicActionField = (<Amount textStyle={'titleSmall'} color={'primary'} {...textProps} value={1} />)
     break;
     case 'stakingApy':
       if (stakingData){

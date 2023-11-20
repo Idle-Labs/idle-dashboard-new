@@ -758,7 +758,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         },
         flags:{
           withdrawFee: 0.0005,
-          addHarvestApy: false
+          addHarvestApy: false,
+          feeDiscountEnabled: true
         },
         risks:[
           {

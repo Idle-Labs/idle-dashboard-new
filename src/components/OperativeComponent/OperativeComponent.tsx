@@ -586,12 +586,16 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     return transactionState.actionType || state.actionType
   }, [state.actionType, transactionState.actionType])
 
-
   const assetToDisplay = useMemo(() => {
     if (!selectAssetById) return state.asset?.name
     const asset = selectAssetById(transactionState.assetId)
     return asset?.name || state.asset?.name
   }, [selectAssetById, state.asset, transactionState.assetId])
+
+  const underlyingAsset = useMemo(() => {
+    if (!selectAssetById || !state.asset?.underlyingId) return null
+    return selectAssetById(state.asset.underlyingId)
+  }, [state.asset, selectAssetById])
 
   const amountToDisplay = useMemo(() => {
     return transactionState.amount ? transactionState.amount : (state.amount === MAX_ALLOWANCE ? `${translate('trade.unlimited')} ${assetToDisplay}` : parseFloat(state.amount))
@@ -751,7 +755,14 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                 actions[actionIndex].steps.map((step, index) => {
                   const StepComponent = step.component
                   return (
-                    <StepComponent key={`step_${index}`} itemIndex={index+1} goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} {...step.props} />
+                    <VStack
+                      flex={1}
+                      width={'full'}
+                      alignItems={'flex-start'}
+                    >
+                      <NavBar goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} translation={step.label} params={{asset: underlyingAsset?.name}} />
+                      <StepComponent key={`step_${index}`} itemIndex={index+1} {...step.props} />
+                    </VStack>
                   )
                 })
               }

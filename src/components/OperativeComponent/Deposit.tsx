@@ -4,6 +4,8 @@ import { ZERO_ADDRESS } from 'constants/vars'
 import { imageFolder } from 'constants/folders'
 import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { sendBeginCheckout } from 'helpers/analytics'
+// import { MdOutlineNewReleases } from "react-icons/md"
+import { IoSparklesOutline } from "react-icons/io5"
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
@@ -11,20 +13,22 @@ import { AddressLink } from 'components/AddressLink/AddressLink'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
-import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { Spinner, Image, Box, VStack, HStack, Text, Button, Checkbox } from '@chakra-ui/react'
 import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const { stakingEnabled, toggleStakingEnabled } = useAssetPageProvider()
 
   const { searchParams } = useBrowserRouter()
   const { account, isNetworkCorrect } = useWalletProvider()
@@ -125,6 +129,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
+    if (stakingEnabled){
+      dispatch({type: 'SET_AMOUNT', payload: amount})
+      dispatch({type: 'SET_DEFAULT_AMOUNT', payload: amount})
+      dispatch({type: 'SET_ASSET', payload: underlyingAsset})
+      return setActionIndex(2);
+    }
+
     ;(async() => {
       // if (!underlyingAssetVault.contract) return
 
@@ -149,7 +160,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, _referral, amount, amountUsd, vault, asset, underlyingAsset, dispatch, getDepositAllowance, sendTransaction])
+  }, [account, disabled, _referral, amount, amountUsd, vault, asset, underlyingAsset, stakingEnabled, dispatch, setActionIndex, getDepositAllowance, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -212,16 +223,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     }
   }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
 
-  // Automatically switch to withdraw
-  // useEffect(() => {
-  //   if (asset && asset.status === 'paused'){
-  //     setActionIndex(1)
-  //   }
-  // }, [asset, setActionIndex])
-
   const depositButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={"common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'}>
+      <Translation component={Button} translation={stakingEnabled ? "common.stakeDeposit" : "common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
             <Spinner size={'sm'} />
@@ -231,7 +235,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, transaction, deposit])
+  }, [account, disabled, transaction, deposit, stakingEnabled])
 
   const referralMessage = useMemo(() => {
     if (!_referral) return null
@@ -318,6 +322,47 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [asset, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
+  const stakingToggler = useMemo(() => {
+
+    const feeDiscountEnabled = vault && ("flags" in vault) && !!vault.flags?.feeDiscountEnabled
+    if (!feeDiscountEnabled) return null
+
+    return (
+      <VStack
+        spacing={2}
+        width={'full'}
+        alignItems={'flex-start'}
+      >
+        <HStack
+          pl={4}
+          spacing={1}
+        >
+          <Translation translation={'common.new'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
+          <IoSparklesOutline size={16} color={'orange'} />
+        </HStack>
+        <Card.Light
+          py={2}
+          px={4}
+          sx={!stakingEnabled ? {
+            opacity:0.8,
+            ':hover':{
+              opacity:1
+            }
+          } : {}}
+        >
+          <HStack
+            spacing={2}
+            alignItems={'flex-start'}
+          >
+            <Checkbox size={'md'} isChecked={stakingEnabled} onChange={() => toggleStakingEnabled()}>
+              <Translation translation={'feeDiscount.op.cta'} fontSize={'xs'} color={'primary'} isHtml params={{discount: 50}} />
+            </Checkbox>
+          </HStack>
+        </Card.Light>
+      </VStack>
+    )
+  }, [vault, stakingEnabled, toggleStakingEnabled])
+
   return (
     <AssetProvider
       flex={1}
@@ -386,6 +431,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           {referralMessage}
           {vaultMessage}
           <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+          {stakingToggler}
         </VStack>
         <VStack
           spacing={4}

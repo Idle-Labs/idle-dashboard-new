@@ -20,8 +20,8 @@ import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
 import { Box, VStack, HStack, Text, Button, SimpleGrid, Center, Tabs, TabList, Tab } from '@chakra-ui/react'
+import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS, PROTOCOL_TOKEN } from 'constants/vars'
 import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, toDayjs, bnOrZero, getBlock, formatDate, dayMax, dayMin, abbreviateNumber } from 'helpers/'
 
 export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] }) => {
@@ -39,6 +39,14 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
 
   const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
+
+  /*
+  const asset = useMemo(() => {
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
+    if (!underlyingToken) return null
+    return selectAssetById(underlyingToken.address)
+  }, [])
+  */
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -568,11 +576,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
               }
               {increaseAmount}
               {increaseTime}
-              {
-                stkIDLEAmount.gt(0) && (
-                  <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
-                )
-              }
+              <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
             </VStack>
             <VStack
               spacing={4}

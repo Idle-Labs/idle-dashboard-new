@@ -93,9 +93,9 @@ export const strategies: Record<string, StrategyProps> = {
       }
     ],
     dynamicActionFields:{
-      stake:['stakingApy', 'stakingPoolShare', 'stkIDLE'],
-      increaseTime:['stakingApy', 'stakingPoolShare', 'stkIDLEAfterIncrease'],
-      increaseAmount:['stakingApy', 'stakingPoolShare', 'stkIDLEAfterIncrease']
+      stake:['stkIDLE', 'feeDiscount'],
+      increaseTime:['stkIDLEAfterIncrease', 'feeDiscount'],
+      increaseAmount:['stkIDLEAfterIncrease', 'feeDiscount']
     },
   },
   GG:{

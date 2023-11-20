@@ -19,6 +19,7 @@
     "insufficientFunds": "Insufficient Funds",
     "estimatedGas": "Estimated Gas Fee",
     "gasFee": "Gas Fee",
+    "stakeDeposit": "Stake & Deposit",
     "calendar": "Calendar",
     "noDeposits": "No deposits",
     "switchNetwork": "Switch network",
@@ -704,6 +705,12 @@
       }
     }
   },
+  "feeDiscount": {
+    "op": {
+      "header": "Stake your IDLE",
+      "cta": "Stake your IDLE to get <span class='link'>up to %{discount}% discount</span> on performance fees"
+    }
+  },
   "staking": {
     "stake": "Stake",
     "1year": "1 year",
@@ -885,6 +892,8 @@
   "dynamicActionFields": {
     "depositLimit": "Available to deposit",
     "stakingPoolShare": "Pool share",
+    "feeDiscount": "Fee discount",
+    "feeDiscountTier": "Discount tier",
     "stakingApy": "Estimated APY",
     "stkIDLE": "You will receive",
     "stkIDLEAfterIncrease": "Balance after the increase",

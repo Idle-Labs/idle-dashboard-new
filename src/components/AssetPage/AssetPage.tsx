@@ -3,6 +3,7 @@ import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import { IconTab } from 'components/IconTab/IconTab'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { Stake } from 'components/OperativeComponent/Stake'
 import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AssetStats } from 'components/AssetStats/AssetStats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -14,13 +15,14 @@ import { Withdraw } from 'components/OperativeComponent/Withdraw'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { selectUnderlyingToken } from 'selectors/selectUnderlyingToken'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
-import { /*strategies,*/ AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber } from 'constants/'
+import { /*strategies,*/ AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, PROTOCOL_TOKEN } from 'constants/'
 
 type TabType = {
   id:string
@@ -35,11 +37,52 @@ type TabType = {
   actions?: OperativeComponentAction[]
 }
 
+type ContextProps = {
+  stakingEnabled: boolean
+  toggleStakingEnabled: Function
+}
+
+const initialState: ContextProps = {
+  stakingEnabled: false,
+  toggleStakingEnabled: () => {}
+}
+
+const StakeIDLE: React.FC = () => {
+  const { selectors: { selectVaultsByType, selectAssetById, selectVaultTransactions } } = usePortfolioProvider()
+
+  const protocolToken = useMemo(() => {
+    if (!selectAssetById) return
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
+    return underlyingToken && selectAssetById(underlyingToken.address)
+  }, [selectAssetById])
+
+  const stakedIdleVault = useMemo(() => {
+    return selectVaultsByType && selectVaultsByType('STK')?.[0]
+  }, [selectVaultsByType])
+
+  const stakedIdleAsset = useMemo(() => {
+    return selectAssetById && stakedIdleVault && selectAssetById(stakedIdleVault.id)
+  }, [selectAssetById, stakedIdleVault])
+
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={stakedIdleAsset.id}
+    >
+      <Stake itemIndex={0} chainIds={[STAKING_CHAINID]} />
+    </AssetProvider>
+  )
+}
+
+const AssetPageProviderContext = React.createContext<ContextProps>(initialState)
+export const useAssetPageProvider = () => React.useContext(AssetPageProviderContext)
+
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
   const { isMobile, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
+  const [ stakingEnabled, setStakingEnabled ] = useState<boolean>(false)
   const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
@@ -90,6 +133,10 @@ export const AssetPage: React.FC = () => {
   const vault = useMemo(() => {
     return selectVaultById && selectVaultById(params.asset)
   }, [selectVaultById, params.asset])
+
+  const toggleStakingEnabled = useCallback(() => {
+    return setStakingEnabled( prevState => !prevState )
+  }, [setStakingEnabled])
 
   /*
   const checkVaultNetwork = useCallback(() => {
@@ -190,31 +237,53 @@ export const AssetPage: React.FC = () => {
   }, [asset, portfolioTimestamp, assetBalanceUsd, assetsDataTimestamp, isPortfolioAccountReady, latestAssetUpdate, viewItemEventSent, setViewItemEventSent])
 
   const tabs = useMemo(() => {
+
+    const actions: TabType["actions"] = [
+      {
+        type: 'deposit',
+        component: Deposit,
+        label: 'common.deposit',
+        steps: [
+          {
+            type: 'approve',
+            component: Approve,
+            label:'modals.approve.header',
+          }
+        ]
+      },
+      {
+        type: 'withdraw',
+        label: 'common.withdraw',
+        component: Withdraw,
+        steps: []
+      }
+    ]
+
+    if (stakingEnabled){
+      actions.push({
+        type: 'stake',
+        component: StakeIDLE,
+        label: 'common.stake',
+        chainIds: [STAKING_CHAINID],
+        steps: [
+          {
+            type: 'approve',
+            component: Approve,
+            props: {
+              amountUsd: null
+            },
+            label:'modals.approve.header',
+          }
+        ]
+      })
+    }
+
     const tabs: TabType[] = [
       {
         id:'earn',
         label:'navBar.earn',
         component: Earn,
-        actions: [
-          {
-            type: 'deposit',
-            component: Deposit,
-            label: 'common.deposit',
-            steps: [
-              {
-                type: 'approve',
-                component: Approve,
-                label:'modals.approve.header',
-              }
-            ]
-          },
-          {
-            type: 'withdraw',
-            label: 'common.withdraw',
-            component: Withdraw,
-            steps: []
-          }
-        ]
+        actions
       }
     ]
     
@@ -270,7 +339,7 @@ export const AssetPage: React.FC = () => {
     }
 
     return tabs
-  }, [vault, vaultGauge, assetGauge, timeframe, dateRange, environment, claimableRewards])
+  }, [vault, vaultGauge, assetGauge, timeframe, dateRange, environment, claimableRewards, stakingEnabled])
 
   // Get selected tab id from search params
   const selectedTabId = useMemo(() => {
@@ -411,73 +480,75 @@ export const AssetPage: React.FC = () => {
   }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
 
   return (
-    <AssetProvider
-      wrapFlex={true}
-      assetId={params.asset}
-    >
-      <Box
-        width={'100%'}
+    <AssetPageProviderContext.Provider value={{stakingEnabled, toggleStakingEnabled}}>
+      <AssetProvider
+        wrapFlex={true}
+        assetId={params.asset}
       >
-        <Flex
-          my={[10, 14]}
+        <Box
           width={'100%'}
-          id={'asset-top-header'}
-          direction={['column', 'row']}
-          justifyContent={['center', 'space-between']}
         >
-          <Stack
+          <Flex
+            my={[10, 14]}
             width={'100%'}
-            spacing={[4, 8]}
-            alignItems={'center'}
-            justifyContent={'center'}
+            id={'asset-top-header'}
             direction={['column', 'row']}
+            justifyContent={['center', 'space-between']}
           >
-            <HStack
-              spacing={2}
-              alignItems={'center'}
-            >
-              <AssetLabel assetId={params.asset} fontSize={'h2'} />
-              <AssetProvider.ChainIcon width={6} height={6} />
-            </HStack>
-            {
-              isMobile && vaultDetails
-            }
             <Stack
-              flex={1}
-              spacing={0}
-              width={['100%', 'auto']}
-              justifyContent={'space-between'}
-              borderBottom={[0, '1px solid']}
+              width={'100%'}
+              spacing={[4, 8]}
+              alignItems={'center'}
+              justifyContent={'center'}
               direction={['column', 'row']}
-              borderColor={['divider', 'divider']}
             >
               <HStack
-                width={['full', 'auto']}
-                borderBottom={['1px solid', 0]}
-                borderColor={'divider'}
+                spacing={2}
+                alignItems={'center'}
               >
-                {renderedTabs}
+                <AssetLabel assetId={params.asset} fontSize={'h2'} />
+                <AssetProvider.ChainIcon width={6} height={6} />
               </HStack>
-              {headerRightSide}
+              {
+                isMobile && vaultDetails
+              }
+              <Stack
+                flex={1}
+                spacing={0}
+                width={['100%', 'auto']}
+                justifyContent={'space-between'}
+                borderBottom={[0, '1px solid']}
+                direction={['column', 'row']}
+                borderColor={['divider', 'divider']}
+              >
+                <HStack
+                  width={['full', 'auto']}
+                  borderBottom={['1px solid', 0]}
+                  borderColor={'divider'}
+                >
+                  {renderedTabs}
+                </HStack>
+                {headerRightSide}
+              </Stack>
             </Stack>
-          </Stack>
-        </Flex>
-        <HStack
-          width={'100%'}
-          spacing={[0, 10]}
-          alignItems={'space-between'}
-        >
-          <Stack
-            flex={1}
-            mb={[20, 0]}
-            spacing={10}
-            width={['100%', 14/20]}
+          </Flex>
+          <HStack
+            width={'100%'}
+            spacing={[0, 10]}
+            alignItems={'space-between'}
           >
-            <TabComponent {...tabs[selectedTabIndex].componentProps} />
-          </Stack>
-          {interactiveComponent}
-        </HStack>
-      </Box>
-    </AssetProvider>
+            <Stack
+              flex={1}
+              mb={[20, 0]}
+              spacing={10}
+              width={['100%', 14/20]}
+            >
+              <TabComponent {...tabs[selectedTabIndex].componentProps} />
+            </Stack>
+            {interactiveComponent}
+          </HStack>
+        </Box>
+      </AssetProvider>
+    </AssetPageProviderContext.Provider>
   )
 }

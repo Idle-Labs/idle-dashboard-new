@@ -90,10 +90,9 @@ export const Approve: React.FC<ApproveArgs> = ({
   return (
     <VStack
       flex={1}
-      width={'100%'}
+      width={'full'}
       alignItems={'flex-start'}
     >
-      <NavBar goBack={goBack} translation={"modals.approve.header"} params={{asset: underlyingAsset?.name}} />
       <Flex
         p={14}
         pt={20}
