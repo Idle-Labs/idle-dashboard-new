@@ -706,8 +706,18 @@
     }
   },
   "feeDiscount": {
+    "table": {
+      "header": "Fee discount tiers",
+      "columns": {
+        "tier": "Tier",
+        "stkIDLE": "stkIDLE",
+        "feeDiscount": "Fee discount",
+        "performanceFee": "Performance fee"
+      }
+    },
     "op": {
       "header": "Stake your IDLE",
+      "viewDiscountTable": "View discount table",
       "cta": "Stake your IDLE to get <span class='link'>up to %{discount}% discount</span> on performance fees"
     }
   },

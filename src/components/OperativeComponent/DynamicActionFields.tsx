@@ -8,7 +8,8 @@ import { BNify, bnOrZero, apr2apy } from 'helpers/'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TextProps, VStack, HStack, Text } from '@chakra-ui/react'
-import { VAULT_LIMIT_MAX, IDLE_STAKING_TIERS } from 'constants/vars'
+import { VAULT_LIMIT_MAX } from 'constants/vars'
+import { STAKING_FEE_DISCOUNTS } from 'constants/stakingFeeDiscounts'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -172,9 +173,9 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     break;
     case 'feeDiscount':
       let feeDiscount = BNify(0)
-      const feeDiscountTierAmount: string | undefined = Object.keys(IDLE_STAKING_TIERS).reverse().find( tierAmount => BNify(tierAmount).lte(amount) )
+      const feeDiscountTierAmount: string | undefined = Object.keys(STAKING_FEE_DISCOUNTS).reverse().find( tierAmount => BNify(tierAmount).lte(amount) )
       if (feeDiscountTierAmount){
-        feeDiscount = BNify(IDLE_STAKING_TIERS[+feeDiscountTierAmount as number])
+        feeDiscount = BNify(STAKING_FEE_DISCOUNTS[+feeDiscountTierAmount as number])
       }
       dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={feeDiscount} />)
     break;
@@ -203,7 +204,17 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       borderBottomColor={'divider'}
       justifyContent={'space-between'}
     >
-      <Translation component={Text} translation={`dynamicActionFields.${field}`} textStyle={'captionSmall'} color={textCta} />
+      <HStack
+        spacing={2}
+        alignItems={'center'}
+      >
+        <Translation component={Text} translation={`dynamicActionFields.${field}`} textStyle={'captionSmall'} color={textCta} />
+        {
+          field === 'feeDiscount' && (
+            <Translation component={Text} translation={`feeDiscount.op.viewDiscountTable`} textTransform={'lowercase'} textStyle={'linkBlue'} fontSize={'sm'} />
+          )
+        }
+      </HStack>
       {dynamicActionField}
     </HStack>
   )
@@ -264,7 +275,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
   return (
     <VStack
       spacing={2}
-      width={'100%'}
+      width={'full'}
     >
       {
         dynamicActionFields.map( (dynamicField: string) => (

@@ -2724,7 +2724,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get historical collected fees
   useEffect(() => {
-    if (isEmpty(state.vaults) || +chainId !== 1 || +chainId !== +state.vaultsChain || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current?.vaultsCollectedFeesProcessing || +(runningEffects.current?.vaultsCollectedFees || 0)>5) return
+    if (isEmpty(state.vaults) || +chainId !== 1 || +chainId !== +state.vaultsChain || !state.isPortfolioAccountReady || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current?.vaultsCollectedFeesProcessing || +(runningEffects.current?.vaultsCollectedFees || 0)>5) return
 
     // Get Historical data
     ;(async () => {
@@ -2747,7 +2747,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
     })()
   // eslint-disable-next-line
-  }, [state.vaults, state.vaultsChain, state.isPortfolioLoaded, vaultFunctionsHelper])
+  }, [state.vaults, state.vaultsChain, state.isPortfolioAccountReady, vaultFunctionsHelper])
 
   // Calculate historical USD Tvls
   useEffect(() => {

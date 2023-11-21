@@ -18,12 +18,12 @@ import { Translation } from 'components/Translation/Translation'
 import { PROTOCOL_TOKEN, SECONDS_IN_YEAR } from 'constants/vars'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { FeeDiscountTable } from 'components/FeeDiscountTable/FeeDiscountTable'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
-import { StakingDistributedRewards } from 'components/StakingDistributedRewards/StakingDistributedRewards'
 
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
@@ -314,7 +314,7 @@ export const Staking: React.FC = () => {
                 <Translation isHtml={true} translation={'strategies.staking.description'} component={Text} />
               </Card.Dark>
             </VStack>
-            <StakingDistributedRewards />
+            <FeeDiscountTable />
           </VStack>
         </Stack>
         <InteractiveComponent vaultId={stakedIdleAsset?.id} assetId={stakedIdleVault?.id} actions={actions} />
