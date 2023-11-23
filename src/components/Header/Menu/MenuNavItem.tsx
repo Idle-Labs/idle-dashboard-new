@@ -18,12 +18,12 @@ export const NavItemText:React.FC<NavItemTextProps> = ({isActive, ...props}) => 
     <HStack
       spacing={2}
     >
+      <Translation translation={props.label} textStyle={'cta'} sx={isActive ? {color:'primary'} : {}} {...props.labelProps}></Translation>
       {
         MenuItemIcon && (
           <Icon IconComponent={MenuItemIcon} color={isActive ? theme.colors.primary : theme.colors.cta} width={6} height={6} size={'24px'} {...props.iconProps}/>
         )
       }
-      <Translation translation={props.label} textStyle={'cta'} sx={isActive ? {color:'primary'} : {}} {...props.labelProps}></Translation>
       {
         props.color && (
           <Box

@@ -391,6 +391,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
         py={14}
         flex={1}
         width={'100%'}
+        justifyContent={'center'}
       >
         <VStack
           spacing={4}

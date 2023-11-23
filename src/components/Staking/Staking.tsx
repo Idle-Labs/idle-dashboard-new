@@ -329,6 +329,7 @@ export const Staking: React.FC = () => {
                   <HStack
                     spacing={4}
                     {...step.props}
+                    key={`step_${index}`}
                   >
                     <Image src={step.image} width={14} />
                     <Translation translation={step.translation} textStyle={'link'} onClick={() => openModal(modalProps as ModalProps, '2xl')} />
@@ -355,14 +356,14 @@ export const Staking: React.FC = () => {
     >
       <VStack
         spacing={6}
-        my={[10, 16]}
+        my={[10, 14]}
         width={'100%'}
         direction={['column', 'row']}
         justifyContent={'flex-start'}
         alignItems={['center','flex-start']}
       >
         <AnnouncementBanner mode={'alert'} text={'strategies.staking.feeSharingDisabled'} />
-        <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} size={'3xl'} />
+        <Translation translation={'navBar.feeDiscount'} component={Heading} as={'h2'} size={'3xl'} />
       </VStack>
       <HStack
         width={'100%'}

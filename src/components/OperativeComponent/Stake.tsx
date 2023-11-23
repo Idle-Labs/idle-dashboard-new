@@ -14,6 +14,7 @@ import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { STAKING_FEE_DISCOUNTS } from 'constants/stakingFeeDiscounts'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
@@ -486,6 +487,19 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
 
   // console.log('minDate', minDate, 'maxDate', maxDate)
 
+  const feeDiscountNotice = useMemo(() => {
+    const stakingMaxFeeDiscount = Object.entries(STAKING_FEE_DISCOUNTS).pop();
+    if (!stakingMaxFeeDiscount) return null
+    return (
+      <Card.Dark
+        p={2}
+        border={0}
+      >
+        <Translation textAlign={'center'} translation={'strategies.staking.op.feeDiscount'} params={{amount: `≥ ${stakingMaxFeeDiscount[0]}`, discount: stakingMaxFeeDiscount[1]}} isHtml textStyle={'captionSmaller'} />
+      </Card.Dark>
+    ) 
+  }, [])
+
   return (
     <AssetProvider
       flex={1}
@@ -547,6 +561,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
               width={'100%'}
               alignItems={'flex-start'}
             >
+              {feeDiscountNotice}
               {
                 increaseEnabled && (
                   <Tabs
