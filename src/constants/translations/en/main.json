@@ -194,7 +194,16 @@
   "strategies": {
     "staking": {
       "title": "Staking",
-      "description": "In <a href='https://gov.idle.finance/t/iip-10-single-token-staking/543' class='link' target='_blank' rel='noopener'>IIP-10</a>, the Idle DAO community voted in favor of allowing long-term holders to stake their IDLE and receive a share of the recurrent IDLE buyback. Available only for Ethereum.",
+      "howItWorks": {
+        "title": "How does it work?",
+        "modalTitle": "Enable fee discount",
+        "steps":{
+          "cta1": "Get IDLE",
+          "cta2": "Lock your IDLE",
+          "cta3": "Enjoy fee discount"
+        } 
+      },
+      "description": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet.<br />stkIDLE linearly decreases from the lockup date to the end date.",
       "feeSharingDisabled": "Following <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. A revamp of stkIDLE introducing new use cases is in the work. <a href='https://gov.idle.finance/t/idle-staking-update/1165' class='link' target='_blank' rel='noopener'>Follow the discussion</a>."
     },
     "gauge": {
@@ -550,6 +559,7 @@
     "stake": "Stake",
     "share": "Share",
     "totalFunds": "Total funds",
+    "feeDiscount": "Fee discount",
     "gauges": "Gauges",
     "seniorCoverage": "Senior Coverage",
     "govToken": "Gov. token",
@@ -672,6 +682,7 @@
       }
     },
     "viewOnChain": "View on chain",
+    "viewOnExplorer": "View on %{explorer}",
     "steps": {
       "deposit": {
         "info": {
@@ -1868,7 +1879,9 @@
         "strategy": "Strategy",
         "riskProfile": "Risk profile",
         "totalLocked":"Total locked",
+        "totalIDLELocked":"Total IDLE locked",
         "allocation":"Allocation",
+        "totalStkIDLESupply":"Total stkIDLE supply",
         "stkIDLESupply":"stkIDLE supply",
         "lockedIDLE":"Locked IDLE",
         "lockedUntil":"Locked until",

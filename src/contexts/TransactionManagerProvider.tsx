@@ -508,6 +508,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
     async (vaultId: AssetId, assetId: AssetId, contractSendMethod: ContractSendMethod, actionType?: string, amount?: string) => {
       if (!account || !web3) return null
 
+      /*
       const sendOptions: SendOptions = {
         from: account?.address
       }
@@ -517,6 +518,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         sendOptions.gas = gas
         sendOptions.gasPrice = (+state.gasPrice+100).toString()
       }
+      */
 
       dispatch({type: 'CREATE', payload: {
         amount,
@@ -527,7 +529,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       }})
 
       setTimeout(() => {
-        const hash = '0xa8e9499cf134f381ac1b65a5b62c42929a56462e8dff8898a532dc1e933bc3b7'
+        const hash = '0xc9ef7496a9ea0587158f52f4a0fe990ee1074fed3751e0c16d69be3256bce7e4'
         dispatch({type: 'SET_HASH', payload: hash})
         dispatch({type: 'SET_STATUS', payload: "pending"})
 
@@ -539,7 +541,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             setTimeout(() => {
               (async() => {
                 const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)
-                // console.log('Test tx: receipt', receipt)
+                console.log('Test tx: receipt', receipt)
                 if (receipt) {
                   dispatch({type: 'SET_RECEIPT', payload: receipt})
 
@@ -562,7 +564,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
         })()
       }, 2000)
     }
-  , [account, web3, state.gasPrice])
+  , [account, web3])
 
   // Reset transaction
   const cleanTransaction = useCallback(() => {

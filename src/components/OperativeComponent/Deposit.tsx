@@ -1,13 +1,10 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
-import { ZERO_ADDRESS } from 'constants/vars'
 import { imageFolder } from 'constants/folders'
-import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { sendBeginCheckout } from 'helpers/analytics'
-// import { MdOutlineNewReleases } from "react-icons/md"
-import { IoSparklesOutline } from "react-icons/io5"
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import { ZERO_ADDRESS, VAULT_LIMIT_MAX } from 'constants/vars'
 import { Translation } from 'components/Translation/Translation'
 import { AddressLink } from 'components/AddressLink/AddressLink'
 import { InputAmount } from 'components/InputAmount/InputAmount'
@@ -18,6 +15,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
+import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -322,51 +320,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [asset, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
-  const stakingToggler = useMemo(() => {
-
-    const feeDiscountEnabled = vault && ("flags" in vault) && !!vault.flags?.feeDiscountEnabled
-    if (!feeDiscountEnabled) return null
-
-    return (
-      <VStack
-        spacing={2}
-        width={'full'}
-        alignItems={'flex-start'}
-      >
-        <HStack
-          pl={4}
-          spacing={1}
-        >
-          <Translation translation={'common.new'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
-          <IoSparklesOutline size={16} color={'orange'} />
-        </HStack>
-        <Card.Light
-          py={2}
-          px={4}
-          sx={!stakingEnabled ? {
-            opacity:0.8,
-            ':hover':{
-              opacity:1
-            }
-          } : {}}
-        >
-          <HStack
-            spacing={2}
-            alignItems={'flex-start'}
-          >
-            <Checkbox size={'md'} isChecked={stakingEnabled} onChange={() => toggleStakingEnabled()}>
-              <Translation translation={'feeDiscount.op.cta'} fontSize={'xs'} color={'primary'} isHtml params={{discount: 50}} />
-            </Checkbox>
-          </HStack>
-        </Card.Light>
-      </VStack>
-    )
-  }, [vault, stakingEnabled, toggleStakingEnabled])
-
   return (
     <AssetProvider
       flex={1}
-      width={'100%'}
+      width={'full'}
       assetId={asset?.underlyingId}
     >
       <VStack
@@ -431,7 +388,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           {referralMessage}
           {vaultMessage}
           <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
-          {stakingToggler}
+          <FeeDiscountToggler assetId={asset?.id} />
         </VStack>
         <VStack
           spacing={4}

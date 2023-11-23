@@ -248,10 +248,10 @@ export type Harvest = {
 export type VaultStatus = 'production' | 'beta' | 'experimental' | 'deprecated' | 'maintenance' | 'paused' | 'boosted'
 
 export type ModalProps = {
-  title: string
-  subtitle: string
-  text: string
-  cta: string
+  title?: string
+  subtitle?: string
+  text?: string
+  cta?: string
   body?: JSX.Element | null
 }
 

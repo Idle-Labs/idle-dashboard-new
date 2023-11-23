@@ -1,22 +1,24 @@
 import { useTranslate } from 'react-polyglot'
-import { TransactionSpeed } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { NavBar } from 'components/OperativeComponent/NavBar'
+import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { selectUnderlyingToken } from 'selectors/selectUnderlyingToken'
 import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { TransactionSpeed, STAKING_CHAINID, PROTOCOL_TOKEN } from 'constants/'
 import { VaultNetworkCheck } from 'components/OperativeComponent/VaultNetworkCheck'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError } from 'helpers/'
-import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, Link, LinkProps } from '@chakra-ui/react'
+import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
+import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError, getStakingPower, getStkIDLE, getFeeDiscount, fixTokenDecimals, getExplorerByChainId } from 'helpers/'
 
 export type ActionComponentArgs = {
   itemIndex: number
@@ -171,6 +173,58 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     return asset?.name || underlyingAsset?.name
   }, [selectAssetById, underlyingAsset?.name, transactionState.assetId, transactionState.amount])
 
+  const feeDiscountEnabled = useMemo(() => {
+    return vault && ("flags" in vault) && !!vault.flags?.feeDiscountEnabled
+  }, [vault])
+
+  const stakingRecap = useMemo(() => {
+
+    if (!transactionState?.contractSendMethod) return null
+
+    // @ts-ignore
+    const txArgs = transactionState.contractSendMethod.arguments
+
+    const idleAmount = fixTokenDecimals(txArgs[0], 18)
+    const lockEndTime = parseInt(txArgs[1])
+    const stakingPower = getStakingPower(lockEndTime, BNify(transactionState.timestamp).div(1000))
+    const stkIDLEAmount = getStkIDLE(idleAmount, stakingPower)
+    const feeDiscount = getFeeDiscount(stkIDLEAmount)
+
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
+    const idleTokenAsset = underlyingToken?.address && selectAssetById(underlyingToken.address)
+
+    if (!idleTokenAsset) return null
+
+    return (
+      <Card.Dark
+        py={3}
+        px={4}
+        border={0}
+      >
+        <SimpleGrid
+          p={0}
+          columns={2}
+        >
+          <HStack
+            pr={2}
+            spacing={2}
+            justifyContent={'center'}
+            borderRight={'1px solid'}
+            borderColor={'divider'}
+          >
+            <Translation translation={'defi.feeDiscount'} textStyle={'captionSmall'} />
+            <Amount.Percentage decimals={2} value={feeDiscount} textStyle={'tableCell'} />
+          </HStack>
+          <HStack
+            justifyContent={'center'}
+          >
+            <TokenAmount assetId={idleTokenAsset.id} amount={stkIDLEAmount} textStyle={'tableCell'} size={'xs'} />
+          </HStack>
+        </SimpleGrid>
+      </Card.Dark>
+    )
+  }, [transactionState, selectAssetById])
+
   const body = useMemo(() => {
     switch (transactionState?.status) {
       case 'pending':
@@ -183,14 +237,29 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
           <VStack
             spacing={4}
           >
-            <Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+            {/*<Translation component={Text} translation={`modals.${txActionType}.status.success`} params={{asset: assetToDisplay, amount: amountToDisplay }} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />*/}
+            <VStack
+              spacing={1}
+              width={'full'}
+              justifyContent={'center'}
+            >
+              <Translation component={Text} translation={`trade.actions.${txActionType}.confirmed`} textStyle={'caption'} textAlign={'center'} />
+              <Text textStyle={'ctaStatic'} fontSize={'h3'}>{amountToDisplay} {assetToDisplay}</Text>
+            </VStack>
             {
               vault?.messages?.actions?.[txActionType] && (
                 <Translation pb={2} translation={vault?.messages?.actions?.[txActionType]} textStyle={'captionSmall'} textAlign={'center'} />
               )
             }
             {
-              txActionType === 'deposit' && vaultGauge ? (
+              txActionType === 'stake' ? (
+                <VStack
+                  spacing={4}
+                >
+                  {stakingRecap}
+                  <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaPrimary'} px={10} />
+                </VStack>
+              ) : txActionType === 'deposit' && vaultGauge ? (
                 <VStack
                   spacing={4}
                 >
@@ -225,7 +294,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       default:
         return null
     }
-  }, [transactionState, vault, translate, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
+  }, [transactionState, vault, translate, stakingRecap/*, feeDiscountEnabled*/, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
 
   const isLongTransaction = useMemo(() => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0
@@ -309,11 +378,17 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     )
   }, [transactionState?.status, resetAndGoBack])
 
+  const explorer = useMemo(() => {
+    const explorer =  getExplorerByChainId(chainId)
+    return explorer?.name || 'Chain'
+  }, [chainId])
+
   return (
     <>
       {navBar}
       <Flex
-        p={14}
+        px={3}
+        py={14}
         flex={1}
         width={'100%'}
       >
@@ -331,7 +406,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
             width={'100%'}
             justifyContent={'center'}
           >
-            <Translation<LinkProps> component={Link} translation={`defi.viewOnChain`} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(chainId, transactionState.hash)} />
+            <Translation<LinkProps> component={Link} translation={`defi.viewOnExplorer`} params={{explorer}} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(chainId, transactionState.hash)} />
           </HStack>
         )
       }
@@ -758,10 +833,11 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                     <VStack
                       flex={1}
                       width={'full'}
+                      key={`step_${index}`}
                       alignItems={'flex-start'}
                     >
                       <NavBar goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} translation={step.label} params={{asset: underlyingAsset?.name}} />
-                      <StepComponent key={`step_${index}`} itemIndex={index+1} {...step.props} />
+                      <StepComponent itemIndex={index+1} {...step.props} />
                     </VStack>
                   )
                 })

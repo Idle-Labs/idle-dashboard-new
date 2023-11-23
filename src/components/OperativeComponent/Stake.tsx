@@ -3,6 +3,7 @@ import { ManipulateType } from 'dayjs'
 import { Card } from 'components/Card/Card'
 import { MdLockOpen } from 'react-icons/md'
 import { STAKING_CHAINID } from 'constants/'
+import { integerValue } from 'helpers/utilities'
 import { TbPlugConnectedX } from 'react-icons/tb'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWeb3Provider } from 'contexts/Web3Provider'
@@ -17,12 +18,13 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
+import { FeeDiscountLink } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Box, VStack, HStack, Text, Button, SimpleGrid, Center, Tabs, TabList, Tab } from '@chakra-ui/react'
 import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS, PROTOCOL_TOKEN } from 'constants/vars'
-import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, toDayjs, bnOrZero, getBlock, formatDate, dayMax, dayMin, abbreviateNumber } from 'helpers/'
+import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, toDayjs, bnOrZero, getBlock, formatDate, dayMax, dayMin, abbreviateNumber, getStakingPower, getStkIDLE } from 'helpers/'
 
 export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] }) => {
   const [ error, setError ] = useState<string>('')
@@ -34,7 +36,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   const { web3 } = useWeb3Provider()
   const { account, setChainId, checkChainEnabled } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
-  const { sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
+  const { sendTransactionTest: sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
 
@@ -118,11 +120,8 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
 
   const stakingPower = useMemo(() => {
     // Use lockEnd from staking position if user is incrementing his amount
-    const stakingDurationSeconds = Math.max(0, lockEndTime-Math.round(Date.now()/1000))
-    return BNify(stakingDurationSeconds).div(MAX_STAKING_SECONDS)
+    return getStakingPower(lockEndTime)
   }, [lockEndTime])
-
-  // console.log('stakingPower', stakingPower.toFixed())
 
   const depositedAmount = useMemo(() => {
     return bnOrZero(stakingData?.position?.deposited)
@@ -130,10 +129,10 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
 
   const stkIDLEAmount = useMemo(() => {
     if (selectedIncreaseType === 'time' && stakingData?.position){
-      return stakingData?.position?.deposited.times(stakingPower)
+      return getStkIDLE(stakingData?.position?.deposited, stakingPower)
     }
     const balance = bnOrZero(stakingData?.position?.balance)
-    return balance.plus(bnOrZero(amount).times(stakingPower))
+    return balance.plus(getStkIDLE(amount, stakingPower))
   }, [selectedIncreaseType, stakingData, stakingPower, amount])
 
   // Update lock end date if not set
@@ -220,7 +219,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
       if (!increaseEnabled){
         const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
         // console.log('allowance', account.address, allowance)
-        if (allowance.gte(amount)){
+        if (true || allowance.gte(amount)){
 
           // Check if max lockEndTime is selected
           let newLockEndTime = lockEndTime
@@ -576,7 +575,14 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
               }
               {increaseAmount}
               {increaseTime}
-              <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
+              <VStack
+                spacing={2}
+                width={'full'}
+                alignItems={'flex-start'}
+              >
+                <DynamicActionFields assetId={asset?.id} action={selectedAction} amount={stkIDLEAmount.toFixed()} amountUsd={stkIDLEAmount.toFixed()} stakingPower={stakingPower} />
+                <FeeDiscountLink pl={4} />
+              </VStack>
             </VStack>
             <VStack
               spacing={4}

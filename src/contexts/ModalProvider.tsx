@@ -88,18 +88,22 @@ export function ModalProvider({ children }: ProviderProps) {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>
-          <ModalCloseButton />
+          {
+            modalProps.title && modalProps.title?.length>0 && (
+              <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>
+            )
+          }
+          <ModalCloseButton zIndex={999} />
           <ModalBody>
             {
-              modalProps.subtitle.length>0 && (
-                <Heading as={'h3'} fontSize={'lg'} mb={6}>
+              modalProps.subtitle && modalProps.subtitle?.length>0 && (
+                <Heading as={'h3'} fontSize={'lg'} mt={modalProps.title && modalProps.title?.length>0 ? 0 : 6} mb={6}>
                   {modalProps.subtitle}
                 </Heading>
               )
             }
             {
-              modalProps.body || (
+              modalProps.body || modalProps.text && (
                 <Text color={'cta'} dangerouslySetInnerHTML={{__html: modalProps.text}} />
               )
             }
@@ -135,7 +139,7 @@ export function ModalProvider({ children }: ProviderProps) {
                   }
                 </Stack>
               </ModalFooter>
-            ) : modalProps.cta.length>0 && (
+            ) : modalProps.cta && modalProps.cta.length>0 && (
               <ModalFooter>
                 <Flex
                   width={'full'}

@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
 import { Column, Row } from 'react-table'
-import { Card } from 'components/Card/Card'
 import { NumberType } from 'constants/types'
 import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
 import { sortAlpha, sortNumeric } from 'helpers/'
+import { Card, CardProps } from 'components/Card/Card'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { STAKING_FEE_DISCOUNTS } from 'constants/stakingFeeDiscounts'
@@ -17,10 +17,11 @@ type FeeStakingTier = {
 
 type FeeDiscountTableArgs = {
   showHeader?: boolean
-}
+} & CardProps
 
 export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
-  showHeader = true
+  showHeader = true,
+  ...cardProps
 }) => {
   const translate = useTranslate()
 
@@ -81,7 +82,10 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
   }
 
   return (
-    <Card mt={10}>
+    <Card
+      p={0}
+      {...cardProps}
+    >
       {
         showHeader && (
           <Translation translation={'feeDiscount.table.header'} fontSize={'lg'} component={Card.Heading} />

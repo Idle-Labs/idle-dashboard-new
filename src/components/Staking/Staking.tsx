@@ -4,13 +4,15 @@ import React, { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
 import { STAKING_CHAINID } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
-import type { Transaction } from 'constants/types'
 import { selectUnderlyingToken } from 'selectors/'
+import { MdArrowForwardIos } from "react-icons/md"
+import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Stake } from 'components/OperativeComponent/Stake'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { GeneralDataField } from 'constants/strategies'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
+import type { ModalProps, Transaction } from 'constants/types'
 import { Unstake } from 'components/OperativeComponent/Unstake'
 import { Approve } from 'components/OperativeComponent/Approve'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
@@ -21,13 +23,14 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { FeeDiscountTable } from 'components/FeeDiscountTable/FeeDiscountTable'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
-import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
+import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text, Image } from '@chakra-ui/react'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
+  const { openModal } = useModalProvider()
   const { isVaultsPositionsLoaded, stakingData, selectors: { selectVaultsByType, selectAssetById, selectVaultTransactions } } = usePortfolioProvider()
 
   const protocolToken = useMemo(() => {
@@ -270,6 +273,82 @@ export const Staking: React.FC = () => {
     )
   }, [account, isMobile, stakingData, protocolToken, realizedApy, stakedIdleVault])
 
+  const howItWorks = useMemo(() => {
+
+    const steps = [
+      {
+        image: 'images/staking/get-idle.png',
+        translation: 'strategies.staking.howItWorks.steps.cta1',
+        props: {
+          justifyContent: 'flex-end'
+        }
+      },
+      {
+        image: 'images/staking/stake.png',
+        translation: 'strategies.staking.howItWorks.steps.cta2',
+        props: {
+          justifyContent: 'center'
+        }
+      },
+      {
+        image: 'images/staking/fee-discount.png',
+        translation: 'strategies.staking.howItWorks.steps.cta3',
+        props: {
+          justifyContent: 'flex-start'
+        }
+      }
+    ]
+
+    return (
+      <VStack
+        spacing={4}
+        width={'full'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'strategies.staking.howItWorks.title'} textStyle={'ctaStatic'} />
+        <Card.Flex
+          py={6}
+          px={10}
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'center'}
+        >
+          <SimpleGrid
+            columns={3}
+            spacing={6}
+            width={'fit-content'}
+          >
+            {
+              steps.map( (step, index) => {
+                const modalProps = {
+                  cta: 'common.close',
+                  subtitle: step.translation,
+                  text: '',
+                }
+                return (
+                  <HStack
+                    spacing={4}
+                    {...step.props}
+                  >
+                    <Image src={step.image} width={14} />
+                    <Translation translation={step.translation} textStyle={'link'} onClick={() => openModal(modalProps as ModalProps, '2xl')} />
+                    {
+                      index<steps.length-1 && (
+                        <HStack pl={2}>
+                          <MdArrowForwardIos size={16} />
+                        </HStack>
+                      )
+                    }
+                  </HStack>
+                )
+              })
+            }
+          </SimpleGrid>
+        </Card.Flex>
+      </VStack>
+    )
+  }, [openModal])
+
   return (
     <Box
       width={'100%'}
@@ -301,20 +380,18 @@ export const Staking: React.FC = () => {
             width={'100%'}
             alignItems={'flex-start'}
           >
-            {stakingPosition}
-            {claimableIDLE}
+            <Translation maxW={['full', '36em']} translation={'strategies.staking.description'} isHtml={true} />
             <VStack
-              spacing={6}
+              spacing={4}
               width={'full'}
               alignItems={'flex-start'}
             >
-              <Translation translation={'staking.globalstkIDLE'} component={Text} textStyle={'heading'} fontSize={'h3'} />
+              {howItWorks}
               <AssetGeneralData assetId={stakedIdleAsset?.id} />
-              <Card.Dark>
-                <Translation isHtml={true} translation={'strategies.staking.description'} component={Text} />
-              </Card.Dark>
             </VStack>
-            <FeeDiscountTable />
+            {stakingPosition}
+            {claimableIDLE}
+            <FeeDiscountTable p={10} />
           </VStack>
         </Stack>
         <InteractiveComponent vaultId={stakedIdleAsset?.id} assetId={stakedIdleVault?.id} actions={actions} />
