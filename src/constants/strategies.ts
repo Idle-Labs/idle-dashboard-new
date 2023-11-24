@@ -16,7 +16,7 @@ export type StrategyCarouselItem = {
   description: string
 }
 
-type Tables = "Available" | "Deposited"
+export type Tables = "Available" | "Deposited" | "Discount"
 
 export type StrategyColumn = {
   id?: any

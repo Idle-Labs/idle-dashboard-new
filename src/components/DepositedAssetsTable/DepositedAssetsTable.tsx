@@ -4,6 +4,7 @@ import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
+import { IoPricetagsOutline } from 'react-icons/io5'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -14,11 +15,11 @@ import { Pagination } from 'components/Pagination/Pagination'
 import { ReactTable, } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { strategies, StrategyColumn } from 'constants/strategies'
-import { sortNumeric, sortAlpha, sendSelectItem, BNify } from 'helpers/'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { strategies, StrategyColumn, Tables } from 'constants/strategies'
 import { MdStarBorder, MdOutlineAccountBalanceWallet } from 'react-icons/md'
 import { AssetProvider, AssetProviderPropsType } from 'components/AssetProvider/AssetProvider'
+import { sortNumeric, sortAlpha, sendSelectItem, BNify, isEmpty, getRoutePath } from 'helpers/'
 import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -57,8 +58,8 @@ export const DepositedAssetsTable: React.FC = () => {
   const [ page, setPage ] = useState<number>(1)
   const { theme, isMobile } = useThemeProvider()
   const { account, prevAccount } = useWalletProvider()
-  const [ mode, setMode ] = useState<'Deposited'|'Available'>('Available')
-  const prevMode = usePrevious<'Deposited'|'Available'>(mode)
+  const [ mode, setMode ] = useState<Tables>('Available')
+  const prevMode = usePrevious<Tables>(mode)
 
   useEffect(() => {
     if (mode !== prevMode){
@@ -284,6 +285,10 @@ export const DepositedAssetsTable: React.FC = () => {
             .slice(0, 10)
   }, [selectVaultsAssetsByType, allStrategies])
 
+  const discountedAssetsData = useMemo(() => {
+    return []
+  }, [])
+
   const depositedAssetsData = useMemo(() => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return []
     return allStrategies.reduce( (vaultsAssetsWithBalance: Asset[], strategy) => {
@@ -460,6 +465,82 @@ export const DepositedAssetsTable: React.FC = () => {
     )
   }, [isMobile, featuredAssetsColumns, featuredAssetsData, page, totalPages, theme, rowsPerPage, onRowClick, goBack, goNext])
 
+  const discountedAssets = useMemo(() => {
+
+    const initialState = {
+      sortBy: [
+        {
+          id: 'apy',
+          desc: false
+        }
+      ]
+    }
+
+    return isMobile ? (
+      <VStack
+        mt={20}
+        spacing={6}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <VStack
+          spacing={2}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+        </VStack>
+      </VStack>
+    ) : (
+      <VStack
+        spacing={6}
+        width={'full'}
+      >
+        <Card>
+          {
+            isEmpty(discountedAssetsData.length) && (
+              <VStack
+                py={10}
+                spacing={6}
+                width={'full'}
+                alignItems={'center'}
+                justifyContent={'center'}
+              >
+                <Translation textAlign={'center'} translation={'feeDiscount.table.empty'} color={'cta'} isHtml />
+                <Translation<ButtonProps> component={Button} translation={`common.stake`} variant={'ctaPrimary'} px={10} onClick={() => navigate(getRoutePath('stake'))} />
+              </VStack>
+            )
+          }
+          {/*<ReactTable columns={featuredAssetsColumns} data={featuredAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />*/}
+        </Card>
+        {
+          totalPages>1 && (
+            <Pagination
+              activePage={page}
+              pages={totalPages}
+              justifyContent={'center'}
+              onPrevArrowClick={() => { if (page) goBack() }}
+              onNextArrowClick={() => { if (page<totalPages) goNext()}}
+              prevArrowColor={page === 1 ? theme.colors.ctaDisabled : theme.colors.primary}
+              nextArrowColor={page === totalPages ? theme.colors.ctaDisabled : theme.colors.primary}
+            />
+          )
+        }
+      </VStack>
+    )
+  }, [isMobile, page, totalPages, theme, discountedAssetsData, navigate, /*rowsPerPage, onRowClick,*/ goBack, goNext])
+
+  const selectedTable = useMemo(() => {
+    switch (mode){
+      case 'Deposited':
+        return depositedAssets
+      case 'Discount':
+        return discountedAssets
+      default:
+      case 'Available':
+        return featuredAssets
+    }
+  }, [mode, depositedAssets, discountedAssets, featuredAssets])
+
   if (!isPortfolioLoaded) return null
 
   return (
@@ -474,8 +555,9 @@ export const DepositedAssetsTable: React.FC = () => {
       >
         <Translation<ButtonProps> component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode==='Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited') } />
         <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode==='Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available') } />
+        <Translation<ButtonProps> component={Button} leftIcon={<IoPricetagsOutline size={24} />} translation={`common.discount`} variant={'filter'} aria-selected={mode==='Discount'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Discount') } />
       </HStack>
-      {mode === 'Deposited' ? depositedAssets : featuredAssets}
+      {selectedTable}
     </VStack>
   )
 }

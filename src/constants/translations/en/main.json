@@ -28,6 +28,7 @@
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
     "redeem": "Redeem",
+    "discount": "Discount",
     "inProgress": "In progress",
     "new": "New",
     "readMore": "Read more",
@@ -730,6 +731,7 @@
   "feeDiscount": {
     "table": {
       "header": "Fee discount tiers",
+      "empty": "Reduce performance fees through IDLE staking.<br />Your accrued discounts for each deposit will appear here.",
       "columns": {
         "tier": "Tier",
         "stkIDLE": "stkIDLE",
