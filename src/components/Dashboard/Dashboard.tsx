@@ -518,7 +518,7 @@ export const Dashboard: React.FC = () => {
           alignItems={'flex-start'}
           justifyContent={'space-between'}
         >
-          <DashboardNewsBanner banner={'zkEVM'} announcement={'maticRewards'} onClick={() => navigate(getRoutePath('earn', ['yield-tranches']))} />
+          <DashboardNewsBanner banner={'zkEVM'} announcement={'feeDiscount'} onClick={() => navigate(getRoutePath('stake'))} />
           <PartnersPrograms />
         </VStack>
         <VStack

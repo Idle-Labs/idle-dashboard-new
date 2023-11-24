@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { NavLink } from "react-router-dom"
 import { Icon } from 'components/Icon/Icon'
 import { MdOpenInNew } from 'react-icons/md'
@@ -8,21 +8,23 @@ import { Translation } from 'components/Translation/Translation'
 
 type NavItemTextProps = {
   isActive?: boolean
-  [x: string]: any
-}
+} & MenuItemType
 
 export const NavItemText:React.FC<NavItemTextProps> = ({isActive, ...props}) => {
   const theme = useTheme()
-  const MenuItemIcon = props.icon
+  const iconPosition = props.iconPosition || 'left'
+
+  const iconElement = useMemo(() => {
+    return props.icon && (
+      <Icon IconComponent={props.icon} color={isActive ? theme.colors.primary : theme.colors.cta} width={6} height={6} size={'24px'} {...props.iconProps}/>
+    )
+  }, [isActive, theme, props])
+
   return (
     <HStack
       spacing={2}
     >
-      {
-        MenuItemIcon && (
-          <Icon IconComponent={MenuItemIcon} color={isActive ? theme.colors.primary : theme.colors.cta} width={6} height={6} size={'24px'} {...props.iconProps}/>
-        )
-      }
+      {iconPosition === 'left' && iconElement}
       <Translation translation={props.label} textStyle={'cta'} sx={isActive ? {color:'primary'} : {}} {...props.labelProps}></Translation>
       {
         props.color && (
@@ -35,6 +37,7 @@ export const NavItemText:React.FC<NavItemTextProps> = ({isActive, ...props}) => 
           </Box>
         )
       }
+      {iconPosition === 'right' && iconElement}
     </HStack>
   )
 }

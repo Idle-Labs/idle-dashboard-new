@@ -5,7 +5,7 @@ import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
 import { TrancheVault } from 'vaults/TrancheVault'
-import { IoSparklesOutline } from 'react-icons/io5'
+import { BsStars } from "react-icons/bs"
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TextProps, VStack, HStack, Text } from '@chakra-ui/react'
@@ -208,7 +208,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         <Translation component={Text} translation={`dynamicActionFields.${field}`} textStyle={'captionSmall'} color={textCta} />
         {
           field === 'feeDiscount' && (
-            <IoSparklesOutline size={16} color={'orange'} />
+            <BsStars size={16} color={'orange'} />
           )
         }
       </HStack>

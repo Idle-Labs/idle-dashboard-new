@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
+import { BsStars } from "react-icons/bs"
 import { Card } from 'components/Card/Card'
-import { IoSparklesOutline } from "react-icons/io5"
 import { useModalProvider } from 'contexts/ModalProvider'
 import type { ModalProps, AssetId } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
@@ -58,7 +58,7 @@ export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
         spacing={1}
       >
         <Translation translation={'common.new'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
-        <IoSparklesOutline size={16} color={'orange'} />
+        <BsStars size={16} color={'orange'} />
       </HStack>
       <Card.Light
         py={2}

@@ -1,6 +1,6 @@
 import { IconType } from './types'
+import { BsStars } from "react-icons/bs";
 import { getLegacyDashboardUrl } from 'helpers/'
-import { IoSparklesOutline } from "react-icons/io5"
 import { ProductProps, products } from 'constants/products'
 
 export type MenuListType = {
@@ -9,6 +9,7 @@ export type MenuListType = {
   label: string
   icon?: IconType
   onClick?: Function
+  iconPosition?: string
   iconProps?: Record<string, any>
   labelProps?: Record<string, any>
 }
@@ -35,7 +36,8 @@ export const menu: MenuItemType[] = [
   {
     path: 'stake',
     label: 'navBar.feeDiscount',
-    icon: IoSparklesOutline,
+    icon: BsStars,
+    iconPosition: 'right',
     iconProps: {
       size: 18,
       color: 'orange'
