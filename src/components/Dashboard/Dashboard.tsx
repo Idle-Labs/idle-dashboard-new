@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import { BsStars } from "react-icons/bs"
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
 import React, { useState, useMemo } from 'react'
@@ -13,18 +14,19 @@ import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 import { PartnersPrograms } from 'components/PartnersPrograms/PartnersPrograms'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
-import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutChart'
+// import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { DashboardNewsBanner } from 'components/DashboardNewsBanner/DashboardNewsBanner'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
-import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Image, Flex } from '@chakra-ui/react'
+import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading/*, Image*/, Flex } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
   const { theme } = useThemeProvider()
@@ -36,6 +38,7 @@ export const Dashboard: React.FC = () => {
   const { network } = useWalletProvider()
   const {
     assetsData,
+    stakingData,
     isPortfolioAccountReady,
     // isVaultsPositionsLoaded,
     isPortfolioLoaded,
@@ -122,6 +125,7 @@ export const Dashboard: React.FC = () => {
     })
   }, [vaultsPositions, totalFunds, selectAssetStrategies])
 
+  /*
   const riskExposureDonutChart = useMemo(() => {
     const compositionData: DonutChartInitialData = totalFunds.gt(0) ? Object.keys(riskExposures).reduce( (donutChartData: DonutChartInitialData, strategy: string) => {
       donutChartData.colors[strategy] = strategies[strategy].color as string
@@ -151,6 +155,7 @@ export const Dashboard: React.FC = () => {
       <DonutChart {...compositionData} getSliceData={() => {}} donutThickness={6} />
     )
   }, [theme, totalFunds, riskExposures])
+  */
 
   const fundsOverview = useMemo(() => {
     if (totalFunds.lte(0)) return null
@@ -195,6 +200,154 @@ export const Dashboard: React.FC = () => {
       </SimpleGrid>
     )
   }, [totalFunds, aggregatedUsdPosition, avgRealizedApy])
+
+  /*
+  const riskExposure = useMemo(() => {
+    return (
+      <Card
+        px={[5, 7]}
+        py={[4, 6]}
+      >
+        <VStack
+          spacing={6}
+          width={'full'}
+          alignItems={'flex-start'}
+        >
+          <HStack
+            flex={1}
+            spacing={6}
+            width={'full'}
+            alignItems={'flex-start'}
+            justifyContent={'space-between'}
+          >
+            <VStack
+              spacing={6}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'dashboard.portfolio.riskExposure'} component={Heading} as={'h3'} fontSize={'h3'} />
+              <HStack
+                spacing={6}
+              >
+                {
+                  Object.keys(riskExposures).map( (strategy: string) => (
+                    <VStack
+                      spacing={2}
+                      alignItems={'flex-start'}
+                      key={`profile_${strategy}`}
+                    >
+                      <Translation translation={strategies[strategy].riskProfile} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
+                      <HStack
+                        spacing={2}
+                      >
+                        <Amount.Percentage value={riskExposures[strategy].perc.times(100)} textStyle={'ctaStatic'} fontSize={['md', 'lg']} lineHeight={'initial'} />
+                        <Image src={`images/strategies/${strategy}.svg`} w={6} h={6} />
+                      </HStack>
+                    </VStack>
+                  ))
+                }
+              </HStack>
+            </VStack>
+            <Box
+              width={100}
+              height={100}
+            >
+              {riskExposureDonutChart}
+            </Box>
+          </HStack>
+        </VStack>
+      </Card>
+    )
+  }, [riskExposures, riskExposureDonutChart])
+  */
+
+  const stakingPowerCard = useMemo(() => {
+
+    const stakingShare = bnOrZero(stakingData?.position.share)
+
+    return (
+      <Card
+        px={[5, 7]}
+        py={[4, 6]}
+        layerStyle={['card', 'cardHover']}
+        onClick={() => navigate(getRoutePath('stake'))}
+      >
+        <VStack
+          spacing={6}
+          width={'full'}
+          alignItems={'flex-start'}
+        >
+          <HStack
+            spacing={6}
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+          >
+            <VStack
+              spacing={6}
+              width={'full'}
+              alignItems={'flex-start'}
+            >
+              <HStack
+                spacing={2}
+              >
+                <Translation translation={'dashboard.portfolio.stakingPower'} component={Heading} as={'h3'} fontSize={'h3'} />
+                <BsStars size={20} color={'orange'} />
+              </HStack>
+              {
+                (!isPortfolioLoaded || stakingShare.lte(0)) ? (
+                  <VStack
+                    spacing={2}
+                    width={'full'}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={`strategies.staking.dashboard.description`} isHtml />
+                  </VStack>
+                ) : (
+                  <HStack
+                    spacing={10}
+                    width={'full'}
+                    justifyContent={'flex-start'}
+                  >
+                    <VStack
+                      spacing={2}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'staking.yourstkIDLE'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                        <AssetProvider.GeneralData field={'stkIDLEBalance'} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
+                      </SkeletonText>
+                    </VStack>
+                    <VStack
+                      spacing={2}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'staking.lockEnd'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                        <AssetProvider.StakingEndDate showTime={false} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
+                      </SkeletonText>
+                    </VStack>
+                    <VStack
+                      spacing={2}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'staking.feeDiscount'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                        <AssetProvider.GeneralData field={'stakingFeeDiscount'} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
+                      </SkeletonText>
+                    </VStack>
+                  </HStack>
+                )
+              }
+            </VStack>
+            <MdKeyboardArrowRight
+              size={24}
+              color={theme.colors.primary}
+            />
+          </HStack>
+        </VStack>
+      </Card>
+    )
+  }, [stakingData, isPortfolioLoaded, navigate, theme])
 
   const productsOverview = useMemo(() => {
     if (!selectVaultsAssetsByType) return null
@@ -322,61 +475,10 @@ export const Dashboard: React.FC = () => {
             )
           })
         }
-        <Card
-          px={[5, 7]}
-          py={[4, 6]}
-        >
-          <VStack
-            spacing={6}
-            width={'full'}
-            alignItems={'flex-start'}
-          >
-            <HStack
-              flex={1}
-              spacing={6}
-              width={'full'}
-              alignItems={'flex-start'}
-              justifyContent={'space-between'}
-            >
-              <VStack
-                spacing={6}
-                alignItems={'flex-start'}
-              >
-                <Translation translation={'dashboard.portfolio.riskExposure'} component={Heading} as={'h3'} fontSize={'h3'} />
-                <HStack
-                  spacing={6}
-                >
-                  {
-                    Object.keys(riskExposures).map( (strategy: string) => (
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                        key={`profile_${strategy}`}
-                      >
-                        <Translation translation={strategies[strategy].riskProfile} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                        <HStack
-                          spacing={2}
-                        >
-                          <Amount.Percentage value={riskExposures[strategy].perc.times(100)} textStyle={'ctaStatic'} fontSize={['md', 'lg']} lineHeight={'initial'} />
-                          <Image src={`images/strategies/${strategy}.svg`} w={6} h={6} />
-                        </HStack>
-                      </VStack>
-                    ))
-                  }
-                </HStack>
-              </VStack>
-              <Box
-                width={100}
-                height={100}
-              >
-                {riskExposureDonutChart}
-              </Box>
-            </HStack>
-          </VStack>
-        </Card>
+        {stakingPowerCard}
       </VStack>
     )
-  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, network, vaultsPositions, riskExposures, riskExposureDonutChart, theme])
+  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, network, vaultsPositions, stakingPowerCard, theme])
 
   const chartColor = useMemo(() => {
     if (selectedStrategies.length===1){

@@ -207,8 +207,11 @@
           "cta3": "Enjoy fee discount"
         } 
       },
+      "dashboard": {
+        "description": "Stake IDLE to unlock a performance <span class='linkStatic'>fee discount</span> as a liquidity provider."
+      },
       "op": {
-        "feeDiscount": "Stake <span class='bold' style='color: #fff;'>%{amount} IDLE</span> to unlock <span class='link bold'>%{discount}% discount</span> on fee performance"
+        "feeDiscount": "Stake <span class='bold' style='color: #fff;'>%{amount} IDLE</span> to unlock <span class='linkStatic bold'>%{discount}% fee discount</span>"
       },
       "description": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet.<br />stkIDLE linearly decreases from the lockup date to the end date.",
       "feeSharingDisabled": "Following <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. A revamp of stkIDLE introducing new use cases is in the work. <a href='https://gov.idle.finance/t/idle-staking-update/1165' class='link' target='_blank' rel='noopener'>Follow the discussion</a>."
@@ -339,6 +342,7 @@
       "totalChart": "Total Funds",
       "addAsset": "Add Asset",
       "yourAssets": "Your Assets",
+      "stakingPower": "Staking power",
       "riskExposure": "Senior/Junior composition",
       "asset": "Asset",
       "portfolioBalance": "Portfolio Balance",
@@ -736,7 +740,7 @@
     "op": {
       "header": "Stake your IDLE",
       "viewDiscountTable": "View discount table",
-      "cta": "Stake your IDLE to get <span class='link'>up to %{discount}% discount</span> on performance fees"
+      "cta": "Stake your IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees"
     }
   },
   "staking": {
@@ -748,6 +752,7 @@
     "lockEnd": "Lock end date",
     "itWillTake": "It will take",
     "totalSupply": "Total supply",
+    "feeDiscount": "Fee discount",
     "yourstkIDLE": "Your stkIDLE",
     "increaseTime": "Increase time",
     "increaseLock": "Increase lock",

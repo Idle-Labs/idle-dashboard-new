@@ -22,7 +22,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { FeeDiscountTable } from 'components/FeeDiscountTable/FeeDiscountTable'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
-import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
+// import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text, Image } from '@chakra-ui/react'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
@@ -362,7 +362,6 @@ export const Staking: React.FC = () => {
         justifyContent={'flex-start'}
         alignItems={['center','flex-start']}
       >
-        <AnnouncementBanner mode={'alert'} text={'strategies.staking.feeSharingDisabled'} />
         <Translation translation={'navBar.feeDiscount'} component={Heading} as={'h2'} size={'3xl'} />
       </VStack>
       <HStack

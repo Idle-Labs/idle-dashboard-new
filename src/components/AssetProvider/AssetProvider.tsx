@@ -1130,11 +1130,20 @@ const StakingDeposited: React.FC<AmountProps & AssetFieldProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const StakingEndDate: React.FC<AmountProps> = (props) => {
+type StakingEndDateArgs = AmountProps & {
+  showTime?: boolean
+}
+
+const StakingEndDate: React.FC<StakingEndDateArgs> = ({
+  showTime = true,
+  ...props
+}) => {
   const { stakingData } = usePortfolioProvider()
+
+  const format = showTime ? 'YYYY/MM/DD HH:mm' : 'YYYY/MM/DD'
   
   return stakingData?.position.lockEnd ? (
-    <Text {...props}>{formatDate(stakingData.position.lockEnd, 'YYYY/MM/DD HH:mm', true)}</Text>
+    <Text {...props}>{formatDate(stakingData.position.lockEnd, format, showTime)}</Text>
   ) : <Spinner size={'sm'} />
 }
 
@@ -1143,6 +1152,14 @@ const StakingShare: React.FC<AmountProps> = (props) => {
   
   return stakingData?.position.share ? (
     <Amount.Percentage value={stakingData.position.share} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
+const StakingFeeDiscount: React.FC<AmountProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData?.feeDiscount ? (
+    <Amount.Percentage value={stakingData?.feeDiscount} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
@@ -1460,6 +1477,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<StakingDeposited textStyle={'tableCell'} {...props} />)
     case 'stakingEndDate':
       return (<StakingEndDate textStyle={'tableCell'} {...props} />)
+    case 'stakingFeeDiscount':
+      return (<StakingFeeDiscount textStyle={'tableCell'} {...props} />)
     case 'stakingShare':
       return (<StakingShare textStyle={'tableCell'} {...props} />)
     case 'tvl':
@@ -1592,6 +1611,7 @@ AssetProvider.SeniorPoolUsd = SeniorPoolUsd
 AssetProvider.JuniorPoolUsd = JuniorPoolUsd
 AssetProvider.StrategyBadge = StrategyBadge
 AssetProvider.ApyRatioChart = ApyRatioChart
+AssetProvider.StakingEndDate = StakingEndDate
 AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.PerformanceFee = PerformanceFee

@@ -187,6 +187,7 @@ export type StakingData = {
   maxApr: BigNumber
   rewardsDays: number
   avgLockTime: number
+  feeDiscount: BigNumber
   rewards: EtherscanTransaction[]
   position: {
     lockEnd: number
