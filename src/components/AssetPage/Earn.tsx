@@ -18,6 +18,7 @@ import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
+import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
@@ -403,6 +404,7 @@ export const Earn: React.FC = () => {
         </Card.Flex>
       </Box>
       {fundsOverview}
+      <AssetDiscountedFees assetId={asset?.id} />
       <AssetDistributedRewards assetId={asset?.id} />
       <MaticNFTs assetId={asset?.id} />
       {vaultRewards}

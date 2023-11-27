@@ -3,12 +3,12 @@ import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
-import { FEES_COLLECTORS } from 'constants/vars'
 import { explorers, networks } from 'constants/'
 import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { selectUnderlyingToken } from 'selectors/'
 import { TrancheVault } from 'vaults/TrancheVault'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
+import { FEES_COLLECTORS } from 'constants/addresses'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
@@ -67,23 +67,6 @@ export class VaultFunctionsHelper {
   private getExporerByChainId = (chainId: number): Explorer => {
     return explorers[networks[chainId].explorer]
   }
-
-  /*
-  public async getVaultDistributedRewards(vault: Vault, account: string): Promise<EtherscanTransaction[]> {
-    const chainId = vault.chainId || this.chainId
-    const explorer = this.getExporerByChainId(chainId)
-    if (!explorer || !("distributedTokens" in vault) || !vault.distributedTokens.length) return []
-
-    const distributedTokens = vault.distributedTokens
-
-    const endpoint = `${explorer?.endpoints[chainId]}?module=account&action=tokentx&address=${IDLE_MULTISIG_ADDRESS_OPTIMISM}&sort=desc`
-
-    const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
-    const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
-
-    return etherscanTxlist ? etherscanTxlist.filter( (tx: EtherscanTransaction) => (distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && tx.to.toLowerCase() === account.toLowerCase() && BNify(tx.value).gt(0))) : []
-  }
-  */
 
   public async getStakingRewards(stakedIdleVault: StakedIdleVault | undefined, chainId?: number): Promise<EtherscanTransaction[]> {
 

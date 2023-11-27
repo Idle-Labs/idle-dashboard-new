@@ -92,13 +92,13 @@ export const DepositedAssetsTable: React.FC = () => {
         id:'tvl',
         width: '13%',
         accessor:'tvlUsd',
-        sortType: 'numeric',
+        sortType: 'numeric'
       },
       {
         id:'apy',
         width: '13%',
         accessor:'apy',
-        sortType: 'numeric',
+        sortType: 'numeric'
       },
       {
         id:'apy7',
@@ -205,7 +205,7 @@ export const DepositedAssetsTable: React.FC = () => {
       accessor: 'id',
       display: 'none'
     },
-    ...strategyColumnsDeposit,
+    ...strategyColumnsDeposit
   ], [strategyColumnsDeposit])
 
   const depositedAssetsColumns: Column<Asset>[] = useMemo(() => [
@@ -263,6 +263,42 @@ export const DepositedAssetsTable: React.FC = () => {
     allColumnsById['chainId']
   ], [translate, strategyColumnsDeposit, allColumnsById])
 
+  const discountedAssetsColumns: Column<Asset>[] = useMemo(() => [
+    {
+      Header: '#',
+      accessor: 'id',
+      display: 'none'
+    },
+    ...strategyColumnsDeposit,
+    {
+      width: '13%',
+      accessor:'balanceUsd',
+      Header:translate('defi.balance'),
+      Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            <Amount.Usd value={value} textStyle={'tableCell'} />
+          </SkeletonText>
+        )
+      },
+      sortType: sortNumeric
+    },
+    {
+      width: '13%',
+      accessor:'vaultPosition',
+      Header:translate('defi.discountedFees'),
+      Cell: ({ value }: { value: VaultPosition | undefined }) => {
+        return (
+          <SkeletonText noOfLines={2} isLoaded={!!value}>
+            {value && <Amount.Usd value={value.usd.discountedFees} textStyle={'tableCell'} />}
+          </SkeletonText>
+        )
+      },
+      sortType: sortNumeric
+    },
+    allColumnsById['chainId']
+  ], [allColumnsById, strategyColumnsDeposit, translate])
+
   const allStrategies = useMemo(() => {
     return products.reduce( (allStrategies: (keyof typeof strategies)[], product: ProductProps) => {
       return [...allStrategies, ...product.strategies]
@@ -285,10 +321,6 @@ export const DepositedAssetsTable: React.FC = () => {
             .slice(0, 10)
   }, [selectVaultsAssetsByType, allStrategies])
 
-  const discountedAssetsData = useMemo(() => {
-    return []
-  }, [])
-
   const depositedAssetsData = useMemo(() => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return []
     return allStrategies.reduce( (vaultsAssetsWithBalance: Asset[], strategy) => {
@@ -299,6 +331,13 @@ export const DepositedAssetsTable: React.FC = () => {
       return vaultsAssetsWithBalance
     }, [])
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, allStrategies])
+
+  const discountedAssetsData = useMemo(() => {
+    if (!isPortfolioLoaded) return []
+    return depositedAssetsData.filter( (asset: Asset) => {
+      return !!asset.flags?.feeDiscountEnabled
+    })
+  }, [depositedAssetsData, isPortfolioLoaded])
 
   // Set deposited if connected
   useEffect(() => {
@@ -325,8 +364,16 @@ export const DepositedAssetsTable: React.FC = () => {
 
   const rowsPerPage = useMemo(() => 5, [])
   const totalPages = useMemo(() => {
-    return mode === 'Deposited' ? Math.ceil(depositedAssetsData.length/rowsPerPage) : Math.ceil(featuredAssetsData.length/rowsPerPage)
-  }, [mode, featuredAssetsData, depositedAssetsData, rowsPerPage])
+    switch (mode){
+      case 'Deposited':
+        return Math.ceil(depositedAssetsData.length/rowsPerPage)
+      case 'Discount':
+        return Math.ceil(discountedAssetsData.length/rowsPerPage)
+      default:
+      case 'Available':
+        return Math.ceil(featuredAssetsData.length/rowsPerPage)
+    }
+  }, [mode, featuredAssetsData, depositedAssetsData, discountedAssetsData, rowsPerPage])
 
   const goBack = useCallback(() => {
     if (!page) return false
@@ -497,7 +544,7 @@ export const DepositedAssetsTable: React.FC = () => {
       >
         <Card>
           {
-            isEmpty(discountedAssetsData.length) && (
+            isEmpty(discountedAssetsData) ? (
               <VStack
                 py={10}
                 spacing={6}
@@ -508,9 +555,10 @@ export const DepositedAssetsTable: React.FC = () => {
                 <Translation textAlign={'center'} translation={'feeDiscount.table.empty'} color={'cta'} isHtml />
                 <Translation<ButtonProps> component={Button} translation={`common.stake`} variant={'ctaPrimary'} px={10} onClick={() => navigate(getRoutePath('stake'))} />
               </VStack>
+            ) : (
+              <ReactTable columns={discountedAssetsColumns} data={discountedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_discounted', 'Dashboard discounted') } />
             )
           }
-          {/*<ReactTable columns={featuredAssetsColumns} data={featuredAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />*/}
         </Card>
         {
           totalPages>1 && (
@@ -527,7 +575,7 @@ export const DepositedAssetsTable: React.FC = () => {
         }
       </VStack>
     )
-  }, [isMobile, page, totalPages, theme, discountedAssetsData, navigate, /*rowsPerPage, onRowClick,*/ goBack, goNext])
+  }, [isMobile, page, totalPages, theme, discountedAssetsColumns, discountedAssetsData, navigate, rowsPerPage, onRowClick, goBack, goNext])
 
   const selectedTable = useMemo(() => {
     switch (mode){

@@ -8,6 +8,7 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
+import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs } from 'helpers/'
@@ -153,6 +154,13 @@ export class TrancheVault {
     if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
       return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && this.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+    })
+  }
+
+  public getDiscountedFees(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
+    if (!this.flags?.feeDiscountEnabled || !this.underlyingToken?.address || !distributedFeesSenders[this.chainId]) return []
+    return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
+      return cmpAddrs(tx.contractAddress, this.underlyingToken?.address as string) && distributedFeesSenders[this.chainId].map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
     })
   }
 

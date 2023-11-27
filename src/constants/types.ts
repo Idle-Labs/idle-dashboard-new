@@ -226,6 +226,7 @@ export type VaultPosition = {
     earnings: BigNumber
     deposited: BigNumber
     redeemable: BigNumber
+    discountedFees?: BigNumber
   },
   usd: {
     staked: BigNumber
@@ -233,8 +234,11 @@ export type VaultPosition = {
     rewards?: BigNumber
     deposited: BigNumber
     redeemable: BigNumber
+    discountedFees?: BigNumber
   }
 }
+
+export type Address = `${'0x'}${string & { length: 40 }}`
 
 export type Harvest = {
   hash: string
@@ -320,6 +324,7 @@ export type Asset = {
   vaultPosition?: VaultPosition
   flags?: Record<string, boolean>
   interestBearingTokens?: Balances
+  discountedFees?: DistributedReward[]
   distributedRewards?: Record<AssetId, DistributedReward[]>
 }
 
