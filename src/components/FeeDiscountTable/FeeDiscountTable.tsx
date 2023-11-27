@@ -17,10 +17,12 @@ type FeeStakingTier = {
 
 type FeeDiscountTableArgs = {
   showHeader?: boolean
+  sortEnabled?: boolean
 } & CardProps
 
 export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
   showHeader = true,
+  sortEnabled = true,
   ...cardProps
 }) => {
   const translate = useTranslate()
@@ -40,6 +42,8 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
     {
       id:'tier',
       accessor:'tier',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
       Header:translate('feeDiscount.table.columns.tier'),
       Cell: ({ value }: { value: NumberType }) => {
         return (
@@ -51,6 +55,8 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
     {
       id:'amount',
       accessor:'amount',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
       Header:translate('feeDiscount.table.columns.stkIDLE'),
       Cell: ({ value }: { value: NumberType }) => {
         return (
@@ -62,6 +68,8 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
     {
       id:'discount',
       accessor:'discount',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
       Header:translate('feeDiscount.table.columns.feeDiscount'),
       Cell: ({ value }: { value: NumberType }) => {
         return (
@@ -70,7 +78,7 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
       },
       sortType: sortNumeric
     },
-  ]), [translate])
+  ]), [sortEnabled, translate])
 
   const initialState = {
     sortBy: [

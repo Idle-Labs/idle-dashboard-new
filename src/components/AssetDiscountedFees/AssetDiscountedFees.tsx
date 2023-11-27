@@ -10,6 +10,7 @@ import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { BNify, sortArrayByKey, isEmpty, formatDate } from 'helpers/'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
+import { FeeDiscountTable } from 'components/FeeDiscountTable/FeeDiscountTable'
 import type { AssetId, BigNumber, DistributedReward, ModalProps, Transaction } from 'constants/'
 
 type AssetDiscountedFeesProps = {
@@ -26,9 +27,17 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
 
   const openHowItWorksModal = useCallback(() => {
     const modalProps = {
-      cta: 'defi.modals.opDistribution.cta',
-      text: 'defi.modals.opDistribution.body',
-      subtitle: 'defi.modals.opDistribution.title'
+      cta: 'defi.modals.feeDiscount.cta',
+      body: (
+        <VStack
+          spacing={2}
+          width={'full'}
+        >
+          <Translation translation={'defi.modals.feeDiscount.body'} isHtml />
+          <FeeDiscountTable showHeader={false} sortEnabled={false} />
+        </VStack>
+      ),
+      subtitle: 'defi.modals.feeDiscount.title'
     }
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal])
@@ -61,7 +70,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
     const modalProps = {
       cta: 'common.close',
       body: rewardsHistory,
-      subtitle: 'defi.modals.opDistribution.rewardsHistory',
+      subtitle: 'common.rewardsHistory',
     }
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, rewardsHistory])

@@ -28,6 +28,7 @@
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
     "redeem": "Redeem",
+    "rewardsHistory": "Rewards history",
     "discount": "Discount",
     "inProgress": "In progress",
     "new": "New",
@@ -458,9 +459,13 @@
   },
   "defi": {
     "modals": {
+      "feeDiscount": {
+        "cta": "Got it",
+        "title": "Fee Discount program",
+        "body": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet. stkIDLE linearly decreases from the lockup date to the end date.<br />Find below the fee discount tiers table:"
+      },
       "opDistribution": {
         "cta": "Got it",
-        "rewardsHistory": "Rewards history",
         "title": "OP distribution program",
         "body": "To celebrate the launch on the OP Mainnet, the Optimism Foundation has granted 150,000 OP tokens to Idle, which will be used as rewards for early LP providers on Optimism Yield Tranches.<br /><br />The first campaign will start immediately and run for 60 days where both Senior and Junior liquidity providers will receive additional LP rewards paid in OP. The OP rewards will be distributed in addition to the interest paid by borrowers. On a weekly basis, Idle will airdrop the OP rewards to the users of any Senior/Junior Yield Tranches on Optimism, to the address used for providing liquidity. Every day a snapshot will be taken, and OP rewards will be calculated on the proportion of liquidity provided by the LP and the <a href='https://docs.idle.finance/products/yield-tranches/adaptive-yield-split' class='link' target='_blank' rel='noopener'>Senior/Junior Yield Split</a> at that specific time. The first snapshot will be taken on 25th October 2023 and the final one will be taken on 24th December 2023.<br /><br />Over the first 60 day campaign, the maximum weekly distribution will be set to 3125 OP tokens per vault, leading to a total distribution of 50,000 OP tokens over the 2 months period."
       },

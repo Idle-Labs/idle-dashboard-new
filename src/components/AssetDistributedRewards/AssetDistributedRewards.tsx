@@ -78,7 +78,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
     const modalProps = {
       cta: 'common.close',
       body: rewardsHistory,
-      subtitle: 'defi.modals.opDistribution.rewardsHistory',
+      subtitle: 'common.rewardsHistory'
     }
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, rewardsHistory])
