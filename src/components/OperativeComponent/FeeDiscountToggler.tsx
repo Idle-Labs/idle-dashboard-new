@@ -1,13 +1,16 @@
 import React, { useMemo } from 'react'
 import { BsStars } from "react-icons/bs"
+import { BNify, bnOrZero } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { useModalProvider } from 'contexts/ModalProvider'
 import type { ModalProps, AssetId } from 'constants/types'
+import { STAKING_CHAINID, PROTOCOL_TOKEN } from 'constants/vars'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { STAKING_FEE_DISCOUNTS } from 'constants/stakingFeeDiscounts'
 import { VStack, HStack, Checkbox, TextProps } from '@chakra-ui/react'
+import { selectUnderlyingToken } from 'selectors/selectUnderlyingToken'
 import { FeeDiscountTable } from 'components/FeeDiscountTable/FeeDiscountTable'
 
 type FeeDiscountTogglerArgs = {
@@ -31,23 +34,41 @@ export const FeeDiscountLink: React.FC<TextProps> = (props) => {
 export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
   assetId
 }) => {
-  const { selectors: { selectVaultById } } = usePortfolioProvider()
   const { stakingEnabled, toggleStakingEnabled } = useAssetPageProvider()
+  const { stakingData, selectors: { selectVaultById, selectAssetById, selectAssetBalance } } = usePortfolioProvider()
 
   const vault = useMemo(() => {
     if (!assetId || !selectVaultById) return null
     return selectVaultById(assetId)
   }, [assetId, selectVaultById])
 
+  const protocolTokenAsset = useMemo(() => {
+    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
+    return underlyingToken ? selectAssetById(underlyingToken?.address) : null
+  }, [selectAssetById])
+
   const feeDiscountEnabled = useMemo(() => {
     return vault && ("flags" in vault) && !!vault.flags?.feeDiscountEnabled
   }, [vault])
+
+  const protocolTokenBalance = useMemo(() => {
+    if (!protocolTokenAsset) return BNify(0)
+    return selectAssetBalance(protocolTokenAsset.id)
+  }, [selectAssetBalance, protocolTokenAsset])
 
   if (!feeDiscountEnabled) return null
 
   const discount = Object.values(STAKING_FEE_DISCOUNTS).pop();
 
-  return (
+  return stakingData?.feeDiscount.gt(0) ? (
+    <HStack
+      pl={4}
+      spacing={1}
+    >
+      <Translation translation={'feeDiscount.op.feeDiscount'} textStyle={'bodyTitle'} params={{discount: bnOrZero(stakingData.feeDiscount)}} isHtml fontSize={'xs'} fontWeight={600} />
+      <BsStars size={16} color={'orange'} />
+    </HStack>
+  ) : (
     <VStack
       spacing={2}
       width={'full'}
@@ -57,13 +78,13 @@ export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
         pl={4}
         spacing={1}
       >
-        <Translation translation={'common.new'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
+        <Translation translation={'defi.feeDiscount'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
         <BsStars size={16} color={'orange'} />
       </HStack>
       <Card.Light
         py={2}
         px={4}
-        sx={!stakingEnabled ? {
+        sx={!stakingEnabled && protocolTokenBalance.gt(0) ? {
           opacity:0.8,
           ':hover':{
             opacity:1
@@ -72,11 +93,17 @@ export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
       >
         <HStack
           spacing={2}
-          alignItems={'flex-start'}
+          justifyContent={protocolTokenBalance.gt(0) ? 'flex-start' : 'center'}
         >
-          <Checkbox size={'md'} isChecked={stakingEnabled} onChange={() => toggleStakingEnabled()}>
-            <Translation translation={'feeDiscount.op.cta'} fontSize={'xs'} color={'primary'} isHtml params={{discount}} />
-          </Checkbox>
+          {
+            protocolTokenBalance.lte(0) ? (
+              <Translation py={1} textAlign={'center'} translation={'feeDiscount.op.ctaNoIDLE'} fontSize={'xs'} color={'primary'} isHtml params={{discount}} />
+            ) : (
+              <Checkbox size={'md'} isChecked={stakingEnabled} onChange={() => toggleStakingEnabled()}>
+                <Translation translation={'feeDiscount.op.cta'} fontSize={'xs'} color={'primary'} isHtml params={{discount}} />
+              </Checkbox>
+            )
+          }
         </HStack>
       </Card.Light>
       <FeeDiscountLink pl={4} />
