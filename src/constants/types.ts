@@ -15,6 +15,8 @@ export type IconType = string | ReactIcon | React.ElementType
 
 export type NumberType = string | number | BigNumber
 
+export type Address = `${'0x'}${string & { length: 40 }}`
+
 export type VaultAdditionalApr = {
   vaultId: string
   apr: BigNumber
@@ -101,7 +103,7 @@ export type EtherscanTransaction = {
   blockHash: string
   blockNumber: string
   confirmations: string
-  contractAddress: string
+  contractAddress: Address
   cumulativeGasUsed: string
   from: string
   gas: string
@@ -238,15 +240,13 @@ export type VaultPosition = {
   }
 }
 
-export type Address = `${'0x'}${string & { length: 40 }}`
-
 export type Harvest = {
   hash: string
   aprs: Balances
   value: Balances
   timestamp: number
   blockNumber: number
-  tokenAddress: string
+  tokenAddress: Address
   totalValue: BigNumber
 }
 

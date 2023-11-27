@@ -145,6 +145,22 @@ export function formatMoney (amount: number, decimalCount = 2, decimal = ".", th
   }
 }
 
+export function uniqueValues(array: any[], attribute: string) {
+  const uniqueValues = new Set();
+  const result = [];
+
+  for (const object of array) {
+    const attributeValue = object[attribute];
+
+    if (!uniqueValues.has(attributeValue)) {
+      uniqueValues.add(attributeValue);
+      result.push(object);
+    }
+  }
+
+  return result;
+}
+
 export function formatDate (timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) {
   const day = dayjs(+timestamp)
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? ' UTC' : '')

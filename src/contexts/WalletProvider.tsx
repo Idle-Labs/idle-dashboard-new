@@ -1,9 +1,9 @@
-import type { Account } from 'constants/types'
 import useLocalForge from 'hooks/useLocalForge'
 import { selectUnderlyingToken } from 'selectors/'
 import { useSearchParams } from 'react-router-dom'
 import type { ProviderProps } from './common/types'
 import type { WalletState } from '@web3-onboard/core'
+import type { Account, Address } from 'constants/types'
 import { getOnBoardInitParams } from './configs/onboard'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
 import { checkAddress, sendLogin, sendChainId } from 'helpers/'
@@ -84,9 +84,9 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
   const prevChainId = usePrevious<number>(chainId)
 
-  const customAddress = useMemo(() => {
+  const customAddress: Address | null = useMemo(() => {
     const walletAddress = getSearchParams.get('wallet')
-    return walletAddress && checkAddress(walletAddress) ? walletAddress : null
+    return walletAddress && checkAddress(walletAddress) ? walletAddress as Address : null
   }, [getSearchParams])
 
   const setChainId = useCallback((chainId: number) => {

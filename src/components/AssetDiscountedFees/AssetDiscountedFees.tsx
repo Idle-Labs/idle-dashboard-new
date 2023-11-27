@@ -1,17 +1,16 @@
 import { Card } from 'components/Card/Card'
 import { DATETIME_FORMAT } from 'constants/vars'
-import { Amount } from 'components/Amount/Amount'
 import React, { useMemo, useCallback } from 'react'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { BNify, sortArrayByKey, isEmpty, toDayjs } from 'helpers/'
 import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
+import { BNify, sortArrayByKey, isEmpty, formatDate } from 'helpers/'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
-import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps, Transaction } from 'constants/'
+import type { AssetId, BigNumber, DistributedReward, ModalProps, Transaction } from 'constants/'
 
 type AssetDiscountedFeesProps = {
   assetId?: AssetId
@@ -19,15 +18,11 @@ type AssetDiscountedFeesProps = {
 
 export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId}) => {
   const { openModal } = useModalProvider()
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
   
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
   }, [selectAssetById, assetId])
-
-  const vault = useMemo(() => {
-    return selectVaultById && selectVaultById(assetId)
-  }, [selectVaultById, assetId])
 
   const openHowItWorksModal = useCallback(() => {
     const modalProps = {
@@ -104,24 +99,12 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
           <AssetProvider assetId={asset.underlyingId}>
             <SimpleGrid
               width={'full'}
-              spacing={[4, 0]}
-              columns={[2, 4]}
+              spacing={[3, 0]}
+              columns={[2, 3]}
               justifyContent={'center'}
               alignItems={'space-between'}
             >
               <TokenAmount assetId={asset.underlyingId} size={['sm', 'md']} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
-              {
-                /*
-                <VStack
-                  spacing={1}
-                  alignItems={['flex-end', 'flex-start']}
-                  justifyContent={'flex-start'}
-                >
-                  <Translation component={Text} translation={'defi.apy'} textStyle={'titleSmall'} />
-                  <Amount.Percentage value={apr} textStyle={'tableCell'} />
-                </VStack>
-                */
-              }
               <VStack
                 spacing={1}
                 alignItems={'flex-start'}
@@ -130,7 +113,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
                 <Translation component={Text} translation={'common.lastDistribution'} textStyle={'titleSmall'} />
                 {
                   latestDistribution ? (
-                    <Text textStyle={'tableCell'}>{toDayjs(latestDistribution.timeStamp).format(DATETIME_FORMAT)}</Text>
+                    <Text textStyle={'tableCell'}>{formatDate(latestDistribution.timeStamp, DATETIME_FORMAT)}</Text>
                   ) : (
                     <Text textStyle={'tableCell'}>-</Text>
                   )

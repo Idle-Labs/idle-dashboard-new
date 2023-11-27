@@ -12,35 +12,17 @@ import { products, ProductProps } from 'constants/products'
 import type { Asset, VaultPosition } from 'constants/types'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
 import { Pagination } from 'components/Pagination/Pagination'
-import { ReactTable, } from 'components/ReactTable/ReactTable'
+import { TableField } from 'components/TableField/TableField'
+import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { strategies, StrategyColumn, Tables } from 'constants/strategies'
 import { MdStarBorder, MdOutlineAccountBalanceWallet } from 'react-icons/md'
-import { AssetProvider, AssetProviderPropsType } from 'components/AssetProvider/AssetProvider'
 import { sortNumeric, sortAlpha, sendSelectItem, BNify, isEmpty, getRoutePath } from 'helpers/'
 import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
-
-type TableFieldProps = {
-  row: RowProps
-  field: string
-  value: any
-  props?: AssetProviderPropsType
-}
-
-export const TableField: React.FC<TableFieldProps> = ({ field, row, value, props }) => {
-  const assetId = row.original.id
-  return (
-    <SkeletonText noOfLines={2} isLoaded={!!value}>
-      <AssetProvider assetId={assetId}>
-        <AssetProvider.GeneralData section={'strategy'} field={field} {...props} />
-      </AssetProvider>
-    </SkeletonText>
-  )
-}
 
 export const DepositedAssetsTable: React.FC = () => {
 
@@ -147,15 +129,15 @@ export const DepositedAssetsTable: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} props={column.fieldProps} />
+              <TableField field={id} assetId={row.original.id} value={value} props={column.fieldProps} />
               {
                 column.extraFields.map( (extraField: string) => (
-                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
+                  <TableField key={`extraField_${extraField}`} assetId={row.original.id} field={extraField} value={value} />
                 ))
               }
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} props={column.fieldProps} />
+            <TableField field={id} assetId={row.original.id} value={value} props={column.fieldProps} />
           )
         }
       }
@@ -184,15 +166,15 @@ export const DepositedAssetsTable: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} props={column.fieldProps} />
+              <TableField field={id} value={value} assetId={row.original.id} props={column.fieldProps} />
               {
                 column.extraFields.map( (extraField: string) => (
-                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
+                  <TableField key={`extraField_${extraField}`} field={extraField} value={value} assetId={row.original.id} />
                 ))
               }
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} props={column.fieldProps} />
+            <TableField field={id} value={value} assetId={row.original.id} props={column.fieldProps} />
           )
         }
       }
@@ -248,7 +230,7 @@ export const DepositedAssetsTable: React.FC = () => {
                           <StatArrow type={'increase'} />
                         )
                       }
-                      <TableField field={'realizedApy'} value={value} row={row} />
+                      <TableField field={'realizedApy'} value={value} assetId={row.original.id} />
                     </Flex>
                   </StatNumber>
                   <Amount.Usd prefix={'+'} value={value.usd.earnings} textStyle={'captionSmall'} />

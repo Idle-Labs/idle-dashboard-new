@@ -576,7 +576,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
           if ("getDiscountedFees" in vault){
             const discountedFeesTxs = vault.getDiscountedFees(account.address, etherscanTransactions)
-            // console.log('discountedFeesTxs', vault.id, discountedFeesTxs)
             output.discountedFees[vault.id] = discountedFeesTxs.reduce( (discountedFees: NonNullable<Asset["discountedFees"]>, tx: EtherscanTransaction) => {
               const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
               if (!underlyingToken || !underlyingToken.address) return discountedFees
@@ -2852,7 +2851,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const discountedFees = await asyncReduce<AssetId, VaultsPositions["discountedFees"]>(
         Object.keys(state.discountedFees),
-        async (assetId, index) => {
+        async (assetId) => {
           const discountedFees = state.discountedFees
           const asset = selectAssetById(assetId)
           const vaultPosition = selectVaultPosition(assetId)
@@ -2878,7 +2877,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
               vaultPosition.underlying.discountedFees = bnOrZero(vaultPosition.underlying.discountedFees).plus(discountedFeesAmount);
               vaultPosition.usd.discountedFees = bnOrZero(vaultPosition.usd.discountedFees).plus(discountedFeesUsd);
 
-              console.log('discountedFees', assetId, underlyingToken?.address, bnOrZero(underlyingConversionRateAtBlock).toString(), discountedFeesAmount.toString(), discountedFeesUsd.toString(), vaultPosition.underlying.discountedFees.toString(), vaultPosition.usd.discountedFees.toString())
+              // console.log('discountedFees', assetId, underlyingToken?.address, bnOrZero(underlyingConversionRateAtBlock).toString(), discountedFeesAmount.toString(), discountedFeesUsd.toString(), vaultPosition.underlying.discountedFees.toString(), vaultPosition.usd.discountedFees.toString())
               // vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(discountedFeesUsd.div(distributionVaults.totalVaults));
 
             // Calculate avg rewards apy

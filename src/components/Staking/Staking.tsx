@@ -22,6 +22,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { FeeDiscountTable } from 'components/FeeDiscountTable/FeeDiscountTable'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
+import { DiscountedFeesTable } from 'components/DiscountedFeesTable/DiscountedFeesTable'
 // import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text, Image } from '@chakra-ui/react'
@@ -391,6 +392,7 @@ export const Staking: React.FC = () => {
             </VStack>
             {stakingPosition}
             {claimableIDLE}
+            <DiscountedFeesTable p={10} />
             <FeeDiscountTable p={10} />
           </VStack>
         </Stack>

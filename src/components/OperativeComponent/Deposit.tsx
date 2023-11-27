@@ -15,18 +15,18 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
+import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { Spinner, Image, Box, VStack, HStack, Text, Button, Checkbox } from '@chakra-ui/react'
 import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
+  const { stakingEnabled } = useAssetPageProvider()
   const [ amount, setAmount ] = useState<string>('0')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
-  const { stakingEnabled, toggleStakingEnabled } = useAssetPageProvider()
 
   const { searchParams } = useBrowserRouter()
   const { account, isNetworkCorrect } = useWalletProvider()

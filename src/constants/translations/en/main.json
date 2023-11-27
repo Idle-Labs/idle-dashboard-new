@@ -733,6 +733,7 @@
     "table": {
       "header": "Fee discount tiers",
       "empty": "Reduce performance fees through IDLE staking.<br />Your accrued discounts for each deposit will appear here.",
+      "stakingEmpty": "Your distributed fees will appear here.",
       "columns": {
         "tier": "Tier",
         "stkIDLE": "stkIDLE",

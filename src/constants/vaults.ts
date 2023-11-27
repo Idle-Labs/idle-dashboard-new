@@ -8,10 +8,10 @@ import IdleStrategy from 'abis/idle/IdleStrategy.json'
 import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
+import { rewardsSenders } from 'constants/whitelistedSenders'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
-import { rewardsSenders, distributedFeesSenders } from 'constants/whitelistedSenders'
 
 export const vaultsStatusSchemes: Record<string, string> = {
   'production' : 'green',
