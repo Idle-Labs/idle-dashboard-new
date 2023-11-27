@@ -749,7 +749,7 @@
     "op": {
       "header": "Stake your IDLE",
       "viewDiscountTable": "View discount table",
-      "feeDiscount": "Your fee discount is <span color='#4DE3B0'>%{discount}%</span>",
+      "feeDiscount": "Your fee discount is %{discount}%",
       "ctaNoIDLE": "Get IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees",
       "cta": "Stake your IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees"
     }

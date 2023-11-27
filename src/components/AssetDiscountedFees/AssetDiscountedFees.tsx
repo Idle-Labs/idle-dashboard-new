@@ -86,7 +86,11 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
     return !isEmpty(asset?.discountedFees) ? sortArrayByKey(asset.discountedFees, 'timeStamp', 'desc')[0] : null
   }, [asset])
 
-  if (!asset || !asset.underlyingId) return null
+  const discountedFeesEnabled = useMemo(() => {
+    return "flags" in asset && !!asset.flags?.feeDiscountEnabled
+  }, [asset])
+
+  if (!asset || !asset.underlyingId || !discountedFeesEnabled) return null
 
   return (
     <VStack

@@ -61,13 +61,27 @@ export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
   const discount = Object.values(STAKING_FEE_DISCOUNTS).pop();
 
   return stakingData?.feeDiscount.gt(0) ? (
-    <HStack
-      pl={4}
-      spacing={1}
+    <VStack
+      spacing={2}
+      width={'full'}
+      alignItems={'flex-start'}
     >
-      <Translation translation={'feeDiscount.op.feeDiscount'} textStyle={'bodyTitle'} params={{discount: bnOrZero(stakingData.feeDiscount)}} isHtml fontSize={'xs'} fontWeight={600} />
-      <BsStars size={16} color={'orange'} />
-    </HStack>
+      <Card.Dark
+        p={2}
+        border={0}
+        alignItems={'center'}
+      >
+        <HStack
+          spacing={1}
+          width={'full'}
+          justifyContent={'center'}
+        >
+          <Translation translation={'feeDiscount.op.feeDiscount'} textStyle={'bodyTitle'} params={{discount: bnOrZero(stakingData.feeDiscount)}} isHtml fontSize={'xs'} fontWeight={600} />
+          <BsStars size={16} color={'orange'} />
+        </HStack>
+      </Card.Dark>
+      <FeeDiscountLink pl={4} />
+    </VStack>
   ) : (
     <VStack
       spacing={2}
