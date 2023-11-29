@@ -232,7 +232,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
       if (!increaseEnabled){
         const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
         // console.log('allowance', account.address, allowance)
-        if (true || allowance.gte(amount)){
+        if (allowance.gte(amount)){
 
           // Check if max lockEndTime is selected
           let newLockEndTime = lockEndTime

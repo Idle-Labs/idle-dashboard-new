@@ -1894,6 +1894,7 @@
     "status": {
       "production": "Production",
       "boosted": "Boosted",
+      "discount": "Discount",
       "paused": "Paused",
       "beta": "Beta",
       "experimental": "Experimental",
@@ -1942,6 +1943,7 @@
       },
       "tooltips": {
         "stkIDLESupply":"Total supply of stkIDLE minted",
+        "discount":"This vault is eligible for fee discount",
         "boosted": "This vault is boosted by additional rewards",
         "maintenance": "This vault is temporarily under maintenance",
         "totalSupply": "Total amount of assets staked in this gauge",

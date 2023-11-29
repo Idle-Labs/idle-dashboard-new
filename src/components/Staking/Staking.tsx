@@ -6,13 +6,13 @@ import { STAKING_CHAINID } from 'constants/'
 import { Amount } from 'components/Amount/Amount'
 import { selectUnderlyingToken } from 'selectors/'
 import { MdArrowForwardIos } from "react-icons/md"
-import { useModalProvider } from 'contexts/ModalProvider'
+// import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Stake } from 'components/OperativeComponent/Stake'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import type { GeneralDataField } from 'constants/strategies'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
-import type { ModalProps, Transaction } from 'constants/types'
+import type { /*ModalProps, */Transaction } from 'constants/types'
 import { Unstake } from 'components/OperativeComponent/Unstake'
 import { Approve } from 'components/OperativeComponent/Approve'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
@@ -31,7 +31,7 @@ import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneral
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const { openModal } = useModalProvider()
+  // const { openModal } = useModalProvider()
   const { isVaultsPositionsLoaded, stakingData, selectors: { selectVaultsByType, selectAssetById, selectVaultTransactions } } = usePortfolioProvider()
 
   const protocolToken = useMemo(() => {
@@ -321,11 +321,13 @@ export const Staking: React.FC = () => {
           >
             {
               steps.map( (step, index) => {
+                /*
                 const modalProps = {
                   cta: 'common.close',
                   subtitle: step.translation,
                   text: '',
                 }
+                */
                 return (
                   <HStack
                     spacing={4}
@@ -333,7 +335,7 @@ export const Staking: React.FC = () => {
                     key={`step_${index}`}
                   >
                     <Image src={step.image} width={14} />
-                    <Translation translation={step.translation} textStyle={'link'} onClick={() => openModal(modalProps as ModalProps, '2xl')} />
+                    <Translation translation={step.translation} /*onClick={() => openModal(modalProps as ModalProps, '2xl')}*/ />
                     {
                       index<steps.length-1 && (
                         <HStack pl={2}>
@@ -349,7 +351,7 @@ export const Staking: React.FC = () => {
         </Card.Flex>
       </VStack>
     )
-  }, [openModal])
+  }, [])
 
   return (
     <Box

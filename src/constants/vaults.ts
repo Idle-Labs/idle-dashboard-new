@@ -19,6 +19,7 @@ export const vaultsStatusSchemes: Record<string, string> = {
   'disabled' : 'gray',
   'beta' : 'blue',
   'experimental' : 'purple',
+  'discount' : 'blue',
   'deprecated' : 'gray',
   'boosted' : 'red'
 }
@@ -729,6 +730,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       stETH:{
         autoFarming:[],
         enabledEnvs: [],
+        status:'discount',
         protocol:'instadapp',
         blockNumber:17519660,
         underlyingToken:'stETH',

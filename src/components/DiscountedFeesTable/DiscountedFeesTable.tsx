@@ -10,7 +10,8 @@ import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { HStack, SkeletonText, Text, VStack } from '@chakra-ui/react'
-import { sortNumeric, isEmpty, sortArrayByKey, formatDate, uniqueValues } from 'helpers/'
+import { TransactionLink } from 'components/TransactionLink/TransactionLink'
+import { sortNumeric, isEmpty, sortArrayByKey, formatDate, uniqueValues, getExplorerTxUrl, openWindow } from 'helpers/'
 
 type RowProps = Row<DistributedReward>
 
@@ -41,14 +42,15 @@ export const DiscountedFeesTable: React.FC<DiscountedFeesTableArgs> = ({
 
   const discountedFeesColumns: Column<DistributedReward>[] = useMemo(() => [
     {
+      id: 'id',
       Header: '#',
       accessor: 'hash',
       display: 'none'
     },
     {
+      id: 'asset',
       accessor: 'assetId',
-      id: 'assetWithStatus',
-      Header:translate('defi.assetWithStatus'),
+      Header:translate('defi.asset'),
       Cell: ({ value: assetId }: { value: AssetId }) => {
         return (
           <HStack
@@ -57,7 +59,7 @@ export const DiscountedFeesTable: React.FC<DiscountedFeesTableArgs> = ({
             alignItems={'center'}
             justifyContent={'space-between'}
           >
-            <TableField field={'assetWithStatus'} value={isPortfolioLoaded} assetId={assetId} />
+            <TableField field={'asset'} value={isPortfolioLoaded} assetId={assetId} />
             <TableField field={'productTagWithRisk'} value={isPortfolioLoaded} assetId={assetId} />
           </HStack>
         )
@@ -85,6 +87,22 @@ export const DiscountedFeesTable: React.FC<DiscountedFeesTableArgs> = ({
       },
       sortType: sortNumeric
     },
+    {
+      id: 'hash',
+      accessor:'hash',
+      Header:translate('transactionRow.hash'),
+      Cell: ({ value, row }: { value: string; row: RowProps }) => {
+        return (
+          <HStack
+            width={'full'}
+            justifyContent={'flex-start'}
+          >
+            <TransactionLink hash={value} chainId={row.original.chainId} />
+          </HStack>
+        )
+      },
+      sortType: sortNumeric
+    },
   ], [translate, isPortfolioLoaded])
 
   return (
@@ -108,7 +126,7 @@ export const DiscountedFeesTable: React.FC<DiscountedFeesTableArgs> = ({
             <Translation textAlign={'center'} translation={'feeDiscount.table.stakingEmpty'} color={'cta'} isHtml />
           </VStack>
         ) : (
-          <ReactTable columns={discountedFeesColumns} data={data} page={1} rowsPerPage={data.length} initialState={initialState} />
+          <ReactTable columns={discountedFeesColumns} data={data} page={1} rowsPerPage={data.length} initialState={initialState} onRowClick={ (row) => openWindow(getExplorerTxUrl(row.original.chainId as number, row.original.hash)) } />
         )
       }
     </Card>
