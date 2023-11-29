@@ -11,6 +11,6 @@ export const rewardsSenders: Record<number, Address[]> = {
 export const distributedFeesSenders: Record<number, Address[]> = {
   1: [
     IDLE_MULTISIG_MAINNET,
-    '0x0000000000000000000000000000000000000000' // TEST
+    // '0x0000000000000000000000000000000000000000' // TEST
   ]
 }
