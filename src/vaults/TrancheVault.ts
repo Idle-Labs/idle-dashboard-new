@@ -158,9 +158,10 @@ export class TrancheVault {
   }
 
   public getDiscountedFees(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
-    if (!this.flags?.feeDiscountEnabled || !this.underlyingToken?.address || !distributedFeesSenders[this.chainId]) return []
+    const tokenAddr = this.id// his.underlyingToken?.address
+    if (!this.flags?.feeDiscountEnabled || !tokenAddr || !distributedFeesSenders[this.chainId]) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return cmpAddrs(tx.contractAddress, this.underlyingToken?.address as string) && distributedFeesSenders[this.chainId].map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+      return cmpAddrs(tx.contractAddress, tokenAddr as string) && distributedFeesSenders[this.chainId].map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
     })
   }
 

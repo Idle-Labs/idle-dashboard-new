@@ -216,6 +216,7 @@ export const Dashboard: React.FC = () => {
               Object.keys(riskExposures).filter( (strategy: string) => riskExposures[strategy].perc.gt(0) ).map( (strategy: string) => (
                 <HStack
                   spacing={2}
+                  key={`index_${strategy}`}
                 >
                   <Amount.Percentage value={riskExposures[strategy].perc.times(100)} textStyle={'heading'} fontSize={'h3'}/>
                   <Image src={`images/strategies/${strategy}.svg`} w={6} h={6} />
@@ -647,7 +648,7 @@ export const Dashboard: React.FC = () => {
           alignItems={'flex-start'}
           justifyContent={'space-between'}
         >
-          <DashboardNewsBanner banner={'zkEVM'} announcement={'feeDiscount'} onClick={() => navigate(getRoutePath('stake'))} />
+          <DashboardNewsBanner banner={'feeDiscount'} announcement={'feeDiscount'} onClick={() => navigate(getRoutePath('stake'))} />
           <PartnersPrograms />
         </VStack>
         <VStack

@@ -24,16 +24,16 @@ import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fi
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
-  const { stakingEnabled } = useAssetPageProvider()
   const [ amount, setAmount ] = useState<string>('0')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
+  const { stakingEnabled, setStakingEnabled } = useAssetPageProvider()
 
   const { searchParams } = useBrowserRouter()
   const { account, isNetworkCorrect } = useWalletProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
   const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
-  const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
+  const { dispatch, activeItem, activeStep, executeAction, setActionIndex, depositAmount } = useOperativeComponent()
 
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams]) 
 
@@ -122,14 +122,16 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [underlyingAsset, vault, account?.address])
 
   // Deposit
-  const deposit = useCallback((checkAllowance = true) => {
-    if (!account || disabled) return
+  const deposit = useCallback((checkAllowance: boolean = true, forceAmount?: string | number) => {
+    const amountToDeposit = forceAmount || amount
+
+    // console.log('DEPOSIT', account?.address, disabled, forceAmount, amountToDeposit, stakingEnabled)
+    if (!account || (disabled && !forceAmount) || bnOrZero(amountToDeposit).gt(assetBalance)) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
-    if (stakingEnabled){
-      dispatch({type: 'SET_AMOUNT', payload: amount})
-      dispatch({type: 'SET_DEFAULT_AMOUNT', payload: amount})
+    if (stakingEnabled && !forceAmount){
+      dispatch({type: 'SET_DEPOSIT_AMOUNT', payload: amountToDeposit})
       dispatch({type: 'SET_ASSET', payload: underlyingAsset})
       return setActionIndex(2);
     }
@@ -137,13 +139,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ;(async() => {
       // if (!underlyingAssetVault.contract) return
 
-      const allowance = checkAllowance ? await getDepositAllowance() : BNify(amount)
+      const allowance = checkAllowance ? await getDepositAllowance() : BNify(amountToDeposit)
       
-      // console.log('allowance', account.address, checkAllowance, BNify(allowance).toString(), BNify(amount).toString())
+      // console.log('allowance', account.address, checkAllowance, BNify(allowance).toString(), BNify(amountToDeposit).toString())
 
-      if (allowance.gte(amount)){
+      if (allowance.gte(amountToDeposit)){
 
-        const depositParams = _referral && ("flags" in vault) && vault.flags?.referralEnabled ? vault.getDepositParams(amount, _referral) : vault.getDepositParams(amount)
+        const depositParams = _referral && ("flags" in vault) && vault.flags?.referralEnabled ? vault.getDepositParams(amountToDeposit, _referral) : vault.getDepositParams(amountToDeposit)
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         // console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
@@ -158,7 +160,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, _referral, amount, amountUsd, vault, asset, underlyingAsset, stakingEnabled, dispatch, setActionIndex, getDepositAllowance, sendTransaction])
+  }, [account, disabled, _referral, amount, amountUsd, assetBalance, vault, asset, underlyingAsset, stakingEnabled, dispatch, setActionIndex, getDepositAllowance, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -206,6 +208,25 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     })()
   }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
 
+  useEffect(() => {
+    // console.log('useEffect', activeItem, itemIndex, executeAction, stakingEnabled, depositAmount)
+    if (activeItem !== itemIndex || !executeAction || !stakingEnabled || bnOrZero(depositAmount).lte(0)) return
+    dispatch({type: 'SET_AMOUNT', payload: depositAmount})
+    dispatch({type: 'SET_DEFAULT_AMOUNT', payload: depositAmount})
+    dispatch({type: 'SET_ASSET', payload: underlyingAsset})
+
+    // Set amount
+    setAmount(depositAmount)
+
+    // Disable staking
+    setStakingEnabled(false)
+
+    // console.log('Deposit - executeAction', executeAction)
+    // console.log('Deposit - execute deposit')
+    deposit(true, depositAmount)
+    dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
+  }, [depositAmount, setAmount, activeItem, dispatch, deposit, itemIndex, underlyingAsset, stakingEnabled, setStakingEnabled, executeAction])
+
   // Update parent amount
   useEffect(() => {
     if (activeItem !== itemIndex) return
@@ -223,7 +244,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const depositButton = useMemo(() => {
     return account ? (
-      <Translation component={Button} translation={stakingEnabled ? "common.stakeDeposit" : "common.deposit"} disabled={disabled} onClick={deposit} variant={'ctaFull'}>
+      <Translation component={Button} translation={stakingEnabled ? "common.stakeDeposit" : "common.deposit"} disabled={disabled} onClick={() => deposit(true)} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
             <Spinner size={'sm'} />

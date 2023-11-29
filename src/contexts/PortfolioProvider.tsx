@@ -22,7 +22,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -577,18 +577,20 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if ("getDiscountedFees" in vault){
             const discountedFeesTxs = vault.getDiscountedFees(account.address, etherscanTransactions)
             output.discountedFees[vault.id] = discountedFeesTxs.reduce( (discountedFees: NonNullable<Asset["discountedFees"]>, tx: EtherscanTransaction) => {
-              const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
-              if (!underlyingToken || !underlyingToken.address) return discountedFees
-              const underlyingTokenId = underlyingToken.address.toLowerCase()
+              // const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
+              // if (!underlyingToken || !underlyingToken.address) return discountedFees
+              // const underlyingTokenId = underlyingToken.address.toLowerCase()
+              const asset = selectAssetById(tx.contractAddress)
+              if (!asset?.id) return discountedFees
               const discountedFee: DistributedReward = {
                 tx,
                 apr: null,
                 hash: tx.hash,
                 chainId: +chainId,
-                assetId: underlyingTokenId,
+                assetId: asset.id as string,
                 blockNumber: +tx.blockNumber,
                 timeStamp: +tx.timeStamp*1000,
-                value: fixTokenDecimals(tx.value, underlyingToken.decimals || 18)
+                value: fixTokenDecimals(tx.value, asset.decimals || 18)
               }
               discountedFees.push(discountedFee)
               return discountedFees
@@ -793,7 +795,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return output
-  }, [account, explorer, web3Chains, selectVaultPrice, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
+  }, [account, explorer, web3Chains, selectAssetById, selectVaultPrice, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
     if (!web3 || !multiCall || !state.contractsNetworks?.[STAKING_CHAINID].length) return []
@@ -2844,7 +2846,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Calculate discounted fees
   useEffect(() => {
-    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.discountedFees) || runningEffects.current.discountedFees === (account?.address || true)) return;
+    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalPrices) || isEmpty(state.discountedFees) || runningEffects.current.discountedFees === (account?.address || true)) return;
     ;(async() => {
 
       runningEffects.current.discountedFees = account?.address || true
@@ -2858,26 +2860,37 @@ export function PortfolioProvider({ children }:ProviderProps) {
           if (!asset || !vaultPosition || !asset.chainId) return discountedFees
           const assetChainId = +asset.chainId
           if (!isEmpty(state.discountedFees[assetId])){
-            await asyncForEach(state.discountedFees[assetId], async (discountedFee: DistributedReward) => {
+            await asyncForEach(state.discountedFees[assetId], async (discountedFee: DistributedReward, index: number) => {
               const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, asset.underlyingId as string)
               if (!underlyingToken) return
-
               const genericContractsHelper = new GenericContractsHelper({chainId: assetChainId, web3: web3Chains[assetChainId], contracts: state.contractsNetworks[assetChainId]})
+              // const underlyingConversionRateAtBlock = await genericContractsHelper.getConversionRate(underlyingToken, +discountedFee.blockNumber)
 
-              const underlyingConversionRateAtBlock = await genericContractsHelper.getConversionRate(underlyingToken, +discountedFee.blockNumber)
-              const discountedFeesAmount = discountedFee.value
-              const discountedFeesUsd = discountedFeesAmount.times(underlyingConversionRateAtBlock)
+              const discountedFeeAssetId = discountedFee.assetId
+
+              const txTimestamp = floorTimestamp(discountedFee.timeStamp)
+
+              // Get vault price
+              const vaultPriceData = selectAssetHistoricalPriceByTimestamp(discountedFeeAssetId, txTimestamp)
+              const underlyingTokenPriceUsdData = selectAssetHistoricalPriceUsdByTimestamp(underlyingToken.address, txTimestamp)
+
+              const vaultPrice = vaultPriceData ? BNify(vaultPriceData.value) : BNify(1)
+              const underlyingTokenPriceUsd = underlyingTokenPriceUsdData ? BNify(underlyingTokenPriceUsdData.value) : await genericContractsHelper.getConversionRate(underlyingToken, +discountedFee.tx.blockNumber)
+
+              const discountedFeesUnderlyingAmount = discountedFee.value.times(vaultPrice)
+              const discountedFeesUsd = discountedFeesUnderlyingAmount.times(underlyingTokenPriceUsd)
               // const apr = discountedFeesUsd.div(distributionVaults.totalRedeemable).times(52.1429)
-              // discountedFees[assetId][discountedFees[assetId].length-1].apr = apr.times(100)
+              discountedFees[assetId][index].value = discountedFeesUnderlyingAmount
 
               // Update realized apy on vaultPosition
               // vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).plus(apr.times(100));
 
               // Add rewards and earnings
-              vaultPosition.underlying.discountedFees = bnOrZero(vaultPosition.underlying.discountedFees).plus(discountedFeesAmount);
+              vaultPosition.underlying.discountedFees = bnOrZero(vaultPosition.underlying.discountedFees).plus(discountedFeesUnderlyingAmount);
               vaultPosition.usd.discountedFees = bnOrZero(vaultPosition.usd.discountedFees).plus(discountedFeesUsd);
 
-              // console.log('discountedFees', assetId, underlyingToken?.address, bnOrZero(underlyingConversionRateAtBlock).toString(), discountedFeesAmount.toString(), discountedFeesUsd.toString(), vaultPosition.underlying.discountedFees.toString(), vaultPosition.usd.discountedFees.toString())
+              // console.log('discountedFees', assetId, index, vaultPriceData, vaultPrice.toString(), discountedFees[assetId][index])
+
               // vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(discountedFeesUsd.div(distributionVaults.totalVaults));
 
             // Calculate avg rewards apy
@@ -2889,10 +2902,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
           return discountedFees
         },
-        (discountedFees, assetRewards) => {
+        (discountedFees, assetDiscountedFees) => {
           return {
             ...discountedFees,
-            ...assetRewards
+            ...assetDiscountedFees
           }
         },
         {...state.discountedFees}
@@ -2905,7 +2918,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // runningEffects.current.discountedFees = false
       // dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
     }
-  }, [state.discountedFees, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
+  }, [state.discountedFees, selectVaultPosition, state.isVaultsPositionsLoaded, state.historicalPricesUsd, selectAssetHistoricalPriceUsdByTimestamp, selectAssetHistoricalPrices, selectAssetHistoricalPriceByTimestamp, state.historicalPrices, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
 
   // Calculate distributed rewards APYs
   useEffect(() => {

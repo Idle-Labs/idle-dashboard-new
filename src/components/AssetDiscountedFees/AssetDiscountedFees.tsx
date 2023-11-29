@@ -50,7 +50,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
           sortArrayByKey(asset?.discountedFees, 'timeStamp', 'desc').map( (distributedReward: DistributedReward) => {
             const transaction: Transaction = {
               ...distributedReward.tx,
-              action: 'distributed',
+              action: 'feeDiscount',
               idlePrice: BNify(0),
               idleAmount: BNify(0),
               chainId: distributedReward.chainId,
@@ -70,7 +70,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
     const modalProps = {
       cta: 'common.close',
       body: rewardsHistory,
-      subtitle: 'common.rewardsHistory',
+      subtitle: 'common.discountsHistory',
     }
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, rewardsHistory])
@@ -87,7 +87,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
   }, [asset])
 
   const discountedFeesEnabled = useMemo(() => {
-    return "flags" in asset && !!asset.flags?.feeDiscountEnabled
+    return asset && "flags" in asset && !!asset.flags?.feeDiscountEnabled
   }, [asset])
 
   if (!asset || !asset.underlyingId || !discountedFeesEnabled) return null
@@ -117,7 +117,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
               justifyContent={'center'}
               alignItems={'space-between'}
             >
-              <TokenAmount assetId={asset.underlyingId} size={['sm', 'md']} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
+              <TokenAmount assetId={asset.underlyingId} size={'sm'} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
               <VStack
                 spacing={1}
                 alignItems={'flex-start'}
@@ -138,7 +138,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
               >
                 {
                   latestDistribution ? (
-                    <Translation translation={`assets.assetDetails.assetHistory.rewardsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} onClick={() => openRewardsHistoryModal()} />
+                    <Translation translation={`assets.assetDetails.assetHistory.discountsHistory`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} onClick={() => openRewardsHistoryModal()} />
                   ) : (
                     <Translation translation={`common.howItWorks`} textStyle={'linkBlue'} fontSize={'md'} fontWeight={700} onClick={() => openHowItWorksModal()} />
                   )

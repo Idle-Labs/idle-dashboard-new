@@ -29,6 +29,7 @@
     "deposit": "Deposit",
     "redeem": "Redeem",
     "rewardsHistory": "Rewards history",
+    "discountsHistory": "Discounts history",
     "discount": "Discount",
     "inProgress": "In progress",
     "new": "New",
@@ -462,7 +463,7 @@
       "feeDiscount": {
         "cta": "Got it",
         "title": "Fee Discount program",
-        "body": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet. stkIDLE linearly decreases from the lockup date to the end date.<br />Find below the fee discount tiers table:"
+        "body": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet. stkIDLE linearly decreases from the lockup date to the end date.<br />Find below the fee discount tiers:"
       },
       "opDistribution": {
         "cta": "Got it",
@@ -750,6 +751,7 @@
       "header": "Stake your IDLE",
       "viewDiscountTable": "View discount table",
       "feeDiscount": "Your fee discount is %{discount}%",
+      "success": "You have successfully enabled the fee discount.<br />Proceed with depositing your funds.",
       "ctaNoIDLE": "Get IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees",
       "cta": "Stake your IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees"
     }
@@ -859,6 +861,7 @@
     "deposit": "Deposit",
     "redeem": "Withdraw",
     "distributed": "Distributed",
+    "feeDiscount": "Fee discount",
     "send": "Sent",
     "stake": "Stake",
     "unstake": "Unstake",
@@ -1112,6 +1115,7 @@
       "insufficientFundsForLimit": "Insufficient funds. The minimum trade amount for this pair is %{minLimit}",
       "insufficientFundsForAmount": "Insufficient funds. Your %{symbol} balance is less than the selected amount",
       "limitCapReached": "This vault has a deposit limit, you can deposit up to %{limit} %{symbol}",
+      "stakingNotEnoughForFeeDiscount": "Note: increase the amount or staking time to get a fee discount.",
       "stakingIncreaseLockEndDateNotCorrect": "You can only increase the stake period for a maximum of 4 years.",
       "stakingLockEndDateNotCorrect": "Lock end date not correct. You can stake for a minimum of 2 weeks and a maximum of 4 years.",
       "invalidTradePair": "Invalid trade pair: %{sellAssetName} and %{buyAssetName}",
@@ -2006,6 +2010,7 @@
       },
       "assetHistory": {
         "rewardsHistory": "View rewards history",
+        "discountsHistory": "View discounts history",
         "transactionHistory": "Transaction History",
         "recentTransactions": "Recent Transactions",
         "emptyTransactions": "Transactions will appear here"

@@ -12,9 +12,9 @@ import { selectUnderlyingToken } from 'selectors/selectUnderlyingToken'
 import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { TransactionSpeed, STAKING_CHAINID, PROTOCOL_TOKEN } from 'constants/'
 import { VaultNetworkCheck } from 'components/OperativeComponent/VaultNetworkCheck'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { TransactionSpeed, STAKING_CHAINID, PROTOCOL_TOKEN, STAKING_FEE_DISCOUNTS } from 'constants/'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
@@ -43,10 +43,10 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const [ remainingTime, setRemainingTime ] = useState<number | null>(null)
   const [ targetTimestamp, setTargetTimestamp ] = useState<number | null>(null)
   const [ purchaseEventSent, setPurchaseEventSent ] = useState<string | undefined | null>(null)
-  const { amount, actionType, baseActionType, activeStep, activeItem } = useOperativeComponent()
   const [ transactionEventSent, setTransactionEventSent ] = useState<string | undefined | null>(null)
   const { state: { transaction: transactionState }, retry, cleanTransaction } = useTransactionManager()
-  const { selectors: { selectAssetById, selectAssetPriceUsd, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
+  const { amount, actionType, baseActionType, activeStep, activeItem, depositAmount } = useOperativeComponent()
+  const { stakingData, selectors: { selectAssetById, selectAssetPriceUsd, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
 
@@ -138,7 +138,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     // console.log('START COUNTDOWN', newTargetTimestamp, transactionState)
   }, [transactionState, targetTimestamp, startCountDown])
 
-  const resetAndGoBack = useCallback((resetStep = false) => {
+  const resetAndGoBack = useCallback((resetStep = false, actionIndex: number | null = null) => {
     if (transactionState?.status === 'pending') return
     cleanTransaction()
     setProgressValue(0)
@@ -152,7 +152,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     }
     countTimeoutId.current = null
 
-    return goBack(resetStep)
+    return goBack(resetStep, actionIndex)
   }, [transactionState?.status, cleanTransaction, goBack])
 
   // Handle transaction reset from another component
@@ -173,10 +173,6 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     return asset?.name || underlyingAsset?.name
   }, [selectAssetById, underlyingAsset?.name, transactionState.assetId, transactionState.amount])
 
-  const feeDiscountEnabled = useMemo(() => {
-    return vault && ("flags" in vault) && !!vault.flags?.feeDiscountEnabled
-  }, [vault])
-
   const stakingRecap = useMemo(() => {
 
     if (!transactionState?.contractSendMethod) return null
@@ -196,34 +192,68 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
     if (!idleTokenAsset) return null
 
     return (
-      <Card.Dark
-        py={3}
-        px={4}
-        border={0}
+      <VStack
+        spacing={3}
+        width={'full'}
       >
-        <SimpleGrid
-          p={0}
-          columns={2}
-        >
-          <HStack
-            pr={2}
-            spacing={2}
-            justifyContent={'center'}
-            borderRight={'1px solid'}
-            borderColor={'divider'}
-          >
-            <Translation translation={'defi.feeDiscount'} textStyle={'captionSmall'} />
-            <Amount.Percentage decimals={2} value={feeDiscount} textStyle={'tableCell'} />
-          </HStack>
-          <HStack
-            justifyContent={'center'}
-          >
-            <TokenAmount assetId={idleTokenAsset.id} amount={stkIDLEAmount} textStyle={'tableCell'} size={'xs'} />
-          </HStack>
-        </SimpleGrid>
-      </Card.Dark>
+        {
+          feeDiscount.gt(0) ? (
+            <Card.Dark
+              py={3}
+              px={4}
+              border={0}
+            >
+              <SimpleGrid
+                p={0}
+                columns={2}
+              >
+                <HStack
+                  pr={2}
+                  spacing={2}
+                  justifyContent={'center'}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                >
+                  <Translation translation={'defi.feeDiscount'} textStyle={'captionSmall'} />
+                  <Amount.Percentage decimals={2} value={feeDiscount} textStyle={'tableCell'} />
+                </HStack>
+                <HStack
+                  justifyContent={'center'}
+                >
+                  <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} amount={stkIDLEAmount} textStyle={'tableCell'} size={'xs'} />
+                </HStack>
+              </SimpleGrid>
+            </Card.Dark>
+          ) : (
+            <Card.Dark
+              p={2}
+              border={0}
+            >
+              <Translation textAlign={'center'} translation={'strategies.staking.op.feeDiscount'} params={{amount: `≥ ${Object.keys(STAKING_FEE_DISCOUNTS)[0]}`, discount: Object.values(STAKING_FEE_DISCOUNTS)[0]}} isHtml textStyle={'captionSmaller'} />
+            </Card.Dark>
+          )
+        }
+        {
+          bnOrZero(depositAmount).gt(0) ? (
+            <VStack
+              spacing={3}
+              width={'full'}
+              alignItems={'center'}
+            >
+              {
+                feeDiscount.gt(0) && (
+                  <Translation textAlign={'center'} translation={'feeDiscount.op.success'} params={{minStakingAmount: Object.keys(STAKING_FEE_DISCOUNTS)[0]}} isHtml textStyle={'captionSmall'} />
+                )
+              }
+              <Translation component={Button} translation={`common.deposit`} onClick={() => {resetAndGoBack(true, 0)} } variant={'ctaPrimary'} px={10} />
+            </VStack>
+          ) : (
+            <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaPrimary'} px={10} />
+          )
+        }
+      </VStack>
     )
-  }, [transactionState, selectAssetById])
+  }, [transactionState, selectAssetById, stakingData, depositAmount, resetAndGoBack, txActionType])
 
   const body = useMemo(() => {
     switch (transactionState?.status) {
@@ -252,14 +282,9 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
               )
             }
             {
-              txActionType === 'stake' ? (
-                <VStack
-                  spacing={4}
-                >
-                  {stakingRecap}
-                  <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => resetAndGoBack()} variant={'ctaPrimary'} px={10} />
-                </VStack>
-              ) : txActionType === 'deposit' && vaultGauge ? (
+              txActionType === 'stake' ?
+                stakingRecap
+              : txActionType === 'deposit' && vaultGauge ? (
                 <VStack
                   spacing={4}
                 >
@@ -294,7 +319,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
       default:
         return null
     }
-  }, [transactionState, vault, translate, stakingRecap/*, feeDiscountEnabled*/, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
+  }, [transactionState, vault, translate, stakingRecap, txActionType, assetToDisplay, amountToDisplay, remainingTime, activeStep, baseActionType, resetAndGoBack, retry, setSearchParams, vaultGauge])
 
   const isLongTransaction = useMemo(() => {
     return !!transactionState?.estimatedTime && transactionState?.status === 'pending' && remainingTime===0
@@ -552,6 +577,7 @@ interface OperativeComponentContextProps {
   activeItem: number
   asset: Asset | null
   defaultAmount: string
+  depositAmount: string
   executeAction: boolean
   baseActionType: string
   setActionIndex: Function
@@ -564,6 +590,7 @@ const initialState: OperativeComponentContextProps = {
   activeItem: 0,
   actionType: '',
   defaultAmount: '',
+  depositAmount: '',
   baseActionType: '',
   dispatch: () => {},
   executeAction: false,
@@ -581,6 +608,8 @@ const reducer = (state: OperativeComponentContextProps, action: ReducerActionTyp
       return {...state, executeAction: action.payload}
     case 'SET_DEFAULT_AMOUNT':
       return {...state, defaultAmount: action.payload}
+    case 'SET_DEPOSIT_AMOUNT':
+      return {...state, depositAmount: action.payload}
     case 'SET_ACTION_TYPE':
       return {...state, actionType: action.payload}
     case 'SET_BASE_ACTION_TYPE':
@@ -622,7 +651,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   }
 
   const activeAction = useMemo(() => actions[actionIndex], [actions, actionIndex])
-  const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => actions[actionIndex].component, [actions, actionIndex])
+  const ActionComponent = useMemo((): React.FC<ActionComponentArgs> | null => (actions[actionIndex]?.component || null), [actions, actionIndex])
   const activeStep = useMemo(() => !state.activeStep ? activeAction : activeAction.steps[state.activeStep-1], [activeAction, state.activeStep])
 
   useEffect(() => {
@@ -677,6 +706,10 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     return transactionState.amount ? transactionState.amount : (state.amount === MAX_ALLOWANCE ? `${translate('trade.unlimited')} ${assetToDisplay}` : parseFloat(state.amount))
   }, [state.amount, assetToDisplay, translate, transactionState.amount])
 
+  const txActionType = useMemo(() => {
+    return transactionState.actionType || actionType
+  }, [actionType, transactionState.actionType])
+
   useEffect(() => {
     // console.log('TransactionProcess', transactionState)
     const firstProcessIndex = activeAction.steps.length+1
@@ -696,8 +729,9 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       case 'success':
         setActiveItem(firstProcessIndex+1)
         // If internal step is active return to step 0
-        if (state.activeStep) {
+        if (state.activeStep || (txActionType === 'stake' && bnOrZero(state.depositAmount).gt(0))) {
           // Automatically execute action after going back
+          // console.log('SET_EXECUTE_ACTION', true)
           dispatch({type: 'SET_EXECUTE_ACTION', payload: true})
           // setTimeout(() => {
           //   dispatch({type:'SET_ACTIVE_STEP', payload: 0})
@@ -708,7 +742,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       default:
       break;
     }
-  }, [transactionState, cleanTransaction, activeAction, state.activeStep])
+  }, [transactionState, cleanTransaction, activeAction, state.activeStep, txActionType, state.depositAmount])
 
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null
@@ -745,14 +779,23 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     )
   }, [activeAction, activeItem, gasPrice, transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened])
 
-  const goBack = useCallback((resetStep = false) => {
+  const goBack = useCallback((resetStep = false, actionIndex = null) => {
     if (resetStep){
-      return dispatch({type: 'SET_ACTIVE_STEP', payload: 0})
+      dispatch({type: 'SET_ACTIVE_STEP', payload: 0})
+      if (actionIndex !== null){
+        setTimeout(() => {
+          setActionIndex(actionIndex)
+        }, 300)
+      }
+      return
     }
-    return setActiveItem(state.activeStep)
-  }, [dispatch, setActiveItem, state.activeStep])
-  
-  // console.log('activeItem', activeItem)
+    setActiveItem(state.activeStep)
+    if (actionIndex !== null){
+      setTimeout(() => {
+        setActionIndex(actionIndex)
+      }, 300)
+    }
+  }, [dispatch, setActiveItem, state.activeStep, setActionIndex])
 
   return (
     <AssetProvider

@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js'
 import { ManipulateType } from 'dayjs'
+import { getFeeDiscount } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { MdLockOpen } from 'react-icons/md'
 import { STAKING_CHAINID } from 'constants/'
-import { integerValue } from 'helpers/utilities'
 import { TbPlugConnectedX } from 'react-icons/tb'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWeb3Provider } from 'contexts/Web3Provider'
@@ -23,8 +23,8 @@ import { FeeDiscountLink } from 'components/OperativeComponent/FeeDiscountToggle
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
 import { Box, VStack, HStack, Text, Button, SimpleGrid, Center, Tabs, TabList, Tab } from '@chakra-ui/react'
-import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS, PROTOCOL_TOKEN } from 'constants/vars'
 import { BNify, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, toDayjs, bnOrZero, getBlock, formatDate, dayMax, dayMin, abbreviateNumber, getStakingPower, getStkIDLE } from 'helpers/'
 
 export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] }) => {
@@ -37,9 +37,9 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   const { web3 } = useWeb3Provider()
   const { account, setChainId, checkChainEnabled } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
-  const { sendTransactionTest: sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
-  const { dispatch, activeItem, activeStep, executeAction, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
+  const { dispatch, activeItem, activeStep, executeAction, setActionIndex, depositAmount } = useOperativeComponent()
+  const { /*sendTransactionTest: */sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
 
   const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
@@ -170,6 +170,9 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
     setError('')
     setErrorDate('')
 
+    // Check fee discount
+    const feeDiscount = getFeeDiscount(stkIDLEAmount)
+
     if (!selectedIncreaseType || selectedIncreaseType === 'amount'){
       if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
       // if (BNify(assetBalance).lte(0)) return true
@@ -190,8 +193,17 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
       }
     }
 
+    // Show fee discount error
+    if (feeDiscount.lte(0)){
+      if (selectedIncreaseType === 'time' || BNify(amount).gte(assetBalance)){
+        setErrorDate(translate('trade.errors.stakingNotEnoughForFeeDiscount'))
+      } else {
+        setError(translate('trade.errors.stakingNotEnoughForFeeDiscount'))
+      }
+    }
+
     return false
-  }, [amount, selectedIncreaseType, checkLockEndDate, assetBalance, underlyingAsset, translate])
+  }, [amount, stkIDLEAmount, selectedIncreaseType, checkLockEndDate, assetBalance, underlyingAsset, translate])
 
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
@@ -355,13 +367,16 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
     dispatch({type: 'SET_ASSET', payload: underlyingAsset})
 
     // console.log('Deposit - executeAction', executeAction)
-    if (executeAction) {
-      // console.log('Deposit - execute deposit')
+    if (executeAction && bnOrZero(amount).gt(0)) {
       deposit(false)
-      dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
+
+      // Don't reset execute action if deposit is pending
+      if (bnOrZero(depositAmount).lte(0)){
+        dispatch({type: 'SET_EXECUTE_ACTION', payload: false})
+      }
     }
 
-  }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
+  }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit, depositAmount])
 
   const depositButton = useMemo(() => {
     return account ? (
@@ -384,7 +399,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
     if (increaseEnabled && selectedIncreaseType !== 'amount') return null
     return (
       <HStack
-        width={'100%'}
+        width={'full'}
         spacing={[3, 4]}
         alignItems={'flex-start'}
       >
@@ -410,7 +425,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
             >
               <InputAmount amount={amount} amountUsd={null} setAmount={setAmount} />
               <HStack
-                width={'100%'}
+                width={'full'}
                 justifyContent={'space-between'}
               >
                 <HStack
@@ -436,7 +451,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
     return (
       <HStack
         spacing={4}
-        width={'100%'}
+        width={'full'}
         alignItems={'flex-start'}
       >
         <Box
@@ -462,7 +477,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
               <InputDate value={lockEndDate?.format('YYYY-MM-DD')} setValue={setLockEndDate} min={minDate.format('YYYY-MM-DD')} max={maxDate.format('YYYY-MM-DD')} />
               <SimpleGrid
                 spacing={1}
-                width={'100%'}
+                width={'full'}
                 columns={quickOptions.length}
                 justifyContent={'space-between'}
               >
@@ -503,7 +518,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   return (
     <AssetProvider
       flex={1}
-      width={'100%'}
+      width={'full'}
       assetId={asset?.underlyingId}
     >
       {
@@ -511,7 +526,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
           <Center
             px={10}
             flex={1}
-            width={'100%'}
+            width={'full'}
           >
             <VStack
               spacing={6}
@@ -530,7 +545,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
           <Center
             px={10}
             flex={1}
-            width={'100%'}
+            width={'full'}
           >
             <VStack
               spacing={6}
@@ -550,7 +565,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
             pt={8}
             flex={1}
             spacing={6}
-            height={'100%'}
+            height={'full'}
             id={'deposit-container'}
             alignItems={'space-between'}
             justifyContent={'flex-start'}
@@ -558,24 +573,24 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
             <VStack
               flex={1}
               spacing={6}
-              width={'100%'}
+              width={'full'}
               alignItems={'flex-start'}
             >
               {feeDiscountNotice}
               {
                 increaseEnabled && (
                   <Tabs
-                    width={'100%'}
+                    width={'full'}
                     defaultIndex={0}
                     variant={'buttonTertiary'}
                     onChange={handleActionChange}
                   >
                     <TabList
-                      width={'100%'}
+                      width={'full'}
                     >
                       <SimpleGrid
                         spacing={2}
-                        width={'100%'}
+                        width={'full'}
                         columns={increaseOptions.length}
                       >
                         {

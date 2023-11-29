@@ -15,14 +15,13 @@ import { Withdraw } from 'components/OperativeComponent/Withdraw'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { selectUnderlyingToken } from 'selectors/selectUnderlyingToken'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
-import { /*strategies,*/ AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, PROTOCOL_TOKEN } from 'constants/'
+import { /*strategies,*/ AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID } from 'constants/'
 
 type TabType = {
   id:string
@@ -39,22 +38,18 @@ type TabType = {
 
 type ContextProps = {
   stakingEnabled: boolean
+  setStakingEnabled: Function
   toggleStakingEnabled: Function
 }
 
 const initialState: ContextProps = {
   stakingEnabled: false,
+  setStakingEnabled: () => {},
   toggleStakingEnabled: () => {}
 }
 
 const StakeIDLE: React.FC = () => {
-  const { selectors: { selectVaultsByType, selectAssetById, selectVaultTransactions } } = usePortfolioProvider()
-
-  const protocolToken = useMemo(() => {
-    if (!selectAssetById) return
-    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
-    return underlyingToken && selectAssetById(underlyingToken.address)
-  }, [selectAssetById])
+  const { selectors: { selectVaultsByType, selectAssetById } } = usePortfolioProvider()
 
   const stakedIdleVault = useMemo(() => {
     return selectVaultsByType && selectVaultsByType('STK')?.[0]
@@ -480,7 +475,7 @@ export const AssetPage: React.FC = () => {
   }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
 
   return (
-    <AssetPageProviderContext.Provider value={{stakingEnabled, toggleStakingEnabled}}>
+    <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled}}>
       <AssetProvider
         wrapFlex={true}
         assetId={params.asset}

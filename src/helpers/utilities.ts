@@ -80,6 +80,10 @@ export function numberToPercentage(value: any, decimals = 2, maxValue = 9999, mi
   return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals)))+'%'
 }
 
+export function dateIsEqual(d1: Date | number | string, d2: Date | number | string): boolean {
+  return dayjs(d1).isSame(d2)
+}
+
 export function floorTimestamp(timestamp: Date | number | string): number {
   return +(dayjs(timestamp).startOf('day').valueOf())
 }
