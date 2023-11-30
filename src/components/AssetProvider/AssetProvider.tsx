@@ -3,7 +3,6 @@ import { BigNumber } from 'bignumber.js'
 import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import { networks } from 'constants/networks'
-import { GOVERNANCE_CHAINID } from 'constants/'
 import { strategies } from 'constants/strategies'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
@@ -23,9 +22,9 @@ import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
-import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes } from 'constants/'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag, Image } from '@chakra-ui/react'
+import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, VaultPosition, GOVERNANCE_CHAINID } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -1066,10 +1065,16 @@ const TotalPoolUsd: React.FC<AmountProps> = (props) => {
 }
 
 const TotalDiscountedFees: React.FC<AmountProps & AssetFieldProps> = (props) => {
-  const { stakingData } = usePortfolioProvider()
+  const { isVaultsPositionsLoaded, vaultsPositions } = usePortfolioProvider()
+
+  const totalDiscountedFeesUsd = useMemo(() => {
+    return Object.values(vaultsPositions).reduce( (totalDiscountedFees: BigNumber, vaultPosition: VaultPosition) => {
+      return totalDiscountedFees.plus(bnOrZero(vaultPosition.usd.discountedFees))
+    }, BNify(0))
+  }, [vaultsPositions])
   
-  return stakingData ? (
-    <Amount.Usd value={stakingData.totalDiscountedFees} {...props} />
+  return isVaultsPositionsLoaded ? (
+    <Amount.Usd value={totalDiscountedFeesUsd} {...props} />
   ) : <Spinner size={'sm'} />
 }
 
