@@ -76,9 +76,9 @@ export const strategies: Record<string, StrategyProps> = {
         tooltip:'assets.assetDetails.tooltips.stkIDLESupply'
       },
       {
-        field:'stakingTotalRewards',
-        label:'assets.assetDetails.generalData.totalRewards',
-        tooltip:'assets.assetDetails.tooltips.stakingTotalRewards'
+        field:'totalDiscountedFees',
+        label:'assets.assetDetails.generalData.totalDiscountedFees',
+        tooltip:'assets.assetDetails.tooltips.totalDiscountedFees'
       },
       {
         field:'stakingAvgLockTimeChart',

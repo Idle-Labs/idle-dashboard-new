@@ -119,6 +119,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   // console.log('redeemableAmountIsValid', bnOrZero(amountUsd).toString(), redeemable.toString(), redeemableAmountIsValid)
 
   let textCta = 'cta'
+  let textColor = ''
   let dynamicActionField = null
 
   switch (field){
@@ -171,9 +172,14 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     case 'stkIDLEAfterIncrease':
       dynamicActionField = (<Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />)
     break;
+    case 'currentFeeDiscount':
+      const currentFeeDiscount = bnOrZero(stakingData?.feeDiscount)
+      textColor = currentFeeDiscount.lte(0) ? 'orange' : 'brightGreen'
+      dynamicActionField = (<Amount.Percentage color={textColor} textStyle={'titleSmall'} {...textProps} value={currentFeeDiscount} />)
+    break;
     case 'feeDiscount':
       const feeDiscount = getFeeDiscount(amount)
-      const textColor = feeDiscount.lte(0) ? 'orange' : 'brightGreen'
+      textColor = feeDiscount.lte(0) ? 'orange' : 'brightGreen'
       dynamicActionField = (<Amount.Percentage color={textColor} textStyle={'titleSmall'} {...textProps} value={feeDiscount} />)
     break;
     case 'feeDiscountTier':
@@ -218,7 +224,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
 }
 
 export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) => {
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { stakingData, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const { assetId, action } = props
 
@@ -247,12 +253,21 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     let fields = strategy?.dynamicActionFields[action]
 
     const showLimitCap = vault && ("flags" in vault) && vault.flags?.showLimitCap
+    const showFeeDiscount = vault && ("flags" in vault) && vault.flags?.feeDiscountEnabled && bnOrZero(stakingData?.feeDiscount).gt(0)
 
     // Add limit cap
     if (showLimitCap && action === 'deposit' && vaultLimitCap.gt(0) && !limitCapReached) {
       fields = [
         'depositLimit',
         ...fields
+      ]
+    }
+
+    // Add fee discount
+    if (showFeeDiscount && action === 'deposit' && fields.indexOf('currentFeeDiscount') === -1) {
+      fields = [
+        ...fields,
+        'currentFeeDiscount'
       ]
     }
     /*
@@ -265,7 +280,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     }
     */
     return fields
-  }, [action, vault, strategy, limitCapReached, vaultLimitCap])
+  }, [action, vault, strategy, limitCapReached, stakingData, vaultLimitCap])
   
   if (!dynamicActionFields) return null
 

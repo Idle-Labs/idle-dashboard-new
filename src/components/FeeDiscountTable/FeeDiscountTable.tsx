@@ -99,6 +99,7 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
           <Translation translation={'feeDiscount.table.header'} fontSize={'lg'} component={Card.Heading} />
         )
       }
+      <Translation translation={'feeDiscount.table.description'} />
       <ReactTable columns={columns} data={data} page={1} rowsPerPage={data.length} initialState={initialState} />
     </Card>
   )

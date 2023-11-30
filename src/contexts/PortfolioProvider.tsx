@@ -2711,6 +2711,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         stkIdleClaimable
       ] = stkIdleResults.map( r => r.data )
 
+      const totalDiscountedFees = BNify(0)
       const firstRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[0] as EtherscanTransaction).timeStamp : 0
       const lastRewardTimestamp: number = stakedIdleVaultRewards?.length ? +(stakedIdleVaultRewards[stakedIdleVaultRewards.length-1] as EtherscanTransaction).timeStamp : 0
       const stkIdletotalRewardsDays = stakedIdleVaultRewards?.length ? Math.abs(lastRewardTimestamp-firstRewardTimestamp)/86400 : 0
@@ -2726,6 +2727,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         maxApr,
         avgLockTime,
         feeDiscount,
+        totalDiscountedFees,
         rewards: stakedIdleVaultRewards,
         rewardsDays: stkIdletotalRewardsDays,
         position: {

@@ -39,7 +39,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex, depositAmount } = useOperativeComponent()
-  const { /*sendTransactionTest: */sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
+  const { sendTransactionTest: sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
 
   const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 

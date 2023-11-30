@@ -19,11 +19,18 @@ type AssetDiscountedFeesProps = {
 
 export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId}) => {
   const { openModal } = useModalProvider()
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById/*, selectAssetBalance*/ } } = usePortfolioProvider()
   
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
   }, [selectAssetById, assetId])
+
+  /*
+  const assetBalance = useMemo(() => {
+    if (!selectAssetBalance) return BNify(0)
+    return selectAssetBalance(asset?.id)
+  }, [selectAssetBalance, asset?.id])
+  */
 
   const openHowItWorksModal = useCallback(() => {
     const modalProps = {
@@ -90,7 +97,7 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
     return asset && "flags" in asset && !!asset.flags?.feeDiscountEnabled
   }, [asset])
 
-  if (!asset || !asset.underlyingId || !discountedFeesEnabled) return null
+  if (!asset || !asset.underlyingId || !discountedFeesEnabled/* || assetBalance.lte(0)*/) return null
 
   return (
     <VStack

@@ -35,7 +35,7 @@ export const menu: MenuItemType[] = [
   },
   {
     path: 'stake',
-    label: 'navBar.feeDiscount',
+    label: 'navBar.stake',
     icon: BsStars,
     iconPosition: 'right',
     iconProps: {

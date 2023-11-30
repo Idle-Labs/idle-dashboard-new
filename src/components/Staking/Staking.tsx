@@ -180,7 +180,7 @@ export const Staking: React.FC = () => {
   }, [account, stakingData])
 
   const claimableIDLE = useMemo(() => {
-    if (!account || !stakingData || stakingData.position.deposited.lte(0) || !stakedIdleVault) return null
+    if (!account || !stakingData || stakingData.position.claimable.lte(0) || !stakedIdleVault) return null
 
     const contractSendMethod = stakedIdleVault.getClaimRewardsContractSendMethod()
 
@@ -365,7 +365,7 @@ export const Staking: React.FC = () => {
         justifyContent={'flex-start'}
         alignItems={['center','flex-start']}
       >
-        <Translation translation={'navBar.feeDiscount'} component={Heading} as={'h2'} size={'3xl'} />
+        <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} size={'3xl'} />
       </VStack>
       <HStack
         width={'100%'}
@@ -383,7 +383,7 @@ export const Staking: React.FC = () => {
             width={'100%'}
             alignItems={'flex-start'}
           >
-            <Translation maxW={['full', '36em']} translation={'strategies.staking.description'} isHtml={true} />
+            <Translation translation={'strategies.staking.description'} isHtml={true} />
             <VStack
               spacing={4}
               width={'full'}

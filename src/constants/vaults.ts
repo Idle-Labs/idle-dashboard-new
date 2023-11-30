@@ -730,7 +730,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       stETH:{
         autoFarming:[],
         enabledEnvs: [],
-        status:'discount',
         protocol:'instadapp',
         blockNumber:17519660,
         underlyingToken:'stETH',
@@ -853,7 +852,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           address:'0x0cac674ebD77bBD899f6079932768f6d59Da089A'
         },
         flags:{
-          addHarvestApy: false
+          addHarvestApy: false,
+          feeDiscountEnabled: true
         },
         description:'This strategy converts the stETH into native <a class="link" rel="nofollow noopener noreferrer" target="_blank" href="https://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0">Lido wstETH</a> tokens. The APR is boosted by LDO rewards and dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
@@ -931,7 +931,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'MATIC',
         flags:{
           showMaticNFTs: true,
-          addHarvestApy: false
+          addHarvestApy: false,
+          feeDiscountEnabled: true
         },
         stats:{
           startTimestamp: 1665360000000
@@ -2270,7 +2271,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         adaptiveYieldSplitEnabled:true,
         flags:{
           addHarvestApy: false,
-          referralEnabled: true
+          referralEnabled: true,
+          feeDiscountEnabled: true
         },
         CDO:{
           abi:IdleCDO as Abi,
@@ -2758,7 +2760,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'DAI',
         flags:{
           addHarvestApy: false,
-          referralEnabled: true
+          referralEnabled: true,
+          feeDiscountEnabled: true
         },
         adaptiveYieldSplitEnabled:true,
         CDO:{
@@ -2840,6 +2843,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16420584,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -2917,6 +2923,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16519261,
         underlyingToken:'DAI',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -2994,6 +3003,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16519329,
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true
+        },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -3070,6 +3082,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16726342,
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true
+        },
         CDO:{
           decimals:18,
           abi:IdleCDO as Abi,

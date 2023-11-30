@@ -1,15 +1,16 @@
 import { useMemo } from 'react'
 import { Card } from 'components/Card/Card'
-import { useTheme, Stack } from '@chakra-ui/react'
+import { useTheme, Stack, Image } from '@chakra-ui/react'
 import { MdCheckCircle, MdWarning } from 'react-icons/md'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 
 type AnnouncementBannerProps = {
   text: TranslationProps["translation"]
-  mode?: 'none' | 'success' | 'alert'
+  mode?: 'none' | 'success' | 'alert',
+  image?: string
 }
 
-export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text, mode = 'none' }) => {
+export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text, mode = 'none', image }) => {
   const theme = useTheme()
   const color = useMemo(() => mode === 'success' ? theme.colors.darkGreen : (mode === 'alert' ? theme.colors.yellow : ''), [theme, mode])
   return (
@@ -25,7 +26,9 @@ export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text, mo
         direction={['column','row']}
       >
         {
-          mode === 'success' ? (
+          image ? (
+            <Image src={image} width={6} />
+          ) : mode === 'success' ? (
             <MdCheckCircle size={24} color={color} />
           ) : mode === 'alert' && (
             <MdWarning size={24} color={color} />

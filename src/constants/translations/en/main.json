@@ -216,7 +216,7 @@
       "op": {
         "feeDiscount": "Stake <span class='bold' style='color: #fff;'>%{amount} IDLE</span> to unlock <span class='linkStatic bold'>%{discount}% fee discount</span>"
       },
-      "description": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet.<br />stkIDLE linearly decreases from the lockup date to the end date.",
+      "description": "IDLE tokeholders can benefit from a performance fee discount by staking their IDLE and further enhance their yields.<br />The discount is currently active on all Yield Tranches on the Ethereum mainnet - excluding those based on Fasanara - and it's distributed on a monthly basis in the underlying token of the pool, directly to depositor wallet.",
       "feeSharingDisabled": "Following <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. A revamp of stkIDLE introducing new use cases is in the work. <a href='https://gov.idle.finance/t/idle-staking-update/1165' class='link' target='_blank' rel='noopener'>Follow the discussion</a>."
     },
     "gauge": {
@@ -463,7 +463,7 @@
       "feeDiscount": {
         "cta": "Got it",
         "title": "Fee Discount program",
-        "body": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet. stkIDLE linearly decreases from the lockup date to the end date.<br />Find below the fee discount tiers:"
+        "body": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet. stkIDLE linearly decreases from the lockup date to the end date."
       },
       "opDistribution": {
         "cta": "Got it",
@@ -736,10 +736,12 @@
     }
   },
   "feeDiscount": {
+    "announcement": "Stake IDLE, and get a performance fee discount as a liquidity provider in Yield Tranches. Currently available for all Yield Tranches deployed on Ethereum mainnet, besides Fasanara's ones. <a href='https://docs.idle.finance/governance/idle-staking' class='link' target='_blank' rel='noopener'>Learn more</a>",
     "table": {
       "header": "Fee discount tiers",
       "empty": "Reduce performance fees through IDLE staking.<br />Your accrued discounts for each deposit will appear here.",
       "stakingEmpty": "Your distributed fees will appear here.",
+      "description": "The summary table assumes that the IDLE tokens are staked for the longest length available, i.e. 4 years. Shorter staking periods will affect the discount applied. stkIDLE linearly decreases from the lockup date to the end date.",
       "columns": {
         "tier": "Tier",
         "stkIDLE": "stkIDLE",
@@ -753,7 +755,8 @@
       "feeDiscount": "Your fee discount is %{discount}%",
       "success": "You have successfully enabled the fee discount.<br />Proceed with depositing your funds.",
       "ctaNoIDLE": "Get IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees",
-      "cta": "Stake your IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees"
+      "cta": "Stake your IDLE to get <span class='linkStatic'>up to %{discount}% discount</span> on performance fees",
+      "ctaIncrease": "Increase your staking position to get <span class='linkStatic'>up to %{discount}% discount</span>"
     }
   },
   "staking": {
@@ -819,7 +822,7 @@
     "stakeIDLE": "Stake IDLE",
     "gauge": "Gauge",
     "defi": "DeFi",
-    "transactionHistory": "Transaction History",
+    "transactionHistory": "Transaction history",
     "overview": "Overview",
     "transactions": "Transactions",
     "tradeHistory": "Trade History",
@@ -941,6 +944,7 @@
     "depositLimit": "Available to deposit",
     "stakingPoolShare": "Pool share",
     "feeDiscount": "Fee discount",
+    "currentFeeDiscount": "Fee discount",
     "feeDiscountTier": "Discount tier",
     "stakingApy": "Estimated APY",
     "stkIDLE": "You will receive",
@@ -1910,6 +1914,7 @@
         "totalLocked":"Total locked",
         "totalIDLELocked":"Total IDLE locked",
         "allocation":"Allocation",
+        "totalDiscountedFees": "Total discounted fees",
         "totalStkIDLESupply":"Total stkIDLE supply",
         "stkIDLESupply":"stkIDLE supply",
         "lockedIDLE":"Locked IDLE",
@@ -1953,6 +1958,7 @@
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
         "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
+        "totalDiscountedFees": "The total amount of fees redistributed to users",
         "spotApy": "The annualized yield this vault is providing at the current block",
         "autoCompounding": "These rewards are automatically re-invested in the strategy",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
@@ -2013,7 +2019,7 @@
       "assetHistory": {
         "rewardsHistory": "View rewards history",
         "discountsHistory": "View discounts history",
-        "transactionHistory": "Transaction History",
+        "transactionHistory": "Transaction history",
         "recentTransactions": "Recent Transactions",
         "emptyTransactions": "Transactions will appear here"
       },
@@ -2058,7 +2064,7 @@
   },
   "loremIpsum": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed lectus efficitur, iaculis sapien eu, luctus tellus. Maecenas eget sapien dignissim, finibus mauris nec, mollis ipsum. Donec sodales sit amet felis sagittis vestibulum. Ut in consectetur lacus. Suspendisse potenti. Aenean at massa consequat lectus semper pretium. Cras sed bibendum enim. Mauris euismod sit amet dolor in placerat.",
   "transactionHistory": {
-    "transactionHistory": "Transaction History",
+    "transactionHistory": "Transaction history",
     "recentTransactions": "Recent Transactions",
     "filter": "Filter",
     "filters": {

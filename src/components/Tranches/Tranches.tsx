@@ -22,6 +22,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
+import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
 
@@ -754,6 +755,7 @@ export const Tranches: React.FC = () => {
         width={'full'}
         spacing={10}
       >
+        <AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />
         <Stack
           spacing={[8, 0]}
           direction={['column', 'row']}

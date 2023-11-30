@@ -24,7 +24,7 @@ export const DiscountedFeesTable: React.FC<DiscountedFeesTableArgs> = ({
   ...cardProps
 }) => {
   const translate = useTranslate()
-  const { isPortfolioLoaded, discountedFees } = usePortfolioProvider()
+  const { /*stakingData, */isPortfolioLoaded, discountedFees } = usePortfolioProvider()
 
   const data: DistributedReward[] = useMemo(() => {
     if (isEmpty(discountedFees)) return []
@@ -104,6 +104,8 @@ export const DiscountedFeesTable: React.FC<DiscountedFeesTableArgs> = ({
       sortType: sortNumeric
     },
   ], [translate, isPortfolioLoaded])
+
+  if (!data.length) return null
 
   return (
     <Card

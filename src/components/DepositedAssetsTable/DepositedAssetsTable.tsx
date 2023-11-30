@@ -19,7 +19,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { strategies, StrategyColumn, Tables } from 'constants/strategies'
 import { MdStarBorder, MdOutlineAccountBalanceWallet } from 'react-icons/md'
-import { sortNumeric, sortAlpha, sendSelectItem, BNify, isEmpty, getRoutePath } from 'helpers/'
+import { sortNumeric, sortAlpha, sendSelectItem, bnOrZero, BNify, isEmpty, getRoutePath } from 'helpers/'
 import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -28,6 +28,7 @@ export const DepositedAssetsTable: React.FC = () => {
 
   const navigate = useNavigate()
   const {
+    stakingData,
     isPortfolioLoaded,
     isPortfolioAccountReady,
     selectors: {
@@ -315,11 +316,11 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, allStrategies])
 
   const discountedAssetsData = useMemo(() => {
-    if (!isPortfolioLoaded) return []
+    if (!isPortfolioLoaded || bnOrZero(stakingData?.position.deposited).lte(0)) return []
     return depositedAssetsData.filter( (asset: Asset) => {
       return !!asset.flags?.feeDiscountEnabled
     })
-  }, [depositedAssetsData, isPortfolioLoaded])
+  }, [depositedAssetsData, isPortfolioLoaded, stakingData])
 
   // Set deposited if connected
   useEffect(() => {

@@ -1,6 +1,6 @@
+import { BNify } from 'helpers/'
 import React, { useMemo } from 'react'
 import { BsStars } from "react-icons/bs"
-import { BNify, bnOrZero } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { useModalProvider } from 'contexts/ModalProvider'
 import type { ModalProps, AssetId } from 'constants/types'
@@ -59,42 +59,50 @@ export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
   if (!feeDiscountEnabled) return null
 
   const discount = Object.values(STAKING_FEE_DISCOUNTS).pop();
-
-  return stakingData?.feeDiscount.gt(0) ? (
-    <VStack
-      spacing={2}
-      width={'full'}
-      alignItems={'flex-start'}
-    >
-      <Card.Dark
-        p={2}
-        border={0}
-        alignItems={'center'}
+  
+  /*
+  stakingData?.feeDiscount.gt(0) ? (
+      <VStack
+        spacing={2}
+        width={'full'}
+        alignItems={'flex-start'}
       >
-        <HStack
-          spacing={1}
-          width={'full'}
-          justifyContent={'center'}
+        <Card.Dark
+          p={2}
+          border={0}
+          alignItems={'center'}
         >
-          <Translation translation={'feeDiscount.op.feeDiscount'} textStyle={'bodyTitle'} params={{discount: bnOrZero(stakingData.feeDiscount)}} isHtml fontSize={'xs'} fontWeight={600} />
-          <BsStars size={16} color={'orange'} />
-        </HStack>
-      </Card.Dark>
-      <FeeDiscountLink pl={4} />
-    </VStack>
-  ) : (
+          <HStack
+            spacing={1}
+            width={'full'}
+            justifyContent={'center'}
+          >
+            <Translation translation={'feeDiscount.op.feeDiscount'} textStyle={'bodyTitle'} params={{discount: bnOrZero(stakingData.feeDiscount)}} isHtml fontSize={'xs'} fontWeight={600} />
+            <BsStars size={16} color={'orange'} />
+          </HStack>
+        </Card.Dark>
+        <FeeDiscountLink pl={4} />
+      </VStack>
+    ) : 
+  */
+
+  return (
     <VStack
       spacing={2}
       width={'full'}
       alignItems={'flex-start'}
     >
-      <HStack
-        pl={4}
-        spacing={1}
-      >
-        <Translation translation={'defi.feeDiscount'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
-        <BsStars size={16} color={'orange'} />
-      </HStack>
+      {
+        stakingData?.feeDiscount.lte(0) && (
+          <HStack
+            pl={4}
+            spacing={1}
+          >
+            <Translation translation={'defi.feeDiscount'} textStyle={'bodyTitle'} fontSize={'xs'} fontWeight={600} />
+            <BsStars size={16} color={'orange'} />
+          </HStack>
+        )
+      }
       <Card.Light
         py={2}
         px={4}
@@ -114,7 +122,7 @@ export const FeeDiscountToggler: React.FC<FeeDiscountTogglerArgs> = ({
               <Translation py={1} textAlign={'center'} translation={'feeDiscount.op.ctaNoIDLE'} fontSize={'xs'} color={'primary'} isHtml params={{discount}} />
             ) : (
               <Checkbox size={'md'} isChecked={stakingEnabled} onChange={() => toggleStakingEnabled()}>
-                <Translation translation={'feeDiscount.op.cta'} fontSize={'xs'} color={'primary'} isHtml params={{discount}} />
+                <Translation translation={stakingData?.feeDiscount.gt(0) ? 'feeDiscount.op.ctaIncrease' : 'feeDiscount.op.cta'} fontSize={'xs'} color={'primary'} isHtml params={{discount}} />
               </Checkbox>
             )
           }

@@ -161,15 +161,22 @@ const VaultVariant: React.FC<TextProps> = (props) => {
 
 const StatusBadge: React.FC<ImageProps> = (props) => {
   const { asset, translate } = useAssetProvider()
-  if (!asset || !("status" in asset) || !asset?.status?.length || asset?.status === 'production') return null
+  if (!asset) return null
+
+  const status = asset.status || 'production'
+  // if (status !== 'deprecated' && "flags" in asset && !!asset.flags?.feeDiscountEnabled){
+  //   status = 'discount'
+  // }
+
+  if (!status?.length || status === 'production') return null
 
   return (
     <Tooltip
       hasArrow
       placement={'top'}
-      label={translate(`assets.assetDetails.tooltips.${asset.status}`)}
+      label={translate(`assets.assetDetails.tooltips.${status}`)}
     >
-      <Image src={`images/vaults/${asset.status}.png`} {...props} />
+      <Image src={`images/vaults/${status}.png`} {...props} />
     </Tooltip>
   )
 }
@@ -1058,6 +1065,14 @@ const TotalPoolUsd: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const TotalDiscountedFees: React.FC<AmountProps & AssetFieldProps> = (props) => {
+  const { stakingData } = usePortfolioProvider()
+  
+  return stakingData ? (
+    <Amount.Usd value={stakingData.totalDiscountedFees} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const StakingTvl: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
   
@@ -1461,6 +1476,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     */
     case 'stakingTvl':
       return (<StakingTvl textStyle={'tableCell'} />)
+    case 'totalDiscountedFees':
+      return (<TotalDiscountedFees textStyle={'tableCell'}/>)
     case 'stkIDLESupply':
       return (<StkIDLESupply textStyle={'tableCell'} />)
     case 'stkIDLEBalance':
