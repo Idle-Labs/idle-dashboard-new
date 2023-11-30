@@ -14,7 +14,7 @@ export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text, mo
   const theme = useTheme()
   const color = useMemo(() => mode === 'success' ? theme.colors.darkGreen : (mode === 'alert' ? theme.colors.yellow : ''), [theme, mode])
   return (
-    <Card
+    <Card.Dark
       p={[3, 5]}
       borderColor={color}
     >
@@ -36,6 +36,6 @@ export const AnnouncementBanner: React.FC<AnnouncementBannerProps> = ({ text, mo
         }
         <Translation textAlign={'center'} translation={text} isHtml={true} textStyle={'caption'} />
       </Stack>
-    </Card>
+    </Card.Dark>
   )
 }

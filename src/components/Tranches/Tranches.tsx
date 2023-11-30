@@ -815,7 +815,7 @@ export const Tranches: React.FC = () => {
 
   return (
     <Flex
-      mt={20}
+      mt={10}
       width={'100%'}
       direction={'column'}
       alignItems={'center'}
