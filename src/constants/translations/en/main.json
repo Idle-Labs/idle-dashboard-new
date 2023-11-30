@@ -216,7 +216,7 @@
       "op": {
         "feeDiscount": "Stake <span class='bold' style='color: #fff;'>%{amount} IDLE</span> to unlock <span class='linkStatic bold'>%{discount}% fee discount</span>"
       },
-      "description": "IDLE tokeholders can benefit from a performance fee discount by staking their IDLE and further enhance their yields.<br />The discount is currently active on all Yield Tranches on the Ethereum mainnet - excluding those based on Fasanara - and it's distributed on a monthly basis in the underlying token of the pool, directly to depositor wallet.",
+      "description": "IDLE tokeholders can benefit from a performance fee discount by staking their IDLE and further enhance their yields.<br />The fee discount is currently active on all Yield Tranches on Ethererum , excluding those based on Fasanara, and it's distributed on a monthly basis in the underlying LP token of the pool, directly to depositor wallets.",
       "feeSharingDisabled": "Following <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. A revamp of stkIDLE introducing new use cases is in the work. <a href='https://gov.idle.finance/t/idle-staking-update/1165' class='link' target='_blank' rel='noopener'>Follow the discussion</a>."
     },
     "gauge": {
@@ -345,7 +345,7 @@
       "totalChart": "Total Funds",
       "addAsset": "Add Asset",
       "yourAssets": "Your Assets",
-      "stakingPower": "Staking power",
+      "feeDiscount": "Fee discount",
       "riskExposure": "Senior/Junior composition",
       "asset": "Asset",
       "portfolioBalance": "Portfolio Balance",

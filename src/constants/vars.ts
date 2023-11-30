@@ -5,6 +5,7 @@ export const VAULTS_MIN_TVL = 1000
 export const GOVERNANCE_CHAINID = 1
 export const PROTOCOL_TOKEN = 'IDLE'
 export const MAX_STAKING_DAYS = 1460
+export const TABLE_ROWS_PER_PAGE = 5
 export const stkIDLE_TOKEN = 'STKIDLE'
 export const BLOCKS_PER_YEAR = 2613400
 export const DATE_FORMAT = 'YYYY/MM/DD'

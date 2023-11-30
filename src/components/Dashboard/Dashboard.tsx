@@ -309,7 +309,7 @@ export const Dashboard: React.FC = () => {
   }, [riskExposures, riskExposureDonutChart])
   */
 
-  const stakingPowerCard = useMemo(() => {
+  const feeDiscountCard = useMemo(() => {
 
     const stakingShare = bnOrZero(stakingData?.position.share)
 
@@ -339,7 +339,7 @@ export const Dashboard: React.FC = () => {
               <HStack
                 spacing={2}
               >
-                <Translation translation={'dashboard.portfolio.stakingPower'} component={Heading} as={'h3'} fontSize={'h3'} />
+                <Translation translation={'dashboard.portfolio.feeDiscount'} component={Heading} as={'h3'} fontSize={'h3'} />
                 <BsStars size={20} color={'orange'} />
               </HStack>
               {
@@ -524,10 +524,10 @@ export const Dashboard: React.FC = () => {
             )
           })
         }
-        {stakingPowerCard}
+        {feeDiscountCard}
       </VStack>
     )
-  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, network, vaultsPositions, stakingPowerCard, theme])
+  }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, network, vaultsPositions, feeDiscountCard, theme])
 
   const chartColor = useMemo(() => {
     if (selectedStrategies.length===1){

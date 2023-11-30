@@ -60,7 +60,7 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
       Header:translate('feeDiscount.table.columns.stkIDLE'),
       Cell: ({ value }: { value: NumberType }) => {
         return (
-          <Amount textStyle={'tableCell'} prefix={'≥ '} value={value} />
+          <Amount abbreviate={false} decimals={0} textStyle={'tableCell'} prefix={'≥ '} value={value} />
         )
       },
       sortType: sortNumeric
@@ -99,7 +99,7 @@ export const FeeDiscountTable: React.FC<FeeDiscountTableArgs> = ({
           <Translation translation={'feeDiscount.table.header'} fontSize={'lg'} component={Card.Heading} />
         )
       }
-      <Translation translation={'feeDiscount.table.description'} />
+      <Translation translation={'feeDiscount.table.description'} fontSize={'sm'} />
       <ReactTable columns={columns} data={data} page={1} rowsPerPage={data.length} initialState={initialState} />
     </Card>
   )
