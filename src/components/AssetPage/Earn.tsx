@@ -1,4 +1,5 @@
 import { strategies } from 'constants/'
+import { NavLink } from "react-router-dom"
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
@@ -33,6 +34,7 @@ export const Earn: React.FC = () => {
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.WEEK)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const {
+    stakingData,
     isPortfolioLoaded,
     isVaultsPositionsLoaded,
     selectors: {
@@ -177,6 +179,10 @@ export const Earn: React.FC = () => {
     )
   }, [asset, userHasBalance, translate, chartData, useDollarConversion, account, isVaultsPositionsLoaded, isPortfolioLoaded])
 
+  const feeDiscountEnabled = useMemo(() => {
+    return asset && "flags" in asset && !!asset.flags?.feeDiscountEnabled
+  }, [asset])
+
   const fundsOverview = useMemo(() => {
     if (!asset || !userHasBalance) return null
     return (
@@ -197,18 +203,21 @@ export const Earn: React.FC = () => {
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
-
-        <VStack
-          spacing={2}
-          justifyContent={'center'}
-        >
-          <Translation component={Text} translation={'defi.redeemable'} textStyle={'titleSmall'} />
-          <AssetProvider.BalanceUsd textStyle={'heading'} fontSize={'h3'} />
-          <HStack spacing={1}>
-            <AssetProvider.Redeemable decimals={4} textStyle={'captionSmaller'} />
-            <AssetProvider.Name textStyle={'captionSmaller'} />
-          </HStack>
-        </VStack>
+        {
+          /*
+          <VStack
+            spacing={2}
+            justifyContent={'center'}
+          >
+            <Translation component={Text} translation={'defi.redeemable'} textStyle={'titleSmall'} />
+            <AssetProvider.BalanceUsd textStyle={'heading'} fontSize={'h3'} />
+            <HStack spacing={1}>
+              <AssetProvider.Redeemable decimals={4} textStyle={'captionSmaller'} />
+              <AssetProvider.Name textStyle={'captionSmaller'} />
+            </HStack>
+          </VStack>
+          */
+        }
 
         <VStack
           spacing={2}
@@ -222,21 +231,24 @@ export const Earn: React.FC = () => {
           </HStack>
         </VStack>
 
-        {
-          /*
-          <VStack
-            spacing={2}
-            justifyContent={'center'}
-          >
-            <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
-            <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
-            <HStack spacing={1}>
-              <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
-              <AssetProvider.Name textStyle={'captionSmaller'} />
-            </HStack>
-          </VStack>
-          */
-        }
+        <VStack
+          spacing={2}
+          justifyContent={'center'}
+        >
+          <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
+          <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
+          {
+            feeDiscountEnabled && (
+              bnOrZero(stakingData?.feeDiscount).gt(0) ? (
+                <Translation translation={'assets.fundsOverview.discount'} params={{discount: bnOrZero(stakingData?.feeDiscount)}} fontWeight={'600'} color={'brightGreen'} fontSize={'xs'} />
+              ) : (
+                <NavLink to={'/stake'}>
+                  <Translation translation={'feeDiscount.enable'} color={'link'} fontSize={'xs'} />
+                </NavLink>
+              )
+            )
+          }
+        </VStack>
 
         <VStack
           spacing={2}
@@ -248,7 +260,7 @@ export const Earn: React.FC = () => {
         </VStack>
       </SimpleGrid>
     )
-  }, [asset, userHasBalance])
+  }, [asset, stakingData, userHasBalance, feeDiscountEnabled])
 
   const strategyDescriptionCarousel = useMemo(() => {
     if (!strategy || !isPortfolioLoaded) return null

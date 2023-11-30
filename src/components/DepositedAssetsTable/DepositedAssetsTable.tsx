@@ -28,10 +28,11 @@ export const DepositedAssetsTable: React.FC = () => {
 
   const navigate = useNavigate()
   const {
-    stakingData,
+    // stakingData,
     isPortfolioLoaded,
     isPortfolioAccountReady,
     selectors: {
+      selectVaultPosition,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
       selectVaultsAssetsWithBalance
@@ -316,11 +317,12 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, allStrategies])
 
   const discountedAssetsData = useMemo(() => {
-    if (!isPortfolioLoaded || bnOrZero(stakingData?.position.deposited).lte(0)) return []
+    if (!isPortfolioLoaded/* || bnOrZero(stakingData?.position.deposited).lte(0)*/) return []
     return depositedAssetsData.filter( (asset: Asset) => {
-      return !!asset.flags?.feeDiscountEnabled
+      const vaultPosition = selectVaultPosition(asset.id)
+      return !!asset.flags?.feeDiscountEnabled && vaultPosition && bnOrZero(vaultPosition.usd.discountedFees).gt(0)
     })
-  }, [depositedAssetsData, isPortfolioLoaded, stakingData])
+  }, [depositedAssetsData, isPortfolioLoaded, selectVaultPosition])
 
   // Set deposited if connected
   useEffect(() => {

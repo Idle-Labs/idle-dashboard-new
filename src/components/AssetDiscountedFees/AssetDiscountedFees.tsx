@@ -1,5 +1,6 @@
 import { Card } from 'components/Card/Card'
 import { DATETIME_FORMAT } from 'constants/vars'
+import { Amount } from 'components/Amount/Amount'
 import React, { useMemo, useCallback } from 'react'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { Scrollable } from 'components/Scrollable/Scrollable'
@@ -19,7 +20,7 @@ type AssetDiscountedFeesProps = {
 
 export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId}) => {
   const { openModal } = useModalProvider()
-  const { selectors: { selectAssetById/*, selectAssetBalance*/ } } = usePortfolioProvider()
+  const { stakingData, selectors: { selectAssetById/*, selectAssetBalance*/ } } = usePortfolioProvider()
   
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
@@ -120,11 +121,19 @@ export const AssetDiscountedFees: React.FC<AssetDiscountedFeesProps> = ({assetId
             <SimpleGrid
               width={'full'}
               spacing={[3, 0]}
-              columns={[2, 3]}
+              columns={[2, 4]}
               justifyContent={'center'}
               alignItems={'space-between'}
             >
               <TokenAmount assetId={asset.underlyingId} size={'sm'} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
+              <VStack
+                spacing={1}
+                alignItems={'flex-start'}
+                justifyContent={'flex-start'}
+              >
+                <Translation component={Text} translation={'defi.feeDiscount'} textStyle={'titleSmall'} />
+                <Amount.Percentage value={stakingData?.feeDiscount} textStyle={'tableCell'} />
+              </VStack>
               <VStack
                 spacing={1}
                 alignItems={'flex-start'}

@@ -22,7 +22,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach/*, getFeeDiscount*/, floorTimestamp } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT } from 'constants/types'
 
 type VaultsPositions = {
@@ -2719,7 +2719,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(365.2425).div(stkIdletotalRewardsDays).times(100)
       const avgLockTime = parseFloat(fixTokenDecimals(stkIdleTotalSupply, 18).div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(MAX_STAKING_DAYS).toFixed())
 
-      const feeDiscount = getFeeDiscount(fixTokenDecimals(stkIdleBalance, 18))
+      const feeDiscount = BNify(10);// getFeeDiscount(fixTokenDecimals(stkIdleBalance, 18))
 
       // console.log(`stkIdleTotalRewards: ${stkIdleTotalRewards.toFixed()}, stkIdleTotalLocked: ${fixTokenDecimals(stkIdleTotalLocked, 18).toFixed()}, stkIdletotalRewardsDays: ${stkIdletotalRewardsDays.toFixed()}`)
 
@@ -2848,10 +2848,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Calculate discounted fees
   useEffect(() => {
-    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalPrices) || isEmpty(state.discountedFees) || runningEffects.current.discountedFees === (account?.address || true)) return;
+    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.vaultsPositions) || isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalPrices) || isEmpty(state.discountedFees) || runningEffects.current.discountedFees === (account?.address || true)) return;
     ;(async() => {
 
       runningEffects.current.discountedFees = account?.address || true
+
+      const vaultsPositions = {...state.vaultsPositions}
 
       const discountedFees = await asyncReduce<AssetId, VaultsPositions["discountedFees"]>(
         Object.keys(state.discountedFees),
@@ -2891,6 +2893,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
               vaultPosition.underlying.discountedFees = bnOrZero(vaultPosition.underlying.discountedFees).plus(discountedFeesUnderlyingAmount);
               vaultPosition.usd.discountedFees = bnOrZero(vaultPosition.usd.discountedFees).plus(discountedFeesUsd);
 
+              vaultsPositions[assetId] = vaultPosition
+
               // console.log('discountedFees', assetId, index, vaultPriceData, vaultPrice.toString(), discountedFees[assetId][index])
 
               // vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(discountedFeesUsd.div(distributionVaults.totalVaults));
@@ -2912,7 +2916,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         },
         {...state.discountedFees}
       )
+
       dispatch({type: 'SET_DISCOUNTED_FEES', payload: discountedFees})
+      dispatch({type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions})
     })()
 
     // Clean transactions and positions
@@ -2920,7 +2926,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // runningEffects.current.discountedFees = false
       // dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
     }
-  }, [state.discountedFees, selectVaultPosition, state.isVaultsPositionsLoaded, state.historicalPricesUsd, selectAssetHistoricalPriceUsdByTimestamp, selectAssetHistoricalPrices, selectAssetHistoricalPriceByTimestamp, state.historicalPrices, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
+  }, [state.discountedFees, selectVaultPosition, state.vaultsPositions, state.isVaultsPositionsLoaded, state.historicalPricesUsd, selectAssetHistoricalPriceUsdByTimestamp, selectAssetHistoricalPrices, selectAssetHistoricalPriceByTimestamp, state.historicalPrices, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
 
   // Calculate distributed rewards APYs
   useEffect(() => {

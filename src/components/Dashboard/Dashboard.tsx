@@ -27,7 +27,7 @@ import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetwor
 import { DashboardNewsBanner } from 'components/DashboardNewsBanner/DashboardNewsBanner'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
-import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Image, Flex } from '@chakra-ui/react'
+import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Flex } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
   const { theme } = useThemeProvider()
@@ -46,7 +46,7 @@ export const Dashboard: React.FC = () => {
     vaultsPositions,
     selectors: {
       selectAssetsByIds,
-      selectAssetStrategies,
+      // selectAssetStrategies,
       selectVaultsAssetsByType,
     }
   } = usePortfolioProvider()
@@ -104,6 +104,13 @@ export const Dashboard: React.FC = () => {
 
   // console.log('vaultsPositions', vaultsPositions)
 
+  const totalDiscountedFeesUsd = useMemo(() => {
+    return Object.values(vaultsPositions).reduce( (totalDiscountedFees: BigNumber, vaultPosition: VaultPosition) => {
+      return totalDiscountedFees.plus(bnOrZero(vaultPosition.usd.discountedFees))
+    }, BNify(0))
+  }, [vaultsPositions])
+
+  /*
   const riskExposures = useMemo(() => {
     return Object.keys(vaultsPositions).reduce( (riskExposures: Record<string, any>, assetId: AssetId) => {
       const vaultPosition = vaultsPositions[assetId]
@@ -125,6 +132,7 @@ export const Dashboard: React.FC = () => {
       }
     })
   }, [vaultsPositions, totalFunds, selectAssetStrategies])
+  */
 
   /*
   const riskExposureDonutChart = useMemo(() => {
@@ -207,28 +215,40 @@ export const Dashboard: React.FC = () => {
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'dashboard.portfolio.composition'} textStyle={'titleSmall'} />
-          <HStack
-            spacing={4}
-            width={'full'}
+          <Translation component={Text} translation={'defi.discountedFees'} textStyle={'titleSmall'} />
+          <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={totalDiscountedFeesUsd} />
+        </VStack>
+
+        {
+          /*
+          <VStack
+            spacing={2}
             justifyContent={'center'}
           >
-            {
-              Object.keys(riskExposures).filter( (strategy: string) => riskExposures[strategy].perc.gt(0) ).map( (strategy: string) => (
-                <HStack
-                  spacing={2}
-                  key={`index_${strategy}`}
-                >
-                  <Amount.Percentage value={riskExposures[strategy].perc.times(100)} textStyle={'heading'} fontSize={'h3'}/>
-                  <Image src={`images/strategies/${strategy}.svg`} w={6} h={6} />
-                </HStack>
-              ))
-            }
-          </HStack>
-        </VStack>
+            <Translation component={Text} translation={'dashboard.portfolio.composition'} textStyle={'titleSmall'} />
+            <HStack
+              spacing={4}
+              width={'full'}
+              justifyContent={'center'}
+            >
+              {
+                Object.keys(riskExposures).filter( (strategy: string) => riskExposures[strategy].perc.gt(0) ).map( (strategy: string) => (
+                  <HStack
+                    spacing={2}
+                    key={`index_${strategy}`}
+                  >
+                    <Amount.Percentage value={riskExposures[strategy].perc.times(100)} textStyle={'heading'} fontSize={'h3'}/>
+                    <Image src={`images/strategies/${strategy}.svg`} w={6} h={6} />
+                  </HStack>
+                ))
+              }
+            </HStack>
+          </VStack>
+          */
+        }
       </SimpleGrid>
     )
-  }, [totalFunds, aggregatedUsdPosition, avgRealizedApy, riskExposures])
+  }, [totalFunds, aggregatedUsdPosition, avgRealizedApy, totalDiscountedFeesUsd])
 
   /*
   const riskExposure = useMemo(() => {
