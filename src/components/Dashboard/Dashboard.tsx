@@ -21,6 +21,7 @@ import { PartnersPrograms } from 'components/PartnersPrograms/PartnersPrograms'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AssetId, Asset, HistoryTimeframe, VaultPosition } from 'constants/types'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+// import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 // import { DonutChart, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { DashboardNewsBanner } from 'components/DashboardNewsBanner/DashboardNewsBanner'
@@ -341,7 +342,7 @@ export const Dashboard: React.FC = () => {
                       alignItems={'flex-start'}
                     >
                       <Translation translation={'staking.yourstkIDLE'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'full'}>
                         <AssetProvider.GeneralData field={'stkIDLEBalance'} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                       </SkeletonText>
                     </VStack>
@@ -350,7 +351,7 @@ export const Dashboard: React.FC = () => {
                       alignItems={'flex-start'}
                     >
                       <Translation translation={'staking.lockEnd'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'full'}>
                         <AssetProvider.StakingEndDate showTime={false} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                       </SkeletonText>
                     </VStack>
@@ -359,7 +360,7 @@ export const Dashboard: React.FC = () => {
                       alignItems={'flex-start'}
                     >
                       <Translation translation={'staking.feeDiscount'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                      <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'full'}>
                         <AssetProvider.GeneralData field={'stakingFeeDiscount'} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                       </SkeletonText>
                     </VStack>
@@ -463,7 +464,7 @@ export const Dashboard: React.FC = () => {
                               alignItems={'flex-start'}
                             >
                               <Translation translation={'stats.totalTVL'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'full'}>
                                 <Amount.Usd value={aggregatedData.totalTVL} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                               </SkeletonText>
                             </VStack>
@@ -472,7 +473,7 @@ export const Dashboard: React.FC = () => {
                               alignItems={'flex-start'}
                             >
                               <Translation translation={'stats.minApy'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'full'}>
                                 <Amount.Percentage value={aggregatedData.minApy} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                               </SkeletonText>
                             </VStack>
@@ -481,7 +482,7 @@ export const Dashboard: React.FC = () => {
                               alignItems={'flex-start'}
                             >
                               <Translation translation={'stats.maxApy'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-                              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
+                              <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'full'}>
                                 <Amount.Percentage value={aggregatedData.maxApy} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                               </SkeletonText>
                             </VStack>
@@ -518,128 +519,133 @@ export const Dashboard: React.FC = () => {
   return (
     <Box
       mt={5}
-      width={'100%'}
+      width={'full'}
     >
-      {/*<AnnouncementBanner text={'announcements.eulerHack'} />*/}
       <VaultsCarousel />
-      <Stack
-        mt={0}
-        mb={10}
-        flex={1}
-        spacing={20}
+      <VStack
+        spacing={10}
         pt={[16, 100]}
-        width={'100%'}
-        direction={['column', 'row']}
+        width={'full'}
       >
-        <VStack
+        {/*<AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />*/}
+        <Stack
+          mt={0}
+          mb={10}
           flex={1}
-          spacing={6}
-          width={['full', '66.3%']}
-          alignItems={'flex-start'}
+          spacing={20}
+          width={'full'}
+          direction={['column', 'row']}
         >
-          <Flex
-            p={0}
-            width={'full'}
-            overflow={'hidden'}
-            direction={'column'}
-            minH={['auto', 410]}
-            position={'relative'}
-            justifyContent={'space-between'}
+          <VStack
+            flex={1}
+            spacing={6}
+            width={['full', '66.3%']}
+            alignItems={'flex-start'}
           >
-            {
-              /*
-              totalFunds.lte(0) && (
-                <Center
-                  layerStyle={'overlay'}
-                  bg={'rgba(0, 0, 0, 0.4)'}
-                >
-                  <Translation translation={account ? 'dashboard.performanceChart.empty' : 'dashboard.performanceChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
-                </Center>
-              )
-              */
-            }
-            <BalanceChartProvider
-              timeframe={timeframe}
-              allowFlatChart={true}
-              assetIds={allAssetIds}
-              strategies={selectedStrategies}
+            <Flex
+              p={0}
+              width={'full'}
+              overflow={'hidden'}
+              direction={'column'}
+              minH={['auto', 410]}
+              position={'relative'}
+              justifyContent={'space-between'}
             >
-              <Stack
-                pt={0}
-                pb={4}
-                width={'full'}
-                alignItems={'flex-start'}
-                direction={['column', 'row']}
-                justifyContent={['center', 'space-between']}
+              {
+                /*
+                totalFunds.lte(0) && (
+                  <Center
+                    layerStyle={'overlay'}
+                    bg={'rgba(0, 0, 0, 0.4)'}
+                  >
+                    <Translation translation={account ? 'dashboard.performanceChart.empty' : 'dashboard.performanceChart.emptyNotConnected'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                  </Center>
+                )
+                */
+              }
+              <BalanceChartProvider
+                timeframe={timeframe}
+                allowFlatChart={true}
+                assetIds={allAssetIds}
+                strategies={selectedStrategies}
               >
-                <VStack
+                <Stack
+                  pt={0}
+                  pb={4}
                   width={'full'}
-                  spacing={[5, 1]}
-                  alignItems={['center', 'flex-start']}
+                  alignItems={'flex-start'}
+                  direction={['column', 'row']}
+                  justifyContent={['center', 'space-between']}
                 >
-                  <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
-                  <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
-                    <VStack
-                      spacing={[1, 3]}
-                      alignItems={'baseline'}
-                    >
-                      <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
-                      {
-                        /*
-                        totalFunds.gt(0) && (
-                          <HStack
-                            spacing={2}
-                          >
-                            <BalanceChartProvider.BalanceChangeUsd textStyle={'captionSmall'} />
-                            <BalanceChartProvider.BalanceChangePercentage textStyle={'captionSmall'} />
-                          </HStack>
-                        )
-                        */
-                      }
-                    </VStack>
-                  </SkeletonText>
-                </VStack>
-                <HStack
-                  pt={[4, 9]}
-                  width={'full'}
-                  justifyContent={'flex-end'}
-                >
-                  <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
-                </HStack>
-              </Stack>
-              <BalanceChart
-                height={'300px'}
-                percentChange={0}
-                color={chartColor}
-                maxMinEnabled={false}
-                loadingEnabled={false}
-                isRainbowChart={false}
-                gradientEnabled={false}
-                setPercentChange={setPercentChange}
-                margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-              />
-            </BalanceChartProvider>
-          </Flex>
-          <Flex
-            px={[0, 10]}
-            width={'full'}
+                  <VStack
+                    width={'full'}
+                    spacing={[5, 1]}
+                    alignItems={['center', 'flex-start']}
+                  >
+                    <Translation display={['none', 'block']} translation={'dashboard.portfolio.totalChart'} component={Text} textStyle={'tableCell'} fontWeight={400} color={'cta'} />
+                    <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
+                      <VStack
+                        spacing={[1, 3]}
+                        alignItems={'baseline'}
+                      >
+                        <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
+                        {
+                          /*
+                          totalFunds.gt(0) && (
+                            <HStack
+                              spacing={2}
+                            >
+                              <BalanceChartProvider.BalanceChangeUsd textStyle={'captionSmall'} />
+                              <BalanceChartProvider.BalanceChangePercentage textStyle={'captionSmall'} />
+                            </HStack>
+                          )
+                          */
+                        }
+                      </VStack>
+                    </SkeletonText>
+                  </VStack>
+                  <HStack
+                    pt={[4, 9]}
+                    width={'full'}
+                    justifyContent={'flex-end'}
+                  >
+                    <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} width={['full', 'auto']} justifyContent={['center', 'initial']} />
+                  </HStack>
+                </Stack>
+                <BalanceChart
+                  height={'300px'}
+                  percentChange={0}
+                  color={chartColor}
+                  maxMinEnabled={false}
+                  loadingEnabled={false}
+                  isRainbowChart={false}
+                  gradientEnabled={false}
+                  setPercentChange={setPercentChange}
+                  margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+                />
+              </BalanceChartProvider>
+            </Flex>
+            <Flex
+              px={[0, 10]}
+              width={'full'}
+            >
+              {fundsOverview}
+            </Flex>
+          </VStack>
+          <VStack
+            spacing={6}
+            width={['full', '500px']}
+            alignItems={'flex-start'}
           >
-            {fundsOverview}
-          </Flex>
-        </VStack>
-        <VStack
-          spacing={6}
-          width={['100%', '500px']}
-          alignItems={'flex-start'}
-        >
-          {productsOverview}
-        </VStack>
-      </Stack>
+            {productsOverview}
+          </VStack>
+        </Stack>
+      </VStack>
       <DepositedAssetsTable />
       <Stack
         spacing={6}
         mt={[10, 20]}
-        width={'100%'}
+        width={'full'}
         direction={['column', 'row']}
       >
         <VStack
@@ -658,7 +664,7 @@ export const Dashboard: React.FC = () => {
           borderRadius={8}
           overflow={'hidden'}
           alignItems={'flex-start'}
-          width={['100%', '500px']}
+          width={['full', '500px']}
           backgroundColor={'black'}
         >
           <Translation mb={0} component={Card.Heading} fontSize={'lg'} translation={'social.title'} />
@@ -683,7 +689,7 @@ export const Dashboard: React.FC = () => {
                 <VStack
                   flex={1}
                   spacing={0}
-                  height={'100%'}
+                  height={'full'}
                   alignItems={'flex-start'}
                   ref={ref as typeof useRef}
                   justifyContent={'flex-start'}

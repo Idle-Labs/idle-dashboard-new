@@ -25,8 +25,8 @@ import { TransactionButton } from 'components/TransactionButton/TransactionButto
 import { DiscountedFeesTable } from 'components/DiscountedFeesTable/DiscountedFeesTable'
 // import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
-import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text, Image } from '@chakra-ui/react'
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
+import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text, Image, Link, LinkProps } from '@chakra-ui/react'
 
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
@@ -287,6 +287,7 @@ export const Staking: React.FC = () => {
       {
         image: 'images/staking/stake.png',
         translation: 'strategies.staking.howItWorks.steps.cta2',
+        link: 'https://docs.idle.finance/governance/idle-staking',
         props: {
           justifyContent: 'center'
         }
@@ -335,7 +336,13 @@ export const Staking: React.FC = () => {
                     key={`step_${index}`}
                   >
                     <Image src={step.image} width={14} />
-                    <Translation translation={step.translation} /*onClick={() => openModal(modalProps as ModalProps, '2xl')}*/ />
+                    {
+                      !!step.link ? (
+                        <Translation<LinkProps> component={Link} translation={step.translation} textDecoration={'underline'} isExternal href={step.link} />
+                      ) : (
+                        <Translation translation={step.translation} /*onClick={() => openModal(modalProps as ModalProps, '2xl')}*/ />
+                      )
+                    }
                     {
                       index<steps.length-1 && (
                         <HStack pl={2}>
