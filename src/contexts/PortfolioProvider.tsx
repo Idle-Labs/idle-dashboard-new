@@ -2719,7 +2719,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const maxApr = stkIdleTotalRewards.div(fixTokenDecimals(stkIdleTotalSupply, 18)).times(365.2425).div(stkIdletotalRewardsDays).times(100)
       const avgLockTime = parseFloat(fixTokenDecimals(stkIdleTotalSupply, 18).div(fixTokenDecimals(stkIdleTotalLocked, 18)).times(MAX_STAKING_DAYS).toFixed())
 
-      const feeDiscount = BNify(10);// getFeeDiscount(fixTokenDecimals(stkIdleBalance, 18))
+      const feeDiscount = getFeeDiscount(fixTokenDecimals(stkIdleBalance, 18))
 
       // console.log(`stkIdleTotalRewards: ${stkIdleTotalRewards.toFixed()}, stkIdleTotalLocked: ${fixTokenDecimals(stkIdleTotalLocked, 18).toFixed()}, stkIdletotalRewardsDays: ${stkIdletotalRewardsDays.toFixed()}`)
 

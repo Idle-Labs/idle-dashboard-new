@@ -213,7 +213,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       >
         <Translation component={Text} translation={`dynamicActionFields.${field}`} textStyle={'captionSmall'} color={textCta} />
         {
-          field === 'feeDiscount' && (
+          ['feeDiscount', 'currentFeeDiscount'].includes(field) && (
             <BsStars size={16} color={'orange'} />
           )
         }

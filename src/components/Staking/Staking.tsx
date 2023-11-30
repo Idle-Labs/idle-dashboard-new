@@ -28,6 +28,13 @@ import { InteractiveComponent } from 'components/InteractiveComponent/Interactiv
 import { AssetGeneralDataField, AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { SimpleGrid, Box, Stack, VStack, HStack, Heading, Text, Image, Link, LinkProps } from '@chakra-ui/react'
 
+type howItWorksStep = {
+  image: string
+  translation: string
+  link?: string
+  props: any
+}
+
 export const Staking: React.FC = () => {
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
@@ -276,7 +283,7 @@ export const Staking: React.FC = () => {
 
   const howItWorks = useMemo(() => {
 
-    const steps = [
+    const steps: howItWorksStep[] = [
       {
         image: 'images/staking/get-idle.png',
         translation: 'strategies.staking.howItWorks.steps.cta1',
@@ -287,7 +294,6 @@ export const Staking: React.FC = () => {
       {
         image: 'images/staking/stake.png',
         translation: 'strategies.staking.howItWorks.steps.cta2',
-        link: 'https://docs.idle.finance/governance/idle-staking',
         props: {
           justifyContent: 'center'
         }

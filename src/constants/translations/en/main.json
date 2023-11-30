@@ -737,7 +737,7 @@
   },
   "feeDiscount": {
     "enable": "Enable fee discount",
-    "announcement": "<strong style='color: white'>Stake IDLE</strong> and get a performance fee discount as a liquidity provider in Yield Tranches. Currently available for all Yield Tranches deployed on Ethereum mainnet, besides Fasanara's ones. <a href='https://docs.idle.finance/governance/idle-staking' class='link' target='_blank' rel='noopener'>Learn more</a>",
+    "announcement": "<strong style='color: white'>Stake IDLE</strong> and get a performance fee discount as a liquidity provider in Yield Tranches. Currently available for all Yield Tranches deployed on Ethereum mainnet, besides Fasanara's ones. <a href='https://docs.idle.finance/governance/idle-staking/fee-discount' class='link' target='_blank' rel='noopener'>Learn more</a>",
     "table": {
       "header": "Fee discount tiers",
       "empty": "Reduce performance fees through IDLE staking.<br />Your accrued discounts for each deposit will appear here.",
