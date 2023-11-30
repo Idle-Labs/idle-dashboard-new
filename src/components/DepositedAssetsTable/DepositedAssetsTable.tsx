@@ -20,7 +20,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { strategies, StrategyColumn, Tables } from 'constants/strategies'
 import { MdStarBorder, MdOutlineAccountBalanceWallet } from 'react-icons/md'
 import { sortNumeric, sortAlpha, sendSelectItem, bnOrZero, BNify, isEmpty, getRoutePath } from 'helpers/'
-import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
+import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow, Image } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -535,7 +535,15 @@ export const DepositedAssetsTable: React.FC = () => {
                 alignItems={'center'}
                 justifyContent={'center'}
               >
-                <Translation textAlign={'center'} translation={'feeDiscount.table.empty'} color={'cta'} isHtml />
+                <VStack
+                  spacing={2}
+                  width={'full'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                >
+                  <Image src={'images/vaults/discount.png'} width={8} />
+                  <Translation textAlign={'center'} translation={'feeDiscount.table.empty'} color={'cta'} isHtml />
+                </VStack>
                 <Translation<ButtonProps> component={Button} translation={`common.stake`} variant={'ctaPrimary'} px={10} onClick={() => navigate(getRoutePath('stake'))} />
               </VStack>
             ) : (
