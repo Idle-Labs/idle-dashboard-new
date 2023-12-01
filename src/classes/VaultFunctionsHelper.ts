@@ -160,8 +160,9 @@ export class VaultFunctionsHelper {
       const harvestedValueBB = totalValue.times(aprRatioBB.div(100))
       const tokenAprAA = harvestedValueAA.div(tranchePoolAA).times(52.1429)
       const tokenAprBB = harvestedValueBB.div(tranchePoolBB).times(52.1429)
+
       // const totalApr = totalValue.div(tranchePoolAA.plus(tranchePoolBB)).times(52.1429)
-      // console.log('getTrancheHarvest', trancheVault.cdoConfig.address, totalValue.toString(), harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString(), totalApr.toString())
+      // console.log('getTrancheHarvest', trancheVault.cdoConfig.address, trancheVault.id, totalValue.toString(), harvestedValueAA.toString(), harvestedValueBB.toString(), tranchePoolAA.toString(), tranchePoolBB.toString(), tokenAprAA.toString(), tokenAprBB.toString(), totalApr.toString())
 
       lastHarvest.harvest = {
         aprs: {

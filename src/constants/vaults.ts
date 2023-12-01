@@ -2262,15 +2262,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     */
     clearpool:{
       USDC:{
-        autoFarming:[],
         enabledEnvs:[],
         variant:'portofino',
         protocol:'clearpool',
         blockNumber:16790250,
+        autoFarming:['CPOOL'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: false,
+          addHarvestApy: true,
           referralEnabled: true,
           feeDiscountEnabled: true
         },
@@ -2591,15 +2591,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDT:{
-        autoFarming:[],
         enabledEnvs:[],
         variant:'fasanara',
         protocol:'clearpool',
         blockNumber:16790250,
+        autoFarming:['CPOOL'],
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: false,
+          addHarvestApy: true,
           referralEnabled: true
         },
         CDO:{
@@ -2672,15 +2672,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       USDCFas:{
-        autoFarming:[],
         enabledEnvs:[],
         variant:'fasanara',
         protocol:'clearpool',
         blockNumber:17413683,
+        autoFarming:['CPOOL'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: false,
+          addHarvestApy: true,
           referralEnabled: true
         },
         CDO:{

@@ -28,9 +28,9 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { Center, SimpleGrid, Stack, HStack, VStack, Heading, Flex } from '@chakra-ui/react'
 import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocationChartData'
-import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange } from 'constants/types'
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
+import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange, Balances } from 'constants/types'
 import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage, bnOrZero, floorTimestamp, isEmpty } from 'helpers/'
 
 type AboutItemProps = {
@@ -150,29 +150,44 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   // console.log('performanceChartData', performanceChartData)
 
   const assetsAvgApy = useMemo(() => {
-    const sums = rateChartData.rainbow.reduce( (totals: Record<AssetId, BigNumber>, data: RainbowData) => {
-      assetIds.forEach( (assetId: AssetId) => {
-        if (!totals[assetId]){
-          totals[assetId] = BNify(0)
-        }
-        totals[assetId] = totals[assetId].plus(data[assetId])
-      })
-      return totals
-    }, {})
-    return Object.keys(sums).reduce( (avgApys: Record<AssetId, BigNumber>, assetId: AssetId) => {
-      const asset = selectAssetById(assetId)
-      avgApys[assetId] = sums[assetId].div(rateChartData.rainbow.length)
-      // console.log('apyBreakdown', asset?.apyBreakdown)
-      if (asset?.apyBreakdown){
-        Object.keys(asset.apyBreakdown).forEach( (apyType: string) => {
-          if (apyType !== 'base'){
-            avgApys[assetId] = avgApys[assetId].plus(asset.apyBreakdown[apyType])
-          }
-        })
+    const avgApys = assetIds.reduce( (avgApys: Balances, assetId: AssetId) => {
+      return {
+        ...avgApys,
+        [assetId]: BNify(0)
       }
-      return avgApys
     }, {})
-  }, [assetIds, rateChartData, selectAssetById])
+
+    if (isEmpty(performanceChartData.rainbow)) return avgApys
+
+    return assetIds.reduce( (avgApys: Balances, assetId: AssetId) => {
+      const asset = selectAssetById(assetId)
+
+      const firstDataPoint = performanceChartData.rainbow[0] as RainbowData
+      const lastDataPoint = [...performanceChartData.rainbow].pop() as RainbowData
+
+      const assetFirstPrice = bnOrZero(firstDataPoint[assetId])
+      const assetLastPrice = bnOrZero(lastDataPoint[assetId])
+
+      const earningsDays = bnOrZero(lastDataPoint.date).minus(firstDataPoint.date).div(1000).div(86400)
+      const earningsPercentage = assetLastPrice.div(assetFirstPrice).minus(1).times(100)
+      let avgApy = earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : BNify(0)
+
+      if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
+        avgApy = avgApy.plus(asset?.apyBreakdown?.harvest)
+      }
+
+      if (earningsPercentage && earningsDays.gt(0)){
+        if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
+          avgApy = avgApy.plus(asset?.apyBreakdown?.rewards)
+        }
+      }
+
+      return {
+        ...avgApys,
+        [assetId]: avgApy
+      }
+    }, {...avgApys})
+  }, [assetIds, performanceChartData, selectAssetById])
 
   const assetsApys = useMemo(() => {
     if (isEmpty(assetsAvgApy)) return null

@@ -116,6 +116,7 @@ export const Earn: React.FC = () => {
         apy = apy.plus(asset?.apyBreakdown?.rewards)
       }
     }
+
     return (
       <VStack
         spacing={1}
