@@ -2436,7 +2436,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         adaptiveYieldSplitEnabled:true,
         flags:{
           addHarvestApy: false,
-          referralEnabled: true
+          referralEnabled: true,
+          feeDiscountEnabled: true
         },
         CDO:{
           abi:IdleCDO as Abi,
