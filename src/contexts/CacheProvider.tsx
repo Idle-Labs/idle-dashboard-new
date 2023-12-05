@@ -80,23 +80,21 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
       // Wait until processing = False
       while (processingRef.current){
         await asyncWait(100)
-        console.log('waitProcessed')
       }
       resolve(true)
     });
   }, [])
 
   const processQueue = useCallback(async () => {
-    if (!requestQueue.size) return
-
     await waitProcessed()
+
+    // Exit if queue empty
+    if (!requestQueue.size) return
 
     // Start processing
     processingRef.current = true
 
     const processedKeys = Array.from(requestQueue.keys())
-
-    console.log('processQueue', processedKeys)
 
     const promises = processedKeys.map( (urlHash: string) => {
       const data = requestQueue.get(urlHash)
@@ -110,20 +108,8 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
       requestQueue.delete(urlHash)
     })
 
-    processingRef.current = false
     // End processing
-
-    /*
-    const cachedRequestsMap = new Map(Object.entries({
-      ...cachedRequests,
-      ...newEntries
-    }))
-
-    // For Precached data
-    // console.log('cachedRequests', Object.fromEntries(cachedRequestsMap))
-
-    setCachedRequests(Object.fromEntries(cachedRequestsMap))
-    */
+    processingRef.current = false
   }, [requestQueue, waitProcessed])
 
   const getUrlHash = (url: string) => {

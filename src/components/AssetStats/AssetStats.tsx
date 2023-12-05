@@ -384,7 +384,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
   // console.log('assetIds', assetIds)
   // console.log('rateChartData', rateChartData)
   // console.log('collectedFees', collectedFees)
-  console.log('tvlUsdChartData', tvlUsdChartData)
+  // console.log('tvlUsdChartData', tvlUsdChartData)
   // console.log('volumeChartData', volumeChartData)
   // console.log('performanceChartData', performanceChartData)
 
