@@ -22,12 +22,14 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
 
   const menuButton = useMemo(() => {
     return isMobile ? (
-      <MenuButton as={IconButton} variant={'cta'} leftIcon={<Icon IconComponent={menuItem?.icon as string} height={'24px'} />} />
+      <MenuButton as={IconButton} variant={'cta'} m={0} icon={<Icon IconComponent={menuItem?.icon as string} height={'24px'} />} />
     ) : (
-      <MenuButton as={Flex} style={{cursor:'pointer'}}>
+      <MenuButton as={Flex} style={{cursor:'pointer'}} alignItems={'center'} justifyContent={'center'}>
         <Flex
+          width={'full'}
           direction={'row'}
           alignItems={'center'}
+          justifyContent={'center'}
         > 
           <NavItemText isActive={isOpen} {...menuItem} />
           {

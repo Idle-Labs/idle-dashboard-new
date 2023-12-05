@@ -476,7 +476,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!explorer) return []
 
     const cacheKey = `${explorer.endpoints[chainIdToUse]}?module=account&action=tokentx&address=${account.address}`
-    const cachedData = cacheProvider && cacheProvider.getCachedUrl(cacheKey)
+    const cachedData = cacheProvider ? await cacheProvider.getCachedUrl(cacheKey) : null
 
     startBlock = cachedData ? cachedData.data.reduce( (t: number, r: any) => Math.max(t, +r.blockNumber), 0)+1 : startBlock
 
@@ -2757,6 +2757,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [multiCall, web3Chains, vaultFunctionsHelper, state.vaults, account, state.isPortfolioAccountReady])
 
   // Get historical collected fees
+  /*
   useEffect(() => {
     if (isEmpty(state.vaults) || +chainId !== 1 || +chainId !== +state.vaultsChain || !state.isPortfolioAccountReady || !vaultFunctionsHelper || !isEmpty(state.vaultsCollectedFees) || runningEffects.current?.vaultsCollectedFeesProcessing || +(runningEffects.current?.vaultsCollectedFees || 0)>5) return
 
@@ -2782,6 +2783,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     })()
   // eslint-disable-next-line
   }, [state.vaults, state.vaultsChain, state.isPortfolioAccountReady, vaultFunctionsHelper])
+  */
 
   // Calculate historical USD Tvls
   useEffect(() => {

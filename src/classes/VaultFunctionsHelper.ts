@@ -745,7 +745,7 @@ export class VaultFunctionsHelper {
     const currTime = Math.ceil(Date.now()/1000)
 
     const cacheKey = `subgraph_${vault.chainId}_${vault.id}`
-    const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
+    const cachedData = this.cacheProvider ? await this.cacheProvider.getCachedUrl(cacheKey) : null
     const lastFetchTimestamp = cachedData && cachedData.timestamp
     const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timeStamp), 0)
 
@@ -925,7 +925,7 @@ export class VaultFunctionsHelper {
     const address = apiType === 'rates' ? vault.underlyingToken?.address : vault.id
 
     const cacheKey = `idleRates_${vault.chainId}_${address}`
-    const cachedData = this.cacheProvider && this.cacheProvider.getCachedUrl(cacheKey)
+    const cachedData = this.cacheProvider ? await this.cacheProvider.getCachedUrl(cacheKey) : null
 
     const lastFetchTimestamp = cachedData && cachedData.timestamp
     const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timestamp), 0)

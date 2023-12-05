@@ -1,13 +1,13 @@
-import { hashCode } from 'helpers/'
+import localforage from 'localforage'
+import { hashCode, isEmpty } from 'helpers/'
 import { CACHE_VERSION } from 'constants/vars'
 import useLocalForge from 'hooks/useLocalForge'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import { preCachedRequests } from 'constants/historicalData'
-import React, { useContext, useCallback, useMemo, useEffect } from 'react'
+import React, { useContext, useCallback, useMemo, useEffect, useState } from 'react'
 
 export type CacheContextProps = {
-  fetchUrl: Function
   saveData: Function
   getUrlHash: Function
   getCachedUrl: Function
@@ -19,7 +19,6 @@ export type CacheContextProps = {
 const initialState = {
   isLoaded: false,
   processing: false,
-  fetchUrl: () => {},
   saveData: () => {},
   getUrlHash: () => {},
   getCachedUrl: () => {},
@@ -33,34 +32,70 @@ type CacheProviderProps = {
   TTL: number
 } & ProviderProps
 
+type CachedItem = {
+  data: any
+  timestamp: number
+  expirationDate: number | null
+}
+
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
   const { chainId, isChainLoaded } = useWalletProvider()
-  const [ cacheVersion, setCacheVersion, , isVersionLoaded ] = useLocalForge('cacheVersion')
-  const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge(`cachedRequests`, preCachedRequests)
+  const [ processing, setProcessing ] = useState<boolean>(false)
+  const [ cacheVersion, setCacheVersion, , isLoaded ] = useLocalForge('cacheVersion')
+  // const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge(`cachedRequests`, preCachedRequests)
+
+  const initCache = useCallback( async () => {
+    const promises = Object.keys(preCachedRequests).map( (urlHash: string) => {
+      const data = preCachedRequests[urlHash]
+      return localforage.setItem(`cachedRequests_${urlHash}`, data)
+    } )
+
+    setProcessing(true)
+    await localforage.clear()
+    await Promise.all(promises)
+    await localforage.setItem('cachedRequests_timestamp', Date.now())
+    setProcessing(false)
+
+  }, [setProcessing])
+
+  // @ts-ignore
+  window.initCache = initCache
 
   // Check preCachedData version
   useEffect(() => {
-    if (!isLoaded || !isVersionLoaded || !isChainLoaded || cacheVersion === CACHE_VERSION) return
-    setCachedRequests(preCachedRequests)
+    if (!isLoaded || !isChainLoaded || cacheVersion === CACHE_VERSION) return
+    initCache()
     setCacheVersion(CACHE_VERSION)
     // eslint-disable-next-line
     console.log('CACHE VERSION UPGRADE FROM %s to %s', cacheVersion, CACHE_VERSION)
-  }, [cacheVersion, chainId, isChainLoaded, isLoaded, isVersionLoaded, setCachedRequests, setCacheVersion])
+  }, [cacheVersion, chainId, isChainLoaded, isLoaded, initCache, setCacheVersion])
 
   const cacheIsLoaded = useMemo(() => {
-    return isLoaded && isChainLoaded && isVersionLoaded && cacheVersion === CACHE_VERSION
-  }, [cacheVersion, isChainLoaded, isVersionLoaded, isLoaded])
+    return isLoaded && isChainLoaded && cacheVersion === CACHE_VERSION
+  }, [cacheVersion, isChainLoaded, isLoaded])
 
-  // console.log('cacheIsLoaded', cacheIsLoaded)
-
-  const requestQueue = useMemo(() => new Map(), [])
+  const requestQueue: Record<string, CachedItem> = useMemo(() => ({}), [])
 
   const processQueue = useCallback(async () => {
-    if (!requestQueue.size) return
+    if (isEmpty(requestQueue)) return
 
-    const newEntries = Object.fromEntries(requestQueue)
-    // const processedKeys = Object.keys(newEntries)
+    const processedKeys = Object.keys(requestQueue)
 
+    const promises = processedKeys.map( (urlHash: string) => {
+      const data = requestQueue[urlHash]
+      return localforage.setItem(urlHash, data)
+    })
+
+    setProcessing(true)
+    await Promise.all(promises)
+    setProcessing(false)
+
+    // Clear queue
+    processedKeys.forEach( urlHash => {
+      delete requestQueue[urlHash]
+    })
+
+    /*
     const cachedRequestsMap = new Map(Object.entries({
       ...cachedRequests,
       ...newEntries
@@ -70,19 +105,21 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     // console.log('cachedRequests', Object.fromEntries(cachedRequestsMap))
 
     setCachedRequests(Object.fromEntries(cachedRequestsMap))
-  }, [requestQueue, setCachedRequests, cachedRequests])
+    */
+  }, [requestQueue, setProcessing])
 
   const getUrlHash = (url: string) => {
-    return url ? hashCode(url.toLowerCase()) : null
+    return url ? `cachedRequests_${hashCode(url.toLowerCase())}` : null
   }
 
-  const getCachedUrl = useCallback( (url: string, callback?: Function): any => {
+  const getCachedUrl = useCallback( async (url: string, callback?: Function): Promise<CachedItem | null> => {
 
     const urlHash = getUrlHash(url)
     if (!urlHash) return null
 
     const timestamp = Date.now()
-    const cachedRequest = cachedRequests[urlHash]
+    // const cachedRequest = cachedRequests[urlHash]
+    const cachedRequest: CachedItem | null = await localforage.getItem(urlHash)
 
     // console.log('getCachedUrl', url, cachedRequest)
 
@@ -95,18 +132,21 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     }
 
     return null
-  }, [cachedRequests])
+  }, [])
 
   const saveData = useCallback( (url: string, data: any, TTL: number = defaultTTL/*, extraData?: any*/): any => {
     const timestamp = Date.now()
     const urlHash = getUrlHash(url)
+
+    if (!urlHash) return data
+
     const expirationDate = !TTL ? null : timestamp+(TTL*1000)
 
-    requestQueue.set(urlHash, {
+    requestQueue[urlHash] = {
       data,
       timestamp,
       expirationDate
-    })
+    }
 
     // console.log('saveData', url, urlHash, {
     //   data,
@@ -120,10 +160,10 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     return data
   }, [requestQueue, processQueue, defaultTTL])
 
-  const checkAndCache = useCallback( async (url: string, asyncFunc?: Function, TTL: number = defaultTTL): Promise<any> => {
+  const checkAndCache = useCallback( async (url: string, asyncFunc?: Function, TTL: number = defaultTTL): Promise<CachedItem["data"] | null> => {
 
     // Get cached data
-    const cachedData = getCachedUrl(url)
+    const cachedData = await getCachedUrl(url)
     if (cachedData){
       return cachedData.data
     }
@@ -137,20 +177,22 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
     return null
   }, [getCachedUrl, saveData, defaultTTL])
 
-  const fetchUrl = useCallback( (url: string, TTL: number = defaultTTL) => {
-    // Get cached data
-    const cachedData = getCachedUrl(url)
-    if (cachedData) return cachedData.data
-
-    // Fetch and save
-    return fetch(url)
-      .then(response => response.json())
-      .then(json => saveData(url, json.results, TTL))
-
-  }, [getCachedUrl, saveData, defaultTTL])
+  useEffect(() => {
+    (async function () {
+      try {
+        const initTimestamp = await localforage.getItem('cachedRequests_timestamp')
+        if ((initTimestamp === null || initTimestamp === undefined)){
+          await initCache()
+        }
+      } catch ( err ) {
+        
+      }
+    })()
+  // eslint-disable-next-line
+  }, [])
 
   return (
-    <CacheContext.Provider value={{ fetchUrl, saveData, getUrlHash, getCachedUrl, checkAndCache, isLoaded: cacheIsLoaded, processing }}>
+    <CacheContext.Provider value={{ saveData, getUrlHash, getCachedUrl, checkAndCache, isLoaded: cacheIsLoaded, processing }}>
       {children}
     </CacheContext.Provider>
   )
