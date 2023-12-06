@@ -5,7 +5,7 @@ import { translations } from 'constants/translations'
 import coinbaseWalletModule from '@web3-onboard/coinbase'
 import injectedModule from '@web3-onboard/injected-wallets'
 import walletConnectModule from '@web3-onboard/walletconnect'
-import { defaultChainId, chains, DASHBORD_URL } from 'constants/'
+import { defaultChainId, chains, LANDING_URL, DASHBORD_URL } from 'constants/'
 
 const env = process.env;
 
@@ -52,7 +52,7 @@ export const getOnBoardInitParams = (chainId) => {
     theme: 'dark',
     appMetadata:{
       name: 'Idle Finance',
-      explore: DASHBORD_URL,
+      explore: LANDING_URL,
       icon: '/images/icon.svg',
       logo: '/images/logo.svg',
       description: 'Idle Finance',
