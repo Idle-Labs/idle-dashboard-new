@@ -51,8 +51,8 @@ export const getOnBoardInitParams = (chainId) => {
     },
     theme: 'dark',
     appMetadata:{
-      explore: 'explore',
       name: 'Idle Finance',
+      explore: DASHBORD_URL,
       icon: '/images/icon.svg',
       logo: '/images/logo.svg',
       description: 'Idle Finance',
