@@ -103,9 +103,9 @@ export function ModalProvider({ children }: ProviderProps) {
               )
             }
             {
-              modalProps.body || modalProps.text && (
+              modalProps.body || (modalProps.text && (
                 <Text color={'cta'} dangerouslySetInnerHTML={{__html: modalProps.text}} />
-              )
+              ))
             }
           </ModalBody>
           {

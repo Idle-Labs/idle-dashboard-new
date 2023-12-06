@@ -1,5 +1,5 @@
+import { IconType } from './types'
 import { networksFolder } from 'constants/folders'
-import { IconType, TransactionSpeed } from './types'
 
 const env = process.env;
 

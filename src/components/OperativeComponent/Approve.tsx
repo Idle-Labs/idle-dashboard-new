@@ -4,7 +4,6 @@ import { MAX_ALLOWANCE } from 'constants/vars'
 import type { NumberType } from 'constants/types'
 import { MdOutlineLockOpen } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { NavBar } from 'components/OperativeComponent/NavBar'
 import React, { useState, useCallback, useEffect } from 'react'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
@@ -20,7 +19,6 @@ type ApproveArgs = {
 
 export const Approve: React.FC<ApproveArgs> = ({
   amountUsd,
-  goBack,
   itemIndex
 }) => {
   const { account } = useWalletProvider()
