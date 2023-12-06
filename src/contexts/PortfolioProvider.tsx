@@ -483,6 +483,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const endpoint = `${explorer.endpoints[chainIdToUse]}?module=account&action=tokentx&address=${account.address}&startblock=${startBlock}&endblock=${endBlock}&sort=asc`
     const etherscanTransactions = await makeEtherscanApiRequest(endpoint, explorer.keys)
 
+    if (!etherscanTransactions) return []
+
     const dataToCache = new Set()
     if (cachedData){
       for (const tx of cachedData.data) {

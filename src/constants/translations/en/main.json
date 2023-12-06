@@ -1085,7 +1085,7 @@
       },
       "withdraw": {
         "confirm": "You are withdrawing",
-        "confirmed": "You have withdrawed",
+        "confirmed": "You have withdrawn",
         "messages": {
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",

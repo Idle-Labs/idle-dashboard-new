@@ -6,7 +6,7 @@ import type { WalletState } from '@web3-onboard/core'
 import type { Account, Address } from 'constants/types'
 import { getOnBoardInitParams } from './configs/onboard'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
-import { checkAddress, sendLogin, sendChainId } from 'helpers/'
+import { checkAddress, sendLogin, sendChainId, isEmpty } from 'helpers/'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
 import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { chains, networks, explorers, defaultChainId, Network, Explorer, UnderlyingTokenProps } from 'constants/'
@@ -182,10 +182,15 @@ export function WalletProvider({ children }: ProviderProps) {
       })
       sendLogin('Custom wallet')
     } else if (wallet) {
-      if (connecting) return
+      if (connecting || isEmpty(wallet.accounts)) return
+
+      // Get first valid account from the provider
+      const firstValidAccount: Account | null = wallet.accounts.find( account => checkAddress(account.address) ) || null
+      if (!firstValidAccount) return
+
       setWalletProvider(wallet.label)
-      setAccount(wallet.accounts[0])
-      sendLogin(wallet.label, wallet.accounts[0]?.address)
+      setAccount(firstValidAccount)
+      sendLogin(wallet.label, firstValidAccount?.address)
     }
   }, [wallet, customAddress, connecting, setWalletProvider])
 
