@@ -150,7 +150,7 @@ export class VaultFunctionsHelper {
 
       if (!harvestTxs) return lastHarvest
 
-      const harvestTx = harvestTxs.find( (tx: EtherscanTransaction) => tx.contractAddress.toLowerCase() === trancheVault.underlyingToken?.address?.toLowerCase() && tx.to.toLowerCase() === trancheVault.cdoConfig.address.toLowerCase() )
+      const harvestTx = harvestTxs.find( (tx: EtherscanTransaction) => cmpAddrs(tx.contractAddress, trancheVault.underlyingToken?.address as string) && cmpAddrs(tx.to, trancheVault.cdoConfig.address) )
 
       if (!harvestTx) return lastHarvest
 

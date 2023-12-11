@@ -2270,7 +2270,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: true,
+          addHarvestApy: false,
           referralEnabled: true,
           feeDiscountEnabled: true
         },
@@ -2599,7 +2599,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: true,
+          addHarvestApy: false,
           referralEnabled: true
         },
         CDO:{
@@ -2680,7 +2680,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: true,
+          addHarvestApy: false,
           referralEnabled: true
         },
         CDO:{
