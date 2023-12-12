@@ -1045,6 +1045,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       ]: DecodedResult[][] = rawCallsResultsByChain[resultIndex]
       // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
 
+      // console.log('pricesUsdCallsResults', pricesUsdCallsResults)
+
       // Process paused vaults
       pausedVaults = pausedCallsResults.reduce( (pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -1078,6 +1080,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
         return pricesUsd
       }, pricesUsd)
+
+      // console.log('pricesUsd', pricesUsd)
 
       // Process interest bearing tokens
       interestBearingTokens = interestBearingTokensCallsResults.reduce( (interestBearingTokens: Record<AssetId, Balances>, callResult: DecodedResult) => {
@@ -2156,19 +2160,16 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const rawCallUsd = chainlinkHelper.getUsdFeedAddressRawCall(address, assetId)
       const callDataUsd = rawCallUsd && multiCall && multiCall.getDataFromRawCall(rawCallUsd.call, rawCallUsd)
-      if (callDataUsd) calls[0].push(callDataUsd)
-
+      if (!callDataUsd) return calls
+    
+      calls[0].push(callDataUsd)
       return calls
     }, [[],[]])
-
-    // console.log('feedsCalls', feedsCalls)
 
     const [
       feedsUsd
     // @ts-ignore
     ] = await multiCall.executeMultipleBatches(feedsCalls, 1, web3Chains[1])
-
-    // console.log('feedsUsd', feedsUsd)
 
     // Group feeds by asset
     const assetsFeedsUsd = feedsUsd.reduce( (assetsFeedsUsd: Record<AssetId, string | null>, callResult: DecodedResult): Record<AssetId, string | null> => {
@@ -2181,8 +2182,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         [assetId]: feedAddress
       }
     }, {})
-
-    // console.log('assetsFeedsUsd', assetsFeedsUsd)
 
     // Get feeds rounds bounds (timestamp, latestRound, latestTimestamp)
     const feedsUsdRoundBoundsCalls = Object.keys(assetsFeedsUsd).reduce( (calls: CallData[][], assetId: string) => {

@@ -16,6 +16,7 @@ type ConversionRateProps = {
   routerMethod?: string
   address?: string
   addressFrom?: string
+  useWETH?: boolean
   invertTokens?: boolean
   protocolContract?: string
   isPoolToken?: boolean
@@ -95,7 +96,11 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hsl: ['202', '100%', '50%']
       },
       conversionRate: {
-        field: "stETHDAIPrice"
+        field: "WSTETH",
+        address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+      },
+      chainlinkPriceFeed: {
+        address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84'
       },
       address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0'
     },

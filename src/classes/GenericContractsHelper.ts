@@ -118,7 +118,7 @@ export class GenericContractsHelper {
 
     if (!ProtocolContract) return null
 
-    const useWETH = conversionToken?.address === DAI?.address
+    const useWETH = conversionRateParams.useWETH !== undefined ? !!conversionRateParams.useWETH : conversionToken?.address === DAI?.address
     const invertTokens = !!conversionRateParams.invertTokens
     const routerMethod = conversionRateParams.routerMethod || 'getAmountsIn'
 
