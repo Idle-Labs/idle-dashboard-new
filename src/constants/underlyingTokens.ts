@@ -84,6 +84,21 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84'
     },
+    WSTETH: {
+      decimals: 18,
+      enabled: true,
+      token:'wstETH',
+      label: 'wstETH',
+      colors: {
+        hex: '#00a3ff',
+        rgb: [0, 163, 255],
+        hsl: ['202', '100%', '50%']
+      },
+      conversionRate: {
+        field: "stETHDAIPrice"
+      },
+      address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0'
+    },
     CVX: {
       token:'CVX',
       label: 'CVX',

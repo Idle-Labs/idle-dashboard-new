@@ -208,6 +208,22 @@ export class VaultFunctionsHelper {
     return await this.getTrancheApy(strategyApr, trancheVault);
   }
 
+  public async getAmphorwstETHrancheStrategyApr(chainId: number): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'amphor', 'wstETH')
+    const callback = async () => (await callPlatformApis(chainId, 'amphor', 'wstETH'))
+    const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
+
+    if (!BNify(apr).isNaN()){
+      return BNify(apr).div(100);
+    }
+    return BNify(0);
+  }
+
+  public async getAmphorwstETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
+    const strategyApr = await this.getAmphorwstETHrancheStrategyApr(trancheVault.chainId);
+    return await this.getTrancheApy(strategyApr, trancheVault);
+  }
+
   public async getInstadappStETHTrancheStrategyApr(chainId: number): Promise<BigNumber> {
     const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'instadapp', 'stETH')
     const callback = async () => (await callPlatformApis(chainId, 'instadapp', 'stETH'))
@@ -653,6 +669,12 @@ export class VaultFunctionsHelper {
                 vaultId: vault.id,
                 cdoId: vault.cdoConfig.address,
                 apr: await this.getStETHTrancheApy(vault)
+              }
+            case 'IdleCDO_amphor_wstETH':
+              return {
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+                apr: await this.getAmphorwstETHTrancheApy(vault)
               }
             case 'IdleCDO_instadapp_stETH':
               return {

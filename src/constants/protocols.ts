@@ -119,6 +119,37 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     }
   },
+  amphor: {
+    icon:`${protocolsFolder}amphor.png`,
+    label: "Morpho",
+    stats: {
+      showLegend: false,
+    },
+    enabled: true,
+    colors: {
+      rgb: [30, 61, 137],
+      hsl: ["223", "64%", "33%"]
+    },
+    apis: {
+      wstETH:{
+        path:'wstethVault.strategyGrossAPR',
+        endpoint: {
+          1: 'https://api.idle.finance/amphorAprs'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        }
+      },
+      wstETHEpoch:{
+        endpoint: {
+          1: 'https://api.idle.finance/amphorEpochInfo/wstethVault'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        }
+      }
+    }
+  },
   optimism: {
     icon: '',
     label: "Optimism",

@@ -3156,6 +3156,88 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           }
         }
       }
+    },
+    amphor:{
+      wstETH:{
+        autoFarming:[],
+        protocol:'amphor',
+        blockNumber:13776954,
+        underlyingToken:'WSTETH',
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_amphor_wstETH',
+          address:'0x9e0c5ee5e4B187Cf18B23745FCF2b6aE66a9B52f'
+        },
+        Strategy:{
+          harvestEnabled:false,
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_amphor_wstETH',
+          address:'0x35df8a95b348dd87167ed00b3421ba15d95ac1c8'
+        },
+        flags:{
+          addHarvestApy: false,
+          feeDiscountEnabled: true
+        },
+        description:'This strategy deploys funds in the <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor wstETH</a> pool.<br />The synthetic LP replicates the payoff of a position in Uniswap v3 liquidity pool while hedging against Impermanent Loss on ETH/USDC.<br />As long as ETH/USDC is trading above the "Risk threshold", the vault generates 20.9% APR.<br />Every week, the vault early terminates if ETH price closes higher the "Termination threshold".<br />If the vault reaches its maturity and ETH price ends below the "Risk threshold", on Jan 17, the capital would be at risk. To prevent any loss, the position will restructure if the ETH price gets too close to the "Risk threshold".',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf',
+              periodFinish:'periodFinish'
+            },
+            CDORewards:{
+              decimals:18,
+              unstakeWithBalance:false,
+              stakingRewards:[],
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_amphor_wstETH_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:13776954,
+            name:'AA_amphor_wstETH',
+            token:'AA_amphor_wstETH',
+            label:'Amphor wstETH AA',
+            address:'0x28D8a22c6689aC1e2DDC43Ca6F85c520457351C1'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_amphor_wstETH_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:13776954,
+            name:'BB_amphor_wstETH',
+            token:'BB_amphor_wstETH',
+            label:'Amphor wstETH BB',
+            address:'0xEfC4f43737Fd336fa8A8254454Ced1e421804b16'
+          }
+        }
+      },
     }
   }
 };
