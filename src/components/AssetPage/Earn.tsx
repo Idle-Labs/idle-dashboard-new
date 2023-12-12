@@ -4,6 +4,7 @@ import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
+import { useI18nProvider } from 'contexts/I18nProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MaticNFTs } from 'components/MaticNFTs/MaticNFTs'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -13,7 +14,6 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
-import { bnOrZero, BNify, abbreviateNumber, isEmpty } from 'helpers/'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
@@ -21,6 +21,7 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
+import { bnOrZero, BNify, abbreviateNumber, isEmpty, replaceTokens, dateToLocale } from 'helpers/'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
@@ -28,6 +29,7 @@ import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, 
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
+  const { locale } = useI18nProvider()
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
@@ -45,17 +47,17 @@ export const Earn: React.FC = () => {
     }
   } = usePortfolioProvider()
 
+  const asset = useMemo(() => {
+    return selectAssetById && selectAssetById(params.asset)
+  }, [selectAssetById, params.asset])
+
   const strategy = useMemo(() => {
-    return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
-  }, [params])
+    return asset?.type
+  }, [asset])
 
   const strategyColor = useMemo(() => {
     return strategy && strategies[strategy].color
   }, [strategy])
-
-  const asset = useMemo(() => {
-    return selectAssetById && selectAssetById(params.asset)
-  }, [selectAssetById, params.asset])
 
   const vault = useMemo(() => {
     return asset && selectVaultById && selectVaultById(asset.id)
@@ -281,11 +283,11 @@ export const Earn: React.FC = () => {
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
         <Card.Dark>
-          <Text dangerouslySetInnerHTML={{__html: vault.description}} />
+          <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
         </Card.Dark>
       </VStack>
     )
-  }, [vault])
+  }, [vault, asset, locale])
 
   const coveredRisks = useMemo(() => {
     if (!vault || !("risks" in vault) || !vault.risks) return null

@@ -1,6 +1,6 @@
 export const TILDE = "~"
 export const STAKING_CHAINID = 1
-export const CACHE_VERSION = '2.7'
+export const CACHE_VERSION = '2.6'
 export const VAULTS_MIN_TVL = 1000
 export const GOVERNANCE_CHAINID = 1
 export const PROTOCOL_TOKEN = 'IDLE'

@@ -2,6 +2,7 @@ import aToken from 'abis/aave/AToken.json'
 import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
 import IdleCDO from 'abis/idle/IdleCDO.json'
+import AmphorPool from 'abis/amphor/AmphorPool.json'
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
 import IdleStrategy from 'abis/idle/IdleStrategy.json'
 // import RibbonPool from 'abis/ribbon/RibbonPool.json'
@@ -42,6 +43,7 @@ export interface Pool {
   abi: Abi
   name: string
   address?: string
+  functions?: Record<string, string>
 }
 
 interface StakingReward {
@@ -3162,12 +3164,21 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         protocol:'amphor',
         blockNumber:13776954,
+        status:'experimental',
         underlyingToken:'WSTETH',
         CDO:{
           decimals:18,
           abi:IdleCDO as Abi,
           name:'IdleCDO_amphor_wstETH',
           address:'0x9e0c5ee5e4B187Cf18B23745FCF2b6aE66a9B52f'
+        },
+        Pool:{
+          abi:AmphorPool as Abi,
+          name:'Amphor_Pool_wstETH',
+          address:'0x2791EB5807D69Fe10C02eED6B4DC12baC0701744',
+          functions:{
+            vaultIsOpen:'vaultIsOpen'
+          }
         },
         Strategy:{
           harvestEnabled:false,
@@ -3179,7 +3190,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           addHarvestApy: false,
           feeDiscountEnabled: true
         },
-        description:'This strategy deploys funds in the <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor wstETH</a> pool.<br />The synthetic LP replicates the payoff of a position in Uniswap v3 liquidity pool while hedging against Impermanent Loss on ETH/USDC.<br />As long as ETH/USDC is trading above the "Risk threshold", the vault generates 20.9% APR.<br />Every week, the vault early terminates if ETH price closes higher the "Termination threshold".<br />If the vault reaches its maturity and ETH price ends below the "Risk threshold", on Jan 17, the capital would be at risk. To prevent any loss, the position will restructure if the ETH price gets too close to the "Risk threshold".',
+        description:'This strategy deploys funds in the <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor wstETH</a> pool.<br />The synthetic LP replicates the payoff of a position in Uniswap v3 liquidity pool while hedging against Impermanent Loss on ETH/USDC.<br />As long as ETH/USDC is trading above the "Risk threshold", the vault generates <span class="bold" style="color: #fff;">{apy}% APR</span>.<br />Every week, the vault early terminates if ETH price closes higher the "Termination threshold".<br />If the vault reaches its maturity and ETH price ends below the "Risk threshold", on <span class="bold" style="color: #fff;">{epochEnd}</span>, the capital would be at risk. To prevent any loss, the position will restructure if the ETH price gets too close to the "Risk threshold".',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,

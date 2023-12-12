@@ -131,8 +131,17 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     },
     apis: {
+      wstETHBase:{
+        path:'wstethVault.underlyingAPR',
+        endpoint: {
+          1: 'https://api.idle.finance/amphorAprs'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        }
+      },
       wstETH:{
-        path:'wstethVault.strategyGrossAPR',
+        path:'wstethVault.strategyNetAPR',
         endpoint: {
           1: 'https://api.idle.finance/amphorAprs'
         },

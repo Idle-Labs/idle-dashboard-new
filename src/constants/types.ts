@@ -185,6 +185,14 @@ export type GaugeData = {
 
 export type GaugesData = Record<AssetId, GaugeData>
 
+export type EpochData = {
+  vaultId?: string
+  apr: BigNumber
+  number: number
+  start: number
+  end: number
+}
+
 export type StakingData = {
   maxApr: BigNumber
   rewardsDays: number
@@ -280,48 +288,50 @@ export type DistributedReward = {
 
 export type Asset = {
   id?: AssetId
-  icon?: string
-  vaultId?: string
-  type?: string
-  chainId?: number
   name: string
+  icon?: string
+  type?: string
   token: string
-  decimals: number
   color?: string
-  protocol?: string
-  variant?: string
-  status?: VaultStatus
-  underlyingId?: AssetId
   apr?: BigNumber
   apy?: BigNumber
   fee?: BigNumber
   tvl?: BigNumber
+  vaultId?: string
+  chainId?: number
+  decimals: number
+  variant?: string
   apy7?: BigNumber
+  protocol?: string
   limit?: BigNumber
   apy30?: BigNumber
   tvlUsd?: BigNumber
   rewards?: Balances
   balance?: BigNumber
+  baseApr?: BigNumber
+  status?: VaultStatus
   totalTvl?: BigNumber
   aprRatio?: BigNumber
-  baseApr?: BigNumber
   apyBoost?: BigNumber
   priceUsd?: BigNumber
+  vaultIsOpen?: boolean
   gaugeData?: GaugeData
   rates?: HistoryData[]
   prices?: HistoryData[]
   allocations?: Balances
   balanceUsd?: BigNumber
   vaultPrice?: BigNumber
+  underlyingId?: AssetId
   totalSupply?: BigNumber
   aprBreakdown?: Balances
   apyBreakdown?: Balances
   protocolsAprs?: Balances
   pricesUsd?: HistoryData[]
   additionalApr?: BigNumber
-  collectedFees?: Transaction[]
+  epochData?: EpochData | null
   lastHarvest?: Harvest | null
   idleDistribution?: BigNumber
+  collectedFees?: Transaction[]
   vaultPosition?: VaultPosition
   flags?: Record<string, boolean>
   interestBearingTokens?: Balances

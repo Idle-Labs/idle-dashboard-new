@@ -61,6 +61,7 @@ export class TrancheVault {
   // Contracts
   public readonly cdoContract: Contract
   public readonly trancheContract: Contract
+  public readonly poolContract: Contract | undefined
   public readonly strategyContract: Contract | undefined
   public readonly underlyingContract: Contract | undefined
 
@@ -139,7 +140,12 @@ export class TrancheVault {
     if (this.strategyConfig.address){
       this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
     }
-        
+
+    // Init Pool contract
+    if (this.poolConfig?.address){
+      this.poolContract = new web3.eth.Contract(this.poolConfig.abi, this.poolConfig.address)
+    }
+
     // Init underlying token contract
     if (this.underlyingToken){
       const abi: Abi = this.underlyingToken?.abi || ERC20 as Abi
@@ -403,6 +409,16 @@ export class TrancheVault {
       {
         assetId:this.id,
         call:this.strategyContract.methods.getApr()
+      },
+    ]
+  }
+
+  public getPoolVaultOpen(): ContractRawCall[] {
+    if (!this.poolContract || !this.poolConfig?.functions?.vaultIsOpen) return []
+    return [
+      {
+        assetId:this.id,
+        call:this.poolContract.methods[this.poolConfig.functions.vaultIsOpen]()
       },
     ]
   }

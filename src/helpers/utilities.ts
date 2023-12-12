@@ -38,6 +38,13 @@ export function hexToRgb(hex: string): number[]{
   ]
 }
 
+export function replaceTokens(inputString: string, tokenObject: Record<string, string>): string {
+  const regex = /{([^}]+)}/g
+  return inputString.replace(regex, (match, key) => {
+    return getObjectPath(tokenObject, key);
+  })
+}
+
 export function downloadFile(content: any, fileName: string = 'export.csv') {
   const file = new File([content as BlobPart], fileName, {
     type: 'text/plain',
