@@ -1,15 +1,16 @@
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
+import { BsStars } from 'react-icons/bs'
 import type { AssetId } from 'constants/types'
 import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
 import { TrancheVault } from 'vaults/TrancheVault'
-import { BsStars } from "react-icons/bs"
+import { useI18nProvider } from 'contexts/I18nProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TextProps, VStack, HStack, Text } from '@chakra-ui/react'
-import { BNify, bnOrZero, apr2apy, getFeeDiscount } from 'helpers/'
+import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs } from 'helpers/'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -24,6 +25,7 @@ type DynamicActionFieldProps = {
 } & TextProps & DynamicActionFieldsProps
 
 const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, amount, amountUsd, stakingPower, ...textProps }) => {
+  const { locale } = useI18nProvider()
   const { stakingData, helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -126,6 +128,15 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     case 'boost':
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
       dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.gt(9999) ? `>9999` : apyBoost.toFixed(2)}x</Text>)
+    break;
+    case 'epochEnd':
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.end || 0, locale)}</Text>)
+    break;
+    case 'epochStart':
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.start || 0, locale)}</Text>)
+    break;
+    case 'riskThreshold':
+      dynamicActionField = (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData.riskThreshold} />)
     break;
     case 'overperformance':
       const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
@@ -252,6 +263,24 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     if (!strategy?.dynamicActionFields?.[action]) return null
     let fields = strategy?.dynamicActionFields[action]
 
+    // Add epoch end
+    if (action === 'deposit' && asset?.epochData) {
+      // Epoch started
+      if (toDayjs(asset.epochData.start).isBefore(Date.now())) {
+        fields = [
+          'riskThreshold',
+          'epochEnd',
+          ...fields
+        ]
+      } else if (toDayjs(asset.epochData.start).isAfter(Date.now())) {
+        fields = [
+          'riskThreshold',
+          'epochStart',
+          ...fields
+        ]
+      }
+    }
+
     const showLimitCap = vault && ("flags" in vault) && vault.flags?.showLimitCap
     const showFeeDiscount = vault && ("flags" in vault) && vault.flags?.feeDiscountEnabled && bnOrZero(stakingData?.feeDiscount).gt(0)
 
@@ -280,7 +309,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     }
     */
     return fields
-  }, [action, vault, strategy, limitCapReached, stakingData, vaultLimitCap])
+  }, [action, vault, asset, strategy, limitCapReached, stakingData, vaultLimitCap])
   
   if (!dynamicActionFields) return null
 

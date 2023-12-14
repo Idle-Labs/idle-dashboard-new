@@ -15,6 +15,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
+import { EpochVaultMessage } from 'components/OperativeComponent/EpochVaultMessage'
 import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
@@ -68,6 +69,14 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     }
   }, [executeAction, transaction.status, activeStep, itemIndex])
 
+  const isEpochVault = useMemo(() => {
+    return asset && !!asset.epochData
+  }, [asset])
+
+  const epochVaultLocked = useMemo(() => {
+    return asset && isEpochVault && asset.vaultIsOpen === false
+  }, [asset, isEpochVault])
+
   const vaultEnabled = useMemo(() => {
     return (vault && (!("enabled" in vault) || vault.enabled)) && (asset && asset?.status !== 'deprecated')
   }, [vault, asset])
@@ -83,7 +92,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const disabled = useMemo(() => {
     setError('')
 
-    if (limitCapReached || !vaultEnabled || depositsDisabled || asset?.status === 'paused') return true
+    if (limitCapReached || !vaultEnabled || depositsDisabled || asset?.status === 'paused' || epochVaultLocked) return true
 
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
@@ -103,7 +112,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (transaction.status === 'started') return true
 
     return false
-  }, [asset, amount, vaultLimitCap, limitCapReached, vaultEnabled, transaction, depositsDisabled, assetBalance, underlyingAsset, translate])
+  }, [asset, amount, vaultLimitCap, limitCapReached, epochVaultLocked, vaultEnabled, transaction, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   // console.log(Object.getOwnPropertyNames(vault))
   // console.log('vault', vault.status, asset.status)
@@ -300,6 +309,14 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           }
         </HStack>
       </Card.Dark>
+    ) : isEpochVault ? (
+      <AssetProvider
+        width={'full'}
+        wrapFlex={false}
+        assetId={asset?.id}
+      >
+        <EpochVaultMessage />
+      </AssetProvider>
     ) : (asset && asset?.status !== 'production') ? (
       <Card.Dark
         p={2}
@@ -336,7 +353,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         <Translation textStyle={'captionSmaller'} translation={vaultMessages.deposit} isHtml={true} textAlign={'center'} />
       </Card.Dark>
     )
-  }, [asset, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
+  }, [asset, isEpochVault, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
   return (
     <AssetProvider

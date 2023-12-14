@@ -1268,8 +1268,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       // Process vaults epochs
       epochsData = vaultsEpochsData.reduce( (epochsData: Record<AssetId, Asset["epochData"]>, epochData: Asset["epochData"]) => {
-        if (epochData?.vaultId){
-          epochsData[epochData.vaultId] = epochData
+        if (epochData?.cdoId){
+          const filteredVaults = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && cmpAddrs(vault.cdoConfig.address, epochData.cdoId as string) )
+          filteredVaults.forEach( (vault: Vault) => {
+            const assetId = vault.id
+            epochsData[assetId] = epochData
+          })
         }
         return epochsData
       }, epochsData)
@@ -3270,23 +3274,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].totalTvl = BNify(0)
       assetsData[vault.id].flags = vault.flags
       assetsData[vault.id].fee = state.fees[vault.id]
-      assetsData[vault.id].limit = state.limits[vault.id] || BNify(0)
       assetsData[vault.id].rewards =  state.rewards[vault.id]
-      assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
-      assetsData[vault.id].balance =  state.balances[vault.id] || BNify(0)
       assetsData[vault.id].aprRatio =  state.aprRatios[vault.id]
-      assetsData[vault.id].priceUsd =  state.pricesUsd[vault.id] || BNify(1)
       assetsData[vault.id].epochData = state.epochsData[vault.id]
       assetsData[vault.id].gaugeData =  state.gaugesData[vault.id]
-      assetsData[vault.id].balanceUsd =  state.balancesUsd[vault.id] || BNify(0)
       assetsData[vault.id].allocations =  state.allocations[vault.id]
-      assetsData[vault.id].vaultPrice =  state.vaultsPrices[vault.id] || BNify(1)
-      assetsData[vault.id].lastHarvest =  state.lastHarvests[vault.id] || null
-      assetsData[vault.id].totalSupply =  state.totalSupplies[vault.id] || BNify(0)
-      assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
+      assetsData[vault.id].limit = state.limits[vault.id] || BNify(0)
       assetsData[vault.id].protocolsAprs =  state.protocolsAprs[vault.id]
+      assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
+      assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
+      assetsData[vault.id].balance =  state.balances[vault.id] || BNify(0)
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
+      assetsData[vault.id].priceUsd =  state.pricesUsd[vault.id] || BNify(1)
+      assetsData[vault.id].lastHarvest =  state.lastHarvests[vault.id] || null
+      assetsData[vault.id].balanceUsd =  state.balancesUsd[vault.id] || BNify(0)
       assetsData[vault.id].discountedFees = state.discountedFees[vault.id] || []
+      assetsData[vault.id].vaultPrice =  state.vaultsPrices[vault.id] || BNify(1)
+      assetsData[vault.id].totalSupply =  state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].additionalApr =  state.additionalAprs[vault.id] || BNify(0)
       assetsData[vault.id].distributedRewards = state.distributedRewards[vault.id] || {}

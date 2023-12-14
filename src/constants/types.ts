@@ -186,11 +186,13 @@ export type GaugeData = {
 export type GaugesData = Record<AssetId, GaugeData>
 
 export type EpochData = {
-  vaultId?: string
+  cdoId?: string
   apr: BigNumber
   number: number
   start: number
   end: number
+  underlyingToken: string
+  riskThreshold: BigNumber
 }
 
 export type StakingData = {

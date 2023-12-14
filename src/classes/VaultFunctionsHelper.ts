@@ -675,12 +675,17 @@ export class VaultFunctionsHelper {
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_amphor_wstETH':
           const epochData = await this.getAmphorwstETHEpochData(+vault.chainId)
+          // console.log('epochData', epochData)
           return {
-            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
             apr: BNify(epochData.epochApr),
             number: +epochData.epochNumber,
-            start: toDayjs(epochData.epochStart).valueOf(),
+            underlyingToken: epochData.underlying,
             end: toDayjs(epochData.epochEnd).valueOf(),
+            start: toDayjs(epochData.epochStart).valueOf(),
+            riskThreshold: BNify(epochData.protection_band),
+            // start: 1702595425318+86400*1000*3,
+            // end: 1702595425318+86400*1000*7,
           }
         default:
           return null
