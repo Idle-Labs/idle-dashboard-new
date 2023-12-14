@@ -1,5 +1,5 @@
 import trezorModule from '@web3-onboard/trezor'
-// import ledgerModule from '@web3-onboard/ledger'
+import ledgerModule from '@web3-onboard/ledger'
 import gnosisModule from '@web3-onboard/gnosis'
 import { translations } from 'constants/translations'
 import coinbaseWalletModule from '@web3-onboard/coinbase'
@@ -15,7 +15,6 @@ export const getOnBoardInitParams = (chainId) => {
     email: '<EMAIL_CONTACT>',
     appUrl: DASHBORD_URL
   })
-  // const ledger = ledgerModule()
   const injected = injectedModule()
 
   const walletConnectV2InitOptions = {
@@ -25,6 +24,7 @@ export const getOnBoardInitParams = (chainId) => {
     optionalChains: Object.keys(chains).map( cId => +cId )
   }
 
+  const ledger = ledgerModule(walletConnectV2InitOptions)
   const walletConnect = walletConnectModule(walletConnectV2InitOptions);
   const coinbaseWalletSdk = coinbaseWalletModule({ darkMode: true })
 
@@ -34,7 +34,7 @@ export const getOnBoardInitParams = (chainId) => {
       walletConnect,
       coinbaseWalletSdk,
       gnosis,
-      // ledger,
+      ledger,
       trezor
     ],
     chains: Object.values(chains),
