@@ -541,7 +541,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
             setTimeout(() => {
               (async() => {
                 const receipt: TransactionReceipt = await web3.eth.getTransactionReceipt(hash)
-                console.log('Test tx: receipt', receipt)
+                // console.log('Test tx: receipt', receipt)
                 if (receipt) {
                   dispatch({type: 'SET_RECEIPT', payload: receipt})
 
