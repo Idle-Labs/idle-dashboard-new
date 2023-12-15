@@ -961,7 +961,10 @@
     "totalGain": "Total gain",
     "fee": "Fee",
     "withdrawFee": "Withdraw fee",
-    "netGain": "Net gain"
+    "netGain": "Net gain",
+    "tooltips": {
+      "riskThreshold": "If the vault reaches its maturity and %{underlying} price ends below this price, the capital would be at risk"
+    }
   },
   "trade": {
     "trade": "Trade",
@@ -1024,7 +1027,7 @@
         "messages": {
           "boosted": "The APY of this vault is boosted by additional rewards.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
-          "vaultOpen": "The deposit window started. You can deposit until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
+          "vaultOpen": "The deposit window has started. You can deposit until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
           "vaultLocked": "The deposit window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to interact with the pool.",
           "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault. Follow <a href='https://twitter.com/idlefinance' class='link' target='_blank' rel='noopener'>IdleDAO's Twitter page</a> to stay updated on future limit increases.",

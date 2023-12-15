@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { BsStars } from 'react-icons/bs'
+import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
 import { VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
@@ -9,7 +10,8 @@ import { TrancheVault } from 'vaults/TrancheVault'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { TextProps, VStack, HStack, Text } from '@chakra-ui/react'
+import { TooltipContent } from 'components/TooltipContent/TooltipContent'
+import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
 import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs } from 'helpers/'
 
 type DynamicActionFieldsProps = {
@@ -25,6 +27,7 @@ type DynamicActionFieldProps = {
 } & TextProps & DynamicActionFieldsProps
 
 const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, amount, amountUsd, stakingPower, ...textProps }) => {
+  const translate = useTranslate()
   const { locale } = useI18nProvider()
   const { stakingData, helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
@@ -203,8 +206,18 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       }
     break;
     default:
-      return null
+      dynamicActionField = null
   }
+
+  const tooltipTranslateKey = useMemo(() => `dynamicActionFields.tooltips.${field}`, [field]) 
+
+  const tooltipText = useMemo(() => {
+    return translate(tooltipTranslateKey, {underlying: asset?.epochData?.underlyingToken})
+  }, [asset, tooltipTranslateKey, translate])
+
+  const hasTooltip = useMemo(() => {
+    return tooltipText !== tooltipTranslateKey
+  }, [tooltipText, tooltipTranslateKey])
 
   if (!dynamicActionField) return null
 
@@ -222,7 +235,23 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         spacing={2}
         alignItems={'center'}
       >
-        <Translation component={Text} translation={`dynamicActionFields.${field}`} textStyle={'captionSmall'} color={textCta} />
+        <Tooltip
+          hasArrow
+          placement={'top'}
+          label={tooltipText}
+          isDisabled={!hasTooltip}
+        >
+          <TooltipContent>
+            <Translation
+              component={Text}
+              color={textCta}
+              textStyle={'captionSmall'}
+              translation={`dynamicActionFields.${field}`}
+              borderBottomColor={hasTooltip ? 'cta' : 'none'}
+              borderBottom={hasTooltip ? '1px dashed' : 'none'}
+            />
+          </TooltipContent>
+        </Tooltip>
         {
           ['feeDiscount', 'currentFeeDiscount'].includes(field) && (
             <BsStars size={16} color={'orange'} />
