@@ -130,11 +130,11 @@ export function dateDiff(t1: number, t2: number, unit: any = 'ms', returnDecimal
   return Math.abs(dayjs(t1).diff(t2, unit, returnDecimals))
 }
 
-export function toDayjs(timestamp?: Date | number | string) {
+export function toDayjs(timestamp?: Date | dayjs.Dayjs | number | string) {
   return dayjs(timestamp)
 }
 
-export function dateToLocale (timestamp: number, locale: string) {
+export function dateToLocale(timestamp: Date | dayjs.Dayjs | number, locale: string) {
   return dayjs(timestamp).locale(locale).format('LLL')
 }
 

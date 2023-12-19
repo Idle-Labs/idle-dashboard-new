@@ -20,6 +20,7 @@ import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
+import { EpochThresholdsTable } from 'components/EpochThresholdsTable/EpochThresholdsTable'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { bnOrZero, BNify, abbreviateNumber, isEmpty, replaceTokens, dateToLocale } from 'helpers/'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
@@ -289,6 +290,22 @@ export const Earn: React.FC = () => {
     )
   }, [vault, asset, locale])
 
+  const epochThresholds = useMemo(() => {
+    if (!asset || !asset.epochData) return null
+    return (
+      <VStack
+        pt={4}
+        spacing={6}
+        width={'full'}
+        alignItems={'flex-start'}
+        justifyContent={'flex-start'}
+      >
+        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.epochThresholds'} />
+        <EpochThresholdsTable assetId={asset.id} />
+      </VStack>
+    )
+  }, [asset])
+
   const coveredRisks = useMemo(() => {
     if (!vault || !("risks" in vault) || !vault.risks) return null
     return (
@@ -430,6 +447,7 @@ export const Earn: React.FC = () => {
         {strategyDescriptionCarousel}
         {strategyDescription}
         {coveredRisks}
+        {epochThresholds}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
       <VaultUnderlyingProtocols assetId={asset?.id} />

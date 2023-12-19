@@ -657,6 +657,7 @@
     "overview": "Overview",
     "strategyDescription": "Strategy description",
     "coveredRisks": "Covered risks",
+    "epochThresholds": "Epoch thresholds",
     "underlyingProtocols": "Underlying protocols",
     "historicalPerformance": "Historical Performance",
     "fundsOverview": "Funds Overview",
@@ -733,6 +734,14 @@
       "status": {
         "title": "Status"
       }
+    }
+  },
+  "epochs": {
+    "table": {
+      "number": "Epoch",
+      "start": "Start date",
+      "end": "End date",
+      "threshold": "Termination threshold"
     }
   },
   "feeDiscount": {

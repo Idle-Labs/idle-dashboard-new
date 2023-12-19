@@ -686,7 +686,24 @@ export class VaultFunctionsHelper {
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_amphor_wstETH':
           const epochData = await this.getAmphorwstETHEpochData(+vault.chainId)
+          // console.log('epochData', epochData)
+          const weeklyThresholds: EpochData["weeklyThresholds"] = Object.keys(epochData).filter( key => key.match(/ET[\d]Price/) ).reduce( (weeklyThresholds: EpochData["weeklyThresholds"], thresholdKey: string, index: number) => {
+            const start = !index ? toDayjs(epochData.epochStart) : toDayjs(weeklyThresholds[index-1].end).add(1, 'day')
+            const end = !index ? start.add(+epochData.first_week_duration, 'day') : start.add(6, 'day')
+            if (end.isSameOrBefore(toDayjs(epochData.epochEnd))){
+              // console.log('weeklyThresholds', index, dateToLocale(start, 'en'), dateToLocale(end, 'en'), epochData[thresholdKey])
+              weeklyThresholds[index] = {
+                number: index+1,
+                end: end.valueOf(),
+                start: start.valueOf(),
+                threshold: BNify(epochData[thresholdKey])
+              }
+            }
+            return weeklyThresholds
+          }, {})
+
           return {
+            weeklyThresholds,
             cdoId: vault.cdoConfig.address,
             apr: BNify(epochData.epochApr),
             number: +epochData.epochNumber,
@@ -694,8 +711,6 @@ export class VaultFunctionsHelper {
             end: toDayjs(epochData.epochEnd).valueOf(),
             start: toDayjs(epochData.epochStart).valueOf(),
             riskThreshold: BNify(epochData.protection_band),
-            // start: 1702595425318+86400*1000*3,
-            // end: 1702595425318+86400*1000*7,
           }
         default:
           return null

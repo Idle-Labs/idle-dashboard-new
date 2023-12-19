@@ -185,6 +185,13 @@ export type GaugeData = {
 
 export type GaugesData = Record<AssetId, GaugeData>
 
+export type EpochWeekThreshold = {
+  number: number
+  start: number
+  end: number
+  threshold: BigNumber
+}
+
 export type EpochData = {
   cdoId?: string
   apr: BigNumber
@@ -193,6 +200,7 @@ export type EpochData = {
   end: number
   underlyingToken: string
   riskThreshold: BigNumber
+  weeklyThresholds: Record<number, EpochWeekThreshold>
 }
 
 export type StakingData = {

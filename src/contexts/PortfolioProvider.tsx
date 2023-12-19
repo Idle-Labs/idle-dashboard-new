@@ -1744,7 +1744,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: totalAprs[vaultId]
         }
       }, {...state.totalAprs})
-      
+
       const newEpochsData = vaults.map( (vault: Vault) => vault.id ).reduce( (newEpochsData: VaultsOnchainData["epochsData"], vaultId: AssetId) => {
         if (!epochsData[vaultId]){
           delete newEpochsData[vaultId]
