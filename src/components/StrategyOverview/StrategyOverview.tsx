@@ -27,20 +27,22 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
   const { isVaultsPositionsLoaded, vaultsPositions } = usePortfolioProvider()
   const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 
-  const aggregatedData = useMemo(() => (
-    compositions.strategies
+  const aggregatedData = useMemo(() => {
+    return compositions.strategies
       .filter( (chartData: DonutChartData) => enabledStrategies.includes(chartData.extraData.strategy.type) )
       .reduce( (aggregatedData: Balances, chartData: DonutChartData) => {
         aggregatedData.redeemable = aggregatedData.redeemable.plus(chartData.value)
+        aggregatedData.earnings = aggregatedData.earnings.plus(chartData.extraData.earnings)
         aggregatedData.deposited = aggregatedData.deposited.plus(chartData.extraData.deposited)
         aggregatedData.realizedApy = aggregatedData.realizedApy.plus(BNify(chartData.extraData.avgRealizedApy).times(chartData.value))
         return aggregatedData
       }, {
+        earnings: BNify(0),
         deposited: BNify(0),
         redeemable: BNify(0),
         realizedApy: BNify(0)
       })
-  ), [compositions, enabledStrategies])
+  }, [compositions, enabledStrategies])
 
   aggregatedData.realizedApy = aggregatedData.realizedApy.div(aggregatedData.redeemable)
 
@@ -88,7 +90,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
         >
           <Translation translation={'defi.earnings'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
           <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded} minW={'100%'}>
-            <Amount.Usd value={aggregatedData.redeemable.minus(aggregatedData.deposited)} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} sx={!walletVisible ? {filter:'blur(7px)'} : {}} {...textProps} />
+            <Amount.Usd value={aggregatedData.earnings} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} sx={!walletVisible ? {filter:'blur(7px)'} : {}} {...textProps} />
           </SkeletonText>
         </VStack>
         <VStack
