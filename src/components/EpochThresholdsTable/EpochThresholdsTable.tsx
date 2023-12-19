@@ -76,12 +76,12 @@ export const EpochThresholdsTable: React.FC<EpochThresholdsTableArgs> = ({
       Header:translate('epochs.table.threshold'),
       Cell: ({ value }: { value: BigNumber }) => {
         return (
-          <Amount.Usd abbreviate={false} decimals={0} textStyle={'tableCell'} value={value} />
+          <Amount.Usd abbreviate={false} decimals={0} prefix={asset.epochData.bullish ? '> ' : '< '} textStyle={'tableCell'} value={value} />
         )
       },
       sortType: sortNumeric
     },
-  ]), [sortEnabled, translate, locale])
+  ]), [sortEnabled, translate, locale, asset])
 
   const initialState = {
     sortBy: [

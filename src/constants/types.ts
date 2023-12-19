@@ -198,6 +198,7 @@ export type EpochData = {
   number: number
   start: number
   end: number
+  bullish: boolean
   underlyingToken: string
   riskThreshold: BigNumber
   weeklyThresholds: Record<number, EpochWeekThreshold>

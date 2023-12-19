@@ -704,13 +704,14 @@ export class VaultFunctionsHelper {
 
           return {
             weeklyThresholds,
+            bullish: !!epochData.bullish,
             cdoId: vault.cdoConfig.address,
             apr: BNify(epochData.epochApr),
             number: +epochData.epochNumber,
             underlyingToken: epochData.underlying,
             end: toDayjs(epochData.epochEnd).valueOf(),
             start: toDayjs(epochData.epochStart).valueOf(),
-            riskThreshold: BNify(epochData.protection_band),
+            riskThreshold: BNify(epochData.protection_band)
           }
         default:
           return null
