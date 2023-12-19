@@ -667,7 +667,7 @@ type ApyProps = {
 } & PercentageProps
 
 const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, ...props}) => {
-  const { asset } = useAssetProvider()
+  const { asset, vault } = useAssetProvider()
 
   const netApy = useMemo(() => {
     if (asset?.apyBreakdown){
@@ -703,6 +703,12 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
           Object.keys(asset.apyBreakdown).map( (type: string) => {
             const apr = BNify(asset?.apyBreakdown?.[type])
             if (apr.lte(0) && type!=='base') return null
+
+            let vaultTranslationKey = `assets.assetDetails.apyBreakdown.${type}`
+            if (vault && "translations" in vault && vault.translations?.apyBreakdown?.[type]){
+              vaultTranslationKey = vault?.translations?.apyBreakdown?.[type]
+            }
+
             return (
               <HStack
                 spacing={3}
@@ -711,7 +717,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
                 alignItems={'baseline'}
                 justifyContent={'space-between'}
               >
-                <Translation translation={`assets.assetDetails.apyBreakdown.${type}`} />
+                <Translation translation={vaultTranslationKey} />
                 <Amount.Percentage value={apr} {...props} />
               </HStack>
             )

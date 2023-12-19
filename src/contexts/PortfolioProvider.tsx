@@ -39,6 +39,7 @@ type VaultsOnchainData = {
   baseAprs: Balances
   balances: Balances
   aprRatios: Balances
+  totalAprs: Balances
   pricesUsd: Balances
   maticNFTs: MaticNFT[]
   gaugesData: GaugesData
@@ -105,6 +106,7 @@ const initialState: InitialState = {
   contracts: [],
   maticNFTs: [],
   pricesUsd: {},
+  totalAprs: {},
   openVaults: {},
   gaugesData: {},
   epochsData: {},
@@ -973,6 +975,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return promises
     }, new Map())
 
+    // Get vaults epochs
+    const vaultsTotalAprsPromises = vaults.reduce( (promises: Map<AssetId, Promise<VaultAdditionalApr | null>>, vault: Vault): Map<AssetId, Promise<VaultAdditionalApr | null>> => {
+      if (!("cdoConfig" in vault) || promises.has(vault.cdoConfig.address)) return promises
+      promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getVaultTotalApr(vault))
+      return promises
+    }, new Map())
+
     // const stakedIdleVault = vaults.find( (vault: Vault) => vault.type === 'STK' ) as StakedIdleVault
     // const stakedIdleVaultRewardsPromise = vaultFunctionsHelper.getStakingRewards(stakedIdleVault)
 
@@ -994,6 +1003,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
       vaultsEpochsData,
+      vaultsTotalAprs,
       rawCallsResultsByChain,
       [
         idleDistributionResults,
@@ -1017,6 +1027,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
       Promise.all(Array.from(vaultsEpochsPromises.values())),
+      Promise.all(Array.from(vaultsTotalAprsPromises.values())),
       Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMultipleBatches(rawCallsByChainId[+chainId], +chainId, web3Chains[chainId]) )),
       // multiCall.executeMultipleBatches(rawCalls),
       multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
@@ -1027,6 +1038,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     let limits: Balances = {}
     let baseAprs: Balances = {}
     let balances: Balances = {}
+    let totalAprs: Balances = {}
     let aprRatios: Balances = {}
     let pricesUsd: Balances = {}
     let vaultsPrices: Balances = {}
@@ -1277,6 +1289,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
         return epochsData
       }, epochsData)
+
+      // Process total aprs
+      totalAprs = vaultsTotalAprs.reduce( (totalAprs: Balances, vaultTotalApr: VaultAdditionalApr | null) => {
+        if (vaultTotalApr?.cdoId){
+          const filteredVaults = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && cmpAddrs(vault.cdoConfig.address, vaultTotalApr.cdoId as string) )
+          filteredVaults.forEach( (vault: Vault) => {
+            const assetId = vault.id
+            totalAprs[assetId] = vaultTotalApr.apr
+          })
+        }
+        return totalAprs
+      }, totalAprs)
 
       aprs = aprsCallsResults.reduce( (aprs: Balances, callResult: DecodedResult) => {
         if (callResult.data) {
@@ -1545,6 +1569,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       pricesUsd,
       aprRatios,
       maticNFTs,
+      totalAprs,
       epochsData,
       // assetsData,
       gaugesData,
@@ -1636,6 +1661,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         pricesUsd,
         aprRatios,
         maticNFTs,
+        totalAprs,
         gaugesData,
         openVaults,
         epochsData,
@@ -1708,6 +1734,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }
       }, {...state.protocolsAprs})
 
+      const newTotalAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newTotalAprs: VaultsOnchainData["totalAprs"], vaultId: AssetId) => {
+        if (!totalAprs[vaultId]){
+          delete newTotalAprs[vaultId]
+          return newTotalAprs
+        }
+        return {
+          ...newTotalAprs,
+          [vaultId]: totalAprs[vaultId]
+        }
+      }, {...state.totalAprs})
+      
       const newEpochsData = vaults.map( (vault: Vault) => vault.id ).reduce( (newEpochsData: VaultsOnchainData["epochsData"], vaultId: AssetId) => {
         if (!epochsData[vaultId]){
           delete newEpochsData[vaultId]
@@ -1926,6 +1963,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         balances: newBalances,
         baseAprs: newBaseAprs,
         aprRatios: newAprRatios,
+        totalAprs: newTotalAprs,
         pricesUsd: newPricesUsd,
         epochsData: newEpochsData,
         openVaults: newOpenVaults,
@@ -2418,6 +2456,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         pricesUsd,
         aprRatios,
         maticNFTs,
+        totalAprs,
         // assetsData,
         gaugesData,
         // stakingData,
@@ -2446,6 +2485,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // dispatch({type: 'SET_LAST_HARVESTS', payload: {...state.lastHarvests, ...lastHarvests}})
 
       // newState.stakingData = stakingData
+      newState.totalAprs = {...state.totalAprs, ...totalAprs}
       newState.epochsData = {...state.epochsData, ...epochsData}
       newState.openVaults = {...state.openVaults, ...openVaults}
       newState.lastHarvests = {...state.lastHarvests, ...lastHarvests}
@@ -3284,6 +3324,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]
       assetsData[vault.id].baseApr =  state.baseAprs[vault.id] || BNify(0)
       assetsData[vault.id].balance =  state.balances[vault.id] || BNify(0)
+      assetsData[vault.id].totalApr = state.totalAprs[vault.id] || BNify(0)
       assetsData[vault.id].vaultPosition =  state.vaultsPositions[vault.id]
       assetsData[vault.id].priceUsd =  state.pricesUsd[vault.id] || BNify(1)
       assetsData[vault.id].lastHarvest =  state.lastHarvests[vault.id] || null
@@ -3456,6 +3497,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.balances,
     state.aprRatios,
     state.pricesUsd,
+    state.totalAprs,
     state.openVaults,
     state.gaugesData,
     state.epochsData,

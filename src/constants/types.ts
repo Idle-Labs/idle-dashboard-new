@@ -304,9 +304,9 @@ export type Asset = {
   decimals: number
   variant?: string
   apy7?: BigNumber
-  protocol?: string
   limit?: BigNumber
   apy30?: BigNumber
+  protocol?: string
   tvlUsd?: BigNumber
   rewards?: Balances
   balance?: BigNumber
@@ -316,13 +316,14 @@ export type Asset = {
   aprRatio?: BigNumber
   apyBoost?: BigNumber
   priceUsd?: BigNumber
-  vaultIsOpen?: boolean
+  totalApr?: BigNumber
   gaugeData?: GaugeData
+  vaultIsOpen?: boolean
   rates?: HistoryData[]
   prices?: HistoryData[]
-  allocations?: Balances
   balanceUsd?: BigNumber
   vaultPrice?: BigNumber
+  allocations?: Balances
   underlyingId?: AssetId
   totalSupply?: BigNumber
   aprBreakdown?: Balances

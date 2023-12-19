@@ -230,6 +230,17 @@ export class VaultFunctionsHelper {
     return BNify(0);
   }
 
+  public async getAmphorwstETHTrancheTotalApr(chainId: number): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'amphor', 'wstETHTotal')
+    const callback = async () => (await callPlatformApis(chainId, 'amphor', 'wstETHTotal'))
+    const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(`${platformApiEndpoint}_amphor_wstETHTotal`, callback) : await callback()
+
+    if (!BNify(apr).isNaN()){
+      return BNify(apr);
+    }
+    return BNify(0);
+  }
+
   public async getAmphorwstETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
     const strategyApr = await this.getAmphorwstETHTrancheStrategyApr(trancheVault.chainId);
     return await this.getTrancheApy(strategyApr, trancheVault);
@@ -675,7 +686,6 @@ export class VaultFunctionsHelper {
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_amphor_wstETH':
           const epochData = await this.getAmphorwstETHEpochData(+vault.chainId)
-          // console.log('epochData', epochData)
           return {
             cdoId: vault.cdoConfig.address,
             apr: BNify(epochData.epochApr),
@@ -686,6 +696,23 @@ export class VaultFunctionsHelper {
             riskThreshold: BNify(epochData.protection_band),
             // start: 1702595425318+86400*1000*3,
             // end: 1702595425318+86400*1000*7,
+          }
+        default:
+          return null
+      }
+    }
+    return null
+  }
+
+  public async getVaultTotalApr(vault: Vault): Promise<VaultAdditionalApr | null> {
+    if (vault instanceof TrancheVault) {
+      switch (vault.cdoConfig.name) {
+        case 'IdleCDO_amphor_wstETH':
+          const apr = await this.getAmphorwstETHTrancheTotalApr(+vault.chainId)
+          return {
+            apr,
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
           }
         default:
           return null
@@ -788,7 +815,7 @@ export class VaultFunctionsHelper {
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
             apr,
-            'type':'base',
+            type:'base',
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
           }

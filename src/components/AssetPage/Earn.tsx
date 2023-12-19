@@ -283,7 +283,7 @@ export const Earn: React.FC = () => {
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
         <Card.Dark>
-          <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
+          <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
         </Card.Dark>
       </VStack>
     )

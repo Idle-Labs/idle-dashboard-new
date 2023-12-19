@@ -37,6 +37,7 @@ export class TrancheVault {
   readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
   readonly messages: TrancheConfig["messages"]
+  readonly translations: TrancheConfig["translations"]
   readonly vaultFunctionsHelper: VaultFunctionsHelper
   readonly flags: Record<string, boolean> | undefined
 
@@ -97,6 +98,7 @@ export class TrancheVault {
     this.cacheProvider = cacheProvider
     this.messages = vaultConfig.messages
     this.description = vaultConfig.description
+    this.translations = vaultConfig.translations
     this.trancheConfig = vaultConfig.Tranches[type]
     this.rewardsSenders = vaultConfig.rewardsSenders
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})

@@ -149,6 +149,15 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
+      wstETHTotal:{
+        path:'wstethVault.totalNetAPR',
+        endpoint: {
+          1: 'https://api.idle.finance/amphorAprs'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        }
+      },
       wstETHEpoch:{
         endpoint: {
           1: 'https://api.idle.finance/amphorEpochInfo/wstethVault'
