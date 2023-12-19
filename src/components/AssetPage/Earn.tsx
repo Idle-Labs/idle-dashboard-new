@@ -300,7 +300,7 @@ export const Earn: React.FC = () => {
         alignItems={'flex-start'}
         justifyContent={'flex-start'}
       >
-        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.epochThresholds'} />
+        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'epochs.thresholds'} />
         <EpochThresholdsTable assetId={asset.id} />
       </VStack>
     )

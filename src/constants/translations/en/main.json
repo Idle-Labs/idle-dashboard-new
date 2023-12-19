@@ -657,7 +657,6 @@
     "overview": "Overview",
     "strategyDescription": "Strategy description",
     "coveredRisks": "Covered risks",
-    "epochThresholds": "Epoch thresholds",
     "underlyingProtocols": "Underlying protocols",
     "historicalPerformance": "Historical Performance",
     "fundsOverview": "Funds Overview",
@@ -737,8 +736,9 @@
     }
   },
   "epochs": {
+    "thresholds": "Weekly thresholds",
     "table": {
-      "number": "Epoch",
+      "number": "Week",
       "start": "Start date",
       "end": "End date",
       "threshold": "Termination threshold"
