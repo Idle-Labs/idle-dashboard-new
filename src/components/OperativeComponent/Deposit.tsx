@@ -280,7 +280,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [vault])
 
   const vaultMessage = useMemo(() => {
-    return !vaultEnabled && assetBalance.gt(0) ? (
+    return !vaultEnabled ? (
       <Card.Dark
         py={2}
         pl={3}
@@ -292,8 +292,12 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           width={'full'}
         >
           <Image src={`${imageFolder}vaults/deprecated.png`} width={6} height={6} />
-          <Translation textStyle={'captionSmaller'} translation={`trade.vaults.${asset?.type}.disabled`} textAlign={'left'} />
-          <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
+          <Translation textStyle={'captionSmaller'} translation={asset?.status && asset.status !== 'production' ? `trade.actions.deposit.messages.${asset?.status}` : `trade.vaults.${asset?.type}.disabled`} textAlign={'left'} />
+          {
+            assetBalance.gt(0) && (
+              <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setActionIndex(1) } />
+            )
+          }
         </HStack>
       </Card.Dark>
     ) : (asset && asset?.status !== 'production') ? (
@@ -307,13 +311,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           justifyContent={'center'}
         >
           <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${asset.status}`} textAlign={'center'} />
-          {
-            /*
-            asset?.status === 'paused' && (
-              <Translation component={Button} translation={`trade.vaults.${asset?.type}.disabledCta`} fontSize={'xs'} height={'auto'} width={'auto'} py={2} px={7} onClick={ () => setActionIndex(1) } />
-            )
-            */
-          }
         </VStack>
       </Card.Dark>
     ) : limitCapReached ? (

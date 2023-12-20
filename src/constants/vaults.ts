@@ -109,6 +109,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'fasanara',
+        status:'deprecated',
         protocol:'clearpool',
         blockNumber:17413683,
         underlyingToken:'USDC',
