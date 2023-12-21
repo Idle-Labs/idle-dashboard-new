@@ -3165,6 +3165,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         protocol:'amphor',
         blockNumber:13776954,
+        enabledEnvs:['beta'],
         status:'experimental',
         underlyingToken:'WSTETH',
         CDO:{
