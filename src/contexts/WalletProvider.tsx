@@ -37,8 +37,8 @@ type ContextProps = {
 }
 
 const initialState: ContextProps = {
-  account: null,
   wallet: null,
+  account: null,
   network: null,
   explorer: null,
   chainIdHex: null,
@@ -174,6 +174,7 @@ export function WalletProvider({ children }: ProviderProps) {
     if (customAddress){
       setWalletProvider('metamask')
       setAccount({
+        isCustom: true,
         address: customAddress,
         ens: null,
         balance: {
@@ -189,7 +190,10 @@ export function WalletProvider({ children }: ProviderProps) {
       if (!firstValidAccount) return
 
       setWalletProvider(wallet.label)
-      setAccount(firstValidAccount)
+      setAccount({
+        ...firstValidAccount,
+        isCustom: false
+      })
       sendLogin(wallet.label, firstValidAccount?.address)
     }
   }, [wallet, customAddress, connecting, setWalletProvider])

@@ -1919,6 +1919,18 @@
       "create": "Create one"
     }
   },
+  "authWall": {
+    "title": "By accessing or using Idle App, I agree to the <a href='https://idle.finance/terms-of-service' target='_blank' class='link'>Terms of Service</a> and confirm that I have read and understood the <a href='https://idle.finance/privacy-policy' target='_blank' class='link'>Privacy Notice</a>.",
+    "signature_title":"By accessing or using Idle App, I agree to the Terms of Service (https://idle.finance/terms-of-service) and confirm that I have read and understood the Privacy Notice (https://idle.finance/privacy-policy).", 
+    "subtitle": "I hereby further represent and warrant that:",
+    "ctaAgree": "Agree & Login",
+    "ctaCancel": "Cancel",
+    "options": {
+      "option_1": "I’m not a resident of or located in the United States of America (including its territories: American Samoa, Guam, Puerto Rico, the Northern Mariana Islands and the U.S. Virgin Islands) or any other Restricted Jurisdiction (as defined in the Terms of Service);",
+      "option_2": "I’m not a Prohibited Person (as defined in the Terms of Service) nor acting on behalf of a Prohibited Person;",
+      "option_3": "I acknowledge that Idle App and related software are experimental, and that the use of experimental software may result in complete loss of my funds."
+    }
+  },
   "graph": {
     "timeControls": {
       "1H": "1H",

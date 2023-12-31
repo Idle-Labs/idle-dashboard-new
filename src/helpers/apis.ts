@@ -134,9 +134,22 @@ export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["
   if (data?.result && (data.message.match(/^OK/) || data.message === "No transactions found")) {
     return data.result;
   } else if (apiKeyIndex < keys.length - 1) {
-    return await makeEtherscanApiRequest(endpoint, keys, TTL, apiKeyIndex + 1);
+    return await makeEtherscanApiRequest(endpoint, keys, TTL, apiKeyIndex + 1)
   }
-  return null;
+  return null
+}
+
+export const saveSignature = async (address: string, signature: string): Promise<any> => {
+  const endpoint = getPlatformApisEndpoint(1, 'idle', 'saveSignature')
+  if (!endpoint) return null
+  return await makePostRequest(endpoint, {
+    address,
+    signature
+  })
+}
+
+export const checkSignature = async (address: string): Promise<any> => {
+  return await callPlatformApis(1, 'idle', 'checkSignature', address)
 }
 
 export const getExplorerByChainId = (chainId: number): Explorer | null => {

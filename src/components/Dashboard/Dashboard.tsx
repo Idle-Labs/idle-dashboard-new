@@ -3,7 +3,6 @@ import { BsStars } from "react-icons/bs"
 import { Card } from 'components/Card/Card'
 import { useNavigate } from 'react-router-dom'
 import React, { useState, useMemo } from 'react'
-import { Footer } from 'components/Footer/Footer'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
@@ -723,8 +722,6 @@ export const Dashboard: React.FC = () => {
           </Box>
         </VStack>
       </Stack>
-
-      <Footer />
     </Box>
   )
 }

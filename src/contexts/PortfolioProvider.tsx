@@ -1857,11 +1857,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Clear portfolio when wallet changed
   useEffect(() => {
-    if (!account && !!prevAccount){
+    if (!!prevAccount && !account){
       // console.log('ACCOUNT CHANGED - RESET STATE')
       dispatch({type: 'RESET_STATE', payload: {}})
     }
-  }, [account, prevAccount])
+  }, [accountChanged, account, prevAccount])
 
   // Update on-chain data of last transaction asset
   useEffect(() => {

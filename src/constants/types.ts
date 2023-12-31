@@ -399,6 +399,7 @@ export type Ens = {
 export type Account = {
   address: string
   ens: Ens | null
+  isCustom?: boolean
   balance: Record<string, string> | null
 }
 

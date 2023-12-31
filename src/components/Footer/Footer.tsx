@@ -20,8 +20,8 @@ export const Footer: React.FC = () => {
   return (
     <Box
       pb={4}
-      mt={[10, 20]}
       pt={[10, 4]}
+      width={'full'}
       borderTop={'1px solid'}
       borderColor={'divider'}
     >

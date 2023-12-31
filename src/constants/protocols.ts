@@ -384,6 +384,22 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["227", "100%", "50%"]
     },
     apis: {
+      checkSignature:{
+        endpoint:{
+          1: 'http://localhost:3333/checkSignature/'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        }
+      },
+      saveSignature:{
+        endpoint:{
+          1: 'http://localhost:3333/saveSignature'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+        }
+      },
       rates:{
         endpoint: {
           1: 'https://api.idle.finance/rates/',

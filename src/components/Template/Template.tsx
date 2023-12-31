@@ -1,8 +1,10 @@
 import React, { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
+import { Footer } from 'components/Footer/Footer'
 import { Header } from 'components/Header/Header'
-import { ContainerProps, Box } from '@chakra-ui/react'
+import { AuthWall } from 'components/AuthWall/AuthWall'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { ContainerProps, Box, VStack } from '@chakra-ui/react'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { WrongNetworkBanner } from 'components/WrongNetworkBanner/WrongNetworkBanner'
 
@@ -19,23 +21,35 @@ export const Template: React.FC<ContainerProps> = () => {
   return (
     <Box
       id={'body'}
-      width={'100%'}
       minH={'100vh'}
+      width={'full'}
+      display={'flex'}
       overflowX={'hidden'}
       position={'absolute'}
       className={className}
       height={scrollLocked ? '100vh' : 'auto'}
       overflowY={scrollLocked ? 'hidden' : 'visible'}
     >
-      <Box
-        my={[4, 10]}
-        mx={[4, 20]}
+      <VStack
+        spacing={0}
+        py={[4, 10]}
+        px={[4, 20]}
+        width={'full'}
+        alignItems={'flex-start'}
       >
         <Header />
-        <Suspense>
-          <Outlet />
-        </Suspense>
-      </Box>
+        <AuthWall>
+          <Suspense>
+            <Outlet />
+          </Suspense>
+        </AuthWall>
+        <Box
+          pt={[10, 20]}
+          width={'full'}
+        >
+          <Footer />
+        </Box>
+      </VStack>
       <WrongNetworkBanner />
     </Box>
   )
