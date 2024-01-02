@@ -12,7 +12,7 @@ type StatsProps = {
   showLegend?: boolean
 }
 
-type ApisProps = {
+export type ApisProps = {
   path?: string,
   filters?: string[]
   params?: string[]
@@ -386,7 +386,7 @@ export const protocols: Record<string, Protocol> = {
     apis: {
       checkSignature:{
         endpoint:{
-          1: 'http://localhost:3333/checkSignature/'
+          1: 'https://api.idle.finance/checkSignature/'
         },
         config: {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
@@ -394,7 +394,7 @@ export const protocols: Record<string, Protocol> = {
       },
       saveSignature:{
         endpoint:{
-          1: 'http://localhost:3333/saveSignature'
+          1: 'https://api.idle.finance/saveSignature'
         },
         config: {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},

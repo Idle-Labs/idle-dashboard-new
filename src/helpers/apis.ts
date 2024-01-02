@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { getObjectPath, asyncWait } from 'helpers/'
-import type { Explorer, PlatformApiFilters } from 'constants/'
 import { protocols, subgraphs, explorers, networks } from 'constants/'
+import type { Explorer, PlatformApiFilters, ApisProps } from 'constants/'
 
 export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
   const data = await axios
@@ -15,7 +15,7 @@ export const makeRequest = async (endpoint: string, config?: any, error_callback
   return data?.data || null;
 }
 
-export const makePostRequest = async (endpoint: string, postData: any = {}, error_callback?: Function, config?: any) => {
+export const makePostRequest = async (endpoint: string, postData: any = {}, config?: any, error_callback?: Function) => {
   const data = await axios
     .post(endpoint, postData, config)
     .catch(err => {
@@ -26,12 +26,19 @@ export const makePostRequest = async (endpoint: string, postData: any = {}, erro
   return data?.data;
 }
 
-export const getPlatformApisEndpoint = (chainId: number, protocol: string, api: string, endpointSuffix?: string, filters?: PlatformApiFilters): string | null => {
+export const getPlatformApiConfig = (chainId: number, protocol: string, api: string): ApisProps | null => {
   const protocolApis = protocols[protocol]
   if (!protocolApis || !protocolApis.apis) return null
   
   const apiConfig = protocolApis.apis[api]
   if (!apiConfig || !apiConfig.endpoint[chainId]) return null
+
+  return apiConfig
+}
+
+export const getPlatformApisEndpoint = (chainId: number, protocol: string, api: string, endpointSuffix?: string, filters?: PlatformApiFilters): string | null => {
+  const apiConfig = getPlatformApiConfig(chainId, protocol, api)
+  if (!apiConfig) return null
 
   const protocolFilters = apiConfig.filters
   const queryStringParams = filters && Object.keys(filters).reduce( (applyFilters: string[], field: string) => {
@@ -140,12 +147,13 @@ export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["
 }
 
 export const saveSignature = async (address: string, signature: string): Promise<any> => {
+  const apiConfig = getPlatformApiConfig(1, 'idle', 'saveSignature')
   const endpoint = getPlatformApisEndpoint(1, 'idle', 'saveSignature')
   if (!endpoint) return null
   return await makePostRequest(endpoint, {
     address,
     signature
-  })
+  }, apiConfig?.config)
 }
 
 export const checkSignature = async (address: string): Promise<any> => {

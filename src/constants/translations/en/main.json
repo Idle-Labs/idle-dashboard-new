@@ -1925,10 +1925,12 @@
     "subtitle": "I hereby further represent and warrant that:",
     "ctaAgree": "Agree & Login",
     "ctaCancel": "Cancel",
+    "checkError": "There was a problem during the verification of your signature, please try again.",
     "options": {
       "option_1": "I’m not a resident of or located in the United States of America (including its territories: American Samoa, Guam, Puerto Rico, the Northern Mariana Islands and the U.S. Virgin Islands) or any other Restricted Jurisdiction (as defined in the Terms of Service);",
       "option_2": "I’m not a Prohibited Person (as defined in the Terms of Service) nor acting on behalf of a Prohibited Person;",
-      "option_3": "I acknowledge that Idle App and related software are experimental, and that the use of experimental software may result in complete loss of my funds."
+      "option_3": "I acknowledge that Idle App and related software are experimental, and that the use of experimental software may result in complete loss of my funds.",
+      "option_4": "I am not using, and will not in the future use, a VPN to mask my physical location from a restricted territory."
     }
   },
   "graph": {
