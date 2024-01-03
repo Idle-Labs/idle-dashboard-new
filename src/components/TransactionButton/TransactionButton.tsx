@@ -1,9 +1,12 @@
 import './progress.css'
 import type { AssetId } from 'constants/types'
+import { useSetChain } from '@web3-onboard/react'
+import { selectChainById } from 'constants/chains'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { Translation } from 'components/Translation/Translation'
+import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import useBoundingRect from "hooks/useBoundingRect/useBoundingRect"
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useRef, useCallback, useState, useMemo, useEffect } from 'react'
@@ -11,12 +14,14 @@ import { useTheme, ButtonProps, Button, Flex, Spinner, Text, TextProps, FlexProp
 
 type TransactionButtonValueProps = {
   text: string
+  // isChainEnabled?: boolean
   contractSendMethod: ContractSendMethod
 } & TextProps & FlexProps
 
 export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
   text,
   contractSendMethod,
+  // isChainEnabled = true
   ...props
 }) => {
   const theme = useTheme()
@@ -68,6 +73,8 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
       startCountdown()
     }
   }, [isRightTransaction, transaction.status, startCountdown, cleanTransaction, transaction.error?.code])
+
+  // console.log('transaction', transaction)
   
   const textComponent = useMemo(() => {
     if (isRightTransaction){
@@ -193,25 +200,39 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
   assetId,
   vaultId,
   actionType,
-  chainIds = [],
+  // chainIds = [],
   contractSendMethod,
   ...props
 }) => {
   // @ts-ignore
   const [ref, { width }] = useBoundingRect()
-  const { checkChainEnabled } = useWalletProvider()
+  const [ , setChain ] = useSetChain()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
   const { sendTransaction, state: { transaction } } = useTransactionManager()
+  const { /*checkChainEnabled, */chainId, isNetworkCorrect, setChainId } = useWalletProvider()
 
-  const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
+  // const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
   // @ts-ignore
   const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
 
+  const asset = useMemo(() => {
+    if (!selectAssetById) return null
+    return selectAssetById(assetId)
+  }, [selectAssetById, assetId])
+
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
-    // console.log('onClick', vaultId, assetId, contractSendMethod)
+    // Check selected chainId
+    const assetChain = selectChainById(asset?.chainId)
+    if (!isNetworkCorrect && assetChain){
+      return setChain({ chainId: assetChain.id as string })
+    } else if (asset.chainId !== chainId){
+      return setChainId(asset.chainId)
+    }
+
     return sendTransaction(vaultId, assetId, contractSendMethod, actionType, amount)
-  }, [transaction, vaultId, assetId, contractSendMethod, actionType, amount, sendTransaction])
+  }, [transaction, vaultId, assetId, chainId, contractSendMethod, actionType, amount, sendTransaction, asset, setChain, setChainId, isNetworkCorrect])
 
   const borderColor = useMemo(() => {
     if (!isRightTransaction) return 'primary'
@@ -225,7 +246,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
     }
   }, [isRightTransaction, transaction])
 
-  const isButtonDisabled = useMemo(() => !!props.disabled || !isChainEnabled, [props, isChainEnabled])
+  const isButtonDisabled = useMemo(() => !!props.disabled/* || !isChainEnabled*/, [props/*, isChainEnabled*/])
 
   return (
     <Button

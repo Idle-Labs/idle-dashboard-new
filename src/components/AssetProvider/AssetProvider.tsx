@@ -24,7 +24,7 @@ import { TranslationProps, Translation } from 'components/Translation/Translatio
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag, Image } from '@chakra-ui/react'
-import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, VaultPosition, GOVERNANCE_CHAINID } from 'constants/'
+import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -1071,16 +1071,16 @@ const TotalPoolUsd: React.FC<AmountProps> = (props) => {
 }
 
 const TotalDiscountedFees: React.FC<AmountProps & AssetFieldProps> = (props) => {
-  const { isVaultsPositionsLoaded, vaultsPositions } = usePortfolioProvider()
+  const { stakingData } = usePortfolioProvider()
 
-  const totalDiscountedFeesUsd = useMemo(() => {
-    return Object.values(vaultsPositions).reduce( (totalDiscountedFees: BigNumber, vaultPosition: VaultPosition) => {
-      return totalDiscountedFees.plus(bnOrZero(vaultPosition.usd.discountedFees))
-    }, BNify(0))
-  }, [vaultsPositions])
+  // const totalDiscountedFeesUsd = useMemo(() => {
+  //   return Object.values(vaultsPositions).reduce( (totalDiscountedFees: BigNumber, vaultPosition: VaultPosition) => {
+  //     return totalDiscountedFees.plus(bnOrZero(vaultPosition.usd.discountedFees))
+  //   }, BNify(0))
+  // }, [vaultsPositions])
   
-  return isVaultsPositionsLoaded ? (
-    <Amount.Usd value={totalDiscountedFeesUsd} {...props} />
+  return stakingData ? (
+    <Amount.Usd value={stakingData.totalDiscountedFees} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

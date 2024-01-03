@@ -577,7 +577,6 @@ export function TransactionManagerProvider({children}: ProviderProps) {
       if (!account || !web3 || !network) return null
 
       try {
-
         dispatch({type: 'START', payload: {
           amount,
           assetId,

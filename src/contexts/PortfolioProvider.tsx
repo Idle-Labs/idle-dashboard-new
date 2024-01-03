@@ -2126,7 +2126,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const stkIdleConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'stkIDLE' ) as GenericContractConfig
     const feeDistributorConfig = globalContracts[STAKING_CHAINID].find( (contract: GenericContractConfig) => contract.name === 'StakingFeeDistributor' ) as GenericContractConfig
 
-    // console.log('stakedIdleVault', stakedIdleVault)
     // console.log('allVaultsNetworks', allVaultsNetworks)
 
     const allVaults: Vault[] = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
@@ -2136,6 +2135,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const defaultChainWeb3 = +chainId === +STAKING_CHAINID ? web3 : web3Chains[STAKING_CHAINID]
 
       const stakedIdleVault: StakedIdleVault = new StakedIdleVault({web3: defaultChainWeb3, chainId: STAKING_CHAINID, rewardTokenConfig, stkIdleConfig, feeDistributorConfig})
+
+      // console.log('stakedIdleVault', stakedIdleVault)
+
       allVaults.push(stakedIdleVault)
       allVaultsNetworks[STAKING_CHAINID].push(stakedIdleVault)
 
@@ -2155,6 +2157,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('allVaults', chainId, allVaults)
     
     const assetsData = generateAssetsData(allVaults)
+
+    // console.log('assetsData', assetsData)
+
     dispatch({type: 'SET_VAULTS', payload: allVaults})
     dispatch({type: 'SET_CONTRACTS', payload: contracts})
     dispatch({type: 'SET_VAULTS_CHAIN', payload: chainId})

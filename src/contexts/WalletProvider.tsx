@@ -147,7 +147,7 @@ export function WalletProvider({ children }: ProviderProps) {
       }
     })()
   // eslint-disable-next-line
-  }, [walletProvider, isWalletProviderLoaded])
+  }, [walletProvider, isWalletProviderLoaded, connectedChain])
 
   // Switch chain
   useEffect(() => {

@@ -39,10 +39,10 @@ export const chains: Record<number, Chain> = {
   }
 }
 
-export function selectChainById(id: number){
+export function selectChainById(id: number): Chain | undefined {
   return chains[id]
 }
 
-export function selectChainByHexId(hexId: string){
+export function selectChainByHexId(hexId: string): Chain | undefined {
   return Object.values(chains).find( (c: Chain) => c.id === hexId )
 }
