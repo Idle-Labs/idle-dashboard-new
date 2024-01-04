@@ -30,7 +30,7 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
       <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.borrowerOverview'} />
       <Card.Dark>
         <VStack
-          spacing={4}
+          spacing={6}
           width={'full'}
           alignItems={'flex-start'}
         >
