@@ -94,6 +94,7 @@ export interface TrancheConfig {
   underlyingToken:string
   modal?: any
   variant?: string
+  borrower?: string
   CDO: CDO
   Pool?: Pool
   stats?: StatsProps
@@ -113,6 +114,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'fasanara',
+        borrower:'fasanara',
         status:'deprecated',
         protocol:'clearpool',
         blockNumber:17413683,
@@ -198,6 +200,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         status:'boosted',
         variant:'portofino',
+        borrower:'portofino',
         protocol:'clearpool',
         blockNumber:2812768,
         autoFarming:['MATIC'],
@@ -368,6 +371,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         status:'boosted',
         variant:'wincent',
+        borrower:'wincent',
         autoFarming:['OP'],
         protocol:'clearpool',
         blockNumber:17413683,
@@ -455,6 +459,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         autoFarming:[],
         variant:'wincent',
+        borrower:'wincent',
         status:'deprecated',
         protocol:'clearpool',
         blockNumber:17413683,
@@ -543,6 +548,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'boosted',
         autoFarming:['OP'],
         variant:'fasanara',
+        borrower:'fasanara',
         protocol:'clearpool',
         blockNumber:17413683,
         underlyingToken:'USDT',
@@ -630,6 +636,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'boosted',
         autoFarming:['OP'],
         variant:'portofino',
+        borrower:'portofino',
         protocol:'clearpool',
         blockNumber:2812768,
         underlyingToken:'USDT',
@@ -2350,6 +2357,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDC:{
         enabledEnvs:[],
         variant:'portofino',
+        borrower:'portofino',
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],
@@ -2434,6 +2442,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         status:'deprecated',
         variant:'wintermute',
+        borrower:'wintermute',
         protocol:'clearpool',
         blockNumber:16790250,
         underlyingToken:'USDC',
@@ -2514,6 +2523,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDCWinc:{
         autoFarming:[],
         variant:'wincent',
+        borrower:'wincent',
         enabledEnvs:['beta'],
         protocol:'clearpool',
         blockNumber:16790250,
@@ -2598,6 +2608,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'folkvang',
+        borrower:'folkvang',
         status:'deprecated',
         protocol:'clearpool',
         blockNumber:16790250,
@@ -2679,6 +2690,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDT:{
         enabledEnvs:[],
         variant:'fasanara',
+        borrower:'fasanara',
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],
@@ -2760,6 +2772,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDCFas:{
         enabledEnvs:[],
         variant:'fasanara',
+        borrower:'fasanara',
         protocol:'clearpool',
         blockNumber:17413683,
         autoFarming:['CPOOL'],
@@ -2842,6 +2855,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'portofino',
+        borrower:'portofino',
         protocol:'clearpool',
         blockNumber:16790274,
         underlyingToken:'DAI',

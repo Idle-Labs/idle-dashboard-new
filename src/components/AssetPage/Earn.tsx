@@ -16,6 +16,7 @@ import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
+import { BorrowerOverview } from 'components/BorrowerOverview/BorrowerOverview'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
@@ -286,6 +287,7 @@ export const Earn: React.FC = () => {
     return (
       <VStack
         spacing={6}
+        width={'full'}
         alignItems={'flex-start'}
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
@@ -295,6 +297,13 @@ export const Earn: React.FC = () => {
       </VStack>
     )
   }, [vault, asset, locale])
+
+  const borrowerOverview = useMemo(() => {
+    if (!vault || !("borrower" in vault?.vaultConfig)) return null
+    return (
+      <BorrowerOverview borrower={vault.vaultConfig.borrower} />
+    )
+  }, [vault])
 
   const epochThresholds = useMemo(() => {
     if (!asset || !asset.epochData) return null
@@ -459,6 +468,7 @@ export const Earn: React.FC = () => {
       >
         {strategyDescriptionCarousel}
         {strategyDescription}
+        {borrowerOverview}
         {coveredRisks}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
