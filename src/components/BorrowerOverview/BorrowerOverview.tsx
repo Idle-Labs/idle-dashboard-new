@@ -73,7 +73,17 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
               alignItems={'flex-start'}
             >
               <Translation component={Text} translation={'common.rating'} textStyle={'titleSmall'} />
-              <Text>{borrowerInfo.rating}</Text>
+              <Link display={'flex'} justifyContent={'center'} href={'https://credora.io/credit-evaluations/'} isExternal>
+                <HStack
+                  px={2}
+                  spacing={2}
+                  borderRadius={8}
+                  backgroundColor={'card.bg'}
+                >
+                  <Text>{borrowerInfo.rating}</Text>
+                  <Image src={'images/protocols/credora.svg'} height={3} />
+                </HStack>
+              </Link>
             </VStack>
             <VStack
               spacing={2}
