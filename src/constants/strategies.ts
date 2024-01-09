@@ -326,7 +326,13 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'apy',
         accessor:'apy',
-        sortType: 'numeric'
+        sortType: 'numeric',
+        extraFields:['distributedTokens'],
+        stackProps:{
+          direction:'column',
+          alignItems:'flex-start',
+          justifyContent:'flex-start'
+        }
       },
       {
         id:'apy7',
@@ -474,7 +480,13 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'apy',
         accessor:'apy',
-        sortType: 'numeric'
+        sortType: 'numeric',
+        extraFields:['distributedTokens'],
+        stackProps:{
+          direction:'column',
+          alignItems:'flex-start',
+          justifyContent:'flex-start'
+        }
       },
       {
         id:'apy7',

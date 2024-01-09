@@ -37,9 +37,9 @@ export class TrancheVault {
   readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
   readonly messages: TrancheConfig["messages"]
+  readonly flags: Record<string, any> | undefined
   readonly translations: TrancheConfig["translations"]
   readonly vaultFunctionsHelper: VaultFunctionsHelper
-  readonly flags: Record<string, boolean> | undefined
 
   // Private attributes
   private readonly cacheProvider: CacheContextProps | undefined

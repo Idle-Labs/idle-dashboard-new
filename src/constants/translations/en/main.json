@@ -2003,7 +2003,7 @@
         "riskProfiles": {
           "BY_AA": "This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
           "BY_BB": "This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
-          "AA_AA": "The Senior class has built-in protection mechanism against losses provided by Junior liquidity, and a rather stable byt lower yield.",
+          "AA_AA": "The Senior class has built-in protection mechanism against losses provided by Junior liquidity, and a rather stable but lower yield.",
           "BB_BB": "The Junior class has higher yield and always overperform the underlying yield, as it protects the Senior class from losses."
         }
       },

@@ -1,31 +1,32 @@
 import type { Abi } from './types'
-import stkIDLE from "abis/idle/stkIDLE.json";
-import Timelock from 'abis/idle/Timelock.json';
-import Multicall from 'abis/idle/Multicall.json';
-import LockedIDLE from "abis/idle/LockedIDLE.json";
-import PriceOracle from "abis/idle/PriceOracle.json";
-import FeeTreasury from "abis/idle/FeeTreasury.json";
-import EarlyRewards from 'abis/idle/EarlyRewards.json';
-import VesterFactory from 'abis/idle/VesterFactory.json';
-import GovernorAlpha from 'abis/idle/GovernorAlpha.json';
+import stkIDLE from "abis/idle/stkIDLE.json"
+import Timelock from 'abis/idle/Timelock.json'
+import Multicall from 'abis/idle/Multicall.json'
+import LockedIDLE from "abis/idle/LockedIDLE.json"
+import PriceOracle from "abis/idle/PriceOracle.json"
+import FeeTreasury from "abis/idle/FeeTreasury.json"
+import EarlyRewards from 'abis/idle/EarlyRewards.json'
+import VesterFactory from 'abis/idle/VesterFactory.json'
+import GovernorAlpha from 'abis/idle/GovernorAlpha.json'
 import GovernorBravo from 'abis/idle/GovernorBravo.json'
-import EcosystemFund from 'abis/idle/EcosystemFund.json';
-import Comptroller from 'abis/compound/Comptroller.json';
-import IdleController from 'abis/idle/IdleController.json';
-import GaugeController from 'abis/idle/GaugeController.json';
-import DepositManager from 'abis/polygon/DepositManager.json';
-import GaugeDistributor from 'abis/idle/GaugeDistributor.json';
-import UniswapV3Quoter from "abis/uniswap/UniswapV3Quoter.json";
-import RootChainManager from 'abis/polygon/RootChainManager.json';
-import SushiV2Router02 from "abis/sushiswap/SushiV2Router02.json";
-import UniswapV2Router02 from "abis/uniswap/UniswapV2Router02.json";
-import ChildChainManager from 'abis/polygon/ChildChainManager.json';
-import ProtocolDataProvider from 'abis/aave/ProtocolDataProvider.json';
-import GaugeDistributorProxy from 'abis/idle/GaugeDistributorProxy.json';
-import StakingFeeDistributor from 'abis/idle/StakingFeeDistributor.json';
-import QuickswapV2Router02 from "abis/quickswap/QuickswapV2Router02.json";
-import BalancerExchangeProxy from "abis/balancer/BalancerExchangeProxy.json";
-import MinimalInitializableProxyFactory from "abis/idle/MinimalInitializableProxyFactory.json";
+import EcosystemFund from 'abis/idle/EcosystemFund.json'
+import Comptroller from 'abis/compound/Comptroller.json'
+import IdleController from 'abis/idle/IdleController.json'
+import GaugeController from 'abis/idle/GaugeController.json'
+import DepositManager from 'abis/polygon/DepositManager.json'
+import GaugeDistributor from 'abis/idle/GaugeDistributor.json'
+import UniswapV3Quoter from "abis/uniswap/UniswapV3Quoter.json"
+import RootChainManager from 'abis/polygon/RootChainManager.json'
+import SushiV2Router02 from "abis/sushiswap/SushiV2Router02.json"
+import UniswapV2Router02 from "abis/uniswap/UniswapV2Router02.json"
+import ChildChainManager from 'abis/polygon/ChildChainManager.json'
+import ProtocolDataProvider from 'abis/aave/ProtocolDataProvider.json'
+import GaugeDistributorProxy from 'abis/idle/GaugeDistributorProxy.json'
+import StakingFeeDistributor from 'abis/idle/StakingFeeDistributor.json'
+import QuickswapV2Router02 from "abis/quickswap/QuickswapV2Router02.json"
+import MorphoRewardsEmissions from 'abis/morpho/MorphoRewardsEmissions.json'
+import BalancerExchangeProxy from "abis/balancer/BalancerExchangeProxy.json"
+import MinimalInitializableProxyFactory from "abis/idle/MinimalInitializableProxyFactory.json"
 
 export type GenericContractConfig = {
   abi: Abi
@@ -199,6 +200,11 @@ export const globalContracts: Record<number, GenericContractConfig[]> = {
       name: "StakingFeeDistributor",
       abi: StakingFeeDistributor as Abi,
       address: "0xbabb82456c013fd7e3f25857e0729de8207f80e2" // Mainnet
+    },
+    {
+      name: "MorphoRewardsEmissions",
+      abi: MorphoRewardsEmissions as Abi,
+      address: "0xf27fa85b6748c8a64d4b0d3d6083eb26f18bde8e" // Mainnet
     }
   ]
 }

@@ -2,6 +2,7 @@ import aToken from 'abis/aave/AToken.json'
 import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
 import IdleCDO from 'abis/idle/IdleCDO.json'
+import MorphoPool from 'abis/morpho/MorphoPool.json'
 import AmphorPool from 'abis/amphor/AmphorPool.json'
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
 import IdleStrategy from 'abis/idle/IdleStrategy.json'
@@ -2840,6 +2841,185 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       }
     },
     morpho:{
+      bbWETH:{
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16420584,
+        status:'experimental',
+        autoFarming:['MORPHO'],
+        underlyingToken:'WETH',
+        variant: 'BlockAnalitica',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true,
+          morphoRewardsEmissionsParams: [
+            '0x260D1E0CB6CC9E34Ea18CE39bAB879d450Cdd706',
+            '0x678dDC1d07eaa166521325394cDEb1E4c086DF43',
+            '0x9994E35Db50125E0DF82e4c2dde62496CE330999',
+            '0xc54d7acf14de29e0e5527cabd7a576506870346a78a11a6762e2cca66322ec41'
+          ]
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_bbWETH',
+          address:'0x260D1E0CB6CC9E34Ea18CE39bAB879d450Cdd706'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_bbWETH',
+          address:'0x0186e34DE71987303B4eD4a027Ed939a1178A73B'
+        },
+        Pool:{
+          name: 'Morpho_bbETH',
+          abi:MorphoPool as Abi,
+          address:'0x38989BBA00BDF8181F4082995b3DEAe96163aC5D'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/earn/vault?vault=0x7cE27FC617e12C937dA933A65d1F40E3191a370e" class="link" rel="nofollow noopener noreferrer" target="_blank">BlockAnalitica WETH MetaMorpho pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_bbWETH_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'AA_morpho_steak_USDC',
+            token:'AA_morpho_steak_USDC',
+            label:'Morpho Steak USDC AA',
+            address:'0x10036C2E5C441Cdef24A30134b6dF5ebf116205e'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_bbWETH_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'BB_morpho_steak_USDC',
+            token:'BB_morpho_steak_USDC',
+            label:'Morpho Steak USDC BB',
+            address:'0x3331B21Abb39190a0426ca54D68F9E3E953Eec8e'
+          }
+        }
+      },
+      steakUSDC:{
+        autoFarming:[],
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16420584,
+        status:'experimental',
+        underlyingToken:'USDC',
+        distributedTokens:['MORPHO'],
+        variant:'Steakhouse Financial',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_steakUSDC',
+          address:'0x87E53bE99975DA318056af5c4933469a6B513768'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_steakUSDC',
+          address:'0x937C5122d6fbaddBd74a41E73B9dB6dEb66d515d'
+        },
+        Pool:{
+          abi:MorphoPool as Abi,
+          name: 'Morpho_steakUSDC',
+          address:'0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/earn/vault?vault=0x5540F06fE556A8306E904c433c2619A5D76482D2" class="link" rel="nofollow noopener noreferrer" target="_blank">Steakhouse USDC MetaMorpho pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_steakUSDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'AA_morpho_steak_USDC',
+            token:'AA_morpho_steak_USDC',
+            label:'Morpho Steak USDC AA',
+            address:'0x2B0E31B8EE653D2077db86dea3ACf3F34ae9d5D2'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_steakUSDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'BB_morpho_steak_USDC',
+            token:'BB_morpho_steak_USDC',
+            label:'Morpho Steak USDC BB',
+            address:'0x7b713B1Cb6EaFD4061064581579ffCCf7DF21545'
+          }
+        }
+      },
       USDC:{
         variant:'Aave',
         autoFarming:[],
@@ -2862,7 +3042,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_USDC',
           address:'0x6c14a1a28dd6dae5734fd960bac0b89a6b401cfd'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2942,7 +3122,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_aave_DAI',
           address:'0x9182A7C9D9858d54816baC7e3C049B26d3fc56bB'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3022,7 +3202,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_aave_USDT',
           address:'0x57E142278E93d721F3eBD52EC5D2D28484862f32'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3101,7 +3281,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_aave_WETH',
           address:'0x9708B5398382EE064A8E718972670351F1c2c860'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.xyz/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave WETH pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave WETH pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,

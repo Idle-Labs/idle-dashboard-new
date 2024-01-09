@@ -23,7 +23,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp } from 'helpers/'
-import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission } from 'constants/types'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -464,9 +464,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [state.vaults, state.assetsData, selectAssetBalance, selectVaultPosition])
 
   const vaultFunctionsHelper = useMemo((): VaultFunctionsHelper | null => {
-    if (!chainId || !web3 || !multiCall || !explorer) return null
-    return new VaultFunctionsHelper({chainId, web3, web3Chains, multiCall, explorer, cacheProvider})
-  }, [chainId, web3, web3Chains, multiCall, explorer, cacheProvider])
+    if (!chainId || !web3 || !multiCall || !explorer || isEmpty(state.contractsNetworks)) return null
+    return new VaultFunctionsHelper({chainId, web3, web3Chains, multiCall, explorer, cacheProvider, contracts: state.contractsNetworks})
+  }, [chainId, web3, web3Chains, multiCall, explorer, cacheProvider, state.contractsNetworks])
 
   const genericContractsHelper = useMemo((): GenericContractsHelper | null => {
     if (!chainId || !web3 || !multiCall || !state.contracts.length) return null
@@ -867,6 +867,108 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   }, [web3, chainId, multiCall, state.contracts])
 
+  const getMorphoRewardsEmissions = useCallback(async (vaults: Vault[]): Promise<Record<AssetId, RewardEmission> | null> => {
+    if (!web3 || !multiCall || !web3Chains || isEmpty(state.contractsNetworks)) return null
+
+    const morphoVaults = vaults.filter( (vault: Vault) => ("poolContract" in vault) && vault.poolContract && vault.chainId && vault.protocol === 'morpho')
+
+    const rewardTokensCallsByChainId = morphoVaults.reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, vault: Vault): Record<number, Record<AssetId, CallData>> => {
+      if (!("strategyContract" in vault) || !vault.strategyContract) return callsByChainId
+      const callData = multiCall.getCallData(vault.strategyContract, 'getRewardTokens', [], {vault})
+      if (!callData) return callsByChainId
+      if (!callsByChainId[vault.chainId]){
+        callsByChainId[vault.chainId] = {}
+      }
+      callsByChainId[vault.chainId][vault.cdoConfig.address] = callData
+      return callsByChainId
+    }, {})
+
+    const withdrawQueueLengthCallsByChainId = morphoVaults.reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, vault: Vault): Record<number, Record<AssetId, CallData>> => {
+      if (!("poolContract" in vault) || !vault.poolContract) return callsByChainId
+      const callData = multiCall.getCallData(vault.poolContract, 'withdrawQueueLength', [], {vault})
+      if (!callData) return callsByChainId
+      if (!callsByChainId[vault.chainId]){
+        callsByChainId[vault.chainId] = {}
+      }
+      // callsByChainId[vault.chainId].push(callData)
+      callsByChainId[vault.chainId][vault.cdoConfig.address] = callData
+      return callsByChainId
+    }, {})
+
+    // const withdrawQueueLengths = await multiCall.executeMulticalls(withdrawQueueLengthCalls, 1, web3Chains[1])
+    // console.log('withdrawQueueLengthCallsByChainId', withdrawQueueLengthCallsByChainId)
+
+    const [
+      rewardTokensByChainId,
+      withdrawQueueLengthsByChain
+    ] = await Promise.all([
+      await Promise.all(Object.keys(rewardTokensCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rewardTokensCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) )),
+      await Promise.all(Object.keys(withdrawQueueLengthCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(withdrawQueueLengthCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
+    ])
+
+    console.log('rewardTokensByChainId', rewardTokensByChainId)
+    console.log('withdrawQueueLengthsByChain', withdrawQueueLengthsByChain)
+
+    const marketIdsCallsByChainId = Object.keys(withdrawQueueLengthsByChain).reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, index: any): Record<number, Record<AssetId, CallData>> => {
+      const chainId = +Object.keys(withdrawQueueLengthCallsByChainId)[index]
+      withdrawQueueLengthsByChain[index]?.forEach( result => {
+        const queueLength = result.data
+        const vault = result.extraData.vault
+        for (let i = 0; i < queueLength; i++){
+          const callData = multiCall.getCallData(vault.poolContract, 'withdrawQueue', [i], {vault})
+          if (callData){
+            if (!callsByChainId[vault.chainId]){
+              callsByChainId[vault.chainId] = {}
+            }
+            callsByChainId[vault.chainId][vault.cdoConfig.address] = callData
+            // callsByChainId[chainId].push(callData)
+          }
+        }
+      })
+      return callsByChainId
+    }, {})
+
+    // console.log('marketIdsCallsByChainId', marketIdsCallsByChainId)
+    const marketIdsByChain = await Promise.all(Object.keys(marketIdsCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(marketIdsCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
+    console.log('marketIdsByChain', marketIdsByChain)
+
+    const urdAddresses = ['0x678dDC1d07eaa166521325394cDEb1E4c086DF43', '0x2EfD4625d0c149EbADf118EC5446c6de24d916A4']
+
+    const rewardsEmissionsCallsByChainId = Object.keys(marketIdsByChain).reduce( (callsByChainId: Record<number, Record<AssetId, CallData[]>>, index: any): Record<number, Record<AssetId, CallData[]>> => {
+      const chainId = +Object.keys(marketIdsByChain)[index]
+      marketIdsByChain[index]?.forEach( result => {
+        const marketId = result.data
+        const vault = result.extraData.vault
+        const morphoRewardsEmissionsContract = state.contractsNetworks[vault.chainId].find( (Contract: GenericContract) => Contract.name === 'MorphoRewardsEmissions')
+
+        const vaultRewardTokens = rewardTokensByChainId[index]?.find( (decodedResult: DecodedResult) => decodedResult.extraData.vault.cdoConfig.address === vault.cdoConfig.address )
+
+        if (!callsByChainId[vault.chainId]){
+          callsByChainId[vault.chainId] = {}
+        }
+        callsByChainId[vault.chainId][vault.cdoConfig.address] = []
+
+        vaultRewardTokens?.data.forEach( (rewardToken: string) => {
+          urdAddresses.forEach( (urdAddress: string) => {
+            const callParams = [vault.cdoConfig.address, urdAddress, rewardToken, marketId]
+            const callData = multiCall.getCallData(morphoRewardsEmissionsContract.contract, 'rewardsEmissions', callParams, {vault, rewardToken, urdAddress})
+            if (callData){
+              callsByChainId[vault.chainId][vault.cdoConfig.address].push(callData)
+            }
+          })
+        })
+
+      })
+      return callsByChainId
+    }, {})
+
+    const rewardsEmissionsByChain = await Promise.all(Object.keys(rewardsEmissionsCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rewardsEmissionsCallsByChainId[+chainId]).flat(), true, +chainId, web3Chains[chainId]) ))
+    console.log('rewardsEmissionsByChain', rewardsEmissionsByChain)
+
+    return {}
+
+  }, [web3, multiCall, web3Chains, state.contractsNetworks])
+
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
     if (!multiCall || !web3Chains || !vaultFunctionsHelper || !genericContractsHelper) return null
 
@@ -988,6 +1090,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // Get Matic NFTs
     const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
 
+    const morphoRewardsEmissionsPromise = getMorphoRewardsEmissions(vaults)
+
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
 
     // const stkIdleCalls = getStkIdleCalls()
@@ -998,6 +1102,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const [
       maticNFTs,
+      morphoRewardsEmissions,
       // stakedIdleVaultRewards,
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
@@ -1022,6 +1127,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       ]
     ] = await Promise.all([
       maticNFTsPromise,
+      morphoRewardsEmissionsPromise,
       // stakedIdleVaultRewardsPromise,
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
@@ -1587,7 +1693,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       idleDistributions,
       interestBearingTokens
     }
-  }, [selectAssetById, web3Chains, account, multiCall, selectVaultById, state.contractsNetworks, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, web3Chains, account, multiCall, selectVaultById, getMorphoRewardsEmissions, state.contractsNetworks, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return

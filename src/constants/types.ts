@@ -286,6 +286,13 @@ export type BannerProps = {
   modal?: ModalProps
 }
 
+export type RewardEmission = {
+  tokenId: AssetId
+  apr: BigNumber | null
+  annualDistribution: BigNumber
+  annualDistributionUsd: BigNumber
+}
+
 export type DistributedReward = {
   hash: string
   assetId: AssetId
