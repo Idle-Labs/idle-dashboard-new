@@ -867,11 +867,39 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   }, [web3, chainId, multiCall, state.contracts])
 
-  const getMorphoRewardsEmissions = useCallback(async (vaults: Vault[]): Promise<Record<AssetId, RewardEmission> | null> => {
+  const getMorphoRewardsEmissions = useCallback(async (vaults: Vault[]): Promise<Record<AssetId, Record<AssetId, RewardEmission>> | null> => {
     if (!web3 || !multiCall || !web3Chains || isEmpty(state.contractsNetworks)) return null
 
+    // Get morpho vaults
     const morphoVaults = vaults.filter( (vault: Vault) => ("poolContract" in vault) && vault.poolContract && vault.chainId && vault.protocol === 'morpho')
 
+    const rewardTokensCallsByChainId: Record<number, Record<AssetId, CallData>> = {}
+    const withdrawQueueLengthCallsByChainId: Record<number, Record<AssetId, CallData>> = {}
+    
+    morphoVaults.forEach( (vault: Vault) => {
+      if (("strategyContract" in vault) && vault.strategyContract){
+        const callData = multiCall.getCallData(vault.strategyContract, 'getRewardTokens', [], {vault})
+        if (callData){
+          if (!rewardTokensCallsByChainId[vault.chainId]){
+            rewardTokensCallsByChainId[vault.chainId] = {}
+          }
+          rewardTokensCallsByChainId[vault.chainId][vault.cdoConfig.address] = callData
+        }
+      }
+
+      if (("poolContract" in vault) && vault.poolContract){
+        const callData = multiCall.getCallData(vault.poolContract, 'withdrawQueueLength', [], {vault})
+        if (callData){
+          if (!withdrawQueueLengthCallsByChainId[vault.chainId]){
+            withdrawQueueLengthCallsByChainId[vault.chainId] = {}
+          }
+          withdrawQueueLengthCallsByChainId[vault.chainId][vault.cdoConfig.address] = callData
+        }
+      }
+    })
+
+    /*
+    // Reward tokens calls
     const rewardTokensCallsByChainId = morphoVaults.reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, vault: Vault): Record<number, Record<AssetId, CallData>> => {
       if (!("strategyContract" in vault) || !vault.strategyContract) return callsByChainId
       const callData = multiCall.getCallData(vault.strategyContract, 'getRewardTokens', [], {vault})
@@ -894,6 +922,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       callsByChainId[vault.chainId][vault.cdoConfig.address] = callData
       return callsByChainId
     }, {})
+    */
 
     // const withdrawQueueLengths = await multiCall.executeMulticalls(withdrawQueueLengthCalls, 1, web3Chains[1])
     // console.log('withdrawQueueLengthCallsByChainId', withdrawQueueLengthCallsByChainId)
@@ -902,12 +931,53 @@ export function PortfolioProvider({ children }:ProviderProps) {
       rewardTokensByChainId,
       withdrawQueueLengthsByChain
     ] = await Promise.all([
+
       await Promise.all(Object.keys(rewardTokensCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rewardTokensCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) )),
       await Promise.all(Object.keys(withdrawQueueLengthCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(withdrawQueueLengthCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
     ])
 
     console.log('rewardTokensByChainId', rewardTokensByChainId)
     console.log('withdrawQueueLengthsByChain', withdrawQueueLengthsByChain)
+
+    // Get calls for rewards tokens conversion rates
+    const rewardTokensConversionRateCalls = Object.keys(rewardTokensByChainId).reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, index: any): Record<number, Record<AssetId, CallData>> => {
+      const chainId = +Object.keys(rewardTokensCallsByChainId)[index]
+      const genericContractsHelper = new GenericContractsHelper({chainId, web3: web3Chains[chainId], multiCall, contracts: state.contractsNetworks[chainId]})
+      rewardTokensByChainId[index]?.forEach( result => {
+        const rewardTokens = result.data as string[]
+        rewardTokens.forEach( (rewardTokenAddress: string) => {
+          const vault = result.extraData.vault
+          const rewardToken = selectUnderlyingTokenByAddress(chainId, rewardTokenAddress)
+          if (rewardToken?.address && !callsByChainId[vault.chainId]?.[rewardTokenAddress]){
+            const conversionRateParams = genericContractsHelper.getConversionRateParams(rewardToken)
+            if (conversionRateParams){
+              const callData = multiCall.getDataFromRawCall(conversionRateParams.call, {assetId: rewardTokenAddress, params: conversionRateParams})
+              if (callData){
+                if (!callsByChainId[vault.chainId]){
+                  callsByChainId[vault.chainId] = {}
+                }
+                callsByChainId[vault.chainId][rewardTokenAddress] = callData
+              }
+            }
+          }
+        })
+      })
+      return callsByChainId
+    }, {})
+
+    // Get reward tokens conversion rates
+    const rewardTokensConversionRateByChain = await Promise.all(Object.keys(rewardTokensConversionRateCalls).map( chainId => multiCall.executeMulticalls(Object.values(rewardTokensConversionRateCalls[+chainId]), true, +chainId, web3Chains[chainId]) ))
+
+    const rewardTokensConversionRates = Object.keys(rewardTokensConversionRateByChain).reduce( (conversionRates: Balances, index: any) => {
+      rewardTokensConversionRateByChain[index]?.forEach( (callResult: DecodedResult) => {
+        const rewardToken = callResult.extraData.assetId
+        const conversionRate = callResult.data ? callResult.extraData.params.processResults(callResult.data, callResult.extraData.params) : BNify(1)
+        conversionRates[rewardToken] = conversionRate
+      })
+      return conversionRates
+    }, {})
+
+    console.log('rewardTokensConversionRates', rewardTokensConversionRates)
 
     const marketIdsCallsByChainId = Object.keys(withdrawQueueLengthsByChain).reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, index: any): Record<number, Record<AssetId, CallData>> => {
       const chainId = +Object.keys(withdrawQueueLengthCallsByChainId)[index]
@@ -951,7 +1021,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultRewardTokens?.data.forEach( (rewardToken: string) => {
           urdAddresses.forEach( (urdAddress: string) => {
             const callParams = [vault.cdoConfig.address, urdAddress, rewardToken, marketId]
-            const callData = multiCall.getCallData(morphoRewardsEmissionsContract.contract, 'rewardsEmissions', callParams, {vault, rewardToken, urdAddress})
+            const callData = multiCall.getCallData(morphoRewardsEmissionsContract.contract, 'rewardsEmissions', callParams, {cdoAddress: vault.cdoConfig.address, marketId, rewardToken, urdAddress})
             if (callData){
               callsByChainId[vault.chainId][vault.cdoConfig.address].push(callData)
             }
@@ -965,8 +1035,40 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const rewardsEmissionsByChain = await Promise.all(Object.keys(rewardsEmissionsCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rewardsEmissionsCallsByChainId[+chainId]).flat(), true, +chainId, web3Chains[chainId]) ))
     console.log('rewardsEmissionsByChain', rewardsEmissionsByChain)
 
-    return {}
+    return Object.keys(rewardsEmissionsByChain).reduce( (rewardsEmissions: Record<AssetId, Record<AssetId, RewardEmission>>, index: any) => {
+      rewardsEmissionsByChain[index]?.forEach( result => {
+        const rewardEmissionData = result.data
+        const marketId = result.extraData.marketId
+        const cdoAddress = result.extraData.cdoAddress
+        const urdAddress = result.extraData.urdAddress
+        const rewardToken = result.extraData.rewardToken
+        const rewardTokensConversionRate = rewardTokensConversionRates[rewardToken] || BNify(1)
 
+        const annualDistribution = BNify(rewardEmissionData.supplyRewardTokensPerYear)
+        const annualDistributionUsd = annualDistribution.times(rewardTokensConversionRate)
+
+        const rewardEmission: RewardEmission = {
+          marketId,
+          rewardToken,
+          apr: BNify(0),
+          annualDistribution,
+          annualDistributionUsd
+        }
+
+        if (!rewardsEmissions[cdoAddress]){
+          rewardsEmissions[cdoAddress] = {}
+        }
+
+        if (!rewardsEmissions[cdoAddress][rewardToken]){
+          rewardsEmissions[cdoAddress][rewardToken] = rewardEmission
+        } else {
+          rewardsEmissions[cdoAddress][rewardToken].annualDistribution = rewardsEmissions[cdoAddress][rewardToken].annualDistribution.plus(annualDistribution)
+          rewardsEmissions[cdoAddress][rewardToken].annualDistributionUsd = rewardsEmissions[cdoAddress][rewardToken].annualDistributionUsd.plus(annualDistributionUsd)
+        }
+      })
+
+      return rewardsEmissions
+    }, {})
   }, [web3, multiCall, web3Chains, state.contractsNetworks])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
@@ -1138,6 +1240,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // multiCall.executeMultipleBatches(rawCalls),
       multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
     ])
+
+    console.log('morphoRewardsEmissions', morphoRewardsEmissions)
 
     let fees: Balances = {}
     let aprs: Balances = {}

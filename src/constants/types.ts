@@ -287,7 +287,8 @@ export type BannerProps = {
 }
 
 export type RewardEmission = {
-  tokenId: AssetId
+  marketId: string
+  rewardToken: AssetId
   apr: BigNumber | null
   annualDistribution: BigNumber
   annualDistributionUsd: BigNumber
@@ -333,6 +334,7 @@ export type Asset = {
   apyBoost?: BigNumber
   priceUsd?: BigNumber
   totalApr?: BigNumber
+  aprSplit?: BigNumber
   gaugeData?: GaugeData
   vaultIsOpen?: boolean
   rates?: HistoryData[]
@@ -355,6 +357,7 @@ export type Asset = {
   flags?: Record<string, boolean>
   interestBearingTokens?: Balances
   discountedFees?: DistributedReward[]
+  rewardsEmission?: Record<AssetId, RewardEmission>
   distributedRewards?: Record<AssetId, DistributedReward[]>
 }
 
