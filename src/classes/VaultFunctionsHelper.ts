@@ -2,17 +2,17 @@ import Web3 from 'web3'
 import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
+import { Multicall, CallData } from 'classes/'
 import { explorers, networks } from 'constants/'
 import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { TrancheVault } from 'vaults/TrancheVault'
+import { selectUnderlyingToken } from 'selectors/'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
 import { FEES_COLLECTORS } from 'constants/addresses'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
-import { Multicall, CallData, GenericContractsHelper } from 'classes/'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors/'
 import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs } from 'helpers/'
 import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData } from 'constants/'
 
@@ -242,50 +242,6 @@ export class VaultFunctionsHelper {
       return BNify(apr);
     }
     return BNify(0);
-  }
-
-  public async getMorphoRewardsAdditionalApr(trancheVault: TrancheVault): Promise<BigNumber> {
-
-    if (!this.contracts || !trancheVault.flags?.morphoRewardsEmissionsParams || !this.multiCall){
-      return BNify(0)
-    }
-
-    const MorphoRewardsEmissionsContract = this.contracts?.[trancheVault.chainId].find( (Contract: GenericContract) => Contract.name === 'MorphoRewardsEmissions')
-    if (MorphoRewardsEmissionsContract){
-      const genericContractsHelper = new GenericContractsHelper({chainId: trancheVault.chainId, web3: this.web3, multiCall: this.multiCall, contracts: this.contracts[trancheVault.chainId]})
-
-      const callParams: string[] = trancheVault.flags.morphoRewardsEmissionsParams as string[]
-      const rewardToken = selectUnderlyingTokenByAddress(trancheVault.chainId, callParams[2] as string)
-      if (!rewardToken) return BNify(0)
-
-      const conversionRateParams = genericContractsHelper.getConversionRateParams(rewardToken)
-      if (!conversionRateParams) return BNify(0)
-
-      const underlyingPriceUsdCalls = trancheVault.getPricesUsdCalls(this.contracts[trancheVault.chainId])
-
-      const rawCalls: CallData[] = [
-        this.multiCall.getCallData(trancheVault.cdoContract, 'getContractValue'),
-        this.multiCall.getDataFromRawCall(underlyingPriceUsdCalls[0].call, underlyingPriceUsdCalls[0]),
-        this.multiCall.getCallData(MorphoRewardsEmissionsContract.contract, 'rewardsEmissions', callParams),
-        this.multiCall.getDataFromRawCall(conversionRateParams.call, {assetId: trancheVault.id, params: conversionRateParams})
-      ].filter( (call): call is CallData => !!call )
-
-      // const [
-      //   tranchePool,
-      //   rewardsEmissions,
-      //   rewardConversionRate
-      // ]
-
-      const multicallResults = await this.multiCall.executeMulticalls(rawCalls);
-
-      console.log('getMorphoRewardsAdditionalApr', trancheVault.id, multicallResults)
-
-      // const annualRewardsEmission = fixTokenDecimals(rewardsEmissions.supplyRewardTokensPerYear, rewardToken.decimals || 18)
-      // const annualRewardsEmissionUsd = annualRewardsEmission.times(rewardConversionRate)
-      // const apr = annualRewardsEmissionUsd.div()
-    }
-
-    return BNify(0)
   }
 
   public async getAmphorwstETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
@@ -815,14 +771,6 @@ export class VaultFunctionsHelper {
                 cdoId: vault.cdoConfig.address,
                 apr: await this.getInstadappStETHTrancheApy(vault)
               }
-            /*
-            case 'IdleCDO_morpho_bbWETH':
-              return {
-                vaultId: vault.id,
-                cdoId: vault.cdoConfig.address,
-                apr: await this.getMorphoRewardsAdditionalApr(vault)
-              }
-            */
             default:
               return {
                 apr: BNify(0),

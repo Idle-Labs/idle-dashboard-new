@@ -8,9 +8,11 @@ import { AssetFieldProps, AssetProvider } from 'components/AssetProvider/AssetPr
 export type TokenAmountProps = {
   assetId?: AssetId
   spacing?: number
+  showIcon?: boolean
+  showName?: boolean
   amount: AmountProps["value"]
   size?: ResponsiveValue<string> | undefined
-  showIcon?: boolean
+  amountComponent?: React.FC | React.ElementType | null
 } & AmountProps & AssetFieldProps
 
 export const TokenAmount: React.FC<TokenAmountProps> = ({
@@ -18,9 +20,12 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
   amount,
   size = 'sm',
   spacing = 2,
+  amountComponent,
   showIcon = true,
+  showName = true,
   ...props
 }) => {
+  const AmountComponent = amountComponent || Amount
   const { ...amountProps } = props as Omit<AmountProps, keyof TokenAmountProps>
   const { ...assetFieldProps } = props as Omit<AssetFieldProps, keyof TokenAmountProps>
   return (
@@ -41,8 +46,12 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
           spacing={1}
           alignItems={'baseline'}
         >
-          <Amount value={amount} decimals={BNify(amount).lt(1) && BNify(amount).gt(0) ? 4 : 2} {...amountProps} />
-          <AssetProvider.Name {...assetFieldProps} fontSize={'85%'} fontWeight={400} />
+          <AmountComponent value={amount} decimals={BNify(amount).lt(1) && BNify(amount).gt(0) ? 4 : 2} {...amountProps} />
+          {
+            showName && (
+              <AssetProvider.Name {...assetFieldProps} fontSize={'85%'} fontWeight={400} />
+            )
+          }
         </HStack>
       </HStack>
     </AssetProvider>

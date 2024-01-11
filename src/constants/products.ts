@@ -80,19 +80,37 @@ export const products: ProductProps[] = [
         id:'apy',
         accessor:'apy',
         sortType: 'numeric',
-        tables: ['Deposited']
+        tables: ['Deposited'],
+        extraFields:['rewardsEmissions'],
+        stackProps:{
+          direction:'column',
+          alignItems:'flex-start',
+          justifyContent:'flex-start'
+        }
       },
       {
         accessor:'id',
         id:'seniorApy',
         sortType: 'trancheApy',
-        tables: ['Available']
+        tables: ['Available'],
+        extraFields:['seniorRewardsEmissions'],
+        stackProps:{
+          direction:'column',
+          alignItems:'flex-start',
+          justifyContent:'flex-start'
+        }
       },
       {
         accessor:'id',
         id:'juniorApy',
         sortType: 'trancheApy',
-        tables: ['Available']
+        tables: ['Available'],
+        extraFields:['juniorRewardsEmissions'],
+        stackProps:{
+          direction:'column',
+          alignItems:'flex-start',
+          justifyContent:'flex-start'
+        }
       },
       {
         width: '8%',

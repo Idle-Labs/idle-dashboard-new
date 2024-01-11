@@ -2938,9 +2938,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         protocol:'morpho',
         enabledEnvs:['beta'],
         blockNumber:16420584,
+        distributedTokens:[],
         status:'experimental',
         underlyingToken:'USDC',
-        distributedTokens:['MORPHO'],
         variant:'Steakhouse Financial',
         adaptiveYieldSplitEnabled:true,
         flags:{

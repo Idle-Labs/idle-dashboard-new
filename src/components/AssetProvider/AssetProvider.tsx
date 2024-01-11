@@ -14,16 +14,16 @@ import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { selectProtocol, selectUnderlyingToken } from 'selectors/'
-import { BNify, bnOrZero, abbreviateNumber, formatDate } from 'helpers/'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty } from 'helpers/'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, VStack, HStack, Tag, Image } from '@chakra-ui/react'
+import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
 import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
 
 type AssetCellProps = {
@@ -1015,6 +1015,42 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
     </AssetProvider>
   )
 }
+
+
+const SeniorRewardsEmissions: React.FC<AmountProps> = (props) => {
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
+
+  return (
+    <AssetProvider
+      assetId={trancheAsset?.id}
+    >
+      <AssetProvider.RewardsEmissions {...props} />
+    </AssetProvider>
+  )
+}
+
+const JuniorRewardsEmissions: React.FC<AmountProps> = (props) => {
+  const { vault } = useAssetProvider()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  if (!vault || !("vaultConfig" in vault)) return null
+
+  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+
+  return (
+    <AssetProvider
+      assetId={trancheAsset?.id}
+    >
+      <AssetProvider.RewardsEmissions {...props} />
+    </AssetProvider>
+  )
+}
+
 const SeniorPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
@@ -1106,6 +1142,56 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
   return stakingData?.position.balance ? (
     <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.position.balance} {...props} />
   ) : <Spinner size={'sm'} />
+}
+
+const RewardsEmissions: React.FC<IdleDistributionProps> = ({...props}) => {
+  const { asset, translate } = useAssetProvider()
+
+  if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return null
+
+  // console.log('RewardsEmissions', asset.id, asset.rewardsEmissions)
+  
+  return (
+    <SimpleGrid
+      spacing={1}
+      width={'full'}
+      justifyContent={'flex-start'}
+      columns={[1, Object.keys(asset.rewardsEmissions).length]}
+    >
+      {
+        Object.keys(asset.rewardsEmissions).map( rewardId => {
+          const rewardEmission = asset.rewardsEmissions?.[rewardId]
+          if (!rewardEmission) return null
+          const amount = rewardEmission.apr || rewardEmission.annualDistribution
+          const amountComponent = rewardEmission.apr ? Amount.Percentage : null
+          const tooltipLabel = rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionToken')
+          return (
+            <Tooltip
+              hasArrow
+              placement={'top'}
+              label={tooltipLabel}
+              key={`reward_${rewardId}`}
+            >
+              <TooltipContent>
+                <Flex
+                  py={1}
+                  px={2}
+                  width={'auto'}
+                  borderRadius={8}
+                  border={'1px solid'}
+                  borderColor={'card.bg'}
+                  justifyContent={'center'}
+                  backgroundColor={'card.bgLight'}
+                >
+                  <TokenAmount assetId={rewardId} decimals={2} showName={false} showIcon={true} size={'2xs'} fontSize={'xs'} amountComponent={amountComponent} prefix={'+'} amount={amount} {...props} />
+                </Flex>
+              </TooltipContent>
+            </Tooltip>
+          )
+        })
+      }
+    </SimpleGrid>
+  )
 }
 
 export type IdleDistributionProps = TextProps & {
@@ -1470,6 +1556,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (
         <IdleDistribution textStyle={'tableCell'} {...props} />
       )
+    case 'rewardsEmissions':
+      return (
+        <RewardsEmissions {...props} />
+      )
     /*
     case 'fields':
       console.log(field, fields, fieldsProps, props)
@@ -1518,6 +1608,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<JuniorApy textStyle={'tableCell'} {...props} />)
     case 'seniorApy':
       return (<SeniorApy textStyle={'tableCell'} {...props} />)
+    case 'juniorRewardsEmissions':
+      return (<JuniorRewardsEmissions textStyle={'tableCell'} {...props} />)
+    case 'seniorRewardsEmissions':
+      return (<SeniorRewardsEmissions textStyle={'tableCell'} {...props} />)
     case 'productTag':
       return (<ProductTag type={asset?.type} {...props} />)
     case 'productTagWithRisk':
@@ -1644,5 +1738,6 @@ AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
+AssetProvider.RewardsEmissions = RewardsEmissions
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution
