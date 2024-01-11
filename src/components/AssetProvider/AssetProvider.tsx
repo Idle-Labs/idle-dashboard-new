@@ -55,6 +55,8 @@ const initialState = {
   underlyingAssetVault: null
 }
 
+export type AssetProviderPropsType = TextProps & AvatarProps & BoxProps & ThemingProps
+
 const AssetContext = createContext<ContextProps>(initialState)
 
 export const useAssetProvider = () => useContext(AssetContext)
@@ -1017,7 +1019,7 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
 }
 
 
-const SeniorRewardsEmissions: React.FC<AmountProps> = (props) => {
+const SeniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   
@@ -1034,7 +1036,7 @@ const SeniorRewardsEmissions: React.FC<AmountProps> = (props) => {
   )
 }
 
-const JuniorRewardsEmissions: React.FC<AmountProps> = (props) => {
+const JuniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
@@ -1144,10 +1146,11 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
-const RewardsEmissions: React.FC<IdleDistributionProps> = ({...props}) => {
+// @ts-ignore
+const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}) => {
   const { asset, translate } = useAssetProvider()
 
-  if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return null
+  if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
 
   // console.log('RewardsEmissions', asset.id, asset.rewardsEmissions)
   
@@ -1468,8 +1471,6 @@ const Allocation: React.FC = () => {
   ) : <Spinner size={'sm'} />
 }
 
-export type AssetProviderPropsType = TextProps & AvatarProps & BoxProps & ThemingProps
-
 type GeneralDataProps = {
   field: string
   section?: string
@@ -1686,7 +1687,9 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'autoCompounding':
       return (
         <Autocompounding size={'xs'}>
-          <Text textStyle={'tableCell'} {...props}>-</Text>
+          <RewardsEmissions size={'xs'}>
+            <Text textStyle={'tableCell'} {...props}>-</Text>
+          </RewardsEmissions>
         </Autocompounding>
       )
     default:
