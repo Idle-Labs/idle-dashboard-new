@@ -98,7 +98,7 @@ export const products: ProductProps[] = [
         stackProps:{
           spacing: 2,
           direction:'row',
-          alignItems:'flex-start',
+          alignItems:'center',
           justifyContent:'flex-start'
         }
       },
@@ -111,7 +111,7 @@ export const products: ProductProps[] = [
         stackProps:{
           spacing: 2,
           direction:'row',
-          alignItems:'flex-start',
+          alignItems:'center',
           justifyContent:'flex-start'
         }
       },

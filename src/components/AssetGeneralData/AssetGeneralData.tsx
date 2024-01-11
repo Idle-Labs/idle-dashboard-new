@@ -47,11 +47,12 @@ export const AssetGeneralDataField: React.FC<LabelProps> = ({ generalData }) => 
   return (
     <VStack
       spacing={2}
+      width={'full'}
       alignItems={'flex-start'}
       justifyContent={'flex-start'}
     >
       <HStack
-        width={'100%'}
+        width={'full'}
         alignItems={'center'}
         justifyContent={'space-between'}
       >

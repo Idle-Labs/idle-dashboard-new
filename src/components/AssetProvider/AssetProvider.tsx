@@ -761,6 +761,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
   return asset?.apy ? (
     <HStack
       spacing={2}
+      alignItems={'center'}
       justifyContent={'flex-start'}
     >
       <Tooltip
@@ -1162,18 +1163,17 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
   const { asset, translate } = useAssetProvider()
 
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
-
-  // console.log('RewardsEmissions', asset.id, asset.rewardsEmissions)
   
+  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter( rewardId => !asset.rewardsEmissions?.[rewardId].apr )
   return (
     <SimpleGrid
       spacing={1}
       width={'full'}
       justifyContent={'flex-start'}
-      columns={[1, Object.keys(asset.rewardsEmissions).length]}
+      columns={[1, visibleRewardsIds.length]}
     >
       {
-        Object.keys(asset.rewardsEmissions).map( rewardId => {
+        visibleRewardsIds.map( rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
           if (!rewardEmission || rewardEmission.apr) return null
           const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
