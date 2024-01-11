@@ -2842,8 +2842,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     },
     morpho:{
       bbWETH:{
+        enabledEnvs:[],
         protocol:'morpho',
-        enabledEnvs:['beta'],
         blockNumber:16420584,
         status:'experimental',
         autoFarming:['MORPHO'],
@@ -2935,8 +2935,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
       steakUSDC:{
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'morpho',
-        enabledEnvs:['beta'],
         blockNumber:16420584,
         distributedTokens:[],
         status:'experimental',
