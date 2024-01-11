@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import BigNumber from 'bignumber.js'
+import type { EventLog } from 'web3-core'
 import { GaugeVault } from 'vaults/GaugeVault'
 import useLocalForge from 'hooks/useLocalForge'
 import { useWeb3Provider } from './Web3Provider'
@@ -909,6 +910,28 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     })
 
+    const morphoRewardsEmissionsContract = state.contractsNetworks[1].find( (Contract: GenericContract) => Contract.name === 'MorphoRewardsEmissions')
+
+    // Get RewardsEmissionSet events
+    const rewardEmissionSetEvents = await morphoRewardsEmissionsContract.contract.getPastEvents('RewardsEmissionSet', {
+      fromBlock: '18940297',
+      toBlock: 'latest'
+    });
+
+    const morphoSenders = rewardEmissionSetEvents.reduce( (morphoSenders: string[], event: EventLog) => {
+      if (!morphoSenders.includes(event.returnValues.sender)){
+        morphoSenders.push(event.returnValues.sender)
+      }
+      return morphoSenders
+    }, [])
+
+    const urdAddresses = rewardEmissionSetEvents.reduce( (urdAddresses: string[], event: EventLog) => {
+      if (!urdAddresses.includes(event.returnValues.urd)){
+        urdAddresses.push(event.returnValues.urd)
+      }
+      return urdAddresses
+    }, [])
+
     /*
     // Reward tokens calls
     const rewardTokensCallsByChainId = morphoVaults.reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, vault: Vault): Record<number, Record<AssetId, CallData>> => {
@@ -1018,9 +1041,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const marketIdsByChain = await Promise.all(Object.keys(marketIdsCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(marketIdsCallsByChainId[+chainId]).flat(), true, +chainId, web3Chains[chainId]) ))
     // console.log('marketIdsByChain', marketIdsByChain)
 
-    const morphoSender = '0x640428d38189b11b844daebdbaabbdfbd8ae0143'
-    const urdAddresses = ['0x678dDC1d07eaa166521325394cDEb1E4c086DF43', '0x2EfD4625d0c149EbADf118EC5446c6de24d916A4']
-
     const rewardsEmissionsCallsByChainId = Object.keys(marketIdsByChain).reduce( (callsByChainId: Record<number, Record<AssetId, CallData[]>>, index: any): Record<number, Record<AssetId, CallData[]>> => {
       marketIdsByChain[index]?.forEach( result => {
         const marketId = result.data
@@ -1038,11 +1058,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
         vaultRewardTokens?.data.forEach( (rewardToken: string) => {
           urdAddresses.forEach( (urdAddress: string) => {
-            const callParams = [morphoSender, urdAddress, rewardToken, marketId]
-            const callData = multiCall.getCallData(morphoRewardsEmissionsContract.contract, 'rewardsEmissions', callParams, {vault, cdoAddress: vault.cdoConfig.address, marketId, rewardToken, urdAddress})
-            if (callData){
-              callsByChainId[vault.chainId][vault.cdoConfig.address].push(callData)
-            }
+            morphoSenders.forEach( (senderAddress: string) => {
+              const callParams = [senderAddress, urdAddress, rewardToken, marketId]
+              const callData = multiCall.getCallData(morphoRewardsEmissionsContract.contract, 'rewardsEmissions', callParams, {vault, cdoAddress: vault.cdoConfig.address, marketId, rewardToken, urdAddress})
+              if (callData){
+                callsByChainId[vault.chainId][vault.cdoConfig.address].push(callData)
+              }
+            })
           })
         })
 
