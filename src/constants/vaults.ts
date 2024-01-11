@@ -2846,18 +2846,13 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         protocol:'morpho',
         blockNumber:16420584,
         status:'experimental',
-        autoFarming:['MORPHO'],
         underlyingToken:'WETH',
-        variant: 'BlockAnalitica',
+        variant: 'Block Analitica',
         adaptiveYieldSplitEnabled:true,
+        autoFarming:['MORPHO', 'WSTETH'],
         flags:{
-          feeDiscountEnabled: true,
-          morphoRewardsEmissionsParams: [
-            '0x260D1E0CB6CC9E34Ea18CE39bAB879d450Cdd706',
-            '0x678dDC1d07eaa166521325394cDEb1E4c086DF43',
-            '0x9994E35Db50125E0DF82e4c2dde62496CE330999',
-            '0xc54d7acf14de29e0e5527cabd7a576506870346a78a11a6762e2cca66322ec41'
-          ]
+          addHarvestApy: false,
+          feeDiscountEnabled: true
         },
         CDO:{
           abi:IdleCDO as Abi,
@@ -2934,7 +2929,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       steakUSDC:{
-        autoFarming:[],
         enabledEnvs:[],
         protocol:'morpho',
         blockNumber:16420584,
@@ -2943,7 +2937,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDC',
         variant:'Steakhouse Financial',
         adaptiveYieldSplitEnabled:true,
+        autoFarming:['MORPHO', 'WSTETH'],
         flags:{
+          addHarvestApy: false,
           feeDiscountEnabled: true
         },
         CDO:{

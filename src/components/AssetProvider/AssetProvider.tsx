@@ -666,9 +666,10 @@ type ApyProps = {
   showGross?: boolean
   showNet?: boolean
   showTooltip? : boolean
+  addRewards?: boolean
 } & PercentageProps
 
-const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, ...props}) => {
+const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, addRewards = false, ...props}) => {
   const { asset, vault } = useAssetProvider()
 
   const netApy = useMemo(() => {
@@ -758,16 +759,26 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
   const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0)
 
   return asset?.apy ? (
-    <Tooltip
-      hasArrow
-      placement={'top'}
-      label={tooltipLabel}
-      isDisabled={tooltipDisabled}
+    <HStack
+      spacing={2}
+      justifyContent={'flex-start'}
     >
-      <TooltipContent>
-        <Amount.Percentage value={asset?.apy} {...props} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
-      </TooltipContent>
-    </Tooltip>
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        label={tooltipLabel}
+        isDisabled={tooltipDisabled}
+      >
+        <TooltipContent>
+          <Amount.Percentage value={asset?.apy} {...props} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+        </TooltipContent>
+      </Tooltip>
+      {
+        addRewards && (
+          <RewardsEmissions />
+        )
+      }
+    </HStack>
   ) : <Spinner size={'sm'} />
   
 }
@@ -1164,7 +1175,7 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
       {
         Object.keys(asset.rewardsEmissions).map( rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
-          if (!rewardEmission) return null
+          if (!rewardEmission || rewardEmission.apr) return null
           const amount = rewardEmission.apr || rewardEmission.annualDistribution
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
           const tooltipLabel = rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionToken')
@@ -1628,6 +1639,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<StrategyBadge {...props} />)
     case 'apy':
       return (<Apy showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
+    case 'apyWithRewards':
+      return (<Apy addRewards={true} showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
     case 'apy7':
       return (<Amount.Percentage value={asset?.apy7} textStyle={'tableCell'} {...props} />)
     case 'apy30':

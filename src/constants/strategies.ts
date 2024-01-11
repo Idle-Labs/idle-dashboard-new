@@ -377,7 +377,7 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.pool'
       },
       {
-        field:'apy',
+        field:'apyWithRewards',
         label:'assets.assetDetails.generalData.apy',
         tooltip:'assets.assetDetails.tooltips.seniorTrancheApy'
       },
@@ -530,7 +530,7 @@ export const strategies: Record<string, StrategyProps> = {
         label:'assets.assetDetails.generalData.pool'
       },
       {
-        field:'apy',
+        field:'apyWithRewards',
         label:'assets.assetDetails.generalData.apy',
         tooltip:'assets.assetDetails.tooltips.juniorTrancheApy'
       },
