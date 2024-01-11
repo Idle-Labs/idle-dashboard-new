@@ -292,6 +292,7 @@ export type RewardEmission = {
   totalSupply?: BigNumber
   annualDistribution: BigNumber
   annualDistributionUsd: BigNumber
+  annualDistributionOn1000Usd?: BigNumber
 }
 
 export type DistributedReward = {
@@ -343,6 +344,7 @@ export type Asset = {
   allocations?: Balances
   underlyingId?: AssetId
   totalSupply?: BigNumber
+  totalTvlUsd?: BigNumber
   aprBreakdown?: Balances
   apyBreakdown?: Balances
   protocolsAprs?: Balances

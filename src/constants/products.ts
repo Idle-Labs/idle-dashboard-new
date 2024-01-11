@@ -83,7 +83,8 @@ export const products: ProductProps[] = [
         tables: ['Deposited'],
         extraFields:['rewardsEmissions'],
         stackProps:{
-          direction:'column',
+          spacing: 2,
+          direction:'row',
           alignItems:'flex-start',
           justifyContent:'flex-start'
         }
@@ -95,7 +96,8 @@ export const products: ProductProps[] = [
         tables: ['Available'],
         extraFields:['seniorRewardsEmissions'],
         stackProps:{
-          direction:'column',
+          spacing: 2,
+          direction:'row',
           alignItems:'flex-start',
           justifyContent:'flex-start'
         }
@@ -107,7 +109,8 @@ export const products: ProductProps[] = [
         tables: ['Available'],
         extraFields:['juniorRewardsEmissions'],
         stackProps:{
-          direction:'column',
+          spacing: 2,
+          direction:'row',
           alignItems:'flex-start',
           justifyContent:'flex-start'
         }

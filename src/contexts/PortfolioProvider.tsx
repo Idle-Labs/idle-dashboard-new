@@ -3701,12 +3701,22 @@ export function PortfolioProvider({ children }:ProviderProps) {
               assetsData[otherVault.id].totalTvl = BNify(assetsData[vault.id].tvl).plus(BNify(otherVaultAsset.tvl))
               // console.log('Other Vault', vault.id, otherVault.id, BNify(assetsData[vault.id].tvl).toString(), BNify(otherVaultAsset.tvl).toString(), BNify(assetsData[vault.id].totalTvl).toString())
             }
+            if (otherVaultAsset.tvlUsd) {
+              assetsData[vault.id].totalTvlUsd = BNify(assetsData[vault.id].tvlUsd).plus(BNify(otherVaultAsset.tvlUsd))
+              assetsData[otherVault.id].totalTvlUsd = BNify(assetsData[vault.id].tvlUsd).plus(BNify(otherVaultAsset.tvlUsd))
+              // console.log('Other Vault', vault.id, otherVault.id, BNify(assetsData[vault.id].tvl).toString(), BNify(otherVaultAsset.tvl).toString(), BNify(assetsData[vault.id].totalTvl).toString())
+            }
           }
         }
 
         // Set default totalTvl
         if (!assetsData[vault.id].totalTvl || bnOrZero(assetsData[vault.id].totalTvl).lt(bnOrZero(assetsData[vault.id].tvl))){
           assetsData[vault.id].totalTvl = assetsData[vault.id].tvl
+        }
+
+        // Set default totalTvlUsd
+        if (!assetsData[vault.id].totalTvlUsd || bnOrZero(assetsData[vault.id].totalTvlUsd).lt(bnOrZero(assetsData[vault.id].tvlUsd))){
+          assetsData[vault.id].totalTvlUsd = assetsData[vault.id].tvlUsd
         }
       }
     }
@@ -3720,19 +3730,26 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const vaultRewardsEmissions = state.morphoRewardsEmissions[vault.cdoConfig.address]
         assetsData[vault.id].rewardsEmissions = Object.keys(vaultRewardsEmissions).reduce( (rewardsEmissions: NonNullable<Asset["rewardsEmissions"]>, rewardId: AssetId) => {
           const rewardEmission = vaultRewardsEmissions[rewardId]
-          if (bnOrZero(assetsData[vault.id].totalTvl).gt(0) && bnOrZero(assetsData[vault.id].tvlUsd).gt(0) && bnOrZero(assetsData[vault.id].aprRatio).gt(0)){
+          if (bnOrZero(assetsData[vault.id].totalTvl).gt(0) && bnOrZero(assetsData[vault.id].totalTvlUsd).gt(0) && bnOrZero(assetsData[vault.id].tvlUsd).gt(0) && bnOrZero(assetsData[vault.id].aprRatio).gt(0)){
 
             const totalTvl = bnOrZero(assetsData[vault.id].totalTvl)
+            const totalTvlUsd = bnOrZero(assetsData[vault.id].totalTvlUsd)
 
             const vaultShare = totalTvl.div(rewardEmission.totalSupply)
 
-            const annualDistribution = rewardEmission.annualDistribution.times(vaultShare).times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
-            const annualDistributionUsd = rewardEmission.annualDistributionUsd.times(vaultShare).times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
+            const annualDistributionWholePool = rewardEmission.annualDistribution.times(vaultShare)
+            const annualDistributionWholePoolUsd = rewardEmission.annualDistributionUsd.times(vaultShare)
+
+            const annualDistribution = annualDistributionWholePool.times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
+            const annualDistributionUsd = annualDistributionWholePoolUsd.times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
+            const annualDistributionOn1000Usd = annualDistribution.times(1000).div(bnOrZero(assetsData[vault.id].tvlUsd))
+            // const annualDistributionPer1000Total = annualDistributionWholePool.times(1000).div(bnOrZero(totalTvlUsd))
 
             const vaultRewardEmission: RewardEmission = {
               assetId: rewardId,
               annualDistribution,
-              annualDistributionUsd
+              annualDistributionUsd,
+              annualDistributionOn1000Usd
             }
             // Calculate apr using annual distribution usd
             if (BNify(vaultRewardEmission.annualDistributionUsd).gt(0)){
@@ -3745,21 +3762,28 @@ export function PortfolioProvider({ children }:ProviderProps) {
             }
 
             rewardsEmissions[rewardId] = vaultRewardEmission
-            // console.log(
-            //   'rewardsEmissions',
-            //   'vaultId', vault.id,
-            //   'rewardId', rewardId,
-            //   'totalTvl', totalTvl.toString(),
-            //   'totalSupply', rewardEmission.totalSupply.toString(),
-            //   'vaultShare', vaultShare.toString(),
-            //   'aprRatio', bnOrZero(assetsData[vault.id].aprRatio).toString(),
-            //   'annualDistribution', rewardEmission.annualDistribution.toString(),
-            //   'annualDistributionUsd', rewardEmission.annualDistributionUsd.toString(),
-            //   'vaultAnnualDistribution', vaultRewardEmission.annualDistribution.toString(),
-            //   'vaultAnnualDistributionUsd', vaultRewardEmission.annualDistributionUsd.toString(),
-            //   'tvlUsd', bnOrZero(assetsData[vault.id].tvlUsd).toString(),
-            //   'apr', bnOrZero(vaultRewardEmission.apr).toString()
-            // )
+            /*
+            console.log(
+              'rewardsEmissions',
+              'vaultId', vault.id,
+              'rewardId', rewardId,
+              'totalTvl', totalTvl.toString(),
+              'totalTvlUsd', totalTvlUsd.toString(),
+              'totalSupply', rewardEmission.totalSupply.toString(),
+              'vaultShare', vaultShare.toString(),
+              'aprRatio', bnOrZero(assetsData[vault.id].aprRatio).toString(),
+              'annualDistribution', rewardEmission.annualDistribution.toString(),
+              'annualDistributionUsd', rewardEmission.annualDistributionUsd.toString(),
+              'annualDistributionWholePool', annualDistributionWholePool.toString(),
+              'annualDistributionWholePoolUsd', annualDistributionWholePoolUsd.toString(),
+              'vaultAnnualDistribution', vaultRewardEmission.annualDistribution.toString(),
+              'vaultAnnualDistributionUsd', vaultRewardEmission.annualDistributionUsd.toString(),
+              'annualDistributionPer1000', vaultRewardEmission.annualDistributionPer1000.toString(),
+              'annualDistributionPer1000Total', annualDistributionPer1000Total.toString(),
+              'tvlUsd', bnOrZero(assetsData[vault.id].tvlUsd).toString(),
+              'apr', bnOrZero(vaultRewardEmission.apr).toString()
+            )
+            */
           }
           return rewardsEmissions
         }, {})

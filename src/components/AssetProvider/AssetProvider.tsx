@@ -1176,9 +1176,9 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
         Object.keys(asset.rewardsEmissions).map( rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
           if (!rewardEmission || rewardEmission.apr) return null
-          const amount = rewardEmission.apr || rewardEmission.annualDistribution
+          const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
-          const tooltipLabel = rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionToken')
+          const tooltipLabel = rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd')
           return (
             <Tooltip
               hasArrow
