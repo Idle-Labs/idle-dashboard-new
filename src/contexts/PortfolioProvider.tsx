@@ -3730,10 +3730,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         const vaultRewardsEmissions = state.morphoRewardsEmissions[vault.cdoConfig.address]
         assetsData[vault.id].rewardsEmissions = Object.keys(vaultRewardsEmissions).reduce( (rewardsEmissions: NonNullable<Asset["rewardsEmissions"]>, rewardId: AssetId) => {
           const rewardEmission = vaultRewardsEmissions[rewardId]
-          if (bnOrZero(assetsData[vault.id].totalTvl).gt(0) && bnOrZero(assetsData[vault.id].totalTvlUsd).gt(0) && bnOrZero(assetsData[vault.id].tvlUsd).gt(0) && bnOrZero(assetsData[vault.id].aprRatio).gt(0)){
+          if (bnOrZero(assetsData[vault.id].totalTvl).gt(0) /*&& bnOrZero(assetsData[vault.id].totalTvlUsd).gt(0)*/ && bnOrZero(assetsData[vault.id].tvlUsd).gt(0) && bnOrZero(assetsData[vault.id].aprRatio).gt(0)){
 
             const totalTvl = bnOrZero(assetsData[vault.id].totalTvl)
-            const totalTvlUsd = bnOrZero(assetsData[vault.id].totalTvlUsd)
+            // const totalTvlUsd = bnOrZero(assetsData[vault.id].totalTvlUsd)
 
             const vaultShare = totalTvl.div(rewardEmission.totalSupply)
 
