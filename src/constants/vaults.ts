@@ -3337,10 +3337,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     amphor:{
       wstETH:{
         autoFarming:[],
+        enabledEnvs:[],
         protocol:'amphor',
         blockNumber:13776954,
-        enabledEnvs:['beta'],
-        status:'experimental',
         underlyingToken:'WSTETH',
         flags:{
           addHarvestApy: false,
