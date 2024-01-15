@@ -6,10 +6,10 @@ import { ZERO_ADDRESS, VAULT_LIMIT_MAX } from 'constants/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
-import { AddressLink } from 'components/AddressLink/AddressLink'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+// import { AddressLink } from 'components/AddressLink/AddressLink'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
@@ -265,6 +265,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, transaction, deposit, stakingEnabled])
 
+  /*
   const referralMessage = useMemo(() => {
     if (!_referral) return null
     return (
@@ -283,6 +284,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       </Card.Dark>
     )
   }, [_referral])
+  */
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined

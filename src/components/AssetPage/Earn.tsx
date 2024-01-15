@@ -107,6 +107,8 @@ export const Earn: React.FC = () => {
     const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
     const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
     const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
+
+    const showCurrentApy = !!asset?.flags?.showCurrentApy
     
     let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
 
@@ -120,6 +122,10 @@ export const Earn: React.FC = () => {
       }
     }
 
+    if (showCurrentApy){
+      apy = asset.apy
+    }
+
     return (
       <VStack
         spacing={1}
@@ -127,7 +133,7 @@ export const Earn: React.FC = () => {
         alignItems={['center','flex-start']}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
+          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : asset?.epochData ? 'epochs.assetPerformance' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
           <HStack
             spacing={3}
             width={['full','auto']}
@@ -301,7 +307,7 @@ export const Earn: React.FC = () => {
         justifyContent={'flex-start'}
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'epochs.thresholds'} />
-        <EpochThresholdsTable assetId={asset.id} />
+        <EpochThresholdsTable sortEnabled={false} assetId={asset.id} />
       </VStack>
     )
   }, [asset])

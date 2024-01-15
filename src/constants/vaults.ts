@@ -3343,6 +3343,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'WSTETH',
         flags:{
           addHarvestApy: false,
+          showCurrentApy: true,
           referralEnabled: true,
           feeDiscountEnabled: false
         },
@@ -3357,7 +3358,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'Amphor_Pool_wstETH',
           address:'0x2791EB5807D69Fe10C02eED6B4DC12baC0701744',
           functions:{
-            vaultIsOpen:'vaultIsOpen'
+            vaultIsOpen:'vaultIsOpen',
           }
         },
         Strategy:{

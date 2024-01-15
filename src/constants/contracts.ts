@@ -167,6 +167,11 @@ export const globalContracts: Record<number, GenericContractConfig[]> = {
       address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
     },
     {
+      name: 'UniswapV3Quoter',
+      abi: UniswapV3Quoter as Abi,
+      address: '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
+    },
+    {
       abi: BalancerExchangeProxy as Abi,
       name: 'BalancerExchangeProxy',
       address: '0x3E66B66Fd1d0b02fDa6C811Da9E0547970DB2f21'

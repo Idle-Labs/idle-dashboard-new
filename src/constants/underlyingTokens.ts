@@ -96,8 +96,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hsl: ['202', '100%', '50%']
       },
       conversionRate: {
-        field: "WSTETH",
-        address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+        protocolContract: 'UniswapV3Quoter',
+        routerMethod: 'quoteExactInputSingle',
+        addressFrom: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
       },
       chainlinkPriceFeed: {
         address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84'
