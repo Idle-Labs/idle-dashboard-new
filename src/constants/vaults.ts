@@ -3342,6 +3342,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:['beta'],
         status:'experimental',
         underlyingToken:'WSTETH',
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true,
+          feeDiscountEnabled: false
+        },
         CDO:{
           decimals:18,
           abi:IdleCDO as Abi,
@@ -3361,10 +3366,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:IdleStrategy as Abi,
           name:'IdleStrategy_amphor_wstETH',
           address:'0x35df8a95b348dd87167ed00b3421ba15d95ac1c8'
-        },
-        flags:{
-          addHarvestApy: false,
-          feeDiscountEnabled: false
         },
         translations:{
           apyBreakdown:{
