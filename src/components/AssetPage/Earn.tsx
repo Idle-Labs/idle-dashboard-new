@@ -133,7 +133,7 @@ export const Earn: React.FC = () => {
         alignItems={['center','flex-start']}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : asset?.epochData ? 'epochs.assetPerformance' : 'dashboard.portfolio.assetPerformance'} component={Text} textStyle={'caption'} textAlign={['center','left']} />
+          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : (asset?.epochData ? 'epochs.assetPerformance' : 'dashboard.portfolio.assetPerformance')} component={Text} textStyle={'caption'} textAlign={['center','left']} />
           <HStack
             spacing={3}
             width={['full','auto']}
