@@ -368,11 +368,17 @@ export const Earn: React.FC = () => {
   }, [assetBalanceUnderlying, useDollarConversion])
 
   return (
-    <>
-      <Box>
+    <VStack
+      spacing={10}
+      width={'full'}
+    >
+      <Box
+        width={'full'}
+      >
         <HStack
           mb={6}
           spacing={6}
+          width={'full'}
           alignItems={'center'}
         >
           <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
@@ -392,6 +398,7 @@ export const Earn: React.FC = () => {
         </HStack>
         <Card.Flex
           p={0}
+          width={'full'}
           overflow={'hidden'}
           direction={'column'}
           minH={['auto', 460]}
@@ -453,10 +460,10 @@ export const Earn: React.FC = () => {
         {strategyDescriptionCarousel}
         {strategyDescription}
         {coveredRisks}
-        {epochThresholds}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
+      {epochThresholds}
       <VaultUnderlyingProtocols assetId={asset?.id} />
-    </>
+    </VStack>
   )
 }
