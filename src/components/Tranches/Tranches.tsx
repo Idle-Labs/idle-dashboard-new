@@ -254,6 +254,14 @@ export const Tranches: React.FC = () => {
     return product?.columns || (strategy && strategies[strategy].columns)
   }, [product, strategy])
 
+  const sortTotalTvlUsd = useCallback((a: any, b: any, field: any, id?: any): number => {
+
+    const asset1 = selectAssetById(a.original.id)
+    const asset2 = selectAssetById(b.original.id)
+
+    return bnOrZero(asset1.totalTvlUsd).gt(bnOrZero(asset2.totalTvlUsd)) ? -1 : 1
+  }, [selectAssetById])
+
   const sortTrancheApy = useCallback((a: any, b: any, field: any, id?: any): number => {
 
     // console.log('sortTrancheApy', a, b, field, id);
@@ -286,10 +294,12 @@ export const Tranches: React.FC = () => {
         return sortNumeric
       case 'trancheApy':
         return sortTrancheApy
+      case 'totalTvlUsd':
+        return sortTotalTvlUsd
       default:
         return undefined
     }
-  }, [sortTrancheApy])
+  }, [sortTrancheApy, sortTotalTvlUsd])
 
   const allColumnsById: Record<string, Column<Asset>> = useMemo(() => {
     if (!columns) return {}
@@ -303,7 +313,7 @@ export const Tranches: React.FC = () => {
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
-        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor, id) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (
             <Stack
@@ -380,14 +390,15 @@ export const Tranches: React.FC = () => {
     if (!strategy || !columns) return []
     return columns.filter( (column: StrategyColumn) => !column.tables || column.tables.includes('Deposited') ).map( (column: StrategyColumn) => {
       const { id, accessor, sortType } = column
-      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      // const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      const sortTypeFn = getCellSorting(sortType)
       return {
         id,
         accessor,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
-        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
+        sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor, id) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
           return column.extraFields && column.extraFields.length>0 ? (
             <Stack
@@ -415,7 +426,7 @@ export const Tranches: React.FC = () => {
         }
       }
     })
-  }, [strategy, columns, translate])
+  }, [strategy, columns, translate, getCellSorting])
 
   const depositedAssetsColumns: Column<Asset>[] = useMemo(() => ([
     {

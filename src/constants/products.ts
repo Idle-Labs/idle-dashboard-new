@@ -72,9 +72,9 @@ export const products: ProductProps[] = [
       {
         title:'defi.tvl',
         accessor:'tvlUsd',
-        sortType: 'numeric',
         id:'trancheTotalTvl',
-        tables: ['Available']
+        tables: ['Available'],
+        sortType: 'totalTvlUsd'
       },
       {
         id:'apy',

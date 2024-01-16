@@ -322,8 +322,6 @@ export class VaultFunctionsHelper {
 
     const apr = BNify(strategyApr).times(trancheAPRSplitRatio).div(currentAARatio)
 
-    // console.log('apr', trancheVault.id, isAATranche, strategyApr.toString(), trancheAPRSplitRatio.toString(), currentAARatio.toString())
-
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
   }
 
