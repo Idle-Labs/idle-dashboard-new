@@ -361,7 +361,7 @@ export class GaugeVault {
   }
 
   // eslint-disable-next-line
-  public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
+  public getDepositParams(amount: NumberType, _referral: string | undefined | null = ''): any[] {
     return [normalizeTokenAmount(amount, 18)]
   }
 

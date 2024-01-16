@@ -12,20 +12,20 @@ import { RateChart } from 'components/RateChart/RateChart'
 import { ProductTag } from 'components/ProductTag/ProductTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import React, { useMemo, createContext, useContext } from 'react'
 import { selectProtocol, selectUnderlyingToken } from 'selectors/'
+import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty } from 'helpers/'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, checkAddress } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
+import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
-import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, ZERO_ADDRESS } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -927,29 +927,11 @@ const FeesUsd: React.FC<AmountProps> = (props) => {
 }
 
 const PerformanceFee: React.FC<PercentageProps> = (props) => {
+  const { referral } = useAssetPageProvider()
   const { asset, vault } = useAssetProvider()
-  const { searchParams } = useBrowserRouter()
 
-  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams]) 
-
-  const referralEnabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.referralEnabled), [vault])
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
-
-  const _referral = useMemo((): string | undefined => {
-    if (!referralEnabled || !vault) return
-    const referral = getSearchParams.get('_referral')
-    if (!checkAddress(referral) || referral === ZERO_ADDRESS) return
-
-    // Check allowed referrals
-    if ("checkReferralAllowed" in vault){
-      const referralAllowed = vault.checkReferralAllowed(referral)
-      if (!referralAllowed) return
-    }
-
-    return referral
-  }, [referralEnabled, getSearchParams, vault])
-
-  const performanceFeeDiscounted = useMemo(() => (_referral && bnOrZero(feeDiscountOnReferral).gt(0)), [_referral, feeDiscountOnReferral])
+  const performanceFeeDiscounted = useMemo(() => (referral && bnOrZero(feeDiscountOnReferral).gt(0)), [referral, feeDiscountOnReferral])
   const performanceFee = useMemo(() => performanceFeeDiscounted ? feeDiscountOnReferral : bnOrZero(asset?.fee), [performanceFeeDiscounted, asset, feeDiscountOnReferral])
   
   return asset?.fee ? (

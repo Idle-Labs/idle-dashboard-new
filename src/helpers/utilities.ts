@@ -307,11 +307,12 @@ export function requestTimeout(callback: Function, delay: number) {
   }
 }
 
-export function checkAddress(address: string) {
+export function checkAddress(address: string | undefined | null) {
   return address && /^0x[a-fA-F0-9]{40}$/.test(address)
 }
 
-export function cmpAddrs(addr1: string, addr2: string) {
+export function cmpAddrs(addr1: string | undefined | null, addr2: string | undefined | null) {
+  if (typeof addr1 !== 'string' || typeof addr2 !== 'string') return false
   return addr1.toLowerCase() === addr2.toLowerCase()
 }
 

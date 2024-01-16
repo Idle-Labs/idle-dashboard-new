@@ -1,6 +1,7 @@
 import { Earn } from './Earn'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
+import useLocalForge from 'hooks/useLocalForge'
 import { IconTab } from 'components/IconTab/IconTab'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Stake } from 'components/OperativeComponent/Stake'
@@ -16,12 +17,12 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
-import { bnOrZero, BNify, sendViewItem, checkSectionEnabled } from 'helpers/'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
-import { /*strategies,*/ AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID } from 'constants/'
+import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs } from 'helpers/'
+import { AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
 
 type TabType = {
   id:string
@@ -40,9 +41,11 @@ type ContextProps = {
   stakingEnabled: boolean
   setStakingEnabled: Function
   toggleStakingEnabled: Function
+  referral: string | null | undefined
 }
 
 const initialState: ContextProps = {
+  referral: null,
   stakingEnabled: false,
   setStakingEnabled: () => {},
   toggleStakingEnabled: () => {}
@@ -83,10 +86,66 @@ export const AssetPage: React.FC = () => {
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
   const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
   const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["6MONTHS"])
+  const [ storedReferrals, setStoredReferrals, , storedReferralsLoaded ] = useLocalForge('storedReferrals', {})
+  const {
+    isPortfolioLoaded,
+    portfolioTimestamp,
+    assetsDataTimestamp,
+    isPortfolioAccountReady,
+    selectors: {
+      selectAssetById,
+      selectVaultById,
+      selectVaultGauge,
+      selectAssetBalance,
+      selectAssetPriceUsd
+    }
+  } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    return selectAssetById && selectAssetById(params.asset)
+  }, [selectAssetById, params.asset])
+
+  const vault = useMemo(() => {
+    return selectVaultById && selectVaultById(params.asset)
+  }, [selectVaultById, params.asset])
 
   const useDateRange = useMemo(() => {
     return !!dateRange.startDate && !!dateRange.endDate
   }, [dateRange])
+
+  const referralEnabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.referralEnabled), [vault])
+
+  // Get selected tab id from search params
+  const referral = useMemo((): string | undefined => {
+    if (!referralEnabled || !vault) return
+    let referral = getSearchParams.get('_referral')
+
+    // if no referral get stored one
+    if (!referral && storedReferralsLoaded && checkAddress(storedReferrals[vault.id])){
+      referral = storedReferrals[vault.id]
+    }
+
+    if (!referral || !checkAddress(referral) || referral === ZERO_ADDRESS) return
+
+    // Check allowed referrals
+    if ("checkReferralAllowed" in vault){
+      const referralAllowed = vault.checkReferralAllowed(referral)
+      if (!referralAllowed) return
+    }
+
+    return referral
+  }, [referralEnabled, getSearchParams, vault, storedReferrals, storedReferralsLoaded])
+
+  // Save referral
+  useEffect(() => {
+    if (!referral || !storedReferralsLoaded || !vault) return
+    const storedReferral = storedReferrals[vault.id]
+    if (cmpAddrs(storedReferral, referral)) return
+    setStoredReferrals({
+      ...storedReferrals,
+      [vault.id]: referral
+    })
+  }, [vault, referral, storedReferrals, setStoredReferrals, storedReferralsLoaded])
 
   useEffect(() => {
     if (useDateRange){
@@ -103,31 +162,9 @@ export const AssetPage: React.FC = () => {
     }
   }, [timeframe, setDateRange])
 
-  const {
-    isPortfolioLoaded,
-    portfolioTimestamp,
-    assetsDataTimestamp,
-    isPortfolioAccountReady,
-    selectors: {
-      selectAssetById,
-      selectVaultById,
-      selectVaultGauge,
-      selectAssetBalance,
-      selectAssetPriceUsd
-    }
-  } = usePortfolioProvider()
-
   // const strategy = useMemo(() => {
   //   return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
   // }, [params])
-
-  const asset = useMemo(() => {
-    return selectAssetById && selectAssetById(params.asset)
-  }, [selectAssetById, params.asset])
-
-  const vault = useMemo(() => {
-    return selectVaultById && selectVaultById(params.asset)
-  }, [selectVaultById, params.asset])
 
   const toggleStakingEnabled = useCallback(() => {
     return setStakingEnabled( prevState => !prevState )
@@ -475,7 +512,7 @@ export const AssetPage: React.FC = () => {
   }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
 
   return (
-    <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled}}>
+    <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled, referral}}>
       <AssetProvider
         wrapFlex={true}
         assetId={params.asset}

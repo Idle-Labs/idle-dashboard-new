@@ -1,14 +1,13 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { MdDiscount } from "react-icons/md"
+import { VAULT_LIMIT_MAX } from 'constants/'
 import { imageFolder } from 'constants/folders'
 import { sendBeginCheckout } from 'helpers/analytics'
-import { ZERO_ADDRESS, VAULT_LIMIT_MAX } from 'constants/'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
-import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 // import { AddressLink } from 'components/AddressLink/AddressLink'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
@@ -22,40 +21,21 @@ import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountTog
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
+import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
-  const { stakingEnabled, setStakingEnabled } = useAssetPageProvider()
+  const { stakingEnabled, setStakingEnabled, referral } = useAssetPageProvider()
 
-  const { searchParams } = useBrowserRouter()
   const { account, isNetworkCorrect } = useWalletProvider()
+  const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
-  const { asset, vault, underlyingAsset/*, underlyingAssetVault*/, translate } = useAssetProvider()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex, depositAmount } = useOperativeComponent()
 
-  const [ getSearchParams ] = useMemo(() => searchParams, [searchParams]) 
-
-  const referralEnabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.referralEnabled), [vault])
   const depositsDisabled = useMemo(() => (vault && ("flags" in vault) && vault.flags?.depositsDisabled), [vault])
-
-  // Get selected tab id from search params
-  const _referral = useMemo((): string | undefined => {
-    if (!referralEnabled || !vault) return
-    const referral = getSearchParams.get('_referral')
-    if (!referral || !checkAddress(referral) || referral === ZERO_ADDRESS) return
-
-    // Check allowed referrals
-    if ("checkReferralAllowed" in vault){
-      const referralAllowed = vault.checkReferralAllowed(referral)
-      if (!referralAllowed) return
-    }
-
-    return referral
-  }, [referralEnabled, getSearchParams, vault])
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -162,7 +142,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
       if (allowance.gte(amountToDeposit)){
 
-        const depositParams = _referral && ("flags" in vault) && vault.flags?.referralEnabled ? vault.getDepositParams(amountToDeposit, _referral) : vault.getDepositParams(amountToDeposit)
+        // @ts-ignore
+        const depositParams = vault.getDepositParams(amountToDeposit, referral)
         const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
         // console.log('depositParams', depositParams, depositContractSendMethod)
         // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
@@ -177,7 +158,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, _referral, amount, amountUsd, assetBalance, vault, asset, underlyingAsset, stakingEnabled, dispatch, setActionIndex, getDepositAllowance, sendTransaction])
+  }, [account, disabled, referral, amount, amountUsd, assetBalance, vault, asset, underlyingAsset, stakingEnabled, dispatch, setActionIndex, getDepositAllowance, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -205,14 +186,16 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     }
     // const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
     const amount = balanceToDeposit.toFixed()
-    const depositParams = _referral && ("flags" in vault) && vault.flags?.referralEnabled ? vault.getDepositParams(amount, _referral) : vault.getDepositParams(amount)
+
+    // @ts-ignore
+    const depositParams = vault.getDepositParams(amount, referral)
 
     const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
 
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, isNetworkCorrect, vault, _referral, getDepositAllowance, assetBalance])
+  }, [account, isNetworkCorrect, vault, referral, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {
@@ -276,7 +259,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
 
   const referralMessage = useMemo(() => {
-    if (!asset || !_referral || feeDiscountOnReferral.lte(0)) return null
+    if (!asset || !referral || feeDiscountOnReferral.lte(0)) return null
     return (
       <Card.Dark
         py={2}
@@ -298,7 +281,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         </HStack>
       </Card.Dark>
     )
-  }, [asset, _referral, feeDiscountOnReferral])
+  }, [asset, referral, feeDiscountOnReferral])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined

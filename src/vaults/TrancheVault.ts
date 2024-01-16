@@ -492,7 +492,7 @@ export class TrancheVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  public checkReferralAllowed(referral: string): boolean {
+  public checkReferralAllowed(referral: string | undefined | null): boolean {
     if (!checkAddress(referral)) return false
     const allowedReferrals = this.flags?.allowedReferrals || []
     if (isEmpty(allowedReferrals)) return true
@@ -500,7 +500,7 @@ export class TrancheVault {
   }
 
   // eslint-disable-next-line
-  public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
+  public getDepositParams(amount: NumberType, _referral: string | undefined | null = null): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     const params: any[] = [normalizeTokenAmount(amount, decimals)]
     if (this.flags?.referralEnabled && this.checkReferralAllowed(_referral)){
