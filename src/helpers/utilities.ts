@@ -315,6 +315,11 @@ export function cmpAddrs(addr1: string, addr2: string) {
   return addr1.toLowerCase() === addr2.toLowerCase()
 }
 
+export function capitalize(str: string) {
+  if (typeof str !== 'string') return ''
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function lazyLoadComponent(component: string) {
   return lazy(() => {
     const promise = import(`components/${component}/${component}`)

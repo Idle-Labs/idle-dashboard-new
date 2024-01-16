@@ -502,6 +502,12 @@ export class TrancheVault {
     return params
   }
 
+  public checkReferralAllowed(referral: string): boolean {
+    const allowedReferrals = this.flags?.allowedReferrals || []
+    if (isEmpty(allowedReferrals)) return true
+    return allowedReferrals.find( (addr: string) => cmpAddrs(addr, referral) ) !== undefined
+  }
+
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
     // Check enabled and valid referral
     if (this.flags?.referralEnabled && checkAddress(params[1])){

@@ -572,6 +572,7 @@
     "staked": "Staked",
     "noVaultsAvailable": "No vaults available",
     "depositWithReferral": "You are depositing with the following referral address:",
+    "feeDiscountReferral": "Performance fee reduced to <strong style='color: white'>%{performanceFee}%</strong> thanks to %{protocol} partnership. Fee rebate airdropped at the end of each epoch.",
     "amountStaked": "Amount Staked",
     "assetStaking": "%{assetName} Staking",
     "stake": "Stake",

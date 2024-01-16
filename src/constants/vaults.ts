@@ -3345,7 +3345,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           addHarvestApy: false,
           showCurrentApy: true,
           referralEnabled: true,
-          feeDiscountEnabled: false
+          feeDiscountEnabled: false,
+          feeDiscountOnReferral: 0.07,
+          allowedReferrals:['0x32B0aCfBb18C270491CDD124EB104A8d25A182ca']
         },
         CDO:{
           decimals:18,

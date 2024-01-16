@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
+import { MdDiscount } from "react-icons/md"
 import { imageFolder } from 'constants/folders'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { ZERO_ADDRESS, VAULT_LIMIT_MAX } from 'constants/'
@@ -21,7 +22,7 @@ import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountTog
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit } from 'helpers/'
+import { BNify, bnOrZero, checkAddress, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
@@ -43,11 +44,18 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // Get selected tab id from search params
   const _referral = useMemo((): string | undefined => {
-    if (!referralEnabled) return
+    if (!referralEnabled || !vault) return
     const referral = getSearchParams.get('_referral')
-    if (!checkAddress(referral) || referral === ZERO_ADDRESS) return
+    if (!referral || !checkAddress(referral) || referral === ZERO_ADDRESS) return
+
+    // Check allowed referrals
+    if ("checkReferralAllowed" in vault){
+      const referralAllowed = vault.checkReferralAllowed(referral)
+      if (!referralAllowed) return
+    }
+
     return referral
-  }, [referralEnabled, getSearchParams])
+  }, [referralEnabled, getSearchParams, vault])
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -265,9 +273,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [account, disabled, transaction, deposit, stakingEnabled])
 
-  /*
+  const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
+
   const referralMessage = useMemo(() => {
-    if (!_referral) return null
+    if (!asset || !_referral || feeDiscountOnReferral.lte(0)) return null
     return (
       <Card.Dark
         py={2}
@@ -275,16 +284,21 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         pr={2}
         border={0}
       >
-        <VStack
-          spacing={1}
+        <HStack
+          spacing={3}
+          width={'full'}
+          justifyContent={'flex-start'}
         >
-          <Translation textStyle={'captionSmaller'} translation={`defi.depositWithReferral`} />
-          <AddressLink address={_referral} text={_referral} fontSize={'sm'} />
-        </VStack>
+          <Box
+            pl={2}
+          >
+            <MdDiscount size={24} />
+          </Box>
+          <Translation textStyle={'captionSmaller'} translation={`defi.feeDiscountReferral`} isHtml={true} params={{performanceFee: feeDiscountOnReferral.times(100), protocol: capitalize(asset.protocol as string)}} />
+        </HStack>
       </Card.Dark>
     )
-  }, [_referral])
-  */
+  }, [asset, _referral, feeDiscountOnReferral])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined
@@ -422,8 +436,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               }
             </VStack>
           </HStack>
-          {/*referralMessage*/}
-          {vaultMessage}
+          <VStack
+            spacing={3}
+            width={'full'}
+          >
+            {referralMessage}
+            {vaultMessage}
+          </VStack>
           <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
           <FeeDiscountToggler assetId={asset?.id} />
         </VStack>
