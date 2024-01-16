@@ -492,25 +492,26 @@ export class TrancheVault {
     return allowanceContract?.methods.approve(...params)
   }
 
-  // eslint-disable-next-line
-  public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
-    const decimals = this.underlyingToken?.decimals || 18
-    const params: any[] = [normalizeTokenAmount(amount, decimals)]
-    if (this.flags?.referralEnabled && checkAddress(_referral)){
-      params.push(_referral)
-    }
-    return params
-  }
-
   public checkReferralAllowed(referral: string): boolean {
+    if (!checkAddress(referral)) return false
     const allowedReferrals = this.flags?.allowedReferrals || []
     if (isEmpty(allowedReferrals)) return true
     return allowedReferrals.find( (addr: string) => cmpAddrs(addr, referral) ) !== undefined
   }
 
+  // eslint-disable-next-line
+  public getDepositParams(amount: NumberType, _referral: string | undefined = ''): any[] {
+    const decimals = this.underlyingToken?.decimals || 18
+    const params: any[] = [normalizeTokenAmount(amount, decimals)]
+    if (this.flags?.referralEnabled && this.checkReferralAllowed(_referral)){
+      params.push(_referral)
+    }
+    return params
+  }
+
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
     // Check enabled and valid referral
-    if (this.flags?.referralEnabled && checkAddress(params[1])){
+    if (this.flags?.referralEnabled && this.checkReferralAllowed(params[1])){
       return this.cdoContract.methods[`deposit${this.type}Ref`](...params)
     }
     return this.cdoContract.methods[`deposit${this.type}`](...params)
