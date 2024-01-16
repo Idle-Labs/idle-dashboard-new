@@ -1920,8 +1920,8 @@
     }
   },
   "authWall": {
-    "title": "By accessing or using Idle App, I agree to the <a href='https://idle.finance/terms-of-service' target='_blank' class='link'>Terms of Service</a> and confirm that I have read and understood the <a href='https://idle.finance/privacy-policy' target='_blank' class='link'>Privacy Notice</a>.",
-    "signature_title":"By accessing or using Idle App, I agree to the Terms of Service (https://idle.finance/terms-of-service) and confirm that I have read and understood the Privacy Notice (https://idle.finance/privacy-policy).", 
+    "title": "By accessing or using Idle App, I agree to the <a href='https://idle.finance/terms-of-service' target='_blank' class='link'>Terms of Service</a> and confirm that I have read and understood the <a href='https://idle.finance/privacy-policy' target='_blank' class='link'>Privacy Notice</a>, <a href='https://idle.finance/risks-disclosure-statement' target='_blank' class='link'>Risk Disclosure Statement</a> and <a href='https://idle.finance/restricted-persons' target='_blank' class='link'>Tokens Restricted for Restricted Persons</a>.",
+    "signature_title":"By accessing or using Idle App, I agree to the Terms of Service (https://idle.finance/terms-of-service) and confirm that I have read and understood the Privacy Notice (https://idle.finance/privacy-policy), Risk Disclosure Statement (https://idle.finance/https://idle.finance/risks-disclosure-statement) and Tokens Restricted for Restricted Persons (https://idle.finance/restricted-persons).", 
     "subtitle": "I hereby further represent and warrant that:",
     "ctaAgree": "Agree & Login",
     "ctaCancel": "Cancel",
