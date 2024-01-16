@@ -254,7 +254,7 @@ export const Tranches: React.FC = () => {
     return product?.columns || (strategy && strategies[strategy].columns)
   }, [product, strategy])
 
-  const sortTotalTvlUsd = useCallback((a: any, b: any, field: any, id?: any): number => {
+  const sortTotalTvlUsd = useCallback((a: any, b: any): number => {
 
     const asset1 = selectAssetById(a.original.id)
     const asset2 = selectAssetById(b.original.id)

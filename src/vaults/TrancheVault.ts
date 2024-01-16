@@ -230,11 +230,6 @@ export class TrancheVault {
           const action = Object.keys(actions).find( (action: string) => !!actions[action] )
           const subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
 
-          // if (tx.hash.toLowerCase() === '0x67db8b44103853451733ae2387a26a76476a94b11759e1e81d45999847ce4561'.toLowerCase()) {
-          //   console.log('GAUGE?', isGaugeDeposit, isGaugeRedeem, isSendTransferTx, isRedeemTx, isSwapOutTx, action)
-          // }
-
-
           if (action) {
 
             const txHashKey = `${tx.hash}_${action}`
