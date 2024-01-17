@@ -781,6 +781,7 @@ export class VaultFunctionsHelper {
             case 'IdleCDO_clearpool_fasanara_USDT':
             case 'IdleCDO_clearpool_portofino_USDT':
             case 'IdleCDO_clearpool_wincent_USDC':
+            case 'IdleCDO_clearpool_bastion_USDT':
               return {
                 type: 'rewards',
                 vaultId: vault.id,

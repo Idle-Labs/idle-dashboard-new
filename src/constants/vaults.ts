@@ -283,6 +283,88 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   },
   10:{
     clearpool:{
+      USDTBas:{
+        enabledEnvs:['beta'],
+        protocol:'clearpool',
+        blockNumber:16790250,
+        autoFarming:['CPOOL'],
+        status:'experimental',
+        underlyingToken:'USDT',
+        variant:'Bastion Trading',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          referralEnabled: true
+        },
+        CDO:{
+          decimals:18,
+          abi:IdleCDO as Abi,
+          name:'IdleCDO_clearpool_bastion_USDT',
+          address:'0x67D07aA415c8eC78cbF0074bE12254E55Ad43f3f'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_clearpool_bastion_USDT',
+          address:'0x98c1E0261Fe4C4c701Cc509Cce2168084944bA4B'
+        },
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe6be721ccc9552d79bdc0d9cc3638606c3bdadb5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Bastion USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_clearpool_bastion_USDT_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'AA_clearpool_bastion_USDT',
+            label:'Clearpool bastion USDT AA',
+            token:'AA_clearpool_bastion_USDT',
+            address:'0x8324cB085Ffdce6256C2aEe4a63Bc878870Ff04d'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_clearpool_bastion_USDT_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16790250,
+            name:'BB_clearpool_bastion_USDT',
+            token:'BB_clearpool_bastion_USDT',
+            label:'Clearpool bastion USDT BB',
+            address:'0x9837cC130FB339FAB85Dc09E9de6343b3324246F'
+          }
+        }
+      },
       USDCWin:{
         enabledEnvs:[],
         status:'boosted',

@@ -1989,7 +1989,7 @@
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
         "juniorTrancheApy": "The APY is calculating by adding together the Base APY and Harvest APY",
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
-        "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprected",
+        "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprecated",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
         "stkIDLEBalance":"This is your stkIDLE balance, the longer you stake the higher this balance will be",
         "seniorTrancheApy": "The APY is calculating by adding together the Base APY, Gauge APY and Harvest APY",
