@@ -12,6 +12,7 @@ type TokenColors = {
 }
 
 type ConversionRateProps = {
+  fee?: number
   field?: string
   routerMethod?: string
   address?: string
@@ -96,6 +97,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hsl: ['202', '100%', '50%']
       },
       conversionRate: {
+        fee: 500,
         protocolContract: 'UniswapV3Quoter',
         routerMethod: 'quoteExactInputSingle',
         addressFrom: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'

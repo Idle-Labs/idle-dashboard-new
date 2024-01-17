@@ -131,6 +131,8 @@ export class GenericContractsHelper {
         return fixTokenDecimals(results, conversionToken.decimals)
       }
 
+      const fee = conversionRateParams.fee || 3000
+
       path.push(addressFrom, conversionToken.address)
       
       return {
@@ -139,7 +141,7 @@ export class GenericContractsHelper {
         invertTokens,
         routerMethod,
         processResults,
-        call:ProtocolContract.contract.methods[routerMethod](addressFrom, conversionToken.address, 3000, one.toFixed(), 0)
+        call:ProtocolContract.contract.methods[routerMethod](addressFrom, conversionToken.address, fee, one.toFixed(), 0)
       }
     } else {
       path.push(routerMethod === 'getAmountsOut' || invertTokens ? addressFrom : conversionToken.address)
