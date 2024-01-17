@@ -284,11 +284,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   10:{
     clearpool:{
       USDTBas:{
-        enabledEnvs:['beta'],
+        enabledEnvs:[],
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],
-        status:'experimental',
         underlyingToken:'USDT',
         variant:'Bastion Trading',
         adaptiveYieldSplitEnabled:true,
