@@ -288,6 +288,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     clearpool:{
       USDTBas:{
         enabledEnvs:[],
+        borrower:'bastion',
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],

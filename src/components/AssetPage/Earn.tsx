@@ -468,11 +468,11 @@ export const Earn: React.FC = () => {
       >
         {strategyDescriptionCarousel}
         {strategyDescription}
-        {borrowerOverview}
-        {coveredRisks}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
+      {borrowerOverview}
       {epochThresholds}
+      {coveredRisks}
       <VaultUnderlyingProtocols assetId={asset?.id} />
     </VStack>
   )

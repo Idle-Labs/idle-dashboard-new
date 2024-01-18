@@ -2,6 +2,7 @@ import { borrowers } from 'constants/'
 import React, { useMemo } from 'react'
 import { FaGlobe } from "react-icons/fa"
 import { Card } from 'components/Card/Card'
+import { SiCrunchbase } from "react-icons/si"
 import { BsTwitterX, BsLinkedin } from "react-icons/bs"
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Translation } from 'components/Translation/Translation'
@@ -58,8 +59,8 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
               spacing={2}
               alignItems={'flex-start'}
             >
-              <Translation component={Text} translation={'common.headquarter'} textStyle={'titleSmall'} />
-              <Text>{borrowerInfo.location}</Text>
+              <Translation component={Text} translation={'common.industry'} textStyle={'titleSmall'} />
+              <Text>{borrowerInfo.industry}</Text>
             </VStack>
             <VStack
               spacing={2}
@@ -73,17 +74,22 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
               alignItems={'flex-start'}
             >
               <Translation component={Text} translation={'common.rating'} textStyle={'titleSmall'} />
-              <Link display={'flex'} justifyContent={'center'} href={'https://credora.io/credit-evaluations/'} isExternal>
-                <HStack
-                  px={2}
-                  spacing={2}
-                  borderRadius={8}
-                  backgroundColor={'card.bg'}
-                >
-                  <Text>{borrowerInfo.rating}</Text>
-                  <Image src={'images/protocols/credora.svg'} height={3} />
-                </HStack>
-              </Link>
+              <Text>{borrowerInfo.rating}*</Text>
+              {
+                /*
+                <Link display={'flex'} justifyContent={'center'} href={'https://credora.io/credit-evaluations/'} isExternal>
+                  <HStack
+                    px={2}
+                    spacing={2}
+                    borderRadius={8}
+                    backgroundColor={'card.bg'}
+                  >
+                    <Text>{borrowerInfo.rating}</Text>
+                    <Image src={'images/protocols/credora.svg'} height={3} />
+                  </HStack>
+                </Link>
+                */
+              }
             </VStack>
             <VStack
               spacing={2}
@@ -96,7 +102,14 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
               {
                 Object.keys(borrowerInfo.links).map( linkType => {
                   return (
-                    <Link display={'flex'} justifyContent={'center'} href={borrowerInfo.links[linkType]} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+                    <Link
+                      isExternal
+                      display={'flex'}
+                      key={`link_${linkType}`}
+                      justifyContent={'center'}
+                      href={borrowerInfo.links[linkType]}
+                      sx={{'>:hover':{color:'primary !important'}}}
+                    >
                       {
                         linkType === 'website' ? (
                           <FaGlobe size={22} color={theme.colors.primary} />
@@ -104,7 +117,9 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
                           <BsTwitterX size={22} color={theme.colors.primary} />
                         ) : linkType === 'linkedin' ? (
                           <BsLinkedin size={22} color={theme.colors.primary} />
-                        ) : null
+                        ) : linkType === 'crunchbase' ? (
+                          <SiCrunchbase size={22} color={theme.colors.primary} />
+                        ): null
                       }
                     </Link>
                   )
@@ -113,6 +128,16 @@ export const BorrowerOverview: React.FC<BorrowerOverviewArgs> = ({ borrower }) =
               </HStack>
             </VStack>
           </SimpleGrid>
+          <Link display={'flex'} justifyContent={'center'} href={'https://credora.io/credit-evaluations'} isExternal>
+            <HStack
+              spacing={1}
+              alignItems={'center'}
+              justifyContent={'flex-start'}
+            >
+              <Translation component={Text} prefix={'*'} translation={'defi.ratingProvidedBy'} textStyle={'captionSmall'} />
+              <Image src={'images/protocols/credora.svg'} height={3} />
+            </HStack>
+          </Link>
         </VStack>
       </Card.Dark>
     </VStack>

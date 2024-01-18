@@ -23,6 +23,7 @@ export type StrategyColumn = {
   title?: any
   width?: any
   accessor: any
+  cellSx?: any
   tables?: Tables[]
   extraFields?: string[]
   stackProps?: StackProps

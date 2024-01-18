@@ -30,6 +30,7 @@
     "deposit": "Deposit",
     "redeem": "Redeem",
     "headquarter": "Headquarter",
+    "industry": "Industry",
     "founded": "Founded",
     "rating": "Rating",
     "links": "Links",
@@ -555,6 +556,7 @@
         "claimYour": "Claim your %{opportunity}"
       }
     },
+    "ratingProvidedBy": "Rating provided by",
     "yourWallet": "Your Wallet",
     "amountToStake": "Amount to Stake",
     "amountToUnstake": "Amount to Unstake",

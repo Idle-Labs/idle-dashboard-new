@@ -23,6 +23,7 @@ import { sortNumeric, sortAlpha, sendSelectItem, bnOrZero, BNify, isEmpty, getRo
 import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow, Image } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
+type ColumnProps = Column<Asset> & {cellSx?: any}
 
 export const DepositedAssetsTable: React.FC = () => {
 
@@ -102,6 +103,7 @@ export const DepositedAssetsTable: React.FC = () => {
         width:'5%',
         accessor:'id',
         id:'chainId',
+        cellSx: {p:'0!important',alignItems:'center'},
         stackProps:{
           justifyContent:'center'
         },
@@ -110,20 +112,21 @@ export const DepositedAssetsTable: React.FC = () => {
     ]
   }, [])
 
-  const allColumnsById: Record<string, Column<Asset>> = useMemo(() => {
-    return columns.reduce( (allColumns: Record<string, Column<Asset>>, column: StrategyColumn) => {
+  const allColumnsById: Record<string, ColumnProps> = useMemo(() => {
+    return columns.reduce( (allColumns: Record<string, ColumnProps>, column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
       allColumns[id] = {
         id,
         accessor,
         width: column.width,
+        cellSx: column.cellSx,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return column.extraFields && column.extraFields.length>0 ? (
+          return (
             <Stack
               spacing={2}
               width={'full'}
@@ -133,13 +136,11 @@ export const DepositedAssetsTable: React.FC = () => {
             >
               <TableField field={id} assetId={row.original.id} value={value} props={column.fieldProps} />
               {
-                column.extraFields.map( (extraField: string) => (
+                column.extraFields?.map( (extraField: string) => (
                   <TableField key={`extraField_${extraField}`} assetId={row.original.id} field={extraField} value={value} />
                 ))
               }
             </Stack>
-          ) : (
-            <TableField field={id} assetId={row.original.id} value={value} props={column.fieldProps} />
           )
         }
       }
@@ -147,7 +148,7 @@ export const DepositedAssetsTable: React.FC = () => {
     }, {})
   }, [columns, translate])
 
-  const strategyColumnsDeposit: Column<Asset>[] = useMemo(() => {
+  const strategyColumnsDeposit: ColumnProps[] = useMemo(() => {
     return columns.filter( (col: StrategyColumn) => !col.tables || col.tables.includes(mode) ).map( (column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
@@ -155,12 +156,13 @@ export const DepositedAssetsTable: React.FC = () => {
         id,
         accessor,
         width: column.width,
+        cellSx: column.cellSx,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return column.extraFields && column.extraFields.length>0 ? (
+          return (
             <Stack
               spacing={2}
               width={'full'}
@@ -170,20 +172,18 @@ export const DepositedAssetsTable: React.FC = () => {
             >
               <TableField field={id} value={value} assetId={row.original.id} props={column.fieldProps} />
               {
-                column.extraFields.map( (extraField: string) => (
+                column.extraFields?.map( (extraField: string) => (
                   <TableField key={`extraField_${extraField}`} field={extraField} value={value} assetId={row.original.id} />
                 ))
               }
             </Stack>
-          ) : (
-            <TableField field={id} value={value} assetId={row.original.id} props={column.fieldProps} />
           )
         }
       }
     })
   }, [columns, mode, translate])
 
-  const featuredAssetsColumns: Column<Asset>[] = useMemo(() => [
+  const featuredAssetsColumns: ColumnProps[] = useMemo(() => [
     {
       Header: '#',
       accessor: 'id',
@@ -192,7 +192,7 @@ export const DepositedAssetsTable: React.FC = () => {
     ...strategyColumnsDeposit
   ], [strategyColumnsDeposit])
 
-  const depositedAssetsColumns: Column<Asset>[] = useMemo(() => [
+  const depositedAssetsColumns: ColumnProps[] = useMemo(() => [
     {
       Header: '#',
       accessor: 'id',
@@ -247,7 +247,7 @@ export const DepositedAssetsTable: React.FC = () => {
     allColumnsById['chainId']
   ], [translate, strategyColumnsDeposit, allColumnsById])
 
-  const discountedAssetsColumns: Column<Asset>[] = useMemo(() => [
+  const discountedAssetsColumns: ColumnProps[] = useMemo(() => [
     {
       Header: '#',
       accessor: 'id',

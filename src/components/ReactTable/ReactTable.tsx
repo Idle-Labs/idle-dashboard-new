@@ -101,7 +101,17 @@ export const ReactTable = <T extends {}>({
               if (isFirstCell) {
                 firstCellFound = true
               }
-              const sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
+              let sx = isFirstCell ? {borderTopLeftRadius:8, borderBottomLeftRadius:8} : (isLastCell ? {borderTopRightRadius:8, borderBottomRightRadius:8} : {})
+
+              // @ts-ignore
+              if (cell.column.cellSx){
+                sx = {
+                  ...sx,
+                  // @ts-ignore
+                  ...cell.column.cellSx
+                }
+              }
+
               return (
                 <Td
                   {...cell.getCellProps()}
