@@ -45,6 +45,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
   return (
     <VStack
       spacing={6}
+      width={'full'}
       alignItems={'flex-start'}
     >
       <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.underlyingProtocols'} />
