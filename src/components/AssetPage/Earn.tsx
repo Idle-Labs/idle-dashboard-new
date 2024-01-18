@@ -299,7 +299,7 @@ export const Earn: React.FC = () => {
   }, [vault, asset, locale])
 
   const borrowerOverview = useMemo(() => {
-    if (!vault || !("borrower" in vault?.vaultConfig)) return null
+    if (!vault || !("vaultConfig" in vault) || !("borrower" in vault?.vaultConfig)) return null
     return (
       <BorrowerOverview borrower={vault.vaultConfig.borrower} />
     )
