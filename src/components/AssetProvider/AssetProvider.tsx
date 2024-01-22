@@ -677,8 +677,14 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
     if (asset?.apyBreakdown){
       return Object.keys(asset.apyBreakdown).reduce( (totalNetApy: BigNumber, apyType: string) => {
         let netApy = bnOrZero(asset.apyBreakdown?.[apyType])
+
+        let isNetApr = false
+        if (vault && "flags" in vault && !isEmpty(vault.flags?.aprBreakdownParams) && vault.flags?.aprBreakdownParams?.[apyType]){
+          isNetApr = vault.flags?.aprBreakdownParams?.[apyType].isNet || false
+        }
+
         // Remove fees on base and harvest apy
-        if (apyType !== 'rewards'){
+        if (apyType !== 'rewards' && !isNetApr){
           netApy = netApy.minus(netApy.times(bnOrZero(asset?.fee)))
         }
         return totalNetApy.plus(netApy)
@@ -686,7 +692,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
     } else {
       return BNify(asset?.apy).minus(BNify(asset?.apy).times(bnOrZero(asset?.fee)))
     }
-  }, [asset])
+  }, [asset, vault])
 
   showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length>1
 

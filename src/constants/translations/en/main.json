@@ -2022,7 +2022,7 @@
       },
       "apyBreakdown": {
         "base": "Base APY",
-        "lidoStaking": "Lido staking APR",
+        "lidoStaking": "Lido staking APY",
         "rewards": "Rewards APY",
         "strategy": "Strategy APY",
         "harvest": "Harvest APY",

@@ -3442,6 +3442,11 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           referralEnabled: true,
           feeDiscountEnabled: false,
           feeDiscountOnReferral: 0.07,
+          aprBreakdownParams:{
+            base:{
+              isNet: true
+            }
+          },
           allowedReferrals:['0x32B0aCfBb18C270491CDD124EB104A8d25A182ca']
         },
         CDO:{
