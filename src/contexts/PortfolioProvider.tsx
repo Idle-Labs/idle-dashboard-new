@@ -643,7 +643,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       let firstDepositTx: any = null
       const vaultPrice = selectVaultPrice(assetId)
 
-      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber, totalDeposits: BigNumber, depositedWithRefAmount: BigNumber}, transaction: Transaction, index: number) => {
+      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber, totalDeposits: BigNumber, depositedWithRefAmount: BigNumber, referral?: string | null}, transaction: Transaction, index: number) => {
         switch (transaction.action) {
           case 'deposit':
           case 'stake':
@@ -656,6 +656,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
             // Deposit with referral
             if (checkAddress(transaction.referral)){
+              depositsInfo.referral = transaction.referral
               depositsInfo.depositedWithRefAmount = depositsInfo.depositedWithRefAmount.plus(transaction.underlyingAmount)
             }
           break;
@@ -665,6 +666,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             depositsInfo.depositedIdleAmount = BigNumber.maximum(0, depositsInfo.depositedIdleAmount.minus(transaction.idleAmount))
             if (depositsInfo.depositedIdleAmount.lte(0)){
               firstDepositTx = null
+              depositsInfo.referral = null
               depositsInfo.balancePeriods = []
               depositsInfo.totalDeposits = BNify(0)
               depositsInfo.depositedAmount = BNify(0)
@@ -714,6 +716,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
         return depositsInfo
       }, {
+        referral: null,
         balancePeriods:[],
         totalDeposits: BNify(0),
         depositedAmount: BNify(0),
@@ -721,7 +724,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         depositedWithRefAmount: BNify(0)
       })
 
-      const { balancePeriods, depositedAmount, depositedIdleAmount, depositedWithRefAmount } = depositsInfo
+      const { balancePeriods, depositedAmount, depositedIdleAmount, depositedWithRefAmount, referral } = depositsInfo
 
       if (depositedIdleAmount.lte(0)) return vaultsPositions
 
@@ -788,6 +791,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsPositions[assetId] = {
         usd,
         idle,
+        referral,
         poolShare,
         underlying,
         realizedApy,

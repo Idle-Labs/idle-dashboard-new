@@ -42,6 +42,10 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return selectAssetBalance(underlyingAsset?.id)
   }, [selectAssetBalance, underlyingAsset?.id])
 
+  const positionReferral = useMemo(() => {
+    return referral || asset?.vaultPosition?.referral
+  }, [asset, referral])
+
   // Update amount USD and disabled
   useEffect(() => {
     if (!selectAssetPriceUsd || !underlyingAsset) return
@@ -259,7 +263,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
 
   const referralMessage = useMemo(() => {
-    if (!asset || !referral || feeDiscountOnReferral.lte(0)) return null
+    if (!asset || !positionReferral || feeDiscountOnReferral.lte(0)) return null
     return (
       <Card.Dark
         py={2}
@@ -281,7 +285,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         </HStack>
       </Card.Dark>
     )
-  }, [asset, referral, feeDiscountOnReferral])
+  }, [asset, positionReferral, feeDiscountOnReferral])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined

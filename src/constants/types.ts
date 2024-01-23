@@ -238,6 +238,7 @@ export type VaultPosition = {
   realizedApy: BigNumber
   depositDuration: number
   rewardsApy?: BigNumber
+  referral?: string | null
   earningsPercentage: BigNumber
   firstDepositTx?: Transaction | null
   idle: {

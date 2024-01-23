@@ -936,8 +936,12 @@ const PerformanceFee: React.FC<PercentageProps> = (props) => {
   const { referral } = useAssetPageProvider()
   const { asset, vault } = useAssetProvider()
 
+  const positionReferral = useMemo(() => {
+    return referral || asset?.vaultPosition?.referral
+  }, [asset, referral])
+
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
-  const performanceFeeDiscounted = useMemo(() => (referral && bnOrZero(feeDiscountOnReferral).gt(0)), [referral, feeDiscountOnReferral])
+  const performanceFeeDiscounted = useMemo(() => (positionReferral && bnOrZero(feeDiscountOnReferral).gt(0)), [positionReferral, feeDiscountOnReferral])
   const performanceFee = useMemo(() => performanceFeeDiscounted ? feeDiscountOnReferral : bnOrZero(asset?.fee), [performanceFeeDiscounted, asset, feeDiscountOnReferral])
   
   return asset?.fee ? (
