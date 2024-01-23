@@ -1122,6 +1122,7 @@
         "messages": {
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",
+          "vaultLocked": "The vault is currently locked. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> or an early termination to interact with the pool.",
           "gasEstimateError": "We have encountered an error during the gas estimate, you may not be able to withdraw your funds. This error may not be up to us, please <a href=\"https://discord.com/channels/606071749657755668/606073687799627776\" target=\"_blank\" class=\"link\">click here</a> to enter our Discord channel and communicate the following error:<br /><span class=\"error\">\"%{error}\"</span>",
           "decoded": {
             "execution reverted: NEC": "Not enough liquidity to withdraw from the lender"

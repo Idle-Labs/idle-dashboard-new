@@ -203,14 +203,14 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   // Update gas fees
   useEffect(() => {
-    if (activeItem !== itemIndex) return
+    if (activeItem !== itemIndex || epochVaultLocked) return
     ;(async () => {
       const defaultGasLimit = await getDefaultGasLimit()
       if (defaultGasLimit){
         setGasLimit(defaultGasLimit)
       }
     })()
-  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
+  }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit, epochVaultLocked])
 
   useEffect(() => {
     // console.log('useEffect', activeItem, itemIndex, executeAction, stakingEnabled, depositAmount)
@@ -318,7 +318,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         wrapFlex={false}
         assetId={asset?.id}
       >
-        <EpochVaultMessage />
+        <EpochVaultMessage action={'deposit'} />
       </AssetProvider>
     ) : (asset && asset?.status !== 'production') ? (
       <Card.Dark

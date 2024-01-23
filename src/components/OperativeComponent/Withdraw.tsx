@@ -4,7 +4,6 @@ import { Amount } from 'components/Amount/Amount'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import type { IdleTokenProtocol } from 'constants/vaults'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import { getDecodedError, bnOrZero, BNify, estimateGasLimit } from 'helpers/'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
@@ -12,8 +11,10 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
+import { getDecodedError, bnOrZero, BNify, estimateGasLimit } from 'helpers/'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
+import { EpochVaultMessage } from 'components/OperativeComponent/EpochVaultMessage'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
@@ -35,6 +36,14 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const { selectors: { selectAssetPriceUsd, selectVaultPrice, selectAssetBalance, selectVaultGauge, selectAssetById } } = usePortfolioProvider()
 
   const [ , setSearchParams ] = useMemo(() => searchParams, [searchParams])
+
+  const isEpochVault = useMemo(() => {
+    return asset && !!asset.epochData
+  }, [asset])
+
+  const epochVaultLocked = useMemo(() => {
+    return asset && isEpochVault && asset.vaultIsOpen === false
+  }, [asset, isEpochVault])
 
   const toggleRedeemInterestBearing = useCallback(() => {
     return setRedeemInterestBearing( prevState => !prevState )
@@ -93,7 +102,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const disabled = useMemo(() => {
     setError('')
-    if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
+    if (BNify(amount).isNaN() || BNify(amount).lte(0) || epochVaultLocked) return true
     // if (BNify(assetBalance).lte(0)) return true
     if (BNify(amount).gt(assetBalance)){
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
@@ -104,7 +113,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (transaction.status === 'started') return true
 
     return false
-  }, [amount, transaction, assetBalance, underlyingAsset, translate])
+  }, [amount, transaction, assetBalance, underlyingAsset, translate, epochVaultLocked])
 
   // Withdraw
   const withdraw = useCallback(() => {
@@ -172,7 +181,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   // Update gas fees
   useEffect(() => {
     setGasEstimateError(null)
-    if (activeItem !== itemIndex) return
+    if (activeItem !== itemIndex || epochVaultLocked) return
     ;(async () => {
       try {
         const defaultGasLimit = await getDefaultGasLimit()
@@ -186,7 +195,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         setGasEstimateError(errorToShow)
       }
     })()
-  }, [activeItem, amount, translate, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError])
+  }, [activeItem, amount, translate, itemIndex, getDefaultGasLimit, setGasLimit, setGasEstimateError, epochVaultLocked])
 
   // Update parent amount
   useEffect(() => {
@@ -216,6 +225,47 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined
   }, [vault])
+
+  const vaultMessage = useMemo(() => {
+    return gasEstimateError ? (
+      <Card.Dark
+        p={2}
+        border={0}
+      >
+        <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.gasEstimateError'} params={{supportLink:'<a href="https://discord.com/channels/606071749657755668/606073687799627776">Discord channel</a>', error: gasEstimateError}} isHtml={true} textAlign={'center'} />
+      </Card.Dark>
+    ) : isEpochVault ? (
+      <AssetProvider
+        width={'full'}
+        wrapFlex={false}
+        assetId={asset?.id}
+      >
+        <EpochVaultMessage action={'withdraw'} />
+      </AssetProvider>
+    ) : assetBalance.gt(0) && vaultMessages?.withdraw ? (
+      <Card.Dark
+        p={2}
+        border={0}
+      >
+        <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} isHtml={true} textAlign={'center'} />
+      </Card.Dark>
+    ) : BNify(assetGauge?.balance).gt(0) && (
+      <Card.Dark
+        py={2}
+        pl={3}
+        pr={2}
+        border={0}
+      >
+        <HStack
+          spacing={3}
+          width={'full'}
+        >
+          <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.unstakeFromGauge'} textAlign={'left'} />
+          <Translation component={Button} translation={`common.unstake`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setSearchParams(`?tab=gauge`) } />
+        </HStack>
+      </Card.Dark>
+    )
+  }, [asset, vaultMessages, gasEstimateError, assetBalance, assetGauge, isEpochVault, setSearchParams])
 
   const withdrawInterestBearingToken = useMemo(() => {
     if (!redeemInterestBearingEnabled || vaultBalance.lte(0)) return null
@@ -339,38 +389,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
               }
             </VStack>
           </HStack>
-          {
-            gasEstimateError ? (
-              <Card.Dark
-                p={2}
-                border={0}
-              >
-                <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.gasEstimateError'} params={{supportLink:'<a href="https://discord.com/channels/606071749657755668/606073687799627776">Discord channel</a>', error: gasEstimateError}} isHtml={true} textAlign={'center'} />
-              </Card.Dark>
-            ) : assetBalance.gt(0) && vaultMessages?.withdraw ? (
-              <Card.Dark
-                p={2}
-                border={0}
-              >
-                <Translation textStyle={'captionSmaller'} translation={vaultMessages.withdraw} isHtml={true} textAlign={'center'} />
-              </Card.Dark>
-            ) : BNify(assetGauge?.balance).gt(0) && (
-              <Card.Dark
-                py={2}
-                pl={3}
-                pr={2}
-                border={0}
-              >
-                <HStack
-                  spacing={3}
-                  width={'full'}
-                >
-                  <Translation textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.unstakeFromGauge'} textAlign={'left'} />
-                  <Translation component={Button} translation={`common.unstake`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} onClick={ () => setSearchParams(`?tab=gauge`) } />
-                </HStack>
-              </Card.Dark>
-            )
-          }
+          {vaultMessage}
           {
             redeemInterestBearingEnabled && redeemInterestBearing ?
               interestBearingTokens

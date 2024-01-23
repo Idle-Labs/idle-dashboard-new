@@ -7,7 +7,11 @@ import { Translation } from 'components/Translation/Translation'
 import { BsFillUnlockFill, BsFillShieldLockFill } from "react-icons/bs"
 import { useAssetProvider } from 'components/AssetProvider/AssetProvider'
 
-export const EpochVaultMessage: React.FC = () => {
+type Args = {
+  action?: string
+}
+
+export const EpochVaultMessage: React.FC<Args> = ({action}) => {
   const { asset } = useAssetProvider()
   const { locale } = useI18nProvider()
 
@@ -18,10 +22,6 @@ export const EpochVaultMessage: React.FC = () => {
   const epochVaultLocked = useMemo(() => {
     return isEpochVault && asset && asset.vaultIsOpen === false
   }, [asset, isEpochVault])
-
-  // const epochVaultOpen = useMemo(() => {
-  //   return isEpochVault && asset && asset.vaultIsOpen === true
-  // }, [asset, isEpochVault])
 
   if (!isEpochVault) return null
 
@@ -46,7 +46,7 @@ export const EpochVaultMessage: React.FC = () => {
             )
           }
         </Box>
-        <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.${epochVaultLocked ? 'vaultLocked' : 'vaultOpen'}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.start || 0, locale), epochEnd: dateToLocale(asset?.epochData?.end || 0, locale)}} textAlign={'left'} />
+        <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.${epochVaultLocked ? 'vaultLocked' : 'vaultOpen'}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.start || 0, locale), epochEnd: dateToLocale(asset?.epochData?.end || 0, locale)}} textAlign={'left'} />
       </HStack>
     </Card.Dark>
   )
