@@ -11,7 +11,7 @@ import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
-import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs } from 'helpers/'
+import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
@@ -228,9 +228,18 @@ export class TrancheVault {
           }
 
           const action = Object.keys(actions).find( (action: string) => !!actions[action] )
-          const subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
+          let subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
 
           if (action) {
+
+            // Get tx referral
+            if (action === 'deposit' && tx.functionName && /^deposit(AA|BB)Ref/.test(tx.functionName)){
+              subAction = 'depositWithRef'
+              const decodedParams = decodeTxParams(this.web3, tx, this.cdoContract)
+              if (decodedParams?.length && this.checkReferralAllowed(decodedParams[1])){
+                tx.referral = decodedParams[1]
+              }
+            }
 
             const txHashKey = `${tx.hash}_${action}`
 

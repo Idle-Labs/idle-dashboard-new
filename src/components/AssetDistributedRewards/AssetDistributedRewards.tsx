@@ -7,10 +7,10 @@ import { Scrollable } from 'components/Scrollable/Scrollable'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { BNify, sortArrayByKey, isEmpty, toDayjs } from 'helpers/'
 import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
+import { BNify, sortArrayByKey, isEmpty, toDayjs, getVaultFlag, bnOrZero } from 'helpers/'
 import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps, Transaction } from 'constants/'
 
 type AssetDistributedRewardsProps = {
@@ -19,7 +19,7 @@ type AssetDistributedRewardsProps = {
 
 export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = ({assetId}) => {
   const { openModal } = useModalProvider()
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultById, selectVaultPosition } } = usePortfolioProvider()
   
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
@@ -29,14 +29,14 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
     return selectVaultById && selectVaultById(assetId)
   }, [selectVaultById, assetId])
 
+  const vaultPosition = useMemo(() => {
+    return selectVaultPosition && selectVaultPosition(assetId)
+  }, [assetId, selectVaultPosition])
+
   const openHowItWorksModal = useCallback(() => {
-    const modalProps = {
-      cta: 'defi.modals.opDistribution.cta',
-      text: 'defi.modals.opDistribution.body',
-      subtitle: 'defi.modals.opDistribution.title'
-    }
+    const modalProps = vault.translations.distributedTokens.modal
     return openModal(modalProps as ModalProps, '2xl')
-  }, [openModal])
+  }, [openModal, vault])
 
   const distributedRewards: DistributedReward[] = useMemo(() => {
     if (isEmpty(asset?.distributedRewards)) return []
@@ -83,7 +83,14 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, rewardsHistory])
 
+  const showDistributedRewardsForReferralOnly = useMemo(() => {
+    return vault && getVaultFlag(vault, 'showDistributedRewardsForReferralOnly')
+  }, [vault])
+
   if (!asset || !("distributedTokens" in vault) || !vault.distributedTokens.length) return null
+
+  // Check referrals
+  if (showDistributedRewardsForReferralOnly && bnOrZero(vaultPosition?.underlying.depositedWithRef).lte(0)) return null
 
   return (
     <VStack
@@ -91,7 +98,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
       width={'full'}
       alignItems={'flex-start'}
     >
-      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'staking.distributedRewards'} />
+      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={vault.translations.distributedTokens.title || 'staking.distributedRewards'} />
       <VStack
         spacing={4}
         width={'full'}

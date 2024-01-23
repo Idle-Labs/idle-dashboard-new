@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission } from 'constants/types'
 
 type VaultsPositions = {
@@ -522,6 +522,32 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
+    // Get functionName
+    const txlistStartBlock = sortArrayByKey(userTransactions, 'blockNumber', 'asc').find( (tx: EtherscanTransaction) => !tx.functionName )?.blockNumber
+    const txlistEndBlock = sortArrayByKey(userTransactions, 'blockNumber', 'desc').find( (tx: EtherscanTransaction) => !tx.functionName )?.blockNumber
+
+    // Get txlist and retrieve functionName
+    if (txlistStartBlock && txlistEndBlock){
+      const endpoint = `${explorer.endpoints[chainIdToUse]}?module=account&action=txlist&address=${account.address}&startblock=${txlistStartBlock}&endblock=${txlistEndBlock}&sort=asc`
+      const txsList = await makeEtherscanApiRequest(endpoint, explorer.keys)
+      // console.log('txsList', txlistStartBlock, txlistEndBlock, txsList)
+      txsList.filter( (tx: any) => !!tx.functionName ).forEach( (tx: any) => {
+        const etherscanTxs = userTransactions.filter( (etherscanTx: EtherscanTransaction) => cmpAddrs(etherscanTx.hash, tx.hash) )
+        etherscanTxs.forEach( (etherscanTx: EtherscanTransaction) => {
+          if (etherscanTx){
+            etherscanTx.input = tx.input
+            etherscanTx.methodId = tx.methodId
+            etherscanTx.functionName = tx.functionName
+            // console.log('txlist', etherscanTx.hash, etherscanTx)
+          }
+        })
+      })
+    }
+
+    if (cacheProvider){
+      cacheProvider.saveData(cacheKey, userTransactions, 0)
+    }
+
     return userTransactions
   }, [account?.address, lastTransaction, chainId, cacheProvider])
 
@@ -551,6 +577,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         
       const endBlock = 'latest'
       const etherscanTransactions = await getUserTransactions(startBlock, endBlock, +chainId)
+      
       // console.log('etherscanTransactions', account.address, startBlock, endBlock, etherscanTransactions)
 
       await asyncForEach(
@@ -616,7 +643,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       let firstDepositTx: any = null
       const vaultPrice = selectVaultPrice(assetId)
 
-      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber, totalDeposits: BigNumber}, transaction: Transaction, index: number) => {
+      const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber, totalDeposits: BigNumber, depositedWithRefAmount: BigNumber}, transaction: Transaction, index: number) => {
         switch (transaction.action) {
           case 'deposit':
           case 'stake':
@@ -626,6 +653,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
             depositsInfo.totalDeposits = depositsInfo.totalDeposits.plus(transaction.underlyingAmount)
             depositsInfo.depositedAmount = depositsInfo.depositedAmount.plus(transaction.underlyingAmount)
             depositsInfo.depositedIdleAmount = depositsInfo.depositedIdleAmount.plus(transaction.idleAmount)
+
+            // Deposit with referral
+            if (checkAddress(transaction.referral)){
+              depositsInfo.depositedWithRefAmount = depositsInfo.depositedWithRefAmount.plus(transaction.underlyingAmount)
+            }
           break;
           case 'redeem':
           case 'unstake':
@@ -636,8 +668,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
               depositsInfo.balancePeriods = []
               depositsInfo.totalDeposits = BNify(0)
               depositsInfo.depositedAmount = BNify(0)
+              depositsInfo.depositedWithRefAmount = BNify(0)
             } else if (depositsInfo.depositedAmount.lte(0)) {
               depositsInfo.depositedAmount = depositsInfo.totalDeposits
+              // Track referral
+              if (depositsInfo.depositedWithRefAmount.gt(0)){
+                depositsInfo.depositedWithRefAmount = depositsInfo.totalDeposits
+              }
             }
           break;
           default:
@@ -680,10 +717,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
         balancePeriods:[],
         totalDeposits: BNify(0),
         depositedAmount: BNify(0),
-        depositedIdleAmount: BNify(0)
+        depositedIdleAmount: BNify(0),
+        depositedWithRefAmount: BNify(0)
       })
 
-      const { balancePeriods, depositedAmount, depositedIdleAmount } = depositsInfo
+      const { balancePeriods, depositedAmount, depositedIdleAmount, depositedWithRefAmount } = depositsInfo
 
       if (depositedIdleAmount.lte(0)) return vaultsPositions
 
@@ -734,7 +772,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         staked: stakedAmount,
         earnings: earningsAmount,
         deposited: depositedAmount,
-        redeemable: redeemableAmount
+        redeemable: redeemableAmount,
+        depositedWithRef: depositedWithRefAmount
       }
 
       const usd = {
@@ -742,7 +781,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
         staked: stakedAmount.times(assetPriceUsd),
         earnings: earningsAmount.times(assetPriceUsd),
         deposited: depositedAmount.times(assetPriceUsd),
-        redeemable: redeemableAmount.times(assetPriceUsd)
+        redeemable: redeemableAmount.times(assetPriceUsd),
+        depositedWithRef: depositedWithRefAmount.times(assetPriceUsd)
       }
 
       vaultsPositions[assetId] = {

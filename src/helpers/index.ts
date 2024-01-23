@@ -1,5 +1,6 @@
 export * from './apis'
 export * from './charts'
+export * from './vaults'
 export * from './staking'
 export * from './analytics'
 export * from './utilities'

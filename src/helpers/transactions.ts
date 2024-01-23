@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import { BNify } from 'helpers/'
 import type { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
+import { EtherscanTransaction } from 'constants/'
 import type { BlockTransactionString } from 'web3-eth'
 import { Contract, ContractSendMethod, CallOptions } from 'web3-eth-contract'
 
@@ -32,6 +33,18 @@ export async function getBlock(web3: Web3, blockNumber: string | number = 'lates
 export async function getGasPrice(web3: Web3) {
   const gasPrice = await web3.eth.getGasPrice()
   return BNify(gasPrice).div(1e09);
+}
+
+export function decodeTxParams(web3: Web3, tx: EtherscanTransaction, contract: Contract): string[] | null {
+  if (!tx.functionName || !tx.input?.length) return null
+
+  const methodName = tx.functionName.match(/^(\w+)\(/)?.[1]
+  const methodAbi = contract.options.jsonInterface.find(f => f.name === methodName );
+  if (!methodAbi || !methodAbi.inputs) return null
+
+  const inputTypes = methodAbi.inputs.map( i => i.type );
+  const decodedParams = web3.eth.abi.decodeParameters([`"(${inputTypes.join(',')})"`], tx.input.substr(10))
+  return decodedParams?.[0] || null
 }
 
 export async function getBlockBaseFeePerGas(web3: Web3, blockNumber: string | number = 'latest'): Promise<number | null> {

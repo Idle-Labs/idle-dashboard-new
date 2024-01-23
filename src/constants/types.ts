@@ -119,6 +119,8 @@ export type EtherscanTransaction = {
   tokenSymbol: string
   transactionIndex: string
   value: string
+  functionName?: string
+  methodId?: string
 }
 
 export type AssetId = string
@@ -151,6 +153,7 @@ export type Transaction = {
   idlePrice: BigNumber
   idleAmount: BigNumber
   amountUsd?: BigNumber
+  referral?: string | null
   underlyingAmount: BigNumber
 } & EtherscanTransaction
 
@@ -249,6 +252,7 @@ export type VaultPosition = {
     deposited: BigNumber
     redeemable: BigNumber
     discountedFees?: BigNumber
+    depositedWithRef?: BigNumber
   },
   usd: {
     staked: BigNumber
@@ -257,6 +261,7 @@ export type VaultPosition = {
     deposited: BigNumber
     redeemable: BigNumber
     discountedFees?: BigNumber
+    depositedWithRef?: BigNumber
   }
 }
 

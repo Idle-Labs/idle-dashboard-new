@@ -10,6 +10,7 @@ import IdleStrategy from 'abis/idle/IdleStrategy.json'
 import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
+import { AMPHOR_WSTETH_REFERRAL } from 'constants/addresses'
 import { rewardsSenders } from 'constants/whitelistedSenders'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
@@ -398,6 +399,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wincent_USDC',
           address:'0xB144eE58679e15f1b25A5F6EfcEBDd0AB8c8BEF5'
         },
+        translations:{
+          distributedTokens:{
+            modal:{
+              cta: 'defi.modals.opDistribution.cta',
+              text: 'defi.modals.opDistribution.body',
+              subtitle: 'defi.modals.opDistribution.title'
+            }
+          }
+        },
         description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x463a9fb7320834b7f8a5c4713434257c8971b9a8?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool wincent USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
@@ -574,6 +584,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDT',
           address:'0x8A42DDE5040675C71C09499F63fBa8Ed98fee77B'
         },
+        translations:{
+          distributedTokens:{
+            modal:{
+              cta: 'defi.modals.opDistribution.cta',
+              text: 'defi.modals.opDistribution.body',
+              subtitle: 'defi.modals.opDistribution.title'
+            }
+          }
+        },
         description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x87181362ba304fec7e5a82ad2b7b503d7ad62639?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
           AA:{
@@ -661,6 +680,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:IdleStrategy as Abi,
           name:'IdleStrategy_clearpool_portofino_USDT',
           address:'0x5d4E705315ACa451Db40bf7c067077C768B3FFd0'
+        },
+        translations:{
+          distributedTokens:{
+            modal:{
+              cta: 'defi.modals.opDistribution.cta',
+              text: 'defi.modals.opDistribution.body',
+              subtitle: 'defi.modals.opDistribution.title'
+            }
+          }
         },
         description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x462c4b2e69a59ff886980f36300c168234b63464?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         Tranches:{
@@ -3434,20 +3462,23 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         protocol:'amphor',
-        blockNumber:13776954,
+        blockNumber:18769315,
         underlyingToken:'WSTETH',
+        distributedTokens:['WSTETH'],
+        rewardsSenders:rewardsSenders[1],
         flags:{
           addHarvestApy: false,
           showCurrentApy: true,
           referralEnabled: true,
           feeDiscountEnabled: false,
           feeDiscountOnReferral: 0.07,
+          showDistributedRewardsForReferralOnly: true,
           aprBreakdownParams:{
             base:{
               isNet: true
             }
           },
-          allowedReferrals:['0x32B0aCfBb18C270491CDD124EB104A8d25A182ca']
+          allowedReferrals:[AMPHOR_WSTETH_REFERRAL]
         },
         CDO:{
           decimals:18,
@@ -3470,6 +3501,13 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           address:'0x35df8a95b348dd87167ed00b3421ba15d95ac1c8'
         },
         translations:{
+          distributedTokens:{
+            modal:{
+              cta: 'defi.modals.amphorFeeRebate.cta',
+              text: 'defi.modals.amphorFeeRebate.body',
+              subtitle: 'defi.modals.amphorFeeRebate.title'
+            }
+          },
           apyBreakdown:{
             base: "assets.assetDetails.apyBreakdown.lidoStaking"
           }

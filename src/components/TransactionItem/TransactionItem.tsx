@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { formatDate, BNify } from 'helpers/'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
@@ -12,6 +13,11 @@ type TransactionItemArgs = {
 }
 
 export const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) => {
+
+  const txAction = useMemo(() => {
+    return transaction.subAction === 'depositWithRef' ? transaction.subAction : transaction.action
+  }, [transaction])
+
   return (
     <VStack
       mb={2}
@@ -31,7 +37,7 @@ export const TransactionItem: React.FC<TransactionItemArgs> = ({ transaction }) 
           direction={'row'}
           alignItems={'center'}
         >
-          <Translation component={Text} translation={`transactionRow.${transaction.action}`} textStyle={'captionSmall'} />
+          <Translation component={Text} translation={`transactionRow.${txAction}`} textStyle={'captionSmall'} />
         </HStack>
         <Text textStyle={'captionSmall'}>{formatDate(+transaction.timeStamp*1000, DATETIME_FORMAT)}</Text>
       </HStack>
