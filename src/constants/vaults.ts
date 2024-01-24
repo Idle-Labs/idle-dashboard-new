@@ -297,7 +297,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         variant:'Bastion Trading',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          addHarvestApy: false,
+          addHarvestApy: true,
           referralEnabled: true
         },
         CDO:{
