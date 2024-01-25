@@ -1,5 +1,6 @@
+import Web3 from 'web3'
 import axios from 'axios'
-import { getObjectPath, asyncWait } from 'helpers/'
+import { getObjectPath, asyncWait, cmpAddrs } from 'helpers/'
 import { protocols, subgraphs, explorers, networks } from 'constants/'
 import type { Explorer, PlatformApiFilters, ApisProps } from 'constants/'
 
@@ -158,6 +159,12 @@ export const saveSignature = async (address: string, signature: string): Promise
 
 export const checkSignature = async (address: string): Promise<any> => {
   return await callPlatformApis(1, 'idle', 'checkSignature', address)
+}
+
+export const verifySignature = async (web3: Web3, walletAddress: string, message: string, signature: string): Promise<boolean> => {
+  const signatureAddress = await web3.eth.personal.ecRecover(message, signature)
+  console.log('verifySignature', walletAddress, cmpAddrs(signatureAddress, walletAddress))
+  return cmpAddrs(signatureAddress, walletAddress)
 }
 
 export const getExplorerByChainId = (chainId: number): Explorer | null => {

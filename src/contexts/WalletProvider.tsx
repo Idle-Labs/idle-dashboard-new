@@ -78,6 +78,7 @@ export function WalletProvider({ children }: ProviderProps) {
   const [ chainId, setChainIdState ] = useState<number>(hostnameChainId)
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
   const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
+  const [ disconnecting, setDisconnecting ] = useState<boolean>(false)
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ chainSetFromStorage, setChainSetFromStorage ] = useState<boolean>(false)
   const [ storedChainId, setStoredChainId, , isChainLoaded ] = useLocalForge('selectedChain', hostnameChainId)
@@ -123,6 +124,17 @@ export function WalletProvider({ children }: ProviderProps) {
     return !wallet || chainIdHex === connectedChain?.id
   }, [chainIdHex, connectedChain, wallet])
 
+  // Auto-connect wallet
+  useEffect(() => {
+    if (!isWalletProviderLoaded || disconnecting) return
+    ;(async () => {
+      if (!wallet && walletProvider){
+        await connect({autoSelect: { label: walletProvider, disableModals: true }})
+      }
+    })()
+  // eslint-disable-next-line
+  }, [walletProvider, isWalletProviderLoaded, connectedChain, disconnecting])
+
   // Set chainId to stored chainId
   useEffect(() => {
     if (!isChainLoaded || chainSetFromStorage) return
@@ -138,24 +150,13 @@ export function WalletProvider({ children }: ProviderProps) {
     setChainSetFromStorage(true)
   }, [chainId, hostnameChainId, setChainIdState, storedChainId, setStoredChainId, chainSetFromStorage, isChainLoaded])
 
-  // Auto-connect wallet
-  useEffect(() => {
-    if (!isWalletProviderLoaded) return
-    ;(async () => {
-      if (!wallet && walletProvider){
-        await connect({autoSelect: { label: walletProvider, disableModals: true }})
-      }
-    })()
-  // eslint-disable-next-line
-  }, [walletProvider, isWalletProviderLoaded, connectedChain])
-
   // Switch chain
   useEffect(() => {
-    if (!wallet || connecting || isNetworkCorrect) return
+    if (!wallet || connecting || isNetworkCorrect || disconnecting) return
     setChain({
       chainId: chainIdHex
     })
-  }, [chainIdHex, isNetworkCorrect, setChain, wallet, connecting, connectedChain])
+  }, [chainIdHex, isNetworkCorrect, setChain, wallet, connecting, connectedChain, disconnecting])
 
   // Send chainID
   useEffect(() => {
@@ -171,6 +172,7 @@ export function WalletProvider({ children }: ProviderProps) {
 
   // Update wallet and provider
   useEffect(() => {
+    if (disconnecting) return;
     if (customAddress){
       setWalletProvider('metamask')
       setAccount({
@@ -196,7 +198,7 @@ export function WalletProvider({ children }: ProviderProps) {
       })
       sendLogin(wallet.label, firstValidAccount?.address)
     }
-  }, [wallet, customAddress, connecting, setWalletProvider])
+  }, [wallet, customAddress, connecting, setWalletProvider, disconnecting])
 
   // Set walletInitialized
   useEffect(() => {
@@ -205,13 +207,16 @@ export function WalletProvider({ children }: ProviderProps) {
     setWalletInitialized(walletInitialized)
   }, [account, connecting, walletProvider, isWalletProviderLoaded])
 
-  const disconnectWallet = async () => {
-    if (wallet) {
-      setAccount(null)
-      removeWalletProvider()
-      disconnect(wallet)
+  const disconnectWallet = useCallback(async () => {
+    setDisconnecting(true)
+    if (wallet){
+      await disconnect(wallet)
     }
-  }
+    await removeWalletProvider()
+    setAccount(null)
+    setDisconnecting(false)
+  // eslint-disable-next-line
+  }, [wallet, setAccount/*, setWalletProvider*/, removeWalletProvider, disconnect, setDisconnecting])
 
   return (
     <WalletProviderContext.Provider value={{wallet, connectedChainId, prevAccount, account, network, explorer, walletInitialized, isNetworkCorrect, chainId, isChainLoaded, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>

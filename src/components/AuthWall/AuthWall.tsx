@@ -1,13 +1,15 @@
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
-import { MdOutlineRefresh } from "react-icons/md"
+import useLocalForge from 'hooks/useLocalForge'
+import { MdOutlineRefresh } from 'react-icons/md'
 import { ReducerActionTypes } from 'constants/types'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { useWeb3Provider } from 'contexts/Web3Provider'
-import { saveSignature, checkSignature } from 'helpers/'
+import { useCacheProvider } from 'contexts/CacheProvider'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
+import { saveSignature, checkSignature, verifySignature } from 'helpers/'
 import React, { useState, useMemo, useReducer, useCallback, useEffect } from 'react'
 import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image } from '@chakra-ui/react'
 
@@ -17,8 +19,10 @@ export const AuthWall = ({ children }: ProviderProps) => {
   const translate = useTranslate()
   const { web3 } = useWeb3Provider()
   const { messages } = useI18nProvider()
+  const cacheProvider = useCacheProvider()
   const [ sending, setSending ] = useState<boolean>(false)
   const { account, prevAccount, disconnect } = useWalletProvider()
+  const [ storedSignature, setStoredSignature ] = useState<any>(null)
   const [ signatureCheckError, setSignatureCheckError ] = useState<boolean>(false)
   const [ lastCheckTimestamp, setLastCheckTimestamp ] = useState<number | null>(null)
   const [ signatureTimestamp, setSignatureTimestamp ] = useState<string | null>(null)
@@ -44,6 +48,31 @@ export const AuthWall = ({ children }: ProviderProps) => {
     }
   }, [])
 
+  const messageToSign = useMemo(() => {
+    const texts = [translate('authWall.signature_title'), translate('authWall.subtitle')]
+    Object.keys(messages.authWall.options).forEach( optionKey => {
+      texts.push('- '+translate(`authWall.options.${optionKey}`))
+    })
+    return texts.join("\n")
+  }, [messages, translate])
+
+  // Get store signature
+  useEffect(() => {
+    if (!cacheProvider || !account?.address || !web3) return
+    ;(async() => {
+      // Get and verify stored signature
+      const storedSignatureData = await cacheProvider.getCachedUrl(`signature_${account.address}`)
+      if (storedSignatureData){
+        const storedSignatureVerified = await verifySignature(web3, account?.address, messageToSign, storedSignatureData.data.signature)
+        if (storedSignatureVerified){
+          setStoredSignature(storedSignatureData.data)
+        } else {
+          cacheProvider.removeCachedUrl(`signature_${account.address}`)
+        }
+      }
+    })()
+  }, [web3, account, cacheProvider, setStoredSignature, messageToSign])
+
   const [ state, dispatch ] = useReducer(reducer, initialState)
 
   const accountChanged = useMemo(() => {
@@ -54,50 +83,61 @@ export const AuthWall = ({ children }: ProviderProps) => {
     return Object.values(state).filter( v => v === false ).length === 0
   }, [state])
 
+  // TODO: Send signature to server if not saved
+
   const sendSignature = useCallback(async (signature: string) => {
     if (!account?.address) return;
-    return await saveSignature(account.address, signature);
-  }, [account])
+    const response = await saveSignature(account.address, signature);
+
+    if (cacheProvider){
+      const dataToStore = {timestamp: Date.now(), signature, saved: !!response}
+      cacheProvider.saveData(`signature_${account.address}`, dataToStore, null)
+      setStoredSignature(dataToStore)
+    }
+  }, [account, cacheProvider])
 
   const getSignatureTimestamp = useCallback(async () => {
-    if (!account?.address) return;
-    const signature = await checkSignature(account.address)
+    if (!account?.address || !web3) return;
+    const signature = await checkSignature(account?.address as string)
     
+    setSignatureCheckError(false)
     setLastCheckTimestamp(Date.now())
 
+    // Signature not retrieved
     if (!signature){
+
+      // Check stored signature before thwowing errors
+      const storedSignatureVerified = storedSignature && await verifySignature(web3, account?.address, messageToSign, storedSignature.signature)
+      if (storedSignatureVerified){
+        return setSignatureTimestamp(storedSignature?.timestamp)
+      }
+
       return setSignatureCheckError(true)
     }
+
     if (signature?.timestamp){
       setSignatureTimestamp(signature?.timestamp)
     }
 
-    setSignatureCheckError(false)
-  }, [account?.address, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError])
+  }, [web3, account?.address, storedSignature, messageToSign, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError])
 
   const signAndSend = useCallback(async () => {
     if (!account?.address || !web3) return;
 
     setSending(true)
 
-    const texts = [translate('authWall.signature_title'), translate('authWall.subtitle')]
-
-    Object.keys(messages.authWall.options).forEach( optionKey => {
-      texts.push('- '+translate(`authWall.options.${optionKey}`))
-    })
-
     try {
       // @ts-ignore
-      const signature = await web3.eth.personal.sign(texts.join("\n"), account.address)
+      const signature = await web3.eth.personal.sign(messageToSign, account.address)
       if (signature){
         await sendSignature(signature)
         getSignatureTimestamp()
       }
     } catch (err){
+    } finally {
+      setSending(false)
     }
-
-    setSending(false)
-  }, [web3, account, messages, translate, sendSignature, setSending, getSignatureTimestamp])
+  }, [web3, account, messageToSign, sendSignature, setSending, getSignatureTimestamp])
 
   // Check signature
   useEffect(() => {
@@ -135,7 +175,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
     <Center width={'full'} pt={10} mt={10} flex={1}>
       <Card maxW={'52em'}>
         {
-          signatureCheckError ? (
+          false && signatureCheckError ? (
             <VStack
               spacing={4}
               alignItems={'center'}

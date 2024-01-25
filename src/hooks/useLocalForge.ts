@@ -36,34 +36,32 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
   }
   
   /** Set value */
-  const set = useCallback(( value: any ) => {
-    (async function () {
-      await waitUntilProcessed()
-      setProcessing('set')
-      try {
-        await localforage.setItem(key, value)
-        setProcessing(false)
-        setStoredValue(value)
-      } catch (err) {
-        setProcessing(false)
-        return initialValue
-      }
-    })()
+  const set = useCallback(async ( value: any ) => {
+    await waitUntilProcessed()
+    setProcessing('set')
+    try {
+      await localforage.setItem(key, value)
+      setProcessing(false)
+      setStoredValue(value)
+    } catch (err) {
+      setProcessing(false)
+      return initialValue
+    }
   // eslint-disable-next-line
   }, [key, initialValue])
   
   /** Removes value from local storage */
-  const remove = useCallback(() => {
+  const remove = useCallback(async () => {
     setProcessing('remove')
-    ;(async function () {
-      try {
-        await localforage.removeItem(key)
-        setProcessing(false)
-        setStoredValue(null)
-      } catch (e) {
-        setProcessing(false)
-      }
-    })()
+    try {
+      await localforage.removeItem(key)
+      setStoredValue(null)
+      setProcessing(false)
+      console.log('removed ', key)
+    } catch (err) {
+      console.log('remove key error', err)
+      setProcessing(false)
+    }
   }, [key])
 
   useEffect(() => {
@@ -71,6 +69,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
       try {
         const value = await localforage.getItem(key)
         if ((value === null || value === undefined) && initialValue){
+          console.log('setDefaultValue', key, initialValue)
           set(initialValue)
           setStoredValue(initialValue)
         } else {

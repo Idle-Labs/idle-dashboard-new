@@ -389,7 +389,7 @@ export const protocols: Record<string, Protocol> = {
           1: 'https://api.idle.finance/checkSignature/'
         },
         config: {
-          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+          // headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
       saveSignature:{
@@ -397,7 +397,7 @@ export const protocols: Record<string, Protocol> = {
           1: 'https://api.idle.finance/saveSignature'
         },
         config: {
-          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+          // headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
       rates:{
