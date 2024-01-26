@@ -387,17 +387,19 @@ export const protocols: Record<string, Protocol> = {
       checkSignature:{
         endpoint:{
           1: 'https://api.idle.finance/checkSignature/'
+          // 1: 'http://localhost:3333/checkSignature/' // TEST
         },
         config: {
-          // headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
       saveSignature:{
         endpoint:{
           1: 'https://api.idle.finance/saveSignature'
+          // 1: 'http://localhost:3333/saveSignature' // TEST
         },
         config: {
-          // headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
       rates:{

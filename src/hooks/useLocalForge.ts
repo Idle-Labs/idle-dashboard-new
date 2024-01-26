@@ -57,9 +57,7 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
       await localforage.removeItem(key)
       setStoredValue(null)
       setProcessing(false)
-      console.log('removed ', key)
     } catch (err) {
-      console.log('remove key error', err)
       setProcessing(false)
     }
   }, [key])
@@ -69,7 +67,6 @@ export default function useLocalForge ( key: string, initialValue?: any ): HookM
       try {
         const value = await localforage.getItem(key)
         if ((value === null || value === undefined) && initialValue){
-          console.log('setDefaultValue', key, initialValue)
           set(initialValue)
           setStoredValue(initialValue)
         } else {

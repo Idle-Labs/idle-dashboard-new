@@ -7,6 +7,7 @@
     "cancel": "Cancel",
     "close": "Close",
     "continue": "Continue",
+    "sign": "Sign",
     "approve": "Approve",
     "confirm": "Confirm",
     "retry": "Retry",
@@ -1920,15 +1921,15 @@
     }
   },
   "authWall": {
-    "title": "By accessing or using Idle App, I agree to the <a href='https://idle.finance/terms-of-service' target='_blank' class='link'>Terms of Service</a> and confirm that I have read and understood the <a href='https://idle.finance/privacy-policy' target='_blank' class='link'>Privacy Notice</a>, <a href='https://idle.finance/risks-disclosure-statement' target='_blank' class='link'>Risk Disclosure Statement</a> and <a href='https://idle.finance/restricted-persons' target='_blank' class='link'>Tokens Restricted for Restricted Persons</a>.",
-    "signature_title":"By accessing or using Idle App, I agree to the Terms of Service (https://idle.finance/terms-of-service) and confirm that I have read and understood the Privacy Notice (https://idle.finance/privacy-policy), Risk Disclosure Statement (https://idle.finance/https://idle.finance/risks-disclosure-statement) and Tokens Restricted for Restricted Persons (https://idle.finance/restricted-persons).", 
+    "title": "It looks like you're new to idle.finance or are using a new device to connect. For Security please accept the following terms and sign a message with your wallet to continue.",
+    "signatureTitle":"By accessing or using Idle App, I hereby represent and warrant that:", 
     "subtitle": "I hereby further represent and warrant that:",
     "ctaAgree": "Agree & Login",
     "ctaCancel": "Cancel",
-    "checkError": "There was a problem during the verification of your signature, please try again.",
+    "checkError": "There was a problem during the verification of your signature, please retry or sign again.",
     "options": {
-      "option_1": "I’m not a resident of or located in the United States of America (including its territories: American Samoa, Guam, Puerto Rico, the Northern Mariana Islands and the U.S. Virgin Islands) or any other Restricted Jurisdiction (as defined in the Terms of Service);",
-      "option_2": "I’m not a Prohibited Person (as defined in the Terms of Service) nor acting on behalf of a Prohibited Person;",
+      "option_1": "I have read and understood the <a href='https://idle.finance/terms-of-service' target='_blank' class='link'>Terms of Service</a>, <a href='https://idle.finance/privacy-policy' target='_blank' class='link'>Privacy Policy</a>, <a href='https://idle.finance/risks-disclosure-statement' target='_blank' class='link'>Risks Disclosure Statement</a>, <a href='https://idle.finance/legal-notice' target='_blank' class='link'>Legal Notice</a> and <a href='https://idle.finance/restricted-persons' target='_blank' class='link'>Tokens Restricted for Restricted Persons</a>.",
+      "option_2": "I'm not a resident of or located in the United States of America (including its territories: American Samoa, Guam, Puerto Rico, the Northern Mariana Islands and the U.S. Virgin Islands) or any other Restricted Jurisdiction (as defined in the Terms of Service);",
       "option_3": "I acknowledge that Idle App and related software are experimental, and that the use of experimental software may result in complete loss of my funds.",
       "option_4": "I am not using, and will not in the future use, a VPN to mask my physical location from a restricted territory."
     }

@@ -405,6 +405,12 @@ export function shortenHash(hash: string, startLen = 7, endLen = 4) {
   return shortHash;
 }
 
+export function parseAndReplaceAnchorTags(inputString: string) {
+  const regex = /<a\s+(?:[^>]*\s+)?href=(?:"|')([^"']+)(?:"|')(?:\s+[^>]*)?>([^<]+)<\/a>/g;
+  const replacedString = inputString.replace(regex, (match, url, linkText) => `${linkText} (${url})`);
+  return replacedString;
+}
+
 export function getObjectPath(object: any, path: string, fallback: any = null): any {
   if (!path) return undefined
   const dotIndex = path ? path.indexOf('.') : -1;

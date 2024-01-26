@@ -147,23 +147,29 @@ export const makeEtherscanApiRequest = async (endpoint: string, keys: Explorer["
   return null
 }
 
-export const saveSignature = async (address: string, signature: string): Promise<any> => {
+export const saveSignature = async (address: string, message: string, signature: string): Promise<any> => {
   const apiConfig = getPlatformApiConfig(1, 'idle', 'saveSignature')
   const endpoint = getPlatformApisEndpoint(1, 'idle', 'saveSignature')
   if (!endpoint) return null
   return await makePostRequest(endpoint, {
     address,
-    signature
+    signature,
+    message: btoa(message)
   }, apiConfig?.config)
 }
 
-export const checkSignature = async (address: string): Promise<any> => {
-  return await callPlatformApis(1, 'idle', 'checkSignature', address)
+export const checkSignature = async (address: string, message: string): Promise<any> => {
+  const apiConfig = getPlatformApiConfig(1, 'idle', 'checkSignature')
+  const endpoint = getPlatformApisEndpoint(1, 'idle', 'checkSignature', address)
+  if (!endpoint) return null
+
+  return await makePostRequest(endpoint, {
+    message: btoa(message)
+  }, apiConfig?.config)
 }
 
 export const verifySignature = async (web3: Web3, walletAddress: string, message: string, signature: string): Promise<boolean> => {
-  const signatureAddress = await web3.eth.personal.ecRecover(message, signature)
-  console.log('verifySignature', walletAddress, cmpAddrs(signatureAddress, walletAddress))
+  const signatureAddress = await web3.eth.accounts.recover(message, signature)
   return cmpAddrs(signatureAddress, walletAddress)
 }
 

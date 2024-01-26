@@ -1,16 +1,15 @@
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
-import useLocalForge from 'hooks/useLocalForge'
-import { MdOutlineRefresh } from 'react-icons/md'
 import { ReducerActionTypes } from 'constants/types'
+import { MdOutlineArrowForward } from 'react-icons/md'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import { useCacheProvider } from 'contexts/CacheProvider'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
-import { saveSignature, checkSignature, verifySignature } from 'helpers/'
 import React, { useState, useMemo, useReducer, useCallback, useEffect } from 'react'
+import { saveSignature, checkSignature, verifySignature, parseAndReplaceAnchorTags } from 'helpers/'
 import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image } from '@chakra-ui/react'
 
 type InitialState = Record<string, boolean>
@@ -21,11 +20,13 @@ export const AuthWall = ({ children }: ProviderProps) => {
   const { messages } = useI18nProvider()
   const cacheProvider = useCacheProvider()
   const [ sending, setSending ] = useState<boolean>(false)
-  const { account, prevAccount, disconnect } = useWalletProvider()
   const [ storedSignature, setStoredSignature ] = useState<any>(null)
   const [ signatureCheckError, setSignatureCheckError ] = useState<boolean>(false)
   const [ lastCheckTimestamp, setLastCheckTimestamp ] = useState<number | null>(null)
   const [ signatureTimestamp, setSignatureTimestamp ] = useState<string | null>(null)
+  const { walletInitialized, account, prevAccount, disconnect } = useWalletProvider()
+  const [ lastSaveAttempTimestamp, setLastSaveAttempTimestamp ] = useState<number | null>(null)
+  const [ signatureCheckErrorContinue, setSignatureCheckErrorContinue ] = useState<boolean>(false)
 
   const initialState: InitialState = useMemo(() => Object.keys(messages.authWall.options).reduce( (initialState, optionKey) => {
     return {
@@ -49,9 +50,9 @@ export const AuthWall = ({ children }: ProviderProps) => {
   }, [])
 
   const messageToSign = useMemo(() => {
-    const texts = [translate('authWall.signature_title'), translate('authWall.subtitle')]
+    const texts = [translate('authWall.signatureTitle')]
     Object.keys(messages.authWall.options).forEach( optionKey => {
-      texts.push('- '+translate(`authWall.options.${optionKey}`))
+      texts.push('- '+parseAndReplaceAnchorTags(translate(`authWall.options.${optionKey}`)))
     })
     return texts.join("\n")
   }, [messages, translate])
@@ -61,6 +62,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
     if (!cacheProvider || !account?.address || !web3) return
     ;(async() => {
       // Get and verify stored signature
+      // const urlHash = cacheProvider.getUrlHash(`signature_${account.address}`)
       const storedSignatureData = await cacheProvider.getCachedUrl(`signature_${account.address}`)
       if (storedSignatureData){
         const storedSignatureVerified = await verifySignature(web3, account?.address, messageToSign, storedSignatureData.data.signature)
@@ -83,22 +85,33 @@ export const AuthWall = ({ children }: ProviderProps) => {
     return Object.values(state).filter( v => v === false ).length === 0
   }, [state])
 
-  // TODO: Send signature to server if not saved
-
   const sendSignature = useCallback(async (signature: string) => {
     if (!account?.address) return;
-    const response = await saveSignature(account.address, signature);
 
+    // Send signature to server
+    const response = await saveSignature(account.address, messageToSign, signature);
+
+    // Store signature locally
     if (cacheProvider){
       const dataToStore = {timestamp: Date.now(), signature, saved: !!response}
       cacheProvider.saveData(`signature_${account.address}`, dataToStore, null)
       setStoredSignature(dataToStore)
+
+      // Try to send signature again in case of no response
+      if (!response){
+        setTimeout(() => {
+          sendSignature(signature)
+        }, 60000)
+      }
     }
-  }, [account, cacheProvider])
+  }, [account, cacheProvider, messageToSign])
 
   const getSignatureTimestamp = useCallback(async () => {
     if (!account?.address || !web3) return;
-    const signature = await checkSignature(account?.address as string)
+
+    setLastCheckTimestamp(null)
+
+    const signature = await checkSignature(account?.address as string, messageToSign)
     
     setSignatureCheckError(false)
     setLastCheckTimestamp(Date.now())
@@ -112,6 +125,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
         return setSignatureTimestamp(storedSignature?.timestamp)
       }
 
+      setSignatureCheckErrorContinue(false)
       return setSignatureCheckError(true)
     }
 
@@ -119,7 +133,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
       setSignatureTimestamp(signature?.timestamp)
     }
 
-  }, [web3, account?.address, storedSignature, messageToSign, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError])
+  }, [web3, account?.address, storedSignature, messageToSign, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError, setSignatureCheckErrorContinue])
 
   const signAndSend = useCallback(async () => {
     if (!account?.address || !web3) return;
@@ -145,6 +159,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
     getSignatureTimestamp()
   }, [account, getSignatureTimestamp])
 
+  // Reset signature when account changes
   useEffect(() => {
     if (accountChanged){
       setSending(false)
@@ -153,7 +168,15 @@ export const AuthWall = ({ children }: ProviderProps) => {
     }
   }, [accountChanged, setLastCheckTimestamp, setSignatureTimestamp, setSending])
 
-  if (!account || account?.isCustom === true || signatureTimestamp){
+  // Try to send the signature to server if not saved (fires only once)
+  useEffect(() => {
+    if (!storedSignature || !!storedSignature.saved || !account?.address || lastSaveAttempTimestamp) return
+    sendSignature(storedSignature.signature)
+    // Save save attemp timestamp
+    setLastSaveAttempTimestamp(Date.now())
+  }, [account, storedSignature, lastSaveAttempTimestamp, sendSignature, setLastSaveAttempTimestamp])
+
+  if (walletInitialized && (!account || account?.isCustom === true || signatureTimestamp)){
     return (
       <Box
         width={'full'}
@@ -175,14 +198,22 @@ export const AuthWall = ({ children }: ProviderProps) => {
     <Center width={'full'} pt={10} mt={10} flex={1}>
       <Card maxW={'52em'}>
         {
-          false && signatureCheckError ? (
+          signatureCheckError && !signatureCheckErrorContinue ? (
             <VStack
               spacing={4}
               alignItems={'center'}
             >
               <Image src={`images/vaults/warning.png`} width={10} />
               <Translation translation={'authWall.checkError'} textAlign={'center'} />
-              <Translation component={Button} leftIcon={<MdOutlineRefresh size={22} />} variant={'ctaFull'} translation={'common.retry'} width={'10em'} onClick={() => getSignatureTimestamp()} />
+              <HStack
+                spacing={4}
+                width={'full'}
+                alignItems={'center'}
+                justifyContent={'center'}
+              >
+                <Translation component={Button} variant={'ctaPrimaryOutline'} translation={'common.cancel'} width={'10em'} onClick={() => disconnect()} />
+                <Translation component={Button} rightIcon={<MdOutlineArrowForward size={22} />} variant={'ctaFull'} translation={'common.continue'} width={'10em'} onClick={() => setSignatureCheckErrorContinue(true)} />
+              </HStack>
             </VStack>
           ) : (
             <VStack
@@ -196,7 +227,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
                 {
                   Object.keys(messages.authWall.options).map( optionKey => (
                     <Checkbox key={`option_${optionKey}`} size={'md'} isChecked={state[optionKey]} onChange={() => dispatch({type:'TOGGLE_OPTION', payload: {optionKey}}) } alignItems={'baseline'}>
-                      <Translation translation={`authWall.options.${optionKey}`} />
+                      <Translation translation={`authWall.options.${optionKey}`} isHtml />
                     </Checkbox>
                   ))
                 }
