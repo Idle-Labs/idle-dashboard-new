@@ -14,6 +14,7 @@
     "save": "Save",
     "apply": "Apply",
     "reject": "Reject",
+    "welcome": "Welcome",
     "connected": "Connected",
     "created": "Created %{date}",
     "noResultsFound": "No results found.",
@@ -1923,7 +1924,6 @@
   "authWall": {
     "title": "It looks like you're new to idle.finance or are using a new device to connect. For Security please accept the following terms and sign a message with your wallet to continue.",
     "signatureTitle":"By accessing or using Idle App, I hereby represent and warrant that:", 
-    "subtitle": "I hereby further represent and warrant that:",
     "ctaAgree": "Agree & Login",
     "ctaCancel": "Cancel",
     "checkError": "There was a problem during the verification of your signature, please retry or sign again.",

@@ -219,8 +219,8 @@ export const AuthWall = ({ children }: ProviderProps) => {
             <VStack
               spacing={4}
             >
+              <Translation component={Heading} translation={'common.welcome'} as={'h2'} fontSize={'h2'} textAlign={'center'} isHtml />
               <Translation component={Heading} translation={'authWall.title'} as={'h3'} fontSize={'h3'} textAlign={'center'} isHtml />
-              <Translation translation={'authWall.subtitle'} textAlign={'left'} />
               <VStack
                 spacing={3}
               >
