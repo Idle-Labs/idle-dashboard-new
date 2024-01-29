@@ -1922,7 +1922,7 @@
     }
   },
   "authWall": {
-    "title": "It looks like you're new to idle.finance or are using a new device to connect. For Security please accept the following terms and sign a message with your wallet to continue.",
+    "title": "It looks like you're new to idle.finance or are using a new device to connect. Please accept the following terms and sign a message with your wallet to continue.",
     "signatureTitle":"By accessing or using Idle App, I hereby represent and warrant that:", 
     "ctaAgree": "Agree & Login",
     "ctaCancel": "Cancel",
