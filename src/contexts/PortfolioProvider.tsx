@@ -3746,6 +3746,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const annualDistributionUsd = annualDistributionWholePoolUsd.times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
             const annualDistributionOn1000Usd = annualDistribution.times(1000).div(bnOrZero(assetsData[vault.id].tvlUsd))
             // const annualDistributionPer1000Total = annualDistributionWholePool.times(1000).div(bnOrZero(totalTvlUsd))
+            // const aprWholePool = annualDistributionWholePoolUsd.div(totalTvlUsd)
 
             const vaultRewardEmission: RewardEmission = {
               assetId: rewardId,
@@ -3760,7 +3761,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
               // aprsBreakdownRewards[rewardId] = vaultRewardEmission.apr
 
               rewardsEmissionsTotalApr = rewardsEmissionsTotalApr.plus(vaultRewardEmission.apr)
-              // console.log(vault.id, rewardId, vaultRewardEmission.apr.toString(), bnOrZero((assetsData[vault.id].aprBreakdown as Balances)['rewards']).toString())
+
+              // console.log(vault.id, rewardId, vaultRewardEmission.apr.toString())
             }
 
             rewardsEmissions[rewardId] = vaultRewardEmission
