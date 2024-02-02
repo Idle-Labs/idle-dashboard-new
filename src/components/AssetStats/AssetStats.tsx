@@ -31,7 +31,7 @@ import { useAllocationChartData } from 'hooks/useAllocationChartData/useAllocati
 import { DonutChart, DonutChartData, DonutChartInitialData } from 'components/DonutChart/DonutChart'
 import { RainbowData, usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { Transaction, HistoryData, HistoryTimeframe, AssetId, DateRange, Balances } from 'constants/types'
-import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage, bnOrZero, floorTimestamp, isEmpty } from 'helpers/'
+import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, numberToPercentage, bnOrZero, floorTimestamp, isEmpty, formatMoney } from 'helpers/'
 
 type AboutItemProps = {
   translation: TranslationProps["translation"]
@@ -276,7 +276,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     const totalFunds = compositionData.data.reduce( (total: BigNumber, data: DonutChartData) => total.plus(data.value), BNify(0))
-    const formatFn = (n: any) => `$${abbreviateNumber(n)}`
+    const formatFn = (n: any) => `$${formatMoney(n)}`
     const selectedAsset = selectedSlice?.extraData?.asset
 
     const customIcon = selectedSlice?.extraData?.icon
@@ -453,7 +453,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
     >
       <Card>
         <Translation mb={1} translation={'defi.tvl'} textStyle={'captionSmall'} />
-        <Amount.Usd value={tvlUsd} textStyle={'ctaStatic'} fontSize={'xl'} />
+        <Amount.Usd abbreviate={false} value={tvlUsd} textStyle={'ctaStatic'} fontSize={'xl'} />
         {
           /*
           strategyConfig?.strategy === 'tranches' && (
@@ -513,11 +513,11 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
       }
       <Card>
         <Translation mb={1} translation={'stats.totalVolume'} textStyle={'captionSmall'} />
-        <Amount.Usd value={volume} textStyle={'ctaStatic'} fontSize={'xl'} />
+        <Amount.Usd abbreviate={false} value={volume} textStyle={'ctaStatic'} fontSize={'xl'} />
       </Card>
       <Card>
         <Translation mb={1} translation={'stats.collectedFees'} textStyle={'captionSmall'} />
-        <TokenAmount assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
+        <TokenAmount abbreviate={false} assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
       </Card>
     </SimpleGrid>
   ), [tvlUsd, avgApy, volume, assetIds, asset, collectedFeesUsd, selectAssetById, strategyConfig])
@@ -758,6 +758,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
                   setPercentChange={() => {}}
                   timeframe={selectedTimeframe}
                   height={isMobile ? '300px' : '350px'}
+                  formatFn={(n: any) => `$${formatMoney(n)}`}
                   scaleType={assetIds.length>1 ? 'log' : 'linear'}
                   margins={{ top: 10, right: 0, bottom: 60, left: 0 }}
                   fileName={tvlUsdChartData && tvlUsdChartData.rainbow?.length>0 ? `tvls_${asset?.id}_${timeframeStartTimestamp}_${timeframeEndTimestamp}.csv` : null}

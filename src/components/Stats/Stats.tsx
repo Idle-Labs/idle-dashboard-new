@@ -305,7 +305,7 @@ export const Stats: React.FC = () => {
                   </HStack>
                 </AssetProvider>
               ) : (
-                <Amount.Usd value={value} textStyle={'tableCell'} />
+                <Amount.Usd abbreviate={false} value={value} textStyle={'tableCell'} />
               )
             }
           </SkeletonText>

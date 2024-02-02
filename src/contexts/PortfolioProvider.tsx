@@ -3010,13 +3010,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const [
         vaultsHistoricalData,
-        // vaultsCollectedFees
+        vaultsCollectedFees
       ] = await Promise.all([
         Promise.all(vaultsHistoricalDataPromises),
-        // vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
+        vaultFunctionsHelper.getVaultsCollectedFees(state.vaults)
       ])
 
-      // console.log('vaultsHistoricalData', vaultsHistoricalData)
+      // console.log('vaultsCollectedFees', vaultsCollectedFees)
 
       const tvls: Record<AssetId, HistoryData[]> = {}
       const rates: Record<AssetId, HistoryData[]> = {}
@@ -3059,7 +3059,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})
       dispatch({type: 'SET_HISTORICAL_PRICES', payload: prices})
-      // dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
+      dispatch({type: 'SET_VAULTS_COLLECTED_FEES', payload: vaultsCollectedFees})
 
       // eslint-disable-next-line
       console.log('HISTORICAL DATA LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')
