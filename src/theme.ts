@@ -260,6 +260,27 @@ export const theme = extendTheme({
         backgroundColor:'card.bgLight',
       }
     },
+    tableFilter: {
+      w:10,
+      h:10,
+      p:'6px',
+      opacity: 0.6,
+      cursor:'pointer',
+      border:'1px solid',
+      borderRadius:'50%',
+      filter: 'grayscale(1)',
+      borderColor:'divider',
+      _selected:{
+        opacity: '1!important',
+        filter: 'grayscale(0)',
+        backgroundColor:'rgba(255,255,255, 0.1)',
+      },
+      _hover:{
+        opacity: 0.7,
+        filter: 'grayscale(0)',
+        backgroundColor:'rgba(255,255,255, 0.1)',
+      }
+    },
     cardOutline: {
       p:8,
       borderRadius:8,

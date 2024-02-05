@@ -3,11 +3,11 @@ import { Column, Row } from 'react-table'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import type { BigNumber } from 'bignumber.js'
-import { products } from 'constants/products'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { MdArrowForwardIos } from 'react-icons/md'
 import { strategiesFolder } from 'constants/folders'
+import { products, chains, networks } from 'constants/'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { SearchBar } from 'components/SearchBar/SearchBar'
@@ -23,8 +23,8 @@ import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero } from 'helpers/'
-import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray } from 'helpers/'
+import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button, Tooltip } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -57,6 +57,42 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showL
   )
 }
 
+type ChainsFiltersArgs = {
+  enabledChains: number[]
+  setEnabledChains: Function
+}
+
+const ChainsFilters: React.FC<ChainsFiltersArgs> = ({enabledChains, setEnabledChains}) => {
+  const translate = useTranslate()
+  return (
+    <HStack
+      pr={4}
+      spacing={2}
+      borderRight={'1px solid'}
+      borderColor={'divider'}
+    >
+      {
+        Object.keys(chains).map( (chainId: string) => (
+          <Tooltip
+            hasArrow
+            placement={'top'}
+            label={translate(`networks.${chainId}`)}
+          >
+            <Box
+              key={`index_${chainId}`}
+              layerStyle={'tableFilter'}
+              aria-selected={enabledChains.includes(+chainId)}
+              onClick={ () => setEnabledChains( () => enabledChains.includes(+chainId) ? removeItemFromArray([...enabledChains], +chainId) : [...enabledChains, +chainId] ) }
+            >
+              <Image src={networks[+chainId].icon as string} />
+            </Box>
+          </Tooltip>
+        ))
+      }
+    </HStack>
+  )
+}
+
 export const Tranches: React.FC = () => {
   const navigate = useNavigate()
   const translate = useTranslate()
@@ -68,6 +104,8 @@ export const Tranches: React.FC = () => {
   const [ depositedAssetsFilter, setDepositedAssetsFilter ] = useState<string | null>(null)
   const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
   const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
+  const [ availableAssetsChains, setAvailableAssetsChains ] = useState<number[]>(Object.keys(chains).map( chainId => +chainId ))
+  const [ depositedAssetsChains, setDepositedAssetsChains ] = useState<number[]>(Object.keys(chains).map( chainId => +chainId ))
 
   const {
     vaults,
@@ -615,7 +653,9 @@ export const Tranches: React.FC = () => {
     }
 
     const depositedAssetsDataFiltered = depositedAssetsData.filter( (vaultAsset: Asset) => {
-      return !depositedAssetsFilter || !depositedAssetsFilter.length || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
+      const searchCheck = !depositedAssetsFilter || !depositedAssetsFilter.length || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
+      const chainCheck = vaultAsset?.chainId && depositedAssetsChains.includes(+vaultAsset.chainId)
+      return searchCheck && chainCheck
     })
 
     return isMobile ? (
@@ -644,12 +684,17 @@ export const Tranches: React.FC = () => {
           justifyContent={'space-between'}
         >
           <Translation translation={'defi.depositedAssets'} component={Card.Heading} fontSize={'lg'} />
-          <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />
+          <HStack
+            spacing={4}
+          >
+            <ChainsFilters enabledChains={depositedAssetsChains} setEnabledChains={setDepositedAssetsChains} />
+            <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />
+          </HStack>
         </HStack>
         <ReactTable columns={depositedAssetsColumns} data={depositedAssetsDataFiltered} initialState={initialState} onRowClick={ (row) => onRowClickDeposited(row, depositedListId, depositedListName) } />
       </Card>
     )
-  }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
+  }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedAssetsChains, setDepositedAssetsChains, depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
 
   const availableAssets = useMemo(() => {
     if (isPortfolioLoaded && !availableAssetsData.length) return null
@@ -664,7 +709,9 @@ export const Tranches: React.FC = () => {
     }
 
     const availableAssetsDataFiltered = availableAssetsData.filter( (vaultAsset: Asset) => {
-      return !availableAssetsFilter || !availableAssetsFilter.length || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
+      const searchCheck = !availableAssetsFilter || !availableAssetsFilter.length || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
+      const chainCheck = vaultAsset?.chainId && availableAssetsChains.includes(+vaultAsset.chainId)
+      return searchCheck && chainCheck
     })
 
     return isMobile ? (
@@ -693,7 +740,12 @@ export const Tranches: React.FC = () => {
           justifyContent={'space-between'}
         >
           <Translation translation={'defi.availableAssets'} component={Card.Heading} fontSize={'lg'} />
-          <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setAvailableAssetsFilter} />
+          <HStack
+            spacing={4}
+          >
+            <ChainsFilters enabledChains={availableAssetsChains} setEnabledChains={setAvailableAssetsChains} />
+            <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setAvailableAssetsFilter} />
+          </HStack>
         </HStack>
         {
           !isPortfolioLoaded ? (
@@ -708,7 +760,7 @@ export const Tranches: React.FC = () => {
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
+  }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsChains, setAvailableAssetsChains, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
   const deprecatedAssets = useMemo(() => {
     if (!isPortfolioLoaded || !deprecatedAssetsData.length) return null
