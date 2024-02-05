@@ -3699,7 +3699,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     */
     USDCBB: {
-      // status:'maintenance',
+      status:'deprecated',
       blockNumber: 16277063,
       flags:{
         // depositsDisabled:true,
@@ -3770,7 +3770,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDTBB: {
-      // status:'maintenance',
+      status:'deprecated',
       blockNumber: 16277063,
       flags:{
         apiType:'juniorRates',
@@ -3824,7 +3824,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     DAIBB: {
       enabledEnvs: [],
-      // status:'maintenance',
+      status:'deprecated',
       blockNumber: 16519501,
       flags:{
         referralEnabled:true,
@@ -4122,6 +4122,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     WETHBB: {
+      status:'deprecated',
       blockNumber: 16733433,
       underlyingToken: 'WETH',
       idle: {
