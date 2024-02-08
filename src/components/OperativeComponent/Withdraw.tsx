@@ -129,6 +129,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
       // @ts-ignore
       const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw)
+
+      // console.log('withdrawParams', withdrawParams, BNify(amount).toString(), vaultPrice.toString(), amountToWithdraw.toString())
+
       // @ts-ignore
       const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
 

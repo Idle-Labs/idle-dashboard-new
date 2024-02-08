@@ -275,7 +275,7 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
                           <AssetProvider.Strategy color={'gray.500'} fontWeight={'bold'} prefix={'('} suffix={')'} />
                         </HStack>
                       </AssetProvider>
-                      <Amount.Usd abbreviate={false} fontWeight={'bold'} fontSize={'md'} value={tooltipData.bar.data[assetId]} color={colorScale(assetId)} />
+                      <Amount.Usd abbreviate={false} decimals={0} fontWeight={'bold'} fontSize={'md'} value={tooltipData.bar.data[assetId]} color={colorScale(assetId)} />
                     </VStack>
                   ))
                 }
