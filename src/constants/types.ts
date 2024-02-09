@@ -10,12 +10,10 @@ export type { Vault } from 'vaults/'
 export type { BigNumber } from 'bignumber.js'
 
 export type Abi = AbiItem[]
-
-export type IconType = string | ReactIcon | React.ElementType
-
+export type AssetId = string
 export type NumberType = string | number | BigNumber
-
 export type Address = `${'0x'}${string & { length: 40 }}`
+export type IconType = string | ReactIcon | React.ElementType
 
 export type Nullable<T> = T | null | undefined;
 
@@ -125,7 +123,6 @@ export type EtherscanTransaction = {
   methodId?: string
 }
 
-export type AssetId = string
 export type Balances = Record<AssetId, BigNumber>
 
 export type VaultRewards = {
@@ -338,6 +335,7 @@ export type Asset = {
   rewards?: Balances
   balance?: BigNumber
   baseApr?: BigNumber
+  poolData?: Balances
   status?: VaultStatus
   totalTvl?: BigNumber
   aprRatio?: BigNumber

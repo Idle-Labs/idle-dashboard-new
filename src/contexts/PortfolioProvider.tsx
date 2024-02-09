@@ -51,6 +51,7 @@ type VaultsOnchainData = {
   vaultsRewards: VaultsRewards
   // stakingData: StakingData | null
   rewards: Record<AssetId, Balances>
+  poolsData: Record<AssetId, Balances>
   openVaults: Record<AssetId, boolean>
   allocations: Record<AssetId, Balances>
   pausedVaults: Record<AssetId, boolean>
@@ -103,6 +104,7 @@ const initialState: InitialState = {
   rewards: {},
   balances: {},
   baseAprs: {},
+  poolsData: {},
   aprRatios: {},
   selectors: {},
   contracts: [],
@@ -1197,6 +1199,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const checkEnabledCall = (call: string) => {
       return !enabledCalls.length || enabledCalls.includes(call)
     }
+
+    const poolsDataRawCallsByChainId: Record<number, Record<string, CallData[]>> = {}
     
     const rawCallsByChainId = vaults.filter( (vault: Vault) => checkAddress(vault.id) ).reduce( (rawCalls: Record<number, CallData[][]>, vault: Vault): Record<number, CallData[][]> => {
       const aggregatedRawCalls = [
@@ -1216,8 +1220,26 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getInterestBearingTokensExchangeRatesCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensExchangeRatesCalls() : [],
       ]
 
-      if (!rawCalls[vault.chainId])
+      if (!rawCalls[vault.chainId]){
         rawCalls[vault.chainId] = []
+      }
+
+      // Add poolData
+      if ("getPoolDataCalls" in vault){
+        if (!poolsDataRawCallsByChainId[vault.chainId]){
+          poolsDataRawCallsByChainId[vault.chainId] = {}
+        }
+        if (!poolsDataRawCallsByChainId[vault.chainId][vault.cdoConfig.address]){
+          poolsDataRawCallsByChainId[vault.chainId][vault.cdoConfig.address] = []
+          const poolDataCalls = vault.getPoolDataCalls()
+          poolDataCalls.forEach( (rawCall: ContractRawCall) => {
+            const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
+            if (callData){
+              poolsDataRawCallsByChainId[vault.chainId][vault.cdoConfig.address].push(callData)
+            }
+          })
+        }
+      }
 
       aggregatedRawCalls.forEach( (calls: ContractRawCall[], index: number) => {
         // Init array index
@@ -1332,6 +1354,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsEpochsData,
       vaultsTotalAprs,
       rawCallsResultsByChain,
+      poolDataRawCallsResultsByChain,
       [
         idleDistributionResults,
         rewardTokensResults,
@@ -1357,11 +1380,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       Promise.all(Array.from(vaultsEpochsPromises.values())),
       Promise.all(Array.from(vaultsTotalAprsPromises.values())),
       Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMultipleBatches(rawCallsByChainId[+chainId], +chainId, web3Chains[chainId]) )),
+      Promise.all(Object.keys(poolsDataRawCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(poolsDataRawCallsByChainId[+chainId]).flat(), true, +chainId, web3Chains[chainId]) )),
       // multiCall.executeMultipleBatches(rawCalls),
       multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
     ])
-
-    // console.log('morphoRewardsEmissions', morphoRewardsEmissions)
 
     let fees: Balances = {}
     let aprs: Balances = {}
@@ -1381,6 +1403,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     let pausedVaults: Record<AssetId, boolean> = {}
     let protocolsAprs: Record<AssetId, Balances> = {}
     let aprsBreakdown: Record<AssetId, Balances> = {}
+    let poolsData: VaultsOnchainData["poolsData"] = {}
     let epochsData: Record<AssetId, Asset["epochData"]> = {}
     let interestBearingTokens: Record<AssetId, Balances> = {}
     let lastHarvests: Record<AssetId, CdoLastHarvest["harvest"]> = {}
@@ -1402,7 +1425,33 @@ export function PortfolioProvider({ children }:ProviderProps) {
         interestBearingTokensCallsResults,
         interestBearingTokensExchangeRatesCallsResults,
       ]: DecodedResult[][] = rawCallsResultsByChain[resultIndex]
+
+      const poolsDataResults = poolDataRawCallsResultsByChain[resultIndex]
       // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
+
+      // console.log('poolsDataResults', poolsDataResults)
+
+      if (poolsDataResults){
+        poolsData = poolsDataResults.reduce( (poolsData: VaultsOnchainData["poolsData"], callResult: DecodedResult) => {
+          const cdoId = callResult.extraData.data.cdoAddress
+
+          // Get vaults by cdo address
+          const cdoVaults: Vault[] = vaults.filter( (vault: Vault) => ("cdoConfig" in vault) && vault.cdoConfig.address === cdoId )
+          cdoVaults.forEach( (vault: Vault) => {
+            const protocolField = callResult.extraData.data.protocolField
+            if (!poolsData[vault.id]){
+              poolsData[vault.id] = {}
+            }
+            let data = fixTokenDecimals(callResult.data, callResult.extraData.data.decimals)
+            if (typeof callResult.extraData.data.formatFn === 'function'){
+              data = callResult.extraData.data.formatFn(data)
+            }
+            poolsData[vault.id][protocolField] = data
+            // console.log(chainId, vault.id, protocolField, poolsData[vault.id][protocolField].toString())
+          })
+          return poolsData
+        }, {})
+      }
 
       // Process paused vaults
       pausedVaults = pausedCallsResults.reduce( (pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
@@ -1894,6 +1943,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       aprRatios,
       maticNFTs,
       totalAprs,
+      poolsData,
       epochsData,
       // assetsData,
       gaugesData,
@@ -1987,6 +2037,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprRatios,
         maticNFTs,
         totalAprs,
+        poolsData,
         gaugesData,
         openVaults,
         epochsData,
@@ -2059,6 +2110,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
           [vaultId]: protocolsAprs[vaultId]
         }
       }, {...state.protocolsAprs})
+
+      const newPoolsData = vaults.map( (vault: Vault) => vault.id ).reduce( (newPoolsData: Record<AssetId, Balances>, vaultId: AssetId) => {
+        if (!poolsData[vaultId]){
+          delete newPoolsData[vaultId]
+          return newPoolsData
+        }
+        return {
+          ...newPoolsData,
+          [vaultId]: poolsData[vaultId]
+        }
+      }, {...state.poolsData})
 
       const newTotalAprs = vaults.map( (vault: Vault) => vault.id ).reduce( (newTotalAprs: VaultsOnchainData["totalAprs"], vaultId: AssetId) => {
         if (!totalAprs[vaultId]){
@@ -2292,6 +2354,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprRatios: newAprRatios,
         totalAprs: newTotalAprs,
         pricesUsd: newPricesUsd,
+        poolsData: newPoolsData,
         epochsData: newEpochsData,
         openVaults: newOpenVaults,
         allocations: newAllocations,
@@ -2789,6 +2852,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         baseAprs,
         pricesUsd,
         aprRatios,
+        poolsData,
         maticNFTs,
         totalAprs,
         // assetsData,
@@ -2853,6 +2917,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
         const payload = !enabledCalls.length || accountChanged ? protocolsAprs : {...state.protocolsAprs, ...protocolsAprs}
         newState.protocolsAprs = payload
+        // dispatch({type: 'SET_ALLOCATIONS', payload })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('protocols')) {
+        const payload = !enabledCalls.length || accountChanged ? poolsData : {...state.poolsData, ...poolsData}
+        newState.poolsData = payload
         // dispatch({type: 'SET_ALLOCATIONS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
@@ -3656,6 +3725,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].flags = vault.flags
       assetsData[vault.id].fee = state.fees[vault.id]
       assetsData[vault.id].rewards =  state.rewards[vault.id]
+      assetsData[vault.id].poolData =  state.poolsData[vault.id]
       assetsData[vault.id].aprRatio =  state.aprRatios[vault.id]
       assetsData[vault.id].epochData = state.epochsData[vault.id]
       assetsData[vault.id].gaugeData =  state.gaugesData[vault.id]
@@ -3927,6 +3997,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.balances,
     state.aprRatios,
     state.pricesUsd,
+    state.poolsData,
     state.totalAprs,
     state.openVaults,
     state.gaugesData,

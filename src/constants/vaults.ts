@@ -11,6 +11,7 @@ import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
 import { AMPHOR_WSTETH_REFERRAL } from 'constants/addresses'
+import ClearpoolPool from 'abis/clearpool/ClearpoolPool.json'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
@@ -43,7 +44,7 @@ export interface Strategy {
 
 export interface Pool {
   abi: Abi
-  name: string
+  name?: string
   address?: string
   functions?: Record<string, string>
 }
@@ -608,6 +609,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:IdleStrategy as Abi,
           name:'IdleStrategy_clearpool_fasanara_USDT',
           address:'0x8A42DDE5040675C71C09499F63fBa8Ed98fee77B'
+        },
+        Pool:{
+          abi:ClearpoolPool as Abi,
+          address:'0x87181362ba304fec7e5a82ad2b7b503d7ad62639'
         },
         translations:{
           distributedTokens:{

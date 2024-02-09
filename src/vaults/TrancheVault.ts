@@ -7,6 +7,7 @@ import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
+import { ProtocolField, protocols } from 'constants/protocols'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
@@ -417,6 +418,21 @@ export class TrancheVault {
         call:this.strategyContract.methods.getApr()
       },
     ]
+  }
+
+  public getPoolDataCalls(): ContractRawCall[] {
+    const protocolFields = protocols[this.protocol]?.fields
+    if (!this.poolContract || !protocolFields) return []
+    return protocolFields.map( (protocolField: ProtocolField) => ({
+      assetId:this.id,
+      data:{
+        formatFn: protocolField.formatFn,
+        cdoAddress: this.cdoConfig.address,
+        protocolField: protocolField.field,
+        decimals: protocolField.decimals || this.underlyingToken?.decimals || 18
+      },
+      call:this.poolContract?.methods[protocolField.function]()
+    }))
   }
 
   public getPoolVaultOpen(): ContractRawCall[] {

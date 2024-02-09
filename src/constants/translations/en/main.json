@@ -1993,6 +1993,9 @@
         "status":"Status",
         "pool":"Pool",
         "apy":"APY",
+        "borrowRate":"Borrow rate",
+        "supplyRate":"Supply rate",
+        "utilizationRate":"Utilization rate",
         "apyRatio":"APY Ratio",
         "apyBoost":"APY Boost",
         "coverage":"Coverage",
@@ -2010,6 +2013,10 @@
         "redeemFromGauge":"Please unstake your tranche tokens from the Gauge"
       },
       "tooltips": {
+        "pool":"Pool",
+        "borrowRate":"Borrow rate",
+        "supplyRate":"Supply rate",
+        "utilizationRate":"Utilization rate",
         "stkIDLESupply":"Total supply of stkIDLE minted",
         "discount":"This vault is eligible for fee discount",
         "boosted": "This vault is boosted by additional rewards",

@@ -1,4 +1,17 @@
+import BigNumber from 'bignumber.js'
+import { SECONDS_IN_YEAR } from 'constants/vars'
 import { protocolsFolder } from 'constants/folders'
+
+export type ProtocolField = {
+  props?: any
+  field: string
+  label: string
+  tooltip?: string
+  function: string
+  decimals?: number
+  formatFn?: Function
+  inlineField?: string
+}
 
 const env = process.env;
 
@@ -27,6 +40,7 @@ export interface Protocol {
   stats?: StatsProps
   govTokens?: string[]
   colors?: ProtocolColors
+  fields?: ProtocolField[]
   apis?: Record<string, ApisProps>
 }
 
@@ -325,6 +339,38 @@ export const protocols: Record<string, Protocol> = {
     govTokens: ['CPOOL'],
     enabled: true,
     label: "Clearpool",
+    fields:[
+      {
+        field:'poolSize',
+        function:'poolSize',
+        label:'assets.assetDetails.generalData.pool',
+        tooltip:'assets.assetDetails.tooltips.pool'
+      },
+      {
+        decimals: 18,
+        field:'borrowRate',
+        function:'getBorrowRate',
+        formatFn: (d: BigNumber) => d.times(SECONDS_IN_YEAR).times(100),
+        label:'assets.assetDetails.generalData.borrowRate',
+        tooltip:'assets.assetDetails.tooltips.borrowRate'
+      },
+      {
+        decimals: 18,
+        field:'supplyRate',
+        function:'getSupplyRate',
+        formatFn: (d: BigNumber) => d.times(SECONDS_IN_YEAR).times(100),
+        label:'assets.assetDetails.generalData.supplyRate',
+        tooltip:'assets.assetDetails.tooltips.supplyRate'
+      },
+      {
+        decimals: 18,
+        field:'utilizationRate',
+        function:'getUtilizationRate',
+        formatFn: (d: BigNumber) => d.times(100),
+        label:'assets.assetDetails.generalData.utilizationRate',
+        tooltip:'assets.assetDetails.tooltips.utilizationRate',
+      }
+    ],
     colors: {
       rgb: [95, 115, 244],
       hsl: ["232", "87%", "66%"]
