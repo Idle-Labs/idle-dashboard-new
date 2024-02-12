@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Footer } from 'components/Footer/Footer'
 import { Header } from 'components/Header/Header'
+import { AUTHWALL_ENABLED } from 'constants/vars'
 import { AuthWall } from 'components/AuthWall/AuthWall'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { ContainerProps, Box, VStack } from '@chakra-ui/react'
@@ -38,11 +39,19 @@ export const Template: React.FC<ContainerProps> = () => {
         alignItems={'flex-start'}
       >
         <Header />
-        <AuthWall>
-          <Suspense>
-            <Outlet />
-          </Suspense>
-        </AuthWall>
+        {
+          AUTHWALL_ENABLED ? (
+            <AuthWall>
+              <Suspense>
+                <Outlet />
+              </Suspense>
+            </AuthWall>
+          ) : (
+            <Suspense>
+              <Outlet />
+            </Suspense>
+          )
+        }
         <Box
           pt={[10, 20]}
           width={'full'}
