@@ -65,6 +65,7 @@
     "deploy-polygon": "echo 'polygon.idle.finance\nwww.polygon.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote polygon",
     "deploy-all": "yarn deploy && yarn deploy-beta && yarn deploy-polygon",
     "build-deploy": "yarn build && yarn deploy",
+    "build-deploy-beta": "yarn build && yarn deploy-beta",
     "build-deploy-all": "yarn build && yarn deploy-all"
   },
   "browserslist": {
