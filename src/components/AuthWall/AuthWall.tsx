@@ -137,12 +137,9 @@ export const AuthWall = ({ children }: ProviderProps) => {
 
   const signAndSend = useCallback(async () => {
     if (!account?.address || !web3) return;
-
     setSending(true)
-
     try {
-      // @ts-ignore
-      const signature = await web3.eth.personal.sign(messageToSign, account.address)
+      const signature = await web3.eth.personal.sign(messageToSign, account.address, '', () => {})
       if (signature){
         await sendSignature(signature)
         getSignatureTimestamp()
