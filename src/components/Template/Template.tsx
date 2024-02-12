@@ -47,9 +47,13 @@ export const Template: React.FC<ContainerProps> = () => {
               </Suspense>
             </AuthWall>
           ) : (
-            <Suspense>
-              <Outlet />
-            </Suspense>
+            <Box
+              width={'full'}
+            >
+              <Suspense>
+                <Outlet />
+              </Suspense>
+            </Box>
           )
         }
         <Box
