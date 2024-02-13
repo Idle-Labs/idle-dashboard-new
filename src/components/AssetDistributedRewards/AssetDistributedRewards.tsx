@@ -63,7 +63,8 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
               idleAmount: BNify(0),
               chainId: distributedReward.chainId,
               assetId: distributedReward.assetId,
-              underlyingAmount: distributedReward.value
+              underlyingAmount: distributedReward.value,
+              amountUsd: bnOrZero(distributedReward.valueUsd).gt(0) ? BNify(distributedReward.valueUsd) : distributedReward.value
             }
             return (
               <TransactionItem key={`tx_${transaction.hash}`} transaction={transaction} />
@@ -90,7 +91,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
   if (!asset || !("distributedTokens" in vault) || !vault.distributedTokens.length) return null
 
   // Check referrals
-  if (showDistributedRewardsForReferralOnly && bnOrZero(vaultPosition?.underlying.depositedWithRef).lte(0)) return null
+  if (showDistributedRewardsForReferralOnly && bnOrZero(vaultPosition?.underlying.depositedWithRef).lte(0) && isEmpty(distributedRewards)) return null
 
   return (
     <VStack
@@ -107,13 +108,11 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
         {
           vault.distributedTokens.map( (underlyingToken: UnderlyingTokenProps) => {
             if (!underlyingToken.address) return null
-
-            const totalAmount = asset.distributedRewards?.[underlyingToken.address] ? asset.distributedRewards[underlyingToken.address].reduce( (totalAmount: BigNumber, reward: DistributedReward) => {
+            const underlyingId = underlyingToken.address.toLowerCase()
+            const totalAmount = asset.distributedRewards?.[underlyingId] ? asset.distributedRewards[underlyingId].reduce( (totalAmount: BigNumber, reward: DistributedReward) => {
               return totalAmount.plus(reward.value)
             }, BNify(0)) : BNify(0)
-
-            const latestDistribution = asset.distributedRewards?.[underlyingToken.address] ? sortArrayByKey(asset.distributedRewards[underlyingToken.address], 'timeStamp', 'desc')[0] : null
-
+            const latestDistribution = asset.distributedRewards?.[underlyingId] ? sortArrayByKey(asset.distributedRewards[underlyingId], 'timeStamp', 'desc')[0] : null
             const apr = latestDistribution?.apr || asset.apyBreakdown?.rewards || BNify(0)
             return (
               <Card

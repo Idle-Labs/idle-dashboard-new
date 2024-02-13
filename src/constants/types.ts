@@ -309,6 +309,7 @@ export type DistributedReward = {
   blockNumber: number
   apr: BigNumber | null
   value: BigNumber
+  valueUsd?: BigNumber
   tx: EtherscanTransaction
 }
 

@@ -589,7 +589,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
           if ("getDistributedRewards" in vault){
             const distributedRewardsTxs = vault.getDistributedRewards(account.address, etherscanTransactions)
-            // console.log('distributedRewardsTxs', vault.id, distributedRewardsTxs)
             output.distributedRewards[vault.id] = distributedRewardsTxs.reduce( (distributedRewards: NonNullable<Asset["distributedRewards"]>, tx: EtherscanTransaction) => {
               const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
               if (!underlyingToken || !underlyingToken.address) return distributedRewards
@@ -641,6 +640,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!transactions || !transactions.length) return vaultsPositions
 
       let firstDepositTx: any = null
+      // const asset = selectAssetById(assetId)
       const vaultPrice = selectVaultPrice(assetId)
 
       const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber, totalDeposits: BigNumber, depositedWithRefAmount: BigNumber, referral?: string | null}, transaction: Transaction, index: number) => {
@@ -691,6 +691,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           lastBalancePeriod.earningsPercentage = transaction.idlePrice.div(lastBalancePeriod.idlePrice).minus(1)
           lastBalancePeriod.realizedApr = BigNumber.maximum(0, lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration))
           lastBalancePeriod.realizedApy = apr2apy(lastBalancePeriod.realizedApr).times(100)
+          // console.log(assetId, asset?.epochData, transaction.timeStamp, lastBalancePeriod.timeStamp, lastBalancePeriod)
         }
 
         // Add period
@@ -3358,11 +3359,15 @@ export function PortfolioProvider({ children }:ProviderProps) {
                 const rewardConversionRateAtBlock = await genericContractsHelper.getConversionRate(underlyingToken, +distributedReward.blockNumber)
                 const distributedRewardAmount = distributedReward.value
                 const distributedRewardUsd = distributedRewardAmount.times(rewardConversionRateAtBlock)
-                const apr = distributedRewardUsd.div(distributionVaults.totalRedeemable).times(52.1429)
-                res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr.times(100)
+
+                // Add value usd
+                distributedReward.valueUsd = distributedRewardUsd
+
+                const apr = distributedRewardUsd.div(distributionVaults.totalRedeemable).times(52.1429).times(100).div(distributionVaults.totalVaults)
+                res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr
 
                 // Update realized apy on vaultPosition
-                vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).plus(apr.times(100));
+                vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).plus(apr);
 
                 // Add rewards and earnings
                 vaultPosition.usd.rewards = bnOrZero(vaultPosition.usd.rewards).plus(distributedRewardUsd.div(distributionVaults.totalVaults));

@@ -11,10 +11,10 @@ import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
 import { AMPHOR_WSTETH_REFERRAL } from 'constants/addresses'
-import { rewardsSenders } from 'constants/whitelistedSenders'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
+import { rewardsSenders, distributedFeesSenders } from 'constants/whitelistedSenders'
 
 export const vaultsStatusSchemes: Record<string, string> = {
   'production' : 'green',
@@ -3465,7 +3465,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:18769315,
         underlyingToken:'WSTETH',
         distributedTokens:['WSTETH'],
-        rewardsSenders:rewardsSenders[1],
+        rewardsSenders:distributedFeesSenders[1],
         flags:{
           addHarvestApy: false,
           showCurrentApy: true,
