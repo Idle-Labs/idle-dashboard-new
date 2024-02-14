@@ -3,18 +3,18 @@ import dayjs from 'dayjs'
 import { Vault } from 'vaults/'
 import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
-import { explorers, networks } from 'constants/'
 import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { TrancheVault } from 'vaults/TrancheVault'
 import { selectUnderlyingToken } from 'selectors/'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
 import { FEES_COLLECTORS } from 'constants/addresses'
+import { explorers, networks, chains } from 'constants/'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs } from 'helpers/'
 import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData } from 'constants/'
+import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId } from 'helpers/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -518,18 +518,14 @@ export class VaultFunctionsHelper {
   }
 
   public async getVaultsCollectedFees(vaults: Vault[]): Promise<Record<AssetId, Transaction[]>> {
-
-    const vaultsCollectedFees = {}
-
-    if (!this.explorer) return vaultsCollectedFees
-
     const filteredVaults = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) )
 
-    return await asyncReduce<any, any>(
-      FEES_COLLECTORS,
+    const collectedFeesPromises = Object.keys(chains).map( (chainId: string) => asyncReduce<any, any>(
+      FEES_COLLECTORS[chainId],
       async (feeCollectorAddress) => {
-        const endpoint = `${this.explorer?.endpoints[this.chainId]}?module=account&action=tokentx&address=${feeCollectorAddress}&sort=desc`
-        const callback = async () => (await makeEtherscanApiRequest(endpoint, this.explorer?.keys || []))
+        const explorer = getExplorerByChainId(+chainId)
+        const endpoint = `${explorer?.endpoints[+chainId]}?module=account&action=tokentx&address=${feeCollectorAddress}&sort=desc`
+        const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
         const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
         // Process transactions
@@ -544,7 +540,7 @@ export class VaultFunctionsHelper {
           {}
         )
 
-        // console.log('vaultsTransactions', feeCollectorAddress, vaultsTransactions)
+        // console.log('vaultsTransactions', chainId, feeCollectorAddress, endpoint, vaultsTransactions)
 
         return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, Transaction[]>, tx: EtherscanTransaction) => {
           // Look for incoming txs
@@ -634,7 +630,18 @@ export class VaultFunctionsHelper {
         return acc
       },
       {}
-    )
+    ))
+
+    const collectedFeesResults = await Promise.all(collectedFeesPromises)
+    return collectedFeesResults.reduce( (collectedFees: Record<AssetId, any[]>, vaultsTxs: any) => {
+      Object.keys(vaultsTxs).forEach( (assetId: AssetId) => {
+        if (!collectedFees[assetId]){
+          collectedFees[assetId] = []
+        }
+        collectedFees[assetId] = collectedFees[assetId].concat(vaultsTxs[assetId])
+      })
+      return collectedFees
+    }, {})
   }
 
   private calcNewAPRSplit(ratio: BigNumber): BigNumber {

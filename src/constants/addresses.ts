@@ -1,7 +1,11 @@
 // General
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 export const IDLE_MULTISIG_MAINNET = '0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814'
-export const FEES_COLLECTORS = ["0xbecc659bfc6edca552fa1a67451cc6b38a0108e4", "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814", "0x69a62c24f16d4914a48919613e8ee330641bcb94"]
+export const FEES_COLLECTORS: Record<string, string[]> = {
+  1: ["0xbecc659bfc6edca552fa1a67451cc6b38a0108e4", "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814", "0x69a62c24f16d4914a48919613e8ee330641bcb94"],
+  10: ["0xfdbb4d606c199f091143bd604c85c191a526fbd0"],
+  1101: ["0x13854835c508fc79c3e5c5abf7afa54b4ccc1fdf"]
+}
 
 // Optimism
 export const DISPERSE_APP_OPTIMISM = "0xd152f549545093347a162dce210e7293f1452150"
