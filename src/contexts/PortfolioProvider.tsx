@@ -711,6 +711,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
               endTimestamp = vaultEpochData.end
             }
           }
+          
           const duration = index === transactions.length-1 ? Math.floor(endTimestamp/1000)-(+transaction.timeStamp) : 0
           const earningsPercentage = duration ? vaultPrice.div(transaction.idlePrice).minus(1) : BNify(0)
           const realizedApr = duration ? BigNumber.maximum(0, earningsPercentage.times(31536000).div(duration)) : BNify(0)
