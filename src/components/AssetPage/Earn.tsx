@@ -249,7 +249,7 @@ export const Earn: React.FC = () => {
           <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
           <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
           {
-            feeDiscountEnabled && (
+            feeDiscountEnabled ? (
               bnOrZero(stakingData?.feeDiscount).gt(0) ? (
                 <Translation translation={'assets.fundsOverview.discount'} params={{discount: bnOrZero(stakingData?.feeDiscount)}} fontWeight={'600'} color={'brightGreen'} fontSize={'xs'} />
               ) : (
@@ -257,6 +257,11 @@ export const Earn: React.FC = () => {
                   <Translation translation={'feeDiscount.enable'} color={'link'} fontSize={'xs'} />
                 </NavLink>
               )
+            ) : (
+              <HStack spacing={1}>
+                <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
+                <AssetProvider.Name textStyle={'captionSmaller'} />
+              </HStack>
             )
           }
         </VStack>
