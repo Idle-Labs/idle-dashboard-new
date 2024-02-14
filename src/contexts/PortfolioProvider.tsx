@@ -3762,12 +3762,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             // Calculate apr using annual distribution usd
             if (BNify(vaultRewardEmission.annualDistributionUsd).gt(0)){
               vaultRewardEmission.apr = BNify(vaultRewardEmission.annualDistributionUsd).div(bnOrZero(assetsData[vault.id].tvlUsd)).times(100)
-
-              // aprsBreakdownRewards[rewardId] = vaultRewardEmission.apr
-
-              rewardsEmissionsTotalApr = rewardsEmissionsTotalApr.plus(vaultRewardEmission.apr)
-
-              // console.log(vault.id, rewardId, vaultRewardEmission.apr.toString())
+              // rewardsEmissionsTotalApr = rewardsEmissionsTotalApr.plus(vaultRewardEmission.apr)
             }
 
             rewardsEmissions[rewardId] = vaultRewardEmission
@@ -3800,8 +3795,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       assetsData[vault.id].aprBreakdown = {...state.aprsBreakdown[vault.id]} || {}
 
+      // Add rewards emissions total apr
       if (rewardsEmissionsTotalApr.gt(0)){
-        // Add rewards emissions total apr
         if (!assetsData[vault.id].aprBreakdown?.rewards){
           (assetsData[vault.id].aprBreakdown as Balances)['rewards'] = BNify(0)
         }
