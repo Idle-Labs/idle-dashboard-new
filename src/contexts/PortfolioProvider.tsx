@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission } from 'constants/types'
 
 type VaultsPositions = {
@@ -696,13 +696,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
           lastBalancePeriod.earningsPercentage = transaction.idlePrice.div(lastBalancePeriod.idlePrice).minus(1)
           lastBalancePeriod.realizedApr = BigNumber.maximum(0, lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration))
           lastBalancePeriod.realizedApy = apr2apy(lastBalancePeriod.realizedApr).times(100)
-          console.log(assetId, vaultEpochData, transaction.timeStamp, lastBalancePeriod.timeStamp, lastBalancePeriod)
+          // console.log(assetId, vaultEpochData, transaction.timeStamp, lastBalancePeriod.timeStamp, lastBalancePeriod)
         }
 
         // Add period
         if (depositsInfo.depositedAmount.gt(0)){
           // Update period for last transactions
-          const duration = index === transactions.length-1 ? Math.floor(Date.now()/1000)-(+transaction.timeStamp) : 0
+          let endTimestamp = Date.now()
+          // Get epoch date instead of current
+          if (vaultEpochData){
+            if (toDayjs(vaultEpochData.end).isAfter(endTimestamp)){
+              endTimestamp = vaultEpochData.start
+            } else {
+              endTimestamp = vaultEpochData.end
+            }
+            console.log('get vault epoch date instead of current', endTimestamp, vaultEpochData)
+          }
+          const duration = index === transactions.length-1 ? Math.floor(endTimestamp/1000)-(+transaction.timeStamp) : 0
           const earningsPercentage = duration ? vaultPrice.div(transaction.idlePrice).minus(1) : BNify(0)
           const realizedApr = duration ? BigNumber.maximum(0, earningsPercentage.times(31536000).div(duration)) : BNify(0)
           const realizedApy = realizedApr ? apr2apy(realizedApr).times(100) : BNify(0)
