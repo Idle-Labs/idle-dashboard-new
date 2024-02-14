@@ -129,7 +129,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                     justifyContent={'center'}
                     alignItems={'space-between'}
                   >
-                    <TokenAmount assetId={underlyingToken.address} size={['sm', 'md']} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
+                    <TokenAmount assetId={underlyingToken.address} size={'sm'} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
                     <VStack
                       spacing={1}
                       alignItems={['flex-end', 'flex-start']}
