@@ -406,6 +406,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
     return state.vaults ? state.vaults.filter( (vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
   }, [state.vaults])
 
+  const selectVaultEpochData = useCallback( (assetId: AssetId | undefined): EpochData | null => {
+    return state.epochsData && assetId ? state.epochsData[assetId.toLowerCase()] || null :  null
+  }, [state.epochsData])
+
   const selectVaultGauge = useCallback( (vaultId: string): Vault | null => {
     const vault = selectVaultById(vaultId)
     if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig || vault.type === 'GG') return null
@@ -640,8 +644,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!transactions || !transactions.length) return vaultsPositions
 
       let firstDepositTx: any = null
-      // const asset = selectAssetById(assetId)
+      const asset = selectAssetById(assetId)
       const vaultPrice = selectVaultPrice(assetId)
+      const vaultEpochData = selectVaultEpochData(assetId)
 
       const depositsInfo = transactions.reduce( (depositsInfo: {balancePeriods: any[], depositedAmount: BigNumber, depositedIdleAmount: BigNumber, totalDeposits: BigNumber, depositedWithRefAmount: BigNumber, referral?: string | null}, transaction: Transaction, index: number) => {
         switch (transaction.action) {
@@ -691,7 +696,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
           lastBalancePeriod.earningsPercentage = transaction.idlePrice.div(lastBalancePeriod.idlePrice).minus(1)
           lastBalancePeriod.realizedApr = BigNumber.maximum(0, lastBalancePeriod.earningsPercentage.times(31536000).div(lastBalancePeriod.duration))
           lastBalancePeriod.realizedApy = apr2apy(lastBalancePeriod.realizedApr).times(100)
-          // console.log(assetId, asset?.epochData, transaction.timeStamp, lastBalancePeriod.timeStamp, lastBalancePeriod)
+          console.log(assetId, vaultEpochData, transaction.timeStamp, lastBalancePeriod.timeStamp, lastBalancePeriod)
         }
 
         // Add period
@@ -809,7 +814,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return output
-  }, [account, explorer, web3Chains, selectAssetById, selectVaultPrice, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
+  }, [account, explorer, web3Chains, selectAssetById, selectVaultPrice, selectVaultEpochData, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
     if (!web3 || !multiCall || !state.contractsNetworks?.[STAKING_CHAINID].length) return []
@@ -2446,6 +2451,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       selectAssetBalance,
       selectVaultPosition,
       selectAssetPriceUsd,
+      selectVaultEpochData,
       selectAssetStrategies,
       selectAssetBalanceUsd,
       selectNetworkByVaultId,
@@ -2474,6 +2480,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     selectAssetBalance,
     selectAssetPriceUsd,
     selectVaultPosition,
+    selectVaultEpochData,
     selectAssetStrategies,
     selectAssetBalanceUsd,
     selectNetworkByVaultId,
