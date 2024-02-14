@@ -644,7 +644,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!transactions || !transactions.length) return vaultsPositions
 
       let firstDepositTx: any = null
-      const asset = selectAssetById(assetId)
+      // const asset = selectAssetById(assetId)
       const vaultPrice = selectVaultPrice(assetId)
       const vaultEpochData = selectVaultEpochData(assetId)
 
@@ -710,7 +710,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
             } else {
               endTimestamp = vaultEpochData.end
             }
-            console.log('get vault epoch date instead of current', endTimestamp, vaultEpochData)
           }
           const duration = index === transactions.length-1 ? Math.floor(endTimestamp/1000)-(+transaction.timeStamp) : 0
           const earningsPercentage = duration ? vaultPrice.div(transaction.idlePrice).minus(1) : BNify(0)
