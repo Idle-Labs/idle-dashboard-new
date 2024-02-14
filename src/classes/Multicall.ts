@@ -223,6 +223,8 @@ export class  Multicall {
 
     if (!calldata) return null;
 
+    const multicallId = Date.now()
+
     const hash = hashCode(`${calldata}_${chainId}`)
 
     const cachedResults = await this.checkCachedRequests(hash);
@@ -247,7 +249,7 @@ export class  Multicall {
       });
     } catch (err) {
       // eslint-disable-next-line
-      console.log('Multicall Error:', calls, err, singleCallsEnabled)
+      console.trace(multicallId, 'Multicall Error:', chainId, calls, err, singleCallsEnabled)
 
       if (!singleCallsEnabled) {
         this.cachedRequests[hash] = {
@@ -259,8 +261,6 @@ export class  Multicall {
 
       const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
       const decodedCalls = await Promise.all(callPromises);
-
-      // console.log('SingleCalls - decodedCalls', decodedCalls)
 
       const decodedData = decodedCalls.reduce( (decodedResults, decodedCall, i) => {
         const output = {
@@ -282,15 +282,13 @@ export class  Multicall {
         status: 'success',
         data: decodedData
       }
+
+      // console.log(multicallId, 'Multicall - Singlecalls: ', decodedData)
     }
 
     const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results as string);
       
-    // if (debug){
-      // console.log('Multicall raw:', results)
-      // eslint-disable-next-line
-      // console.trace('decodedResults', Date.now(), results, decodedResults)
-    // }
+    // console.log(multicallId, 'Multicall - decodedResults', results, decodedResults)
 
     if (decodedResults && decodedResults[0].length){
 
@@ -313,7 +311,7 @@ export class  Multicall {
 
           if (debug){
             // eslint-disable-next-line
-            console.log(returnTypes, returnFields, decodedResult, decodedValues)
+            // console.log(returnTypes, returnFields, decodedResult, decodedValues)
           }
 
           if (returnTypes.length === 1){
@@ -333,7 +331,7 @@ export class  Multicall {
         return output;
       });
 
-      // console.log('Multicall decoded:', decodedData)
+      // console.log(multicallId, 'Multicall Decoded:', decodedData)
 
       this.cachedRequests[hash] = {
         status: 'success',
