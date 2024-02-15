@@ -1,4 +1,4 @@
-export type Borrower = {
+export type Operator = {
   name: string
   image?: string
   description: string
@@ -9,7 +9,61 @@ export type Borrower = {
   rating?: string
 }
 
-export const borrowers: Record<string, Borrower> = {
+export const operators: Record<string, Operator> = {
+  bProtocol: {
+    founded: 2020,
+    name: 'B.Proocol',
+    location: 'Tel Aviv, Israel',
+    industry: 'DeFi Risk Management',
+    image: 'images/borrowers/bprotocol.png',
+    links: {
+      website: 'https://www.bprotocol.org',
+      twitter: 'https://twitter.com/bprotocoleth',
+      linkedin: 'https://www.linkedin.com/company/b-protocol',
+      crunchbase: 'https://www.crunchbase.com/organization/b-protocol'
+    },
+    description: 'B-Protocol, a decentralized backstop liquidity protocol, where backstop liquidity providers (BLP) buy their right to liquidate under-collateralized loans and share their profits with the users of the platform. As a result, the users (borrowers and lenders) receive additional yield to their usual interest rate. The proposed mechanism eliminates the need for gas wars between liquidators, and thus transfers a big part of the protocol value back to the borrowers and lenders, which in turn improves their effective interest rate.'
+  },
+  blockAnalitica: {
+    founded: 2018,
+    location: 'Ljubljana',
+    name: 'Block Analitica',
+    industry: 'Risk Intelligence for DeFi',
+    image: 'images/borrowers/blockanalitica.png',
+    links: {
+      website: 'https://blockanalitica.com',
+      twitter: 'https://twitter.com/BlockAnalitica',
+      linkedin: 'https://www.linkedin.com/company/block-analitica'
+    },
+    description: 'Established in 2018, our company set out on a mission to offer risk-related services within the DeFi arena.'
+  },
+  steakhouseFinancial: {
+    founded: 2023,
+    location: 'Grand Cayman',
+    industry: 'Market Making',
+    name: 'Steakhouse Financial',
+    image: 'images/borrowers/steakhouse.png',
+    links: {
+      twitter: 'https://twitter.com/SteakhouseFi',
+      website: 'https://www.steakhouse.financial',
+      linkedin: 'https://www.linkedin.com/company/steakhouse-financial/'
+    },
+    description: 'Crypto-native financial advisory to grow a new generation of open, transparent and neutral financial services'
+  },
+  re7: {
+    founded: 2021,
+    name: 'Re7 Capital',
+    industry: 'Investment Firm',
+    image: 'images/borrowers/re7.png',
+    location: 'London, England, United Kingdom',
+    links: {
+      website: 'https://www.re7.capital',
+      twitter: 'https://twitter.com/Re7Capital',
+      linkedin: 'https://www.linkedin.com/company/re7capital',
+      crunchbase: 'https://www.crunchbase.com/organization/re7-capital'
+    },
+    description: 'Re7 Capital specialises in DeFi R&D and liquid crypto investment strategies.'
+  },
   fasanara: {
     rating: 'AA',
     founded: 2019,

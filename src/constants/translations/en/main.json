@@ -1997,6 +1997,10 @@
         "totalIDLEStaked":"Total staked",
         "lastHarvest":"Last Harvest"
       },
+      "operatorOverview": {
+        "curator": "Curator overview",
+        "borrower": "Borrower overview"
+      },
       "requiredActions": {
         "redeemFromGauge":"Please unstake your tranche tokens from the Gauge"
       },

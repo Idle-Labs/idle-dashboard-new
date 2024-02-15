@@ -16,12 +16,12 @@ import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
-import { BorrowerOverview } from 'components/BorrowerOverview/BorrowerOverview'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
 import { EpochThresholdsTable } from 'components/EpochThresholdsTable/EpochThresholdsTable'
+import { VaultOperatorOverview } from 'components/VaultOperatorOverview/VaultOperatorOverview'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { bnOrZero, BNify, abbreviateNumber, isEmpty, replaceTokens, dateToLocale } from 'helpers/'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
@@ -298,10 +298,10 @@ export const Earn: React.FC = () => {
     )
   }, [vault, asset, locale])
 
-  const borrowerOverview = useMemo(() => {
-    if (!vault || !("vaultConfig" in vault) || !("borrower" in vault?.vaultConfig)) return null
+  const vaultOperatorOverview = useMemo(() => {
+    if (!vault || !("vaultConfig" in vault) || !("operators" in vault?.vaultConfig)) return null
     return (
-      <BorrowerOverview borrower={vault.vaultConfig.borrower} />
+      <VaultOperatorOverview vaultOperators={vault.vaultConfig.operators} />
     )
   }, [vault])
 
@@ -470,7 +470,7 @@ export const Earn: React.FC = () => {
         {strategyDescription}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
-      {borrowerOverview}
+      {vaultOperatorOverview}
       {epochThresholds}
       {coveredRisks}
       <VaultUnderlyingProtocols assetId={asset?.id} />

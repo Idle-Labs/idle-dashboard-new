@@ -80,6 +80,11 @@ export type StatsProps = {
   startTimestamp: number
 }
 
+export type VaultOperator = {
+  type: 'borrower' | 'curator'
+  name: string
+}
+
 export interface TrancheConfig {
   protocol:string
   status?: VaultStatus
@@ -95,7 +100,7 @@ export interface TrancheConfig {
   underlyingToken:string
   modal?: any
   variant?: string
-  borrower?: string
+  operators?: VaultOperator[]
   CDO: CDO
   Pool?: Pool
   stats?: StatsProps
@@ -115,7 +120,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'fasanara',
-        borrower:'fasanara',
+        operators:[
+          {
+            type: 'borrower',
+            name: 'fasanara',
+          }
+        ],
         status:'deprecated',
         protocol:'clearpool',
         blockNumber:17413683,
@@ -201,7 +211,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         status:'boosted',
         variant:'portofino',
-        borrower:'portofino',
+        operators:[{
+          type: 'borrower',
+          name: 'portofino'
+        }],
         protocol:'clearpool',
         blockNumber:2812768,
         autoFarming:['MATIC'],
@@ -289,7 +302,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     clearpool:{
       USDTBas:{
         enabledEnvs:[],
-        borrower:'bastion',
+        operators:[{
+          type: 'borrower',
+          name: 'bastion',
+        }],
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],
@@ -373,7 +389,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         status:'boosted',
         variant:'wincent',
-        borrower:'wincent',
+        operators:[{
+          type: 'borrower',
+          name: 'wincent',
+        }],
         autoFarming:['OP'],
         protocol:'clearpool',
         blockNumber:17413683,
@@ -470,7 +489,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         autoFarming:[],
         variant:'wincent',
-        borrower:'wincent',
+        operators:[{
+          type: 'borrower',
+          name: 'wincent',
+        }],
         status:'deprecated',
         protocol:'clearpool',
         blockNumber:17413683,
@@ -559,7 +581,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'boosted',
         autoFarming:['OP'],
         variant:'fasanara',
-        borrower:'fasanara',
+        operators:[{
+          type: 'borrower',
+          name: 'fasanara',
+        }],
         protocol:'clearpool',
         blockNumber:17413683,
         underlyingToken:'USDT',
@@ -656,7 +681,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'boosted',
         autoFarming:['OP'],
         variant:'portofino',
-        borrower:'portofino',
+        operators:[{
+          type: 'borrower',
+          name: 'portofino'
+        }],
         protocol:'clearpool',
         blockNumber:2812768,
         underlyingToken:'USDT',
@@ -2386,7 +2414,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDC:{
         enabledEnvs:[],
         variant:'portofino',
-        borrower:'portofino',
+        operators:[{
+          type: 'borrower',
+          name: 'portofino'
+        }],
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],
@@ -2471,7 +2502,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:[],
         status:'deprecated',
         variant:'wintermute',
-        borrower:'wintermute',
+        operators:[{
+          type: 'borrower',
+          name: 'wintermute'
+        }],
         protocol:'clearpool',
         blockNumber:16790250,
         underlyingToken:'USDC',
@@ -2553,7 +2587,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'wincent',
-        borrower:'wincent',
+        operators:[{
+          type: 'borrower',
+          name: 'wincent',
+        }],
         protocol:'clearpool',
         blockNumber:16790250,
         underlyingToken:'USDC',
@@ -2636,7 +2673,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'folkvang',
-        borrower:'folkvang',
+        operators:[{
+          type: 'borrower',
+          name: 'folkvang',
+        }],
         status:'deprecated',
         protocol:'clearpool',
         blockNumber:16790250,
@@ -2718,7 +2758,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDT:{
         enabledEnvs:[],
         variant:'fasanara',
-        borrower:'fasanara',
+        operators:[{
+          type: 'borrower',
+          name: 'fasanara',
+        }],
         protocol:'clearpool',
         blockNumber:16790250,
         autoFarming:['CPOOL'],
@@ -2800,7 +2843,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDCFas:{
         enabledEnvs:[],
         variant:'fasanara',
-        borrower:'fasanara',
+        operators:[{
+          type: 'borrower',
+          name: 'fasanara',
+        }],
         protocol:'clearpool',
         blockNumber:17413683,
         autoFarming:['CPOOL'],
@@ -2883,7 +2929,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         variant:'portofino',
-        borrower:'portofino',
+        operators:[{
+          type: 'borrower',
+          name: 'portofino'
+        }],
         protocol:'clearpool',
         blockNumber:16790274,
         underlyingToken:'DAI',
@@ -2964,11 +3013,111 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       }
     },
     morpho:{
+      Re7WETH:{
+        enabledEnvs:[],
+        variant: 'Re7',
+        operators:[{
+          name: 're7',
+          type: 'curator',
+        }],
+        protocol:'morpho',
+        blockNumber:16420584,
+        underlyingToken:'WETH',
+        autoFarming:['MORPHO', 'USDC'],
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          feeDiscountEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_Re7WETH',
+          address:'0xA8d747Ef758469e05CF505D708b2514a1aB9Cc08'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_Re7WETH',
+          address:'0x0186e34DE71987303B4eD4a027Ed939a1178A73B'
+        },
+        Pool:{
+          name: 'Morpho_Re7WETH',
+          abi:MorphoPool as Abi,
+          address:'0x38989BBA00BDF8181F4082995b3DEAe96163aC5D'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_Re7WETH_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'AA_morpho_Re7_WETH',
+            token:'AA_morpho_Re7_WETH',
+            label:'Morpho Re7 WETH AA',
+            address:'0x454bB3cb427B21e1c052A080e21A57753cd6969e'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_Re7WETH_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'BB_morpho_Re7_WETH',
+            token:'BB_morpho_Re7_WETH',
+            label:'Morpho Re7 WETH BB',
+            address:'0x20aa3CD83044D2903181f7eF5c2B498a017d1C4A'
+          }
+        }
+      },
       bbWETH:{
         enabledEnvs:[],
         protocol:'morpho',
         blockNumber:16420584,
         underlyingToken:'WETH',
+        operators:[
+          {
+            type:'curator',
+            name:'blockAnalitica'
+          },
+          {
+            type:'curator',
+            name:'bProtocol'
+          },
+        ],
         variant: 'Block Analitica',
         adaptiveYieldSplitEnabled:true,
         autoFarming:['MORPHO', 'WSTETH'],
@@ -3056,6 +3205,12 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16420584,
         distributedTokens:[],
         underlyingToken:'USDC',
+        operators:[
+          {
+            type:'curator',
+            name:'steakhouseFinancial'
+          }
+        ],
         variant:'Steakhouse Financial',
         adaptiveYieldSplitEnabled:true,
         autoFarming:['MORPHO', 'WSTETH'],
