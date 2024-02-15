@@ -3014,14 +3014,15 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     },
     morpho:{
       Re7WETH:{
-        enabledEnvs:[],
-        variant: 'Re7',
         operators:[{
           name: 're7',
           type: 'curator',
         }],
         protocol:'morpho',
+        enabledEnvs:['beta'],
         blockNumber:16420584,
+        status:'experimental',
+        variant: 'Re7 Capital',
         underlyingToken:'WETH',
         autoFarming:['MORPHO', 'USDC'],
         adaptiveYieldSplitEnabled:true,
