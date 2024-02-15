@@ -21,13 +21,14 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
       alignItems={'flex-start'}
     >
       {
-        vaultOperators.map( (operator: VaultOperator) => {
+        vaultOperators.map( (operator: VaultOperator, index: number) => {
           const operatorInfo = operators[operator.name]
           if (!operatorInfo) return null
           return (
             <VStack
               spacing={6}
               width={'full'}
+              key={`index_${index}`}
               alignItems={'flex-start'}
             >
               <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={`assets.assetDetails.operatorOverview.${operator.type}`} />

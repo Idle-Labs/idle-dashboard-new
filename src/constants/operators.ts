@@ -12,7 +12,7 @@ export type Operator = {
 export const operators: Record<string, Operator> = {
   bProtocol: {
     founded: 2020,
-    name: 'B.Proocol',
+    name: 'B.Protocol',
     location: 'Tel Aviv, Israel',
     industry: 'DeFi Risk Management',
     image: 'images/borrowers/bprotocol.png',
@@ -22,7 +22,7 @@ export const operators: Record<string, Operator> = {
       linkedin: 'https://www.linkedin.com/company/b-protocol',
       crunchbase: 'https://www.crunchbase.com/organization/b-protocol'
     },
-    description: 'B-Protocol, a decentralized backstop liquidity protocol, where backstop liquidity providers (BLP) buy their right to liquidate under-collateralized loans and share their profits with the users of the platform. As a result, the users (borrowers and lenders) receive additional yield to their usual interest rate. The proposed mechanism eliminates the need for gas wars between liquidators, and thus transfers a big part of the protocol value back to the borrowers and lenders, which in turn improves their effective interest rate.'
+    description: 'B.Protocol, a decentralized backstop liquidity protocol, where backstop liquidity providers (BLP) buy their right to liquidate under-collateralized loans and share their profits with the users of the platform. As a result, the users (borrowers and lenders) receive additional yield to their usual interest rate. The proposed mechanism eliminates the need for gas wars between liquidators, and thus transfers a big part of the protocol value back to the borrowers and lenders, which in turn improves their effective interest rate.'
   },
   blockAnalitica: {
     founded: 2018,
