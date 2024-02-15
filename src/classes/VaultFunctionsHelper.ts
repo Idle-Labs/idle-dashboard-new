@@ -590,6 +590,7 @@ export class VaultFunctionsHelper {
                   idleAmount: BNify(0),
                   subAction: 'collected',
                   assetId: foundVault.id,
+                  chainId: foundVault.chainId,
                   underlyingAmount: fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals)
                 })
                 // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toString())
@@ -603,6 +604,7 @@ export class VaultFunctionsHelper {
                     idlePrice: BNify(0),
                     idleAmount: BNify(0),
                     subAction: 'collected',
+                    chainId: foundVault.chainId,
                     assetId: rewardToken.address,
                     underlyingAmount: fixTokenDecimals(tx.value, (rewardToken.decimals || 18))
                   })
