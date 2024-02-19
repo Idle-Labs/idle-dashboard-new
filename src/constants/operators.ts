@@ -48,7 +48,7 @@ export const operators: Record<string, Operator> = {
       website: 'https://www.steakhouse.financial',
       linkedin: 'https://www.linkedin.com/company/steakhouse-financial/'
     },
-    description: 'Crypto-native financial advisory to grow a new generation of open, transparent and neutral financial services'
+    description: 'Crypto-native financial advisory to grow a new generation of open, transparent and neutral financial services.'
   },
   re7: {
     founded: 2021,
