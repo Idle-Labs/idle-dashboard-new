@@ -29,8 +29,9 @@ export function Web3Provider({ children }: ProviderProps) {
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
 
   const web3Rpc = useMemo(() => {
+    if (!chainId) return null
     const rpcUrl = chains[chainId]?.rpcUrl
-    if (!chainId || !rpcUrl) return null
+    if (!rpcUrl) return null
     return new Web3(new Web3.providers.HttpProvider(rpcUrl))
   }, [chainId])
 

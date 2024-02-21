@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
 import { IconTab } from 'components/IconTab/IconTab'
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { useWalletProvider } from 'contexts/WalletProvider'
 import { Stake } from 'components/OperativeComponent/Stake'
 import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AssetStats } from 'components/AssetStats/AssetStats'
@@ -39,6 +40,7 @@ type TabType = {
 
 type ContextProps = {
   stakingEnabled: boolean
+  isNetworkCorrect: boolean
   setStakingEnabled: Function
   toggleStakingEnabled: Function
   referral: string | null | undefined
@@ -47,6 +49,7 @@ type ContextProps = {
 const initialState: ContextProps = {
   referral: null,
   stakingEnabled: false,
+  isNetworkCorrect: false,
   setStakingEnabled: () => {},
   toggleStakingEnabled: () => {}
 }
@@ -77,6 +80,7 @@ export const useAssetPageProvider = () => React.useContext(AssetPageProviderCont
 
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
+  const { chainId } = useWalletProvider()
   const { isMobile, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
@@ -108,6 +112,8 @@ export const AssetPage: React.FC = () => {
   const vault = useMemo(() => {
     return selectVaultById && selectVaultById(params.asset)
   }, [selectVaultById, params.asset])
+
+  const isNetworkCorrect = useMemo(() => !!chainId && !!asset?.chainId && +asset.chainId === +chainId, [chainId, asset])
 
   const useDateRange = useMemo(() => {
     return !!dateRange.startDate && !!dateRange.endDate
@@ -162,58 +168,9 @@ export const AssetPage: React.FC = () => {
     }
   }, [timeframe, setDateRange])
 
-  // const strategy = useMemo(() => {
-  //   return Object.keys(strategies).find( strategy => strategies[strategy].route === params.strategy )
-  // }, [params])
-
   const toggleStakingEnabled = useCallback(() => {
     return setStakingEnabled( prevState => !prevState )
   }, [setStakingEnabled])
-
-  /*
-  const checkVaultNetwork = useCallback(() => {
-    const foundNetworkId = selectNetworkByVaultId(params.asset)
-    if (foundNetworkId && +foundNetworkId !== +chainId){
-      setLatestAssetUpdate(0)
-      openModal({
-        cta:'network.switchTo',
-        title:'common.switchNetwork',
-        body:'modals.assets.vaultWrongNetwork'
-      }, 'lg', true, {
-        cta:{
-          network: networks[foundNetworkId].name
-        },
-        body:{
-          network: network?.chainName,
-          correctNetwork: networks[foundNetworkId].chainName
-        }
-      }, [
-        {
-          props:{
-            variant: 'ctaPrimary',
-          },
-          function:() => setChainId(foundNetworkId),
-          text:translate('network.switchTo', {network: networks[foundNetworkId].name}),
-        },
-        {
-          props:{
-            height:12
-          },
-          text:translate('common.close'),
-          function:() => location && navigate(location.pathname.replace(`/${params.asset}`, ''))
-        }
-      ])
-      return false
-    }
-    return true
-  }, [chainId, params.asset, selectNetworkByVaultId, setChainId, network, translate, openModal, location, navigate, setLatestAssetUpdate])
-  */
-
-  // Check vault network
-  // useEffect(() => {
-  //   if (!isChainLoaded || !isPortfolioLoaded || isEmpty(vaultsNetworks)) return
-  //   checkVaultNetwork()
-  // }, [checkVaultNetwork, isPortfolioLoaded, isChainLoaded, vaultsNetworks, vault, asset])
 
   // Update asset
   useEffect(() => {
@@ -227,13 +184,6 @@ export const AssetPage: React.FC = () => {
     const assetPriceUsd = selectAssetPriceUsd(asset.underlyingId)
     return bnOrZero(assetBalance).times(bnOrZero(assetPriceUsd))
   }, [asset, selectAssetBalance, selectAssetPriceUsd])
-
-  // console.log('assetBalance', assetBalance)
-
-  // const asset = useMemo(() => {
-  //   console.log('asset', selectAssetById && selectAssetById(params.asset))
-  //   return selectAssetById && selectAssetById(params.asset)
-  // }, [selectAssetById, params.asset])
 
   const vaultGauge = useMemo(() => {
     return selectVaultGauge && selectVaultGauge(params.asset)
@@ -253,11 +203,9 @@ export const AssetPage: React.FC = () => {
   // Check asset exists
   useEffect(() => {
     if (!isPortfolioLoaded || !selectAssetById || !location || !latestAssetUpdate) return
-    // if (checkVaultNetwork()){
-      if (!asset){
-        return navigate(location.pathname.replace(`/${params.asset}`, ''))
-      }
-    // }
+    if (!asset){
+      return navigate(location.pathname.replace(`/${params.asset}`, ''))
+    }
   }, [isPortfolioLoaded, selectAssetById, latestAssetUpdate, asset, params.asset, location, navigate])
 
   // Send viewItem event
@@ -512,7 +460,7 @@ export const AssetPage: React.FC = () => {
   }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
 
   return (
-    <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled, referral}}>
+    <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled, isNetworkCorrect, referral}}>
       <AssetProvider
         wrapFlex={true}
         assetId={params.asset}

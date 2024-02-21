@@ -3204,7 +3204,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       runningEffects.current.vaultsCollectedFeesProcessing = false
 
-      // console.log('vaultsCollectedFees', state.vaultsChain, runningEffects.current.vaultsCollectedFees, chainId, isNetworkCorrect, state.vaults, vaultsCollectedFees)
+      // console.log('vaultsCollectedFees', state.vaultsChain, runningEffects.current.vaultsCollectedFees, chainId, state.vaults, vaultsCollectedFees)
 
       // eslint-disable-next-line
       console.log('COLLECTED FEES LOADED in ', (Date.now()-startTimestamp)/1000, 'seconds')

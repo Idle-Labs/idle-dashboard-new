@@ -9,8 +9,8 @@ import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetwor
 
 export const VaultNetworkCheck: React.FC<BoxProps> = ({ children }) => {
   const { vault } = useAssetProvider()
-  const { network, chainId, isNetworkCorrect } = useWalletProvider()
-  const isVaultNetworkSelected = useMemo(() => (isNetworkCorrect && vault && +vault.chainId === +chainId) , [isNetworkCorrect, vault, chainId])
+  const { network, chainId } = useWalletProvider()
+  const isVaultNetworkSelected = useMemo(() => chainId && (vault && +vault.chainId === +chainId) , [vault, chainId])
 
   return vault && !isVaultNetworkSelected ? (
     <Center

@@ -8,11 +8,11 @@ import { Translation } from 'components/Translation/Translation'
 
 export const WrongNetworkBanner: React.FC = () => {
   const [ { connectedChain }, setChain ] = useSetChain()
-  const { isNetworkCorrect, wallet, chainIdHex, network } = useWalletProvider()
+  const { wallet, chainIdHex, network } = useWalletProvider()
 
   const selectedChain = useMemo(() => connectedChain?.id ? selectChainByHexId(connectedChain.id) : null, [connectedChain])
 
-  if (isNetworkCorrect || !connectedChain || !wallet || !network || !chainIdHex) return null
+  if (!connectedChain || !wallet || !network || !chainIdHex) return null
 
   return (
     <Card.Light

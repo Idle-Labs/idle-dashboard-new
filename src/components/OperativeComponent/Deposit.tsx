@@ -19,6 +19,7 @@ import { EpochVaultMessage } from 'components/OperativeComponent/EpochVaultMessa
 import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
@@ -27,9 +28,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
   const [ amount, setAmount ] = useState<string>('0')
   const [ amountUsd, setAmountUsd ] = useState<number>(0)
-  const { stakingEnabled, setStakingEnabled, referral } = useAssetPageProvider()
+  const { stakingEnabled, setStakingEnabled, referral, isNetworkCorrect } = useAssetPageProvider()
 
-  const { account, isNetworkCorrect } = useWalletProvider()
+  const { account } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
   const { selectors: { selectAssetPriceUsd, selectAssetBalance } } = usePortfolioProvider()
@@ -171,7 +172,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [underlyingAsset])
 
   const getDefaultGasLimit = useCallback(async (): Promise<number|undefined> => {
-    if (!vault || !isNetworkCorrect || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
+    if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
     const defaultGasLimit = vault.getMethodDefaultGasLimit('deposit')
 
     const allowance = await getDepositAllowance()
@@ -199,7 +200,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, isNetworkCorrect, vault, referral, getDepositAllowance, assetBalance])
+  }, [account, vault, referral, getDepositAllowance, assetBalance])
 
   // Update gas fees
   useEffect(() => {
@@ -247,7 +248,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
 
   const depositButton = useMemo(() => {
-    return account ? (
+    return !isNetworkCorrect && asset ? (
+      <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
+    ) : account ? (
       <Translation component={Button} translation={stakingEnabled ? "common.stakeDeposit" : "common.deposit"} disabled={disabled} onClick={() => deposit(true)} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
@@ -258,7 +261,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, transaction, deposit, stakingEnabled])
+  }, [account, disabled, transaction, deposit, isNetworkCorrect, asset, stakingEnabled])
 
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
 

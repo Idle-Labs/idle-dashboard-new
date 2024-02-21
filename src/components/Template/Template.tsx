@@ -7,7 +7,7 @@ import { AuthWall } from 'components/AuthWall/AuthWall'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { ContainerProps, Box, VStack } from '@chakra-ui/react'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
-import { WrongNetworkBanner } from 'components/WrongNetworkBanner/WrongNetworkBanner'
+// import { WrongNetworkBanner } from 'components/WrongNetworkBanner/WrongNetworkBanner'
 
 export const Template: React.FC<ContainerProps> = () => {
   const { location } = useBrowserRouter()
@@ -63,7 +63,7 @@ export const Template: React.FC<ContainerProps> = () => {
           <Footer />
         </Box>
       </VStack>
-      <WrongNetworkBanner />
+      {/*<WrongNetworkBanner />*/}
     </Box>
   )
 }

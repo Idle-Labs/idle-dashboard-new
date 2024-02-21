@@ -9,6 +9,7 @@ import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { getDecodedError, bnOrZero, BNify, estimateGasLimit } from 'helpers/'
@@ -16,6 +17,7 @@ import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { EpochVaultMessage } from 'components/OperativeComponent/EpochVaultMessage'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
@@ -30,6 +32,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const { account } = useWalletProvider()
   const { searchParams } = useBrowserRouter()
+  const { isNetworkCorrect } = useAssetPageProvider()
   const { dispatch, activeItem, activeStep } = useOperativeComponent()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { sendTransaction, setGasLimit, state: { transaction } } = useTransactionManager()
@@ -209,7 +212,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, withdraw])
 
   const withdrawButton = useMemo(() => {
-    return account ? (
+    return !isNetworkCorrect && asset ? (
+      <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
+    ) : account ? (
       <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
@@ -220,7 +225,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, transaction, withdraw, redeemInterestBearing])
+  }, [account, disabled, transaction, withdraw, isNetworkCorrect, asset, redeemInterestBearing])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined

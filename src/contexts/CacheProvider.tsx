@@ -39,7 +39,7 @@ type CachedItem = {
 }
 
 export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProviderProps) => {
-  const { chainId, isChainLoaded } = useWalletProvider()
+  const { chainId } = useWalletProvider()
   const [ cacheVersion, setCacheVersion, , isLoaded ] = useLocalForge('cacheVersion')
   // const [ cachedRequests, setCachedRequests, , isLoaded, processing ] = useLocalForge(`cachedRequests`, preCachedRequests)
 
@@ -64,16 +64,16 @@ export const CacheProvider = ({ children, TTL: defaultTTL = 300 }: CacheProvider
 
   // Check preCachedData version
   useEffect(() => {
-    if (!isLoaded || !isChainLoaded || cacheVersion === CACHE_VERSION) return
+    if (!isLoaded || cacheVersion === CACHE_VERSION) return
     initCache()
     setCacheVersion(CACHE_VERSION)
     // eslint-disable-next-line
     console.log('CACHE VERSION UPGRADE FROM %s to %s', cacheVersion, CACHE_VERSION)
-  }, [cacheVersion, chainId, isChainLoaded, isLoaded, initCache, setCacheVersion])
+  }, [cacheVersion, chainId, isLoaded, initCache, setCacheVersion])
 
   const cacheIsLoaded = useMemo(() => {
-    return isLoaded && isChainLoaded && cacheVersion === CACHE_VERSION
-  }, [cacheVersion, isChainLoaded, isLoaded])
+    return isLoaded && cacheVersion === CACHE_VERSION
+  }, [cacheVersion, isLoaded])
 
   const requestQueue: Map<string, CachedItem> = useMemo(() => new Map(), [])
 

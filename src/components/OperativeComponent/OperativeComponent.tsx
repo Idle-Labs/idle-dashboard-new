@@ -2,7 +2,6 @@ import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
 import { Card, CardProps } from 'components/Card/Card'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import { NavBar } from 'components/OperativeComponent/NavBar'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
@@ -12,7 +11,7 @@ import { selectUnderlyingToken } from 'selectors/selectUnderlyingToken'
 import type { Asset, ReducerActionTypes, AssetId } from 'constants/types'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { VaultNetworkCheck } from 'components/OperativeComponent/VaultNetworkCheck'
+// import { VaultNetworkCheck } from 'components/OperativeComponent/VaultNetworkCheck'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionSpeed, STAKING_CHAINID, PROTOCOL_TOKEN, STAKING_FEE_DISCOUNTS } from 'constants/'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
@@ -33,7 +32,6 @@ type TransactionStatusProps = {
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   const translate = useTranslate()
-  const { chainId } = useWalletProvider()
   const countTimeoutId = useRef<any>(null)
   const { searchParams } = useBrowserRouter()
   const { underlyingAsset, theme, asset } = useAssetProvider()
@@ -404,9 +402,9 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
   }, [transactionState?.status, resetAndGoBack])
 
   const explorer = useMemo(() => {
-    const explorer =  getExplorerByChainId(chainId)
+    const explorer =  getExplorerByChainId(asset?.chainId)
     return explorer?.name || 'Chain'
-  }, [chainId])
+  }, [asset])
 
   return (
     <>
@@ -432,7 +430,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
             width={'100%'}
             justifyContent={'center'}
           >
-            <Translation<LinkProps> component={Link} translation={`defi.viewOnExplorer`} params={{explorer}} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(chainId, transactionState.hash)} />
+            <Translation<LinkProps> component={Link} translation={`defi.viewOnExplorer`} params={{explorer}} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(asset?.chainId, transactionState.hash)} />
           </HStack>
         )
       }
@@ -814,131 +812,133 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
           id={'operative-component'}
           {...cardProps}
         >
-          <VaultNetworkCheck>
-            {transationSpeedToggler}
-            {
-              transactionSpeedSelectorOpened && (
-                <VStack
-                  top={0}
-                  left={0}
-                  flex={1}
-                  zIndex={10}
-                  bg={'card.bg'}
-                  width={'100%'}
-                  height={'100%'}
-                  position={'absolute'}
-                  id={'transaction-speed-selector'}
-                >
-                  <TransactionSpeedSelector save={() => setTransactionSpeedSelectorOpened(false)} />
-                </VStack>
-              )
-            }
-            <ChakraCarousel
-              gap={0}
-              activeItem={activeItem}
+          {
+          /*<VaultNetworkCheck>
+            </VaultNetworkCheck>
+          */}
+          {transationSpeedToggler}
+          {
+            transactionSpeedSelectorOpened && (
+              <VStack
+                top={0}
+                left={0}
+                flex={1}
+                zIndex={10}
+                bg={'card.bg'}
+                width={'100%'}
+                height={'100%'}
+                position={'absolute'}
+                id={'transaction-speed-selector'}
+              >
+                <TransactionSpeedSelector save={() => setTransactionSpeedSelectorOpened(false)} />
+              </VStack>
+            )
+          }
+          <ChakraCarousel
+            gap={0}
+            activeItem={activeItem}
+          >
+            <Flex
+              flex={1}
+              width={'100%'}
+              direction={'column'}
+              alignItems={'flex-start'}
             >
+              <HStack
+                alignItems={'center'}
+                justifyContent={'space-between'}
+                id={'operative-component-header'}
+              >
+                <Tabs
+                  defaultIndex={0}
+                  variant={'button'}
+                  index={actionIndex}
+                  onChange={handleActionChange}
+                >
+                  <TabList>
+                    {
+                      actions.map( (action, index) => (
+                        <Translation key={`action_${index}`} mr={2} component={Tab} translation={action.label} />
+                      ))
+                    }
+                  </TabList>
+                </Tabs>
+              </HStack>
               <Flex
                 flex={1}
                 width={'100%'}
-                direction={'column'}
-                alignItems={'flex-start'}
               >
-                <HStack
-                  alignItems={'center'}
-                  justifyContent={'space-between'}
-                  id={'operative-component-header'}
-                >
-                  <Tabs
-                    defaultIndex={0}
-                    variant={'button'}
-                    index={actionIndex}
-                    onChange={handleActionChange}
-                  >
-                    <TabList>
-                      {
-                        actions.map( (action, index) => (
-                          <Translation key={`action_${index}`} mr={2} component={Tab} translation={action.label} />
-                        ))
-                      }
-                    </TabList>
-                  </Tabs>
-                </HStack>
-                <Flex
-                  flex={1}
-                  width={'100%'}
-                >
-                  {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
-                </Flex>
+                {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
               </Flex>
-              {
-                actions[actionIndex].steps.map((step, index) => {
-                  const StepComponent = step.component
-                  return (
-                    <VStack
-                      flex={1}
-                      width={'full'}
-                      key={`step_${index}`}
-                      alignItems={'flex-start'}
-                    >
-                      <NavBar goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} translation={step.label} params={{asset: underlyingAsset?.name}} />
-                      <StepComponent itemIndex={index+1} {...step.props} />
-                    </VStack>
-                  )
-                })
-              }
-              <VStack
-                flex={1}
-                spacing={0}
-                id={'confirm-on-wallet'}
-                alignItems={'flex-start'}
-              >
-                <NavBar goBack={() => setActiveItem(state.activeStep) } translation={`modals.confirm.${actionType}.header`} />
-                <Center
-                  p={14}
-                  flex={1}
-                  width={'100%'}
-                >
+            </Flex>
+            {
+              actions[actionIndex].steps.map((step, index) => {
+                const StepComponent = step.component
+                return (
                   <VStack
-                    spacing={6}
+                    flex={1}
+                    width={'full'}
+                    key={`step_${index}`}
+                    alignItems={'flex-start'}
                   >
-                    <MdOutlineAccountBalanceWallet size={72} />
-                    <Translation component={Text} translation={"trade.confirmTransactionWallet"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
-                    <VStack
-                      spacing={1}
-                    >
-                      <Translation component={Text} translation={`modals.${actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
-                      <HStack>
-                        {
-                          BNify(amountToDisplay).isNaN() ? (
-                            <Text textStyle={'bold'}>{amountToDisplay}</Text>
-                          ) : (
-                            <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay as string)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
-                          )
-                        }
-                      </HStack>
-                    </VStack>
+                    <NavBar goBack={() => dispatch({type:'SET_ACTIVE_STEP', payload: index})} translation={step.label} params={{asset: underlyingAsset?.name}} />
+                    <StepComponent itemIndex={index+1} {...step.props} />
                   </VStack>
-                </Center>
-                <HStack
-                  spacing={1}
-                  width={'100%'}
-                  justifyContent={'center'}
-                >
-                  <Translation component={Text} translation={`trade.transactionDontAppear`} textStyle={'captionSmall'} />
-                  <Translation component={Text} translation={`common.retry`} textStyle={['captionSmall', 'link', 'bold']} onClick={() => retry()} />
-                </HStack>
-              </VStack>
-
-              <VStack
+                )
+              })
+            }
+            <VStack
+              flex={1}
+              spacing={0}
+              id={'confirm-on-wallet'}
+              alignItems={'flex-start'}
+            >
+              <NavBar goBack={() => setActiveItem(state.activeStep) } translation={`modals.confirm.${actionType}.header`} />
+              <Center
+                p={14}
                 flex={1}
-                spacing={0}
-                alignItems={'flex-start'}
-                id={'transaction-status'}
+                width={'100%'}
               >
-                <TransactionStatus goBack={goBack} />
-              </VStack>
-            </ChakraCarousel>
-          </VaultNetworkCheck>
+                <VStack
+                  spacing={6}
+                >
+                  <MdOutlineAccountBalanceWallet size={72} />
+                  <Translation component={Text} translation={"trade.confirmTransactionWallet"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+                  <VStack
+                    spacing={1}
+                  >
+                    <Translation component={Text} translation={`modals.${actionType}.status.confirm`} params={{}} textStyle={'captionSmall'} textAlign={'center'} />
+                    <HStack>
+                      {
+                        BNify(amountToDisplay).isNaN() ? (
+                          <Text textStyle={'bold'}>{amountToDisplay}</Text>
+                        ) : (
+                          <Amount textStyle={'bold'} value={amountToDisplay} minPrecision={parseFloat(amountToDisplay as string)<1 ? 5 : 3} suffix={` ${assetToDisplay}`}></Amount>
+                        )
+                      }
+                    </HStack>
+                  </VStack>
+                </VStack>
+              </Center>
+              <HStack
+                spacing={1}
+                width={'100%'}
+                justifyContent={'center'}
+              >
+                <Translation component={Text} translation={`trade.transactionDontAppear`} textStyle={'captionSmall'} />
+                <Translation component={Text} translation={`common.retry`} textStyle={['captionSmall', 'link', 'bold']} onClick={() => retry()} />
+              </HStack>
+            </VStack>
+
+            <VStack
+              flex={1}
+              spacing={0}
+              alignItems={'flex-start'}
+              id={'transaction-status'}
+            >
+              <TransactionStatus goBack={goBack} />
+            </VStack>
+          </ChakraCarousel>
         </Card.Flex>
       </OperativeComponentContext.Provider>
     </AssetProvider>

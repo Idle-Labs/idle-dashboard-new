@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import axios from 'axios'
 import { getObjectPath, asyncWait, cmpAddrs } from 'helpers/'
 import { protocols, subgraphs, explorers, networks } from 'constants/'
-import type { Explorer, PlatformApiFilters, ApisProps } from 'constants/'
+import type { Explorer, PlatformApiFilters, ApisProps, Nullable } from 'constants/'
 
 export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
   const data = await axios
@@ -173,17 +173,19 @@ export const verifySignature = async (web3: Web3, walletAddress: string, message
   return cmpAddrs(signatureAddress, walletAddress)
 }
 
-export const getExplorerByChainId = (chainId: number): Explorer | null => {
+export const getExplorerByChainId = (chainId: Nullable<number>): Explorer | null => {
+  if (!chainId) return null
   const network = networks[+chainId]
   return explorers[network?.explorer] || null
 }
 
-export const getExplorerAddressUrl = (chainId: number, explorer: Explorer | null, address: string): string => {
-  if (!explorer) return ''
+export const getExplorerAddressUrl = (chainId: Nullable<number>, explorer: Nullable<Explorer>, address: string): string => {
+  if (!chainId || !explorer) return ''
   return `${explorer.baseUrl[chainId]}/address/${address}`
 }
 
-export const getExplorerTxUrl = (chainId: number, txHash: string): string => {
+export const getExplorerTxUrl = (chainId: Nullable<number>, txHash: string): string => {
+  if (!chainId) return ''
   const explorer = getExplorerByChainId(chainId)
   if (!explorer) return ''
   return `${explorer.baseUrl[chainId]}/tx/${txHash}`

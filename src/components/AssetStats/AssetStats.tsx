@@ -36,11 +36,13 @@ import { BNify, getChartTimestampBounds, removeItemFromArray, abbreviateNumber, 
 type AboutItemProps = {
   translation: TranslationProps["translation"]
   address: string
+  chainId: number
 }
 
 const AboutItem: React.FC<AboutItemProps> = ({
   translation,
-  address
+  address,
+  chainId
 }) => (
   <HStack
     py={4}
@@ -50,7 +52,7 @@ const AboutItem: React.FC<AboutItemProps> = ({
     borderBottomColor={'divider'}
   >
     <Translation translation={translation} textStyle={'tableCell'} />
-    <AddressLink address={address} />
+    <AddressLink chainId={chainId} address={address} />
   </HStack>
 )
 
@@ -442,7 +444,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
       }
     }
 
-    return items.map( (item, index) => <AboutItem key={index} {...item} /> )
+    return items.map( (item, index) => <AboutItem chainId={asset.chainId} key={index} {...item} /> )
   }, [assetIds, strategyConfig, selectAssetById, asset, vault, contracts])
 
   const aggregatedCards = useMemo(() => (

@@ -108,7 +108,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                       alignItems={'flex-start'}
                     >
                       <Translation component={Text} translation={'defi.poolAddress'} textStyle={'captionSmall'} />
-                      <AddressLink address={protocol.address} />{/*text={protocol.token} />*/}
+                      <AddressLink chainId={asset.chainId} address={protocol.address} />{/*text={protocol.token} />*/}
                     </VStack>
                     <VStack
                       spacing={1}

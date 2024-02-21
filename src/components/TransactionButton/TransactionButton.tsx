@@ -1,6 +1,5 @@
 import './progress.css'
 import type { AssetId } from 'constants/types'
-import { useSetChain } from '@web3-onboard/react'
 import { selectChainById } from 'constants/chains'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -206,10 +205,9 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
 }) => {
   // @ts-ignore
   const [ref, { width }] = useBoundingRect()
-  const [ , setChain ] = useSetChain()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
   const { sendTransaction, state: { transaction } } = useTransactionManager()
-  const { /*checkChainEnabled, */chainId, isNetworkCorrect, setChainId } = useWalletProvider()
+  const { /*checkChainEnabled, */chainId, setChainId } = useWalletProvider()
 
   // const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
@@ -221,18 +219,18 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
     return selectAssetById(assetId)
   }, [selectAssetById, assetId])
 
+  const isNetworkCorrect = useMemo(() => chainId && (asset && +asset.chainId === +chainId) , [asset, chainId])
+
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
     // Check selected chainId
     const assetChain = selectChainById(asset?.chainId)
     if (!isNetworkCorrect && assetChain){
-      return setChain({ chainId: assetChain.id as string })
-    } else if (asset.chainId !== chainId){
-      return setChainId(asset.chainId)
+      return setChainId(assetChain)
     }
 
     return sendTransaction(vaultId, assetId, contractSendMethod, actionType, amount)
-  }, [transaction, vaultId, assetId, chainId, contractSendMethod, actionType, amount, sendTransaction, asset, setChain, setChainId, isNetworkCorrect])
+  }, [transaction, vaultId, assetId, contractSendMethod, actionType, amount, sendTransaction, asset, setChainId, isNetworkCorrect])
 
   const borderColor = useMemo(() => {
     if (!isRightTransaction) return 'primary'

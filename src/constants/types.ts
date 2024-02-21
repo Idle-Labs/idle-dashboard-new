@@ -17,6 +17,8 @@ export type NumberType = string | number | BigNumber
 
 export type Address = `${'0x'}${string & { length: 40 }}`
 
+export type Nullable<T> = T | null | undefined;
+
 export type VaultAdditionalApr = {
   vaultId: string
   apr: BigNumber
