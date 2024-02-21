@@ -1,5 +1,3 @@
-import { STAKING_CHAINID } from 'constants/'
-import { TbPlugConnectedX } from 'react-icons/tb'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { MdLockClock, MdLockOpen } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -10,13 +8,14 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { BNify, estimateGasLimit, bnOrZero, toDayjs, formatDate, abbreviateNumber } from 'helpers/'
 
 export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] }) => {
   const { asset, vault } = useAssetProvider()
-  const { account, setChainId, checkChainEnabled } = useWalletProvider()
+  const { account, checkChainEnabled } = useWalletProvider()
   const { dispatch, activeItem, setActionIndex } = useOperativeComponent()
   const { stakingData, selectors: { selectVaultPrice } } = usePortfolioProvider()
   const { sendTransaction, setGasLimit, state: { block } } = useTransactionManager()
@@ -91,12 +90,14 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] 
   }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, withdraw])
 
   const withdrawButton = useMemo(() => {
-    return account ? (
+    return !isChainEnabled && asset ? (
+      <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
+    ) : account ? (
       <Translation component={Button} translation={"common.withdraw"} disabled={!lockExpired} onClick={withdraw} variant={'ctaFull'} />
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, lockExpired, withdraw])
+  }, [account, lockExpired, withdraw, isChainEnabled, asset])
 
   // console.log('stakingData', stakingData)
 
@@ -123,26 +124,7 @@ export const Unstake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] 
           alignItems={'flex-start'}
         >
           {
-            !isChainEnabled ? (
-              <Center
-                px={10}
-                flex={1}
-                width={'100%'}
-              >
-                <VStack
-                  spacing={6}
-                >
-                  <TbPlugConnectedX size={72} />
-                  <VStack
-                    spacing={4}
-                  >
-                    <Translation component={Text} translation={"staking.networkNotSupported"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
-                    <Translation component={Text} translation={`staking.switchToMainnet`} textStyle={'captionSmall'} textAlign={'center'} />
-                    <Translation component={Button} translation={`common.switchNetwork`} onClick={() => setChainId(STAKING_CHAINID)} variant={'ctaPrimary'} px={10} />
-                  </VStack>
-                </VStack>
-              </Center>
-            ) : !stakingData?.position?.lockEnd ? (
+            !stakingData?.position?.lockEnd ? (
               <Center
                 px={6}
                 flex={1}

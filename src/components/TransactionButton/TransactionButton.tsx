@@ -1,6 +1,5 @@
 import './progress.css'
 import type { AssetId } from 'constants/types'
-import { selectChainById } from 'constants/chains'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { MdOutlineDone, MdOutlineClose } from 'react-icons/md'
@@ -224,9 +223,8 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
   const onClick = useCallback(() => {
     if (transaction.status === 'created' || transaction.status === 'pending') return
     // Check selected chainId
-    const assetChain = selectChainById(asset?.chainId)
-    if (!isNetworkCorrect && assetChain){
-      return setChainId(assetChain)
+    if (!isNetworkCorrect){
+      return setChainId(asset?.chainId)
     }
 
     return sendTransaction(vaultId, assetId, contractSendMethod, actionType, amount)

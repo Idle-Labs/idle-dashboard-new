@@ -3,8 +3,8 @@ import { ManipulateType } from 'dayjs'
 import { getFeeDiscount } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { MdLockOpen } from 'react-icons/md'
-import { STAKING_CHAINID } from 'constants/'
-import { TbPlugConnectedX } from 'react-icons/tb'
+// import { STAKING_CHAINID } from 'constants/'
+// import { TbPlugConnectedX } from 'react-icons/tb'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
@@ -21,6 +21,7 @@ import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { FeeDiscountLink } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
+import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { MIN_STAKING_INCREASE_SECONDS, MIN_STAKING_SECONDS, MAX_STAKING_SECONDS } from 'constants/vars'
@@ -35,21 +36,13 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   const [ lockEndDate, setLockEndDate ] = useState<any>(null)
 
   const { web3 } = useWeb3Provider()
-  const { account, setChainId, checkChainEnabled } = useWalletProvider()
+  const { account, checkChainEnabled } = useWalletProvider()
   const { asset, vault, underlyingAsset, translate } = useAssetProvider()
   const { stakingData, selectors: { selectAssetBalance, selectAssetPriceUsd } } = usePortfolioProvider()
   const { dispatch, activeItem, activeStep, executeAction, setActionIndex, depositAmount } = useOperativeComponent()
   const { sendTransaction, setGasLimit, state: { transaction, block } } = useTransactionManager()
 
   const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
-
-  /*
-  const asset = useMemo(() => {
-    const underlyingToken = selectUnderlyingToken(STAKING_CHAINID, PROTOCOL_TOKEN)
-    if (!underlyingToken) return null
-    return selectAssetById(underlyingToken.address)
-  }, [])
-  */
 
   const assetBalance = useMemo(() => {
     if (!selectAssetBalance) return BNify(0)
@@ -379,12 +372,14 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
   }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit, depositAmount])
 
   const depositButton = useMemo(() => {
-    return account ? (
+    return !isChainEnabled && asset ? (
+      <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
+    ) : account ? (
       <Translation component={Button} translation={`staking.${selectedAction}`} disabled={disabled} onClick={deposit} variant={'ctaFull'} />
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, selectedAction, deposit])
+  }, [account, disabled, selectedAction, isChainEnabled, asset, deposit])
 
   const selectQuickOption = useCallback((value: number, timeframe: ManipulateType) => {
     const newDate = dayMin(dayMax(toDayjs().add(value, timeframe), minDate), maxDate)
@@ -522,26 +517,7 @@ export const Stake: React.FC<ActionComponentArgs> = ({ itemIndex, chainIds=[] })
       assetId={asset?.underlyingId}
     >
       {
-        !isChainEnabled ? (
-          <Center
-            px={10}
-            flex={1}
-            width={'full'}
-          >
-            <VStack
-              spacing={6}
-            >
-              <TbPlugConnectedX size={72} />
-              <VStack
-                spacing={4}
-              >
-                <Translation component={Text} translation={"staking.networkNotSupported"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
-                <Translation component={Text} translation={`staking.switchToMainnet`} textStyle={'captionSmall'} textAlign={'center'} />
-                <Translation component={Button} translation={`common.switchNetwork`} onClick={() => setChainId(STAKING_CHAINID)} variant={'ctaPrimary'} px={10} />
-              </VStack>
-            </VStack>
-          </Center>
-        ) : lockExpired ? (
+        lockExpired ? (
           <Center
             px={10}
             flex={1}
