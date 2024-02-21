@@ -361,11 +361,31 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [selectVaultById, selectAssetById])
 
   const selectAssetHistoricalPriceByTimestamp = useCallback( (assetId: AssetId | undefined, timestamp: string | number): HistoryData | null => {
-    return assetId && state.historicalPrices[assetId.toLowerCase()] ? state.historicalPrices[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp ) : null
+    if (assetId && state.historicalPrices[assetId.toLowerCase()] && !isEmpty(state.historicalPrices[assetId.toLowerCase()])){
+      let price = state.historicalPrices[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp )
+      if (!price){
+        const latestPrice = sortArrayByKey(state.historicalPrices[assetId.toLowerCase()].filter( (historyData: HistoryData) => +historyData.date<+timestamp ), 'date', 'asc').pop()
+        if (latestPrice){
+          price = latestPrice
+        }
+      }
+      return price
+    }
+    return null
   }, [state.historicalPrices])
 
   const selectAssetHistoricalPriceUsdByTimestamp = useCallback( (assetId: AssetId | undefined, timestamp: string | number): HistoryData | null => {
-    return assetId && state.historicalPricesUsd[assetId.toLowerCase()] ? state.historicalPricesUsd[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp ) : null
+    if (assetId && state.historicalPricesUsd[assetId.toLowerCase()] && !isEmpty(state.historicalPricesUsd[assetId.toLowerCase()])){
+      let priceUsd = state.historicalPricesUsd[assetId.toLowerCase()].find( (historyData: HistoryData) => +historyData.date === +timestamp )
+      if (!priceUsd){
+        const latestPriceUsd = sortArrayByKey(state.historicalPricesUsd[assetId.toLowerCase()].filter( (historyData: HistoryData) => +historyData.date<+timestamp ), 'date', 'asc').pop()
+        if (latestPriceUsd){
+          priceUsd = latestPriceUsd
+        }
+      }
+      return priceUsd
+    }
+    return null
   }, [state.historicalPricesUsd])
 
   const selectAssetHistoricalPrices = useCallback( (assetId: AssetId | undefined): Record<AssetId, HistoryData[]> | null => {
