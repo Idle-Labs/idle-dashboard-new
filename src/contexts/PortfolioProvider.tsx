@@ -158,10 +158,43 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
   switch (action.type){
     case 'RESET_STATE':
+    return {
+      ...state,
+      rewards: {},
+      balances: {},
+      maticNFTs: {},
+      gaugesData: {},
+      balancesUsd: {},
+      vaultsRewards: {},
+      gaugesRewards: {},
+      stakingData: null,
+      vaultsPositions: {},
+      isPortfolioLoaded: false,
+      portfolioTimestamp: null,
+      isPortfolioAccountReady: false,
+      isVaultsPositionsLoaded: false,
+    }
+      /*
       return {
         ...initialState,
+        ...action.payload,
+        baseAprs: state.baseAprs,
+        pricesUsd: state.pricesUsd,
+        aprRatios: state.aprRatios,
+        allocations: state.allocations,
+        lastHarvests: state.lastHarvests,
+        vaultsPrices: state.vaultsPrices,
+        protocolsAprs: state.protocolsAprs,
+        historicalTvls: state.historicalTvls,
+        historicalRates: state.historicalRates,
+        historicalPrices: state.historicalPrices,
+        historicalTvlsUsd: state.historicalTvlsUsd,
+        vaultsCollectedFees: state.vaultsCollectedFees,
+        historicalPricesUsd: state.historicalPricesUsd,
+        interestBearingTokens: state.interestBearingTokens,
         selectors: state.selectors
       }
+      */
     case 'SET_STATE':
       return {...state, ...action.payload}
     case 'SET_PROTOCOL_TOKEN':
@@ -3241,10 +3274,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
   // Get user vaults positions
   useEffect(() => {
     // console.log('Load Vaults Positions', account?.address, state.balances, state.isPortfolioLoaded, walletInitialized, connecting, runningEffects.current.vaultsPositions)
-    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions) return
+    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions === (account?.address || true)) return
 
     ;(async () => {
-      runningEffects.current.vaultsPositions = true
+      runningEffects.current.vaultsPositions = account?.address || true
 
       const results = await getVaultsPositions(state.vaults)
       // console.log('getVaultsPositions', state.balances, results)
