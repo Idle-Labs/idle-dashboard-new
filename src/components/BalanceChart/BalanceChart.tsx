@@ -55,6 +55,7 @@ export function BalanceChartProvider({
     strategies,
     allowFlatChart
   })
+
   return (
     <BalanceChartContext.Provider value={balanceChartDataReturn}>
       {children}

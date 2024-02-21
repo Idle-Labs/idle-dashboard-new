@@ -26,7 +26,7 @@ import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetwor
 import { DashboardNewsBanner } from 'components/DashboardNewsBanner/DashboardNewsBanner'
 import { BalanceChartProvider, BalanceChart } from 'components/BalanceChart/BalanceChart'
 import { DepositedAssetsTable } from 'components/DepositedAssetsTable/DepositedAssetsTable'
-import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Flex } from '@chakra-ui/react'
+import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Flex, Spinner } from '@chakra-ui/react'
 
 export const Dashboard: React.FC = () => {
   const { theme } = useThemeProvider()
@@ -166,7 +166,6 @@ export const Dashboard: React.FC = () => {
   */
 
   const fundsOverview = useMemo(() => {
-    if (totalFunds.lte(0)) return null
     return (
       <SimpleGrid
         width={'full'}
@@ -179,27 +178,26 @@ export const Dashboard: React.FC = () => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
-          <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.deposited} />
+          {
+            isPortfolioAccountReady ? (
+              <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.deposited} />
+            ) : (
+              <Spinner size={'sm'} /> 
+            )
+          }
         </VStack>
-
-        {
-          /*
-        <VStack
-          spacing={2}
-          justifyContent={'center'}
-        >
-          <Translation component={Text} translation={'defi.redeemable'} textStyle={'titleSmall'} />
-          <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.redeemable} />
-        </VStack>
-        */
-        }
-
         <VStack
           spacing={2}
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.earnings'} textStyle={'titleSmall'} />
-          <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.earnings} />
+          {
+            isPortfolioAccountReady ? (
+              <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.earnings} />
+            ) : (
+              <Spinner size={'sm'} /> 
+            )
+          }
         </VStack>
 
         <VStack
@@ -207,7 +205,13 @@ export const Dashboard: React.FC = () => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.avgRealizedApy'} textStyle={'titleSmall'} />
-          <Amount.Percentage textStyle={'heading'} fontSize={'h3'} value={avgRealizedApy} />
+          {
+            isPortfolioAccountReady ? (
+              <Amount.Percentage textStyle={'heading'} fontSize={'h3'} value={avgRealizedApy} />
+            ) : (
+              <Spinner size={'sm'} /> 
+            )
+          }
         </VStack>
 
         <VStack
@@ -215,39 +219,17 @@ export const Dashboard: React.FC = () => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.discountedFees'} textStyle={'titleSmall'} />
-          <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={totalDiscountedFeesUsd} />
+          {
+            isPortfolioAccountReady ? (
+              <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={totalDiscountedFeesUsd} />
+            ) : (
+              <Spinner size={'sm'} /> 
+            )
+          }
         </VStack>
-
-        {
-          /*
-          <VStack
-            spacing={2}
-            justifyContent={'center'}
-          >
-            <Translation component={Text} translation={'dashboard.portfolio.composition'} textStyle={'titleSmall'} />
-            <HStack
-              spacing={4}
-              width={'full'}
-              justifyContent={'center'}
-            >
-              {
-                Object.keys(riskExposures).filter( (strategy: string) => riskExposures[strategy].perc.gt(0) ).map( (strategy: string) => (
-                  <HStack
-                    spacing={2}
-                    key={`index_${strategy}`}
-                  >
-                    <Amount.Percentage value={riskExposures[strategy].perc.times(100)} textStyle={'heading'} fontSize={'h3'}/>
-                    <Image src={`images/strategies/${strategy}.svg`} w={6} h={6} />
-                  </HStack>
-                ))
-              }
-            </HStack>
-          </VStack>
-          */
-        }
       </SimpleGrid>
     )
-  }, [totalFunds, aggregatedUsdPosition, avgRealizedApy, totalDiscountedFeesUsd])
+  }, [aggregatedUsdPosition, avgRealizedApy, totalDiscountedFeesUsd, isPortfolioAccountReady])
 
   /*
   const riskExposure = useMemo(() => {

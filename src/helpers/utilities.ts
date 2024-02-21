@@ -2,6 +2,7 @@ import { lazy } from 'react'
 import dayjs from 'classes/dayjs'
 import BigNumber from 'bignumber.js'
 import { Dayjs, ManipulateType } from 'dayjs'
+import { MIN_TIMESTAMP } from 'constants/vars'
 import { HistoryTimeframe, DateRange } from 'constants/types'
 
 type BNifyInput = any
@@ -96,7 +97,7 @@ export function floorTimestamp(timestamp: Date | number | string): number {
 }
 
 export function getTimeframeTimestamp(timeframe: HistoryTimeframe): number {
-  if (timeframe === 'ALL') return 0
+  if (timeframe === 'ALL') return MIN_TIMESTAMP
   const periods: Record<string, ManipulateType> = {
     'W':'week',
     'M':'month',
@@ -346,7 +347,7 @@ export function getDecodedError(error: any) {
 }
 
 export function getTimestampRange(startDate: (Date | number | string), endDate: (Date | number | string)) {
-  const startDayTimestamp = +(dayjs(startDate).startOf('day').valueOf())
+  const startDayTimestamp = +(dayjs(Math.max(MIN_TIMESTAMP, startDate as number)).startOf('day').valueOf())
   const endDayTimestamp = +(dayjs(endDate).startOf('day').valueOf())
 
   const dayTimestamp = 86400000

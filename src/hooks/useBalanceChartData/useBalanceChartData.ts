@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 // import { balanceChartDataMock } from './balanceChartData.mock'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { BNify, getTimestampRange, isEmpty, getTimeframeTimestamp } from 'helpers/'
-import { AssetId, HistoryData, HistoryTimeframe, Asset, Transaction } from 'constants/types'
+import { AssetId, HistoryData, HistoryTimeframe, Asset, Transaction, MIN_TIMESTAMP } from 'constants/'
 
 export type RainbowData = {
   date: number
@@ -44,7 +44,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
 }) => {
 
   const {
-    isPortfolioLoaded,
+    isPortfolioAccountReady,
     historicalPrices,
     historicalPricesUsd,
     selectors: {
@@ -64,11 +64,9 @@ export const useBalanceChartData: UseBalanceChartData = ({
   }, [assetIds, strategies, selectAssetsByIds])
 
   const timeframeStartTimestamp = useMemo((): number => {
-    if (!timeframe) return 0
+    if (!timeframe) return MIN_TIMESTAMP
     return getTimeframeTimestamp(timeframe)
   }, [timeframe])
-
-  // console.log('assets', assets)
 
   const balanceChartData = useMemo((): BalanceChartData => {
 
@@ -77,9 +75,9 @@ export const useBalanceChartData: UseBalanceChartData = ({
       rainbow: []
     }
 
-    // console.log('isPortfolioLoaded', isPortfolioLoaded, 'historicalPrices', historicalPrices, 'historicalPricesUsd', historicalPricesUsd)
+    // console.log('isPortfolioAccountReady', isPortfolioAccountReady, 'historicalPrices', historicalPrices, 'historicalPricesUsd', historicalPricesUsd)
 
-    if (!isPortfolioLoaded || isEmpty(historicalPrices) || isEmpty(historicalPricesUsd)) return chartData
+    if (!isPortfolioAccountReady || isEmpty(historicalPrices) || isEmpty(historicalPricesUsd)) return chartData
 
     // console.log('historicalPricesUsd', historicalPricesUsd)
 
@@ -147,6 +145,9 @@ export const useBalanceChartData: UseBalanceChartData = ({
     const endTimestamp = +(dayjs().endOf('day').valueOf())
 
     const timestampRange = getTimestampRange(startTimestamp, endTimestamp)
+
+    // console.log('startTimestamp', startTimestamp, 'endTimestamp', endTimestamp, 'timestampRange', timestampRange)
+
     const assetsBalancesByDateExtended: Record<number, Record<AssetId, number>> = {}
     for (let timestampIndex = 0, prevTimestamp: number | null = null; timestampIndex < timestampRange.length; timestampIndex++) {
       const timestamp = timestampRange[timestampIndex]
@@ -225,7 +226,7 @@ export const useBalanceChartData: UseBalanceChartData = ({
     
     return chartData
   // eslint-disable-next-line
-  }, [assets, useDollarConversion, timeframeStartTimestamp, selectVaultTransactions, isPortfolioLoaded, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
+  }, [assets, useDollarConversion, timeframeStartTimestamp, selectVaultTransactions, isPortfolioAccountReady, historicalPrices, historicalPricesUsd, selectAssetHistoricalPriceByTimestamp, selectAssetHistoricalPriceUsdByTimestamp])
 
 
   useEffect(() => {
