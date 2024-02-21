@@ -14,7 +14,7 @@ import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
 import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData } from 'constants/'
-import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId } from 'helpers/'
+import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId, isEmpty } from 'helpers/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -441,6 +441,8 @@ export class VaultFunctionsHelper {
       poLidoStakeManagerEpoch,
       tokenIds
     ] = multicallResults2.map( r => r.data )
+
+    if (isEmpty(tokenIds)) return []
 
     // Decrease checkpoint
     let epochIntervalInSeconds = 2700;
