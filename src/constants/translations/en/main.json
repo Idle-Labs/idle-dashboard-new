@@ -24,6 +24,7 @@
     "stakeDeposit": "Stake & Deposit",
     "businessDescription": "Business description",
     "calendar": "Calendar",
+    "explore": "Explore",
     "noDeposits": "No deposits",
     "switchNetwork": "Switch network",
     "relayerGasFee": "Relayer Gas Fee",
@@ -695,6 +696,10 @@
       "rewards": {
         "title": "Vaults Rewards",
         "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
+        "cta": "Explore vaults"
+      },
+      "deposits": {
+        "body": "You don't have any deposit yet.<br />Explore our strategies and make your first deposit.",
         "cta": "Explore vaults"
       },
       "farming": {

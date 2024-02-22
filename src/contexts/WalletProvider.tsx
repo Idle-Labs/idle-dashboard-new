@@ -20,6 +20,7 @@ type ContextProps = {
   connecting: boolean
   disconnect: Function
   setChainId: Function
+  disconnecting: boolean
   chainId: number | null
   account: Account | null
   wallet: WalletState | null
@@ -45,6 +46,7 @@ const initialState: ContextProps = {
   prevAccount: null,
   prevChainId: null,
   connect: () => {},
+  disconnecting: false,
   disconnect: () => {},
   setChainId: () => {},
   walletInitialized: false,
@@ -170,17 +172,17 @@ export function WalletProvider({ children }: ProviderProps) {
 
   const disconnectWallet = useCallback(async () => {
     setDisconnecting(true)
+    setAccount(null)
     if (wallet){
       await disconnect(wallet)
     }
     await removeWalletProvider()
-    setAccount(null)
     setDisconnecting(false)
   // eslint-disable-next-line
   }, [wallet, setAccount, removeWalletProvider, disconnect, setDisconnecting])
 
   return (
-    <WalletProviderContext.Provider value={{wallet, prevAccount, account, network, explorer, walletInitialized, chainId, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
+    <WalletProviderContext.Provider value={{wallet, prevAccount, account, disconnecting, network, explorer, walletInitialized, chainId, prevChainId, chainIdHex, checkChainEnabled, chainToken, setChainId, connecting, connect, disconnect: disconnectWallet}}>
       {children}
     </WalletProviderContext.Provider>
   )

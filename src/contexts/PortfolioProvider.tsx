@@ -158,22 +158,25 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
   switch (action.type){
     case 'RESET_STATE':
-    return {
-      ...state,
-      rewards: {},
-      balances: {},
-      maticNFTs: {},
-      gaugesData: {},
-      balancesUsd: {},
-      vaultsRewards: {},
-      gaugesRewards: {},
-      stakingData: null,
-      vaultsPositions: {},
-      isPortfolioLoaded: false,
-      portfolioTimestamp: null,
-      isPortfolioAccountReady: false,
-      isVaultsPositionsLoaded: false,
-    }
+      return {
+        ...state,
+        rewards: {},
+        balances: {},
+        maticNFTs: {},
+        gaugesData: {},
+        balancesUsd: {},
+        transactions: {},
+        vaultsRewards: {},
+        gaugesRewards: {},
+        stakingData: null,
+        discountedFees: {},
+        vaultsPositions: {},
+        distributedRewards: {},
+        isPortfolioLoaded: false,
+        portfolioTimestamp: null,
+        isPortfolioAccountReady: true,
+        isVaultsPositionsLoaded: false,
+      }
       /*
       return {
         ...initialState,
@@ -319,7 +322,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   const { state: { lastTransaction } } = useTransactionManager()
   const { web3, web3Chains, web3Rpc, multiCall } = useWeb3Provider()
   const runningEffects = useRef<Record<string, boolean | number | string | undefined>>({})
-  const { walletInitialized, connecting, account, prevAccount, chainId, prevChainId, explorer } = useWalletProvider()
+  const { walletInitialized, disconnecting, connecting, account, prevAccount, chainId, prevChainId, explorer } = useWalletProvider()
   const [ storedHistoricalPricesUsd, setHistoricalPricesUsd, , storedHistoricalPricesUsdLoaded ] = useLocalForge('historicalPricesUsd', historicalPricesUsd)
 
   const accountChanged = useMemo(() => {
@@ -1924,11 +1927,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
     // console.log('NETWORK CHANGED - RESET STATE');
   }, [networkChanged])
 
-  // Clear portfolio when wallet changed
+  // Clear portfolio when wallet disconnect
   useEffect(() => {
     if (!!prevAccount && !account){
-      // console.log('ACCOUNT CHANGED - RESET STATE')
       dispatch({type: 'RESET_STATE', payload: {}})
+      // console.log('ACCOUNT CHANGED - RESET STATE')
     }
   }, [accountChanged, account, prevAccount])
 
@@ -3273,14 +3276,13 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get user vaults positions
   useEffect(() => {
-    // console.log('Load Vaults Positions', account?.address, state.balances, state.isPortfolioLoaded, walletInitialized, connecting, runningEffects.current.vaultsPositions)
-    if (!account?.address || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions === (account?.address || true)) return
+    // console.log('Load Vaults Positions', account?.address, disconnecting, state.balances, state.vaultsPositions, state.isPortfolioLoaded, walletInitialized, connecting, runningEffects.current.vaultsPositions)
+    if (!account?.address || disconnecting || !state.isPortfolioLoaded || isEmpty(state.balances) || !walletInitialized || connecting || runningEffects.current.vaultsPositions === (account?.address || true)) return
 
     ;(async () => {
       runningEffects.current.vaultsPositions = account?.address || true
 
       const results = await getVaultsPositions(state.vaults)
-      // console.log('getVaultsPositions', state.balances, results)
 
       const {
         vaultsPositions,
@@ -3307,11 +3309,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_VAULTS_POSITIONS_LOADED', payload: false})
     }
   // eslint-disable-next-line
-  }, [account, state.isPortfolioLoaded, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
+  }, [account, state.isPortfolioLoaded, disconnecting, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
 
   // Calculate discounted fees
   useEffect(() => {
-    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.vaultsPositions) || isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalPrices) || isEmpty(state.discountedFees) || runningEffects.current.discountedFees === (account?.address || true)) return;
+    if (!web3Chains || disconnecting || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.vaultsPositions) || isEmpty(state.historicalPricesUsd) || isEmpty(state.historicalPrices) || isEmpty(state.discountedFees) || runningEffects.current.discountedFees === (account?.address || true)) return;
     ;(async() => {
 
       runningEffects.current.discountedFees = account?.address || true
@@ -3389,7 +3391,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       // runningEffects.current.discountedFees = false
       // dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
     }
-  }, [state.discountedFees, selectVaultPosition, state.vaultsPositions, state.isVaultsPositionsLoaded, state.historicalPricesUsd, selectAssetHistoricalPriceUsdByTimestamp, selectAssetHistoricalPrices, selectAssetHistoricalPriceByTimestamp, state.historicalPrices, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
+  }, [state.discountedFees, disconnecting, selectVaultPosition, state.vaultsPositions, state.isVaultsPositionsLoaded, state.historicalPricesUsd, selectAssetHistoricalPriceUsdByTimestamp, selectAssetHistoricalPrices, selectAssetHistoricalPriceByTimestamp, state.historicalPrices, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
 
   // Calculate distributed rewards APYs
   useEffect(() => {

@@ -333,12 +333,10 @@ export const DepositedAssetsTable: React.FC = () => {
 
   // Disabled Deposited
   useEffect(() => {
-    if (!account && mode === 'Deposited')
-      return setMode('Available')
-    else if (!prevAccount && account && mode === 'Available')
+    if (!prevAccount && account && mode === 'Available')
       return setMode('Deposited')
-    else if (mode === 'Deposited' && isPortfolioAccountReady && !depositedAssetsData.length)
-      return setMode('Available')
+    // else if (mode === 'Deposited' && isPortfolioAccountReady && !depositedAssetsData.length)
+    //   return setMode('Available')
   }, [mode, account, prevAccount, isPortfolioAccountReady, depositedAssetsData])
 
   const onRowClick = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
@@ -376,8 +374,6 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [setPage, page, totalPages])
 
   const depositedAssets = useMemo(() => {
-    if (!depositedAssetsData.length) return null
-
     const initialState = {
       sortBy: [
         {
@@ -410,14 +406,30 @@ export const DepositedAssetsTable: React.FC = () => {
         width={'full'}
       >
         <Card>
-          <HStack
-            width={'full'}
-            alignItems={'flex-start'}
-            justifyContent={'space-between'}
-          >
-            {/*<SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />*/}
-          </HStack>
-          <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />
+          {
+            isEmpty(depositedAssetsData) ? (
+              <VStack
+                py={10}
+                spacing={6}
+                width={'full'}
+                alignItems={'center'}
+                justifyContent={'center'}
+              >
+                <VStack
+                  spacing={2}
+                  width={'full'}
+                  alignItems={'center'}
+                  justifyContent={'center'}
+                >
+                  <Image src={'images/vaults/emptywallet.png'} width={8} />
+                  <Translation textAlign={'center'} translation={'defi.empty.deposits.body'} color={'cta'} isHtml />
+                </VStack>
+                <Translation<ButtonProps> component={Button} translation={`defi.empty.deposits.cta`} variant={'ctaPrimary'} px={10} onClick={() => navigate('/earn/yield-tranches')} />
+              </VStack>
+            ) : (
+              <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />
+            )
+          }
         </Card>
         {
           totalPages>1 && (
@@ -434,7 +446,7 @@ export const DepositedAssetsTable: React.FC = () => {
         }
       </VStack>
     )
-  }, [isMobile, depositedAssetsColumns, depositedAssetsData, page, totalPages, theme, rowsPerPage, onRowClick, goBack, goNext])
+  }, [isMobile, depositedAssetsColumns, depositedAssetsData, page, navigate, totalPages, theme, rowsPerPage, onRowClick, goBack, goNext])
 
   const featuredAssets = useMemo(() => {
     if (!featuredAssetsData.length) return null
