@@ -687,14 +687,14 @@ export const Tranches: React.FC = () => {
           <HStack
             spacing={4}
           >
-            <ChainsFilters enabledChains={depositedAssetsChains} setEnabledChains={setDepositedAssetsChains} />
+            {/*<ChainsFilters enabledChains={depositedAssetsChains} setEnabledChains={setDepositedAssetsChains} />*/}
             <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />
           </HStack>
         </HStack>
         <ReactTable columns={depositedAssetsColumns} data={depositedAssetsDataFiltered} initialState={initialState} onRowClick={ (row) => onRowClickDeposited(row, depositedListId, depositedListName) } />
       </Card>
     )
-  }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedAssetsChains, setDepositedAssetsChains, depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
+  }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedAssetsChains, /*setDepositedAssetsChains,*/ depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
 
   const availableAssets = useMemo(() => {
     if (isPortfolioLoaded && !availableAssetsData.length) return null
@@ -743,7 +743,7 @@ export const Tranches: React.FC = () => {
           <HStack
             spacing={4}
           >
-            <ChainsFilters enabledChains={availableAssetsChains} setEnabledChains={setAvailableAssetsChains} />
+            {/*<ChainsFilters enabledChains={availableAssetsChains} setEnabledChains={setAvailableAssetsChains} />*/}
             <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setAvailableAssetsFilter} />
           </HStack>
         </HStack>
@@ -760,7 +760,7 @@ export const Tranches: React.FC = () => {
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsChains, setAvailableAssetsChains, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
+  }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsChains/*, setAvailableAssetsChains*/, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
   const deprecatedAssets = useMemo(() => {
     if (!isPortfolioLoaded || !deprecatedAssetsData.length) return null
