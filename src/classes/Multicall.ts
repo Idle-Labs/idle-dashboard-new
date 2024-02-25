@@ -251,7 +251,7 @@ export class  Multicall {
         data: calldata,
         to: contractAddress,
         from: contractAddress
-      }), MULTICALL_TIMEOUT, {chainId, calls});
+      }), MULTICALL_TIMEOUT);
     } catch (err) {
       // eslint-disable-next-line
       // console.log(multicallId, 'Multicall Error:', chainId, calls, err, singleCallsEnabled)
