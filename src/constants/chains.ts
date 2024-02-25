@@ -35,8 +35,8 @@ export const chains: Record<number, Chain> = {
     label: 'Polygon zkEVM',
     // rpcUrl: `https://zkevm-rpc.com`,
     publicRpcUrl: `https://zkevm-rpc.com`,
-    rpcUrl: `https://zkevm-rpc.com`
-    // rpcUrl: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_ZK_KEY}`
+    // rpcUrl: `https://zkevm-rpc.com`
+    rpcUrl: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_ZK_KEY}`
   }
 }
 

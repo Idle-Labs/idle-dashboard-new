@@ -172,6 +172,21 @@ export const Stats: React.FC = () => {
   const totalTvlUsd = useMemo(() => Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0)) , [visibleAssets])
   const avgApy = useMemo(() => Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0) ) , [visibleAssets]).div(totalTvlUsd)
 
+  /*
+  const tvlByChain = useMemo(() => {
+    return Object.values(visibleAssets).reduce( (tvlByChain: Record<string, BigNumber>, asset: Asset) => {
+      const chainId = asset.chainId as number
+      if (!tvlByChain[chainId]){
+        tvlByChain[chainId] = BNify(0)
+      }
+      tvlByChain[chainId] = tvlByChain[chainId].plus(bnOrZero(asset.tvlUsd))
+      return tvlByChain
+    }, {})
+  }, [visibleAssets])
+
+  console.log('tvlByChain', tvlByChain)
+  */
+
   // const collectedFeesTxs = useMemo((): Transaction[] => {
   //   return Object.values(assetsData).reduce( ( collectedFees: Transaction[], asset: Asset) => {
   //     if (!asset?.collectedFees) return collectedFees

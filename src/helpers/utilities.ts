@@ -366,6 +366,21 @@ export async function catchPromise(promise: Promise<any>) {
     .catch(/*err => null*/)
 }
 
+export async function callWithTimeout(asyncFunction: Function, timeout: number = 10000/*, params: any = {}*/): Promise<any> {
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error('Timeout exceeded'));
+    }, timeout); // Timeout di 10 secondi
+  });
+
+  return Promise.race([asyncFunction(), timeoutPromise])
+    .then((result) => result)
+    .catch((error) => {
+      // console.error(params, error.message); // Puoi gestire l'errore come preferisci
+      throw new Error(error);
+    });
+}
+
 export async function asyncReduce <T, U>(
   array: T[],
   callback: (currentValue: T, currentIndex: number) => Promise<any>,

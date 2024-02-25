@@ -3,9 +3,11 @@ import type { Abi } from 'constants/types'
 import { ContractRawCall } from 'constants/'
 import Multicall3 from 'abis/multicall/Multicall3.json'
 import { Contract, ContractSendMethod } from 'web3-eth-contract'
-import { splitArrayIntoChunks, hashCode, asyncWait } from 'helpers/'
+import { splitArrayIntoChunks, hashCode, asyncWait, callWithTimeout, isEmpty } from 'helpers/'
 
 type Param = any
+
+const MULTICALL_TIMEOUT = 15000
 
 export type CallData = {
   args: Param[]
@@ -214,6 +216,8 @@ export class  Multicall {
     chainId = chainId || this.chainId
     web3 = web3 || this.web3
 
+    if (isEmpty(calls)) return null
+
     if (calls.length > this.maxBatchSize) {
       return await this.executeMulticallsChunks(calls, singleCallsEnabled, chainId, web3)
     }
@@ -221,9 +225,9 @@ export class  Multicall {
     const calldata = this.prepareMulticallData(calls);
     // console.log('callData', calldata)
 
-    if (!calldata) return null;
+    if (!calldata) return null
 
-    const multicallId = Date.now()
+    // const multicallId = Date.now()
 
     const hash = hashCode(`${calldata}_${chainId}`)
 
@@ -242,14 +246,17 @@ export class  Multicall {
     const contractAddress = this.networkContract;
 
     try {
-      results = await web3.eth.call({
+      // @ts-ignore
+      results = await callWithTimeout(() => web3.eth.call({
         data: calldata,
         to: contractAddress,
         from: contractAddress
-      });
+      }), MULTICALL_TIMEOUT, {chainId, calls});
     } catch (err) {
       // eslint-disable-next-line
-      console.trace(multicallId, 'Multicall Error:', chainId, calls, err, singleCallsEnabled)
+      // console.log(multicallId, 'Multicall Error:', chainId, calls, err, singleCallsEnabled)
+
+      if (err === 'Timeout exceeded') return null
 
       if (!singleCallsEnabled) {
         this.cachedRequests[hash] = {
@@ -260,9 +267,14 @@ export class  Multicall {
       }
 
       const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
-      const decodedCalls = await Promise.all(callPromises);
+      const decodedCalls = await this.catchEm(callWithTimeout(() => Promise.all(callPromises), MULTICALL_TIMEOUT))
 
-      const decodedData = decodedCalls.reduce( (decodedResults, decodedCall, i) => {
+      if (!!decodedCalls[0]){
+        // console.log('Single calls failed', chainId, calls, decodedCalls[0])
+        return null
+      }
+
+      const decodedData = decodedCalls[1].reduce( (decodedResults: any, decodedCall: any, i: number) => {
         const output = {
           data:null,
           callData:calls[i],
@@ -285,6 +297,10 @@ export class  Multicall {
 
       // console.log(multicallId, 'Multicall - Singlecalls: ', decodedData)
     }
+
+    // console.log('Multicall', chainId, results)
+
+    if (!results) return null
 
     const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results as string);
       
