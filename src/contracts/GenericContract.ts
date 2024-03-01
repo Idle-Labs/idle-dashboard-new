@@ -36,17 +36,17 @@ export class GenericContract {
     }
   }
 
-  public async executeRawCall(rawCall: ContractRawCall): Promise<any | null> {
+  public async executeRawCall(rawCall: ContractRawCall, params: Record<any, any> = {}): Promise<any | null> {
     if (!rawCall.call) return null
     try {
-      return await rawCall.call.call()
+      return await rawCall.call.call(params)
     } catch (err) {
       return null
     }
   }
 
-  public async call(methodName: string, params: any[] = []): Promise<any | null> {
+  public async call(methodName: string, params: any[] = [], callParams: Record<any, any> = {}): Promise<any | null> {
     const rawCall = this.getRawCall(methodName, params);
-    return await this.executeRawCall(rawCall)
+    return await this.executeRawCall(rawCall, callParams)
   }
 }

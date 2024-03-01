@@ -7,7 +7,7 @@ import { splitArrayIntoChunks, hashCode, asyncWait, callWithTimeout, isEmpty } f
 
 type Param = any
 
-const MULTICALL_TIMEOUT = 15000
+const MULTICALL_TIMEOUT = 60000
 
 export type CallData = {
   args: Param[]
@@ -186,7 +186,9 @@ export class  Multicall {
   async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false, chainId?: number, web3?: Web3): Promise<DecodedResult[] | null> {
     const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
     const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled, chainId, web3) ))
-    // console.log('chunksResults', callsChunks, chunksResults)
+
+    if (!chunksResults) return null
+
     return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
       // if (!chunkResults) return results
       return results.concat(...chunkResults)
@@ -256,7 +258,14 @@ export class  Multicall {
       // eslint-disable-next-line
       // console.log(multicallId, 'Multicall Error:', chainId, calls, err, singleCallsEnabled)
 
-      if (err === 'Timeout exceeded') return null
+      if (/Timeout exceeded/.test(err as string)){
+        // eslint-disable-next-line
+        console.log('Multicall timed out', chainId, calls)
+        return null
+      } else {
+        // eslint-disable-next-line
+        console.log('Multicall error', chainId, calls, err)
+      }
 
       if (!singleCallsEnabled) {
         this.cachedRequests[hash] = {

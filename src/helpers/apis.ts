@@ -1,8 +1,11 @@
 import Web3 from 'web3'
 import axios from 'axios'
+import { ethers } from 'ethers'
+import GnosisSafe from 'abis/gnosis/GnosisSafe.json'
+import { GenericContract } from 'contracts/GenericContract'
 import { getObjectPath, asyncWait, cmpAddrs } from 'helpers/'
 import { protocols, subgraphs, explorers, networks } from 'constants/'
-import type { Explorer, PlatformApiFilters, ApisProps, Nullable } from 'constants/'
+import type { Abi, Explorer, PlatformApiFilters, ApisProps, Nullable } from 'constants/'
 
 export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
   const data = await axios
@@ -171,6 +174,20 @@ export const checkSignature = async (address: string, message: string): Promise<
 export const verifySignature = async (web3: Web3, walletAddress: string, message: string, signature: string): Promise<boolean> => {
   const signatureAddress = await web3.eth.accounts.recover(message, signature)
   return cmpAddrs(signatureAddress, walletAddress)
+}
+
+export const verifyGnosisSignature = async (web3: Web3, walletAddress: string, message: string, signature: string): Promise<boolean> => {
+  const gnosisSafeContract = new GenericContract(web3, web3.givenProvider.networkVersion, {
+    name: 'GnosisSafe',
+    abi: GnosisSafe as Abi,
+    address: walletAddress
+  })
+  // const messageHash = web3.utils.keccak256("By accessing or using Idle App, I hereby represent and warrant that:\n- I have read and understood the Terms of Service (https://idle.finance/terms-of-service), Privacy Policy (https://idle.finance/privacy-policy), Risks Disclosure Statement (https://idle.finance/risks-disclosure-statement), Legal Notice (https://idle.finance/legal-notice) and Tokens Restricted for Restricted Persons (https://idle.finance/restricted-persons).\n- I'm not a resident of or located in the United States of America (including its territories: American Samoa, Guam, Puerto Rico, the Northern Mariana Islands and the U.S. Virgin Islands) or any other Restricted Jurisdiction (as defined in the Terms of Service);\n- I acknowledge that Idle App and related software are experimental, and that the use of experimental software may result in complete loss of my funds.\n- I am not using, and will not in the future use, a VPN to mask my physical location from a restricted territory.")
+  const messageHash = ethers.hashMessage(message)
+  // const messageHash = '0x73de6fb2e4627a0b195459bdf0565dbfc270d712ab5a708715c9d8905026484f'
+  const signatureAddress = await gnosisSafeContract.call('isValidSignature', [messageHash, signature], {from: walletAddress})
+  console.log('verifyGnosisSignature', walletAddress, web3.givenProvider.networkVersion, message, signature, messageHash, signatureAddress)
+  return cmpAddrs(signatureAddress, '0x20c13b0b')
 }
 
 export const getExplorerByChainId = (chainId: Nullable<number>): Explorer | null => {

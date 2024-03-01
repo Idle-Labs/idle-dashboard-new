@@ -9,8 +9,8 @@ import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import React, { useState, useMemo, useReducer, useCallback, useEffect } from 'react'
-import { saveSignature, checkSignature, verifySignature, parseAndReplaceAnchorTags } from 'helpers/'
 import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image } from '@chakra-ui/react'
+import { saveSignature, checkSignature, verifySignature, verifyGnosisSignature, parseAndReplaceAnchorTags } from 'helpers/'
 
 type InitialState = Record<string, boolean>
 
@@ -24,7 +24,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
   const [ signatureCheckError, setSignatureCheckError ] = useState<boolean>(false)
   const [ lastCheckTimestamp, setLastCheckTimestamp ] = useState<number | null>(null)
   const [ signatureTimestamp, setSignatureTimestamp ] = useState<string | null>(null)
-  const { walletInitialized, account, prevAccount, disconnect } = useWalletProvider()
+  const { walletInitialized, wallet, account, prevAccount, disconnect } = useWalletProvider()
   const [ lastSaveAttempTimestamp, setLastSaveAttempTimestamp ] = useState<number | null>(null)
   const [ signatureCheckErrorContinue, setSignatureCheckErrorContinue ] = useState<boolean>(false)
 
@@ -57,23 +57,62 @@ export const AuthWall = ({ children }: ProviderProps) => {
     return texts.join("\n")
   }, [messages, translate])
 
+  const verifySignatureFunction = useCallback(async (...params: any[]): Promise<any> => {
+    return wallet?.label === 'WalletConnect'
+    ? await verifyGnosisSignature(...params as Parameters<typeof verifyGnosisSignature>)
+    : await verifySignature(...params as Parameters<typeof verifySignature>)
+  }, [wallet])
+
+  const getSignatureTimestamp = useCallback(async () => {
+    if (!account?.address || !web3) return;
+
+    setLastCheckTimestamp(null)
+
+    const signature = await checkSignature(account?.address as string, messageToSign)
+    
+    setSignatureCheckError(false)
+    setLastCheckTimestamp(Date.now())
+
+    // Signature not retrieved
+    if (!signature){
+
+      // Check stored signature before thwowing errors
+      const storedSignatureVerified = storedSignature && await verifySignatureFunction(web3, account?.address, messageToSign, storedSignature.signature)
+      if (storedSignatureVerified){
+        return setSignatureTimestamp(storedSignature?.timestamp)
+      }
+
+      setSignatureCheckErrorContinue(false)
+      return setSignatureCheckError(true)
+    }
+
+    if (signature?.timestamp){
+      setSignatureTimestamp(signature?.timestamp)
+    }
+
+  }, [web3, account?.address, storedSignature, messageToSign, verifySignatureFunction, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError, setSignatureCheckErrorContinue])
+
+
   // Get store signature
   useEffect(() => {
-    if (!cacheProvider || !account?.address || !web3) return
+    if (!cacheProvider || !account?.address || !web3 || !!storedSignature) return
     ;(async() => {
       // Get and verify stored signature
-      // const urlHash = cacheProvider.getUrlHash(`signature_${account.address}`)
       const storedSignatureData = await cacheProvider.getCachedUrl(`signature_${account.address}`)
+      console.log('storedSignatureData', account.address, storedSignatureData)
       if (storedSignatureData){
-        const storedSignatureVerified = await verifySignature(web3, account?.address, messageToSign, storedSignatureData.data.signature)
+        const storedSignatureVerified = await verifySignatureFunction(web3, account?.address, messageToSign, storedSignatureData.data.signature)
+        console.log('storedSignatureVerified', storedSignatureVerified)
         if (storedSignatureVerified){
           setStoredSignature(storedSignatureData.data)
+          // Check signature timestamp
+          return setSignatureTimestamp(storedSignatureData.data.timestamp)
         } else {
           cacheProvider.removeCachedUrl(`signature_${account.address}`)
         }
       }
     })()
-  }, [web3, account, cacheProvider, setStoredSignature, messageToSign])
+  }, [web3, account, cacheProvider, storedSignature, setStoredSignature, messageToSign, verifySignatureFunction, getSignatureTimestamp])
 
   const [ state, dispatch ] = useReducer(reducer, initialState)
 
@@ -91,6 +130,8 @@ export const AuthWall = ({ children }: ProviderProps) => {
     // Send signature to server
     const response = await saveSignature(account.address, messageToSign, signature);
 
+    console.log('sendSignature', response)
+
     // Store signature locally
     if (cacheProvider){
       const dataToStore = {timestamp: Date.now(), signature, saved: !!response}
@@ -106,40 +147,12 @@ export const AuthWall = ({ children }: ProviderProps) => {
     }
   }, [account, cacheProvider, messageToSign])
 
-  const getSignatureTimestamp = useCallback(async () => {
-    if (!account?.address || !web3) return;
-
-    setLastCheckTimestamp(null)
-
-    const signature = await checkSignature(account?.address as string, messageToSign)
-    
-    setSignatureCheckError(false)
-    setLastCheckTimestamp(Date.now())
-
-    // Signature not retrieved
-    if (!signature){
-
-      // Check stored signature before thwowing errors
-      const storedSignatureVerified = storedSignature && await verifySignature(web3, account?.address, messageToSign, storedSignature.signature)
-      if (storedSignatureVerified){
-        return setSignatureTimestamp(storedSignature?.timestamp)
-      }
-
-      setSignatureCheckErrorContinue(false)
-      return setSignatureCheckError(true)
-    }
-
-    if (signature?.timestamp){
-      setSignatureTimestamp(signature?.timestamp)
-    }
-
-  }, [web3, account?.address, storedSignature, messageToSign, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError, setSignatureCheckErrorContinue])
-
   const signAndSend = useCallback(async () => {
     if (!account?.address || !web3) return;
     setSending(true)
     try {
       const signature = await web3.eth.personal.sign(messageToSign, account.address, '', () => {})
+      console.log('signature', signature)
       if (signature){
         await sendSignature(signature)
         getSignatureTimestamp()
