@@ -25,7 +25,7 @@ export const useWeb3Provider = () => useContext(Web3ProviderContext)
 
 export function Web3Provider({ children }: ProviderProps) {
   // const [ web3, setWeb3 ] = useState<Web3 | null>(null)
-  const { wallet, chainId, walletInitialized } = useWalletProvider()
+  const { connecting, wallet, chainId, walletInitialized } = useWalletProvider()
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
 
   const web3Rpc = useMemo(() => {
@@ -47,13 +47,14 @@ export function Web3Provider({ children }: ProviderProps) {
   }, []);
 
   const web3 = useMemo(() => {
-    if (walletInitialized && wallet?.provider){
+    if (!walletInitialized || connecting) return null
+    if (wallet?.provider){
       // @ts-ignore
       return new Web3(wallet.provider)
     } else {
       return web3Rpc
     }
-  }, [wallet?.provider, walletInitialized, web3Rpc])
+  }, [wallet?.provider, connecting, walletInitialized, web3Rpc])
 
   // @ts-ignore // TO REMOVE
   window.web3 = web3

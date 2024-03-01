@@ -529,9 +529,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [state.vaults, state.assetsData, selectAssetBalance, selectVaultPosition])
 
   const vaultFunctionsHelper = useMemo((): VaultFunctionsHelper | null => {
-    if (!chainId || !web3 || !multiCall || !explorer || isEmpty(state.contractsNetworks)) return null
+    if (!chainId || !web3 || !walletInitialized || !multiCall || !explorer || isEmpty(state.contractsNetworks)) return null
     return new VaultFunctionsHelper({chainId, web3, web3Chains, multiCall, explorer, cacheProvider, contracts: state.contractsNetworks})
-  }, [chainId, web3, web3Chains, multiCall, explorer, cacheProvider, state.contractsNetworks])
+  }, [chainId, web3, walletInitialized, web3Chains, multiCall, explorer, cacheProvider, state.contractsNetworks])
 
   const genericContractsHelper = useMemo((): GenericContractsHelper | null => {
     if (!chainId || !web3 || !multiCall || !state.contracts.length) return null

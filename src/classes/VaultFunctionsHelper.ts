@@ -437,10 +437,16 @@ export class VaultFunctionsHelper {
 
     if (!multicallResults2) return []
 
-    const [
+    let [
       poLidoStakeManagerEpoch,
       tokenIds
     ] = multicallResults2.map( r => r.data )
+
+    if (isEmpty(tokenIds)) return []
+
+    // Filter by non-zero ID
+    tokenIds = tokenIds.filter( (tokenId: string) => +tokenId !== 0 )
+    // console.log('tokenIds', tokenIds)
 
     if (isEmpty(tokenIds)) return []
 
@@ -487,9 +493,11 @@ export class VaultFunctionsHelper {
           stMaticContract.contract.methods.getToken2WithdrawRequests(tokenId).call()
         ])
         
-        const usersRequest = token2WithdrawRequests ? token2WithdrawRequests[0] : {
+        const usersRequest = !isEmpty(token2WithdrawRequests) ? token2WithdrawRequests[0] : {
           requestEpoch: 0
         };
+
+        // console.log(tokenId, 'tokenAmount', tokenAmount, 'token2WithdrawRequests', token2WithdrawRequests, 'usersRequest', usersRequest)
 
         const status = Math.round(usersRequest.requestEpoch)>=Math.round(poLidoStakeManagerEpoch) ? 'pending' : 'available';
 

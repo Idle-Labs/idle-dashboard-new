@@ -6,8 +6,8 @@ import type { WalletState } from '@web3-onboard/core'
 import type { Account, Address } from 'constants/types'
 import { getOnBoardInitParams } from './configs/onboard'
 import { usePrevious } from 'hooks/usePrevious/usePrevious'
-import { checkAddress, sendLogin, sendChainId, isEmpty } from 'helpers/'
 import { init, useConnectWallet, useSetChain } from '@web3-onboard/react'
+import { checkAddress, sendLogin, sendChainId, isEmpty, cmpAddrs } from 'helpers/'
 import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react'
 import { defaultChainId, chains, networks, explorers, Network, Explorer, UnderlyingTokenProps } from 'constants/'
 
@@ -136,6 +136,8 @@ export function WalletProvider({ children }: ProviderProps) {
   useEffect(() => {
     if (disconnecting) return;
     if (customAddress){
+      // Skip if already set
+      if (cmpAddrs(account?.address, customAddress)) return
       setWalletProvider('metamask')
       setAccount({
         isCustom: true,
