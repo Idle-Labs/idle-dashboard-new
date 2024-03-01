@@ -99,14 +99,13 @@ export const AuthWall = ({ children }: ProviderProps) => {
     ;(async() => {
       // Get and verify stored signature
       const storedSignatureData = await cacheProvider.getCachedUrl(`signature_${account.address}`)
-      console.log('storedSignatureData', account.address, storedSignatureData)
       if (storedSignatureData){
         const storedSignatureVerified = await verifySignatureFunction(web3, account?.address, messageToSign, storedSignatureData.data.signature)
-        console.log('storedSignatureVerified', storedSignatureVerified)
         if (storedSignatureVerified){
           setStoredSignature(storedSignatureData.data)
           // Check signature timestamp
           return setSignatureTimestamp(storedSignatureData.data.timestamp)
+        // Remove stored signature if not verified
         } else {
           cacheProvider.removeCachedUrl(`signature_${account.address}`)
         }
@@ -130,7 +129,6 @@ export const AuthWall = ({ children }: ProviderProps) => {
     // Send signature to server
     const response = await saveSignature(account.address, messageToSign, signature);
 
-    console.log('sendSignature', response)
 
     // Store signature locally
     if (cacheProvider){
@@ -152,7 +150,6 @@ export const AuthWall = ({ children }: ProviderProps) => {
     setSending(true)
     try {
       const signature = await web3.eth.personal.sign(messageToSign, account.address, '', () => {})
-      console.log('signature', signature)
       if (signature){
         await sendSignature(signature)
         getSignatureTimestamp()
