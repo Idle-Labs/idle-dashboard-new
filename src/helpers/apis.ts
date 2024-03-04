@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import axios from 'axios'
 import { ethers } from 'ethers'
+import { chains } from 'constants/chains'
 import GnosisSafe from 'abis/gnosis/GnosisSafe.json'
 import { GenericContract } from 'contracts/GenericContract'
 import { getObjectPath, asyncWait, cmpAddrs } from 'helpers/'
@@ -172,19 +173,43 @@ export const checkSignature = async (address: string, message: string): Promise<
 }
 
 export const verifySignature = async (web3: Web3, walletAddress: string, message: string, signature: string): Promise<boolean> => {
-  const signatureAddress = await web3.eth.accounts.recover(message, signature)
-  return cmpAddrs(signatureAddress, walletAddress)
+  try{
+    // Verify signature
+    const signatureAddress = await web3.eth.accounts.recover(message, signature)
+    if (cmpAddrs(signatureAddress, walletAddress)){
+      return true
+    }
+  } catch (err) {
+
+  }
+
+  // In case of error or verification not passed, check safe signature
+  return await verifyGnosisSignature(walletAddress, message, signature)
 }
 
-export const verifyGnosisSignature = async (web3: Web3, walletAddress: string, message: string, signature: string): Promise<boolean> => {
-  const gnosisSafeContract = new GenericContract(web3, web3.givenProvider.networkVersion, {
-    name: 'GnosisSafe',
-    abi: GnosisSafe as Abi,
-    address: walletAddress
-  })
+export const verifyGnosisSignature = async (walletAddress: string, message: string, signature: string): Promise<boolean> => {
+  // Check safe signature for each chain
   const messageHash = ethers.hashMessage(message)
-  const signatureAddress = await gnosisSafeContract.call('isValidSignature', [messageHash, signature], {from: walletAddress})
-  return cmpAddrs(signatureAddress, '0x20c13b0b')
+  for (var i = Object.keys(chains).length - 1; i >= 0; i--) {
+    const chainId = Object.keys(chains)[i]
+    const rpcUrl = chains[+chainId].rpcUrl
+    const web3 = new Web3(new Web3.providers.HttpProvider(rpcUrl as string))
+
+    const gnosisSafeContract = new GenericContract(web3, web3.givenProvider.networkVersion, {
+      name: 'GnosisSafe',
+      abi: GnosisSafe as Abi,
+      address: walletAddress
+    })
+    try {
+      const signatureAddress = await gnosisSafeContract.call('isValidSignature', [messageHash, signature], {from: walletAddress})
+      if (cmpAddrs(signatureAddress, '0x20c13b0b')){
+        return true
+      }
+    } catch (err) {
+      continue
+    }
+  }
+  return false
 }
 
 export const getExplorerByChainId = (chainId: Nullable<number>): Explorer | null => {

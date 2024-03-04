@@ -10,7 +10,7 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import React, { useState, useMemo, useReducer, useCallback, useEffect } from 'react'
 import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image } from '@chakra-ui/react'
-import { saveSignature, checkSignature, verifySignature, verifyGnosisSignature, parseAndReplaceAnchorTags } from 'helpers/'
+import { saveSignature, checkSignature, verifySignature, parseAndReplaceAnchorTags } from 'helpers/'
 
 type InitialState = Record<string, boolean>
 
@@ -24,7 +24,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
   const [ signatureCheckError, setSignatureCheckError ] = useState<boolean>(false)
   const [ lastCheckTimestamp, setLastCheckTimestamp ] = useState<number | null>(null)
   const [ signatureTimestamp, setSignatureTimestamp ] = useState<string | null>(null)
-  const { walletInitialized, wallet, account, prevAccount, disconnect } = useWalletProvider()
+  const { walletInitialized, account, prevAccount, disconnect } = useWalletProvider()
   const [ lastSaveAttempTimestamp, setLastSaveAttempTimestamp ] = useState<number | null>(null)
   const [ signatureCheckErrorContinue, setSignatureCheckErrorContinue ] = useState<boolean>(false)
 
@@ -49,6 +49,12 @@ export const AuthWall = ({ children }: ProviderProps) => {
     }
   }, [])
 
+  const [ state, dispatch ] = useReducer(reducer, initialState)
+
+  const accountChanged = useMemo(() => {
+    return !!account && !!prevAccount && account.address !== prevAccount.address
+  }, [account, prevAccount])
+
   const messageToSign = useMemo(() => {
     const texts = [translate('authWall.signatureTitle')]
     Object.keys(messages.authWall.options).forEach( optionKey => {
@@ -56,72 +62,6 @@ export const AuthWall = ({ children }: ProviderProps) => {
     })
     return texts.join("\n")
   }, [messages, translate])
-
-  const verifySignatureFunction = useCallback(async (...params: any[]): Promise<any> => {
-    return wallet?.label === 'WalletConnect'
-    ? await verifyGnosisSignature(...params as Parameters<typeof verifyGnosisSignature>)
-    : await verifySignature(...params as Parameters<typeof verifySignature>)
-  }, [wallet])
-
-  const getSignatureTimestamp = useCallback(async () => {
-    if (!account?.address || !web3) return;
-
-    setLastCheckTimestamp(null)
-
-    const signature = await checkSignature(account?.address as string, messageToSign)
-    
-    setSignatureCheckError(false)
-    setLastCheckTimestamp(Date.now())
-
-    // Signature not retrieved
-    if (!signature){
-
-      // Check stored signature before thwowing errors
-      const storedSignatureVerified = storedSignature && await verifySignatureFunction(web3, account?.address, messageToSign, storedSignature.signature)
-      if (storedSignatureVerified){
-        return setSignatureTimestamp(storedSignature?.timestamp)
-      }
-
-      setSignatureCheckErrorContinue(false)
-      return setSignatureCheckError(true)
-    }
-
-    if (signature?.timestamp){
-      setSignatureTimestamp(signature?.timestamp)
-    }
-
-  }, [web3, account?.address, storedSignature, messageToSign, verifySignatureFunction, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError, setSignatureCheckErrorContinue])
-
-
-  // Get store signature
-  useEffect(() => {
-    if (!cacheProvider || !account?.address || !web3 || !!storedSignature) return
-    ;(async() => {
-      // Get and verify stored signature
-      const storedSignatureData = await cacheProvider.getCachedUrl(`signature_${account.address}`)
-      if (storedSignatureData){
-        const storedSignatureVerified = await verifySignatureFunction(web3, account?.address, messageToSign, storedSignatureData.data.signature)
-        if (storedSignatureVerified){
-          setStoredSignature(storedSignatureData.data)
-          // Check signature timestamp
-          return setSignatureTimestamp(storedSignatureData.data.timestamp)
-        // Remove stored signature if not verified
-        } else {
-          cacheProvider.removeCachedUrl(`signature_${account.address}`)
-        }
-      }
-    })()
-  }, [web3, account, cacheProvider, storedSignature, setStoredSignature, messageToSign, verifySignatureFunction, getSignatureTimestamp])
-
-  const [ state, dispatch ] = useReducer(reducer, initialState)
-
-  const accountChanged = useMemo(() => {
-    return !!account && !!prevAccount && account.address !== prevAccount.address
-  }, [account, prevAccount])
-
-  const canContinue = useMemo(() => {
-    return Object.values(state).filter( v => v === false ).length === 0
-  }, [state])
 
   const sendSignature = useCallback(async (signature: string) => {
     if (!account?.address) return;
@@ -144,6 +84,66 @@ export const AuthWall = ({ children }: ProviderProps) => {
       }
     }
   }, [account, cacheProvider, messageToSign])
+
+  const getSignatureTimestamp = useCallback(async () => {
+    if (!account?.address || !web3) return;
+
+    setLastCheckTimestamp(null)
+
+    const signature = await checkSignature(account?.address as string, messageToSign)
+    
+    setSignatureCheckError(false)
+    setLastCheckTimestamp(Date.now())
+
+    // Signature not retrieved
+    if (!signature){
+
+      // Check stored signature before thwowing errors
+      const storedSignatureVerified = storedSignature && await verifySignature(web3, account?.address, messageToSign, storedSignature.signature)
+
+      if (storedSignatureVerified){
+        // Send signature if not saved
+        if (!storedSignature.saved){
+          sendSignature(storedSignature.signature)
+        }
+        return setSignatureTimestamp(storedSignature?.timestamp)
+      }
+
+      setSignatureCheckErrorContinue(false)
+      return setSignatureCheckError(true)
+    }
+    
+    return setSignatureTimestamp(signature?.timestamp)
+
+  }, [web3, account?.address, sendSignature, storedSignature, messageToSign, setSignatureTimestamp, setLastCheckTimestamp, setSignatureCheckError, setSignatureCheckErrorContinue])
+
+  // Get store signature
+  useEffect(() => {
+    if (!cacheProvider || !account?.address || !web3 || !!storedSignature) return
+    ;(async() => {
+      // Get and verify stored signature
+      const storedSignatureData = await cacheProvider.getCachedUrl(`signature_${account.address}`)
+      if (storedSignatureData){
+        const storedSignatureVerified = await verifySignature(web3, account?.address, messageToSign, storedSignatureData.data.signature)
+        if (storedSignatureVerified){
+          setStoredSignature(storedSignatureData.data)
+          // Send signature if not saved
+          if (!storedSignatureData.data.saved){
+            sendSignature(storedSignatureData.data.signature)
+          }
+          // Check signature timestamp
+          return setSignatureTimestamp(storedSignatureData.data.timestamp)
+        // Remove stored signature if not verified
+        } else {
+          cacheProvider.removeCachedUrl(`signature_${account.address}`)
+        }
+      }
+    })()
+  }, [web3, account, cacheProvider, storedSignature, sendSignature, setStoredSignature, messageToSign, getSignatureTimestamp])
+
+  const canContinue = useMemo(() => {
+    return Object.values(state).filter( v => v === false ).length === 0
+  }, [state])
 
   const signAndSend = useCallback(async () => {
     if (!account?.address || !web3) return;
