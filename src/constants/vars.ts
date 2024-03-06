@@ -16,6 +16,7 @@ export const MIN_TIMESTAMP = 1609459200000
 export const MIN_STAKING_SECONDS = 1209600 // 2 weeks
 export const MAX_STAKING_SECONDS = 126144000 // 4 years
 export const PROD_HOSTNAME = 'app.idle.finance'
+export const MIN_TVL_USD_DEPRECATED_VAULTS = 500
 export const LANDING_URL = 'https://idle.finance'
 export const DATETIME_FORMAT = 'YYYY/MM/DD HH:mm'
 export const MIN_STAKING_INCREASE_SECONDS = 604800 // 1 week

@@ -3301,8 +3301,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDC:{
         variant:'Aave',
         autoFarming:[],
-        enabledEnvs:[],
         protocol:'morpho',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:16420584,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
@@ -3381,8 +3382,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       DAI:{
         variant:'Aave',
         autoFarming:[],
-        enabledEnvs:[],
         protocol:'morpho',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:16519261,
         underlyingToken:'DAI',
         adaptiveYieldSplitEnabled:true,
@@ -3461,8 +3463,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       USDT:{
         variant:'Aave',
         autoFarming:[],
-        enabledEnvs:[],
         protocol:'morpho',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:16519329,
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
@@ -3542,6 +3545,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         variant:'Aave',
         autoFarming:[],
         protocol:'morpho',
+        status:'deprecated',
+        enabledEnvs:['beta'],
         blockNumber:16726342,
         underlyingToken:'WETH',
         adaptiveYieldSplitEnabled:true,
@@ -3861,6 +3866,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     */
     USDCBB: {
       status:'deprecated',
+      enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
         // depositsDisabled:true,
@@ -3932,6 +3938,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     USDTBB: {
       status:'deprecated',
+      enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
         apiType:'juniorRates',
@@ -3984,8 +3991,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     DAIBB: {
-      enabledEnvs: [],
       status:'deprecated',
+      enabledEnvs: ['beta'],
       blockNumber: 16519501,
       flags:{
         referralEnabled:true,
@@ -4240,6 +4247,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     */
     WETH: {
+      enabledEnvs: ['beta'],
       blockNumber: 11815164,
       underlyingToken: 'WETH',
       idle: {
@@ -4284,6 +4292,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     WETHBB: {
       status:'deprecated',
+      enabledEnvs: ['beta'],
       blockNumber: 16733433,
       underlyingToken: 'WETH',
       idle: {

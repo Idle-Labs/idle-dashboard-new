@@ -5,7 +5,7 @@ import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { MdArrowForwardIos } from 'react-icons/md'
-import { useModalProvider } from 'contexts/ModalProvider'
+ import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
 import { SearchBar } from 'components/SearchBar/SearchBar'
@@ -20,7 +20,7 @@ import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, isEmpty } from 'helpers/'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, isEmpty, bnOrZero } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -215,6 +215,12 @@ export const Strategy: React.FC = () => {
     return selectVaultsAssetsWithBalance(strategy)
   }, [isPortfolioLoaded, selectVaultsWithBalance, selectVaultsAssetsWithBalance, strategy])
 
+  const deprecatedAssetsData = useMemo(() => {
+    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
+    const vaultsAssets = selectVaultsAssetsByType(strategy)
+    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(500) )
+  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
+
   const strategyAssets = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     return selectVaultsAssetsByType(strategy)
@@ -223,13 +229,24 @@ export const Strategy: React.FC = () => {
   const availableAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id))
+    return vaultsAssets.filter( (vaultAsset: Asset) => vaultAsset.status !== 'deprecated' && !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id))
   }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const depositedListId = useMemo(() => {
     if (!strategy) return ''
     return `${strategy}_deposited`
   }, [strategy])
+
+  const deprecatedListId = useMemo(() => {
+    if (!strategy) return ''
+    return `${strategy}_deprecated`
+  }, [strategy])
+
+  const deprecatedListName = useMemo(() => {
+    if (!strategy) return ''
+    const strategyName = translate(strategies[strategy].label)
+    return `${strategyName} - ${translate('common.deprecated')}`
+  }, [strategy, translate])
 
   const depositedListName = useMemo(() => {
     if (!strategy) return ''
@@ -376,6 +393,54 @@ export const Strategy: React.FC = () => {
     )
   }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClick])
 
+  const deprecatedAssets = useMemo(() => {
+    if (!isPortfolioLoaded || !deprecatedAssetsData.length) return null
+
+    const initialState = {
+      sortBy: [
+        {
+          id: 'trancheTotalTvl',
+          desc: false
+        }
+      ]
+    }
+
+    return isMobile ? (
+      <VStack
+        mt={20}
+        spacing={6}
+        width={'100%'}
+        alignItems={'flex-start'}
+      >
+        <Translation translation={'defi.deprecatedAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
+        <VStack
+          spacing={2}
+          width={'100%'}
+          alignItems={'flex-start'}
+        >
+          {
+            deprecatedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+          }
+        </VStack>
+      </VStack>
+    ) : (
+      <Card mt={10}>
+        <Translation translation={'defi.deprecatedAssets'} component={Card.Heading} fontSize={'lg'} />
+        {
+          !deprecatedAssetsData.length ? (
+            <Stack
+            >
+              <Skeleton />
+              <Skeleton />
+            </Stack>
+          ) : (
+            <ReactTable columns={availableAssetsColumns} data={deprecatedAssetsData} initialState={initialState} onRowClick={ (row) => onRowClick(row, deprecatedListId, deprecatedListName) } />
+          )
+        }
+      </Card>
+    )
+  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClick])
+
   const banner = useMemo(() => {
     if (!strategy || !strategies[strategy].banner) return null
     const modalProps = strategies[strategy].banner?.modal
@@ -506,6 +571,7 @@ export const Strategy: React.FC = () => {
       {noVaults}
       {depositedAssets}
       {availableAssets}
+      {deprecatedAssets}
     </Flex>
   )
 }

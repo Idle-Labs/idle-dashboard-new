@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { MdArrowForwardIos } from 'react-icons/md'
 import { strategiesFolder } from 'constants/folders'
-import { products, chains, networks } from 'constants/'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { SearchBar } from 'components/SearchBar/SearchBar'
@@ -16,13 +15,13 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { ReactTable } from 'components/ReactTable/ReactTable'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { strategies, StrategyColumn } from 'constants/strategies'
 // import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
+import { products, chains, networks, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn } from 'constants/'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button, Tooltip } from '@chakra-ui/react'
 
@@ -584,7 +583,7 @@ export const Tranches: React.FC = () => {
   const deprecatedAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(500) )
+    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(MIN_TVL_USD_DEPRECATED_VAULTS) )
   }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const depositedListId = useMemo(() => {

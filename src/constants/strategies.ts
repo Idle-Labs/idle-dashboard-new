@@ -136,6 +136,7 @@ export const strategies: Record<string, StrategyProps> = {
     route:'best-yield',
     title:'strategies.best.title',
     label:'strategies.best.label',
+    /*
     banner:{
       text:'strategies.best.banner.text',
       cta:'strategies.best.banner.cta',
@@ -146,6 +147,7 @@ export const strategies: Record<string, StrategyProps> = {
         subtitle:'strategies.best.modal.subtitle'
       }
     },
+    */
     feesCollectors:[
       "0xbecc659bfc6edca552fa1a67451cc6b38a0108e4",
       "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",

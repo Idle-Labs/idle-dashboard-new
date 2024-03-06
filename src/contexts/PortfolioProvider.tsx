@@ -2415,7 +2415,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const checkVaultEnv = (vaultConfig: any) => {
       if (!("enabledEnvs" in vaultConfig)) return true
-      if (("enabledEnvs" in vaultConfig) && !vaultConfig.enabledEnvs.length) return true
+      if (("enabledEnvs" in vaultConfig) && isEmpty(vaultConfig.enabledEnvs)) return true
       if (("enabledEnvs" in vaultConfig) && vaultConfig.enabledEnvs.includes(environment)) return true
       return false
     }
