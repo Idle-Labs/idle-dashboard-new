@@ -399,7 +399,7 @@ export const Strategy: React.FC = () => {
     const initialState = {
       sortBy: [
         {
-          id: 'trancheTotalTvl',
+          id: 'tvl',
           desc: false
         }
       ]
