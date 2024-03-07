@@ -133,6 +133,26 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     }
   },
+  ethena: {
+    icon:`${protocolsFolder}ethena.svg`,
+    label: "Ethena",
+    stats: {
+      showLegend: false,
+    },
+    enabled: true,
+    colors: {
+      rgb: [30, 61, 137],
+      hsl: ["223", "64%", "33%"]
+    },
+    apis: {
+      USDe:{
+        path:'protocolYield.value',
+        endpoint: {
+          1: 'http://localhost:3333/ethenaAprs'
+        }
+      }
+    }
+  },
   amphor: {
     icon:`${protocolsFolder}amphor.png`,
     label: "Morpho",

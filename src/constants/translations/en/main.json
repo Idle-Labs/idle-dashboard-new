@@ -1058,6 +1058,7 @@
         "confirmed": "You have deposited",
         "messages": {
           "boosted": "The APY of this vault is boosted by additional rewards.",
+          "ethenaUSDeWithdraw": "The cooldown period of 7 days has started, once finished, you can claim back your USDe.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
           "vaultOpen": "The deposit window has started. You can deposit until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
@@ -1129,6 +1130,7 @@
         "messages": {
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "vaultOpen": "The vault is now open. You can withdraw until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
+          "ethenaUSDeWithdraw": "By withdrawing a cooldown period of 7 days will be triggered, after which you will be able to claim back your USDe.",
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",
           "vaultLocked": "The vault is currently locked. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> or an early termination to interact with the pool.",
           "gasEstimateError": "We have encountered an error during the gas estimate, you may not be able to withdraw your funds. This error may not be up to us, please <a href=\"https://discord.com/channels/606071749657755668/606073687799627776\" target=\"_blank\" class=\"link\">click here</a> to enter our Discord channel and communicate the following error:<br /><span class=\"error\">\"%{error}\"</span>",

@@ -3017,6 +3017,94 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       }
     },
+    ethena:{
+      USDe:{
+        autoFarming:[],
+        enabledEnvs:[],
+        protocol:'ethena',
+        blockNumber:16420584,
+        underlyingToken:'USDE',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          feeDiscountEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_ethena_USDe',
+          address:'0x4bC5E595d2e0536Ea989a7a9741e9EB5c3CAea33'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_ethena_USDe',
+          address:'0x6c14a1a28dd6dae5734fd960bac0b89a6b401cfd'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.ethena.fi/stake" class="link" rel="nofollow noopener noreferrer" target="_blank">Ethena USDe</a> staking pool and get sUSDe in exchange. To withdraw your funds you need to wait a cooldown period of 7 days, after which you can claim back your USDe. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        messages:{
+          // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
+          actions:{
+            withdraw:'trade.actions.deposit.messages.ethenaUSDeWithdraw'
+          },
+          withdraw:'trade.actions.withdraw.messages.ethenaUSDeWithdraw'
+        },
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_ethena_USDe_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'AA_ethena_USDe',
+            token:'AA_ethena_USDe',
+            label:'Ethena USDe AA',
+            address:'0x5f45A578491A23AC5AEE218e2D405347a0FaFa8E'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_ethena_USDe_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'BB_ethena_USDe',
+            token:'BB_ethena_USDe',
+            label:'Ethena USDe BB',
+            address:'0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C'
+          }
+        }
+      },
+    },
     morpho:{
       Re7WETH:{
         operators:[{

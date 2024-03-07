@@ -190,7 +190,7 @@ export class  Multicall {
     if (!chunksResults) return null
 
     return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
-      // if (!chunkResults) return results
+      if (!chunkResults) return results
       return results.concat(...chunkResults)
     }, [])
   }

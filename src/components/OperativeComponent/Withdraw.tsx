@@ -250,7 +250,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       >
         <EpochVaultMessage action={'withdraw'} />
       </AssetProvider>
-    ) : assetBalance.gt(0) && vaultMessages?.withdraw ? (
+    ) : /*assetBalance.gt(0) && */vaultMessages?.withdraw ? (
       <Card.Dark
         p={2}
         border={0}
@@ -273,7 +273,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         </HStack>
       </Card.Dark>
     )
-  }, [asset, vaultMessages, gasEstimateError, assetBalance, assetGauge, isEpochVault, setSearchParams])
+  }, [asset, vaultMessages, gasEstimateError/*, assetBalance*/, assetGauge, isEpochVault, setSearchParams])
 
   const withdrawInterestBearingToken = useMemo(() => {
     if (!redeemInterestBearingEnabled || vaultBalance.lte(0)) return null

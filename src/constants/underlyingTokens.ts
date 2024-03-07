@@ -45,7 +45,7 @@ export interface UnderlyingTokenProps {
 }
 
 export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProps>> = {
-  1: {
+  1:{
     DAI: {
       token:'DAI',
       decimals: 18,
@@ -375,6 +375,18 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         hsl: ["211", "67%", "47%"]
       },
       address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    },
+    USDE: {
+      decimals: 18,
+      token: 'USDE',
+      label: 'USDe',
+      enabled: true,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"]
+      },
+      address: "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
     },
     USDT: {
       decimals: 6,

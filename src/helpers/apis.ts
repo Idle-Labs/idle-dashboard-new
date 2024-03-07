@@ -1,11 +1,10 @@
 import Web3 from 'web3'
 import axios from 'axios'
 import { ethers } from 'ethers'
-import { chains } from 'constants/chains'
 import GnosisSafe from 'abis/gnosis/GnosisSafe.json'
 import { GenericContract } from 'contracts/GenericContract'
 import { getObjectPath, asyncWait, cmpAddrs } from 'helpers/'
-import { protocols, subgraphs, explorers, networks } from 'constants/'
+import { protocols, subgraphs, explorers, networks, chains } from 'constants/'
 import type { Abi, Explorer, PlatformApiFilters, ApisProps, Nullable } from 'constants/'
 
 export const makeRequest = async (endpoint: string, config?: any, error_callback?: Function): Promise<any> => {
