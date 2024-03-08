@@ -24,7 +24,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs } from 'helpers/'
-import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown } from 'constants/types'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -50,6 +50,7 @@ type VaultsOnchainData = {
   idleDistributions: Balances
   vaultsRewards: VaultsRewards
   // stakingData: StakingData | null
+  ethenaCooldowns: EthenaCooldown[]
   rewards: Record<AssetId, Balances>
   poolsData: Record<AssetId, Balances>
   openVaults: Record<AssetId, boolean>
@@ -133,6 +134,7 @@ const initialState: InitialState = {
   historicalTvls: {},
   discountedFees: {},
   protocolToken: null,
+  ethenaCooldowns: [],
   vaultsPositions: {},
   historicalRates: {},
   historicalPrices: {},
@@ -172,6 +174,7 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
         gaugesRewards: {},
         stakingData: null,
         discountedFees: {},
+        ethenaCooldowns: {},
         vaultsPositions: {},
         distributedRewards: {},
         isPortfolioLoaded: false,
@@ -270,6 +273,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return {...state, balances: action.payload}
     case 'SET_MATIC_NTFS':
       return {...state, maticNFTs: action.payload}  
+    case 'SET_ETHENA_COOLDOWNS':
+      return {...state, ethenaCooldowns: action.payload}  
     case 'SET_GAUGES_DATA':
       return {...state, gaugesData: action.payload}
     case 'SET_REWARDS':
@@ -948,6 +953,73 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   }, [web3, chainId, multiCall, state.contracts])
 
+  const getEthenaCooldowns = useCallback(async (vaults: Vault[], account: string): Promise<VaultsOnchainData["ethenaCooldowns"]> => {
+
+    if (!account || !web3 || !multiCall || !web3Chains || isEmpty(state.contractsNetworks) || !vaultFunctionsHelper) return []
+
+    const ethenaCooldownsEventsPromises = account ? vaults.reduce( (promises: Map<AssetId, Promise<CdoEvents>>, vault: Vault): Map<AssetId, Promise<CdoEvents>> => {
+      const assetKey = ("cdoConfig" in vault) ? vault.cdoConfig.address : vault.id
+      if (promises.has(assetKey)) return promises
+      const promise = vaultFunctionsHelper.getEthenaCooldownsEvents(vault, account)
+      if (!promise) return promises
+      promises.set(assetKey, promise as Promise<CdoEvents>)
+      return promises
+    }, new Map()) : new Map()
+
+    const ethenaCooldownsEventsResults = await Promise.all(Array.from(ethenaCooldownsEventsPromises.values()))
+
+    // Process vaults epochs
+    const rawCallsByChainId = ethenaCooldownsEventsResults.reduce( (rawCallsByChainId: Record<number, CallData[]>, cdoEvents: null | CdoEvents) => {
+      if (!cdoEvents?.cdoId || isEmpty(cdoEvents.events)) return rawCallsByChainId
+      
+      const vault = cdoEvents.data.vault
+
+      if (!("getPoolCustomCalls" in vault)) return rawCallsByChainId
+
+      if (!rawCallsByChainId[vault.chainId]){
+        rawCallsByChainId[vault.chainId] = []
+      }
+
+      rawCallsByChainId[vault.chainId] = rawCallsByChainId[vault.chainId].concat(
+        cdoEvents.events.map( (event: EventLog) => {
+          const rawCalls = vault.getPoolCustomCalls('cooldowns', [event.returnValues.contractAddress], {vault, contractAddress: event.returnValues.contractAddress})
+          const callsData = rawCalls.map( (rawCall: ContractRawCall) => multiCall.getDataFromRawCall(rawCall.call, rawCall) )
+          return callsData
+        }).flat()
+      )
+
+      return rawCallsByChainId
+    }, {})
+
+    const resultsByChainId = await Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rawCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
+
+    return resultsByChainId.reduce( (ethenaCooldowns: VaultsOnchainData["ethenaCooldowns"], decodedResults: DecodedResult[] | null): VaultsOnchainData["ethenaCooldowns"] => {
+      decodedResults?.forEach( (decodedResult: DecodedResult) => {
+        const vault = decodedResult.extraData.data.vault
+        const contractAddress = decodedResult.extraData.data.contractAddress
+        
+        // Override
+        // decodedResult.data.cooldownEnd = 1710526146
+        // decodedResult.data.underlyingAmount = '5000000000000000002'
+
+        if (BNify(decodedResult.data.underlyingAmount).gt(0)){
+          const status = Math.round(decodedResult.data.cooldownEnd*1000)>=Date.now() ? 'pending' : 'available'
+          const ethenaCooldown: EthenaCooldown = {
+            status,
+            contractAddress,
+            underlyingId: vault.underlyingToken?.address,
+            cooldownEnd: +decodedResult.data.cooldownEnd*1000,
+            underlyingAmount: decodedResult.data.underlyingAmount,
+            amount: fixTokenDecimals(decodedResult.data.underlyingAmount, vault.underlyingToken?.decimals || 18)
+          }
+          ethenaCooldowns.push(ethenaCooldown)
+        }
+      })
+      return ethenaCooldowns
+    }, [])
+
+  }, [web3, multiCall, web3Chains, state.contractsNetworks, vaultFunctionsHelper]);
+
   const getMorphoRewardsEmissions = useCallback(async (vaults: Vault[]): Promise<VaultsOnchainData["morphoRewardsEmissions"]> => {
     if (!web3 || !multiCall || !web3Chains || isEmpty(state.contractsNetworks)) return {}
 
@@ -1044,7 +1116,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       withdrawQueueLengthsByChain,
       morphoVaultsTotalSupplyByChainId
     ] = await Promise.all([
-
       await Promise.all(Object.keys(rewardTokensCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rewardTokensCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) )),
       await Promise.all(Object.keys(withdrawQueueLengthCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(withdrawQueueLengthCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) )),
       await Promise.all(Object.keys(morphoVaultsTotalSupplyCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(morphoVaultsTotalSupplyCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
@@ -1219,7 +1290,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : [],
         ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
         ("getInterestBearingTokensCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensCalls() : [],
-        ("getInterestBearingTokensExchangeRatesCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensExchangeRatesCalls() : [],
+        ("getInterestBearingTokensExchangeRatesCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensExchangeRatesCalls() : []
       ]
 
       if (!rawCalls[vault.chainId]){
@@ -1337,6 +1408,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const maticNFTsPromise = checkEnabledCall('balances') && account?.address ? vaultFunctionsHelper.getMaticTrancheNFTs(account.address) : []
 
     const morphoRewardsEmissionsPromise = getMorphoRewardsEmissions(vaults)
+    const ethenaCooldownsPromises = account?.address ? getEthenaCooldowns(vaults, account?.address) : []
 
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
 
@@ -1348,6 +1420,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const [
       maticNFTs,
+      ethenaCooldowns,
       morphoRewardsEmissions,
       // stakedIdleVaultRewards,
       vaultsAdditionalAprs,
@@ -1374,6 +1447,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       ]
     ] = await Promise.all([
       maticNFTsPromise,
+      ethenaCooldownsPromises,
       morphoRewardsEmissionsPromise,
       // stakedIdleVaultRewardsPromise,
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
@@ -1431,7 +1505,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const poolsDataResults = poolDataRawCallsResultsByChain[resultIndex]
       // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
 
-      // console.log('poolsDataResults', poolsDataResults)
+      // console.log('ethenaCooldownsContracts', ethenaCooldownsContracts)
 
       if (poolsDataResults){
         poolsData = poolsDataResults.reduce( (poolsData: VaultsOnchainData["poolsData"], callResult: DecodedResult) => {
@@ -1960,11 +2034,12 @@ export function PortfolioProvider({ children }:ProviderProps) {
       protocolsAprs,
       vaultsRewards,
       additionalAprs,
+      ethenaCooldowns,
       idleDistributions,
       interestBearingTokens,
       morphoRewardsEmissions
     }
-  }, [selectAssetById, web3Chains, account, multiCall, selectVaultById, getMorphoRewardsEmissions, state.contractsNetworks, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
+  }, [selectAssetById, web3Chains, account, multiCall, selectVaultById, getEthenaCooldowns, getMorphoRewardsEmissions, state.contractsNetworks, genericContractsHelper, vaultFunctionsHelper, getGaugesCalls, selectAssetPriceUsd, selectAssetTotalSupply, selectVaultPrice])
 
   useEffect(() => {
     if (!protocolToken) return
@@ -2053,6 +2128,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         aprsBreakdown,
         // vaultsRewards,
         additionalAprs,
+        ethenaCooldowns,
         idleDistributions,
         interestBearingTokens,
         morphoRewardsEmissions
@@ -2348,6 +2424,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         // stakingData,
         fees: newFees,
         aprs: newAprs,
+        ethenaCooldowns,
         limits: newLimits,
         rewards: newRewards,
         balances: newBalances,
@@ -2871,6 +2948,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
         vaultsRewards,
         totalSupplies,
         additionalAprs,
+        ethenaCooldowns,
         idleDistributions,
         interestBearingTokens,
         morphoRewardsEmissions
@@ -2904,67 +2982,57 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprRatios : {...state.aprRatios, ...aprRatios}
         newState.aprRatios = payload
-        // dispatch({type: 'SET_APR_RATIOS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? baseAprs : {...state.baseAprs, ...baseAprs}
         newState.baseAprs = payload
-        // dispatch({type: 'SET_BASE_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? idleDistributions : {...state.idleDistributions, ...idleDistributions}
         newState.idleDistributions = payload
-        // dispatch({type: 'SET_BASE_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
         const payload = !enabledCalls.length || accountChanged ? protocolsAprs : {...state.protocolsAprs, ...protocolsAprs}
         newState.protocolsAprs = payload
-        // dispatch({type: 'SET_ALLOCATIONS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
         const payload = !enabledCalls.length || accountChanged ? poolsData : {...state.poolsData, ...poolsData}
         newState.poolsData = payload
-        // dispatch({type: 'SET_ALLOCATIONS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('protocols')) {
         const payload = !enabledCalls.length || accountChanged ? allocations : {...state.allocations, ...allocations}
         newState.allocations = payload
-        // dispatch({type: 'SET_ALLOCATIONS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprs : {...state.aprs, ...aprs}
         newState.aprs = payload
-        // dispatch({type: 'SET_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? additionalAprs : {...state.additionalAprs, ...additionalAprs}
         newState.additionalAprs = payload
-        // dispatch({type: 'SET_ADDITIONAL_APRS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('aprs')) {
         const payload = !enabledCalls.length || accountChanged ? aprsBreakdown : {...state.aprsBreakdown, ...aprsBreakdown}
         newState.aprsBreakdown = payload
-        // dispatch({type: 'SET_APRS_BREAKDOWN', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         const payload = !enabledCalls.length || accountChanged ? rewards : {...state.rewards, ...rewards}
         newState.rewards = payload
-        // dispatch({type: 'SET_REWARDS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         // console.log('SET_VAULTS_REWARDS', enabledCalls, state.vaultsRewards, vaultsRewards)
         const payload = !enabledCalls.length || accountChanged ? vaultsRewards : {...state.vaultsRewards, ...vaultsRewards}
         newState.vaultsRewards = payload
-        // dispatch({type: 'SET_VAULTS_REWARDS', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
         const payload = !enabledCalls.length || accountChanged ? balances : {...state.balances, ...balances}
         newState.balances = payload
-        // dispatch({type: 'SET_BALANCES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
         newState.maticNFTs = maticNFTs
-        // dispatch({type: 'SET_MATIC_NTFS', payload: maticNFTs })
+      }
+      if (!enabledCalls.length || enabledCalls.includes('balances')) {
+        newState.ethenaCooldowns = ethenaCooldowns
       }
       if (!enabledCalls.length || enabledCalls.includes('rewards')) {
         newState.morphoRewardsEmissions = morphoRewardsEmissions
@@ -2972,22 +3040,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
       if (!enabledCalls.length || enabledCalls.includes('balances')) {
         const payload = !enabledCalls.length || accountChanged ? gaugesData : {...state.gaugesData, ...gaugesData}
         newState.gaugesData = payload
-        // dispatch({type: 'SET_GAUGES_DATA', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('pricesUsd')) {
         const payload = !enabledCalls.length || accountChanged ? pricesUsd : {...state.pricesUsd, ...pricesUsd}
         newState.pricesUsd = payload
-        // dispatch({type: 'SET_PRICES_USD', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('prices')) {
         const payload = !enabledCalls.length || accountChanged ? vaultsPrices : {...state.vaultsPrices, ...vaultsPrices}
         newState.vaultsPrices = payload
-        // dispatch({type: 'SET_VAULTS_PRICES', payload })
       }
       if (!enabledCalls.length || enabledCalls.includes('totalSupplies')) {
         const payload = !enabledCalls.length || accountChanged ? totalSupplies : {...state.totalSupplies, ...totalSupplies}
         newState.totalSupplies = payload
-        // dispatch({type: 'SET_TOTAL_SUPPLIES', payload })
       }
 
       // console.log('postfolioLoaded', newState)
@@ -3013,6 +3077,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dispatch({type: 'SET_MATIC_NTFS', payload: []})
       // dispatch({type: 'SET_GAUGES_DATA', payload: {}})
       dispatch({type: 'SET_VAULTS_REWARDS', payload: {}})
+      dispatch({type: 'SET_ETHENA_COOLDOWNS', payload: []})
       // dispatch({type: 'SET_PRICES_USD', payload: {}})
       // dispatch({type: 'SET_VAULTS_PRICES', payload: {}})
       // dispatch({type: 'SET_TOTAL_SUPPLIES', payload: {}})

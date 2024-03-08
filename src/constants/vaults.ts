@@ -2,6 +2,7 @@ import aToken from 'abis/aave/AToken.json'
 import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
 import IdleCDO from 'abis/idle/IdleCDO.json'
+import EthenaPool from 'abis/ethena/EthenaPool.json'
 import MorphoPool from 'abis/morpho/MorphoPool.json'
 import AmphorPool from 'abis/amphor/AmphorPool.json'
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
@@ -3022,22 +3023,28 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         protocol:'ethena',
-        blockNumber:16420584,
+        blockNumber:19389806,
         underlyingToken:'USDE',
         adaptiveYieldSplitEnabled:true,
         flags:{
-          feeDiscountEnabled: true
+          feeDiscountEnabled: true,
+          showEthenenaCooldowns: true
         },
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
           name:'IdleCDO_ethena_USDe',
-          address:'0x4bC5E595d2e0536Ea989a7a9741e9EB5c3CAea33'
+          address:'0x1EB1b47D0d8BCD9D761f52D26FCD90bBa225344C'
         },
         Strategy:{
           abi:IdleStrategy as Abi,
           name:'IdleStrategy_ethena_USDe',
-          address:'0x6c14a1a28dd6dae5734fd960bac0b89a6b401cfd'
+          address:'0x73a99d5383ab115a24b4e3f6def02f7dd0e57b16'
+        },
+        Pool:{
+          name: 'Ethena_sUSDe',
+          abi:EthenaPool as Abi,
+          address:'0x9D39A5DE30e57443BfF2A8307A4256c8797A3497'
         },
         description:'This strategy deploys funds in the <a href="https://app.ethena.fi/stake" class="link" rel="nofollow noopener noreferrer" target="_blank">Ethena USDe</a> staking pool and get sUSDe in exchange. To withdraw your funds you need to wait a cooldown period of 7 days, after which you can claim back your USDe. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
         messages:{
@@ -3074,7 +3081,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             name:'AA_ethena_USDe',
             token:'AA_ethena_USDe',
             label:'Ethena USDe AA',
-            address:'0x5f45A578491A23AC5AEE218e2D405347a0FaFa8E'
+            address:'0xF3188697Bd35Df73E4293d04A07ebAAf1FfC4018'
           },
           BB:{
             abi:ERC20 as Abi,
@@ -3100,7 +3107,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             name:'BB_ethena_USDe',
             token:'BB_ethena_USDe',
             label:'Ethena USDe BB',
-            address:'0x982E46e81E99fbBa3Fb8Af031A7ee8dF9041bb0C'
+            address:'0xb8d0BE502A8F12Cc5213733285b430A43d07349D'
           }
         }
       },

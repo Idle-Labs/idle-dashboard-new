@@ -13,7 +13,7 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData } from 'constants/'
+import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData, CdoEvents } from 'constants/'
 import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId, isEmpty } from 'helpers/'
 
 export interface CdoLastHarvest {
@@ -393,6 +393,21 @@ export class VaultFunctionsHelper {
     // }
 
     return BNify(normalizeTokenAmount(apr.times(100), (trancheVault.underlyingToken?.decimals || 18)))
+  }
+
+  public async getEthenaCooldownsEvents(vault: Vault, account: string): Promise<CdoEvents | null> {
+    if (!("protocol" in vault) || vault.protocol !== 'ethena' || !("cdoContract" in vault)) return null
+    return {
+      data: { vault, account },
+      cdoId: vault.cdoConfig.address,
+      events: await vault.cdoContract.getPastEvents('NewCooldownRequestContract', {
+        toBlock: 'latest',
+        fromBlock: vault.vaultConfig.blockNumber,
+        filter: {
+          user: account
+        }
+      }),
+    }
   }
 
   public async getMaticTrancheNFTs(account: string): Promise<any> {

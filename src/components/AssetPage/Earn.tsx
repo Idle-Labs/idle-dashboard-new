@@ -16,6 +16,7 @@ import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
+import { EthenaCooldowns } from 'components/EthenaCooldowns/EthenaCooldowns'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
@@ -463,9 +464,10 @@ export const Earn: React.FC = () => {
         </Card.Flex>
       </Box>
       {fundsOverview}
+      <MaticNFTs assetId={asset?.id} />
+      <EthenaCooldowns assetId={asset?.id} />
       <AssetDiscountedFees assetId={asset?.id} />
       <AssetDistributedRewards assetId={asset?.id} />
-      <MaticNFTs assetId={asset?.id} />
       {vaultRewards}
       <VStack
         spacing={4}

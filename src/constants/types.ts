@@ -2,6 +2,7 @@ import React from 'react'
 import * as moment from 'moment'
 import type { Vault } from 'vaults/'
 import type { AbiItem } from 'web3-utils'
+import type { EventLog } from 'web3-core'
 import type { BigNumber } from 'bignumber.js'
 import { IconType as ReactIcon } from 'react-icons'
 import { ContractSendMethod } from 'web3-eth-contract'
@@ -22,6 +23,12 @@ export type VaultAdditionalApr = {
   apr: BigNumber
   cdoId?: string
   type?: string
+}
+
+export type CdoEvents = {
+  data: any
+  cdoId: AssetId
+  events: EventLog[]
 }
 
 export interface ErrnoException extends Error {
@@ -130,15 +137,24 @@ export type VaultRewards = {
   amount: BigNumber
 }
 
+export type EthenaCooldown = {
+  amount: BigNumber
+  cooldownEnd: number
+  underlyingId: string
+  contractAddress: string
+  underlyingAmount: string
+  status: 'pending' | 'available'
+}
+
 export type MaticNFT = {
   amount: BigNumber
-  currentEpoch: number
-  remainingEpochs: number
-  remainingTime: number
-  requestEpoch: number
-  status: string
   tokenId: string
+  currentEpoch: number
+  requestEpoch: number
+  remainingTime: number
+  remainingEpochs: number
   unlockTimestamp: number
+  status: 'pending' | 'available'
   contractSendMethod: ContractSendMethod
 }
 

@@ -140,12 +140,12 @@ export class TrancheVault {
     }
 
     // Init Strategy contract
-    if (this.strategyConfig.address){
+    if (this.strategyConfig.abi && this.strategyConfig.address){
       this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
     }
 
     // Init Pool contract
-    if (this.poolConfig?.address){
+    if (this.poolConfig?.abi && this.poolConfig?.address){
       this.poolContract = new web3.eth.Contract(this.poolConfig.abi, this.poolConfig.address)
     }
 
@@ -416,6 +416,17 @@ export class TrancheVault {
       {
         assetId:this.id,
         call:this.strategyContract.methods.getApr()
+      },
+    ]
+  }
+
+  public getPoolCustomCalls(methodName: string, params: any[], data: any): ContractRawCall[] {
+    if (!this.poolContract || !this.poolContract?.methods?.[methodName]) return []
+    return [
+      {
+        data,
+        assetId:this.id,
+        call:this.poolContract.methods[methodName](...params)
       },
     ]
   }

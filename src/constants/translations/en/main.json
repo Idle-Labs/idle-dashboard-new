@@ -637,6 +637,7 @@
     "deprecatedAssets": "Decommissioned assets",
     "claimable": "Claimable",
     "claimableNTFs": "Claimable NFTs",
+    "pendingWithdrawals": "Pending withdrawals",
     "estUnlockDate": "Estimated unlock date",
     "dailyDistribution": "Daily distribution",
     "idleDistribution": "IDLE distribution",
