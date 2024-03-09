@@ -43,6 +43,8 @@ export const Amount = ({
 
   if (!abbreviate && !BNify(parsedValue).isNaN() && BNify(parsedValue).gte(1000)){
     parsedValue = formatMoney(+parsedValue, decimals)
+  } else if (!BNify(parsedValue).isNaN() && decimals !== undefined) {
+    parsedValue = BNify(parsedValue).toFixed(decimals)
   }
 
   return (

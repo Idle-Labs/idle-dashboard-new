@@ -519,7 +519,7 @@ export const AssetStats: React.FC<AssetStatsProps> = ({ showHeader = true, asset
       </Card>
       <Card>
         <Translation mb={1} translation={'stats.collectedFees'} textStyle={'captionSmall'} />
-        <TokenAmount abbreviate={false} decimals={0} assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
+        <TokenAmount abbreviate={false} decimals={collectedFeesUsd.lt(10) ? 2 : 0} assetId={asset?.id} amount={collectedFeesUsd} showIcon={false} textStyle={'ctaStatic'} fontSize={'xl'} />
       </Card>
     </SimpleGrid>
   ), [tvlUsd, avgApy, volume, assetIds, asset, collectedFeesUsd, selectAssetById, strategyConfig])
