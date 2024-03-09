@@ -104,7 +104,7 @@ export const EthenaCooldowns: React.FC<EthenaCooldownsProps> = ({ assetId }) => 
                         spacing={1}
                         justifyContent={'flex-end'}
                       >
-                        <Amount value={ethenaCooldown.amount} decimals={8} textStyle={'tableCell'} />
+                        <Amount value={ethenaCooldown.amount} decimals={6} textStyle={'tableCell'} />
                         <AssetProvider assetId={asset?.underlyingId}>
                           <AssetProvider.Name textStyle={'tableCell'} />
                         </AssetProvider>

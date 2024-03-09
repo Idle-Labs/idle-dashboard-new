@@ -983,36 +983,44 @@ export function PortfolioProvider({ children }:ProviderProps) {
       rawCallsByChainId[vault.chainId] = rawCallsByChainId[vault.chainId].concat(
         cdoEvents.events.map( (event: EventLog) => {
           const rawCalls = vault.getPoolCustomCalls('cooldowns', [event.returnValues.contractAddress], {vault, contractAddress: event.returnValues.contractAddress})
+          const rawCalls2 = vault.getPoolCustomCalls('convertToAssets', [BNify(1e18).toString()], {vault, contractAddress: event.returnValues.contractAddress})
           const callsData = rawCalls.map( (rawCall: ContractRawCall) => multiCall.getDataFromRawCall(rawCall.call, rawCall) )
-          return callsData
+          const callsData2 = rawCalls2.map( (rawCall: ContractRawCall) => multiCall.getDataFromRawCall(rawCall.call, rawCall) )
+          return [...callsData, ...callsData2].flat()
         }).flat()
       )
 
       return rawCallsByChainId
     }, {})
 
-    const resultsByChainId = await Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rawCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
+    const [
+      latestBlock,
+      resultsByChainId
+    ] = await Promise.all([
+      web3.eth.getBlock('latest'),
+      Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rawCallsByChainId[+chainId]), true, +chainId, web3) ))
+    ])
 
     return resultsByChainId.reduce( (ethenaCooldowns: VaultsOnchainData["ethenaCooldowns"], decodedResults: DecodedResult[] | null): VaultsOnchainData["ethenaCooldowns"] => {
       decodedResults?.forEach( (decodedResult: DecodedResult) => {
         const vault = decodedResult.extraData.data.vault
         const contractAddress = decodedResult.extraData.data.contractAddress
-        
-        // Override
-        // decodedResult.data.cooldownEnd = 1710526146
-        // decodedResult.data.underlyingAmount = '5000000000000000002'
-
-        if (BNify(decodedResult.data.underlyingAmount).gt(0)){
-          const status = Math.round(decodedResult.data.cooldownEnd*1000)>=Date.now() ? 'pending' : 'available'
-          const ethenaCooldown: EthenaCooldown = {
-            status,
-            contractAddress,
-            underlyingId: vault.underlyingToken?.address,
-            cooldownEnd: +decodedResult.data.cooldownEnd*1000,
-            underlyingAmount: decodedResult.data.underlyingAmount,
-            amount: fixTokenDecimals(decodedResult.data.underlyingAmount, vault.underlyingToken?.decimals || 18)
+        if (contractAddress){
+          const convertToAssetsResult = decodedResults.find( (decodedResult2: DecodedResult) => decodedResult2.callData.method.includes("convertToAssets") && cmpAddrs(decodedResult2.extraData.data.contractAddress, contractAddress) )
+          if (BNify(decodedResult.data.underlyingAmount).gt(0)){
+            const conversionRate = convertToAssetsResult?.data ? fixTokenDecimals(convertToAssetsResult.data, vault.underlyingToken?.decimals || 18) : BNify(1)
+            const status = +decodedResult.data.cooldownEnd>=+latestBlock.timestamp ? 'pending' : 'available'
+            // console.log(decodedResult.data.cooldownEnd, latestBlock.timestamp, status, conversionRate.toString())
+            const ethenaCooldown: EthenaCooldown = {
+              status,
+              contractAddress,
+              underlyingId: vault.underlyingToken?.address,
+              cooldownEnd: +decodedResult.data.cooldownEnd*1000,
+              underlyingAmount: decodedResult.data.underlyingAmount,
+              amount: fixTokenDecimals(decodedResult.data.underlyingAmount, vault.underlyingToken?.decimals || 18).times(conversionRate)
+            }
+            ethenaCooldowns.push(ethenaCooldown)
           }
-          ethenaCooldowns.push(ethenaCooldown)
         }
       })
       return ethenaCooldowns
@@ -1461,6 +1469,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
       multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
     ])
 
+    // console.log('ethenaCooldowns', ethenaCooldowns)
+
     let fees: Balances = {}
     let aprs: Balances = {}
     let limits: Balances = {}
@@ -1504,8 +1514,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const poolsDataResults = poolDataRawCallsResultsByChain[resultIndex]
       // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
-
-      // console.log('ethenaCooldownsContracts', ethenaCooldownsContracts)
 
       if (poolsDataResults){
         poolsData = poolsDataResults.reduce( (poolsData: VaultsOnchainData["poolsData"], callResult: DecodedResult) => {
