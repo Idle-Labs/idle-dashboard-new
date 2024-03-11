@@ -97,6 +97,42 @@ export function Web3Provider({ children }: ProviderProps) {
     })()
   }, [web3Chains, setWeb3Chains])
 
+  // Check and load RPCs
+  useEffect(() => {
+    if (!chainId || !isEmpty(web3Chains)) return
+
+    ;(async() => {
+      // Check custom RPCs otherwise use public ones
+      const newWeb3Chains = await asyncReduce<any, Record<string, Web3>>(
+        Object.keys(chains),
+        async (chainId: any) => {
+          const rpcUrl = chains[chainId].rpcUrl as string
+          const publicRpcUrl = chains[chainId].publicRpcUrl as string
+          const web3Private = new Web3(new Web3.providers.HttpProvider(rpcUrl))
+          const web3Public = new Web3(new Web3.providers.HttpProvider(publicRpcUrl))
+          try {
+            await web3Private.eth.getBlockNumber()
+            return {
+              [chainId]: web3Private
+            }
+          } catch (err){
+            return {
+              [chainId]: web3Public
+            }
+          }
+        },
+        (web3Chains, chainWeb3) => {
+          return {
+            ...web3Chains,
+            ...chainWeb3
+          }
+        },
+        {}
+      )
+      setWeb3Chains(newWeb3Chains)
+    })()
+  }, [chainId, web3Chains, setWeb3Chains])
+
   useEffect(() => {
     if (!chainId || !web3 || !web3Rpc) return
     const multiCall = new Multicall(chainId, web3)
