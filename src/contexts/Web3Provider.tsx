@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import { chains } from 'constants/'
 import { Multicall } from 'classes/'
+import { isEmpty, asyncReduce } from 'helpers/'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
@@ -25,6 +26,7 @@ export const useWeb3Provider = () => useContext(Web3ProviderContext)
 
 export function Web3Provider({ children }: ProviderProps) {
   // const [ web3, setWeb3 ] = useState<Web3 | null>(null)
+  const [ web3Chains, setWeb3Chains ] = useState<Record<string, Web3>>({})
   const { connecting, wallet, chainId, walletInitialized } = useWalletProvider()
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
 
@@ -34,17 +36,6 @@ export function Web3Provider({ children }: ProviderProps) {
     if (!rpcUrl) return null
     return new Web3(new Web3.providers.HttpProvider(rpcUrl))
   }, [chainId])
-
-  const web3Chains = useMemo(() => {
-    return Object.keys(chains).reduce( (web3Chains: Record<string, Web3>, chainId: any) => {
-      const rpcUrl = chains[chainId]?.rpcUrl
-      if (!chainId || !rpcUrl) return web3Chains
-      return {
-        ...web3Chains,
-        [chainId]: new Web3(new Web3.providers.HttpProvider(rpcUrl))
-      }
-    }, {})
-  }, []);
 
   const web3 = useMemo(() => {
     if (!walletInitialized || connecting) return null
@@ -59,22 +50,43 @@ export function Web3Provider({ children }: ProviderProps) {
   // @ts-ignore // TO REMOVE
   window.web3 = web3
 
-  // Update wallet and provider
-  // useEffect(() => {
-  //   console.log('wallet.provider', walletInitialized, chainId, wallet?.provider)
-  //   if (!walletInitialized || !chainId) return
-  //   if (wallet?.provider) {
-  //     // @ts-ignore
-  //     setWeb3(new Web3(wallet.provider))
-  //   } else {
-  //     setWeb3(web3Rpc)
-  //   }
-  // }, [wallet?.provider, walletInitialized, chainId, web3Rpc])
+  // Check and load RPCs
+  useEffect(() => {
+    if (!isEmpty(web3Chains)) return;
+    ;(async() => {
+      // Check custom RPCs otherwise use public ones
+      const newWeb3Chains = await asyncReduce<any, Record<string, Web3>>(
+        Object.keys(chains),
+        async (chainId: any) => {
+          const rpcUrl = chains[chainId].rpcUrl as string
+          const publicRpcUrl = chains[chainId].publicRpcUrl as string
+          const web3Private = new Web3(new Web3.providers.HttpProvider(rpcUrl))
+          const web3Public = new Web3(new Web3.providers.HttpProvider(publicRpcUrl))
+          try {
+            await web3Private.eth.getBlockNumber()
+            return {
+              [chainId]: web3Private
+            }
+          } catch (err){
+            return {
+              [chainId]: web3Public
+            }
+          }
+        },
+        (web3Chains, chainWeb3) => {
+          return {
+            ...web3Chains,
+            ...chainWeb3
+          }
+        },
+        {}
+      )
+      setWeb3Chains(newWeb3Chains)
+    })()
+  }, [web3Chains, setWeb3Chains])
 
   useEffect(() => {
     if (!chainId || !web3 || !web3Rpc) return
-
-    // const multiCall = new Multicall(chainId, web3Rpc)
     const multiCall = new Multicall(chainId, web3)
     setMultiCall(multiCall)
   }, [web3, web3Rpc, chainId])
