@@ -148,7 +148,10 @@ export const protocols: Record<string, Protocol> = {
       USDe:{
         path:'protocolYield.value',
         endpoint: {
-          1: 'http://localhost:3333/ethenaAprs'
+          1: 'https://api.idle.finance/ethenaAprs'
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       }
     }
