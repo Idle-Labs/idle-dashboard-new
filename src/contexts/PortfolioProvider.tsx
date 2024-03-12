@@ -735,16 +735,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
               depositsInfo.depositedAmount = BNify(0)
               depositsInfo.depositedWithRefAmount = BNify(0)
             } else if (depositsInfo.depositedAmount.lte(0)) {
-              depositsInfo.depositedAmount = depositsInfo.totalDeposits
+              depositsInfo.depositedAmount = depositsInfo.depositedIdleAmount.times(transaction.idlePrice)
               // Track referral
               if (depositsInfo.depositedWithRefAmount.gt(0)){
-                depositsInfo.depositedWithRefAmount = depositsInfo.totalDeposits
+                depositsInfo.depositedWithRefAmount = depositsInfo.depositedAmount
               }
             }
           break;
           default:
           break;
         }
+
+        // console.log(assetId, transaction.action, transaction.underlyingAmount.toString(), transaction.idleAmount.toString(), depositsInfo.depositedAmount.toString(), depositsInfo.depositedIdleAmount.toString())
 
         // Update last period
         if (depositsInfo.balancePeriods.length>0){
