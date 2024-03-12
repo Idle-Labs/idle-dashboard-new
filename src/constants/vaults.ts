@@ -3021,9 +3021,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     ethena:{
       USDe:{
         autoFarming:[],
-        enabledEnvs:[],
         protocol:'ethena',
+        enabledEnvs:['beta'],
         blockNumber:19389806,
+        status:'experimental',
         underlyingToken:'USDE',
         adaptiveYieldSplitEnabled:true,
         flags:{
