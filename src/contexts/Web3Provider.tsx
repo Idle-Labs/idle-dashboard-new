@@ -9,6 +9,7 @@ import React, { useState, useContext, useEffect, useMemo } from 'react'
 type ContextProps = {
   web3: Web3 | null
   web3Rpc: Web3 | null
+  latestBlock: number | null
   multiCall: Multicall | null
   web3Chains: Record<string, Web3> | null
 }
@@ -17,7 +18,8 @@ const initialState: ContextProps = {
   web3: null,
   web3Rpc: null,
   multiCall: null,
-  web3Chains: null
+  web3Chains: null,
+  latestBlock: null
 }
 
 const Web3ProviderContext = React.createContext<ContextProps>(initialState)
@@ -25,10 +27,10 @@ const Web3ProviderContext = React.createContext<ContextProps>(initialState)
 export const useWeb3Provider = () => useContext(Web3ProviderContext)
 
 export function Web3Provider({ children }: ProviderProps) {
-  // const [ web3, setWeb3 ] = useState<Web3 | null>(null)
-  const [ web3Chains, setWeb3Chains ] = useState<Record<string, Web3> | null>(null)
-  const { connecting, wallet, chainId, walletInitialized } = useWalletProvider()
   const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
+  const [ latestBlock, setLatestBlock ] = useState<number | null>(null)
+  const { connecting, wallet, chainId, walletInitialized } = useWalletProvider()
+  const [ web3Chains, setWeb3Chains ] = useState<Record<string, Web3> | null>(null)
 
   const web3Rpc = useMemo(() => {
     if (!chainId) return null
@@ -49,6 +51,16 @@ export function Web3Provider({ children }: ProviderProps) {
 
   // @ts-ignore // TO REMOVE
   window.web3 = web3
+
+  useEffect(() => {
+    if (!web3) return;
+    ;(async()=>{
+      const blockNumber = await web3.eth.getBlockNumber()
+      if (blockNumber){
+        setLatestBlock(blockNumber)
+      }
+    })()
+  }, [web3, setLatestBlock])
 
   // Check and load RPCs
   useEffect(() => {
@@ -92,7 +104,7 @@ export function Web3Provider({ children }: ProviderProps) {
   }, [web3, web3Rpc, chainId])
 
   return (
-    <Web3ProviderContext.Provider value={{web3, web3Rpc, web3Chains, multiCall}}>
+    <Web3ProviderContext.Provider value={{web3, web3Rpc, web3Chains, multiCall, latestBlock}}>
       {children}
     </Web3ProviderContext.Provider>
   )

@@ -3628,7 +3628,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         protocol:'amphor',
-        blockNumber:18769315,
+        blockNumber: 18769315,
         underlyingToken:'WSTETH',
         distributedTokens:['WSTETH'],
         rewardsSenders:distributedFeesSenders[1],
@@ -3677,6 +3677,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           apyBreakdown:{
             base: "assets.assetDetails.apyBreakdown.lidoStaking"
           }
+        },
+        messages:{
+          defaulted:`The <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor ETH/USDC</a> pool experienced a loss, redistributed to safeguard Senior liquidity. If you've deposited in Junior, there may be an impact on your funds.`
         },
         // eslint-disable-next-line
         description:'This strategy deploys funds in the <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor ETH/USDC</a> pool.<br />The synthetic LP replicates the payoff of a position in Uniswap v3 liquidity pool while hedging against Impermanent Loss on ETH/USDC.<br />As long as ETH/USDC is trading <span class="bold" style="color: #fff;">{aboveBelow}</span> the "Risk threshold", the vault generates a total net <span class="bold" style="color: #fff;">{totalApr}% APR</span> for the entire pool.<br />Every week, the vault early terminates if ETH price closes <span class="bold" style="color: #fff;">{aboveBelow}</span> the "Termination threshold".<br />If the vault reaches its maturity and ETH price ends <span class="bold" style="color: #fff;">{aboveBelowInverse}</span> the "Risk threshold" of <span class="bold" style="color: #fff;">${riskThreshold}</span>, on <span class="bold" style="color: #fff;">{epochEnd}</span>, the capital would be at risk. To prevent any loss, the position will be restructured by the Amphor team if the ETH price gets too close to the "Risk threshold".',

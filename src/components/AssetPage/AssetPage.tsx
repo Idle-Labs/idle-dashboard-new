@@ -19,6 +19,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
+import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
@@ -466,10 +467,16 @@ export const AssetPage: React.FC = () => {
         assetId={params.asset}
       >
         <Box
+          mt={7}
           width={'100%'}
         >
+          {
+            vault && ("messages" in vault) && vault.messages?.defaulted && (
+              <AnnouncementBanner mode={'alert'} text={vault.messages.defaulted} image={'images/vaults/warning.png'} imageRight={isMobile ? undefined : 'images/vaults/warning.png'} />
+            )
+          }
           <Flex
-            my={[10, 14]}
+            my={[10, 7]}
             width={'100%'}
             id={'asset-top-header'}
             direction={['column', 'row']}

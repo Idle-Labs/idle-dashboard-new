@@ -65,8 +65,9 @@ export function WalletProvider({ children }: ProviderProps) {
 
   const [ { connectedChain }, setChain ] = useSetChain()
   const [ getSearchParams ] = useMemo(() => searchParams, [searchParams])
-  const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
+
   const [ disconnecting, setDisconnecting ] = useState<boolean>(false)
+  const [ { wallet, connecting }, connect, disconnect ] = useConnectWallet()
   const [ walletInitialized, setWalletInitialized ] = useState<boolean>(false)
   const [ walletProvider, setWalletProvider, removeWalletProvider, isWalletProviderLoaded ] = useLocalForge('walletProvider', undefined)
 
@@ -168,9 +169,9 @@ export function WalletProvider({ children }: ProviderProps) {
   // Set walletInitialized
   useEffect(() => {
     if (connecting || !isWalletProviderLoaded) return
-    const walletInitialized = !!(!walletProvider || account?.address)
+    const walletInitialized = !!(!walletProvider || !wallet || account?.address)
     setWalletInitialized(walletInitialized)
-  }, [account, connecting, walletProvider, isWalletProviderLoaded])
+  }, [account, connecting, wallet, walletProvider, isWalletProviderLoaded])
 
   const disconnectWallet = useCallback(async () => {
     setDisconnecting(true)
