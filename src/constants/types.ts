@@ -308,6 +308,9 @@ export type BannerProps = {
 }
 
 export type RewardEmission = {
+  prefix?: string
+  suffix?: string
+  tooltip?: string
   assetId: AssetId
   apr?: BigNumber | null
   totalSupply?: BigNumber

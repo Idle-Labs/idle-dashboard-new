@@ -12,16 +12,6 @@ export const chains: Record<number, Chain> = {
     publicRpcUrl: 'https://ethereum.publicnode.com',
     rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
   },
-  /*
-  137: {
-    id: '0x89',
-    token: 'MATIC',
-    label: 'Matic(Polygon) Mainnet',
-    publicRpcUrl: 'https://polygon-rpc.com',
-    rpcUrl: `https://polygon-mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
-  },
-  */
-  /*
   10: {
     id: '0xa',
     token: 'ETH',
@@ -36,7 +26,6 @@ export const chains: Record<number, Chain> = {
     publicRpcUrl: `https://zkevm-rpc.com`,
     rpcUrl: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_ZK_KEY}`
   }
-  */
 }
 
 export function selectChainById(id: number): Chain | undefined {

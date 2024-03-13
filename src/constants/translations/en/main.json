@@ -2049,6 +2049,7 @@
         "autoCompounding": "These rewards are automatically re-invested in the strategy and distributed over a week",
         "lockEndDate": "This is the expiration date of your lock, after this date you will be able to withdraw your IDLE",
         "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution",
+        "ethenaShardsRewardEmission": "Shards that will be distributed per day for each USDe deposited in the Senior tranche",
         "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy. Rewards are harvested weekly and distributed over a week",
         "rewardEmissionToken": "Tokens that will be distributed per year for the entire pool. Received rewards will be harvested monthly and distributed over a week",

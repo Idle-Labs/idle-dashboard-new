@@ -1202,9 +1202,11 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
         visibleRewardsIds.map( rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
           if (!rewardEmission || rewardEmission.apr) return null
+          const prefix = rewardEmission.prefix || '+'
+          const suffix = rewardEmission.suffix || ''
           const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
-          const tooltipLabel = rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd')
+          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
           return (
             <Tooltip
               hasArrow
@@ -1223,7 +1225,7 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
                   justifyContent={'center'}
                   backgroundColor={'card.bgLight'}
                 >
-                  <TokenAmount assetId={rewardId} decimals={2} showName={false} showIcon={true} size={'2xs'} fontSize={'xs'} amountComponent={amountComponent} prefix={'+'} amount={amount} {...props} />
+                  <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={false} showIcon={true} size={'2xs'} fontSize={'xs'} amountComponent={amountComponent} prefix={prefix} suffix={suffix} amount={amount} {...props} />
                 </Flex>
               </TooltipContent>
             </Tooltip>
@@ -1726,9 +1728,14 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'autoCompounding':
       return (
         <Autocompounding size={'xs'}>
-          <RewardsEmissions size={'xs'}>
-            <Text textStyle={'tableCell'} {...props}>-</Text>
-          </RewardsEmissions>
+          <Text textStyle={'tableCell'} {...props}>-</Text>
+          {
+            /*
+            <RewardsEmissions size={'xs'}>
+              <Text textStyle={'tableCell'} {...props}>-</Text>
+            </RewardsEmissions>
+            */
+          }
         </Autocompounding>
       )
     default:

@@ -3798,6 +3798,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
       assetsData[vault.id].flags = vault.flags
+      assetsData[vault.id].rewardsEmissions = {}
       assetsData[vault.id].fee = state.fees[vault.id]
       assetsData[vault.id].rewards =  state.rewards[vault.id]
       assetsData[vault.id].poolData =  state.poolsData[vault.id]
@@ -4008,6 +4009,23 @@ export function PortfolioProvider({ children }:ProviderProps) {
           }
           return rewardsEmissions
         }, {})
+      }
+
+      // Ethena
+      if ("rewardsEmissions" in vault && !isEmpty(vault.rewardsEmissions)){
+        vault.rewardsEmissions.forEach( (rewardEmission: RewardEmission) => {
+          if ("vaultConfig" in vault && assetsData[vault.id].type && ['AA','BB'].includes(assetsData[vault.id].type as string)){
+            const otherVaultType = assetsData[vault.id].type === 'AA' ? 'BB' : 'AA'
+            const otherVault = state.vaults.find( (otherVault: TrancheVault) => otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address )
+            if (otherVault){
+              const seniorTvlUsd = assetsData[vault.id].type === 'AA' ? assetsData[vault.id].totalTvlUsd : assetsData[otherVault.id].totalTvlUsd
+              const juniorTvlUsd = assetsData[vault.id].type === 'BB' ? assetsData[vault.id].totalTvlUsd : assetsData[otherVault.id].totalTvlUsd
+              rewardEmission.annualDistributionOn1000Usd = BNify(1).plus(bnOrZero(juniorTvlUsd).div(bnOrZero(seniorTvlUsd)))
+            }
+          }
+          // @ts-ignore
+          assetsData[vault.id].rewardsEmissions[rewardEmission.assetId] = rewardEmission
+        })
       }
 
       assetsData[vault.id].aprBreakdown = {...state.aprsBreakdown[vault.id]} || {}

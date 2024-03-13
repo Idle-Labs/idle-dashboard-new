@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js'
 import aToken from 'abis/aave/AToken.json'
 import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
@@ -8,7 +9,6 @@ import AmphorPool from 'abis/amphor/AmphorPool.json'
 import IdleTokenV4 from 'abis/idle/IdleTokenV4.json'
 import IdleStrategy from 'abis/idle/IdleStrategy.json'
 // import RibbonPool from 'abis/ribbon/RibbonPool.json'
-import type { Abi, VaultStatus, Paragraph } from './types'
 import IdleCDOPolygon from 'abis/idle/IdleCDOPolygon.json'
 import LiquidityGauge from 'abis/idle/LiquidityGauge.json'
 import { AMPHOR_WSTETH_REFERRAL } from 'constants/addresses'
@@ -16,6 +16,7 @@ import ClearpoolPool from 'abis/clearpool/ClearpoolPool.json'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
+import type { Abi, VaultStatus, Paragraph, RewardEmission } from './types'
 import { rewardsSenders, distributedFeesSenders } from 'constants/whitelistedSenders'
 
 export const vaultsStatusSchemes: Record<string, string> = {
@@ -71,6 +72,7 @@ export interface Tranche {
   tranche: string
   functions: Record<string, string | null>
   CDORewards:CDOReward
+  rewardsEmissions?:RewardEmission[]
   blockNumber:number
   label: string
   name: string
@@ -3046,7 +3048,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:EthenaPool as Abi,
           address:'0x9D39A5DE30e57443BfF2A8307A4256c8797A3497'
         },
-        description:'This strategy deploys funds in the <a href="https://app.ethena.fi/stake" class="link" rel="nofollow noopener noreferrer" target="_blank">Ethena USDe</a> staking pool and get sUSDe in exchange. To withdraw your funds you need to wait a cooldown period of 7 days, after which you can claim back your USDe. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.ethena.fi/stake" class="link" rel="nofollow noopener noreferrer" target="_blank">Ethena USDe</a> staking pool and get sUSDe in exchange. To withdraw your funds you need to wait a cooldown period of 7 days, after which you can claim back your USDe. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.<br /><br /><h3 style="font-weight:bold">Ethena Shards campaign</h3><p>Following the <a href="https://mirror.xyz/0xF99d0E4E3435cc9C9868D1C6274DfaB3e2721341/Wy_n1gKYHNwckLW5TcXb5-vtLoUOdpCaxM45t3TgC90" rel="noopener" target="_blank">latest updates</a> to the Shard campaign of USDe, Senior LPs can leverage up their Ethena Shards exposure. On top of Senior Shards, LPs will receive Junior Shards as well and boost their Shard multiplier based on Junior liquidity.</p>',
         messages:{
           // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
           actions:{
@@ -3069,6 +3071,16 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               rewardsRate:'rewardRate',
               stakedBalance:'balanceOf'
             },
+            rewardsEmissions:[
+              {
+                suffix: 'x',
+                annualDistribution: BigNumber(0),
+                annualDistributionUsd: BigNumber(0),
+                annualDistributionOn1000Usd: BigNumber(1000),
+                assetId: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
+                tooltip:'assets.assetDetails.tooltips.ethenaShardsRewardEmission'
+              }
+            ],
             CDORewards:{
               decimals:18,
               stakingRewards:[],

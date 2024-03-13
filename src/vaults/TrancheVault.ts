@@ -11,7 +11,7 @@ import { ProtocolField, protocols } from 'constants/protocols'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import type { Abi, NumberType, VaultStatus, Paragraph } from 'constants/types'
+import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission } from 'constants/types'
 import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
@@ -58,6 +58,7 @@ export class TrancheVault {
   public readonly rewardsSenders: string[] | undefined
   public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
+  public readonly rewardsEmissions: RewardEmission[] | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
 
   // Contracts
@@ -102,6 +103,7 @@ export class TrancheVault {
     this.translations = vaultConfig.translations
     this.trancheConfig = vaultConfig.Tranches[type]
     this.rewardsSenders = vaultConfig.rewardsSenders
+    this.rewardsEmissions = this.trancheConfig.rewardsEmissions
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
