@@ -3073,6 +3073,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             },
             rewardsEmissions:[
               {
+                prefix: '',
                 suffix: 'x',
                 annualDistribution: BigNumber(0),
                 annualDistributionUsd: BigNumber(0),
