@@ -396,11 +396,11 @@ export class VaultFunctionsHelper {
   }
 
   public async getEthenaCooldownsEvents(vault: Vault, account: string): Promise<CdoEvents | null> {
-    if (!("protocol" in vault) || vault.protocol !== 'ethena' || !("cdoContract" in vault)) return null
+    if (!("protocol" in vault) || vault.protocol !== 'ethena' || !("cdoContractRpc" in vault) || !vault.cdoContractRpc) return null
     return {
       data: { vault, account },
       cdoId: vault.cdoConfig.address,
-      events: await vault.cdoContract.getPastEvents('NewCooldownRequestContract', {
+      events: await vault.cdoContractRpc.getPastEvents('NewCooldownRequestContract', {
         toBlock: 'latest',
         fromBlock: vault.vaultConfig.blockNumber,
         filter: {
