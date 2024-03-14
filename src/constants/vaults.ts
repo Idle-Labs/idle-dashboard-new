@@ -3977,7 +3977,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     */
     USDCBB: {
       status:'deprecated',
-      enabledEnvs: ['beta'],
       blockNumber: 16277063,
       flags:{
         // depositsDisabled:true,
@@ -4103,7 +4102,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     DAIBB: {
       status:'deprecated',
-      enabledEnvs: ['beta'],
       blockNumber: 16519501,
       flags:{
         referralEnabled:true,
@@ -4358,7 +4356,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     */
     WETH: {
-      enabledEnvs: ['beta'],
+      status:'deprecated',
       blockNumber: 11815164,
       underlyingToken: 'WETH',
       idle: {
@@ -4403,7 +4401,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     WETHBB: {
       status:'deprecated',
-      enabledEnvs: ['beta'],
       blockNumber: 16733433,
       underlyingToken: 'WETH',
       idle: {
@@ -4439,7 +4436,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     WBTC: {
       status:'deprecated',
-      enabledEnvs: ['beta'],
       blockNumber: 10627962,
       underlyingToken: 'WBTC',
       idle: {
