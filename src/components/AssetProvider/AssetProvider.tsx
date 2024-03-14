@@ -778,7 +778,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
         isDisabled={tooltipDisabled}
       >
         <TooltipContent>
-          <Amount.Percentage value={asset?.apy} {...props} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+          <Amount.Percentage value={asset?.apy} {...props} stackProps={{spacing:1}} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
         </TooltipContent>
       </Tooltip>
       {
@@ -1202,8 +1202,8 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
         visibleRewardsIds.map( rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
           if (!rewardEmission || rewardEmission.apr) return null
-          const prefix = rewardEmission.prefix || '+'
-          const suffix = rewardEmission.suffix || ''
+          const prefix = rewardEmission.prefix !== undefined ? rewardEmission.prefix : '+'
+          const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
           const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
           const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))

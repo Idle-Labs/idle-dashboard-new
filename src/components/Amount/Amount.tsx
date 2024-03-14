@@ -1,9 +1,10 @@
 import React from 'react'
 import type { NumberType } from 'constants/types'
-import { Text, TextProps } from '@chakra-ui/react'
+import { Text, TextProps, HStack, StackProps } from '@chakra-ui/react'
 import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney } from 'helpers/'
 
 export type AmountProps = {
+  stackProps?: StackProps
   value?: NumberType | null
   prefix?: string | React.ReactElement
   suffix?: string | React.ReactElement
@@ -26,6 +27,7 @@ export const Amount = ({
   decimals,
   maxPrecision,
   minPrecision,
+  stackProps = {},
   abbreviate = true,
   abbreviateThresold,
   ...props
@@ -48,11 +50,25 @@ export const Amount = ({
   }
 
   return (
-    <Text {...props}>
-      {showPrefixSuffix && (prefix || '')}
-      {parsedValue.toString()}
-      {showPrefixSuffix && (suffix || '')}
-    </Text>
+    <HStack
+      spacing={0}
+      alignItems={'baseline'}
+      {...stackProps}
+    >
+      {
+        showPrefixSuffix && !!prefix && (
+          <Text {...props}>{prefix}</Text>
+        )
+      }
+      <Text {...props}>
+        {parsedValue.toString()}
+      </Text>
+      {
+        showPrefixSuffix && !!suffix && (
+          <Text {...props}>{suffix}</Text>
+        )
+      }
+    </HStack>
   )
 }
 

@@ -216,7 +216,7 @@ export const Tranches: React.FC = () => {
                         }
                       </VStack>
                       <VStack
-                        spacing={0}
+                        spacing={1}
                         width={'full'}
                         alignItems={'flex-start'}
                       >
@@ -225,8 +225,7 @@ export const Tranches: React.FC = () => {
                           width={'full'}
                           alignItems={'baseline'}
                         >
-                          <AssetProvider.Apy showTooltip={false} color={strategies[strategy].color} textStyle={'heading'} fontSize={'h3'} />
-                          <Translation translation={'defi.apy'} color={strategies[strategy].color} textStyle={'ctaStatic'} fontSize={'sm'} />
+                          <AssetProvider.Apy showTooltip={false} addRewards={true} color={strategies[strategy].color} textStyle={'heading'} fontSize={'h3'} suffix={<Translation translation={'defi.apy'} color={strategies[strategy].color} textStyle={'ctaStatic'} fontSize={'sm'} />} />
                         </HStack>
                         <HStack
                           spacing={2}
