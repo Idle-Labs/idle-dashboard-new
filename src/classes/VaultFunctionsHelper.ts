@@ -893,6 +893,14 @@ export class VaultFunctionsHelper {
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
           }
+        case 'IdleCDO_ethena_USDe':
+          strategyApr = await this.getEthenaUSDeTrancheStrategyApr(vault.chainId)
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
+          return {
+            apr,
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address
+          }
         case 'IdleCDO_instadapp_stETH':
           strategyApr = await this.getInstadappStETHTrancheStrategyApr(vault.chainId)
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)

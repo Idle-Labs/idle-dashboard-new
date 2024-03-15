@@ -3029,6 +3029,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDE',
         adaptiveYieldSplitEnabled:true,
         flags:{
+          showCurrentApy: true,
           feeDiscountEnabled: true,
           showEthenenaCooldowns: true
         },
