@@ -1058,6 +1058,8 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
+          "buyCta": "Top up",
+          "buy": "Running low on %{asset}?",
           "boosted": "The APY of this vault is boosted by additional rewards.",
           "ethenaUSDeWithdraw": "The cooldown period of 7 days has started, once finished, you can claim back your USDe.",
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",

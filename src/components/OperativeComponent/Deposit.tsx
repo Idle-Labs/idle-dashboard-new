@@ -16,12 +16,12 @@ import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EpochVaultMessage } from 'components/OperativeComponent/EpochVaultMessage'
-import { Spinner, Image, Box, VStack, HStack, Text, Button } from '@chakra-ui/react'
 import { FeeDiscountToggler } from 'components/OperativeComponent/FeeDiscountToggler'
 import { DynamicActionFields } from 'components/OperativeComponent/DynamicActionFields'
 import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetworkButton'
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { Spinner, Image, Box, VStack, HStack, Text, Button, Link } from '@chakra-ui/react'
 import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
@@ -351,12 +351,37 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           <Translation textStyle={'captionSmaller'} translation={`trade.actions.deposit.messages.limitCapReached`} isHtml params={{limit: `${vaultLimitCap.toFixed(0)} ${underlyingAsset?.token}`}} textAlign={'left'} />
         </HStack>
       </Card.Dark>
-    ) : vaultMessages?.deposit && (
+    ) : vaultMessages?.deposit ? (
       <Card.Dark
         p={2}
         border={0}
       >
         <Translation textStyle={'captionSmaller'} translation={vaultMessages.deposit} isHtml={true} textAlign={'center'} />
+      </Card.Dark>
+    ) : vaultMessages?.buyLink && (
+      <Card.Dark
+        p={2}
+        border={'1px solid'}
+        borderColor={'card.bgLight'}
+      >
+        <HStack
+          spacing={3}
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'space-between'}
+        >
+          <HStack
+            pl={2}
+            spacing={3}
+            alignItems={'center'}
+          >
+            <Image src={`${imageFolder}vaults/information.png`} width={6} height={6} />
+            <Translation textStyle={'captionSmall'} translation={`trade.actions.deposit.messages.buy`} params={{asset: underlyingAsset?.name}} textAlign={'left'} />
+          </HStack>
+          <Link display={'flex'} justifyContent={'center'} href={vaultMessages.buyLink} isExternal>
+            <Translation component={Button} translation={`trade.actions.deposit.messages.buyCta`} params={{asset: underlyingAsset?.name}} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} />
+          </Link>
+        </HStack>
       </Card.Dark>
     )
   }, [asset, isEpochVault, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
