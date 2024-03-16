@@ -13,8 +13,8 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import type { Abi, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData, CdoEvents } from 'constants/'
 import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId, isEmpty } from 'helpers/'
+import type { Abi, Assets, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData, CdoEvents, RewardEmission } from 'constants/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -861,6 +861,38 @@ export class VaultFunctionsHelper {
       vaultId: vault.id,
       apr: BNify(0)
     }
+  }
+
+  public getVaultRewardsEmissions(vault: Vault, vaults: Vault[], assetsData: Assets): RewardEmission[] | null {
+    if (vault instanceof TrancheVault) {
+      switch (vault.cdoConfig.name) {
+        case 'IdleCDO_ethena_USDe':
+          if (assetsData[vault.id]?.type === 'AA'){
+            const otherVault = vaults.find( (otherVault: Vault) => otherVault instanceof TrancheVault && otherVault.type === 'BB' && otherVault.cdoConfig.address === vault.cdoConfig.address )
+            if (otherVault){
+              const seniorTvlUsd = bnOrZero(assetsData[vault.id].tvlUsd)
+              const juniorTvlUsd = bnOrZero(assetsData[otherVault.id].tvlUsd)
+              // console.log(vault.id, otherVault.id, 'seniorTvlUsd', seniorTvlUsd.toString(), 'juniorTvlUsd', juniorTvlUsd.toString())
+              return [
+                {
+                  prefix: '',
+                  suffix: 'x',
+                  annualDistribution: BigNumber(0),
+                  annualDistributionUsd: BigNumber(0),
+                  assetId: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
+                  tooltip:'assets.assetDetails.tooltips.ethenaShardsRewardEmission',
+                  annualDistributionOn1000Usd: BNify(1).plus(bnOrZero(juniorTvlUsd).div(bnOrZero(seniorTvlUsd))),
+                }
+              ]
+            }
+          }
+        break;
+        default:
+        break;
+      }
+    }
+
+    return null
   }
 
   public async getVaultAdditionalBaseApr(vault: Vault): Promise<VaultAdditionalApr> {

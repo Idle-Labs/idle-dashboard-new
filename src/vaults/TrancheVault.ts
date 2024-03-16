@@ -12,7 +12,7 @@ import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission } from 'constants/types'
-import { BNify, normalizeTokenAmount, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
+import { BNify, normalizeTokenAmount, getObjectPath, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
@@ -540,6 +540,10 @@ export class TrancheVault {
       params.push(_referral)
     }
     return params
+  }
+
+  public getFlag(flag: string): any{
+    return getObjectPath(this, `flags.${flag}`)
   }
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {

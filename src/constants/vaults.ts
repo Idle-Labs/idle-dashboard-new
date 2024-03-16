@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import aToken from 'abis/aave/AToken.json'
 import ERC20 from 'abis/tokens/ERC20.json'
 import cToken from 'abis/compound/cDAI.json'
@@ -3029,6 +3028,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDE',
         adaptiveYieldSplitEnabled:true,
         flags:{
+          compoundApr: false,
           showCurrentApy: true,
           feeDiscountEnabled: true,
           showEthenenaCooldowns: true
@@ -3073,17 +3073,6 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               rewardsRate:'rewardRate',
               stakedBalance:'balanceOf'
             },
-            rewardsEmissions:[
-              {
-                prefix: '',
-                suffix: 'x',
-                annualDistribution: BigNumber(0),
-                annualDistributionUsd: BigNumber(0),
-                annualDistributionOn1000Usd: BigNumber(1000),
-                assetId: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
-                tooltip:'assets.assetDetails.tooltips.ethenaShardsRewardEmission'
-              }
-            ],
             CDORewards:{
               decimals:18,
               stakingRewards:[],

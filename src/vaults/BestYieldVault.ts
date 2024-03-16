@@ -11,7 +11,7 @@ import { GenericContract } from 'contracts/GenericContract'
 import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { BNify, fixTokenDecimals, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
+import { BNify, fixTokenDecimals, getObjectPath, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
@@ -439,6 +439,10 @@ export class BestYieldVault {
       default:
         return
     }
+  }
+
+  public getFlag(flag: string): any{
+    return getObjectPath(this, `flags.${flag}`)
   }
 
   public getAllowanceParams(amount: NumberType): any[] {

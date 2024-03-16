@@ -1402,7 +1402,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return promises
     }, new Map())
 
-    // Get vaults epochs
+    // Get vaults total aprs
     const vaultsTotalAprsPromises = vaults.reduce( (promises: Map<AssetId, Promise<VaultAdditionalApr | null>>, vault: Vault): Map<AssetId, Promise<VaultAdditionalApr | null>> => {
       if (!("cdoConfig" in vault) || promises.has(vault.cdoConfig.address)) return promises
       promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getVaultTotalApr(vault))
@@ -3777,7 +3777,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Generate Assets Data
   useEffect(() => {
-    if (isEmpty(state.vaults) || isEmpty(state.vaultsNetworks)) return
+    if (isEmpty(state.vaults) || isEmpty(state.vaultsNetworks) || !vaultFunctionsHelper) return
 
     // Generate assets data 
     const assetsData: Assets = Object.keys(state.vaultsNetworks).reduce( ( assetsData: Assets, chainId: any) => {
@@ -3798,7 +3798,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
       assetsData[vault.id].flags = vault.flags
-      assetsData[vault.id].rewardsEmissions = {}
       assetsData[vault.id].fee = state.fees[vault.id]
       assetsData[vault.id].rewards =  state.rewards[vault.id]
       assetsData[vault.id].poolData =  state.poolsData[vault.id]
@@ -3951,6 +3950,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       let rewardsEmissionsTotalApr = BNify(0)
 
+      // Init rewards emissions
+      assetsData[vault.id].rewardsEmissions = {}
+
       if (("cdoConfig" in vault) && !isEmpty(state.morphoRewardsEmissions[vault.cdoConfig.address])){
         const vaultRewardsEmissions = state.morphoRewardsEmissions[vault.cdoConfig.address]
         assetsData[vault.id].rewardsEmissions = Object.keys(vaultRewardsEmissions).reduce( (rewardsEmissions: NonNullable<Asset["rewardsEmissions"]>, rewardId: AssetId) => {
@@ -4011,22 +4013,17 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }, {})
       }
 
-      // Ethena
-      if ("rewardsEmissions" in vault && !isEmpty(vault.rewardsEmissions)){
-        vault.rewardsEmissions.forEach( (rewardEmission: RewardEmission) => {
-          if ("vaultConfig" in vault && assetsData[vault.id].type && ['AA','BB'].includes(assetsData[vault.id].type as string)){
-            const otherVaultType = assetsData[vault.id].type === 'AA' ? 'BB' : 'AA'
-            const otherVault = state.vaults.find( (otherVault: TrancheVault) => otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address )
-            if (otherVault){
-              const seniorTvlUsd = assetsData[vault.id].type === 'AA' ? assetsData[vault.id].totalTvlUsd : assetsData[otherVault.id].totalTvlUsd
-              const juniorTvlUsd = assetsData[vault.id].type === 'BB' ? assetsData[vault.id].totalTvlUsd : assetsData[otherVault.id].totalTvlUsd
-              rewardEmission.annualDistributionOn1000Usd = BNify(1).plus(bnOrZero(juniorTvlUsd).div(bnOrZero(seniorTvlUsd)))
-            }
-          }
-          // @ts-ignore
-          assetsData[vault.id].rewardsEmissions[rewardEmission.assetId] = rewardEmission
+      const assetRewardsEmissions = assetsData[vault.id].rewardsEmissions || {}
+
+      // Add custom rewards emissions
+      const vaultRewardsEmissions = vaultFunctionsHelper.getVaultRewardsEmissions(vault, state.vaults, assetsData)
+      if (vaultRewardsEmissions){
+        vaultRewardsEmissions.forEach( (rewardEmission: RewardEmission) => {
+          assetRewardsEmissions[rewardEmission.assetId] = rewardEmission
         })
       }
+
+      assetsData[vault.id].rewardsEmissions = assetRewardsEmissions
 
       assetsData[vault.id].aprBreakdown = {...state.aprsBreakdown[vault.id]} || {}
 
@@ -4057,11 +4054,14 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
 
       if (assetsData[vault.id].aprBreakdown){
+        const compoundAprFlag = ("getFlag" in vault) ? vault.getFlag('compoundApr') : undefined
+        const compoundApr = compoundAprFlag !== undefined ? vault.getFlag('compoundApr') : true
+
         // Calculate APYs
         assetsData[vault.id].apyBreakdown = Object.keys(assetsData[vault.id].aprBreakdown || {}).reduce( (apyBreakdown: Balances, type: string): Balances => {
           const apr = assetsData[vault.id].aprBreakdown?.[type]
           if (apr){
-            if (type !== 'rewards'){
+            if (type !== 'rewards' && compoundApr){
               apyBreakdown[type] = apr2apy(BNify(apr).div(100)).times(100)
             } else {
               apyBreakdown[type] = apr
@@ -4107,6 +4107,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.additionalAprs,
     state.vaultsNetworks,
     state.discountedFees,
+    vaultFunctionsHelper,
     state.historicalRates,
     state.vaultsPositions,
     state.historicalPrices,
