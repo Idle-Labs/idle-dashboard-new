@@ -61,7 +61,10 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   // Calculate the new APY using the apy breakdown (dilute Gauge and Harest APY based on new TVL)
   const newApy = useMemo(() => {
     if (bnOrZero(newApr).gt(0)){
-      const newApy = apr2apy(bnOrZero(newApr).div(100)).times(100)
+      const compoundAprFlag = ("getFlag" in vault) ? vault.getFlag('compoundApr') : undefined
+      const compoundApr = compoundAprFlag !== undefined ? vault.getFlag('compoundApr') : true
+      const newApy = compoundApr ? apr2apy(bnOrZero(newApr).div(100)).times(100) : bnOrZero(newApr)
+
       const additionalApy = asset.apyBreakdown ? (Object.keys(asset.apyBreakdown || {}) as string[]).filter( (type: string) => type !== 'base' ).reduce( (total: BigNumber, type: string) => {
         switch (type){
           case 'gauge':
@@ -90,7 +93,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       return bnOrZero(asset?.apy)
     }
 
-  }, [asset, amount, newTrancheTvl, assetGauge, newApr])
+  }, [asset, vault, amount, newTrancheTvl, assetGauge, newApr])
   
   // console.log('newApy', amount, asset, newApr.toString(), BNify(asset.additionalApr).toString(), newApy.toString())
 
