@@ -61,31 +61,31 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   // Calculate the new APY using the apy breakdown (dilute Gauge and Harest APY based on new TVL)
   const newApy = useMemo(() => {
     if (bnOrZero(newApr).gt(0)){
-        const newApy = apr2apy(bnOrZero(newApr).div(100)).times(100)
-        const additionalApy = asset.apyBreakdown ? (Object.keys(asset.apyBreakdown || {}) as string[]).filter( (type: string) => type !== 'base' ).reduce( (total: BigNumber, type: string) => {
-          switch (type){
-            case 'gauge':
-              const gaugeData = assetGauge?.gaugeData
-              if (gaugeData){
-                const gaugeNewTotalSupply = bnOrZero(gaugeData?.totalSupply).plus(bnOrZero(amount))
-                const gaugeApyCompressionFactor = bnOrZero(gaugeData?.totalSupply).div(gaugeNewTotalSupply)
-                const newGaugeApy = asset.apyBreakdown[type].times(gaugeApyCompressionFactor)
-                return total.plus(newGaugeApy)
-              }
-              return total.plus(asset.apyBreakdown[type])
-            case 'harvest':
-              const harvestAprCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
-              const newHarvestApr = asset.aprBreakdown[type].times(harvestAprCompressionFactor)
-              return total.plus(apr2apy(BNify(newHarvestApr).div(100)).times(100))
-            case 'rewards':
-              const rewardsAprCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
-              const newRewardsApr = asset.aprBreakdown[type].times(rewardsAprCompressionFactor)
-              return total.plus(apr2apy(BNify(newRewardsApr).div(100)).times(100))
-            default:
-              return total.plus(asset.apyBreakdown[type])
-          }
-        }, BNify(0)) : BNify(0)
-        return BNify(newApy).plus(additionalApy)
+      const newApy = apr2apy(bnOrZero(newApr).div(100)).times(100)
+      const additionalApy = asset.apyBreakdown ? (Object.keys(asset.apyBreakdown || {}) as string[]).filter( (type: string) => type !== 'base' ).reduce( (total: BigNumber, type: string) => {
+        switch (type){
+          case 'gauge':
+            const gaugeData = assetGauge?.gaugeData
+            if (gaugeData){
+              const gaugeNewTotalSupply = bnOrZero(gaugeData?.totalSupply).plus(bnOrZero(amount))
+              const gaugeApyCompressionFactor = bnOrZero(gaugeData?.totalSupply).div(gaugeNewTotalSupply)
+              const newGaugeApy = asset.apyBreakdown[type].times(gaugeApyCompressionFactor)
+              return total.plus(newGaugeApy)
+            }
+            return total.plus(asset.apyBreakdown[type])
+          case 'harvest':
+            const harvestAprCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
+            const newHarvestApr = asset.aprBreakdown[type].times(harvestAprCompressionFactor)
+            return total.plus(apr2apy(BNify(newHarvestApr).div(100)).times(100))
+          case 'rewards':
+            const rewardsAprCompressionFactor = BNify(asset.tvl).div(newTrancheTvl)
+            const newRewardsApr = asset.aprBreakdown[type].times(rewardsAprCompressionFactor)
+            return total.plus(apr2apy(BNify(newRewardsApr).div(100)).times(100))
+          default:
+            return total.plus(asset.apyBreakdown[type])
+        }
+      }, BNify(0)) : BNify(0)
+      return BNify(newApy).plus(additionalApy)
     } else {
       return bnOrZero(asset?.apy)
     }

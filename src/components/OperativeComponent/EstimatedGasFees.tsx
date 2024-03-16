@@ -5,11 +5,13 @@ import { HStack, useTheme } from '@chakra-ui/react'
 import { MdOutlineLocalGasStation } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
+import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 
 export const EstimatedGasFees: React.FC = () => {
   const theme = useTheme()
   const { chainToken } = useWalletProvider()
+  const { isNetworkCorrect } = useAssetPageProvider()
   const { state: { transactionSpeed, estimatedFees, estimatedFeesUsd } } = useTransactionManager()
 
   const gasFee = useMemo(() => {
@@ -21,6 +23,8 @@ export const EstimatedGasFees: React.FC = () => {
     if (!estimatedFeesUsd) return null
     return estimatedFeesUsd[transactionSpeed]
   }, [estimatedFeesUsd, transactionSpeed])
+
+  if (!isNetworkCorrect) return null
 
   return (
     <HStack
