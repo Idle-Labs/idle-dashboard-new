@@ -1,26 +1,26 @@
-import { useMemo } from 'react'
-import type { Asset } from 'constants/types'
+import { useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import type { Asset, AssetId } from 'constants/types'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import { VaultCard } from 'components/VaultCard/VaultCard'
-import { products, ProductProps } from 'constants/products'
-import { isEmpty, divideArray, sortArrayByKey } from 'helpers/'
+import { VStack, Heading, SimpleGrid } from '@chakra-ui/react'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { strategies, StrategyColumn } from 'constants/strategies'
-import { HStack, VStack, Heading, SimpleGrid } from '@chakra-ui/react'
+import { VAULTS_MIN_TVL, products, ProductProps, strategies } from 'constants/'
+import { isEmpty, divideArray, sortArrayByKey, sendSelectItem, getVaultPath, bnOrZero } from 'helpers/'
 import { PausableChakraCarouselProvider } from 'components/PausableChakraCarousel/PausableChakraCarousel'
 
-type BoostedVaultsProps = {
-}
-
-export const BoostedVaults: React.FC<BoostedVaultsProps> = ({}) => {
+export const BoostedVaults: React.FC = () => {
 
   const {
     isPortfolioLoaded,
     selectors: {
-      selectVaultById,
       selectVaultsAssetsByType
     }
   } = usePortfolioProvider()
+
+  const navigate = useNavigate()
+  const { isMobile } = useThemeProvider()
 
   const allStrategies = useMemo(() => {
     return products.reduce( (allStrategies: (keyof typeof strategies)[], product: ProductProps) => {
@@ -39,14 +39,19 @@ export const BoostedVaults: React.FC<BoostedVaultsProps> = ({}) => {
 
   const boostedVaults = useMemo(() => {
     return allVaultsAssets.filter( (asset: Asset) => {
-      const vault = selectVaultById(asset.id)
-      return !isEmpty(asset.rewardsEmissions) || !isEmpty(asset.distributedRewards)// || (vault && "rewardTokens" in vault && !isEmpty(vault.rewardTokens))
+      return bnOrZero(asset.tvlUsd).gte(VAULTS_MIN_TVL) && (!isEmpty(asset.rewardsEmissions) || !isEmpty(asset.distributedRewards))
     })
-  }, [allVaultsAssets, selectVaultById])
+  }, [allVaultsAssets])
 
-  const boostedVaultsGroupped = divideArray(sortArrayByKey(boostedVaults, 'tvlUsd', 'desc').slice(0, 12), 6)
+  const boostedVaultsSorted = useMemo(() => sortArrayByKey(boostedVaults, 'apy', 'desc').slice(0, 10), [boostedVaults]) 
+  const boostedVaultsGroupped = useMemo(() => divideArray(boostedVaultsSorted, 5), [boostedVaultsSorted]) 
 
-  if (!isPortfolioLoaded) return null
+  const onVaultClick = useCallback((asset: Asset) => {
+    sendSelectItem('dashboard_boosted', 'Dashboard boosted', asset)
+    return navigate(getVaultPath(asset.type as string, asset.id as AssetId))
+  }, [navigate])
+
+  if (!isPortfolioLoaded || isEmpty(boostedVaultsSorted)) return null
 
   return (
     <VStack
@@ -58,15 +63,17 @@ export const BoostedVaults: React.FC<BoostedVaultsProps> = ({}) => {
       <PausableChakraCarouselProvider delay={10000}>
         <PausableChakraCarouselProvider.Carousel progressColor={'card.bgLight'}>
           {
-            boostedVaultsGroupped.map( (grouppedVaults: Asset[], index: number) => (
+            isMobile ?
+              boostedVaultsSorted.map( (asset: Asset, index: number) => <VaultCard.New key={index} assetId={asset.id as string} onClick={() => onVaultClick(asset)} /> )
+            : boostedVaultsGroupped.map( (grouppedVaults: Asset[], index: number) => (
               <SimpleGrid
                 key={index}
-                columns={6}
-                spacing={4}
+                columns={[1, 5]}
+                spacing={6}
                 width={'full'}
               >
                 {
-                  grouppedVaults.map( (asset: Asset, index1: number) => <VaultCard.New key={index1} assetId={asset.id as string} /> )
+                  grouppedVaults.map( (asset: Asset, index1: number) => <VaultCard.New key={index1} assetId={asset.id as string} onClick={() => onVaultClick(asset)} /> )
                 }
               </SimpleGrid>
             ))

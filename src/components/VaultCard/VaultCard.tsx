@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 import { strategies } from 'constants/'
 import { getVaultPath } from 'helpers/'
 import { useTranslate } from 'react-polyglot'
-import { CgArrowRight } from 'react-icons/cg'
 import { useNavigate } from 'react-router-dom'
 import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
@@ -16,7 +15,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
-import { useTheme, IconButton, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip } from '@chakra-ui/react'
+import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId
@@ -388,10 +387,9 @@ export const Minimal = ({assetId}: VaultCardProps) => {
 }
 
 export const New = ({ assetId, onClick }: VaultCardProps) => {
-  const theme = useTheme()
+  // const theme = useTheme()
   const navigate = useNavigate()
   const translate = useTranslate()
-  const { location } = useBrowserRouter()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -421,8 +419,13 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
             alignItems={'flex-start'}
             justifyContent={'space-between'}
           >
-            <AssetProvider.GeneralData field={'protocolWithVariant'} />
-            <AssetProvider.StrategyBadge />
+            <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} />
+            <HStack
+              spacing={1}
+            >
+              {/*<AssetProvider.ProtocolIcon size={'xs'} />*/}
+              <AssetProvider.StrategyBadge />
+            </HStack>
           </HStack>
           <HStack
             spacing={1}
@@ -464,7 +467,7 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
             <Flex
               width={'auto'}
             >
-              <AssetProvider.RewardsEmissions flexProps={{borderRadius:24, height: 8, alignItems: 'center'}}>
+              <AssetProvider.RewardsEmissions flexProps={{borderRadius:24, height: 8, alignItems: 'center'}} fontWeight={600}>
                 <Tooltip
                   hasArrow
                   placement={'top'}
@@ -483,11 +486,11 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
                       borderColor={'card.bg'}
                     >
                       <HStack
-                        spacing={1}
+                        spacing={2}
                         alignItems={'center'}
                       >
                         <AssetProvider.Autocompounding size={'2xs'} />
-                        <AssetProvider.RewardsApy fontSize={'xs'} />
+                        <AssetProvider.RewardsApy fontSize={'xs'} fontWeight={600} />
                       </HStack>
                     </Card.Light>
                   </TooltipContent>

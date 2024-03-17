@@ -607,6 +607,7 @@
     "chains": "Chains",
     "protocols": "Protocols",
     "unstake": "Unstake",
+    "apyWithRewards": "APY",
     "seniorApy": "Senior APY",
     "juniorApy": "Junior APY",
     "moreThanUnderlying": "more than the underlying",

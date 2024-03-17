@@ -1,5 +1,6 @@
 export type Operator = {
   name: string
+  nameShort?: string
   image?: string
   description: string
   industry?: string
@@ -69,6 +70,7 @@ export const operators: Record<string, Operator> = {
     founded: 2019,
     industry: 'Market Making',
     location: 'Cayman Islands',
+    nameShort: 'Fasanara Investments',
     image: 'images/borrowers/fasanara.svg',
     name: 'Fasanara Investments Master Fund',
     links: {
@@ -111,6 +113,7 @@ export const operators: Record<string, Operator> = {
     founded: 2014,
     location: 'Hong Kong',
     industry: 'Market Making',
+    nameShort: 'Bastion Trading',
     name: 'Bastion Trading Limited',
     image: 'images/borrowers/bastion.svg',
     links: {

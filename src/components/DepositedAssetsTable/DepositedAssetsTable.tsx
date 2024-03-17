@@ -383,6 +383,31 @@ export const DepositedAssetsTable: React.FC = () => {
       ]
     }
 
+    if (isEmpty(depositedAssetsData)){
+      return (
+        <Card>
+          <VStack
+            py={10}
+            spacing={6}
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'center'}
+          >
+            <VStack
+              spacing={2}
+              width={'full'}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <Image src={'images/vaults/emptywallet.png'} width={8} />
+              <Translation textAlign={'center'} translation={'defi.empty.deposits.body'} color={'cta'} isHtml />
+            </VStack>
+            <Translation<ButtonProps> component={Button} translation={`defi.empty.deposits.cta`} variant={'ctaPrimary'} px={10} onClick={() => navigate('/earn/yield-tranches')} />
+          </VStack>
+        </Card>
+      )
+    }
+
     return isMobile ? (
       <VStack
         mt={20}
@@ -406,30 +431,7 @@ export const DepositedAssetsTable: React.FC = () => {
         width={'full'}
       >
         <Card>
-          {
-            isEmpty(depositedAssetsData) ? (
-              <VStack
-                py={10}
-                spacing={6}
-                width={'full'}
-                alignItems={'center'}
-                justifyContent={'center'}
-              >
-                <VStack
-                  spacing={2}
-                  width={'full'}
-                  alignItems={'center'}
-                  justifyContent={'center'}
-                >
-                  <Image src={'images/vaults/emptywallet.png'} width={8} />
-                  <Translation textAlign={'center'} translation={'defi.empty.deposits.body'} color={'cta'} isHtml />
-                </VStack>
-                <Translation<ButtonProps> component={Button} translation={`defi.empty.deposits.cta`} variant={'ctaPrimary'} px={10} onClick={() => navigate('/earn/yield-tranches')} />
-              </VStack>
-            ) : (
-              <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />
-            )
-          }
+          <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />
         </Card>
         {
           totalPages>1 && (
@@ -520,6 +522,31 @@ export const DepositedAssetsTable: React.FC = () => {
       ]
     }
 
+    if (isEmpty(discountedAssetsData)){
+      return (
+        <Card>
+          <VStack
+            py={10}
+            spacing={6}
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'center'}
+          >
+            <VStack
+              spacing={2}
+              width={'full'}
+              alignItems={'center'}
+              justifyContent={'center'}
+            >
+              <Image src={'images/vaults/discount.png'} width={8} />
+              <Translation textAlign={'center'} translation={'feeDiscount.table.empty'} color={'cta'} isHtml />
+            </VStack>
+            <Translation<ButtonProps> component={Button} translation={`common.stake`} variant={'ctaPrimary'} px={10} onClick={() => navigate(getRoutePath('stake'))} />
+          </VStack>
+        </Card>
+      )
+    }
+
     return isMobile ? (
       <VStack
         mt={20}
@@ -532,6 +559,9 @@ export const DepositedAssetsTable: React.FC = () => {
           width={'100%'}
           alignItems={'flex-start'}
         >
+          {
+            discountedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+          }
         </VStack>
       </VStack>
     ) : (
@@ -540,30 +570,7 @@ export const DepositedAssetsTable: React.FC = () => {
         width={'full'}
       >
         <Card>
-          {
-            isEmpty(discountedAssetsData) ? (
-              <VStack
-                py={10}
-                spacing={6}
-                width={'full'}
-                alignItems={'center'}
-                justifyContent={'center'}
-              >
-                <VStack
-                  spacing={2}
-                  width={'full'}
-                  alignItems={'center'}
-                  justifyContent={'center'}
-                >
-                  <Image src={'images/vaults/discount.png'} width={8} />
-                  <Translation textAlign={'center'} translation={'feeDiscount.table.empty'} color={'cta'} isHtml />
-                </VStack>
-                <Translation<ButtonProps> component={Button} translation={`common.stake`} variant={'ctaPrimary'} px={10} onClick={() => navigate(getRoutePath('stake'))} />
-              </VStack>
-            ) : (
-              <ReactTable columns={discountedAssetsColumns} data={discountedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_discounted', 'Dashboard discounted') } />
-            )
-          }
+          <ReactTable columns={discountedAssetsColumns} data={discountedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_discounted', 'Dashboard discounted') } />
         </Card>
         {
           totalPages>1 && (

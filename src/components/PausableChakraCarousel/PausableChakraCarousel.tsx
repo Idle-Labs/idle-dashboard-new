@@ -1,3 +1,4 @@
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import type { ProviderProps } from 'contexts/common/types'
 import { ContainerProps, Box, Flex, HStack } from '@chakra-ui/react'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
@@ -153,6 +154,7 @@ export const DotNav: React.FC = () => {
 }
 
 export function PausableChakraCarouselProvider({ children, delay }: PausableChakraCarouselProviderArgs) {
+  const { isMobile } = useThemeProvider()
   const [ activeItem, setActiveItem ] = useState<number>(0)
   const [ itemsLength, setItemsLength ] = useState<number>(0)
 
@@ -187,6 +189,10 @@ export function PausableChakraCarouselProvider({ children, delay }: PausableChak
   }, [activeItem, goToItem, goNext, itemsLength])
 
   const pausableTimer = usePausableTimer(startCarousel, delay)
+
+  useEffect(() => {
+    goToItem(0)
+  }, [goToItem, isMobile])
 
   return (
     <PausableChakraCarouselContext.Provider value={{ delay, goBack, goToItem, goNext, activeItem, itemsLength, pausableTimer, setItemsLength }}>

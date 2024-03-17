@@ -19,13 +19,13 @@ import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
 import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty } from 'helpers/'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { Asset, Vault, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -1528,10 +1528,17 @@ const Allocation: React.FC = () => {
 type GeneralDataProps = {
   field: string
   section?: string
+
 } & AssetProviderPropsType
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) => {
   const { asset, vault } = useAssetProvider()
+
+  const operatorInfo = useMemo(() => {
+    const operatorName = getObjectPath(vault, 'vaultConfig.operators.0.name')
+    return operatorName ? operators[operatorName] : null
+  }, [vault])
+
   switch (field) {
     case 'chainId':
       return (
@@ -1554,13 +1561,48 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           </VStack>
         </HStack>
       )
+    case 'vaultOperatorOrProtocol':
+      return operatorInfo ? (
+        <HStack
+          spacing={3}
+          alignItems={'center'}
+        >
+          <Image src={operatorInfo.image} width={10} />
+          <Text textTransform={'uppercase'} textStyle={'tableCell'} lineHeight={1.1}>{operatorInfo.nameShort || operatorInfo.name}</Text>
+        </HStack>
+      ) : (
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+        >
+          <ProtocolIcon w={10} h={10} />
+          <ProtocolName textStyle={'tableCell'}/>
+        </HStack>
+      )
+    case 'operatorWithProtocol':
+      if (!operatorInfo) return (<GeneralData field={'protocol'} section={section} {...props} />)
+      return (
+        <HStack
+          spacing={3}
+          alignItems={'flex-start'}
+        >
+          <Image src={operatorInfo.image} width={10} />
+          <VStack
+            spacing={1}
+            alignItems={'flex-start'}
+          >
+            <Text textTransform={'uppercase'} textStyle={'tableCell'} lineHeight={1.1}>{operatorInfo.nameShort || operatorInfo.name}</Text>
+            <ProtocolName textStyle={'vaultVariant'} {...props} />
+          </VStack>
+        </HStack>
+      )
     case 'protocol':
       return (
         <HStack
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon size={props.size || 'sm'} />
+          <ProtocolIcon size={props.size || 'sm'} sx={props.sx} />
           <ProtocolName textStyle={'tableCell'} {...props} />
         </HStack>
       )

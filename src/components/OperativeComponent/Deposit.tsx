@@ -378,8 +378,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             <Image src={`${imageFolder}vaults/information.png`} width={6} height={6} />
             <Translation textStyle={'captionSmall'} translation={`trade.actions.deposit.messages.buy`} params={{asset: underlyingAsset?.name}} textAlign={'left'} />
           </HStack>
-          <Link display={'flex'} justifyContent={'center'} href={vaultMessages.buyLink} isExternal>
-            <Translation component={Button} translation={`trade.actions.deposit.messages.buyCta`} params={{asset: underlyingAsset?.name}} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} />
+          <Link display={'flex'} justifyContent={'center'} href={vaultMessages.buyLink} sx={{textDecoration:'none !important'}} isExternal>
+            <Translation component={Button} variant={'ctaBlue'} translation={`trade.actions.deposit.messages.buyCta`} params={{asset: underlyingAsset?.name}} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} />
           </Link>
         </HStack>
       </Card.Dark>
