@@ -598,7 +598,6 @@ export const DepositedAssetsTable: React.FC = () => {
 
   return (
     <VStack
-      mt={[10, 20]}
       spacing={6}
       width={'full'}
       alignItems={'flex-start'}

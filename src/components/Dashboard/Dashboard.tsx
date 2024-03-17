@@ -643,8 +643,14 @@ export const Dashboard: React.FC = () => {
           </VStack>
         </Stack>
       </VStack>
-      <BoostedVaults />
-      <DepositedAssetsTable />
+      <VStack
+        mt={5}
+        spacing={16}
+        width={'full'}
+      >
+        <BoostedVaults />
+        <DepositedAssetsTable />
+      </VStack>
       <Stack
         spacing={6}
         mt={[10, 20]}
