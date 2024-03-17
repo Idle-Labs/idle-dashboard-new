@@ -4,12 +4,12 @@ import { formatDate, isEmpty } from 'helpers/'
 import { DATETIME_FORMAT } from 'constants/vars'
 import { Amount } from 'components/Amount/Amount'
 import { useWeb3Provider } from 'contexts/Web3Provider'
-import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { AssetId, EthenaCooldown, Abi } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { HStack, VStack, SimpleGrid, Text } from '@chakra-ui/react'
+import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import EthenaCooldownRequest from 'abis/ethena/EthenaCooldownRequest.json'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
@@ -20,7 +20,7 @@ type EthenaCooldownsProps = {
 }
 export const EthenaCooldowns: React.FC<EthenaCooldownsProps> = ({ assetId }) => {
   const { web3 } = useWeb3Provider()
-  const { chainId } = useWalletProvider()
+  const { isNetworkCorrect } = useAssetPageProvider()
   const { ethenaCooldowns, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -77,10 +77,12 @@ export const EthenaCooldowns: React.FC<EthenaCooldownsProps> = ({ assetId }) => 
                     justifyContent={'space-between'}
                   >
                     {
-                      chainId !== 1 ? (
-                        <SwitchNetworkButton chainId={1} size={'sm'} />
-                      ) : ethenaCooldown.status === 'available' ? (
-                        <TransactionButton text={'defi.claim'} vaultId={vault?.id} assetId={asset?.underlyingId} contractSendMethod={contractSendMethod} actionType={'claim'} amount={ethenaCooldown.amount.toString()} disabled={ethenaCooldown.amount.lte(0)} />
+                      ethenaCooldown.status === 'available' ? (
+                        isNetworkCorrect ? (
+                          <TransactionButton text={'defi.claim'} vaultId={vault?.id} assetId={asset?.underlyingId} contractSendMethod={contractSendMethod} actionType={'claim'} amount={ethenaCooldown.amount.toString()} disabled={ethenaCooldown.amount.lte(0)} />
+                        ) : (
+                          <SwitchNetworkButton chainId={asset.chainId} size={'sm'} />
+                        )
                       ) : (
                         <VStack
                           spacing={1}

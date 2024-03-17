@@ -994,20 +994,21 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }, {})
 
     const [
-      latestBlock,
+      latestBlocks,
       resultsByChainId
     ] = await Promise.all([
-      web3.eth.getBlock('latest'),
-      Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rawCallsByChainId[+chainId]), true, +chainId, web3) ))
+      Promise.all(Object.keys(rawCallsByChainId).map( chainId => web3Chains[chainId].eth.getBlock('latest') )),
+      Promise.all(Object.keys(rawCallsByChainId).map( chainId => multiCall.executeMulticalls(Object.values(rawCallsByChainId[+chainId]), true, +chainId, web3Chains[chainId]) ))
     ])
 
-    return resultsByChainId.reduce( (ethenaCooldowns: VaultsOnchainData["ethenaCooldowns"], decodedResults: DecodedResult[] | null): VaultsOnchainData["ethenaCooldowns"] => {
+    return resultsByChainId.reduce( (ethenaCooldowns: VaultsOnchainData["ethenaCooldowns"], decodedResults: DecodedResult[] | null, index: number): VaultsOnchainData["ethenaCooldowns"] => {
       decodedResults?.forEach( (decodedResult: DecodedResult) => {
         const vault = decodedResult.extraData.data.vault
         const contractAddress = decodedResult.extraData.data.contractAddress
         if (contractAddress){
+          const latestBlock = latestBlocks[index]
           const convertToAssetsResult = decodedResults.find( (decodedResult2: DecodedResult) => decodedResult2.callData.method.includes("convertToAssets") && cmpAddrs(decodedResult2.extraData.data.contractAddress, contractAddress) )
-          if (BNify(decodedResult.data.underlyingAmount).gt(0)){
+          if (bnOrZero(decodedResult?.data?.underlyingAmount).gt(0)){
             const conversionRate = convertToAssetsResult?.data ? fixTokenDecimals(convertToAssetsResult.data, vault.underlyingToken?.decimals || 18) : BNify(1)
             const status = +decodedResult.data.cooldownEnd>=+latestBlock.timestamp ? 'pending' : 'available'
             // console.log(decodedResult.data.cooldownEnd, latestBlock.timestamp, status, conversionRate.toString())
