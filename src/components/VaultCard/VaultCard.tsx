@@ -409,7 +409,7 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
         onClick={() => onClick ? onClick() : navigate(getVaultPath(asset?.type, asset?.id))}
       >
         <VStack
-          spacing={2}
+          spacing={3}
           width={'full'}
           alignItems={'flex-start'}
           justifyContent={'space-between'}

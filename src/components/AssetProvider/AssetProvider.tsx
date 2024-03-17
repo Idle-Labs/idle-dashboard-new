@@ -1564,19 +1564,19 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'vaultOperatorOrProtocol':
       return operatorInfo ? (
         <HStack
-          spacing={3}
+          spacing={2}
           alignItems={'center'}
         >
-          <Image src={operatorInfo.image} width={10} />
-          <Text textTransform={'uppercase'} textStyle={'tableCell'} lineHeight={1.1}>{operatorInfo.nameShort || operatorInfo.name}</Text>
+          <Image src={operatorInfo.image} width={8} />
+          <Text textStyle={'tableCell'} lineHeight={1.1}>{operatorInfo.nameShort || operatorInfo.name}</Text>
         </HStack>
       ) : (
         <HStack
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon w={10} h={10} />
-          <ProtocolName textStyle={'tableCell'}/>
+          <ProtocolIcon w={8} h={8} />
+          <ProtocolName textTransform={'capitalize'} textStyle={'tableCell'}/>
         </HStack>
       )
     case 'operatorWithProtocol':
