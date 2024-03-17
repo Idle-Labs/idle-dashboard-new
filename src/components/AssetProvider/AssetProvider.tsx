@@ -809,6 +809,16 @@ const ApyBoost: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const RewardsApy: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+
+  const rewardsApy = bnOrZero(asset?.apyBreakdown?.rewards)
+  
+  return rewardsApy ? (
+    <Amount.Percentage decimals={2} value={rewardsApy} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const RealizedApy: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
 
@@ -1184,8 +1194,12 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+type RewardsEmissionsProps = {
+  flexProps?: FlexProps
+} & AssetProviderPropsType
+
 // @ts-ignore
-const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}) => {
+const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({children, flexProps, ...props}) => {
   const { asset, translate } = useAssetProvider()
 
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
@@ -1224,6 +1238,7 @@ const RewardsEmissions: React.FC<AssetProviderPropsType> = ({children, ...props}
                   borderColor={'card.bg'}
                   justifyContent={'center'}
                   backgroundColor={'card.bgLight'}
+                  {...flexProps}
                 >
                   <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={false} showIcon={true} size={'2xs'} fontSize={'xs'} amountComponent={amountComponent} prefix={prefix} suffix={suffix} amount={amount} {...props} />
                 </Flex>
@@ -1526,7 +1541,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       if (!vault || !("variant" in vault) || !vault?.variant?.length) return (<GeneralData field={'protocol'} section={section} {...props} />)
       return (
         <HStack
-          spacing={2}
+          spacing={3}
           alignItems={'flex-start'}
         >
           <ProtocolIcon size={props.size || 'sm'} />
@@ -1559,7 +1574,6 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           <Name textStyle={'tableCell'} {...props} />
         </HStack>
       )
-
     case 'assetWithVariant':
       return (
         <HStack
@@ -1763,6 +1777,7 @@ AssetProvider.JuniorApy = JuniorApy
 AssetProvider.Protocols = Protocols
 AssetProvider.Deposited = Deposited
 AssetProvider.ChainIcon = ChainIcon
+AssetProvider.RewardsApy = RewardsApy
 AssetProvider.GaugeShare = GaugeShare
 AssetProvider.Redeemable = Redeemable
 AssetProvider.Allocation = Allocation
@@ -1787,6 +1802,7 @@ AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards
 AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
+AssetProvider.Autocompounding = Autocompounding
 AssetProvider.RewardsEmissions = RewardsEmissions
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution

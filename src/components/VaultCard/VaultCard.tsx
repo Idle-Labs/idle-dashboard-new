@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react'
 import { strategies } from 'constants/'
 import { getVaultPath } from 'helpers/'
+import { useTranslate } from 'react-polyglot'
+import { CgArrowRight } from 'react-icons/cg'
 import { useNavigate } from 'react-router-dom'
 import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
@@ -13,7 +15,8 @@ import { Translation } from 'components/Translation/Translation'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text } from '@chakra-ui/react'
+import { TooltipContent } from 'components/TooltipContent/TooltipContent'
+import { useTheme, IconButton, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId
@@ -384,6 +387,136 @@ export const Minimal = ({assetId}: VaultCardProps) => {
   )
 }
 
+export const New = ({ assetId, onClick }: VaultCardProps) => {
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const translate = useTranslate()
+  const { location } = useBrowserRouter()
+  const { selectors: { selectAssetById } } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    if (!selectAssetById) return
+    return selectAssetById(assetId)
+  }, [assetId, selectAssetById])
+
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={assetId}
+    >
+      <Card.Flex
+        py={3}
+        px={4}
+        layerStyle={['card', 'cardHover']}
+        onClick={() => onClick ? onClick() : navigate(getVaultPath(asset?.type, asset?.id))}
+      >
+        <VStack
+          spacing={2}
+          width={'full'}
+          alignItems={'flex-start'}
+          justifyContent={'space-between'}
+        >
+          <HStack
+            width={'full'}
+            alignItems={'flex-start'}
+            justifyContent={'space-between'}
+          >
+            <AssetProvider.GeneralData field={'protocolWithVariant'} />
+            <AssetProvider.StrategyBadge />
+          </HStack>
+          <HStack
+            spacing={1}
+          >
+            <HStack
+              spacing={1}
+            >
+              <AssetProvider.Apy fontSize={32} textStyle={'bodyTitle'} showTooltip={false} />
+              <Translation translation={'defi.apy'} fontSize={32} textStyle={'bodyTitle'} color={'ctaDisabled'} />
+            </HStack>
+          </HStack>
+          <HStack
+            width={'full'}
+            justifyContent={'space-between'}
+          >
+            <HStack
+              spacing={2}
+            >
+              <Card.Light
+                py={0}
+                px={2}
+                height={8}
+                width={'auto'}
+                display={'flex'}
+                borderRadius={24}
+                border={'1px solid'}
+                alignItems={'center'}
+                borderColor={'card.bg'}
+              >
+                <HStack
+                  spacing={1}
+                >
+                  <AssetProvider.Icon size={'2xs'} mr={'2px'} />
+                  <AssetProvider.PoolUsd abbreviate={false} decimals={0} fontSize={'sm'} textStyle={'bodyTitle'} />
+                  <Translation translation={'defi.tvl'} fontSize={'sm'} textStyle={'bodyTitle'} />
+                </HStack>
+              </Card.Light>
+            </HStack>
+            <Flex
+              width={'auto'}
+            >
+              <AssetProvider.RewardsEmissions flexProps={{borderRadius:24, height: 8, alignItems: 'center'}}>
+                <Tooltip
+                  hasArrow
+                  placement={'top'}
+                  label={translate('defi.additionalRewardsApy')}
+                >
+                  <TooltipContent>
+                    <Card.Light
+                      py={0}
+                      px={2}
+                      height={8}
+                      width={'auto'}
+                      display={'flex'}
+                      borderRadius={24}
+                      border={'1px solid'}
+                      alignItems={'center'}
+                      borderColor={'card.bg'}
+                    >
+                      <HStack
+                        spacing={1}
+                        alignItems={'center'}
+                      >
+                        <AssetProvider.Autocompounding size={'2xs'} />
+                        <AssetProvider.RewardsApy fontSize={'xs'} />
+                      </HStack>
+                    </Card.Light>
+                  </TooltipContent>
+                </Tooltip>
+              </AssetProvider.RewardsEmissions>
+            </Flex>
+            {
+              /*
+              <IconButton
+                size={'sm'}
+                borderRadius={'50%'}
+                aria-label={'explore'}
+                colorScheme={'whiteAlpha'}
+                icon={
+                  <CgArrowRight
+                    size={20}
+                    color={theme.colors.card.bg}
+                  />
+                }
+              />
+              */
+            }
+          </HStack>
+        </VStack>
+      </Card.Flex>
+    </AssetProvider>
+  )
+}
+
 export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
   const navigate = useNavigate()
   const { location } = useBrowserRouter()
@@ -477,6 +610,7 @@ export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
   )
 }
 
+VaultCard.New = New
 VaultCard.Stats = Stats
 VaultCard.Inline = Inline
 VaultCard.Minimal = Minimal

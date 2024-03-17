@@ -421,6 +421,8 @@ export function shortenHash(hash: string, startLen = 7, endLen = 4) {
   return shortHash;
 }
 
+export const divideArray = (a: any[], c: number) => Array.from({length:Math.ceil(a.length/c)},(_,i)=>a.slice(i*c,i*c+c));
+
 export function parseAndReplaceAnchorTags(inputString: string) {
   const regex = /<a\s+(?:[^>]*\s+)?href=(?:"|')([^"']+)(?:"|')(?:\s+[^>]*)?>([^<]+)<\/a>/g;
   const replacedString = inputString.replace(regex, (match, url, linkText) => `${linkText} (${url})`);

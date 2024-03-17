@@ -80,10 +80,10 @@ export const DepositedAssetsTable: React.FC = () => {
         sortType: 'numeric'
       },
       {
-        id:'apy',
+        id:'apyWithRewards',
         width: '13%',
         accessor:'apy',
-        sortType: 'numeric'
+        sortType: 'numeric',
       },
       {
         id:'apy7',

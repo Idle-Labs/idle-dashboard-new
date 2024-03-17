@@ -13,6 +13,7 @@ import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { BoostedVaults } from 'components/BoostedVaults/BoostedVaults'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
@@ -642,6 +643,7 @@ export const Dashboard: React.FC = () => {
           </VStack>
         </Stack>
       </VStack>
+      <BoostedVaults />
       <DepositedAssetsTable />
       <Stack
         spacing={6}

@@ -61,6 +61,10 @@ export const theme = extendTheme({
       800: '#AE3C3B',
       900: '#923231',
     },
+    whiteAlpha: {
+      200: "rgba(255, 255, 255, 0.7)",
+      300: "rgba(255, 255, 255, 1)",
+    },
     BY: {
       200: '#FFD15C'
     },
