@@ -644,7 +644,7 @@ export const Dashboard: React.FC = () => {
         </Stack>
       </VStack>
       <VStack
-        mt={5}
+        mt={4}
         spacing={16}
         width={'full'}
       >
