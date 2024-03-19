@@ -590,7 +590,7 @@ export const Dashboard: React.FC = () => {
                         spacing={[1, 3]}
                         alignItems={'baseline'}
                       >
-                        <Amount.Usd value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
+                        <Amount.Usd abbreviate={false} value={totalFunds} textStyle={'heading'} fontSize={'3xl'} />
                         {
                           /*
                           totalFunds.gt(0) && (
