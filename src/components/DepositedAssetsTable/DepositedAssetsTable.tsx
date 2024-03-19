@@ -457,7 +457,7 @@ export const DepositedAssetsTable: React.FC = () => {
       sortBy: [
         {
           id: 'apy',
-          desc: false
+          desc: true
         }
       ]
     }

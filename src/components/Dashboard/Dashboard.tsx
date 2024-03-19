@@ -181,7 +181,7 @@ export const Dashboard: React.FC = () => {
           <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
           {
             isPortfolioAccountReady ? (
-              <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.deposited} />
+              <Amount.Usd abbreviate={false} textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.deposited} />
             ) : (
               <Spinner size={'sm'} /> 
             )
@@ -194,7 +194,7 @@ export const Dashboard: React.FC = () => {
           <Translation component={Text} translation={'defi.earnings'} textStyle={'titleSmall'} />
           {
             isPortfolioAccountReady ? (
-              <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.earnings} />
+              <Amount.Usd abbreviate={false} textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.earnings} />
             ) : (
               <Spinner size={'sm'} /> 
             )
@@ -222,7 +222,7 @@ export const Dashboard: React.FC = () => {
           <Translation component={Text} translation={'defi.discountedFees'} textStyle={'titleSmall'} />
           {
             isPortfolioAccountReady ? (
-              <Amount.Usd textStyle={'heading'} fontSize={'h3'} value={totalDiscountedFeesUsd} />
+              <Amount.Usd abbreviate={false} textStyle={'heading'} fontSize={'h3'} value={totalDiscountedFeesUsd} />
             ) : (
               <Spinner size={'sm'} /> 
             )
