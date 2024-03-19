@@ -1,9 +1,10 @@
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import type { ProviderProps } from 'contexts/common/types'
-import { ContainerProps, Box, Flex, HStack } from '@chakra-ui/react'
+import { CgArrowLeft, CgArrowRight } from 'react-icons/cg'
 import { ChakraCarousel } from 'components/ChakraCarousel/ChakraCarousel'
 import { usePausableTimer, PausableTimerReturns } from 'hooks/usePausableTimer/usePausableTimer'
 import React, { useCallback, useState, useEffect, useMemo, createContext, useContext } from 'react'
+import { useTheme, StackProps, ContainerProps, Box, Flex, HStack, IconButton } from '@chakra-ui/react'
 
 type PausableChakraCarouselContextProps = {
   delay: number
@@ -153,6 +154,56 @@ export const DotNav: React.FC = () => {
   )
 }
 
+type ArrowNavArgs = {
+  flexProps?: StackProps
+}
+
+export const ArrowNav: React.FC<ArrowNavArgs> = ({
+  flexProps
+}) => {
+  const theme = useTheme()
+  const { activeItem, itemsLength, pausableTimer: { stop }, goBack, goNext } = usePausableChakraCarouselProvider()
+  return (
+    <HStack
+      spacing={3}
+      width={'100%'}
+      alignItems={'center'}
+      justifyContent={['center','flex-end']}
+      {...flexProps}
+    >
+      <IconButton
+        size={'md'}
+        borderRadius={'50%'}
+        aria-label={'prev'}
+        colorScheme={'whiteAlpha'}
+        onClick={() => {stop(); goBack()}}
+        disabled={!activeItem}
+        icon={
+          <CgArrowLeft
+            size={20}
+            color={theme.colors.card.bg}
+          />
+        }
+      />
+
+      <IconButton
+        size={'md'}
+        borderRadius={'50%'}
+        aria-label={'next'}
+        colorScheme={'whiteAlpha'}
+        onClick={() => {stop(); goNext()}}
+        disabled={activeItem === itemsLength-1}
+        icon={
+          <CgArrowRight
+            size={20}
+            color={theme.colors.card.bg}
+          />
+        }
+      />
+    </HStack>
+  )
+}
+
 export function PausableChakraCarouselProvider({ children, delay }: PausableChakraCarouselProviderArgs) {
   const { isMobile } = useThemeProvider()
   const [ activeItem, setActiveItem ] = useState<number>(0)
@@ -202,4 +253,5 @@ export function PausableChakraCarouselProvider({ children, delay }: PausableChak
 }
 
 PausableChakraCarouselProvider.DotNav = DotNav
+PausableChakraCarouselProvider.ArrowNav = ArrowNav
 PausableChakraCarouselProvider.Carousel = PausableChakraCarousel

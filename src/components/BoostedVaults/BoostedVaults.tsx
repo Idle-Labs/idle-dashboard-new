@@ -79,6 +79,7 @@ export const BoostedVaults: React.FC = () => {
             ))
           }
         </PausableChakraCarouselProvider.Carousel>
+        <PausableChakraCarouselProvider.ArrowNav />
       </PausableChakraCarouselProvider>
     </VStack>
   )

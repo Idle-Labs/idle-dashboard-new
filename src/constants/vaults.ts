@@ -3271,9 +3271,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               address:'0x0000000000000000000000000000000000000000'
             },
             blockNumber:16420584,
-            name:'AA_morpho_steak_USDC',
-            token:'AA_morpho_steak_USDC',
-            label:'Morpho Steak USDC AA',
+            name:'AA_morpho_bb_WETH',
+            token:'AA_morpho_bb_WETH',
+            label:'Morpho bb WETH AA',
             address:'0x10036C2E5C441Cdef24A30134b6dF5ebf116205e'
           },
           BB:{
@@ -3297,9 +3297,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
               address:'0x0000000000000000000000000000000000000000'
             },
             blockNumber:16420584,
-            name:'BB_morpho_steak_USDC',
-            token:'BB_morpho_steak_USDC',
-            label:'Morpho Steak USDC BB',
+            name:'BB_morpho_bb_WETH',
+            token:'BB_morpho_bb_WETH',
+            label:'Morpho bb WETH BB',
             address:'0x3331B21Abb39190a0426ca54D68F9E3E953Eec8e'
           }
         }
