@@ -64,12 +64,6 @@ export const Dashboard: React.FC = () => {
     return Object.values(assetsData).filter( (asset: Asset) => asset.id && (!asset.type || enabledStrategies.includes(asset.type)) ).map( (asset: Asset) => asset.id as string )
   }, [assetsData, enabledStrategies])
 
-  const totalFunds = useMemo(() => {
-    return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (amount: BigNumber, vaultPosition: VaultPosition) => {
-      return amount.plus(vaultPosition.usd.redeemable)
-    }, BNify(0))
-  }, [assetIds, vaultsPositions])
-
   const aggregatedUsdPosition: VaultPosition["usd"] = useMemo(() => {
     return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (aggregatedUsdPosition: VaultPosition["usd"], vaultPosition: VaultPosition) => {
       aggregatedUsdPosition.staked = aggregatedUsdPosition.staked.plus(vaultPosition.usd.staked)
@@ -84,6 +78,10 @@ export const Dashboard: React.FC = () => {
       redeemable: BNify(0),
     })
   }, [assetIds, vaultsPositions])
+
+  const totalFunds = useMemo(() => {
+    return aggregatedUsdPosition.deposited.plus(aggregatedUsdPosition.earnings)
+  }, [aggregatedUsdPosition])
 
   const avgRealizedApy = useMemo(() => {
     const realizedApyData = Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (realizedApyData: Record<string, BigNumber>, vaultPosition: VaultPosition) => {
