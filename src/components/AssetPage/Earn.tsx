@@ -143,7 +143,7 @@ export const Earn: React.FC = () => {
           >
             {
               userHasBalance ? (
-                useDollarConversion ? <AssetProvider.BalanceUsd abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
+                useDollarConversion ? <AssetProvider.BalanceUsd abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable abbreviate={false} decimals={2} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
               ) : (
                 <Stack
                   spacing={[0, 2]}
