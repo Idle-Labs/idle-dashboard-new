@@ -6,13 +6,13 @@ import React, { useState, useMemo } from 'react'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
 import { MdKeyboardArrowRight } from 'react-icons/md'
-import { bnOrZero, BNify, getRoutePath } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { TwitterTimelineEmbed } from 'react-twitter-embed'
 import { products, ProductProps } from 'constants/products'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
+import { bnOrZero, BNify, getRoutePath, formatMoney } from 'helpers/'
 import { BoostedVaults } from 'components/BoostedVaults/BoostedVaults'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
@@ -621,6 +621,7 @@ export const Dashboard: React.FC = () => {
                   isRainbowChart={false}
                   gradientEnabled={false}
                   setPercentChange={setPercentChange}
+                  formatFn={(n: any) => `$${formatMoney(n, 2)}`}
                   margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
                 />
               </BalanceChartProvider>

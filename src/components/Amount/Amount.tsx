@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { isValidElement } from 'react'
 import type { NumberType } from 'constants/types'
 import { Text, TextProps, HStack, StackProps } from '@chakra-ui/react'
 import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney } from 'helpers/'
@@ -49,25 +49,24 @@ export const Amount = ({
     parsedValue = BNify(parsedValue).toFixed(decimals)
   }
 
+  const showPrefix = showPrefixSuffix && !!prefix
+  const showSuffix = showPrefixSuffix && !!suffix
+  const prefixIsString = typeof prefix === 'string'
+  const suffixIsString = typeof suffix === 'string'
+  const prefixIsElement = isValidElement(prefix)
+  const suffixIsElement = isValidElement(suffix)
+
   return (
     <HStack
       spacing={0}
       alignItems={'baseline'}
       {...stackProps}
     >
-      {
-        showPrefixSuffix && !!prefix && (
-          <Text {...props}>{prefix}</Text>
-        )
-      }
+      {showPrefix && prefixIsElement ? prefix : null}
       <Text {...props}>
-        {parsedValue.toString()}
+        {`${showPrefix && prefixIsString ? prefix : ''}${parsedValue.toString()}${showSuffix && suffixIsString ? suffix : ''}`}
       </Text>
-      {
-        showPrefixSuffix && !!suffix && (
-          <Text {...props}>{suffix}</Text>
-        )
-      }
+      {showSuffix && suffixIsElement ? suffix : null}
     </HStack>
   )
 }

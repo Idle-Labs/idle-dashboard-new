@@ -20,6 +20,7 @@ type BalanceChartProviderArgs = {
 type BalanceChartArgs = {
   color?: string
   height?: string
+  formatFn?: Function
   percentChange: number
   maxMinEnabled?: boolean
   isRainbowChart: boolean
@@ -99,6 +100,7 @@ const BalanceChangePercentage: React.FC<TextProps> = (props) => {
 }
 
 export const BalanceChart: React.FC<BalanceChartArgs> = ({
+  formatFn,
   isRainbowChart,
   height = '350px',
   setPercentChange,
@@ -121,7 +123,9 @@ export const BalanceChart: React.FC<BalanceChartArgs> = ({
   //   return defaultColor
   // }, [assets])
 
-  const formatFn = (n: any) => `$${abbreviateNumber(n)}`
+  if (!formatFn){
+    formatFn = (n: any) => `$${abbreviateNumber(n)}`
+  }
 
   return (
     <Box width={'full'} p={0} height={height}>

@@ -22,9 +22,9 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
 import { EpochThresholdsTable } from 'components/EpochThresholdsTable/EpochThresholdsTable'
+import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale } from 'helpers/'
 import { VaultOperatorOverview } from 'components/VaultOperatorOverview/VaultOperatorOverview'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
-import { bnOrZero, BNify, abbreviateNumber, isEmpty, replaceTokens, dateToLocale } from 'helpers/'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
@@ -143,7 +143,7 @@ export const Earn: React.FC = () => {
           >
             {
               userHasBalance ? (
-                useDollarConversion ? <AssetProvider.BalanceUsd textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
+                useDollarConversion ? <AssetProvider.BalanceUsd abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
               ) : (
                 <Stack
                   spacing={[0, 2]}
@@ -209,7 +209,7 @@ export const Earn: React.FC = () => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
-          <AssetProvider.DepositedUsd textStyle={'heading'} fontSize={'h3'} />
+          <AssetProvider.DepositedUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
@@ -236,7 +236,7 @@ export const Earn: React.FC = () => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.netEarnings'} textStyle={'titleSmall'} />
-          <AssetProvider.NetEarningsUsd textStyle={'heading'} fontSize={'h3'} />
+          <AssetProvider.NetEarningsUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.NetEarnings decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
@@ -248,7 +248,7 @@ export const Earn: React.FC = () => {
           justifyContent={'center'}
         >
           <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
-          <AssetProvider.FeesUsd textStyle={'heading'} fontSize={'h3'} />
+          <AssetProvider.FeesUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
           {
             feeDiscountEnabled ? (
               bnOrZero(stakingData?.feeDiscount).gt(0) ? (
@@ -458,8 +458,7 @@ export const Earn: React.FC = () => {
             setPercentChange={() => {}}
             height={isMobile ? '300px' : '350px'}
             margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={ !useDollarConversion ? ((n: any) => `${abbreviateNumber(n, decimals)} ${asset?.name}`) : undefined }
-            // formatFn={(n: any) => `${abbreviateNumber(n)} ${asset?.name}`}
+            formatFn={ !useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined }
           />
         </Card.Flex>
       </Box>

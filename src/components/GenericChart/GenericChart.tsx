@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { abbreviateNumber } from 'helpers/'
+import { formatMoney } from 'helpers/'
 import { Box, VStack } from '@chakra-ui/react'
 import { Graph } from 'components/Graph/Graph'
 import { ContinuousScaleType } from "@visx/scale"
@@ -38,7 +38,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   // setPercentChange,
   maxMinEnabled = true,
   color = 'chart.stroke',
-  formatFn = (n: any) => `$${abbreviateNumber(n)}`,
+  formatFn = (n: any) => `$${formatMoney(n)}`,
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
 

@@ -1,9 +1,9 @@
 import React from 'react'
 import * as moment from 'moment'
 import type { Vault } from 'vaults/'
+import BigNumber from 'bignumber.js'
 import type { AbiItem } from 'web3-utils'
 import type { EventLog } from 'web3-core'
-import type { BigNumber } from 'bignumber.js'
 import { IconType as ReactIcon } from 'react-icons'
 import { ContractSendMethod } from 'web3-eth-contract'
 
