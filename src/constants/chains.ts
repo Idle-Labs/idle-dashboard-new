@@ -9,7 +9,7 @@ export const chains: Record<number, Chain> = {
     id: '0x1',
     token: 'ETH',
     label: 'Ethereum Mainnet',
-    publicRpcUrl: 'https://ethereum.publicnode.com',
+    publicRpcUrl: 'https://ethereum-rpc.publicnode.com',
     rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
   },
   10: {
@@ -17,7 +17,8 @@ export const chains: Record<number, Chain> = {
     token: 'ETH',
     label: 'OP Mainnet',
     publicRpcUrl: `https://mainnet.optimism.io`,
-    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_OPTIMISM_KEY}`
+    rpcUrl: `https://optimism-mainnet.infura.io/v3/${env.REACT_APP_INFURA_OPTIMISM_KEY}`
+    // rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_OPTIMISM_KEY}`
   },
   1101: {
     id: '0x44d',
