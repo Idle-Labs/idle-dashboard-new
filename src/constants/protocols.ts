@@ -146,7 +146,7 @@ export const protocols: Record<string, Protocol> = {
     },
     apis: {
       USDe:{
-        path:'protocolYield.value',
+        path:'stakingYield.value',
         endpoint: {
           1: 'https://api.idle.finance/ethenaAprs'
         },
