@@ -224,6 +224,15 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'protocols',
         accessor:'id'
+      },
+      {
+        width: '8%',
+        id:'chainId',
+        accessor:'id',
+        tables: ['Available'],
+        stackProps:{
+          justifyContent:'center'
+        },
       }
     ],
     generalDataFields:[

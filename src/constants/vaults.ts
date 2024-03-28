@@ -3887,6 +3887,76 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   1101:{
     
   },
+  10: { // Optimism
+    USDT: {
+      blockNumber: 117936837,
+      underlyingToken: 'USDT',
+      idle: {
+        decimals:18,
+        token: 'idleUSDTRWA',
+        abi: IdleTokenV4 as Abi,
+        address: '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
+      },
+      flags:{
+        referralEnabled:false
+      },
+      autoFarming:[],
+      description:'This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
+      protocols: [
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'clearpool',
+          abi: ERC20 as Abi,
+          token: 'AA_clearpool_fasanara_USDT',
+          label: 'Clearpool Fasanara USDT (Senior)',
+          address: '0x50BA0c3f940f0e851f8e30f95d2A839216EC5eC9',
+          functions: {
+            exchangeRate: {
+              decimals: 6,
+              name: 'virtualPrice',
+              target:'0x94e399Af25b676e7783fDcd62854221e67566b7f',
+              params: ['0x50BA0c3f940f0e851f8e30f95d2A839216EC5eC9']
+            }
+          }
+        },
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'clearpool',
+          abi: ERC20 as Abi,
+          token: 'AA_clearpool_portofino_USDT',
+          label: 'Clearpool Portofino USDT (Senior)',
+          address: '0x8552801C75C4f2b1Cac088aF352193858B201D4E',
+          functions: {
+            exchangeRate: {
+              decimals: 6,
+              name: 'virtualPrice',
+              target:'0x5d4E705315ACa451Db40bf7c067077C768B3FFd0',
+              params: ['0x8552801C75C4f2b1Cac088aF352193858B201D4E']
+            }
+          }
+        },
+        {
+          decimals: 18,
+          enabled: true,
+          name: 'clearpool',
+          abi: ERC20 as Abi,
+          token: 'AA_clearpool_bastion_USDT',
+          label: 'Clearpool Bastion USDT (Senior)',
+          address: '0x8324cB085Ffdce6256C2aEe4a63Bc878870Ff04d',
+          functions: {
+            exchangeRate: {
+              decimals: 6,
+              name: 'virtualPrice',
+              target:'0x67D07aA415c8eC78cbF0074bE12254E55Ad43f3f',
+              params: ['0x8324cB085Ffdce6256C2aEe4a63Bc878870Ff04d']
+            }
+          }
+        },
+      ]
+    },
+  },
   1: { // Mainnet
     DAI: {
       blockNumber: 10595640,
