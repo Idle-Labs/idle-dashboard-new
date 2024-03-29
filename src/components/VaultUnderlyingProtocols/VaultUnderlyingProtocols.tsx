@@ -59,7 +59,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
           // const allocationPercentage = BNify(asset.allocations?.[protocol.address.toLowerCase()]).div(100)
           // const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
           const allocationUsd = bnOrZero(interestBearingTokens?.[protocol.address.toLowerCase()]).times(underlyingPriceUsd)
-          // const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
+          const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
           const isIdleVault = selectVaultById(protocol.address) !== null
 
           return (
@@ -115,7 +115,13 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                       alignItems={'flex-start'}
                     >
                       <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
-                      <AssetProvider.Apy textStyle={'tableCell'} />
+                      {
+                        isIdleVault ? (
+                          <AssetProvider.Apy textStyle={'tableCell'} />
+                        ) : (
+                          <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
+                        )
+                      }
                     </VStack>
                     <VStack
                       spacing={1}
