@@ -3946,7 +3946,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       }
     }
 
-    // Add morpho rewards emissions
+    // Add morpho rewards emissions or post processed data
     for (const vault of state.vaults){
 
       let rewardsEmissionsTotalApr = BNify(0)
@@ -4051,6 +4051,46 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
             assetsData[trancheVault.id].aprBreakdown = aprBreakdown
           }
+        }
+      }
+
+      // Add underlying protocols aprs
+      if (("getFlag" in vault) && vault.getFlag("addUnderlyingProtocolsAdditionalApr") && assetsData[vault.id].interestBearingTokens){
+        const totalTvl = bnOrZero(assetsData[vault.id].totalTvl)
+        const additionalAprs = Object.keys(assetsData[vault.id].interestBearingTokens as Balances).reduce( (additionalAprs: Balances, underlyingVaultId: string) => {
+          const underlyingVaultData = assetsData[underlyingVaultId]
+          const underlyingVaultAllocation = bnOrZero(assetsData[vault.id]?.interestBearingTokens?.[underlyingVaultId])
+
+          // Check vault allocation
+          if (underlyingVaultAllocation.gt(0) && underlyingVaultData.aprBreakdown){
+            // Look for additional vaults apr
+            Object.keys(underlyingVaultData.aprBreakdown as Balances).forEach( (aprType: string) => {
+              if (['rewards', 'harvest'].includes(aprType)){
+                if (!additionalAprs[aprType]){
+                  additionalAprs[aprType] = BNify(0)
+                }
+                const allocationPercentage = underlyingVaultAllocation.div(totalTvl)
+                // console.log('addUnderlyingProtocolsAdditionalApr', vault.id, underlyingVaultId, underlyingVaultAllocation.toString(), allocationPercentage.toString(), aprType, bnOrZero(underlyingVaultData.aprBreakdown?.[aprType]).toString())
+                // Multiply additional apr for allocation percentage
+                additionalAprs[aprType] = additionalAprs[aprType].plus(bnOrZero(underlyingVaultData.aprBreakdown?.[aprType]).times(allocationPercentage))
+              }
+            })
+          }
+          return additionalAprs
+        }, {})
+
+        // Incorporate additional aprs to aprBreakdown
+        if (!isEmpty(additionalAprs)){
+          // Initialize vault apr breakdown if not
+          if (!assetsData[vault.id].aprBreakdown){
+            assetsData[vault.id].aprBreakdown = {}
+          }
+          Object.keys(additionalAprs).forEach( aprType => {
+            if (!assetsData[vault.id].aprBreakdown?.[aprType]){
+              (assetsData[vault.id].aprBreakdown as Balances)[aprType] = BNify(0)
+            }
+            (assetsData[vault.id].aprBreakdown as Balances)[aprType] = bnOrZero(assetsData[vault.id].aprBreakdown?.[aprType]).plus(additionalAprs[aprType])
+          })
         }
       }
 

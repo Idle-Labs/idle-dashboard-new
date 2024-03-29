@@ -3889,6 +3889,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   },
   10: { // Optimism
     USDT: {
+      enabledEnvs:['beta'],
+      status:'experimental',
       blockNumber: 117936837,
       underlyingToken: 'USDT',
       idle: {
@@ -3898,7 +3900,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         address: '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
       },
       flags:{
-        referralEnabled:false
+        referralEnabled:false,
+        addUnderlyingProtocolsAdditionalApr: true
       },
       autoFarming:[],
       description:'This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
