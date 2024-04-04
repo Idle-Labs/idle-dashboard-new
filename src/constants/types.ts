@@ -409,6 +409,18 @@ export type Avatar = {
   }>;
 };
 
+export type Operator = {
+  name: string
+  nameShort?: string
+  image?: string
+  description: string
+  industry?: string
+  links: Record<string, string>
+  location?: string
+  founded?: number | string
+  rating?: string
+}
+
 export type Ens = {
   name: string
   avatar: Avatar | null

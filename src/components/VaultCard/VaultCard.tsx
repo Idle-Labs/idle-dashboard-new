@@ -1,12 +1,14 @@
+import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
-import { strategies } from 'constants/'
-import { getVaultPath } from 'helpers/'
+import { CgArrowRight } from 'react-icons/cg'
 import { useTranslate } from 'react-polyglot'
+import { BNify, getVaultPath } from 'helpers/'
 import { useNavigate } from 'react-router-dom'
 import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
 import { MdKeyboardArrowRight } from 'react-icons/md'
 import { CardProps, Card } from 'components/Card/Card'
+import { strategies, AggregatedVault } from 'constants/'
 import type { AggregatedAsset } from 'components/Stats/Stats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { StrategyTag } from 'components/StrategyTag/StrategyTag'
@@ -15,7 +17,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
-import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip } from '@chakra-ui/react'
+import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId
@@ -386,6 +388,144 @@ export const Minimal = ({assetId}: VaultCardProps) => {
   )
 }
 
+export const Aggregated = (aggregatedVault: AggregatedVault) => {
+
+  const theme = useTheme()
+
+  const {
+    isPortfolioLoaded,
+    selectors: { selectAssetsByIds }
+  } = usePortfolioProvider()
+
+  const assets = useMemo(() => {
+    return selectAssetsByIds(aggregatedVault.vaults)
+  }, [selectAssetsByIds, aggregatedVault.vaults])
+
+  console.log('assets', assets)
+
+  const maxApy = useMemo((): BigNumber => {
+    return assets.reduce( (maxApy: BigNumber, asset: Asset) => BigNumber.maximum(maxApy, BNify(asset.apy)), BNify(0))
+  }, [assets])
+
+  const totalTvl = useMemo((): BigNumber => {
+    return assets.reduce( (totalTvl: BigNumber, asset: Asset) => totalTvl.plus(BNify(asset.tvlUsd)), BNify(0))
+  }, [assets])
+
+  return (
+    <Card.Flex
+      p={4}
+      layerStyle={['card', 'cardHover']}
+    >
+      <VStack
+        spacing={4}
+        width={'full'}
+      >
+        <VStack
+          pt={2}
+          pr={2}
+          pl={4}
+          pb={4}
+          spacing={2}
+          width={'full'}
+          borderRadius={8}
+          alignItems={'flex-start'}
+          backgroundColor={'card.bgLight'}
+          justifyContent={'space-between'}
+          background={`radial-gradient(circle, ${aggregatedVault.color} 10%, ${theme.colors.card.bgLight} 100%)`}
+          backgroundPosition={'top left'}
+          backgroundSize={'300%'}
+        >
+          <HStack
+            width={'full'}
+            justifyContent={'space-between'}
+            // borderBottom={'1px solid'}
+            // borderColor={'divider'}
+          >
+            <Translation translation={'Idle Automated Vault'} textStyle={'captionSmall'} />
+            <Image src={aggregatedVault.icon} w={8} h={8} />
+          </HStack>
+          <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={'2xl'} />
+        </VStack>
+        <VStack
+          width={'full'}
+        >
+          <HStack
+            width={'full'}
+            justifyContent={'space-between'}
+          >
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'stats.maxApy'} textStyle={'captionSmall'} />
+              <Amount fontSize={36} suffix={(<small style={{fontSize: 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+            </VStack>
+            <VStack
+              spacing={2}
+              alignItems={'flex-end'}
+            >
+              <Translation translation={'defi.availableAssets'} textStyle={'captionSmall'} />
+              <HStack
+                spacing={-2}
+              >
+                {
+                  assets.map( (asset: Asset) => {
+                    return (
+                      <AssetProvider
+                        wrapFlex={false}
+                        assetId={asset.id}
+                      >
+                        <AssetProvider.Icon size={'xs'} />
+                      </AssetProvider>
+                    )
+                  })
+                }
+              </HStack>
+            </VStack>
+          </HStack>
+        </VStack>
+        <Text color={'primary'} textStyle={'captionSmall'}>{aggregatedVault.description}</Text>
+        <HStack
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'space-between'}
+        >
+          <Card.Light
+            py={0}
+            px={2}
+            height={8}
+            width={'auto'}
+            display={'flex'}
+            borderRadius={24}
+            border={'1px solid'}
+            alignItems={'center'}
+            backgroundColor={'primary'}
+          >
+            <HStack
+              spacing={1}
+            >
+              <Amount.Usd abbreviate={false} decimals={0} fontSize={'sm'} fontWeight={600} color={'card.bg'} value={totalTvl} />
+              <Translation translation={'defi.tvl'} fontSize={'sm'} fontWeight={600} color={'card.bg'} />
+            </HStack>
+          </Card.Light>
+          <IconButton
+            size={'sm'}
+            borderRadius={'50%'}
+            colorScheme={'mattWhite'}
+            aria-label={'explore'}
+            icon={
+              <CgArrowRight
+                size={20}
+                color={theme.colors.card.bg}
+              />
+            }
+          />
+        </HStack>
+      </VStack>
+    </Card.Flex>
+  )
+}
+
 export const New = ({ assetId, onClick }: VaultCardProps) => {
   // const theme = useTheme()
   const navigate = useNavigate()
@@ -618,3 +758,4 @@ VaultCard.Stats = Stats
 VaultCard.Inline = Inline
 VaultCard.Minimal = Minimal
 VaultCard.Tranche = Tranche
+VaultCard.Aggregated = Aggregated

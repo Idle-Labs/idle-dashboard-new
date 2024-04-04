@@ -24,6 +24,7 @@ export type StrategyColumn = {
   width?: any
   accessor: any
   cellSx?: any
+  textAlign?: any
   tables?: Tables[]
   extraFields?: string[]
   stackProps?: StackProps
@@ -193,6 +194,15 @@ export const strategies: Record<string, StrategyProps> = {
           justifyContent:'space-between'
         },
       },
+      /*
+      {
+        id:'assetClass',
+        accessor:'categories',
+        fieldProps: {
+          showLoader: false
+        }
+      },
+      */
       {
         id:'tvl',
         accessor:'tvlUsd',
@@ -229,6 +239,7 @@ export const strategies: Record<string, StrategyProps> = {
         width: '8%',
         id:'chainId',
         accessor:'id',
+        textAlign: 'center',
         tables: ['Available'],
         stackProps:{
           justifyContent:'center'

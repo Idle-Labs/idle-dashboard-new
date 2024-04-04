@@ -1,14 +1,4 @@
-export type Operator = {
-  name: string
-  nameShort?: string
-  image?: string
-  description: string
-  industry?: string
-  links: Record<string, string>
-  location?: string
-  founded?: number | string
-  rating?: string
-}
+import type { Operator } from 'constants/types'
 
 export const operators: Record<string, Operator> = {
   bProtocol: {

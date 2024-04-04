@@ -32,14 +32,18 @@ type TableFieldProps = {
   showLoader?: boolean
 }
 
-export const TableField: React.FC<TableFieldProps> = ({ field, row, value }) => {
+export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showLoader }) => {
   const assetId = row.original.id
-  return (
+  return showLoader ? (
     <SkeletonText noOfLines={2} isLoaded={!!value}>
       <AssetProvider assetId={assetId}>
         <AssetProvider.GeneralData section={'strategy'} field={field} />
       </AssetProvider>
     </SkeletonText>
+  ) : (
+    <AssetProvider assetId={assetId}>
+      <AssetProvider.GeneralData section={'strategy'} field={field} />
+    </AssetProvider>
   )
 }
 
@@ -111,7 +115,7 @@ export const Strategy: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} />
+              <TableField field={id} value={value} row={row} {...column.fieldProps} />
               <Flex
                 flex={1}
                 {...column.stackProps}
@@ -124,7 +128,7 @@ export const Strategy: React.FC = () => {
               </Flex>
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} />
+            <TableField field={id} value={value} row={row} {...column.fieldProps} />
           )
         }
       }
@@ -140,7 +144,9 @@ export const Strategy: React.FC = () => {
       return {
         id,
         accessor,
+        width: column.width,
         disableSortBy: !sortTypeFn,
+        textAlign: column.textAlign,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor) : undefined,
@@ -153,7 +159,7 @@ export const Strategy: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} />
+              <TableField field={id} value={value} row={row} {...column.fieldProps} />
               {
                 column.extraFields.map( (extraField: string) => (
                   <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
@@ -161,7 +167,12 @@ export const Strategy: React.FC = () => {
               }
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} />
+            <Flex
+              flex={1}
+              {...column.stackProps}
+            >
+              <TableField field={id} value={value} row={row} {...column.fieldProps} />
+            </Flex>
           )
         }
       }
@@ -176,6 +187,7 @@ export const Strategy: React.FC = () => {
       return {
         id,
         accessor,
+        width: column.width,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
@@ -189,7 +201,7 @@ export const Strategy: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} />
+              <TableField field={id} value={value} row={row} {...column.fieldProps} />
               {
                 column.extraFields.map( (extraField: string) => (
                   <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} />
@@ -197,7 +209,7 @@ export const Strategy: React.FC = () => {
               }
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} />
+            <TableField field={id} value={value} row={row} {...column.fieldProps} />
           )
         }
       }

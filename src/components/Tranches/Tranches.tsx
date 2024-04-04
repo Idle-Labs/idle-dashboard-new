@@ -21,7 +21,7 @@ import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
-import { products, chains, networks, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn } from 'constants/'
+import { products, chains, networks, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button, Tooltip } from '@chakra-ui/react'
 
@@ -874,6 +874,22 @@ export const Tranches: React.FC = () => {
     )
   }, [strategy, product, productStrategies, isMobile, openModal])
 
+  const aggregatedVaultsCards = useMemo(() => {
+    return (
+      <SimpleGrid
+        columns={4}
+        spacing={8}
+        width={'full'}
+      >
+        {
+          aggregatedVaults.map( (aggregatedVault: AggregatedVault) => {
+            return (<VaultCard.Aggregated {...aggregatedVault} />)
+          })
+        }
+      </SimpleGrid>
+    )
+  }, [])
+
   return (
     <Flex
       mt={10}
@@ -881,7 +897,7 @@ export const Tranches: React.FC = () => {
       direction={'column'}
       alignItems={'center'}
     >
-      {heading}
+      {aggregatedVaultsCards}
       {depositedAssets}
       {availableAssets}
       {deprecatedAssets}

@@ -15,7 +15,7 @@ import ClearpoolPool from 'abis/clearpool/ClearpoolPool.json'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
-import type { Abi, VaultStatus, Paragraph, RewardEmission } from './types'
+import type { Abi, VaultStatus, Paragraph, RewardEmission, AssetId } from './types'
 import { rewardsSenders, distributedFeesSenders } from 'constants/whitelistedSenders'
 
 export const vaultsStatusSchemes: Record<string, string> = {
@@ -3872,6 +3872,8 @@ export type IdleTokenProtocol = {
 
 export type BestYieldConfig = {
   idle: IdleToken
+  name?: string
+  categories?: string[]
   proxies?: string[]
   blockNumber: number
   variant?: string
@@ -3884,12 +3886,45 @@ export type BestYieldConfig = {
   protocols: IdleTokenProtocol[]
 }
 
+export type AggregatedVault = {
+  name: string
+  icon: string
+  color: string
+  vaults: AssetId[]
+  description: string
+  categories?: string[]
+}
+
+export const aggregatedVaults: AggregatedVault[] = [
+  {
+    color: '#4de3b0',
+    icon: 'images/strategies/AA.svg',
+    name: 'Stablecoin<br />Secured Lending',
+    vaults: [
+      '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
+      '0x5274891bEC421B39D23760c04A6755eCB444797C',
+      '0xF34842d05A1c888Ca02769A633DF37177415C2f8'
+    ],
+    description: 'Overcollateralized lending to institutional counterparties backed by digital assets with in-depth borrower due diligence, on-chain transparency, and downside protection.'
+  },
+  {
+    color: '#627eea',
+    icon: 'images/strategies/RWA.svg',
+    name: 'Real-World<br />Assets',
+    vaults: [
+      '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
+    ],
+    description: 'Strategic financing to top tier counterparties in the digital asset ecosystem. Premium yields with a short tenor, backed by strong balance sheets with significant, unencumbered liquid assets.'
+  }
+]
+
 export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   1101:{
     
   },
   10: { // Optimism
     USDT: {
+      categories: ['rwa'],
       enabledEnvs:['beta'],
       status:'experimental',
       blockNumber: 117936837,
@@ -3965,6 +4000,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAI: {
       blockNumber: 10595640,
       underlyingToken: 'DAI',
+      categories: ['overcollatLending', 'coveredVaults'],
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
@@ -4219,6 +4255,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDC: {
       blockNumber: 10618515,
       underlyingToken: 'USDC',
+      categories: ['overcollatLending', 'coveredVaults'],
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
@@ -4313,6 +4350,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDT: {
       blockNumber: 10627792,
       underlyingToken: 'USDT',
+      categories: ['overcollatLending', 'coveredVaults'],
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,

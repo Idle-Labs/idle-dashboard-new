@@ -1,17 +1,15 @@
 import Web3 from 'web3'
 import ERC20 from 'abis/tokens/ERC20.json'
 import { Contract } from 'web3-eth-contract'
-import { MAX_ALLOWANCE } from 'constants/vars'
-import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
-import { ProtocolField, protocols } from 'constants/protocols'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission } from 'constants/types'
+import { MAX_ALLOWANCE, tokensFolder, ProtocolField, protocols, operators } from 'constants/'
+import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission, Operator } from 'constants/types'
 import { BNify, normalizeTokenAmount, getObjectPath, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
 import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
@@ -37,6 +35,7 @@ export class TrancheVault {
   readonly risks: Paragraph[] | undefined
   readonly description: string | undefined
   readonly web3Rpc: Web3 | null | undefined
+  readonly categories: string[] | undefined
   readonly messages: TrancheConfig["messages"]
   readonly flags: Record<string, any> | undefined
   readonly translations: TrancheConfig["translations"]
@@ -504,6 +503,11 @@ export class TrancheVault {
       default:
         return
     }
+  }
+
+  public getOperatorInfo(): Operator | null {
+    const operatorName = getObjectPath(this, 'vaultConfig.operators.0.name')
+    return operatorName ? operators[operatorName] : null
   }
 
   public getAllowanceParams(amount: NumberType): any[] {

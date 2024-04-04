@@ -326,6 +326,23 @@ const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props})
   )
 }
 
+const Categories: React.FC<TextProps> = ({...props}) => {
+  const { vault, translate } = useAssetProvider()
+  if (!vault || !("categories" in vault) || isEmpty(vault.categories)) return null
+  return (
+    <VStack
+      spacing={1}
+      alignItems={'flex-start'}
+    >
+      {
+        vault?.categories?.map( (category: string) => (
+          <Tag {...props} variant={'outline'} color={'primary'} size={'sm'} fontWeight={600}>{translate(`assets.categories.${category}.title`)}</Tag>
+        ))
+      }
+    </VStack>
+  )
+}
+
 type RewardsProps = {
  iconMargin?: number
 } & AvatarProps & BoxProps
@@ -376,15 +393,20 @@ type ProtocolsProps = {
 
 const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisabled = false, ...props}) => {
   const { vault } = useAssetProvider()
-  // const { selectors: { selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
   
   const protocols = useMemo(() => {
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return children
 
     const protocolIcons = vault.tokenConfig.protocols.reduce( (protocols: JSX.Element[], protocolConfig: IdleTokenProtocol, index: number) => {
       const protocol = selectProtocol(protocolConfig.name)
+      const vault = selectVaultById(protocolConfig.address)
       if (!protocol) return protocols
       const label = protocolConfig.label || protocol.label
+
+      const operatorInfo = vault && ("getOperatorInfo" in vault) ? vault.getOperatorInfo() : null
+      const protocolIcon = operatorInfo?.image || protocol.icon
+
       protocols.push(
         <Tooltip
           hasArrow
@@ -396,7 +418,7 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisab
           <Avatar
             p={1}
             bg={'white'}
-            src={protocol.icon}
+            src={protocolIcon}
             icon={<BsQuestion size={24} />}
             sx={{
               "> img": {
@@ -412,7 +434,7 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisab
     }, [])
 
     return protocolIcons.length ? protocolIcons : children
-  }, [children, vault, props, iconMargin, tooltipDisabled])
+  }, [children, vault, props, iconMargin, tooltipDisabled, selectVaultById])
 
   return (
     <Flex>
@@ -1759,6 +1781,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
+    case 'assetClass':
+      return (
+        <Categories {...props} />
+      )
     case 'rewards':
       return (
         <Rewards size={'sm'} {...props}>

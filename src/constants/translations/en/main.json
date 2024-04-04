@@ -597,6 +597,7 @@
     "feeDiscount": "Fee discount",
     "discountedFees": "Discounted fees",
     "gauges": "Gauges",
+    "assetClass": "Asset class",
     "seniorCoverage": "Senior Coverage",
     "govToken": "Gov. token",
     "protocol": "Protocol",
@@ -1961,6 +1962,17 @@
   "assets": {
     "fundsOverview": {
       "discount": "%{discount}% Discount"
+    },
+    "categories": {
+      "rwa": {
+        "title": "Real World Assets"
+      },
+      "overcollatLending": {
+        "title": "Overcollat. Lending"
+      },
+      "coveredVaults": {
+        "title": "Covered vaults"
+      }
     },
     "status": {
       "production": "Production",

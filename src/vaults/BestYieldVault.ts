@@ -31,8 +31,9 @@ export class BestYieldVault {
   readonly web3: Web3
   readonly chainId: number
   readonly protocol: string
-  readonly description: string | undefined
   readonly messages: Record<string, any>
+  readonly description: string | undefined
+  readonly categories: string[] | undefined
   readonly vaultFunctionsHelper: VaultFunctionsHelper
   readonly flags: Record<string, boolean> | undefined
 
@@ -81,6 +82,7 @@ export class BestYieldVault {
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
     this.idleController = idleController
+    this.categories = tokenConfig.categories
     this.description = tokenConfig.description
     this.id = this.idleConfig.address.toLowerCase()
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
