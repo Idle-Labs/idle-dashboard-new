@@ -3905,7 +3905,7 @@ export const aggregatedVaults: AggregatedVault[] = [
       '0x5274891bEC421B39D23760c04A6755eCB444797C',
       '0xF34842d05A1c888Ca02769A633DF37177415C2f8'
     ],
-    description: 'Overcollateralized lending to institutional counterparties backed by digital assets with in-depth borrower due diligence, on-chain transparency, and downside protection.'
+    description: 'Overcollateralized lending, with a portion of funds allocated to carefully selected borrowers with high credit scores, enhancing stability and maximizing returns.'
   },
   {
     color: '#627eea',
@@ -3914,7 +3914,7 @@ export const aggregatedVaults: AggregatedVault[] = [
     vaults: [
       '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
     ],
-    description: 'Strategic financing to top tier counterparties in the digital asset ecosystem. Premium yields with a short tenor, backed by strong balance sheets with significant, unencumbered liquid assets.'
+    description: 'Experience the strength of our RWA strategy, engineered to capitalize on tangible assets, delivering stability and sustainable returns for investors.'
   }
 ]
 

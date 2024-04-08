@@ -44,13 +44,13 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
       })
   }, [compositions, enabledStrategies])
 
-  aggregatedData.realizedApy = aggregatedData.realizedApy.div(aggregatedData.redeemable)
+  aggregatedData.realizedApy = aggregatedData.redeemable.gt(0) ? aggregatedData.realizedApy.div(aggregatedData.redeemable) : BNify(0)
 
   if (!showLoading && (!isVaultsPositionsLoaded || aggregatedData.deposited.lte(0))) return null
 
   return (
     <VStack
-      spacing={6}
+      spacing={4}
       alignItems={'flex-start'}
     >
       {

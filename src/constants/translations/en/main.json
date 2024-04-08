@@ -208,6 +208,10 @@
     "feeCollector": "Fee collector"
   },
   "strategies": {
+    "general": {
+      "title": "Explore our selection of handcrafted strategies",
+      "description": "Elevate your portfolio using our refined strategies, versatile solutions designed to satisfy the needs of both sophisticated and risk-inclined investors."
+    },
     "staking": {
       "title": "Staking",
       "howItWorks": {

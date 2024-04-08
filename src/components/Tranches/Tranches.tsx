@@ -813,52 +813,32 @@ export const Tranches: React.FC = () => {
     const modalProps = product?.modal
     return (
       <VStack
+        mb={8}
         width={'full'}
-        spacing={10}
+        spacing={8}
       >
         <AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />
         <Stack
           spacing={[8, 0]}
           direction={['column', 'row']}
           alignItems={['center', 'flex-start']}
-          width={['100%', '100%', '100%', '100%', '80%']}
+          width={['100%', '100%', '100%', '100%', '100%']}
         >
           <VStack
             pr={[0, 0]}
-            spacing={10}
+            spacing={4}
             direction={'column'}
             width={['100%', '50%']}
             alignItems={['center', 'flex-start']}
           >
-            <Translation isHtml={true} translation={'strategies.tranches.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
+            <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
+            <Translation isHtml={true} translation={'strategies.general.description'} textAlign={['center', 'left']} />
             {
               !isMobile && (
-                <VStack
-                  spacing={1}
-                  width={['100%', '90%']}
-                  alignItems={'flex-start'}
-                >
-                  <Translation isHtml={true} translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
-                  {
-                    modalProps && (
-                      <HStack
-                        spacing={2}
-                      >
-                        <Translation translation={'defi.modals.learnMore.cta.learnMore'} textStyle={'cta'} onClick={() => openModal(modalProps as ModalProps)} />
-                        <MdArrowForwardIos />
-                      </HStack>
-                    )
-                  }
-                </VStack>
-              )
-            }
-            {
-              !isMobile && (
-                <StrategyOverview showLoading={false} strategies={productStrategies} />
+                <StrategyOverview showLoading={true} strategies={productStrategies} />
               )
             }
           </VStack>
-          <Image width={['100%', '50%']} src={product?.image} />
           {
             isMobile && (
               <Translation isHtml={true} translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
@@ -872,7 +852,7 @@ export const Tranches: React.FC = () => {
         </Stack>
       </VStack>
     )
-  }, [strategy, product, productStrategies, isMobile, openModal])
+  }, [strategy, product, productStrategies, isMobile])
 
   const aggregatedVaultsCards = useMemo(() => {
     return (
@@ -897,6 +877,7 @@ export const Tranches: React.FC = () => {
       direction={'column'}
       alignItems={'center'}
     >
+      {heading}
       {aggregatedVaultsCards}
       {depositedAssets}
       {availableAssets}
