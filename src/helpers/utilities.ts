@@ -178,6 +178,10 @@ export function formatDate (timestamp: number | string, format = 'YYYY/MM/DD', i
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? ' UTC' : '')
 }
 
+export function arrayUnique (array: any) {
+  return Array.from(new Set(array).values())
+}
+
 export function splitArrayIntoChunks (array: any, chunkSize: number) {
   const output = []
   for (let i = 0; i < array.length; i += chunkSize) {

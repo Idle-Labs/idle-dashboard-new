@@ -110,7 +110,7 @@ export type EtherscanTransaction = {
   blockHash: string
   blockNumber: string
   confirmations: string
-  contractAddress: Address
+  contractAddress: string | Address
   cumulativeGasUsed: string
   from: string
   gas: string
