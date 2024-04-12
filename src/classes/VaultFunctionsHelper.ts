@@ -146,25 +146,21 @@ export class VaultFunctionsHelper {
 
     try {
       const endpoint = `${explorer.endpoints[trancheVault.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
-      // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlock, this.cacheProvider?.isLoaded, this.cacheProvider?.getCachedUrl(endpoint))
       const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
       let harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
 
-      // if (+chainId === 10){
-      //   console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, endpoint, lastHarvestBlock, harvestTxs)
-      // }
-
       if (!harvestTxs || isEmpty(harvestTxs)){
         const blockHex = '0x'+((+lastHarvestBlock).toString(16))
-        const harvestTxsAlchemy = await getAlchemyTransactionHistory(chainId, undefined, trancheVault.cdoConfig.address, blockHex, blockHex)
-        // console.log('harvestTxsAlchemy', trancheVault.cdoConfig.address, lastHarvestBlock, harvestTxsAlchemy)
+        const cacheKey = `alchemyTxs_${chainId}_${trancheVault.cdoConfig.address}_${blockHex}`
+        const callback = async () => (await getAlchemyTransactionHistory(chainId, undefined, trancheVault.cdoConfig.address, blockHex, blockHex))
+        const harvestTxsAlchemy = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
 
         // Override harvestTxs with alchemy txs
         if (harvestTxsAlchemy && !isEmpty(harvestTxsAlchemy)){
           const blockInfo = await this.web3Chains[chainId].eth.getBlock(lastHarvestBlock)
           harvestTxs = harvestTxsAlchemy.reduce( (txs: EtherscanTransaction[], alchemyTx: AssetTransfersResult) => {
             if (cmpAddrs(alchemyTx.rawContract.address, trancheVault.underlyingToken?.address as string)){
-              const tx = getEtherscanTransactionObject({
+              const etherscanTx = getEtherscanTransactionObject({
                 hash: alchemyTx.hash,
                 timeStamp: blockInfo.timestamp,
                 blockNumber: alchemyTx.blockNum,
@@ -172,8 +168,7 @@ export class VaultFunctionsHelper {
                 contractAddress: alchemyTx.rawContract.address,
                 value: normalizeTokenAmount(alchemyTx.value, +(alchemyTx.rawContract.decimal || 18))
               } as Record<keyof EtherscanTransaction, any>)
-              // console.log('Add harvest tx', trancheVault.cdoConfig.address, tx)
-              txs.push(tx)
+              txs.push(etherscanTx)
             }
             return txs
           }, [])
