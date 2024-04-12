@@ -24,8 +24,8 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown } from 'constants/types'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject } from 'helpers/'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -576,6 +576,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
       dataToCache.add(tx)
     }
 
+    if (cacheProvider){
+      cacheProvider.saveData(cacheKey, Array.from(dataToCache.values()), 0)
+    }
+
     const userTransactions = Array.from(dataToCache.values()) as EtherscanTransaction[]
 
     const lastTxBlock = sortArrayByKey(userTransactions, 'blockNumber', 'desc').find( (tx: EtherscanTransaction) => !!tx.blockNumber )?.blockNumber
@@ -587,7 +591,50 @@ export function PortfolioProvider({ children }:ProviderProps) {
       const blockHex = '0x'+((+lastTxBlock+1).toString(16))
       try {
         const alchemyUserTransactions = await getAlchemyTransactionHistory(chainIdToUse, account.address, undefined, blockHex, 'latest')
+        const alchemyUserTransactionsReceived = await getAlchemyTransactionHistory(chainIdToUse, undefined, account.address, blockHex, 'latest')
         // console.log('alchemyUserTransactions', chainIdToUse, account.address, parseInt(blockHex), alchemyUserTransactions)
+        // console.log('alchemyUserTransactionsReceived', chainIdToUse, account.address, parseInt(blockHex), alchemyUserTransactionsReceived)
+
+        // Add distrivuted rewards txs
+        if (alchemyUserTransactionsReceived){
+          const distributedRewardsTxs = alchemyUserTransactionsReceived.filter( (alchemyTx: AssetTransfersResult) => {
+            let output = false
+            state.vaults.filter( (vault: Vault) => +vault.chainId === chainIdToUse ).forEach( (vault: Vault) => {
+              if (("distributedTokens" in vault) && ("rewardsSenders" in vault) && !isEmpty(vault.distributedTokens) && !isEmpty(vault.rewardsSenders)){
+                const foundTx = vault.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes((alchemyTx.rawContract.address as string).toLowerCase()) && vault.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(alchemyTx.from.toLowerCase())
+                if (foundTx){
+                  output = true
+                }
+              }
+            })
+            return output
+          })
+
+          // distributedRewardsTxs.forEach( (alchemyTx: AssetTransfersResult) => {
+          for (let index = 0; index < distributedRewardsTxs.length; index++){
+            const alchemyTx: AssetTransfersResult = distributedRewardsTxs[index]
+            const blockInfo = await web3Chains[chainIdToUse].eth.getBlock(+alchemyTx.blockNum)
+            const distributedRewardTx: EtherscanTransaction = getEtherscanTransactionObject({
+              blockNumber: parseInt(''+alchemyTx.blockNum),
+              contractAddress: alchemyTx.rawContract.address,
+              from: alchemyTx.from,
+              hash: alchemyTx.hash,
+              timeStamp: blockInfo.timestamp,
+              to: account.address,
+              tokenDecimal: +(alchemyTx.rawContract.decimal as string),
+              tokenName: alchemyTx.asset,
+              tokenSymbol: alchemyTx.asset,
+              value: +(alchemyTx.rawContract.value as string)
+            } as Record<keyof EtherscanTransaction, any>)
+
+            userTransactions.push(distributedRewardTx)
+            dataToCache.add(distributedRewardTx)
+          }
+
+          // console.log('distributedRewardsTxs', chainIdToUse, account.address, distributedRewardsTxs)
+        }
+
+        // Add deposit/redeems txs
         if (alchemyUserTransactions){
           const redeemTxsHash: string[] = []
           const depositTxsHash: string[] = []
@@ -635,49 +682,35 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
                   // console.log('DEPOSIT', chainIdToUse, txReceipt, idleTokenLog, underlyingTokenLog, idleAmount, underlyingAmount)
 
-                  const tx1: EtherscanTransaction = {
+                  const tx1: EtherscanTransaction = getEtherscanTransactionObject({
                     blockHash: txReceipt.blockHash,
-                    confirmations: '1',
-                    blockNumber: ''+parseInt(''+txReceipt.blockNumber),
+                    blockNumber: parseInt(''+txReceipt.blockNumber),
                     contractAddress: underlyingTokenLog.address,
-                    cumulativeGasUsed: '',
                     from: account.address,
-                    gas: '',
-                    gasPrice: '',
-                    gasUsed: '',
                     hash: txReceipt.transactionHash,
-                    input: '',
-                    nonce: '',
-                    timeStamp: ''+blockInfo.timestamp,
+                    timeStamp: blockInfo.timestamp,
                     to: txReceipt.to,
-                    tokenDecimal: ''+(vault.underlyingToken?.decimals || 18),
+                    tokenDecimal: (vault.underlyingToken?.decimals || 18),
                     tokenName: vault.underlyingToken?.token,
                     tokenSymbol: vault.underlyingToken?.token,
-                    transactionIndex: ''+txReceipt.transactionIndex,
-                    value: underlyingAmount,
-                  }
+                    transactionIndex: txReceipt.transactionIndex,
+                    value: underlyingAmount
+                  } as Record<keyof EtherscanTransaction, any>)
 
-                  const tx2: EtherscanTransaction = {
+                  const tx2: EtherscanTransaction = getEtherscanTransactionObject({
                     blockHash: txReceipt.blockHash,
-                    confirmations: '1',
-                    blockNumber: ''+parseInt(''+txReceipt.blockNumber),
+                    blockNumber: parseInt(''+txReceipt.blockNumber),
                     contractAddress: idleTokenLog.address,
-                    cumulativeGasUsed: '',
                     from: ZERO_ADDRESS,
-                    gas: '',
-                    gasPrice: '',
-                    gasUsed: '',
                     hash: txReceipt.transactionHash,
-                    input: '',
-                    nonce: '',
-                    timeStamp: ''+blockInfo.timestamp,
+                    timeStamp: blockInfo.timestamp,
                     to: account.address,
                     tokenDecimal: '18',
                     tokenName: vault.underlyingToken?.token,
                     tokenSymbol: vault.underlyingToken?.token,
-                    transactionIndex: ''+txReceipt.transactionIndex,
+                    transactionIndex: txReceipt.transactionIndex,
                     value: idleAmount,
-                  }
+                  } as Record<keyof EtherscanTransaction, any>)
 
                   // Add txs
                   userTransactions.push(tx1)
@@ -707,49 +740,35 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
                   // console.log('REDEEM', chainIdToUse, txReceipt, idleTokenLog, underlyingTokenLog, idleAmount, underlyingAmount)
 
-                  const tx1: EtherscanTransaction = {
+                  const tx1: EtherscanTransaction = getEtherscanTransactionObject({
                     blockHash: txReceipt.blockHash,
-                    confirmations: '1',
                     blockNumber: ''+parseInt(''+txReceipt.blockNumber),
                     contractAddress: txReceipt.to,
-                    cumulativeGasUsed: '',
                     from: account.address,
-                    gas: '',
-                    gasPrice: '',
-                    gasUsed: '',
                     hash: txReceipt.transactionHash,
-                    input: '',
-                    nonce: '',
-                    timeStamp: ''+blockInfo.timestamp,
+                    timeStamp: blockInfo.timestamp,
                     to: account.address,
-                    tokenDecimal: ''+(vault.underlyingToken?.decimals || 18),
+                    tokenDecimal: (vault.underlyingToken?.decimals || 18),
                     tokenName: vault.underlyingToken?.token,
                     tokenSymbol: vault.underlyingToken?.token,
-                    transactionIndex: ''+txReceipt.transactionIndex,
+                    transactionIndex: txReceipt.transactionIndex,
                     value: underlyingAmount,
-                  }
+                  } as Record<keyof EtherscanTransaction, any>)
 
-                  const tx2: EtherscanTransaction = {
+                  const tx2: EtherscanTransaction = getEtherscanTransactionObject({
                     blockHash: txReceipt.blockHash,
-                    confirmations: '1',
                     blockNumber: ''+parseInt(''+txReceipt.blockNumber),
                     contractAddress: vault.id,
-                    cumulativeGasUsed: '',
                     from: account.address,
-                    gas: '',
-                    gasPrice: '',
-                    gasUsed: '',
                     hash: txReceipt.transactionHash,
-                    input: '',
-                    nonce: '',
-                    timeStamp: ''+blockInfo.timestamp,
+                    timeStamp: blockInfo.timestamp,
                     to: ZERO_ADDRESS,
                     tokenDecimal: '18',
                     tokenName: vault.underlyingToken?.token,
                     tokenSymbol: vault.underlyingToken?.token,
-                    transactionIndex: ''+txReceipt.transactionIndex,
+                    transactionIndex: txReceipt.transactionIndex,
                     value: idleAmount,
-                  }
+                  } as Record<keyof EtherscanTransaction, any>)
 
                   // Add txs
                   userTransactions.push(tx1)
@@ -809,7 +828,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     }
 
     return userTransactions
-  }, [account?.address, lastTransaction, web3Chains, chainId, cacheProvider, selectVaultById, selectVaultByCdoAddress])
+  }, [account?.address, lastTransaction, web3Chains, chainId, cacheProvider, selectVaultById, selectVaultByCdoAddress, state.vaults])
 
   const getVaultsPositions = useCallback( async (vaults: Vault[]): Promise<VaultsPositions> => {
 
