@@ -20,7 +20,7 @@ export const getApiKeyByChain = (chainId: number): string | null => {
   return apiKeys[chainId] || null
 }
 
-export const getAlchemyTransactionHistory = async (chainId: number, fromAddress: string, toAddress: string | undefined, fromBlock: number | string = 0, toBlock: number | string = 'latest'): Promise<AssetTransfersResult[] | null> => {
+export const getAlchemyTransactionHistory = async (chainId: number, fromAddress: string | undefined, toAddress: string | undefined, fromBlock: number | string = 0, toBlock: number | string = 'latest'): Promise<AssetTransfersResult[] | null> => {
   const network = getNetworkByChainId(chainId)
   if (!network) return []
 

@@ -3,7 +3,7 @@ import dayjs from 'classes/dayjs'
 import BigNumber from 'bignumber.js'
 import { Dayjs, ManipulateType } from 'dayjs'
 import { MIN_TIMESTAMP } from 'constants/vars'
-import { HistoryTimeframe, DateRange } from 'constants/types'
+import { HistoryTimeframe, DateRange, EtherscanTransaction } from 'constants/types'
 
 type BNifyInput = any
 
@@ -94,6 +94,39 @@ export function dateIsEqual(d1: Date | number | string, d2: Date | number | stri
 
 export function floorTimestamp(timestamp: Date | number | string): number {
   return +(dayjs(timestamp).startOf('day').valueOf())
+}
+
+export function getEtherscanTransactionObject(props: Record<keyof EtherscanTransaction, any>){
+  const etherscanTransaction: EtherscanTransaction = {
+    blockHash: '',
+    confirmations: '',
+    blockNumber: '',
+    contractAddress: '',
+    cumulativeGasUsed: '',
+    from: '',
+    gas: '',
+    gasPrice: '',
+    gasUsed: '',
+    hash: '',
+    input: '',
+    nonce: '',
+    timeStamp: '',
+    to: '',
+    tokenDecimal: '',
+    tokenName: '',
+    tokenSymbol: '',
+    transactionIndex: '',
+    value: '',
+  }
+
+  // Override
+  Object.keys(props).forEach( (k: any) => {
+    if (k in etherscanTransaction){
+      etherscanTransaction[k as keyof EtherscanTransaction] = ''+props[k as keyof EtherscanTransaction]
+    }
+  })
+
+  return etherscanTransaction
 }
 
 export function getTimeframeTimestamp(timeframe: HistoryTimeframe): number {

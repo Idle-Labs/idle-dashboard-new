@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js'
 import { Multicall, CallData } from 'classes/'
 import stMATIC_abi from 'abis/lido/stMATIC.json'
 import { TrancheVault } from 'vaults/TrancheVault'
+import { AssetTransfersResult } from "alchemy-sdk"
 import { selectUnderlyingToken } from 'selectors/'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
 import { FEES_COLLECTORS } from 'constants/addresses'
@@ -13,8 +14,8 @@ import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import PoLidoStakeManager_abi from 'abis/lido/PoLidoStakeManager.json'
-import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId, isEmpty } from 'helpers/'
 import type { Abi, Assets, Asset, AssetId, Harvest, Explorer, Transaction, EtherscanTransaction, UnderlyingTokenProps, VaultAdditionalApr, PlatformApiFilters, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, HistoryData, EpochData, CdoEvents, RewardEmission } from 'constants/'
+import { bnOrZero, toDayjs, BNify, normalizeTokenAmount, makeEtherscanApiRequest, getPlatformApisEndpoint, callPlatformApis, fixTokenDecimals, getSubgraphTrancheInfo, dayDiff, dateDiff, isBigNumberNaN, asyncReduce, cmpAddrs, getExplorerByChainId, isEmpty, getAlchemyTransactionHistory, getEtherscanTransactionObject } from 'helpers/'
 
 export interface CdoLastHarvest {
   cdoId: string
@@ -147,13 +148,45 @@ export class VaultFunctionsHelper {
       const endpoint = `${explorer.endpoints[trancheVault.chainId]}?module=account&action=tokentx&address=${trancheVault.cdoConfig.address}&startblock=${lastHarvestBlock}&endblock=${lastHarvestBlock}&sort=asc`
       // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, lastHarvestBlock, this.cacheProvider?.isLoaded, this.cacheProvider?.getCachedUrl(endpoint))
       const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
-      const harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
+      let harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
 
-      // console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, endpoint, lastHarvestBlock, harvestTxs)
+      // if (+chainId === 10){
+      //   console.log('getTrancheLastHarvest', trancheVault.cdoConfig.address, endpoint, lastHarvestBlock, harvestTxs)
+      // }
+
+      if (!harvestTxs || isEmpty(harvestTxs)){
+        const blockHex = '0x'+((+lastHarvestBlock).toString(16))
+        const harvestTxsAlchemy = await getAlchemyTransactionHistory(chainId, undefined, trancheVault.cdoConfig.address, blockHex, blockHex)
+        // console.log('harvestTxsAlchemy', trancheVault.cdoConfig.address, lastHarvestBlock, harvestTxsAlchemy)
+
+        // Override harvestTxs with alchemy txs
+        if (harvestTxsAlchemy && !isEmpty(harvestTxsAlchemy)){
+          const blockInfo = await this.web3Chains[chainId].eth.getBlock(lastHarvestBlock)
+          harvestTxs = harvestTxsAlchemy.reduce( (txs: EtherscanTransaction[], alchemyTx: AssetTransfersResult) => {
+            if (cmpAddrs(alchemyTx.rawContract.address, trancheVault.underlyingToken?.address as string)){
+              const tx = getEtherscanTransactionObject({
+                hash: alchemyTx.hash,
+                timeStamp: blockInfo.timestamp,
+                blockNumber: alchemyTx.blockNum,
+                to: trancheVault.cdoConfig.address,
+                contractAddress: alchemyTx.rawContract.address,
+                value: normalizeTokenAmount(alchemyTx.value, +(alchemyTx.rawContract.decimal || 18))
+              } as Record<keyof EtherscanTransaction, any>)
+              // console.log('Add harvest tx', trancheVault.cdoConfig.address, tx)
+              txs.push(tx)
+            }
+            return txs
+          }, [])
+        }
+      }
 
       if (!harvestTxs) return lastHarvest
 
       const harvestTx = harvestTxs.find( (tx: EtherscanTransaction) => cmpAddrs(tx.contractAddress, trancheVault.underlyingToken?.address as string) && cmpAddrs(tx.to, trancheVault.cdoConfig.address) )
+
+      // if (+chainId === 10){
+      //   console.log('harvestTx', trancheVault.cdoConfig.address, harvestTx)
+      // }
 
       if (!harvestTx) return lastHarvest
 
