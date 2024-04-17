@@ -2598,6 +2598,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           type: 'borrower',
           name: 'wincent',
         }],
+        status:'deprecated',
         protocol:'clearpool',
         blockNumber:16790250,
         underlyingToken:'USDC',
