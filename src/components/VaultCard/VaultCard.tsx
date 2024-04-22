@@ -8,7 +8,6 @@ import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
 import { MdKeyboardArrowRight } from 'react-icons/md'
 import { CardProps, Card } from 'components/Card/Card'
-import { strategies, AggregatedVault } from 'constants/'
 import type { AggregatedAsset } from 'components/Stats/Stats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { StrategyTag } from 'components/StrategyTag/StrategyTag'
@@ -17,6 +16,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
+import { strategies, AggregatedVault, networks, Network } from 'constants/'
 import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image } from '@chakra-ui/react'
 
 export type VaultCardProps = {
@@ -388,7 +388,12 @@ export const Minimal = ({assetId}: VaultCardProps) => {
   )
 }
 
-export const Aggregated = (aggregatedVault: AggregatedVault) => {
+type AggregatedProps = {
+  onClick: Function
+  aggregatedVault: AggregatedVault
+}
+
+export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
 
   const theme = useTheme()
 
@@ -401,8 +406,6 @@ export const Aggregated = (aggregatedVault: AggregatedVault) => {
     return selectAssetsByIds(aggregatedVault.vaults)
   }, [selectAssetsByIds, aggregatedVault.vaults])
 
-  console.log('assets', assets)
-
   const maxApy = useMemo((): BigNumber => {
     return assets.reduce( (maxApy: BigNumber, asset: Asset) => BigNumber.maximum(maxApy, BNify(asset.apy)), BNify(0))
   }, [assets])
@@ -411,58 +414,84 @@ export const Aggregated = (aggregatedVault: AggregatedVault) => {
     return assets.reduce( (totalTvl: BigNumber, asset: Asset) => totalTvl.plus(BNify(asset.tvlUsd)), BNify(0))
   }, [assets])
 
+  const network = useMemo((): Network => {
+    return networks[aggregatedVault.chainId]
+  }, [aggregatedVault])
+
   return (
     <Card.Flex
-      p={4}
+      p={0}
+      pb={5}
       layerStyle={['card', 'cardHover']}
+      onClick={() => onClick ? onClick() : null}
     >
       <VStack
-        spacing={4}
+        spacing={7}
         width={'full'}
       >
-        <VStack
-          pt={2}
-          pr={2}
-          pl={4}
-          pb={4}
-          spacing={2}
+        <HStack
+          px={5}
+          py={4}
+          spacing={4}
           width={'full'}
-          borderRadius={8}
-          alignItems={'flex-start'}
+          alignItems={'center'}
+          borderRadius={'8px 8px 0 0'}
+          justifyContent={'flex-start'}
           backgroundColor={'card.bgLight'}
-          justifyContent={'space-between'}
-          background={`radial-gradient(circle, ${aggregatedVault.color} 10%, ${theme.colors.card.bgLight} 100%)`}
+          background={`radial-gradient(circle, ${aggregatedVault.color}50 40%, ${aggregatedVault.color}cc 100%)`}
           backgroundPosition={'top left'}
           backgroundSize={'300%'}
         >
-          <HStack
-            width={'full'}
-            justifyContent={'space-between'}
-            // borderBottom={'1px solid'}
-            // borderColor={'divider'}
+          <Image src={aggregatedVault.icon} w={14} h={14} />
+          <VStack
+            alignItems={'space-between'}
           >
-            <Translation translation={'Idle Automated Vault'} textStyle={'captionSmall'} />
-            <Image src={aggregatedVault.icon} w={8} h={8} />
-          </HStack>
-          <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={'2xl'} />
-        </VStack>
+            <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={'xl'} />
+            <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={'h4'} />
+          </VStack>
+        </HStack>
         <VStack
+          px={5}
+          spacing={7}
           width={'full'}
+          alignItems={'flex-start'}
         >
-          <HStack
+          <Text color={'primary'} textStyle={'caption'}>{aggregatedVault.description}</Text>
+          <SimpleGrid
+            columns={3}
+            spacing={4}
             width={'full'}
             justifyContent={'space-between'}
           >
             <VStack
+              pr={4}
               spacing={2}
+              borderRight={'1px solid'}
+              borderColor={'divider'}
               alignItems={'flex-start'}
             >
-              <Translation translation={'stats.maxApy'} textStyle={'captionSmall'} />
-              <Amount fontSize={36} suffix={(<small style={{fontSize: 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+              <Translation translation={'stats.upTo'} textStyle={'captionSmall'} />
+              <HStack
+                spacing={2}
+                alignItems={'baseline'}
+              >
+                <Amount fontSize={'2xl'} suffix={(<small style={{fontSize: 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                <Translation translation={'defi.apy'} textStyle={'caption'} />
+              </HStack>
+            </VStack>
+            <VStack
+              pr={4}
+              spacing={2}
+              borderRight={'1px solid'}
+              borderColor={'divider'}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
+              <Amount.Usd fontSize={'2xl'} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
             </VStack>
             <VStack
               spacing={2}
-              alignItems={'flex-end'}
+              alignItems={'flex-start'}
             >
               <Translation translation={'defi.availableAssets'} textStyle={'captionSmall'} />
               <HStack
@@ -482,45 +511,50 @@ export const Aggregated = (aggregatedVault: AggregatedVault) => {
                 }
               </HStack>
             </VStack>
-          </HStack>
-        </VStack>
-        <Text color={'primary'} textStyle={'captionSmall'}>{aggregatedVault.description}</Text>
-        <HStack
-          width={'full'}
-          alignItems={'center'}
-          justifyContent={'space-between'}
-        >
-          <Card.Light
-            py={0}
-            px={2}
-            height={8}
-            width={'auto'}
-            display={'flex'}
-            borderRadius={24}
-            border={'1px solid'}
+          </SimpleGrid>
+          <HStack
+            width={'full'}
             alignItems={'center'}
-            backgroundColor={'primary'}
+            justifyContent={'space-between'}
           >
             <HStack
-              spacing={1}
+              spacing={2}
             >
-              <Amount.Usd abbreviate={false} decimals={0} fontSize={'sm'} fontWeight={600} color={'card.bg'} value={totalTvl} />
-              <Translation translation={'defi.tvl'} fontSize={'sm'} fontWeight={600} color={'card.bg'} />
+              <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
+              <Card.Light
+                py={0}
+                px={1}
+                pr={2}
+                height={8}
+                width={'auto'}
+                display={'flex'}
+                borderRadius={24}
+                border={'1px solid'}
+                alignItems={'center'}
+                backgroundColor={'primary'}
+              >
+                <HStack
+                  spacing={1}
+                >
+                  <Image src={network.icon as string} width={6} height={6} />
+                  <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{network.name}</Text>
+                </HStack>
+              </Card.Light>
             </HStack>
-          </Card.Light>
-          <IconButton
-            size={'sm'}
-            borderRadius={'50%'}
-            colorScheme={'mattWhite'}
-            aria-label={'explore'}
-            icon={
-              <CgArrowRight
-                size={20}
-                color={theme.colors.card.bg}
-              />
-            }
-          />
-        </HStack>
+            <IconButton
+              size={'sm'}
+              borderRadius={'50%'}
+              colorScheme={'mattWhite'}
+              aria-label={'explore'}
+              icon={
+                <CgArrowRight
+                  size={20}
+                  color={theme.colors.card.bg}
+                />
+              }
+            />
+          </HStack>
+        </VStack>
       </VStack>
     </Card.Flex>
   )

@@ -56,6 +56,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
       {
         showHeader && (
           <HStack
+            height={10}
             spacing={2}
           >
             <Translation translation={'defi.yourWallet'} textStyle={'heading'} color={'primary'} fontSize={'lg'} />

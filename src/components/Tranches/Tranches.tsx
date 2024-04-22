@@ -20,6 +20,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
+import { ProtocolOverview } from 'components/ProtocolOverview/ProtocolOverview'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { products, chains, networks, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
 import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray } from 'helpers/'
@@ -813,7 +814,7 @@ export const Tranches: React.FC = () => {
     const modalProps = product?.modal
     return (
       <VStack
-        mb={8}
+        mb={16}
         width={'full'}
         spacing={8}
       >
@@ -826,16 +827,27 @@ export const Tranches: React.FC = () => {
         >
           <VStack
             pr={[0, 0]}
-            spacing={4}
+            spacing={6}
+            width={'full'}
             direction={'column'}
-            width={['100%', '50%']}
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
-            <Translation isHtml={true} translation={'strategies.general.description'} textAlign={['center', 'left']} />
+            {/*<Translation isHtml={true} translation={'strategies.general.description'} textAlign={['center', 'left']} />*/}
             {
               !isMobile && (
-                <StrategyOverview showLoading={true} strategies={productStrategies} />
+                <HStack
+                  spacing={16}
+                >
+                  <Box
+                    pr={16}
+                    borderRight={'1px solid'}
+                    borderColor={'divider'}
+                  >
+                    <ProtocolOverview showLoading={true} />
+                  </Box>
+                  <StrategyOverview showLoading={true} strategies={productStrategies} />
+                </HStack>
               )
             }
           </VStack>
@@ -856,17 +868,31 @@ export const Tranches: React.FC = () => {
 
   const aggregatedVaultsCards = useMemo(() => {
     return (
-      <SimpleGrid
-        columns={4}
-        spacing={8}
+      <VStack
         width={'full'}
+        spacing={6}
+        alignItems={'flex-start'}
       >
-        {
-          aggregatedVaults.map( (aggregatedVault: AggregatedVault) => {
-            return (<VaultCard.Aggregated {...aggregatedVault} />)
-          })
-        }
-      </SimpleGrid>
+        <VStack
+          spacing={4}
+          width={['full', '50%']}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'strategies.aggregated.title'} component={Heading} as={'h3'} fontSize={'2xl'} />
+          <Translation translation={'strategies.aggregated.description'} />
+        </VStack>
+        <SimpleGrid
+          spacing={10}
+          width={'full'}
+          columns={[1, 3]}
+        >
+          {
+            aggregatedVaults.map( (aggregatedVault: AggregatedVault) => {
+              return (<VaultCard.Aggregated aggregatedVault={aggregatedVault} onClick={() => {}} />)
+            })
+          }
+        </SimpleGrid>
+      </VStack>
     )
   }, [])
 

@@ -34,6 +34,7 @@
     "redeem": "Redeem",
     "headquarter": "Headquarter",
     "industry": "Industry",
+    "availableOn": "Available on",
     "founded": "Founded",
     "rating": "Rating",
     "links": "Links",
@@ -209,8 +210,12 @@
   },
   "strategies": {
     "general": {
-      "title": "Explore our selection of handcrafted strategies",
+      "title": "Explore Earn Vaults",
       "description": "Elevate your portfolio using our refined strategies, versatile solutions designed to satisfy the needs of both sophisticated and risk-inclined investors."
+    },
+    "aggregated": {
+      "title": "Aggregated vaults",
+      "description": "A selection of strategies curated directly by Idle, where funds are strategically allocated across diverse protocols to enhance APY, providing investors with a hassle-free solution for maximizing yields."
     },
     "staking": {
       "title": "Staking",
@@ -882,6 +887,7 @@
     "coverage": "Coverage",
     "apyRange": "APY range",
     "totalTVL": "Total TVL",
+    "upTo": "Up to",
     "minApy": "Min APY",
     "maxApy": "Max APY",
     "seniorApy": "Senior APY",

@@ -3889,7 +3889,9 @@ export type BestYieldConfig = {
 export type AggregatedVault = {
   name: string
   icon: string
+  type: string
   color: string
+  chainId: number
   vaults: AssetId[]
   description: string
   categories?: string[]
@@ -3897,24 +3899,28 @@ export type AggregatedVault = {
 
 export const aggregatedVaults: AggregatedVault[] = [
   {
+    chainId: 1,
     color: '#4de3b0',
+    type: 'Algorithmic rebalance',
     icon: 'images/strategies/AA.svg',
-    name: 'Stablecoin<br />Secured Lending',
+    name: 'Stablecoin Secured Lending',
     vaults: [
       '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
       '0x5274891bEC421B39D23760c04A6755eCB444797C',
       '0xF34842d05A1c888Ca02769A633DF37177415C2f8'
     ],
-    description: 'Overcollateralized lending, with a portion of funds allocated to carefully selected borrowers with high credit scores, enhancing stability and maximizing returns.'
+    description: 'Your funds will be allocated to always achieve the best yield'
   },
   {
+    chainId: 10,
     color: '#627eea',
+    type: 'Yield aggregator',
+    name: 'Real-World Assets',
     icon: 'images/strategies/RWA.svg',
-    name: 'Real-World<br />Assets',
     vaults: [
       '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
     ],
-    description: 'Experience the strength of our RWA strategy, engineered to capitalize on tangible assets, delivering stability and sustainable returns for investors.'
+    description: 'Get exposure to Real-world asset-backed investments'
   }
 ]
 
