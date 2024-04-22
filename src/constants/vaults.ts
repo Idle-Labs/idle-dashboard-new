@@ -890,6 +890,166 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
     }
   },
   1:{
+    gearbox:{
+      USDC:{
+        enabledEnvs:[],
+        protocol:'gearbox',
+        autoFarming:['GEAR'],
+        blockNumber:19674126,
+        underlyingToken:'USDC',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_gearbox_USDC',
+          address:'0xdd4D030A4337CE492B55bc5169F6A9568242C0Bc'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_gearbox_USDC',
+          address:'0x29c794B9a70752c41D65EBcCEF1c1eE697387510'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda0002859b2d05f66a753d8241fcde8623f26f4f" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> and automatically earn additional GEARBOX rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_gearbox_USDC_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'gearbox USDC AA',
+            name:'AA_gearbox_USDC',
+            token:'AA_gearbox_USDC',
+            address:'0x450C055a00226F1Eba09E8D9627034565b7C4C8A'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_gearbox_USDC_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'gearbox USDC BB',
+            name:'BB_gearbox_USDC',
+            token:'BB_gearbox_USDC',
+            address:'0x2a84A042DB06222C486BcB815E961f26599D0dF6'
+          }
+        }
+      },
+      WETH:{
+        enabledEnvs:[],
+        protocol:'gearbox',
+        autoFarming:['GEAR'],
+        blockNumber:19674126,
+        underlyingToken:'WETH',
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_gearbox_WETH',
+          address:'0xbc48967C34d129a2ef25DD4dc693Cc7364d02eb9'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_gearbox_WETH',
+          address:'0xeE4043b3E4fDf830a557Aa78604E16a599701dFA'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda0002859b2d05f66a753d8241fcde8623f26f4f" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> and automatically earn additional GEARBOX rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_gearbox_WETH_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'gearbox WETH AA',
+            name:'AA_gearbox_WETH',
+            token:'AA_gearbox_WETH',
+            address:'0x0f09A04AD551Dd941b589625BD2360FC962FF9f7'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_gearbox_WETH_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16375825,
+            label:'gearbox WETH BB',
+            name:'BB_gearbox_WETH',
+            token:'BB_gearbox_WETH',
+            address:'0x1223ddeEe77F8F379ea7a49e7650Ff1Ec1e2dE8a'
+          }
+        }
+      }
+    },
     instadapp:{
       stETH:{
         autoFarming:[],

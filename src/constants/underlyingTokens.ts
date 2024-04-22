@@ -335,6 +335,20 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: '0x66761fa41377003622aee3c7675fc7b5c1c2fac5'
     },
+    GEAR: {
+      decimals: 18,
+      enabled: true,
+      token: 'GEAR',
+      colors: {
+        hex: '#8247E5',
+        rgb: [130, 71, 229],
+        hsl: ['262, 75%, 59%']
+      },
+      conversionRate: {
+        field: "maticDAIPrice"
+      },
+      address: '0xBa3335588D9403515223F109EdC4eB7269a9Ab5D'
+    },
     MATIC: {
       decimals: 18,
       enabled: true,

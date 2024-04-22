@@ -25,7 +25,7 @@ import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath }
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, Balances } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,

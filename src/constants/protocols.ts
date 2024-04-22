@@ -354,6 +354,18 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["82", "84%", "54%"]
     }
   },
+  gearbox: {
+    icon:`${protocolsFolder}gearbox.svg`,
+    stats: {
+      showLegend: false,
+    },
+    enabled: true,
+    label: "Gearbox",
+    colors: {
+      rgb: [163, 236, 38],
+      hsl: ["82", "84%", "54%"]
+    }
+  },
   clearpool: {
     icon:`${protocolsFolder}clearpool.svg`,
     stats: {
