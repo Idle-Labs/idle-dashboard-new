@@ -182,7 +182,7 @@ export const theme = extendTheme({
         bg: '#1B1E27',
         color: 'white',
       },
-      '.earn-best-yield': {
+      '.earn': {
         background:`url(${strategies.BY.bg}) no-repeat top right`,
         backgroundSize:'100% auto'
       },

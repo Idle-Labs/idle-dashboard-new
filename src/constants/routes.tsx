@@ -27,6 +27,17 @@ export const routes: RouteObject[] = [
         path:'earn',
         children:[
           {
+            index: true,
+            element:<Tranches />
+          },
+          {
+            path:':asset',
+            element:<AssetPage />
+          },
+        ]
+        /*
+        children:[
+          {
             path:'yield-tranches',
             element:<Tranches />,
           },
@@ -44,6 +55,7 @@ export const routes: RouteObject[] = [
             ]
           },
         ]
+        */
       },
       {
         path:'stake',

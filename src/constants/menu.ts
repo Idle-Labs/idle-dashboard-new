@@ -26,12 +26,15 @@ export const menu: MenuItemType[] = [
     label: 'navBar.dashboard',
   },
   {
+    path: 'earn',
     label: 'navBar.earn',
+    /*
     children: Object.values(products).map( (product: ProductProps) => ({
       path: `earn/${product.route}`,
       label: product.label as string,
       // color: product.color as string
     }))
+    */
   },
   {
     path: 'stake',

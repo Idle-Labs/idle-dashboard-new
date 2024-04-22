@@ -113,6 +113,8 @@ export const Tranches: React.FC = () => {
     selectors: {
       selectVaultById,
       selectAssetById,
+      selectAssetsByIds,
+      selectVaultPosition,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
       selectVaultsAssetsWithBalance
@@ -127,8 +129,82 @@ export const Tranches: React.FC = () => {
   const onRowClickDeposited = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
     const strategyConfig = strategies[row.original.type as string]
-    return navigate(`/earn/${strategyConfig.route}/${row.original.id}`)
+    return navigate(`/earn/${row.original.id}`)
   }, [navigate])
+
+  const getAggregatedVaultModal = useCallback((aggregatedVault: AggregatedVault) => {
+    const assets = selectAssetsByIds(aggregatedVault.vaults)
+    return (
+      <VStack
+        pb={4}
+        spacing={3}
+      >
+        <HStack
+          px={4}
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'flex-start'}
+        >
+          <HStack width={['33%', '27%']}>
+            <Translation translation={'defi.asset'} textStyle={'captionSmaller'} />
+          </HStack>
+          <HStack width={['33%', '28%']}>
+            <Translation translation={'defi.tvl'} textStyle={'captionSmaller'} />
+          </HStack>
+          <HStack width={['33%', '27%']}>
+            <Translation translation={'defi.apy'} textStyle={'captionSmaller'} />
+          </HStack>
+        </HStack>
+        {
+          assets.map( (asset: Asset) => {
+            const vaultPosition = selectVaultPosition(asset.id)
+            return (
+              <AssetProvider
+                wrapFlex={false}
+                assetId={asset.id}
+                key={`index_${asset}`}
+              >
+                <Card.Flex
+                  px={4}
+                  py={3}
+                  cursor={'pointer'}
+                  layerStyle={'cardLight'}
+                   onClick={() => { navigate(`/earn/${asset.id}`); closeModal() }}
+                >
+                  <HStack
+                    width={'full'}
+                    alignItems={'center'}
+                    justifyContent={'space-between'}
+                  >
+                    <HStack width={'25%'}>
+                      <AssetProvider.GeneralData field={'asset'} />
+                    </HStack>
+                    <HStack width={'25%'}>
+                      <AssetProvider.PoolUsd fontWeight={600} />
+                    </HStack>
+                    <HStack width={'25%'}>
+                      <AssetProvider.Apy addRewards={true} fontWeight={600} />
+                    </HStack>
+                    {
+                      !isMobile && (
+                        <HStack
+                          height={'100%'}
+                          alignItems={'stretch'}
+                          justifyContent={'flex-end'}
+                        >
+                          <Translation translation={bnOrZero(vaultPosition?.usd.deposited).gt(0) ? 'common.manage' : `common.deposit`} component={Button} width={'full'} height={'auto'} variant={'ctaPrimary'} size={'sm'} onClick={() => { navigate(`/earn/${asset.id}`); closeModal() }} />
+                        </HStack>
+                      )
+                    }
+                  </HStack>
+                </Card.Flex>
+              </AssetProvider>
+            )
+          })
+        }
+      </VStack>
+    )
+  }, [selectAssetsByIds, isMobile, selectVaultPosition, navigate, closeModal])
 
   const getModalCards = useCallback((assetId: string) => {
 
@@ -265,7 +341,7 @@ export const Tranches: React.FC = () => {
                       <Box
                         width={'full'}
                       >
-                        <Translation translation={`trade.vaults.${strategy}.cta`} mt={4} component={Button} width={'full'} variant={'ctaPrimary'} onClick={() => { navigate(`/earn/${route}/${assetId}`); closeModal() }} />
+                        <Translation translation={`trade.vaults.${strategy}.cta`} mt={4} component={Button} width={'full'} variant={'ctaPrimary'} onClick={() => { navigate(`/earn/${assetId}`); closeModal() }} />
                       </Box>
                     </VStack>
                   </Box>
@@ -818,7 +894,7 @@ export const Tranches: React.FC = () => {
         width={'full'}
         spacing={8}
       >
-        <AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />
+        {/*<AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />*/}
         <Stack
           spacing={[8, 0]}
           direction={['column', 'row']}
@@ -833,38 +909,43 @@ export const Tranches: React.FC = () => {
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
-            {/*<Translation isHtml={true} translation={'strategies.general.description'} textAlign={['center', 'left']} />*/}
-            {
-              !isMobile && (
-                <HStack
-                  spacing={16}
-                >
-                  <Box
-                    pr={16}
-                    borderRight={'1px solid'}
-                    borderColor={'divider'}
-                  >
-                    <ProtocolOverview showLoading={true} />
-                  </Box>
-                  <StrategyOverview showLoading={true} strategies={productStrategies} />
-                </HStack>
-              )
-            }
+            <Stack
+              spacing={[10, 16]}
+              width={['full', 'auto']}
+              direction={['column', 'row']}
+            >
+              <Box
+                pr={[0, 16]}
+                width={'full'}
+                borderRight={['none', '1px solid']}
+                borderColor={'divider'}
+              >
+                <ProtocolOverview showLoading={true} />
+              </Box>
+              <StrategyOverview showLoading={true} strategies={productStrategies} />
+            </Stack>
           </VStack>
-          {
-            isMobile && (
-              <Translation isHtml={true} translation={'strategies.tranches.description'} textAlign={['center', 'left']} />
-            )
-          }
-          {
-            isMobile && (
-              <StrategyOverview showLoading={false} strategies={productStrategies} />
-            )
-          }
         </Stack>
       </VStack>
     )
-  }, [strategy, product, productStrategies, isMobile])
+  }, [strategy, product, productStrategies])
+
+  const onClickAggregatedVaults = useCallback((aggregatedVault: AggregatedVault) => {
+    // sendSelectItem(item_list_id, item_list_name, asset)
+    
+    // Show modal with choices
+    if (aggregatedVault.vaults.length>1){
+      const modalProps = {
+        subtitle:'defi.chooseAsset',
+        body: getAggregatedVaultModal(aggregatedVault)
+      }
+      return openModal(modalProps as ModalProps, '2xl')
+    } else {
+      const asset = selectAssetById(aggregatedVault.vaults[0])
+      navigate(`/earn/${asset.id}`);
+      return closeModal();
+    }
+  }, [openModal, selectAssetById, getAggregatedVaultModal, closeModal, navigate])
 
   const aggregatedVaultsCards = useMemo(() => {
     return (
@@ -888,13 +969,13 @@ export const Tranches: React.FC = () => {
         >
           {
             aggregatedVaults.map( (aggregatedVault: AggregatedVault) => {
-              return (<VaultCard.Aggregated aggregatedVault={aggregatedVault} onClick={() => {}} />)
+              return (<VaultCard.Aggregated aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
             })
           }
         </SimpleGrid>
       </VStack>
     )
-  }, [])
+  }, [onClickAggregatedVaults])
 
   return (
     <Flex
@@ -905,9 +986,24 @@ export const Tranches: React.FC = () => {
     >
       {heading}
       {aggregatedVaultsCards}
-      {depositedAssets}
-      {availableAssets}
-      {deprecatedAssets}
+      <VStack
+        mt={10}
+        width={'full'}
+        spacing={6}
+        alignItems={'flex-start'}
+      >
+        <VStack
+          spacing={4}
+          width={['full', '50%']}
+          alignItems={'flex-start'}
+        >
+          <Translation translation={'strategies.isolated.title'} component={Heading} as={'h3'} fontSize={'2xl'} />
+          <Translation translation={'strategies.isolated.description'} />
+        </VStack>
+        {depositedAssets}
+        {availableAssets}
+        {deprecatedAssets}
+      </VStack>
     </Flex>
   )
 }

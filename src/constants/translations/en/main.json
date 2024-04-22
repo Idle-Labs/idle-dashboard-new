@@ -217,6 +217,10 @@
       "title": "Aggregated vaults",
       "description": "A selection of strategies curated directly by Idle, where funds are strategically allocated across diverse protocols to enhance APY, providing investors with a hassle-free solution for maximizing yields."
     },
+    "isolated": {
+      "title": "Isolated vaults",
+      "description": "Isolated vaults offer direct exposure to specific protocols or strategies with customizable risk profiles, empowering you to manage your DeFi risk/reward profile."
+    },
     "staking": {
       "title": "Staking",
       "howItWorks": {

@@ -32,6 +32,7 @@ export const ProtocolOverview: React.FC<ProtocolOverviewProps> = ({
   return (
     <VStack
       spacing={4}
+      width={'full'}
       alignItems={'flex-start'}
     >
       {
@@ -46,6 +47,7 @@ export const ProtocolOverview: React.FC<ProtocolOverviewProps> = ({
       }
       <SimpleGrid
         columns={3}
+        width={'full'}
         spacing={[2, 10]}
       >
         <VStack
@@ -63,7 +65,7 @@ export const ProtocolOverview: React.FC<ProtocolOverviewProps> = ({
         >
           <Translation translation={'defi.avgApy'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
           <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded} minW={'100%'}>
-            <Amount.Usd value={avgApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} {...textProps} />
+            <Amount.Percentage value={avgApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} {...textProps} />
           </SkeletonText>
         </VStack>
         <VStack

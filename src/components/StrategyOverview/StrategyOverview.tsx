@@ -51,6 +51,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
   return (
     <VStack
       spacing={4}
+      width={'full'}
       alignItems={'flex-start'}
     >
       {
@@ -74,6 +75,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
       }
       <SimpleGrid
         columns={3}
+        width={'full'}
         spacing={[2, 10]}
       >
         <VStack

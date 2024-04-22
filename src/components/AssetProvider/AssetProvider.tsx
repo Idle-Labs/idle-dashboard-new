@@ -785,7 +785,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
     </VStack>
   ) : null
 
-  const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0)
+  const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0) || (asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length<=1)
 
   return asset?.apy ? (
     <HStack

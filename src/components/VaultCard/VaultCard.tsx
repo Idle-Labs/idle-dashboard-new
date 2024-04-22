@@ -2,12 +2,13 @@ import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { CgArrowRight } from 'react-icons/cg'
 import { useTranslate } from 'react-polyglot'
-import { BNify, getVaultPath } from 'helpers/'
 import { useNavigate } from 'react-router-dom'
 import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
 import { MdKeyboardArrowRight } from 'react-icons/md'
 import { CardProps, Card } from 'components/Card/Card'
+import { BNify, getVaultPath, bnOrZero } from 'helpers/'
+import { useThemeProvider } from 'contexts/ThemeProvider'
 import type { AggregatedAsset } from 'components/Stats/Stats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
 import { StrategyTag } from 'components/StrategyTag/StrategyTag'
@@ -180,6 +181,7 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
                   <AssetProvider
                     wrapFlex={false}
                     assetId={asset.id as string}
+                    key={`index_${asset.id}`}
                   >
                     <Card
                       py={2}
@@ -396,10 +398,16 @@ type AggregatedProps = {
 export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
 
   const theme = useTheme()
+  const { isMobile } = useThemeProvider()
 
   const {
     isPortfolioLoaded,
-    selectors: { selectAssetsByIds }
+    isVaultsPositionsLoaded,
+    selectors: {
+      selectAssetById,
+      selectAssetsByIds,
+      selectVaultPosition
+    }
   } = usePortfolioProvider()
 
   const assets = useMemo(() => {
@@ -418,6 +426,30 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
     return networks[aggregatedVault.chainId]
   }, [aggregatedVault])
 
+  const vaultsPosition = useMemo((): {assets: string[], balance: BigNumber, realizedApy: BigNumber} => {
+    const vaultsPosition = aggregatedVault.vaults.reduce( (vaultsPosition: {assets: string[], balance: BigNumber, realizedApy: BigNumber}, vaultId: AssetId) => {
+      const vaultPosition = selectVaultPosition(vaultId)
+      if (vaultPosition){
+        const asset = selectAssetById(vaultId)
+        vaultsPosition.assets.push(asset.underlyingId)
+        vaultsPosition.balance = vaultsPosition.balance.plus(bnOrZero(vaultPosition.usd.redeemable))
+        vaultsPosition.realizedApy = vaultsPosition.realizedApy.plus(bnOrZero(vaultPosition.realizedApy).times(vaultPosition.usd.redeemable))
+      }
+      return vaultsPosition
+    }, {
+      assets: [],
+      balance: BNify(0),
+      realizedApy: BNify(0)
+    })
+
+    // Calculate weighted-realized APY
+    if (vaultsPosition.realizedApy.gt(0)){
+      vaultsPosition.realizedApy = vaultsPosition.realizedApy.div(vaultsPosition.balance)
+    }
+
+    return vaultsPosition
+  }, [aggregatedVault, selectAssetById, selectVaultPosition])
+
   return (
     <Card.Flex
       p={0}
@@ -426,7 +458,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
       onClick={() => onClick ? onClick() : null}
     >
       <VStack
-        spacing={7}
+        spacing={[4, 7]}
         width={'full'}
       >
         <HStack
@@ -434,7 +466,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
           py={4}
           spacing={4}
           width={'full'}
-          alignItems={'center'}
+          alignItems={['flex-start', 'center']}
           borderRadius={'8px 8px 0 0'}
           justifyContent={'flex-start'}
           backgroundColor={'card.bgLight'}
@@ -442,76 +474,142 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
           backgroundPosition={'top left'}
           backgroundSize={'300%'}
         >
-          <Image src={aggregatedVault.icon} w={14} h={14} />
+          <Image src={aggregatedVault.icon} w={[10, 14]} h={[10, 14]} />
           <VStack
+            spacing={[1, 2]}
             alignItems={'space-between'}
           >
-            <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={'xl'} />
-            <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={'h4'} />
+            <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+            <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
           </VStack>
         </HStack>
         <VStack
           px={5}
-          spacing={7}
+          spacing={[4, 7]}
           width={'full'}
           alignItems={'flex-start'}
         >
           <Text color={'primary'} textStyle={'caption'}>{aggregatedVault.description}</Text>
-          <SimpleGrid
-            columns={3}
-            spacing={4}
-            width={'full'}
-            justifyContent={'space-between'}
-          >
-            <VStack
-              pr={4}
-              spacing={2}
-              borderRight={'1px solid'}
-              borderColor={'divider'}
-              alignItems={'flex-start'}
-            >
-              <Translation translation={'stats.upTo'} textStyle={'captionSmall'} />
-              <HStack
-                spacing={2}
-                alignItems={'baseline'}
+          {
+            vaultsPosition.balance.gt(0) ? (
+              <SimpleGrid
+                columns={3}
+                spacing={4}
+                width={'full'}
+                justifyContent={'space-between'}
               >
-                <Amount fontSize={'2xl'} suffix={(<small style={{fontSize: 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
-                <Translation translation={'defi.apy'} textStyle={'caption'} />
-              </HStack>
-            </VStack>
-            <VStack
-              pr={4}
-              spacing={2}
-              borderRight={'1px solid'}
-              borderColor={'divider'}
-              alignItems={'flex-start'}
-            >
-              <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
-              <Amount.Usd fontSize={'2xl'} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
-            </VStack>
-            <VStack
-              spacing={2}
-              alignItems={'flex-start'}
-            >
-              <Translation translation={'defi.availableAssets'} textStyle={'captionSmall'} />
-              <HStack
-                spacing={-2}
+                <VStack
+                  pr={4}
+                  spacing={2}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.realizedApy'} textStyle={'captionSmall'} />
+                  <HStack
+                    spacing={2}
+                    alignItems={'baseline'}
+                  >
+                    <Amount fontSize={['lg','2xl']} suffix={(<small style={{fontSize: 24}}>%</small>)} textStyle={'bodyTitle'} value={vaultsPosition.realizedApy} lineHeight={1} />
+                  </HStack>
+                </VStack>
+                <VStack
+                  pr={4}
+                  spacing={2}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.balance'} textStyle={'captionSmall'} />
+                  <Amount.Usd fontSize={['lg','2xl']} textStyle={'bodyTitle'} value={vaultsPosition.balance} lineHeight={1} />
+                </VStack>
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.depositedAssets'} textStyle={'captionSmall'} />
+                  <HStack
+                    spacing={-2}
+                  >
+                    {
+                      vaultsPosition.assets.map( (assetId: string) => {
+                        return (
+                          <AssetProvider
+                            wrapFlex={false}
+                            assetId={assetId}
+                            key={`index_${assetId}`}
+                          >
+                            <AssetProvider.Icon size={'xs'} />
+                          </AssetProvider>
+                        )
+                      })
+                    }
+                  </HStack>
+                </VStack>
+              </SimpleGrid>
+            ) : (
+              <SimpleGrid
+                columns={3}
+                spacing={4}
+                width={'full'}
+                justifyContent={'space-between'}
               >
-                {
-                  assets.map( (asset: Asset) => {
-                    return (
-                      <AssetProvider
-                        wrapFlex={false}
-                        assetId={asset.id}
-                      >
-                        <AssetProvider.Icon size={'xs'} />
-                      </AssetProvider>
-                    )
-                  })
-                }
-              </HStack>
-            </VStack>
-          </SimpleGrid>
+                <VStack
+                  pr={4}
+                  spacing={2}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'stats.upTo'} textStyle={'captionSmall'} />
+                  <HStack
+                    spacing={2}
+                    alignItems={'baseline'}
+                  >
+                    <Amount fontSize={['lg','2xl']} suffix={(<small style={{fontSize: isMobile ? 18 : 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                    {
+                      !isMobile && (
+                        <Translation translation={'defi.apy'} textStyle={'caption'} />
+                      )
+                    }
+                  </HStack>
+                </VStack>
+                <VStack
+                  pr={4}
+                  spacing={2}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
+                  <Amount.Usd fontSize={['lg','2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                </VStack>
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={isMobile ? 'navBar.assets' : 'defi.availableAssets'} textStyle={'captionSmall'} />
+                  <HStack
+                    spacing={-2}
+                  >
+                    {
+                      assets.map( (asset: Asset) => {
+                        return (
+                          <AssetProvider
+                            wrapFlex={false}
+                            assetId={asset.id}
+                            key={`index_${asset.id}`}
+                          >
+                            <AssetProvider.Icon size={'xs'} />
+                          </AssetProvider>
+                        )
+                      })
+                    }
+                  </HStack>
+                </VStack>
+              </SimpleGrid>
+            )
+          }
           <HStack
             width={'full'}
             alignItems={'center'}

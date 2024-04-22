@@ -3728,6 +3728,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:[],
         enabledEnvs:[],
         protocol:'amphor',
+        status:'deprecated',
         blockNumber: 18769315,
         underlyingToken:'WSTETH',
         distributedTokens:['WSTETH'],
@@ -3932,7 +3933,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDT: {
       categories: ['rwa'],
       enabledEnvs:['beta'],
-      status:'experimental',
       blockNumber: 117936837,
       underlyingToken: 'USDT',
       idle: {
