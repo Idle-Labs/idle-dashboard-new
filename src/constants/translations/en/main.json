@@ -916,7 +916,7 @@
     "tvlDistribution": "TVL distribution",
     "collectedFeesEmpty": "Collected fees will appear here",
     "selectDateRange": "Select a date range",
-    "protocolOverview": "Over <strong class='linkStatic'>$%{tvlUsd}</strong> deposited in Idle with <strong>%{avgApy}%</strong> avg APY<br />across <strong>%{vaults} vaults</strong>.",
+    "protocolOverview": "Over <strong class='linkStatic'>$%{tvlUsd}</strong> deposited in Idle with <strong>%{avgApy}%</strong> avg APY across <strong>%{vaults} vaults</strong>.",
     "filters": {
       "strategies": "Strategies",
       "assets": "Assets",

@@ -901,7 +901,7 @@ export const Tranches: React.FC = () => {
           left={0}
           zIndex={1}
           width={'full'}
-          height={'11.5em'}
+          height={['24em','11.5em']}
           position={'absolute'}
           background={`radial-gradient(circle, ${theme.colors.card.bg}AA 40%, ${theme.colors.card.bg}50 100%)`}
           backgroundPosition={'top left'}
@@ -924,7 +924,7 @@ export const Tranches: React.FC = () => {
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
-            <Translation translation={'stats.protocolOverview'} fontSize={'h4'} isHtml={true} params={{tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults}} />
+            <Translation maxW={['auto', '24em']} translation={'stats.protocolOverview'} fontSize={['md','h4']} isHtml={true} params={{tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults}} />
           </VStack>
           <Box
             minWidth={['full', '30em']}
