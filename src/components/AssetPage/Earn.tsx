@@ -292,14 +292,15 @@ export const Earn: React.FC = () => {
     if (!vault || !("description" in vault) || !vault.description) return null
     return (
       <VStack
+        pb={10}
         spacing={6}
         width={'full'}
+        borderBottom={'1px solid'}
+        borderColor={'divider'}
         alignItems={'flex-start'}
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
-        <Card.Dark>
-          <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
-        </Card.Dark>
+        <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
       </VStack>
     )
   }, [vault, asset, locale])
@@ -387,6 +388,7 @@ export const Earn: React.FC = () => {
       spacing={10}
       width={'full'}
     >
+      {strategyDescription}
       <Box
         width={'full'}
       >
@@ -413,6 +415,7 @@ export const Earn: React.FC = () => {
         </HStack>
         <Card.Flex
           p={0}
+          border={0}
           width={'full'}
           overflow={'hidden'}
           direction={'column'}
@@ -432,8 +435,8 @@ export const Earn: React.FC = () => {
             )
           }
           <Stack
-            pt={[6, 8]}
-            px={[6, 8]}
+            pt={0}
+            px={0}
             pb={[4, 0]}
             zIndex={9}
             width={'full'}
@@ -473,7 +476,6 @@ export const Earn: React.FC = () => {
         width={'full'}
       >
         {strategyDescriptionCarousel}
-        {strategyDescription}
       </VStack>
       <AssetGeneralData assetId={asset?.id} />
       {vaultOperatorOverview}

@@ -101,6 +101,7 @@ export interface TrancheConfig {
   distributedTokens?:string[]
   rewardsSenders?:string[]
   underlyingToken:string
+  vaultType?:string
   modal?: any
   variant?: string
   operators?: VaultOperator[]
@@ -133,6 +134,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         protocol:'clearpool',
         blockNumber:17413683,
         underlyingToken:'USDC',
+        vaultType:'institutionalCredit',
         adaptiveYieldSplitEnabled:true,
         stats:{
           startTimestamp: 1690848000000
@@ -223,6 +225,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['MATIC'],
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         stats:{
           startTimestamp: 1690848000000
         },
@@ -315,6 +318,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         variant:'Bastion Trading',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         flags:{
           addHarvestApy: true,
           referralEnabled: true
@@ -402,6 +406,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDC',
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         rewardsSenders:rewardsSenders[10],
         stats:{
           startTimestamp: 1698105600000
@@ -593,6 +598,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         underlyingToken:'USDT',
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         rewardsSenders:rewardsSenders[10],
         stats:{
           startTimestamp: 1698105600000
@@ -696,8 +702,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:2812768,
         underlyingToken:'USDT',
         distributedTokens:['OP'],
-        rewardsSenders:rewardsSenders[10],
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
+        rewardsSenders:rewardsSenders[10],
         stats:{
           startTimestamp: 1698105600000
         },
@@ -890,6 +897,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         protocol:'instadapp',
         blockNumber:17519660,
         underlyingToken:'stETH',
+        vaultType:'leveragedStaking',
         CDO:{
           decimals:18,
           abi:IdleCDO as Abi,
@@ -996,6 +1004,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         protocol:'lido',
         blockNumber:13776954,
         underlyingToken:'stETH',
+        vaultType:'liquidStaking',
         CDO:{
           decimals:18,
           abi:IdleCDO as Abi,
@@ -1086,6 +1095,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs: [],
         blockNumber:15623682,
         underlyingToken:'MATIC',
+        vaultType:'liquidStaking',
         flags:{
           showMaticNFTs: true,
           addHarvestApy: false,
@@ -2430,6 +2440,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['CPOOL'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         flags:{
           addHarvestApy: false,
           referralEnabled: true,
@@ -2517,6 +2528,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16790250,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         flags:{
           addHarvestApy: false,
           referralEnabled: true
@@ -2603,6 +2615,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:16790250,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         flags:{
           addHarvestApy: false,
           referralEnabled: true,
@@ -2775,6 +2788,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['CPOOL'],
         underlyingToken:'USDT',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         flags:{
           addHarvestApy: false,
           referralEnabled: true
@@ -2860,6 +2874,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['CPOOL'],
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         flags:{
           addHarvestApy: false,
           referralEnabled: true
@@ -2950,6 +2965,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           feeDiscountEnabled: true
         },
         adaptiveYieldSplitEnabled:true,
+        vaultType:'institutionalCredit',
         CDO:{
           abi:IdleCDO as Abi,
           decimals:18,
@@ -3028,6 +3044,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         blockNumber:19389806,
         underlyingToken:'USDE',
         adaptiveYieldSplitEnabled:true,
+        vaultType:'diversifiedBasisYield',
         flags:{
           compoundApr: false,
           showCurrentApy: true,
@@ -3129,6 +3146,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'experimental',
         variant: 'Re7 Capital',
         underlyingToken:'WETH',
+        vaultType:'liquidStaking',
         autoFarming:['MORPHO', 'USDC'],
         adaptiveYieldSplitEnabled:true,
         flags:{
@@ -3225,6 +3243,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           },
         ],
         variant: 'Block Analitica',
+        vaultType:'blueChipLending',
         adaptiveYieldSplitEnabled:true,
         autoFarming:['MORPHO', 'WSTETH'],
         flags:{
@@ -3317,6 +3336,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             name:'steakhouseFinancial'
           }
         ],
+        vaultType:'cryptoRwaLending',
         variant:'Steakhouse Financial',
         adaptiveYieldSplitEnabled:true,
         autoFarming:['MORPHO', 'WSTETH'],
@@ -3871,22 +3891,6 @@ export type IdleTokenProtocol = {
   functions?: Record<string, ProtocolFunction>
 }
 
-export type BestYieldConfig = {
-  idle: IdleToken
-  name?: string
-  categories?: string[]
-  proxies?: string[]
-  blockNumber: number
-  variant?: string
-  description?: string
-  status?: VaultStatus
-  autoFarming?: string[]
-  enabledEnvs?: string[]
-  underlyingToken: string
-  flags?: Record<string, any>
-  protocols: IdleTokenProtocol[]
-}
-
 export type AggregatedVault = {
   name: string
   icon: string
@@ -3898,8 +3902,8 @@ export type AggregatedVault = {
   categories?: string[]
 }
 
-export const aggregatedVaults: AggregatedVault[] = [
-  {
+export const aggregatedVaults: Record<string, AggregatedVault> = {
+  stableSecuredLending: {
     chainId: 1,
     color: '#4de3b0',
     type: 'Algorithmic rebalance',
@@ -3912,7 +3916,7 @@ export const aggregatedVaults: AggregatedVault[] = [
     ],
     description: 'Your funds will be allocated to always achieve the best yield'
   },
-  {
+  rwa: {
     chainId: 10,
     color: '#627eea',
     type: 'Yield aggregator',
@@ -3923,7 +3927,23 @@ export const aggregatedVaults: AggregatedVault[] = [
     ],
     description: 'Get exposure to Real-world asset-backed investments'
   }
-]
+}
+
+export type BestYieldConfig = {
+  idle: IdleToken
+  name?: string
+  aggregatedVaultId?: string
+  proxies?: string[]
+  blockNumber: number
+  variant?: string
+  description?: string
+  status?: VaultStatus
+  autoFarming?: string[]
+  enabledEnvs?: string[]
+  underlyingToken: string
+  flags?: Record<string, any>
+  protocols: IdleTokenProtocol[]
+}
 
 export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   1101:{
@@ -3931,10 +3951,10 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   },
   10: { // Optimism
     USDT: {
-      categories: ['rwa'],
       enabledEnvs:['beta'],
       blockNumber: 117936837,
       underlyingToken: 'USDT',
+      aggregatedVaultId: 'rwa',
       idle: {
         decimals:18,
         token: 'idleUSDTRWA',
@@ -4006,7 +4026,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAI: {
       blockNumber: 10595640,
       underlyingToken: 'DAI',
-      categories: ['overcollatLending', 'coveredVaults'],
+      aggregatedVaultId:'stableSecuredLending',
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
@@ -4259,9 +4279,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       ]
     },
     USDC: {
+      aggregatedVaultId:'stableSecuredLending',
       blockNumber: 10618515,
       underlyingToken: 'USDC',
-      categories: ['overcollatLending', 'coveredVaults'],
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
@@ -4356,7 +4376,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDT: {
       blockNumber: 10627792,
       underlyingToken: 'USDT',
-      categories: ['overcollatLending', 'coveredVaults'],
+      aggregatedVaultId:'stableSecuredLending',
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,

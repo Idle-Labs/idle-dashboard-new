@@ -388,7 +388,7 @@ export const Dashboard: React.FC = () => {
       >
         {
           products.map( (productConfig: ProductProps) => {
-            const strategyPath = getRoutePath('earn', [productConfig.route])
+            const strategyPath = getRoutePath('earn')
             const productAssets = productConfig.strategies.reduce( (productAssets: Asset[], strategy: string) => {
               return [
                 ...productAssets,
@@ -455,9 +455,11 @@ export const Dashboard: React.FC = () => {
                         ) : productPositions.length>0 ? (
                           <StrategyOverview showHeader={false} strategies={productConfig.strategies} textProps={{fontSize:['md', 'lg']}} />
                         ) : (
-                          <HStack
-                            spacing={10}
+                          <SimpleGrid
+                            columns={3}
                             width={'full'}
+                            spacing={[2, 10]}
+                            justifyContent={'space-between'}
                           >
                             <VStack
                               spacing={2}
@@ -486,7 +488,7 @@ export const Dashboard: React.FC = () => {
                                 <Amount.Percentage value={aggregatedData.maxApy} textStyle={'ctaStatic'} fontSize={'lg'} lineHeight={'initial'} />
                               </SkeletonText>
                             </VStack>
-                          </HStack>
+                          </SimpleGrid>
                         )
                       }
                     </VStack>
@@ -521,10 +523,10 @@ export const Dashboard: React.FC = () => {
       mt={5}
       width={'full'}
     >
-      <VaultsCarousel />
+      {/*<VaultsCarousel />*/}
       <VStack
+        pt={12}
         spacing={10}
-        pt={[16, 100]}
         width={'full'}
       >
         {/*<AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />*/}

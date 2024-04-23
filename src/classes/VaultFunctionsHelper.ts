@@ -1267,8 +1267,6 @@ export class VaultFunctionsHelper {
 
     if (!results) return historicalData
 
-    // console.log('getVaultHistoricalDataFromIdleApi', vault.id, results)
-
     const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
       const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())

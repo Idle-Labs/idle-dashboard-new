@@ -12,7 +12,7 @@ export const ProductTag: React.FC<ProductTagProps> = ({ type, ...textProps }) =>
   if (!foundProduct) return null
   return (
     <Translation
-      px={4}
+      px={3}
       py={'6px'}
       component={Tag}
       fontWeight={600}

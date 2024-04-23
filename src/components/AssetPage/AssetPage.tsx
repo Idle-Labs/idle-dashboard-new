@@ -20,11 +20,11 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
-import { Box, Flex, Stack, HStack, Tabs, TabList, ImageProps } from '@chakra-ui/react'
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
-import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs } from 'helpers/'
-import { AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
+import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs, getObjectPath } from 'helpers/'
+import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps } from '@chakra-ui/react'
+import { operators, AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
 
 type TabType = {
   id:string
@@ -82,7 +82,7 @@ export const useAssetPageProvider = () => React.useContext(AssetPageProviderCont
 export const AssetPage: React.FC = () => {
   const navigate = useNavigate()
   const { chainId } = useWalletProvider()
-  const { isMobile, environment } = useThemeProvider()
+  const { isMobile, theme, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
   const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
   const [ stakingEnabled, setStakingEnabled ] = useState<boolean>(false)
@@ -460,6 +460,74 @@ export const AssetPage: React.FC = () => {
     )
   }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
 
+  const vaultColor = useMemo(() => {
+    if (!vault) return theme.colors.card.bg
+    if (("aggregatedVault") in vault) return vault.aggregatedVault.color
+    return theme.colors.card.bg
+  }, [vault, theme])
+
+  const operatorInfo = useMemo(() => {
+    const operatorName = getObjectPath(vault, 'vaultConfig.operators.0.name')
+    return operatorName ? operators[operatorName] : null
+  }, [vault])
+
+  const vaultHeader = useMemo(() => {
+    return vault && ("aggregatedVault" in vault) && vault.aggregatedVault ? (
+      <HStack
+        spacing={3}
+        width={'full'}
+        alignItems={'center'}
+      >
+        <Image src={vault.aggregatedVault.icon} w={[12, 14]} h={[12, 14]} />
+        <VStack
+          spacing={[1, 2]}
+          alignItems={'space-between'}
+        >
+          <Translation translation={vault.aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+          <Translation translation={vault.aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
+        </VStack>
+      </HStack>
+    ) : operatorInfo ? (
+      <HStack
+        spacing={3}
+        width={'full'}
+        alignItems={'center'}
+      >
+        <Image src={operatorInfo.image} w={[12, 14]} h={[12, 14]} />
+        <VStack
+          spacing={[1, 2]}
+          alignItems={'space-between'}
+        >
+          <Translation translation={operatorInfo.nameShort || operatorInfo.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+          {
+            vault && ("vaultType" in vault) && (
+              <Translation translation={`products.${vault.vaultType}`} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
+            )
+          }
+        </VStack>
+      </HStack>
+    ) : (
+      <HStack
+        spacing={3}
+        width={'full'}
+        alignItems={'center'}
+      >
+        <AssetProvider.ProtocolIcon w={[12, 14]} h={[12, 14]} />
+        <VStack
+          spacing={[1, 2]}
+          alignItems={'space-between'}
+        >
+          <AssetProvider.ProtocolName color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+          {
+            vault && ("vaultType" in vault) && (
+              <Translation translation={`products.${vault.vaultType}`} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
+            )
+          }
+        </VStack>
+      </HStack>
+    )
+  }, [vault, operatorInfo])
+
   return (
     <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled, isNetworkCorrect, referral}}>
       <AssetProvider
@@ -476,29 +544,169 @@ export const AssetPage: React.FC = () => {
             )
           }
           <Flex
-            my={[10, 7]}
+            left={0}
+            py={[4, 8]}
+            px={[4, 20]}
+            width={'full'}
+            alignItems={'flex-start'}
+            justifyContent={'flex-start'}
+            position={'absolute'}
+            background={`radial-gradient(circle, ${vaultColor}aa 40%, ${vaultColor}50 100%)`}
+            backgroundPosition={'top left'}
+            backgroundSize={'300%'}
+          >
+            <VStack
+              spacing={6}
+              width={'full'}
+              alignItems={'flex-start'}
+              id={'asset-top-header'}
+              justifyContent={'flex-start'}
+            >
+              {vaultHeader}
+              <SimpleGrid
+                columns={4}
+                spacing={[4, 6]}
+                alignItems={'flex-start'}
+              >
+                <VStack
+                  pr={[4, 6]}
+                  spacing={2}
+                  height={'100%'}
+                  borderRight={'1px solid'}
+                  borderColor={'dividerLight'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.apy'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <HStack
+                    flex={1}
+                    spacing={0}
+                    alignItems={'flex-end'}
+                  >
+                    <AssetProvider.Apy showTooltip={false} fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                  </HStack>
+                </VStack>
+                <VStack
+                  pr={[4, 6]}
+                  spacing={2}
+                  height={'100%'}
+                  borderRight={'1px solid'}
+                  borderColor={'dividerLight'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.tvl'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <HStack
+                    flex={1}
+                    spacing={0}
+                    alignItems={'flex-end'}
+                  >
+                    <AssetProvider.PoolUsd fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                  </HStack>
+                </VStack>
+                <VStack
+                  pr={[4, 6]}
+                  spacing={2}
+                  height={'100%'}
+                  borderRight={'1px solid'}
+                  borderColor={'dividerLight'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.chain'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <Flex
+                    flex={1}
+                    alignItems={'flex-end'}
+                  >
+                    <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
+                  </Flex>
+                </VStack>
+                <VStack
+                  spacing={2}
+                  height={'100%'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.protocols'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <Flex
+                    flex={1}
+                    alignItems={'flex-end'}
+                  >
+                    <AssetProvider.Protocols width={[6, 8]} height={[6, 8]}>
+                      <AssetProvider.ProtocolIcon width={[6, 8]} height={[6, 8]} />
+                    </AssetProvider.Protocols>
+                  </Flex>
+                </VStack>
+              </SimpleGrid>
+            </VStack>
+          </Flex>
+          {
+            /*
+            <Flex
+              my={[10, 7]}
+              width={'100%'}
+              id={'asset-top-header'}
+              direction={['column', 'row']}
+              justifyContent={['center', 'space-between']}
+            >
+              <Stack
+                width={'100%'}
+                spacing={[4, 8]}
+                alignItems={'center'}
+                justifyContent={'center'}
+                direction={['column', 'row']}
+              >
+                {
+                  vault && ("aggregatedVault" in vault) && vault.aggregatedVault && (
+                    <HStack
+                      spacing={2}
+                      alignItems={'center'}
+                    >
+                      <Image src={vault.aggregatedVault.icon} w={[10, 14]} h={[10, 14]} />
+                      <VStack
+                        spacing={[1, 2]}
+                        alignItems={'space-between'}
+                      >
+                        <Translation translation={vault.aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+                        <Translation translation={vault.aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
+                      </VStack>
+                    </HStack>
+                  )
+                }
+                {
+                  isMobile && vaultDetails
+                }
+                <Stack
+                  flex={1}
+                  spacing={0}
+                  width={['100%', 'auto']}
+                  justifyContent={'space-between'}
+                  borderBottom={[0, '1px solid']}
+                  direction={['column', 'row']}
+                  borderColor={['divider', 'divider']}
+                >
+                  <HStack
+                    width={['full', 'auto']}
+                    borderBottom={['1px solid', 0]}
+                    borderColor={'divider'}
+                  >
+                    {renderedTabs}
+                  </HStack>
+                  {headerRightSide}
+                </Stack>
+              </Stack>
+            </Flex>
+            */
+          }
+          <HStack
+            mt={['4em','7em']}
             width={'100%'}
-            id={'asset-top-header'}
-            direction={['column', 'row']}
-            justifyContent={['center', 'space-between']}
+            spacing={[0, 10]}
+            alignItems={'space-between'}
           >
             <Stack
-              width={'100%'}
-              spacing={[4, 8]}
-              alignItems={'center'}
-              justifyContent={'center'}
-              direction={['column', 'row']}
+              flex={1}
+              mt={'7.5em'}
+              mb={[20, 0]}
+              spacing={10}
+              width={['100%', 14/20]}
             >
-              <HStack
-                spacing={2}
-                alignItems={'center'}
-              >
-                <AssetLabel assetId={params.asset} fontSize={'h2'} />
-                <AssetProvider.ChainIcon width={6} height={6} />
-              </HStack>
-              {
-                isMobile && vaultDetails
-              }
               <Stack
                 flex={1}
                 spacing={0}
@@ -515,21 +723,7 @@ export const AssetPage: React.FC = () => {
                 >
                   {renderedTabs}
                 </HStack>
-                {headerRightSide}
               </Stack>
-            </Stack>
-          </Flex>
-          <HStack
-            width={'100%'}
-            spacing={[0, 10]}
-            alignItems={'space-between'}
-          >
-            <Stack
-              flex={1}
-              mb={[20, 0]}
-              spacing={10}
-              width={['100%', 14/20]}
-            >
               <TabComponent {...tabs[selectedTabIndex].componentProps} />
             </Stack>
             {interactiveComponent}

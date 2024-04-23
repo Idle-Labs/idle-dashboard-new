@@ -49,6 +49,7 @@ export const ProtocolOverview: React.FC<ProtocolOverviewProps> = ({
         columns={3}
         width={'full'}
         spacing={[2, 10]}
+        justifyContent={'space-between'}
       >
         <VStack
           spacing={2}

@@ -19,7 +19,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import { strategies, StrategyColumn, Tables } from 'constants/strategies'
 import { MdStarBorder, MdOutlineAccountBalanceWallet } from 'react-icons/md'
-import { sortNumeric, sortAlpha, sendSelectItem, bnOrZero, BNify, isEmpty, getRoutePath } from 'helpers/'
+import { sortNumeric, sortAlpha, sendSelectItem, bnOrZero, BNify, isEmpty, getRoutePath, getVaultPath } from 'helpers/'
 import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow, Image } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -55,23 +55,23 @@ export const DepositedAssetsTable: React.FC = () => {
   const columns: StrategyColumn[] = useMemo(() => {
     return [
       {
-        width: '25%',
-        accessor:'name',
-        sortType:'alpha',
-        id:'assetWithStatus',
-        stackProps:{
-          justifyContent:'space-between'
-        },
-        extraFields:['productTagWithRisk']
-      },
-      {
-        width: '18%',
+        width: '28%',
         accessor:'id',
-        id:'protocols',
+        id:'vaultOperatorOrProtocol',
         sortType:'alpha',
         fieldProps: {
           size: 'xs'
-        }
+        },
+        stackProps:{
+          justifyContent:'space-between'
+        },
+        extraFields:['strategies']
+      },
+      {
+        width: '15%',
+        accessor:'name',
+        sortType:'alpha',
+        id:'asset',
       },
       {
         id:'tvl',
@@ -342,7 +342,7 @@ export const DepositedAssetsTable: React.FC = () => {
   const onRowClick = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
     const strategyRoute = strategies[row.original.type as string].route
-    return navigate(`/earn/${strategyRoute}/${row.original.id}`)
+    return navigate(getVaultPath(row.original.type as string, row.original.id as string))
   }, [navigate])
 
   const rowsPerPage = useMemo(() => 5, [])
@@ -402,7 +402,7 @@ export const DepositedAssetsTable: React.FC = () => {
               <Image src={'images/vaults/emptywallet.png'} width={8} />
               <Translation textAlign={'center'} translation={'defi.empty.deposits.body'} color={'cta'} isHtml />
             </VStack>
-            <Translation<ButtonProps> component={Button} translation={`defi.empty.deposits.cta`} variant={'ctaPrimary'} px={10} onClick={() => navigate('/earn/yield-tranches')} />
+            <Translation<ButtonProps> component={Button} translation={`defi.empty.deposits.cta`} variant={'ctaPrimary'} px={10} onClick={() => navigate(getRoutePath('earn'))} />
           </VStack>
         </Card>
       )

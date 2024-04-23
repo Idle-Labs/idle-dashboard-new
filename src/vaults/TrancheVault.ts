@@ -52,6 +52,7 @@ export class TrancheVault {
   public readonly vaultConfig: TrancheConfig
   public readonly variant: string | undefined
   public readonly poolConfig: Pool | undefined
+  public readonly vaultType: string | undefined
   public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
   public readonly rewardsSenders: string[] | undefined
@@ -98,6 +99,7 @@ export class TrancheVault {
     this.variant = vaultConfig.variant
     this.cacheProvider = cacheProvider
     this.messages = vaultConfig.messages
+    this.vaultType = vaultConfig.vaultType
     this.description = vaultConfig.description
     this.translations = vaultConfig.translations
     this.trancheConfig = vaultConfig.Tranches[type]

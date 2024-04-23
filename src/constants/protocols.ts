@@ -474,7 +474,8 @@ export const protocols: Record<string, Protocol> = {
       rates:{
         endpoint: {
           1: 'https://api.idle.finance/rates/',
-          137: "https://api-polygon.idle.finance/rates/"
+          10: 'https://api-optimism.idle.finance/rates/',
+          137: 'https://api-polygon.idle.finance/rates/'
         },
         filters: ['start', 'end', 'limit', 'frequency', 'order'],
         config: {

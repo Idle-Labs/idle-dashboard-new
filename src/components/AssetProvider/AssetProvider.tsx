@@ -125,7 +125,7 @@ const Symbol: React.FC<TextProps> = (props) => {
 const ProtocolName: React.FC<TextProps> = (props) => {
   const { vault } = useAssetProvider()
   return (
-    <Text textTransform={'uppercase'} {...props}>{vault && "protocol" in vault ? vault?.protocol : ''}</Text>
+    <Text textTransform={'capitalize'} {...props}>{vault && "protocol" in vault ? vault?.protocol : ''}</Text>
   )
 }
 
@@ -154,10 +154,10 @@ const Strategy: React.FC<Omit<TranslationProps, "translation">> = (props) => {
 
 const VaultVariant: React.FC<TextProps> = (props) => {
   const { vault } = useAssetProvider()
-  if (!vault || !("variant" in vault) || !vault?.variant?.length) return null
+  if (!vault || !("vaultType" in vault) || !vault?.vaultType) return null
 
   return (
-    <Text textStyle={'tableCell'} {...props}>{vault.variant}</Text>
+    <Translation translation={`products.${vault.vaultType}`} textStyle={'tableCell'} {...props} />
   )
 }
 
@@ -1561,6 +1561,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     return operatorName ? operators[operatorName] : null
   }, [vault])
 
+  const aggregatedVault = useMemo(() => {
+    return vault && ("aggregatedVault" in vault) ? vault.aggregatedVault : null
+  }, [vault])
+
   switch (field) {
     case 'chainId':
       return (
@@ -1575,7 +1579,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
         >
           <ProtocolIcon size={props.size || 'sm'} />
           <VStack
-            spacing={0}
+            spacing={1}
             alignItems={'flex-start'}
           >
             <ProtocolName textStyle={'tableCell'} {...props} />
@@ -1589,16 +1593,47 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           spacing={2}
           alignItems={'center'}
         >
-          <Image src={operatorInfo.image} width={8} />
-          <Text textStyle={'tableCell'} lineHeight={1.1}>{operatorInfo.nameShort || operatorInfo.name}</Text>
+          <Image src={operatorInfo.image} width={9} height={9} />
+          <VStack
+            height={9}
+            spacing={0}
+            alignItems={'flex-start'}
+            justifyContent={'space-between'}
+          >
+            <Text textStyle={'tableCell'} lineHeight={1}>{operatorInfo.nameShort || operatorInfo.name}</Text>
+            <VaultVariant textStyle={'vaultVariant'} lineHeight={1} />
+          </VStack>
+        </HStack>
+      ) : aggregatedVault ? (
+        <HStack
+          spacing={3}
+          width={'full'}
+          alignItems={'center'}
+        >
+          <Image src={aggregatedVault.icon} w={9} h={9} />
+          <VStack
+            spacing={[1, 2]}
+            alignItems={'space-between'}
+          >
+            <Translation translation={aggregatedVault.name} textStyle={'tableCell'} lineHeight={1} />
+            <Translation translation={aggregatedVault.type} textStyle={'vaultVariant'} lineHeight={1} />
+          </VStack>
         </HStack>
       ) : (
         <HStack
           spacing={2}
           alignItems={'center'}
         >
-          <ProtocolIcon w={8} h={8} />
-          <ProtocolName textTransform={'capitalize'} textStyle={'tableCell'}/>
+          <ProtocolIcon w={9} h={9} />
+          <VStack
+            height={9}
+            spacing={0}
+            alignItems={'flex-start'}
+            justifyContent={'space-between'}
+          >
+            <ProtocolName textStyle={'tableCell'} lineHeight={1} {...props} />
+            <VaultVariant textStyle={'vaultVariant'} lineHeight={1} />
+          </VStack>
         </HStack>
       )
     case 'operatorWithProtocol':

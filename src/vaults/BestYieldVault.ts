@@ -5,12 +5,12 @@ import { tokensFolder } from 'constants/folders'
 import { selectUnderlyingToken } from 'selectors/'
 import { ContractSendMethod } from 'web3-eth-contract'
 import { ZERO_ADDRESS, MAX_ALLOWANCE } from 'constants/'
-import type { IdleTokenProtocol } from 'constants/vaults'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
+import { IdleTokenProtocol, AggregatedVault, aggregatedVaults } from 'constants/vaults'
 import { BNify, fixTokenDecimals, getObjectPath, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
 
@@ -33,7 +33,7 @@ export class BestYieldVault {
   readonly protocol: string
   readonly messages: Record<string, any>
   readonly description: string | undefined
-  readonly categories: string[] | undefined
+  // readonly categories: string[] | undefined
   readonly vaultFunctionsHelper: VaultFunctionsHelper
   readonly flags: Record<string, boolean> | undefined
 
@@ -47,6 +47,7 @@ export class BestYieldVault {
   public readonly tokenConfig: BestYieldConfig
   public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly aggregatedVault: AggregatedVault | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
 
   // Contracts
@@ -82,11 +83,16 @@ export class BestYieldVault {
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
     this.idleController = idleController
-    this.categories = tokenConfig.categories
+    // this.categories = tokenConfig.categories
     this.description = tokenConfig.description
     this.id = this.idleConfig.address.toLowerCase()
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
+
+
+    if (tokenConfig.aggregatedVaultId){
+      this.aggregatedVault = aggregatedVaults[tokenConfig.aggregatedVaultId]
+    }
 
     this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
       const underlyingToken = selectUnderlyingToken(chainId, rewardToken)

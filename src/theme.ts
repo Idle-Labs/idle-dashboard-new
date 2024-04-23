@@ -144,6 +144,7 @@ export const theme = extendTheme({
     yellow:'#FFD15C',
     orange:'#FF9859',
     divider:'#555B67',
+    dividerLight:'#CDD0D6',
     primary:'#FFFFFF',
     buttonBg:'#404F6A',
     tertiary:'#2272C8',
@@ -360,10 +361,9 @@ export const theme = extendTheme({
     },
     vaultVariant:{
       color:'cta',
-      fontSize:'xxs',
-      fontWeight:600,
+      fontSize:'xs',
+      fontWeight:400,
       lineHeight:'normal',
-      textTransform:'uppercase'
     },
     tableCell: {
       fontSize:'md',

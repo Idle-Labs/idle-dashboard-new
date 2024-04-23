@@ -25,13 +25,13 @@ export function checkSectionEnabled(path: string, environment?: string) {
 }
 
 export function getVaultPath(type: string, assetId: AssetId) {
-  const strategy = strategies[type]
-  return `/earn/${strategy.route}/${assetId}`
+  // const strategy = strategies[type]
+  return `/earn/${assetId}`
 }
 
 export function getAssetPath(asset: Asset) {
   const strategy = strategies[asset.type as string]
-  return `/earn/${strategy.route}/${asset.id}`
+  return `/earn/${asset.id}`
 }
 
 export function openWindow(url: string) {

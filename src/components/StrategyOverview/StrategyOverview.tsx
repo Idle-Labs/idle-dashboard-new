@@ -24,7 +24,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
   strategies: enabledStrategies
 }) => {
   const [ walletVisible, setWalletVisible ] = useState<boolean>(true)
-  const { isVaultsPositionsLoaded, vaultsPositions } = usePortfolioProvider()
+  const { isPortfolioAccountReady, vaultsPositions } = usePortfolioProvider()
   const { compositions }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds: Object.keys(vaultsPositions), strategies: enabledStrategies })
 
   const aggregatedData = useMemo(() => {
@@ -46,7 +46,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
 
   aggregatedData.realizedApy = aggregatedData.redeemable.gt(0) ? aggregatedData.realizedApy.div(aggregatedData.redeemable) : BNify(0)
 
-  if (!showLoading && (!isVaultsPositionsLoaded || aggregatedData.deposited.lte(0))) return null
+  if (!showLoading && !isPortfolioAccountReady) return null
 
   return (
     <VStack
@@ -77,13 +77,14 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
         columns={3}
         width={'full'}
         spacing={[2, 10]}
+        justifyContent={'space-between'}
       >
         <VStack
           spacing={2}
           alignItems={'flex-start'}
         >
           <Translation translation={'defi.deposited'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-          <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded} minW={'100%'}>
+          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady} minW={'100%'}>
             <Amount.Usd value={aggregatedData.deposited} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} sx={!walletVisible ? {filter:'blur(7px)'} : {}} {...textProps} />
           </SkeletonText>
         </VStack>
@@ -92,7 +93,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
           alignItems={'flex-start'}
         >
           <Translation translation={'defi.earnings'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-          <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded} minW={'100%'}>
+          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady} minW={'100%'}>
             <Amount.Usd value={aggregatedData.earnings} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} sx={!walletVisible ? {filter:'blur(7px)'} : {}} {...textProps} />
           </SkeletonText>
         </VStack>
@@ -101,7 +102,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
           alignItems={'flex-start'}
         >
           <Translation translation={'defi.realizedApy'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
-          <SkeletonText noOfLines={2} isLoaded={!!isVaultsPositionsLoaded} minW={'100%'}>
+          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady} minW={'100%'}>
             <Amount.Percentage value={aggregatedData.realizedApy} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} sx={!walletVisible ? {filter:'blur(7px)'} : {}} {...textProps} />
           </SkeletonText>
         </VStack>

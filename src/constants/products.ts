@@ -21,7 +21,7 @@ export const products: ProductProps[] = [
     color: '#04117B',
     strategies: ['BY'],
     route: `best-yield`,
-    label: 'strategies.best.label',
+    label: 'strategies.aggregated.title',
     image: `${strategiesFolder}best-yield.png`,
     description: 'strategies.best.description'
   },
@@ -30,7 +30,7 @@ export const products: ProductProps[] = [
     strategy:'tranches',
     route: `yield-tranches`,
     strategies: ['AA', 'BB'],
-    label: 'strategies.tranches.label',
+    label: 'strategies.isolated.title',
     bg: `${strategiesFolder}tranches-bg.png`,
     image: `${strategiesFolder}tranches.png`,
     description: 'strategies.tranches.description',
@@ -42,10 +42,10 @@ export const products: ProductProps[] = [
     },
     columns: [
       {
-        accessor:'name',
+        width:'25%',
+        accessor:'id',
+        id:'vaultOperatorOrProtocol',
         sortType:'alpha',
-        id:'assetWithStatus',
-        tables: ['Deposited'],
         stackProps:{
           justifyContent:'space-between'
         },
@@ -54,14 +54,8 @@ export const products: ProductProps[] = [
       {
         accessor:'name',
         sortType:'alpha',
-        id:'assetWithStatus',
-        tables: ['Available'],
+        id:'asset',
         extraFields:[]
-      },
-      {
-        accessor:'id',
-        id:'protocolWithVariant',
-        sortType:'alpha',
       },
       {
         id:'tvl',

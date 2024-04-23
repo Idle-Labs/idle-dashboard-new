@@ -454,6 +454,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
     <Card.Flex
       p={0}
       pb={5}
+      maxWidth={['full', '32em']}
       layerStyle={['card', 'cardHover']}
       onClick={() => onClick ? onClick() : null}
     >
@@ -695,7 +696,6 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
             <HStack
               spacing={1}
             >
-              {/*<AssetProvider.ProtocolIcon size={'xs'} />*/}
               <AssetProvider.StrategyBadge />
             </HStack>
           </HStack>

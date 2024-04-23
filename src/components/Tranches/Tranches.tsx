@@ -508,6 +508,7 @@ export const Tranches: React.FC = () => {
       return {
         id,
         accessor,
+        width: column.width,
         disableSortBy: !sortTypeFn,
         defaultCanSort: !!sortTypeFn,
         Header: translate(column.title || `defi.${id}`),
@@ -962,17 +963,17 @@ export const Tranches: React.FC = () => {
           <Translation translation={'strategies.aggregated.title'} component={Heading} as={'h3'} fontSize={'2xl'} />
           <Translation translation={'strategies.aggregated.description'} />
         </VStack>
-        <SimpleGrid
+        <Stack
           spacing={10}
           width={'full'}
-          columns={[1, 3]}
+          direction={['column', 'row']}
         >
           {
-            aggregatedVaults.map( (aggregatedVault: AggregatedVault) => {
+            Object.values(aggregatedVaults).map( (aggregatedVault: AggregatedVault) => {
               return (<VaultCard.Aggregated aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
             })
           }
-        </SimpleGrid>
+        </Stack>
       </VStack>
     )
   }, [onClickAggregatedVaults])

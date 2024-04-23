@@ -208,12 +208,23 @@
     "timelock": "Timelock",
     "feeCollector": "Fee collector"
   },
+  "products": {
+    "diversifiedBasisYield": "Diversified Basis Yield",
+    "institutionalCredit": "Institutional Credit",
+    "leveragedStaking": "Leveraged staking",
+    "liquidStaking": "Liquid staking",
+    "leveragedLSD": "Leverage LSD",
+    "blueChipLending": "Blue-chip lending markets",
+    "cryptoRwaLending": "Crypto & RWA-secured lending",
+    "strategist": "Strategist"
+  },
   "strategies": {
     "general": {
       "title": "Explore Earn Vaults",
       "description": "Elevate your portfolio using our refined strategies, versatile solutions designed to satisfy the needs of both sophisticated and risk-inclined investors."
     },
     "aggregated": {
+      "tag": "Aggregated",
       "title": "Aggregated vaults",
       "description": "A selection of strategies curated directly by Idle, where funds are strategically allocated across diverse protocols to enhance APY, providing investors with a hassle-free solution for maximizing yields."
     },
@@ -245,7 +256,7 @@
       "title": "Gauge"
     },
     "tranches": {
-      "tag": "Tranches",
+      "tag": "Isolated",
       "label": "Yield Tranches",
       "noVaultsAvailable": "Yield Tranches vaults are currently not available %{network}. Switch to Ethereum mainnet to explore this strategy.",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
@@ -259,7 +270,7 @@
       }
     },
     "best": {
-      "tag": "Best Yield",
+      "tag": "Aggregated",
       "label": "Best Yield",
       "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",
       "noVaultsAvailable": "Best Yield vaults are currently not available for %{network}. Switch to Ethereum mainnet to explore this strategy.",
@@ -417,7 +428,7 @@
       }
     },
     "assetChart": {
-      "empty": "We're still collecting data for this vault"
+      "empty": "We are still collecting data for this vault"
     },
     "performanceChart": {
       "empty": "The performances of your portfolio will appear here",
@@ -614,10 +625,12 @@
     "seniorCoverage": "Senior Coverage",
     "govToken": "Gov. token",
     "protocol": "Protocol",
+    "vaultOperatorOrProtocol": "Vault",
     "assetWithVariant": "Asset",
     "assetWithStatus": "Asset",
     "protocolWithVariant": "Protocol",
     "chainId": "Chain",
+    "chain": "Chain",
     "chains": "Chains",
     "protocols": "Protocols",
     "unstake": "Unstake",
@@ -2084,9 +2097,9 @@
         "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy. Rewards are harvested weekly and distributed over a week",
         "rewardEmissionToken": "Tokens that will be distributed per year for the entire pool. Received rewards will be harvested monthly and distributed over a week",
-        "AA":"This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
+        "AA":"This Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
         "rewardEmissionTokenOn1000Usd": "Tokens that will be distributed per year for a $1000 worth position. Received rewards, once transferrable, will be harvested monthly and distributed over a week",
-        "BB":"This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
+        "BB":"This Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
         "riskProfiles": {
           "BY_AA": "This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
           "BY_BB": "This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
