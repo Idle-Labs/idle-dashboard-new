@@ -376,7 +376,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     generalDataFields:[
       {
-        field: 'protocolWithVariant',
+        field: 'protocol',
         props: {
           size:'xs'
         },
@@ -530,7 +530,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     generalDataFields:[
       {
-        field: 'protocolWithVariant',
+        field: 'protocol',
         props: {
           size:'xs'
         },

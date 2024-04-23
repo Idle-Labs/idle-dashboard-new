@@ -91,7 +91,7 @@ export const networks: Record<number, Network> = {
     version: 'v1',
     color: '#8247E5',
     baseToken: 'ETH',
-    name: 'OP Mainnet',
+    name: 'Optimism',
     network: 'mainnet',
     provider: 'optimism',
     supportEip1559: true,

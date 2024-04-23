@@ -71,6 +71,21 @@ export const operators: Record<string, Operator> = {
     },
     description: 'Fasanara Digital was founded in 2019 and it is part of Fasanara Capital, a 200 people London-based Hedge Fund founded in 2011 and specialised in alternative credit and fintech strategies. Fasanara Capital across its different funds manages over 4bn USD. Fasanara Digital, with a team of 15 people fully dedicated to investments and development in crypto, manages a delta neutral high turnover fund specialised in market-making and arbitrage strategies. The fund trades approximately 10bn USD per month on both spot and derivatives on all major trading venues.'
   },
+  wintermute: {
+    rating: '-',
+    founded: 2017,
+    location: 'England',
+    industry: 'Market Making',
+    nameShort: 'Wintermute Trading',
+    image: 'images/borrowers/wintermute.svg',
+    name: 'Wintermute Trading Ltd',
+    links: {
+      website: 'https://www.wintermute.com/',
+      twitter: 'https://twitter.com/wintermute_t',
+      linkedin: 'https://www.linkedin.com/company/wintermute-trading/',
+    },
+    description: 'Wintermute (Wintermute Trading Ltd) is a leading global algorithmic trading firm and one of the largest players in digital asset markets. With an average daily trading volume of over $5bn, Wintermute facilitates OTC trading of 350+ tokens and provides liquidity across 80+ centralized and decentralized exchanges'
+  },
   portofino: {
     rating: 'BB',
     founded: 2021,

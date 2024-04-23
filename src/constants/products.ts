@@ -46,10 +46,21 @@ export const products: ProductProps[] = [
         accessor:'id',
         id:'vaultOperatorOrProtocol',
         sortType:'alpha',
+        tables: ['Deposited'],
         stackProps:{
           justifyContent:'space-between'
         },
         extraFields:['actionRequired', 'strategies']
+      },
+      {
+        width:'25%',
+        accessor:'id',
+        id:'vaultOperatorOrProtocol',
+        sortType:'alpha',
+        tables: ['Available'],
+        stackProps:{
+          justifyContent:'space-between'
+        },
       },
       {
         accessor:'name',

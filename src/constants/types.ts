@@ -331,6 +331,12 @@ export type DistributedReward = {
   tx: EtherscanTransaction
 }
 
+export type ProtocolData = {
+  totalTvlUsd: BigNumber
+  totalAvgApy: BigNumber
+  uniqueVaults: number
+}
+
 export type Asset = {
   id?: AssetId
   name: string

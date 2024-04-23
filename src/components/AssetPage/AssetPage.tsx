@@ -454,16 +454,16 @@ export const AssetPage: React.FC = () => {
           )
         }
         {
-          !isMobile && vaultDetails
+          // !isMobile && vaultDetails
         }
       </Stack>
     )
-  }, [selectedTab, isMobile, timeframe, setTimeframe, useDateRange, setDateRange, vaultDetails])
+  }, [selectedTab, timeframe, setTimeframe, useDateRange, setDateRange])
 
   const vaultColor = useMemo(() => {
-    if (!vault) return theme.colors.card.bg
+    if (!vault) return theme.colors.banner.bg
     if (("aggregatedVault") in vault) return vault.aggregatedVault.color
-    return theme.colors.card.bg
+    return theme.colors.banner.bg
   }, [vault, theme])
 
   const operatorInfo = useMemo(() => {
@@ -551,7 +551,7 @@ export const AssetPage: React.FC = () => {
             alignItems={'flex-start'}
             justifyContent={'flex-start'}
             position={'absolute'}
-            background={`radial-gradient(circle, ${vaultColor}aa 40%, ${vaultColor}50 100%)`}
+            background={`radial-gradient(circle, ${vaultColor}00 40%, ${vaultColor}CC 100%)`}
             backgroundPosition={'top left'}
             backgroundSize={'300%'}
           >
@@ -576,7 +576,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.apy'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <Translation translation={'defi.apy'} fontSize={['sm','md']} color={'primary'} />
                   <HStack
                     flex={1}
                     spacing={0}
@@ -593,7 +593,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.tvl'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <Translation translation={'defi.tvl'} fontSize={['sm','md']} color={'primary'} />
                   <HStack
                     flex={1}
                     spacing={0}
@@ -610,20 +610,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.chain'} textStyle={['captionSmall', 'caption']} color={'primary'} />
-                  <Flex
-                    flex={1}
-                    alignItems={'flex-end'}
-                  >
-                    <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
-                  </Flex>
-                </VStack>
-                <VStack
-                  spacing={2}
-                  height={'100%'}
-                  alignItems={'flex-start'}
-                >
-                  <Translation translation={'defi.protocols'} textStyle={['captionSmall', 'caption']} color={'primary'} />
+                  <Translation translation={'defi.composition'} fontSize={['sm','md']} color={'primary'} />
                   <Flex
                     flex={1}
                     alignItems={'flex-end'}
@@ -631,6 +618,19 @@ export const AssetPage: React.FC = () => {
                     <AssetProvider.Protocols width={[6, 8]} height={[6, 8]}>
                       <AssetProvider.ProtocolIcon width={[6, 8]} height={[6, 8]} />
                     </AssetProvider.Protocols>
+                  </Flex>
+                </VStack>
+                <VStack
+                  spacing={2}
+                  height={'100%'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.chain'} fontSize={['sm','md']} color={'primary'} />
+                  <Flex
+                    flex={1}
+                    alignItems={'flex-end'}
+                  >
+                    <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
                   </Flex>
                 </VStack>
               </SimpleGrid>
@@ -723,6 +723,7 @@ export const AssetPage: React.FC = () => {
                 >
                   {renderedTabs}
                 </HStack>
+                {headerRightSide}
               </Stack>
               <TabComponent {...tabs[selectedTabIndex].componentProps} />
             </Stack>

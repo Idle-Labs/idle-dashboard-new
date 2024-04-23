@@ -123,6 +123,9 @@ export const theme = extendTheme({
       bgHover:'#293243',
       colorHover:'#CDD0D6'
     },
+    banner:{
+      bg: '#0035a4'
+    },
     card:{
       bg:'#202A3E',
       bgDark:'#1B1E27',

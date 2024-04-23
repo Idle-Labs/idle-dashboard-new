@@ -428,7 +428,6 @@ export const Earn: React.FC = () => {
             chartData && !chartData.total?.length && (
               <Center
                 layerStyle={'overlay'}
-                bg={'rgba(0, 0, 0, 0.4)'}
               >
                 <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
               </Center>

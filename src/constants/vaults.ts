@@ -3906,26 +3906,26 @@ export const aggregatedVaults: Record<string, AggregatedVault> = {
   stableSecuredLending: {
     chainId: 1,
     color: '#4de3b0',
-    type: 'Algorithmic rebalance',
+    type: 'Yield Aggregator',
     icon: 'images/strategies/AA.svg',
-    name: 'Stablecoin Secured Lending',
+    name: 'Optimized Secured Lending',
     vaults: [
       '0x3fe7940616e5bc47b0775a0dccf6237893353bb4',
       '0x5274891bEC421B39D23760c04A6755eCB444797C',
       '0xF34842d05A1c888Ca02769A633DF37177415C2f8'
     ],
-    description: 'Your funds will be allocated to always achieve the best yield'
+    description: 'Algorithmically rebalanced vault to always achieve the highest yield'
   },
   rwa: {
     chainId: 10,
     color: '#627eea',
-    type: 'Yield aggregator',
-    name: 'Real-World Assets',
+    type: 'Yield Index',
+    name: 'Diversified RWA Lending',
     icon: 'images/strategies/RWA.svg',
     vaults: [
       '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
     ],
-    description: 'Get exposure to Real-world asset-backed investments'
+    description: 'Diversified exposure to real-world asset-backed credit vaults, protected by first-loss capital'
   }
 }
 
@@ -3951,6 +3951,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   },
   10: { // Optimism
     USDT: {
+      autoFarming:['OP'],
       enabledEnvs:['beta'],
       blockNumber: 117936837,
       underlyingToken: 'USDT',
@@ -3965,8 +3966,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         referralEnabled:false,
         addUnderlyingProtocolsAdditionalApr: true
       },
-      autoFarming:[],
-      description:'This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
+      description:'The RWA Best Yield vault seeks to automatically maximize yields across multiple Senior Tranches, providing higher yields while keeping a convervative risk profile thanks to Seniors’ built-in coverage. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a><br /><br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are automatically collected from the underlying vaults and distriuted every wednesday directly to our depositors wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>',
       protocols: [
         {
           decimals: 18,

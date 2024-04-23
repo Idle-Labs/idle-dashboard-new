@@ -23,7 +23,7 @@ import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { ProtocolOverview } from 'components/ProtocolOverview/ProtocolOverview'
 import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
 import { products, chains, networks, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray } from 'helpers/'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray, abbreviateNumber } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button, Tooltip } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -97,7 +97,7 @@ export const Tranches: React.FC = () => {
   const navigate = useNavigate()
   const translate = useTranslate()
   const { account } = useWalletProvider()
-  const { isMobile } = useThemeProvider()
+  const { theme, isMobile } = useThemeProvider()
   // const { params } = useBrowserRouter()
   const { openModal, closeModal } = useModalProvider()
   const [ availableAssetsFilter, setAvailableAssetsFilter ] = useState<string | null>(null)
@@ -109,6 +109,7 @@ export const Tranches: React.FC = () => {
 
   const {
     vaults,
+    protocolData,
     isPortfolioLoaded,
     selectors: {
       selectVaultById,
@@ -891,45 +892,49 @@ export const Tranches: React.FC = () => {
     const modalProps = product?.modal
     return (
       <VStack
-        mb={16}
+        mb={20}
         width={'full'}
         spacing={8}
       >
         {/*<AnnouncementBanner text={'feeDiscount.announcement'} image={'images/vaults/discount.png'} />*/}
+        <Box
+          left={0}
+          zIndex={1}
+          width={'full'}
+          height={'11.5em'}
+          position={'absolute'}
+          background={`radial-gradient(circle, ${theme.colors.card.bg}AA 40%, ${theme.colors.card.bg}50 100%)`}
+          backgroundPosition={'top left'}
+          backgroundSize={'300%'}
+        />
         <Stack
+          zIndex={2}
+          width={'full'}
           spacing={[8, 0]}
+          position={'relative'}
           direction={['column', 'row']}
-          alignItems={['center', 'flex-start']}
-          width={['100%', '100%', '100%', '100%', '100%']}
+          alignItems={['center', 'center']}
+          justifyContent={'space-between'}
         >
           <VStack
             pr={[0, 0]}
-            spacing={6}
+            spacing={4}
             width={'full'}
             direction={'column'}
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
-            <Stack
-              spacing={[10, 16]}
-              width={['full', 'auto']}
-              direction={['column', 'row']}
-            >
-              <Box
-                pr={[0, 16]}
-                width={'full'}
-                borderRight={['none', '1px solid']}
-                borderColor={'divider'}
-              >
-                <ProtocolOverview showLoading={true} />
-              </Box>
-              <StrategyOverview showLoading={true} strategies={productStrategies} />
-            </Stack>
+            <Translation translation={'stats.protocolOverview'} fontSize={'h4'} isHtml={true} params={{tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults}} />
           </VStack>
+          <Box
+            minWidth={['full', '30em']}
+          >
+            <StrategyOverview showLoading={true} strategies={productStrategies} />
+          </Box>
         </Stack>
       </VStack>
     )
-  }, [strategy, product, productStrategies])
+  }, [theme, strategy, product, productStrategies, protocolData])
 
   const onClickAggregatedVaults = useCallback((aggregatedVault: AggregatedVault) => {
     // sendSelectItem(item_list_id, item_list_name, asset)
@@ -960,7 +965,7 @@ export const Tranches: React.FC = () => {
           width={['full', '50%']}
           alignItems={'flex-start'}
         >
-          <Translation translation={'strategies.aggregated.title'} component={Heading} as={'h3'} fontSize={'2xl'} />
+          <Translation translation={'strategies.aggregated.title'} component={Heading} as={'h3'} fontSize={'3xl'} />
           <Translation translation={'strategies.aggregated.description'} />
         </VStack>
         <Stack
@@ -998,7 +1003,7 @@ export const Tranches: React.FC = () => {
           width={['full', '50%']}
           alignItems={'flex-start'}
         >
-          <Translation translation={'strategies.isolated.title'} component={Heading} as={'h3'} fontSize={'2xl'} />
+          <Translation translation={'strategies.isolated.title'} component={Heading} as={'h3'} fontSize={'3xl'} />
           <Translation translation={'strategies.isolated.description'} />
         </VStack>
         {depositedAssets}

@@ -800,7 +800,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
         isDisabled={tooltipDisabled}
       >
         <TooltipContent>
-          <Amount.Percentage value={asset?.apy} {...props} stackProps={{spacing:1}} borderBottom={showTooltip ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+          <Amount.Percentage value={asset?.apy} {...props} stackProps={{spacing:1}} borderBottom={showTooltip && !tooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
         </TooltipContent>
       </Tooltip>
       {

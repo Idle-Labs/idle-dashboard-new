@@ -48,7 +48,7 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
       width={'full'}
       alignItems={'flex-start'}
     >
-      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.underlyingProtocols'} />
+      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.vaultComposition'} />
       <SimpleGrid
         spacing={6}
         width={'100%'}
@@ -89,12 +89,12 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                     >
                       {
                         isIdleVault ? (
-                          <AssetProvider.GeneralData field={'protocolWithVariant'} size={'sm'} />
+                          <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'sm'} />
                         ) : (
                           <ProtocolLabel protocolId={protocol.name} size={'sm'} />
                         )
                       }
-                      <AssetProvider.Strategy prefix={'('} suffix={')'} color={'primary'} />
+                      {/*<AssetProvider.Strategy prefix={'('} suffix={')'} color={'primary'} />*/}
                     </HStack>
                     <AssetProvider.StrategyBadge width={6} height={6} />
                   </HStack>

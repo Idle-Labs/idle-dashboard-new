@@ -220,17 +220,17 @@
   },
   "strategies": {
     "general": {
-      "title": "Explore Earn Vaults",
+      "title": "Explore Earn Strategies",
       "description": "Elevate your portfolio using our refined strategies, versatile solutions designed to satisfy the needs of both sophisticated and risk-inclined investors."
     },
     "aggregated": {
       "tag": "Aggregated",
       "title": "Aggregated vaults",
-      "description": "A selection of strategies curated directly by Idle, where funds are strategically allocated across diverse protocols to enhance APY, providing investors with a hassle-free solution for maximizing yields."
+      "description": "A selection of strategies curated directly by Idle, where funds are strategically allocated across diverse protocols to optimize yields."
     },
     "isolated": {
       "title": "Isolated vaults",
-      "description": "Isolated vaults offer direct exposure to specific protocols or strategies with customizable risk profiles, empowering you to manage your DeFi risk/reward profile."
+      "description": "Siloed pools offering direct exposure to specific strategies with different risk-return profiles."
     },
     "staking": {
       "title": "Staking",
@@ -647,6 +647,7 @@
     "stakingRewards": "Staking Rewards",
     "autoCompounding": "Auto Compounding",
     "claim": "Claim",
+    "composition": "Composition",
     "rewards": "Rewards",
     "unstaking": "Unstaking",
     "available": "Available %{unbondingEnd}",
@@ -705,6 +706,7 @@
     "strategyDescription": "Strategy description",
     "borrowerOverview": "Borrower overview",
     "coveredRisks": "Covered risks",
+    "vaultComposition": "Vault composition",
     "underlyingProtocols": "Underlying protocols",
     "historicalPerformance": "Historical Performance",
     "fundsOverview": "Funds Overview",
@@ -914,6 +916,7 @@
     "tvlDistribution": "TVL distribution",
     "collectedFeesEmpty": "Collected fees will appear here",
     "selectDateRange": "Select a date range",
+    "protocolOverview": "Over <strong class='linkStatic'>$%{tvlUsd}</strong> deposited in Idle with <strong>%{avgApy}%</strong> avg APY<br />across <strong>%{vaults} vaults</strong>.",
     "filters": {
       "strategies": "Strategies",
       "assets": "Assets",

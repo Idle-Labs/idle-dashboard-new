@@ -22,9 +22,9 @@ import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors
 import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID } from 'constants/vars'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
-import { GaugeRewardData, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
+import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData } from 'constants/types'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject } from 'helpers/'
 
 type VaultsPositions = {
@@ -71,6 +71,7 @@ type InitialState = {
   balancesUsd: Balances
   helpers: Record<any, any>
   vaultsChain: number | null
+  protocolData: ProtocolData
   isPortfolioLoaded: boolean
   protocolToken: Asset | null
   contracts: GenericContract[]
@@ -123,6 +124,11 @@ const initialState: InitialState = {
   vaultsPrices: {},
   transactions: {},
   pausedVaults: {},
+  protocolData: {
+    uniqueVaults: 0,
+    totalTvlUsd: BNify(0),
+    totalAvgApy: BNify(0),
+  },
   stakingData: null,
   vaultsChain: null,
   totalSupplies: {},
@@ -206,6 +212,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       */
     case 'SET_STATE':
       return {...state, ...action.payload}
+    case 'SET_PROTOCOL_DATA':
+        return {...state, protocolData: action.payload}
     case 'SET_PROTOCOL_TOKEN':
       return {...state, protocolToken: action.payload}
     case 'SET_PORTFOLIO_TIMESTAMP':
@@ -4373,6 +4381,33 @@ export function PortfolioProvider({ children }:ProviderProps) {
     state.interestBearingTokens,
     state.morphoRewardsEmissions
   ])
+
+  useEffect(() => {
+    if (!state.isPortfolioLoaded || isEmpty(state.assetsData)) return;
+    const visibleAssets: Asset[] = (Object.values(state.assetsData) as Asset[]).filter( (asset: Asset) => (!!strategies[asset.type as string]?.visible && asset.status !== 'deprecated') )
+    const totalTvlUsd = Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0))
+    const totalAvgApy = Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0) ).div(totalTvlUsd)
+    const uniqueVaults: AssetId[] = visibleAssets.reduce( (uniqueVaults: AssetId[], asset: Asset) => {
+      const vault = selectVaultById(asset.id)
+      if (vault){
+        if (vault instanceof TrancheVault){
+          const cdoAddress = vault.cdoConfig.address
+          if (!uniqueVaults.includes(cdoAddress)){
+            uniqueVaults.push(cdoAddress)
+          }
+        } else {
+          uniqueVaults.push(asset.id as string)
+        }
+      }
+      return uniqueVaults
+    }, [])
+
+    dispatch({type:'SET_PROTOCOL_DATA', payload: {
+      totalTvlUsd,
+      totalAvgApy,
+      uniqueVaults: uniqueVaults.length
+    }})
+  }, [state.assetsData, selectVaultById, state.isPortfolioLoaded])
 
   return (
     <PortfolioProviderContext.Provider value={state}>
