@@ -154,7 +154,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDC',
           address:'0x73318bF57Fa6A4a97e0140e5CfF8219755FcDdbc'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -244,7 +244,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_USDT',
           address:'0xB5D4D8d9122Bf252B65DAbb64AaD68346405443C'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -334,7 +334,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_bastion_USDT',
           address:'0x98c1E0261Fe4C4c701Cc509Cce2168084944bA4B'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe6be721ccc9552d79bdc0d9cc3638606c3bdadb5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Bastion USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe6be721ccc9552d79bdc0d9cc3638606c3bdadb5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Bastion USDT</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -435,7 +435,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             }
           }
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa3aad4020f9c2e336c6bc0461948c94447a335f5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa3aad4020f9c2e336c6bc0461948c94447a335f5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -526,7 +526,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wincent_USDCe',
           address:'0x7bE5622b27ceb9f2f3776fa5c8e3BA23Db65Ced7'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x463a9fb7320834b7f8a5c4713434257c8971b9a8?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool wincent USDCe</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x463a9fb7320834b7f8a5c4713434257c8971b9a8?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool wincent USDCe</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -631,7 +631,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             }
           }
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x87181362ba304fec7e5a82ad2b7b503d7ad62639?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x87181362ba304fec7e5a82ad2b7b503d7ad62639?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -732,7 +732,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             }
           }
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x462c4b2e69a59ff886980f36300c168234b63464?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x462c4b2e69a59ff886980f36300c168234b63464?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1124,7 +1124,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           title:'Lido stMATIC unstake period',
           text:'When you withdraw your funds from the tranche you will receive an NFT representing your redeemed amount, default stMATIC unstaking period takes around 3-4 days (80 epochs) to process. After that you can claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab. More info at <a href="https://docs.polygon.lido.fi/how-lido-on-polygon-works/#unstake-tokens" class="link" rel="nofollow noopener noreferrer" target="_blank">https://docs.polygon.lido.fi/how-lido-on-polygon-works/#unstake-tokens</a>'
         },
-        description:'This strategy deploys funds in the <a href="https://polygon.lido.fi/" class="link" rel="nofollow noopener noreferrer" target="_blank">Lido MATIC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://polygon.lido.fi/" class="link" rel="nofollow noopener noreferrer" target="_blank">Lido MATIC pool</a>.',
         messages:{
           // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
           actions:{
@@ -1537,7 +1537,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_USDC',
           address:'0x5DaD2eEF80a8cdFD930aB8f0353cA13Bd48c4346'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1617,7 +1617,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_DAI',
           address:'0xc7F1B9C72B8230E470420A4b69af7c50781A3f44'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x6b175474e89094c44da98b954eedeac495271d0f" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x6b175474e89094c44da98b954eedeac495271d0f" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler DAI pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1697,7 +1697,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_USDT',
           address:'0x3d1775dA27Dd9c6d936795Ac21b94CDeD8baBD69'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xdac17f958d2ee523a2206206994597c13d831ec7" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xdac17f958d2ee523a2206206994597c13d831ec7" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDT pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1779,7 +1779,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_USDC',
           address:'0x0FE4Fc1301aFe4aFE8C3ac288c3E13cDaCe71b04'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a> and automatically stake the received eUSDC to earn additional EUL rewards. The accrued EUL are harvested and re-invested in the strategy. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDC pool</a> and automatically stake the received eUSDC to earn additional EUL rewards. The accrued EUL are harvested and re-invested in the strategy.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1861,7 +1861,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_USDTStaking',
           address:'0xaf141907c3185bee2d451b5a72b89232b0340652'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xdac17f958d2ee523a2206206994597c13d831ec7" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDT pool</a> and automatically stake the received eUSDT to earn additional EUL rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xdac17f958d2ee523a2206206994597c13d831ec7" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler USDT pool</a> and automatically stake the received eUSDT to earn additional EUL rewards.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -1943,7 +1943,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_WETHStaking',
           address:'0x2D29c277Ac61376Fb011DCAFCe03EA3C9485f4c2'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler WETH pool</a> and automatically stake the received eWETH to earn additional EUL rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler WETH pool</a> and automatically stake the received eWETH to earn additional EUL rewards.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2025,7 +2025,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_DAIStaking',
           address:'0x62aa57dd00c3d77f984379892c857bef58fc7722'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x6b175474e89094c44da98b954eedeac495271d0f" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler DAI pool</a> and automatically stake the received eDAI to earn additional EUL rewards. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x6b175474e89094c44da98b954eedeac495271d0f" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler DAI pool</a> and automatically stake the received eDAI to earn additional EUL rewards.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2105,7 +2105,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_euler_AGEUR',
           address:'0x8468B8Efe7eeA52978Ccfe3C0248Ca6F6895e166'
         },
-        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x1a7e4e63778b4f12a199c062f3efdd288afcbce8" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler AGEUR pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.euler.finance/market/0x1a7e4e63778b4f12a199c062f3efdd288afcbce8" class="link" rel="nofollow noopener noreferrer" target="_blank">Euler AGEUR pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2191,7 +2191,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_ribbon_USDC',
           address:'0x25e7337037817DD9Bddd0334Ca1591f370518893'
         },
-        description:'This strategy deploys funds in the <a href="https://lend.ribbon.finance/app/pool/folkvang" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Folkvang USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://lend.ribbon.finance/app/pool/folkvang" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Folkvang USDC pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2280,7 +2280,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         // links:{
         //   default:'https://docs.ribbon.finance/ribbon-lend/introduction-to-ribbon-lend/no-lockups/pool-status',
         // },
-        description:'This strategy deploys funds in the <a href="https://lend.ribbon.finance/app/pool/wintermute" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Wintermute USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://lend.ribbon.finance/app/pool/wintermute" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Wintermute USDC pool</a>.',
         Tranches: {
           AA:{
             decimals:18,
@@ -2365,7 +2365,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_ribbon_DAI',
           address:'0x94BcFfc172Af69132BbCE7DF52D567e5ce651dcd'
         },
-        description:'This strategy converts 1:1 DAI into USDC via <a href="https://mips.makerdao.com/mips/details/MIP29" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://lend.ribbon.finance/app/pool/wintermute" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Wintermute USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy converts 1:1 DAI into USDC via <a href="https://mips.makerdao.com/mips/details/MIP29" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://lend.ribbon.finance/app/pool/wintermute" class="link" rel="nofollow noopener noreferrer" target="_blank">Ribbon Wintermute USDC pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2457,7 +2457,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_USDC',
           address:'0x931c080c7ed6b3c6988576654e5d56753dc92181'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2544,7 +2544,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wintermute_USDC',
           address:'0x54ae90be2dee0a960953c724839541e75bb1f471'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wintermute USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wintermute USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2632,7 +2632,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wincent_USDC',
           address:'0xB9c8d0A004772000eE199c4348f1933AcbFDC1bB'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2718,7 +2718,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_folkvang_USDC',
           address:'0x84B2dEaF87A398F25ec5833000F72B6a4906b5AC'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe3d20a721522874d32548b4097d1afc6f024e45b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Folkvang USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe3d20a721522874d32548b4097d1afc6f024e45b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Folkvang USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2804,7 +2804,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDT',
           address:'0xc8e2Fad99061407e947485c846bd05Eae9DE1991'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x1a1d778776542c2efed161ba1fbcfe6e09ba99fb?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x1a1d778776542c2efed161ba1fbcfe6e09ba99fb?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2890,7 +2890,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDC',
           address:'0x16F6bE72882B24527F94c7BCCabF77B62608083b'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2977,7 +2977,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_DAI',
           address:'0x3687c0F8760371fc1BD1c7bc28695c388CdEd5a0'
         },
-        description:'This strategy converts 1:1 DAI into USDC via <a href="https://mips.makerdao.com/mips/details/MIP29" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy converts 1:1 DAI into USDC via <a href="https://mips.makerdao.com/mips/details/MIP29" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3067,7 +3067,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:EthenaPool as Abi,
           address:'0x9D39A5DE30e57443BfF2A8307A4256c8797A3497'
         },
-        description:'This strategy deploys funds in the <a href="https://app.ethena.fi/stake" class="link" rel="nofollow noopener noreferrer" target="_blank">Ethena USDe</a> staking pool and get sUSDe in exchange. To withdraw your funds you need to wait a cooldown period of 7 days, after which you can claim back your USDe. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.<br /><br /><h3 style="font-weight:bold">Ethena Shards campaign</h3><p>Following the latest updates to the <a href="https://mirror.xyz/0xF99d0E4E3435cc9C9868D1C6274DfaB3e2721341/Wy_n1gKYHNwckLW5TcXb5-vtLoUOdpCaxM45t3TgC90" class="link" rel="nofollow noopener noreferrer" target="_blank" class="link">Shard campaign of USDe</a>, Senior LPs can leverage up their Ethena Shards exposure. On top of Senior Shards, LPs will receive Junior Shards as well and boost their Shard multiplier based on Junior liquidity.</p>',
+        description:'This strategy deploys funds in the <a href="https://app.ethena.fi/stake" class="link" rel="nofollow noopener noreferrer" target="_blank">Ethena USDe</a> staking pool and get sUSDe in exchange. To withdraw your funds you need to wait a cooldown period of 7 days, after which you can claim back your USDe.<br /><br /><h3 style="font-weight:bold">Ethena Shards campaign</h3><p>Following the latest updates to the <a href="https://mirror.xyz/0xF99d0E4E3435cc9C9868D1C6274DfaB3e2721341/Wy_n1gKYHNwckLW5TcXb5-vtLoUOdpCaxM45t3TgC90" class="link" rel="nofollow noopener noreferrer" target="_blank" class="link">Shard campaign of USDe</a>, Senior LPs can leverage up their Ethena Shards exposure. On top of Senior Shards, LPs will receive Junior Shards as well and boost their Shard multiplier based on Junior liquidity.</p>',
         messages:{
           buyLink: 'https://app.ethena.fi',
           // pendingNFTAmount:'Claim your rewards directly from <a href="https://polygon.lido.fi" class="link" rel="nofollow noopener noreferrer" target="_blank">https://polygon.lido.fi</a> in Claim tab.',
@@ -3169,7 +3169,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:MorphoPool as Abi,
           address:'0x38989BBA00BDF8181F4082995b3DEAe96163aC5D'
         },
-        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3266,7 +3266,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           abi:MorphoPool as Abi,
           address:'0x38989BBA00BDF8181F4082995b3DEAe96163aC5D'
         },
-        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x38989BBA00BDF8181F4082995b3DEAe96163aC5D" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by B.Protocol and Block Analitica is intended to optimize risk-adjusted interest earned from blue-chip LST and stablecoin collateral markets. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x38989BBA00BDF8181F4082995b3DEAe96163aC5D" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by B.Protocol and Block Analitica is intended to optimize risk-adjusted interest earned from blue-chip LST and stablecoin collateral markets.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3360,7 +3360,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name: 'Morpho_steakUSDC',
           address:'0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
         },
-        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB" class="link" rel="nofollow noopener noreferrer" target="_blank">Steakhouse USDC MetaMorpho vault</a>. The vault is intended to optimize yields with bluechip collateral from both crypto and tradfi markets. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB" class="link" rel="nofollow noopener noreferrer" target="_blank">Steakhouse USDC MetaMorpho vault</a>. The vault is intended to optimize yields with bluechip collateral from both crypto and tradfi markets.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3441,7 +3441,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_USDC',
           address:'0x6c14a1a28dd6dae5734fd960bac0b89a6b401cfd'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDC pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDC pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3522,7 +3522,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_aave_DAI',
           address:'0x9182A7C9D9858d54816baC7e3C049B26d3fc56bB'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave DAI pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave DAI pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3603,7 +3603,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_aave_USDT',
           address:'0x57E142278E93d721F3eBD52EC5D2D28484862f32'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDT pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave USDT pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3684,7 +3684,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_morpho_aave_WETH',
           address:'0x9708B5398382EE064A8E718972670351F1c2c860'
         },
-        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave WETH pool</a>. The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href="https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35" class="link" rel="nofollow noopener noreferrer" target="_blank">Adaptive Yield Split</a>.',
+        description:'This strategy deploys funds in the <a href="https://aave.morpho.org/?network=mainnet" class="link" rel="nofollow noopener noreferrer" target="_blank">Morpho Aave WETH pool</a>.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,

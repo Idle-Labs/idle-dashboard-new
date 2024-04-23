@@ -2,6 +2,7 @@ import { Earn } from './Earn'
 import { GaugeStaking } from './GaugeStaking'
 import { useNavigate } from 'react-router-dom'
 import useLocalForge from 'hooks/useLocalForge'
+import { TrancheVault } from 'vaults/TrancheVault'
 import { IconTab } from 'components/IconTab/IconTab'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -500,7 +501,7 @@ export const AssetPage: React.FC = () => {
         >
           <Translation translation={operatorInfo.nameShort || operatorInfo.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
           {
-            vault && ("vaultType" in vault) && (
+            vault && ("vaultType" in vault) && vault.vaultType && (
               <Translation translation={`products.${vault.vaultType}`} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
             )
           }
@@ -519,7 +520,7 @@ export const AssetPage: React.FC = () => {
         >
           <AssetProvider.ProtocolName color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
           {
-            vault && ("vaultType" in vault) && (
+            vault && ("vaultType" in vault) && vault.vaultType && (
               <Translation translation={`products.${vault.vaultType}`} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
             )
           }
@@ -602,24 +603,45 @@ export const AssetPage: React.FC = () => {
                     <AssetProvider.PoolUsd fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                   </HStack>
                 </VStack>
-                <VStack
-                  pr={[4, 6]}
-                  spacing={2}
-                  height={'100%'}
-                  borderRight={'1px solid'}
-                  borderColor={'dividerLight'}
-                  alignItems={'flex-start'}
-                >
-                  <Translation translation={'defi.composition'} fontSize={['sm','md']} color={'primary'} />
-                  <Flex
-                    flex={1}
-                    alignItems={'flex-end'}
-                  >
-                    <AssetProvider.Protocols width={[6, 8]} height={[6, 8]}>
-                      <AssetProvider.ProtocolIcon width={[6, 8]} height={[6, 8]} />
-                    </AssetProvider.Protocols>
-                  </Flex>
-                </VStack>
+                {
+                  !(vault instanceof TrancheVault) ? (
+                    <VStack
+                      pr={[4, 6]}
+                      spacing={2}
+                      height={'100%'}
+                      borderRight={'1px solid'}
+                      borderColor={'dividerLight'}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'defi.composition'} fontSize={['sm','md']} color={'primary'} />
+                      <Flex
+                        flex={1}
+                        alignItems={'flex-end'}
+                      >
+                        <AssetProvider.Protocols width={[6, 8]} height={[6, 8]}>
+                          <AssetProvider.ProtocolIcon showTooltip={true} width={[6, 8]} height={[6, 8]} />
+                        </AssetProvider.Protocols>
+                      </Flex>
+                    </VStack>
+                  ) : (
+                    <VStack
+                      pr={[4, 6]}
+                      spacing={2}
+                      height={'100%'}
+                      borderRight={'1px solid'}
+                      borderColor={'dividerLight'}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'defi.riskProfile'} fontSize={['sm','md']} color={'primary'} />
+                      <Flex
+                        flex={1}
+                        alignItems={'flex-end'}
+                      >
+                        <AssetProvider.Strategies showLabel={!isMobile} iconMargin={0} w={[6, 8]} />
+                      </Flex>
+                    </VStack>
+                  )
+                }
                 <VStack
                   spacing={2}
                   height={'100%'}

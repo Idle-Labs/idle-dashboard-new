@@ -621,6 +621,7 @@
     "feeDiscount": "Fee discount",
     "discountedFees": "Discounted fees",
     "gauges": "Gauges",
+    "riskProfile": "Risk profile",
     "assetClass": "Asset class",
     "seniorCoverage": "Senior Coverage",
     "govToken": "Gov. token",
@@ -635,6 +636,7 @@
     "protocols": "Protocols",
     "unstake": "Unstake",
     "apyWithRewards": "APY",
+    "ays": "Advanced Yield Split",
     "seniorApy": "Senior APY",
     "juniorApy": "Junior APY",
     "moreThanUnderlying": "more than the underlying",
@@ -1073,14 +1075,18 @@
         "disabledCta":"Withdraw"
       },
       "AA": {
+        "disabledCta":"Withdraw",
         "cta": "Deposit with Senior",
+        "howItWorks": "How Senior tranches work",
         "disabled":"This vault has been deactivated, please withdraw your funds",
-        "disabledCta":"Withdraw"
+        "ays": "The APR is dynamically adjusted according to the boost provided to the counterpart Junior tranche thanks to the <a href=\"https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35\" class=\"link\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Adaptive Yield Split</a>."
       },
       "BB": {
+        "disabledCta":"Withdraw",
         "cta": "Deposit with Junior",
+        "howItWorks": "How Junior tranches work",
         "disabled":"This vault has been deactivated, please withdraw your funds",
-        "disabledCta":"Withdraw"
+        "ays": "The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href=\"https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35\" class=\"link\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Adaptive Yield Split</a>."
       }
     },
     "actions": {

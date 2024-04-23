@@ -4,6 +4,7 @@ import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
 import { Amount } from 'components/Amount/Amount'
+import { TrancheVault } from 'vaults/TrancheVault'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MaticNFTs } from 'components/MaticNFTs/MaticNFTs'
@@ -293,7 +294,7 @@ export const Earn: React.FC = () => {
     return (
       <VStack
         pb={10}
-        spacing={6}
+        spacing={4}
         width={'full'}
         borderBottom={'1px solid'}
         borderColor={'divider'}
@@ -301,6 +302,18 @@ export const Earn: React.FC = () => {
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
         <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
+        {
+          (vault instanceof TrancheVault) && (
+            <VStack
+              spacing={2}
+              width={'full'}
+              alignItems={'flex-start'}
+            >
+              <Translation component={Heading} as={'h4'} fontSize={'h4'} translation={`trade.vaults.${vault.type}.howItWorks`} />
+              <Translation isHtml={true} translation={[strategies[vault.type].description as string, `trade.vaults.${vault.type}.ays`]} />
+            </VStack>
+          )
+        }
       </VStack>
     )
   }, [vault, asset, locale])

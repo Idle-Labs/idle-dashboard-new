@@ -1283,10 +1283,10 @@ const IdleDistribution: React.FC<IdleDistributionProps> = ({defaultText, ...prop
 
   const dailyDistribution = bnOrZero(asset?.idleDistribution).times(BNify(BLOCKS_PER_YEAR).div(365))
   
-  return bnOrZero(dailyDistribution).gt(0) && IDLE ? (
+  return IDLE ? (
     <HStack
       spacing={0}
-      alignItems={'center'}
+      alignItems={'end'}
     >
       <TokenAmount assetId={IDLE.address} showIcon={true} size={'2xs'} fontSize={'sm'} prefix={'+'} amount={dailyDistribution} {...props} />
       <Translation translation={'common.day'} prefix={'/'} fontSize={'85%'} fontWeight={400} textTransform={'lowercase'} />
