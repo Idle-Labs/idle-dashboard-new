@@ -3967,6 +3967,9 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         startTimestamp: 1712620800000
       },
       flags:{
+        generalDataFields:{
+          idleDistribution: false
+        },
         referralEnabled:false,
         hideStrategyDescriptionCarousel:true,
         addUnderlyingProtocolsAdditionalApr: true

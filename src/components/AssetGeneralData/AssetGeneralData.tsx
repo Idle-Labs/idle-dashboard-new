@@ -70,15 +70,30 @@ export const AssetGeneralDataField: React.FC<LabelProps> = ({ generalData }) => 
 
 export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) => {
   // const { params } = useBrowserRouter()
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
   }, [selectAssetById, assetId])
 
+  const vault = useMemo(() => {
+    return selectVaultById && selectVaultById(assetId)
+  }, [selectVaultById, assetId])
+
   const strategy = useMemo(() => {
     return asset?.type && strategies[asset.type]
   }, [asset])
+
+  const generalDataFields = useMemo(() => {
+    if (!vault || !("getFlag" in vault)) return strategy?.generalDataFields || []
+    const vaultGeneralDataFields = vault.getFlag("generalDataFields")
+    if (vaultGeneralDataFields){
+      return strategy?.generalDataFields ? strategy?.generalDataFields.filter( (generalDataField: GeneralDataField) => {
+        return vaultGeneralDataFields[generalDataField.field] === undefined || vaultGeneralDataFields[generalDataField.field] === true
+      }) : []
+    }
+    return strategy?.generalDataFields || []
+  }, [strategy, vault])
 
   return (
     <AssetProvider
@@ -88,26 +103,26 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
       <Card.Dark>
         <SimpleGrid
           spacing={[6, 0]}
-          columns={[2, Math.min(strategy?.generalDataFields.length, 5)]}
+          columns={[2, Math.min(generalDataFields.length, 5)]}
         >
           {
-            strategy?.generalDataFields && strategy?.generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => (
+            generalDataFields && generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => (
               <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
             ))
           }
         </SimpleGrid>
         {
-          strategy?.generalDataFields && strategy?.generalDataFields.length>5 && (
+          generalDataFields && generalDataFields.length>5 && (
             <SimpleGrid
               pt={6}
               mt={6}
               spacing={[6, 0]}
-              columns={[2, Math.min(strategy?.generalDataFields.length, 5)]}
+              columns={[2, Math.min(generalDataFields.length, 5)]}
               borderTop={'1px solid'}
               borderTopColor={'divider'}
             >
               {
-                strategy?.generalDataFields.slice(5).map( (generalData: GeneralDataField) => (
+                generalDataFields.slice(5).map( (generalData: GeneralDataField) => (
                   <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
                 ))
               }

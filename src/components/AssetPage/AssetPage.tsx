@@ -24,7 +24,7 @@ import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBa
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs, getObjectPath } from 'helpers/'
-import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps } from '@chakra-ui/react'
+import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps, Spinner } from '@chakra-ui/react'
 import { operators, AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
 
 type TabType = {
@@ -583,7 +583,13 @@ export const AssetPage: React.FC = () => {
                     spacing={0}
                     alignItems={'flex-end'}
                   >
-                    <AssetProvider.Apy showTooltip={false} fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                    {
+                      !isPortfolioLoaded ? (
+                        <Spinner size={'md'} />
+                      ) : (
+                        <AssetProvider.Apy showTooltip={false} fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                      )
+                    }
                   </HStack>
                 </VStack>
                 <VStack
@@ -600,7 +606,13 @@ export const AssetPage: React.FC = () => {
                     spacing={0}
                     alignItems={'flex-end'}
                   >
-                    <AssetProvider.PoolUsd fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                    {
+                      !isPortfolioLoaded ? (
+                        <Spinner size={'md'} />
+                      ) : (
+                        <AssetProvider.PoolUsd fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                      )
+                    }
                   </HStack>
                 </VStack>
                 {
