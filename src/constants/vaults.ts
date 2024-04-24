@@ -3974,7 +3974,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         hideStrategyDescriptionCarousel:true,
         addUnderlyingProtocolsAdditionalApr: true
       },
-      description:'The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a convervative risk profile thanks to Seniors’ built-in coverage. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a><br /><br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are automatically collected from the underlying vaults and distriuted every wednesday directly to our depositors wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>',
+      description:'The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a convervative risk profile thanks to <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Seniors’ built-in coverage</a>.<br /><br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are collected from the underlying vaults and airdropped every Wednesday directly to the depositors\' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>',
       protocols: [
         {
           decimals: 18,

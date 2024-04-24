@@ -201,7 +201,7 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
                             width={'100%'}
                             justifyContent={'space-between'}
                           >
-                            <AssetProvider.GeneralData field={'protocolWithVariant'} size={'xs'} />
+                            <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'xs'} />
                             <HStack
                               spacing={1}
                             >
@@ -285,12 +285,12 @@ const Tranche = ({ assetId, onClick }: VaultCardProps) => {
               width={'full'}
               justifyContent={'space-between'}
             >
-              <AssetLabel assetId={asset.id} size={'sm'} extraFields={['statusBadge']} />
               {
                 strategies[asset.type].strategy === 'tranches' && (
-                  <AssetProvider.GeneralData size={'xs'} field={'protocolWithVariant'} />
+                  <AssetProvider.GeneralData size={'xs'} field={'vaultOperatorOrProtocol'} />
                 )
               }
+              <AssetLabel assetId={asset.id} size={'sm'} extraFields={['statusBadge']} />
             </HStack>
             <HStack
               pt={3}
@@ -859,12 +859,12 @@ export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
             width={'full'}
             justifyContent={'space-between'}
           >
-            <AssetLabel assetId={assetId} size={'sm'} extraFields={strategies[asset.type].strategy === 'tranches' ? ['strategyBadge'] : []} />
             {
               strategies[asset.type].strategy === 'tranches' && (
-                <AssetProvider.GeneralData size={'xs'} field={'protocolWithVariant'} />
+                <AssetProvider.GeneralData size={'xs'} field={'vaultOperatorOrProtocol'} />
               )
             }
+            <AssetLabel assetId={assetId} size={'sm'} extraFields={strategies[asset.type].strategy === 'tranches' ? ['strategyBadge'] : []} />
           </HStack>
           <SimpleGrid
             pt={3}

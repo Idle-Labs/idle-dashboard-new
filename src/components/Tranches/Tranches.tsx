@@ -901,7 +901,7 @@ export const Tranches: React.FC = () => {
           left={0}
           zIndex={1}
           width={'full'}
-          height={['22em','11.5em']}
+          height={['20em','11.5em']}
           position={'absolute'}
           background={`radial-gradient(circle, ${theme.colors.card.bg}AA 40%, ${theme.colors.card.bg}50 100%)`}
           backgroundPosition={'top left'}

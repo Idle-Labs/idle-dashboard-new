@@ -311,7 +311,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     stats:{
       header:{
-        fields:['protocolWithVariant']
+        fields:['vaultOperatorOrProtocol']
       },
       strategyData:{
         fields:['coveragePercentage']
@@ -338,7 +338,7 @@ export const strategies: Record<string, StrategyProps> = {
       {
         accessor:'id',
         sortType:'alpha',
-        id:'protocolWithVariant',
+        id:'vaultOperatorOrProtocol',
         extraFields:['statusBadge', 'actionRequired']
       },
       {
@@ -469,7 +469,7 @@ export const strategies: Record<string, StrategyProps> = {
     ],
     stats:{
       header:{
-        fields:['protocolWithVariant']
+        fields:['vaultOperatorOrProtocol']
       },
       strategyData:{
         fields:['apyBoost']
@@ -496,7 +496,7 @@ export const strategies: Record<string, StrategyProps> = {
       {
         accessor:'id',
         sortType:'alpha',
-        id:'protocolWithVariant',
+        id:'vaultOperatorOrProtocol',
         extraFields:['statusBadge']
       },
       {
