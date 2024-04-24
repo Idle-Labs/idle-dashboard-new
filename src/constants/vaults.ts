@@ -3974,7 +3974,36 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         hideStrategyDescriptionCarousel:true,
         addUnderlyingProtocolsAdditionalApr: true
       },
-      description:'The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a convervative risk profile thanks to <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Seniors’ built-in coverage</a>.<br /><br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are collected from the underlying vaults and airdropped every Wednesday directly to the depositors\' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>',
+      description:`The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a convervative risk profile thanks to <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Seniors’ built-in coverage</a>.<br /><br />
+      <h3 style="font-weight:bold">OP Incentive program</h3>
+      <p>This vault, thanks to OP rewards, always maintains a constant APY based on the following TVL thresholds:</p>
+      <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
+        <thead>
+          <tr>
+            <th>TVL thresholds</th>
+            <th>Net APY offered</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Up to $1,000,000</td>
+            <td>25%</td>
+          </tr>
+          <tr>
+            <td>Up to $2,000,000</td>
+            <td>20%</td>
+          </tr>
+          <tr>
+            <td>Up to $3,000,000</td>
+            <td>18%</td>
+          </tr>
+          <tr>
+            <td>Up to $5,000,000</td>
+            <td>16%</td>
+          </tr>
+        </tbody>
+      </table>
+      <br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are collected from the underlying vaults and airdropped every Wednesday directly to the depositors\' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>`,
       protocols: [
         {
           decimals: 18,
