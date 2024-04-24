@@ -154,7 +154,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDC',
           address:'0x73318bF57Fa6A4a97e0140e5CfF8219755FcDdbc'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Fasanara USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -244,7 +244,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_USDT',
           address:'0xB5D4D8d9122Bf252B65DAbb64AaD68346405443C'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Portofino USDT borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -334,7 +334,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_bastion_USDT',
           address:'0x98c1E0261Fe4C4c701Cc509Cce2168084944bA4B'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe6be721ccc9552d79bdc0d9cc3638606c3bdadb5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Bastion USDT</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe6be721ccc9552d79bdc0d9cc3638606c3bdadb5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Bastion USDT borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -435,7 +435,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             }
           }
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa3aad4020f9c2e336c6bc0461948c94447a335f5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa3aad4020f9c2e336c6bc0461948c94447a335f5?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Wincent USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -526,7 +526,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wincent_USDCe',
           address:'0x7bE5622b27ceb9f2f3776fa5c8e3BA23Db65Ced7'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x463a9fb7320834b7f8a5c4713434257c8971b9a8?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool wincent USDCe</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x463a9fb7320834b7f8a5c4713434257c8971b9a8?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">wincent USDCe borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -631,7 +631,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             }
           }
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x87181362ba304fec7e5a82ad2b7b503d7ad62639?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x87181362ba304fec7e5a82ad2b7b503d7ad62639?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Fasanara USDT borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -732,7 +732,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
             }
           }
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x462c4b2e69a59ff886980f36300c168234b63464?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDT</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x462c4b2e69a59ff886980f36300c168234b63464?market=optimism" class="link" rel="nofollow noopener noreferrer" target="_blank">Portofino USDT borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2457,7 +2457,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_USDC',
           address:'0x931c080c7ed6b3c6988576654e5d56753dc92181'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Portofino USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2544,7 +2544,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wintermute_USDC',
           address:'0x54ae90be2dee0a960953c724839541e75bb1f471'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wintermute USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Wintermute USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2632,7 +2632,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_wincent_USDC',
           address:'0xB9c8d0A004772000eE199c4348f1933AcbFDC1bB'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Wincent USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xCb288b6d30738db7E3998159d192615769794B5b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Wincent USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2718,7 +2718,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_folkvang_USDC',
           address:'0x84B2dEaF87A398F25ec5833000F72B6a4906b5AC'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe3d20a721522874d32548b4097d1afc6f024e45b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Folkvang USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xe3d20a721522874d32548b4097d1afc6f024e45b?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Folkvang USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2804,7 +2804,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDT',
           address:'0xc8e2Fad99061407e947485c846bd05Eae9DE1991'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x1a1d778776542c2efed161ba1fbcfe6e09ba99fb?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDT</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0x1a1d778776542c2efed161ba1fbcfe6e09ba99fb?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Fasanara USDT borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2890,7 +2890,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_fasanara_USDC',
           address:'0x16F6bE72882B24527F94c7BCCabF77B62608083b'
         },
-        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Fasanara USDC</a> pool.',
+        description:'This strategy deploys funds in the <a href="https://clearpool.finance/permissionless/pools/0xa75dd592826fa9c679ec03beefb1777ba1a373a0?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Fasanara USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -2977,7 +2977,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_clearpool_portofino_DAI',
           address:'0x3687c0F8760371fc1BD1c7bc28695c388CdEd5a0'
         },
-        description:'This strategy converts 1:1 DAI into USDC via <a href="https://mips.makerdao.com/mips/details/MIP29" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Clearpool Portofino USDC</a> pool.',
+        description:'This strategy converts 1:1 DAI into USDC via <a href="https://mips.makerdao.com/mips/details/MIP29" class="link" rel="nofollow noopener noreferrer" target="_blank">Maker DAO PSM</a> and deploys USDC into <a href="https://clearpool.finance/permissionless/pools/0x4a90c14335e81829d7cb0002605f555b8a784106?market=ethereum" class="link" rel="nofollow noopener noreferrer" target="_blank">Portofino USDC borrowing pool</a> on Clearpool.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -3146,7 +3146,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         status:'experimental',
         variant: 'Re7 Capital',
         underlyingToken:'WETH',
-        vaultType:'liquidStaking',
+        vaultType:'lrtLending',
         autoFarming:['MORPHO', 'USDC'],
         adaptiveYieldSplitEnabled:true,
         flags:{
@@ -3937,6 +3937,7 @@ export type BestYieldConfig = {
   blockNumber: number
   variant?: string
   description?: string
+  stats?: StatsProps
   status?: VaultStatus
   autoFarming?: string[]
   enabledEnvs?: string[]
@@ -3962,11 +3963,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         abi: IdleTokenV4 as Abi,
         address: '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
       },
+      stats:{
+        startTimestamp: 1712620800000
+      },
       flags:{
         referralEnabled:false,
+        hideStrategyDescriptionCarousel:true,
         addUnderlyingProtocolsAdditionalApr: true
       },
-      description:'The RWA Best Yield vault seeks to automatically maximize yields across multiple Senior Tranches, providing higher yields while keeping a convervative risk profile thanks to Seniors’ built-in coverage. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a><br /><br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are automatically collected from the underlying vaults and distriuted every wednesday directly to our depositors wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>',
+      description:'The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a convervative risk profile thanks to Seniors’ built-in coverage. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a><br /><br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are automatically collected from the underlying vaults and distriuted every wednesday directly to our depositors wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>',
       protocols: [
         {
           decimals: 18,
@@ -4037,6 +4042,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         referralEnabled:true
       },
       proxies: ['0xDe3c769cCD1878372864375e9f89956806B86daA'],
+      description:'This Senior Best Yield Vaults seek to automatically maximize yields across either Senior Tranches, providing higher yields while keeping a low-risk profile thanks to Seniors’ built-in coverage, or overcollateralized lending protocols (see underlying protocols below). It represent a conservative target risk allocation strategy. <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Learn more.</a>',
       autoFarming:['IDLE', 'COMP'],
       protocols: [
         {

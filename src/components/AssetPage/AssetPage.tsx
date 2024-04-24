@@ -91,7 +91,7 @@ export const AssetPage: React.FC = () => {
   const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
   const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
   const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["6MONTHS"])
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["WEEK"])
   const [ storedReferrals, setStoredReferrals, , storedReferralsLoaded ] = useLocalForge('storedReferrals', {})
   const {
     isPortfolioLoaded,

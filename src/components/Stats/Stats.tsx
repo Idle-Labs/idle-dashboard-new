@@ -228,7 +228,7 @@ export const Stats: React.FC = () => {
             pl={4}
           >
             <AssetProvider assetId={value}>
-              <AssetProvider.GeneralData field={'protocolWithVariant'} size={'xs'} />
+              <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'xs'} />
             </AssetProvider>
           </Flex>
         ) : row.original.type === 'BY' ? (
@@ -239,7 +239,6 @@ export const Stats: React.FC = () => {
             >
               <AssetProvider.GeneralData field={'protocols'} size={'xs'} />
             </Flex>
-            <AssetProvider.GeneralData field={'strategies'} />
           </AssetProvider>
         ) : (
           <HStack

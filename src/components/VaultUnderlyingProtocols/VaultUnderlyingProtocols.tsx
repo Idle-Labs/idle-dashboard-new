@@ -56,9 +56,8 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
       >
       {
         vault.tokenConfig?.protocols.map( (protocol: IdleTokenProtocol) => {
-          // const allocationPercentage = BNify(asset.allocations?.[protocol.address.toLowerCase()]).div(100)
-          // const allocationUsd = BNify(asset?.tvlUsd).times(allocationPercentage)
-          const allocationUsd = bnOrZero(interestBearingTokens?.[protocol.address.toLowerCase()]).times(underlyingPriceUsd)
+          const allocationPercentage = bnOrZero(asset.allocations?.[protocol.address.toLowerCase()])
+          // const allocationUsd = bnOrZero(interestBearingTokens?.[protocol.address.toLowerCase()]).times(underlyingPriceUsd)
           const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
           const isIdleVault = selectVaultById(protocol.address) !== null
 
@@ -128,7 +127,8 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
                       alignItems={'flex-start'}
                     >
                       <Translation component={Text} translation={'assets.assetDetails.generalData.allocation'} textStyle={'captionSmall'} />
-                      <Amount.Usd value={allocationUsd} textStyle={'tableCell'} />
+                      <Amount.Percentage value={allocationPercentage} textStyle={'tableCell'} />
+                      {/*<Amount.Usd value={allocationUsd} textStyle={'tableCell'} />*/}
                     </VStack>
                   </HStack>
                 </VStack>

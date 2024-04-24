@@ -18,7 +18,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { strategies, AggregatedVault, networks, Network } from 'constants/'
-import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image } from '@chakra-ui/react'
+import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, Spinner, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image } from '@chakra-ui/react'
 
 export type VaultCardProps = {
   assetId: AssetId
@@ -480,8 +480,8 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
             spacing={[1, 2]}
             alignItems={'space-between'}
           >
-            <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
-            <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
+            <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+            <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
           </VStack>
         </HStack>
         <VStack
@@ -567,7 +567,13 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                     spacing={2}
                     alignItems={'baseline'}
                   >
-                    <Amount fontSize={['lg','2xl']} suffix={(<small style={{fontSize: isMobile ? 18 : 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                    {
+                      !isPortfolioLoaded ? (
+                        <Spinner size={'md'} />
+                      ) : (
+                        <Amount fontSize={['lg','2xl']} suffix={(<small style={{fontSize: isMobile ? 18 : 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                      )
+                    }
                     {
                       !isMobile && (
                         <Translation translation={'defi.apy'} textStyle={'caption'} />
@@ -583,7 +589,13 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                   alignItems={'flex-start'}
                 >
                   <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
-                  <Amount.Usd fontSize={['lg','2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                  {
+                    !isPortfolioLoaded ? (
+                      <Spinner size={'md'} />
+                    ) : (
+                      <Amount.Usd fontSize={['lg','2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                    )
+                  }
                 </VStack>
                 <VStack
                   spacing={2}

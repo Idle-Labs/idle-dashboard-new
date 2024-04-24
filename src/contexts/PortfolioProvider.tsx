@@ -4246,17 +4246,10 @@ export function PortfolioProvider({ children }:ProviderProps) {
         })
       }
 
+
       assetsData[vault.id].rewardsEmissions = assetRewardsEmissions
 
       assetsData[vault.id].aprBreakdown = {...state.aprsBreakdown[vault.id]} || {}
-
-      // Add rewards emissions total apr
-      if (rewardsEmissionsTotalApr.gt(0)){
-        if (!assetsData[vault.id].aprBreakdown?.rewards){
-          (assetsData[vault.id].aprBreakdown as Balances)['rewards'] = BNify(0)
-        }
-        (assetsData[vault.id].aprBreakdown as Balances)['rewards'] = (assetsData[vault.id].aprBreakdown as Balances)['rewards'].plus(rewardsEmissionsTotalApr)
-      }
 
       // Add gauge to vault apr breakdown
       if (vault.type==='GG' && ("trancheVault" in vault) && vault.enabled){
@@ -4335,9 +4328,28 @@ export function PortfolioProvider({ children }:ProviderProps) {
         }, {})
       }
 
-      // Calculate APR and APY using the breakdowns
+      // Calculate APR and APY using the breakdowns (without additional rewards)
       assetsData[vault.id].apr = assetsData[vault.id].aprBreakdown ? (Object.values(assetsData[vault.id].aprBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apr: BigNumber) => total.plus(apr), BNify(0)) : BNify(0)
       assetsData[vault.id].apy = assetsData[vault.id].apyBreakdown ? (Object.values(assetsData[vault.id].apyBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apy: BigNumber) => total.plus(apy), BNify(0)) : BNify(0)
+
+      // Add rewards on top
+      const vaultRewardsEmissionsTotalApr: VaultAdditionalApr = vaultFunctionsHelper.getRewardsEmissionTotalApr(vault, assetsData[vault.id])
+      if (vaultRewardsEmissionsTotalApr && bnOrZero(vaultRewardsEmissionsTotalApr.apr).gt(0)){
+        rewardsEmissionsTotalApr = rewardsEmissionsTotalApr.plus(vaultRewardsEmissionsTotalApr.apr)
+      }
+
+      // Add rewards emissions total apr
+      if (rewardsEmissionsTotalApr.gt(0)){
+        if (!assetsData[vault.id].aprBreakdown?.rewards){
+          (assetsData[vault.id].aprBreakdown as Balances)['rewards'] = BNify(0)
+        }
+        (assetsData[vault.id].aprBreakdown as Balances)['rewards'] = (assetsData[vault.id].aprBreakdown as Balances)['rewards'].plus(rewardsEmissionsTotalApr);
+        (assetsData[vault.id].apyBreakdown as Balances)['rewards'] = (assetsData[vault.id].aprBreakdown as Balances)['rewards']
+
+        // Calculate APR and APY using the breakdowns (with additional rewards)
+        assetsData[vault.id].apr = assetsData[vault.id].aprBreakdown ? (Object.values(assetsData[vault.id].aprBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apr: BigNumber) => total.plus(apr), BNify(0)) : BNify(0)
+        assetsData[vault.id].apy = assetsData[vault.id].apyBreakdown ? (Object.values(assetsData[vault.id].apyBreakdown || {}) as BigNumber[]).reduce( (total: BigNumber, apy: BigNumber) => total.plus(apy), BNify(0)) : BNify(0)
+      }
     }
 
     // console.log('assetsData', assetsData)

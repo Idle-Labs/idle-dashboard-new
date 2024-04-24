@@ -213,6 +213,7 @@
     "institutionalCredit": "Institutional Credit",
     "leveragedStaking": "Leveraged staking",
     "liquidStaking": "Liquid staking",
+    "lrtLending": "LRT-secured lending",
     "leveragedLSD": "Leverage LSD",
     "blueChipLending": "Blue-chip lending markets",
     "cryptoRwaLending": "Crypto & RWA-secured lending",
@@ -226,7 +227,7 @@
     "aggregated": {
       "tag": "Aggregated",
       "title": "Aggregated vaults",
-      "description": "A selection of strategies curated directly by Idle, where funds are strategically allocated across diverse protocols to optimize yields."
+      "description": "Aggregated pools offering automated or diversified allocation to optimize yields."
     },
     "isolated": {
       "title": "Isolated vaults",
@@ -662,6 +663,7 @@
     "netEarnings": "Net earnings",
     "rewardsEarnings": "Rewards earnings",
     "deposited": "Deposited",
+    "deposits": "Deposits",
     "redeemable": "Redeemable",
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",

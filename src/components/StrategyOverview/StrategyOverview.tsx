@@ -83,7 +83,7 @@ export const StrategyOverview: React.FC<StrategyOverviewProps> = ({
           spacing={2}
           alignItems={'flex-start'}
         >
-          <Translation translation={'defi.deposited'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
+          <Translation translation={'defi.deposits'} textStyle={'captionSmall'} fontSize={['xs', 'sm']} />
           <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady} minW={'100%'}>
             <Amount.Usd value={aggregatedData.deposited} textStyle={'ctaStatic'} fontSize={'xl'} lineHeight={'initial'} sx={!walletVisible ? {filter:'blur(7px)'} : {}} {...textProps} />
           </SkeletonText>

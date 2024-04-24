@@ -9,6 +9,7 @@ import { AssetTransfersResult } from "alchemy-sdk"
 import { selectUnderlyingToken } from 'selectors/'
 import PoLidoNFT_abi from 'abis/lido/PoLidoNFT.json'
 import { FEES_COLLECTORS } from 'constants/addresses'
+import { BestYieldVault } from 'vaults/BestYieldVault'
 import { explorers, networks, chains } from 'constants/'
 import { StakedIdleVault } from 'vaults/StakedIdleVault'
 import { CacheContextProps } from 'contexts/CacheProvider'
@@ -318,6 +319,21 @@ export class VaultFunctionsHelper {
   public async getInstadappStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
     const strategyApr = await this.getInstadappStETHTrancheStrategyApr(trancheVault.chainId);
     return await this.getTrancheApy(strategyApr, trancheVault);
+  }
+
+  public getBestYieldRWAAdditionalApy(asset: Asset): BigNumber {
+    let targetApy = BNify(0)
+    if (bnOrZero(asset.totalTvlUsd).lte(1000000)) {
+      targetApy = BNify(25)
+    } else if (bnOrZero(asset.totalTvlUsd).lte(2000000)) {
+      targetApy = BNify(20)
+    } else if (bnOrZero(asset.totalTvlUsd).lte(3000000)) {
+      targetApy = BNify(18)
+    } else if (bnOrZero(asset.totalTvlUsd).lte(5000000)) {
+      targetApy = BNify(16)
+    }
+
+    return BigNumber.maximum(0, targetApy.minus(bnOrZero(asset.apy)))
   }
 
   public async getOptimismTrancheAdditionalApy(trancheVault: TrancheVault): Promise<BigNumber> {
@@ -632,6 +648,7 @@ export class VaultFunctionsHelper {
               idleAmount: BNify(0),
               subAction: 'collected',
               assetId: foundVault.id,
+              chainId: foundVault.chainId,
               underlyingAmount: fixTokenDecimals(tx.value, 18)
             })
             // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, 18).toString())
@@ -891,6 +908,28 @@ export class VaultFunctionsHelper {
     }
   }
 
+  public getRewardsEmissionTotalApr(vault: Vault, asset: Asset): VaultAdditionalApr {
+    if (vault instanceof BestYieldVault){
+      switch (vault.idleConfig.token) {
+        case 'idleUSDTRWA':
+          return {
+            type: 'rewards',
+            vaultId: vault.id,
+            apr: this.getBestYieldRWAAdditionalApy(asset)
+          }
+        default:
+          return {
+            apr: BNify(0),
+            vaultId: vault.id,
+          }
+      }
+    }
+    return {
+      vaultId: vault.id,
+      apr: BNify(0)
+    }
+  }
+
   public getVaultRewardsEmissions(vault: Vault, vaults: Vault[], assetsData: Assets): RewardEmission[] | null {
     if (vault instanceof TrancheVault) {
       switch (vault.cdoConfig.name) {
@@ -900,7 +939,6 @@ export class VaultFunctionsHelper {
             if (otherVault){
               const seniorTvlUsd = bnOrZero(assetsData[vault.id].tvlUsd)
               const juniorTvlUsd = bnOrZero(assetsData[otherVault.id].tvlUsd)
-              // console.log(vault.id, otherVault.id, 'seniorTvlUsd', seniorTvlUsd.toString(), 'juniorTvlUsd', juniorTvlUsd.toString())
               return [
                 {
                   prefix: '',

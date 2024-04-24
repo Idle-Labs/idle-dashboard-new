@@ -12,7 +12,7 @@ import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { IdleTokenProtocol, AggregatedVault, aggregatedVaults } from 'constants/vaults'
 import { BNify, fixTokenDecimals, getObjectPath, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
-import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters } from 'constants/'
+import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters, StatsProps } from 'constants/'
 
 type ConstructorProps = {
   web3: Web3
@@ -45,6 +45,7 @@ export class BestYieldVault {
   public readonly idleConfig: IdleToken
   public readonly variant: string | undefined
   public readonly tokenConfig: BestYieldConfig
+  public readonly stats: StatsProps | undefined
   public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
   public readonly aggregatedVault: AggregatedVault | undefined
@@ -76,6 +77,7 @@ export class BestYieldVault {
     this.messages = {}
     this.chainId = chainId
     this.protocol = 'idle'
+    this.stats = tokenConfig.stats
     this.flags = tokenConfig.flags
     this.tokenConfig = tokenConfig
     this.status = tokenConfig.status

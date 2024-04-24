@@ -742,7 +742,7 @@ export const Tranches: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.depositedAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
+        <Translation translation={'defi.deposited'} component={Heading} as={'h3'} fontSize={'lg'} />
         <VStack
           spacing={2}
           width={'100%'}
@@ -760,7 +760,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
           justifyContent={'space-between'}
         >
-          <Translation translation={'defi.depositedAssets'} component={Card.Heading} fontSize={'lg'} />
+          <Translation translation={'defi.deposited'} component={Card.Heading} fontSize={'lg'} />
           <HStack
             spacing={4}
           >
@@ -798,7 +798,7 @@ export const Tranches: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.availableAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
+        <Translation translation={'common.available'} component={Heading} as={'h3'} fontSize={'lg'} />
         <VStack
           spacing={2}
           width={'100%'}
@@ -816,7 +816,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
           justifyContent={'space-between'}
         >
-          <Translation translation={'defi.availableAssets'} component={Card.Heading} fontSize={'lg'} />
+          <Translation translation={'common.available'} component={Card.Heading} fontSize={'lg'} />
           <HStack
             spacing={4}
           >
@@ -858,7 +858,7 @@ export const Tranches: React.FC = () => {
         width={'100%'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.deprecatedAssets'} component={Heading} as={'h3'} fontSize={'lg'} />
+        <Translation translation={'common.deprecated'} component={Heading} as={'h3'} fontSize={'lg'} />
         <VStack
           spacing={2}
           width={'100%'}
@@ -871,7 +871,7 @@ export const Tranches: React.FC = () => {
       </VStack>
     ) : (
       <Card mt={10}>
-        <Translation translation={'defi.deprecatedAssets'} component={Card.Heading} fontSize={'lg'} />
+        <Translation translation={'common.deprecated'} component={Card.Heading} fontSize={'lg'} />
         {
           !deprecatedAssetsData.length ? (
             <Stack
@@ -924,7 +924,9 @@ export const Tranches: React.FC = () => {
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
-            <Translation maxW={['auto', '24em']} translation={'stats.protocolOverview'} fontSize={['md','h4']} isHtml={true} params={{tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults}} />
+            <SkeletonText noOfLines={2} isLoaded={bnOrZero(protocolData.totalTvlUsd).gt(0)}>
+              <Translation translation={'stats.protocolOverview'} fontSize={['md','h4']} isHtml={true} params={{tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults}} />
+            </SkeletonText>
           </VStack>
           <Box
             minWidth={['full', '30em']}
@@ -974,8 +976,8 @@ export const Tranches: React.FC = () => {
           direction={['column', 'row']}
         >
           {
-            Object.values(aggregatedVaults).map( (aggregatedVault: AggregatedVault) => {
-              return (<VaultCard.Aggregated aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
+            Object.values(aggregatedVaults).map( (aggregatedVault: AggregatedVault, index: number) => {
+              return (<VaultCard.Aggregated key={`index_${index}`} aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
             })
           }
         </Stack>

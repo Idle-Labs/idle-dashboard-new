@@ -249,7 +249,10 @@ export const strategies: Record<string, StrategyProps> = {
     generalDataFields:[
       {
         field:'pool',
-        label:'assets.assetDetails.generalData.pool'
+        label:'assets.assetDetails.generalData.pool',
+        props:{
+          abbreviate: false
+        }
       },
       {
         field:'apy',
@@ -268,16 +271,19 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'rewards',
+        props:{
+          size:'xs',
+        },
         label:'assets.assetDetails.generalData.rewards'
       },
       {
         field:'performanceFee',
         label:'assets.assetDetails.generalData.performanceFee'
       },
-      {
-        field:'allocation',
-        label:'assets.assetDetails.generalData.allocation'
-      }
+      // {
+      //   field:'allocation',
+      //   label:'assets.assetDetails.generalData.allocation'
+      // }
     ]
   },
   AA:{
@@ -397,7 +403,10 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'pool',
-        label:'assets.assetDetails.generalData.pool'
+        label:'assets.assetDetails.generalData.pool',
+        props:{
+          abbreviate: false
+        }
       },
       {
         field:'apyWithRewards',
@@ -498,7 +507,7 @@ export const strategies: Record<string, StrategyProps> = {
       {
         id:'tvl',
         accessor:'tvlUsd',
-        sortType: 'numeric'
+        sortType: 'numeric',
       },
       {
         id:'apy',
@@ -550,7 +559,10 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field:'pool',
-        label:'assets.assetDetails.generalData.pool'
+        label:'assets.assetDetails.generalData.pool',
+        props:{
+          abbreviate: false
+        }
       },
       {
         field:'apyWithRewards',

@@ -284,10 +284,16 @@ export const Earn: React.FC = () => {
     if (!strategy || !isPortfolioLoaded) return null
     const strategyProps = strategies[strategy]
     if (!strategyProps?.carouselItems) return null
+    if (("getFlag" in vault) && vault.getFlag('hideStrategyDescriptionCarousel') === true) return null
     return (
-      <StrategyDescriptionCarousel color={strategyColor} strategy={strategy} delay={10000} />
+      <VStack
+        spacing={4}
+        width={'full'}
+      >
+        <StrategyDescriptionCarousel color={strategyColor} strategy={strategy} delay={10000} />
+      </VStack>
     )
-  }, [strategy, strategyColor, isPortfolioLoaded])
+  }, [vault, strategy, strategyColor, isPortfolioLoaded])
 
   const strategyDescription = useMemo(() => {
     if (!vault || !("description" in vault) || !vault.description) return null
@@ -483,12 +489,7 @@ export const Earn: React.FC = () => {
       <AssetDiscountedFees assetId={asset?.id} />
       <AssetDistributedRewards assetId={asset?.id} />
       {vaultRewards}
-      <VStack
-        spacing={4}
-        width={'full'}
-      >
-        {strategyDescriptionCarousel}
-      </VStack>
+      {strategyDescriptionCarousel}
       <AssetGeneralData assetId={asset?.id} />
       {vaultOperatorOverview}
       {epochThresholds}
