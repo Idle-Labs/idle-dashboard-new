@@ -3952,8 +3952,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   },
   10: { // Optimism
     USDT: {
+      enabledEnvs:[],
       autoFarming:['OP'],
-      enabledEnvs:['beta'],
       blockNumber: 117936837,
       underlyingToken: 'USDT',
       aggregatedVaultId: 'rwa',
