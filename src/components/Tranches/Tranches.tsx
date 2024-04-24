@@ -124,6 +124,7 @@ export const Tranches: React.FC = () => {
 
   const product = useMemo(() => products.find( product => product.route === 'yield-tranches' ), [])
 
+  const visibleStrategies = useMemo(() => Object.keys(strategies).filter( (strategy: string) => !!strategies[strategy].visible ), [])
   const productStrategies = useMemo(() => (product?.strategies || []), [product])
   const strategy = useMemo(() => productStrategies?.[0], [productStrategies])
 
@@ -931,12 +932,12 @@ export const Tranches: React.FC = () => {
           <Box
             minWidth={['full', '30em']}
           >
-            <StrategyOverview showLoading={true} strategies={productStrategies} />
+            <StrategyOverview showLoading={true} strategies={visibleStrategies} />
           </Box>
         </Stack>
       </VStack>
     )
-  }, [theme, strategy, product, productStrategies, protocolData])
+  }, [theme, strategy, product, visibleStrategies, protocolData])
 
   const onClickAggregatedVaults = useCallback((aggregatedVault: AggregatedVault) => {
     // sendSelectItem(item_list_id, item_list_name, asset)
