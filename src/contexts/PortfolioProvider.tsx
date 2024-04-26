@@ -4396,7 +4396,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   useEffect(() => {
     if (!state.isPortfolioLoaded || isEmpty(state.assetsData)) return;
-    const visibleAssets: Asset[] = (Object.values(state.assetsData) as Asset[]).filter( (asset: Asset) => (!!strategies[asset.type as string]?.visible && asset.status !== 'deprecated') )
+    const visibleAssets: Asset[] = (Object.values(state.assetsData) as Asset[]).filter( (asset: Asset) => (!!strategies[asset.type as string]?.visible) )
     const totalTvlUsd = Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0))
     const totalAvgApy = Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0) ).div(totalTvlUsd)
     const uniqueVaults: AssetId[] = visibleAssets.reduce( (uniqueVaults: AssetId[], asset: Asset) => {
