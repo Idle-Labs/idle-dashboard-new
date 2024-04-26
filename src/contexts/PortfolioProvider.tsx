@@ -4401,7 +4401,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     const totalAvgApy = Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0) ).div(totalTvlUsd)
     const uniqueVaults: AssetId[] = visibleAssets.reduce( (uniqueVaults: AssetId[], asset: Asset) => {
       const vault = selectVaultById(asset.id)
-      if (vault){
+      if (asset.status !== 'deprecated' && vault){
         if (vault instanceof TrancheVault){
           const cdoAddress = vault.cdoConfig.address
           if (!uniqueVaults.includes(cdoAddress)){
