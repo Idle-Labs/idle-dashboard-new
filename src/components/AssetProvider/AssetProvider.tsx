@@ -154,10 +154,12 @@ const Strategy: React.FC<Omit<TranslationProps, "translation">> = (props) => {
 
 const VaultVariant: React.FC<TextProps> = (props) => {
   const { vault } = useAssetProvider()
-  if (!vault || !("vaultType" in vault) || !vault?.vaultType) return null
+  const vaultType = useMemo(() => {
+    return vault && ("vaultType" in vault) && vault.vaultType ? vault.vaultType : vault?.type
+  }, [vault])
 
   return (
-    <Translation translation={`products.${vault.vaultType}`} textStyle={'tableCell'} {...props} />
+    <Translation translation={`products.${vaultType}`} textStyle={'tableCell'} {...props} />
   )
 }
 
@@ -1890,6 +1892,7 @@ AssetProvider.GeneralData = GeneralData
 AssetProvider.RealizedApy = RealizedApy
 AssetProvider.EarningsUsd = EarningsUsd
 AssetProvider.NetEarnings = NetEarnings
+AssetProvider.VaultVariant = VaultVariant
 AssetProvider.TotalPoolUsd = TotalPoolUsd
 AssetProvider.VaultBalance = VaultBalance
 AssetProvider.EarningsPerc = EarningsPerc

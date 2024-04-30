@@ -892,9 +892,9 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
   1:{
     gearbox:{
       USDC:{
-        enabledEnvs:[],
         protocol:'gearbox',
         autoFarming:['GEAR'],
+        enabledEnvs:['beta'],
         blockNumber:19674126,
         underlyingToken:'USDC',
         adaptiveYieldSplitEnabled:true,

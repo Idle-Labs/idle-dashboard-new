@@ -463,7 +463,7 @@ export const AssetPage: React.FC = () => {
 
   const vaultColor = useMemo(() => {
     if (!vault) return theme.colors.banner.bg
-    if (("aggregatedVault") in vault) return vault.aggregatedVault.color
+    if (("aggregatedVault" in vault) && vault.aggregatedVault) return vault.aggregatedVault.color
     return theme.colors.banner.bg
   }, [vault, theme])
 
@@ -500,11 +500,7 @@ export const AssetPage: React.FC = () => {
           alignItems={'space-between'}
         >
           <Translation translation={operatorInfo.nameShort || operatorInfo.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
-          {
-            vault && ("vaultType" in vault) && vault.vaultType && (
-              <Translation translation={`products.${vault.vaultType}`} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
-            )
-          }
+          <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
         </VStack>
       </HStack>
     ) : (
@@ -519,11 +515,7 @@ export const AssetPage: React.FC = () => {
           alignItems={'space-between'}
         >
           <AssetProvider.ProtocolName color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
-          {
-            vault && ("vaultType" in vault) && vault.vaultType && (
-              <Translation translation={`products.${vault.vaultType}`} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
-            )
-          }
+          <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
         </VStack>
       </HStack>
     )

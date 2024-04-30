@@ -457,7 +457,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   idle: {
-    icon:`${protocolsFolder}idle.svg`,
+    icon:`${protocolsFolder}idle-blue.svg`,
     label: "Idle",
     enabled: true,
     colors: {
