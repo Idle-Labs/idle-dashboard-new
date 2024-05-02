@@ -971,8 +971,8 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         }
       },
       WETH:{
-        enabledEnvs:[],
         protocol:'gearbox',
+        enabledEnvs:['beta'],
         autoFarming:['GEAR'],
         blockNumber:19674126,
         underlyingToken:'WETH',
