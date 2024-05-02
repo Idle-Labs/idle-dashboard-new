@@ -10,7 +10,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
-import { BNify, sortArrayByKey, isEmpty, toDayjs, getVaultFlag, bnOrZero } from 'helpers/'
+import { BNify, sortArrayByKey, isEmpty, toDayjs, getVaultFlag, bnOrZero, getObjectPath } from 'helpers/'
 import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps, Transaction } from 'constants/'
 
 type AssetDistributedRewardsProps = {
@@ -88,7 +88,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
     return vault && getVaultFlag(vault, 'showDistributedRewardsForReferralOnly')
   }, [vault])
 
-  if (!asset || !("distributedTokens" in vault) || !vault.distributedTokens.length) return null
+  if (!asset || !("distributedTokens" in vault) || isEmpty(vault?.distributedTokens)) return null
 
   // Check referrals
   if (showDistributedRewardsForReferralOnly && bnOrZero(vaultPosition?.underlying.depositedWithRef).lte(0) && isEmpty(distributedRewards)) return null
@@ -99,7 +99,7 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
       width={'full'}
       alignItems={'flex-start'}
     >
-      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={vault.translations.distributedTokens.title || 'staking.distributedRewards'} />
+      <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={getObjectPath(vault, 'translations.distributedTokens.title') || 'staking.distributedRewards'} />
       <VStack
         spacing={4}
         width={'full'}

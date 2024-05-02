@@ -11,7 +11,7 @@ import type { Abi, NumberType, VaultStatus } from 'constants/types'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { IdleTokenProtocol, AggregatedVault, aggregatedVaults } from 'constants/vaults'
-import { BNify, fixTokenDecimals, getObjectPath, normalizeTokenAmount, catchPromise, asyncReduce } from 'helpers/'
+import { BNify, fixTokenDecimals, getObjectPath, normalizeTokenAmount, catchPromise, asyncReduce, isEmpty, cmpAddrs } from 'helpers/'
 import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters, StatsProps } from 'constants/'
 
 type ConstructorProps = {
@@ -47,7 +47,9 @@ export class BestYieldVault {
   public readonly tokenConfig: BestYieldConfig
   public readonly stats: StatsProps | undefined
   public readonly status: VaultStatus | undefined
+  public readonly rewardsSenders: string[] | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly aggregatedVault: AggregatedVault | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
 
@@ -85,17 +87,27 @@ export class BestYieldVault {
     this.cacheProvider = cacheProvider
     this.idleConfig = tokenConfig.idle
     this.idleController = idleController
-    // this.categories = tokenConfig.categories
     this.description = tokenConfig.description
     this.id = this.idleConfig.address.toLowerCase()
+    this.rewardsSenders = tokenConfig.rewardsSenders
     this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
 
+    this.distributedTokens = []
+    if (tokenConfig.distributedTokens){
+      tokenConfig.distributedTokens.forEach( (distributedToken: string) => {
+        const underlyingToken = selectUnderlyingToken(chainId, distributedToken)
+        if (underlyingToken){
+          this.distributedTokens.push(underlyingToken)
+        }
+      })
+    }
 
     if (tokenConfig.aggregatedVaultId){
       this.aggregatedVault = aggregatedVaults[tokenConfig.aggregatedVaultId]
     }
 
+    this.rewardTokens = []
     this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
       const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
       if (underlyingToken){
@@ -463,6 +475,13 @@ export class BestYieldVault {
 
   public getUnlimitedAllowanceParams(): any[] {
     return this.getAllowanceParams(MAX_ALLOWANCE)
+  }
+
+  public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
+    if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
+    return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
+      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && this.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+    })
   }
 
   public getAllowanceContract(): Contract | undefined {

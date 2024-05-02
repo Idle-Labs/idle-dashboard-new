@@ -4102,6 +4102,8 @@ export type BestYieldConfig = {
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
+  rewardsSenders?:string[]
+  distributedTokens?:string[]
   flags?: Record<string, any>
   protocols: IdleTokenProtocol[]
 }
@@ -4123,6 +4125,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         abi: IdleTokenV4 as Abi,
         address: '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
       },
+      distributedTokens:['OP'],
+      rewardsSenders:rewardsSenders[10],
       stats:{
         startTimestamp: 1712620800000
       },
