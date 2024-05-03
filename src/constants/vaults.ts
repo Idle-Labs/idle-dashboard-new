@@ -3295,6 +3295,98 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
       },
     },
     morpho:{
+      Re7WETHFarm:{
+        operators:[{
+          name: 're7',
+          type: 'curator',
+        }],
+        protocol:'morpho',
+        enabledEnvs:['beta'],
+        blockNumber:16420584,
+        status:'experimental',
+        variant: 'Re7 Capital',
+        underlyingToken:'WETH',
+        vaultType:'lrtLendingFarm',
+        autoFarming:['MORPHO', 'USDC'],
+        adaptiveYieldSplitEnabled:true,
+        flags:{
+          addHarvestApy: false,
+          feeDiscountEnabled: true
+        },
+        CDO:{
+          abi:IdleCDO as Abi,
+          decimals:18,
+          name:'IdleCDO_morpho_Re7WETHFarm',
+          address:'0xD071EA5D2575E155E4e9c2234968D1E11B8a920E'
+        },
+        Strategy:{
+          abi:IdleStrategy as Abi,
+          name:'IdleStrategy_morpho_Re7WETHFarm',
+          address:'0x0f050055b162fEAcA563Ff36fE905c930361dA57'
+        },
+        Pool:{
+          abi:MorphoPool as Abi,
+          name: 'Morpho_Re7WETHFarm',
+          address:'0x38989BBA00BDF8181F4082995b3DEAe96163aC5D'
+        },
+        description:'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
+        Tranches:{
+          AA:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'AA',
+            functions:{
+              stake:'stake',
+              unstake:'exit',
+              rewards:'earned',
+              claim:'getReward',
+              deposit:'depositAA',
+              withdraw:'withdrawAA',
+              rewardsRate:'rewardRate',
+              stakedBalance:'balanceOf'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:false,
+              abi:TrancheStakingRewards as Abi,
+              name:'TrancheStakingRewards_morpho_Re7WETHFarm_AA',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'AA_morpho_Re7_WETH',
+            token:'AA_morpho_Re7_WETH',
+            label:'Morpho Re7 WETH AA',
+            address:'0xb9d321B26095195610707597Aab416925C598aab'
+          },
+          BB:{
+            abi:ERC20 as Abi,
+            decimals:18,
+            tranche:'BB',
+            functions:{
+              stake:'stake',
+              claim:'claim',
+              unstake:'unstake',
+              deposit:'depositBB',
+              withdraw:'withdrawBB',
+              stakedBalance:'usersStakes'
+            },
+            CDORewards:{
+              decimals:18,
+              stakingRewards:[],
+              unstakeWithBalance:true,
+              abi:IdleCDOTrancheRewards as Abi,
+              name:'IdleCDOTrancheRewards_morpho_Re7WETHFarm_BB',
+              address:'0x0000000000000000000000000000000000000000'
+            },
+            blockNumber:16420584,
+            name:'BB_morpho_Re7_WETH',
+            token:'BB_morpho_Re7_WETH',
+            label:'Morpho Re7 WETH BB',
+            address:'0xf529f10Fe24367d3A123Faf0E9D5F6D80980b46f'
+          }
+        }
+      },
       Re7WETH:{
         operators:[{
           name: 're7',
