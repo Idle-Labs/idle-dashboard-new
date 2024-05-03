@@ -97,7 +97,7 @@ export function Web3Provider({ children }: ProviderProps) {
 
   // Check and load RPCs
   useEffect(() => {
-    if (!chainId || !isEmpty(web3Chains)) return
+    if (!chainId || isEmpty(web3Chains)) return
 
     ;(async() => {
       // Check custom RPCs otherwise use public ones
@@ -132,10 +132,10 @@ export function Web3Provider({ children }: ProviderProps) {
   }, [chainId, web3Chains, setWeb3Chains])
 
   useEffect(() => {
-    if (!chainId || !web3 || !web3Rpc) return
-    const multiCall = new Multicall(chainId, web3)
+    if (!chainId || isEmpty(web3Chains)) return
+    const multiCall = new Multicall(chainId, web3Chains)
     setMultiCall(multiCall)
-  }, [web3, web3Rpc, chainId])
+  }, [web3Chains, chainId])
 
   return (
     <Web3ProviderContext.Provider value={{web3, web3Rpc, web3Chains, multiCall, latestBlock}}>

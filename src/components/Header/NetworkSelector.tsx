@@ -8,14 +8,14 @@ import { chains, networks, MenuItemType, MenuListType } from 'constants/'
 
 export const NetworkSelector: React.FC = () => {
   const { screenSize } = useThemeProvider()
-  const { chainId, setChainId } = useWalletProvider()
+  const { chainId, setChainId, network } = useWalletProvider()
   const [ menuItem, setMenuItem ] = useState<MenuItemType | null>(null)
 
   useEffect(() => {
-    if (!chainId) return
+    if (!chainId || !network) return
     const menuItem = {
-      icon: networks[chainId].icon,
-      label: networks[chainId].name,
+      icon: network.icon,
+      label: network.name,
       children: Object.keys(chains).filter( cId => cId !== chainId.toString() ).map( (cId: string): MenuListType => {
         const icon = networks[parseInt(cId)].icon || undefined
         return {
@@ -30,7 +30,7 @@ export const NetworkSelector: React.FC = () => {
     }
 
     setMenuItem(menuItem)
-  }, [chainId, setChainId])
+  }, [chainId, network, setChainId])
 
   return menuItem ? (
     <Menu>

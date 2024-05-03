@@ -39,16 +39,16 @@ export class  Multicall {
   readonly chainId: number
   readonly maxBatchSize: number
   readonly networkContract: string
-  readonly multicallContract: Contract
+  readonly web3Chains: Record<string, Web3> | null
   public cachedRequests: Record<string, CachedRequest>
 
-  constructor(chainId: number, web3: Web3) {
-    this.web3 = web3
+  constructor(chainId: number, web3Chains: Record<string, Web3> | null) {
+    this.web3 = new Web3
     this.chainId = chainId
     this.maxBatchSize = 600
     this.cachedRequests = {}
+    this.web3Chains = web3Chains
     this.networkContract = '0xcA11bde05977b3631167028862bE2a173976CA11'
-    this.multicallContract = new web3.eth.Contract(Multicall3 as Abi, this.networkContract)
   }
 
   getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
@@ -212,13 +212,13 @@ export class  Multicall {
     return null
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, chainId?: number, web3?: Web3, debug: boolean = false): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, chainId?: number, web3?: Web3 | null, debug: boolean = false): Promise<DecodedResult[] | null> {
 
     // Get chainId
     chainId = chainId || this.chainId
-    web3 = web3 || this.web3
+    web3 = web3 || this.web3Chains?.[chainId]
 
-    if (isEmpty(calls)) return null
+    if (isEmpty(calls) || !web3) return null
 
     if (calls.length > this.maxBatchSize) {
       return await this.executeMulticallsChunks(calls, singleCallsEnabled, chainId, web3)

@@ -24,10 +24,10 @@ export interface CdoLastHarvest {
 }
 
 type ConstructorProps = {
-  web3: Web3
   chainId: number
-  explorer?: Explorer
+  web3: Web3 | null
   multiCall?: Multicall
+  explorer?: Explorer | null
   cacheProvider?: CacheContextProps
   web3Chains?: Record<string, Web3> | null
   contracts?: Record<string, GenericContract[]>
@@ -45,10 +45,10 @@ type SubgraphData = {
 
 export class VaultFunctionsHelper {
 
-  readonly web3: Web3
   readonly chainId: number
-  readonly explorer: Explorer | undefined
+  readonly web3: Web3 | null
   readonly multiCall: Multicall | undefined
+  readonly explorer: Explorer | null | undefined
   readonly cacheProvider: CacheContextProps | undefined
   readonly web3Chains: Record<string, Web3> | null | undefined
   readonly contracts: Record<string, GenericContract[]> | undefined
@@ -102,6 +102,10 @@ export class VaultFunctionsHelper {
     // User tranche chain
     const chainId = trancheVault.chainId
 
+    const web3ToUse = this.web3Chains ? this.web3Chains[+chainId] : this.web3
+
+    if (!web3ToUse) return lastHarvest
+
     // Get explorer by vault chainId
     const explorer = this.getExporerByChainId(chainId)
     
@@ -119,7 +123,7 @@ export class VaultFunctionsHelper {
       lastHarvestBlockHex
     ] = await Promise.all([
       this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault)),
-      this.web3Chains[+chainId].eth.getStorageAt(trancheVault.cdoConfig.address, 204)
+      web3ToUse.eth.getStorageAt(trancheVault.cdoConfig.address, 204)
     ]);
 
     // console.log('getTrancheLastHarvest', chainId, trancheVault.cdoConfig.address, lastHarvestBlockHex, multicallResults)
@@ -133,7 +137,7 @@ export class VaultFunctionsHelper {
       trancheAPRSplitRatio
     ] = multicallResults.map( r => BNify(r.data) )
 
-    const lastHarvestBlock = this.web3.utils.hexToNumber(lastHarvestBlockHex)
+    const lastHarvestBlock = web3ToUse.utils.hexToNumber(lastHarvestBlockHex)
 
     // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlockHex, lastHarvestBlock)
 
@@ -459,7 +463,9 @@ export class VaultFunctionsHelper {
     if (!this.multiCall) return []
 
     const chainId = 1
-    const web3ToUse = +this.chainId === +chainId ? this.web3 : (this.web3Chains ? this.web3Chains[chainId] : this.web3)
+    const web3ToUse = +this.chainId === +chainId && this.web3 ? this.web3 : (this.web3Chains ? this.web3Chains[chainId] : this.web3)
+
+    if (!web3ToUse) return []
 
     const MATIC = selectUnderlyingToken(chainId, 'MATIC')
     const stMATIC = selectUnderlyingToken(chainId, 'STMATIC')
@@ -478,6 +484,7 @@ export class VaultFunctionsHelper {
     ].filter( (call): call is CallData => !!call )
 
     const multicallResults = await this.multiCall.executeMulticalls(rawCalls, true, chainId, web3ToUse)
+
     if (!multicallResults) return []
 
     const [
@@ -1295,10 +1302,6 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalData
 
-    // const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
-    // const callback = async () => ( await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters) )
-    // const results = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
-
     const {
       results
     } = await this.getIdleRatesData(vault, filters)
@@ -1350,10 +1353,6 @@ export class VaultFunctionsHelper {
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalPrices
 
-    // const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
-    // const callback = async() => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
-    // const infos = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
-
     const {
       results
     } = await this.getIdleRatesData(vault, filters)
@@ -1379,10 +1378,6 @@ export class VaultFunctionsHelper {
     }
 
     if (!("underlyingToken" in vault) || !vault.underlyingToken?.address) return historicalRates
-
-    // const platformApiEndpoint = getPlatformApisEndpoint(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters)
-    // const callback = async () => (await callPlatformApis(this.chainId, 'idle', 'rates', vault.underlyingToken?.address, filters))
-    // const rates = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
     const {
       results
