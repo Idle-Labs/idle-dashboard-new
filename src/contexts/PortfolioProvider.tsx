@@ -164,8 +164,8 @@ const initialContextState = initialState
 
 const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
-  // console.log(action.type, action.payload)
   const currTime = Date.now()
+  // console.log(action.type, action.payload)
 
   switch (action.type){
     case 'RESET_STATE':
@@ -547,7 +547,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [state.vaults, state.assetsData, selectAssetBalance, selectVaultPosition])
 
   const vaultFunctionsHelper = useMemo((): VaultFunctionsHelper | null => {
-    if (!chainId || !web3 || !walletInitialized || !multiCall || !explorer || isEmpty(state.contractsNetworks)) return null
+    if (!chainId || !walletInitialized || !multiCall || isEmpty(state.contractsNetworks)) return null
     return new VaultFunctionsHelper({chainId, web3, web3Chains, multiCall, explorer, cacheProvider, contracts: state.contractsNetworks})
   }, [chainId, web3, walletInitialized, web3Chains, multiCall, explorer, cacheProvider, state.contractsNetworks])
 
@@ -847,7 +847,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
       vaultsTransactions: {}
     }
 
-    if (!account?.address || !explorer || !web3Chains) return output
+    if (!account?.address || !web3Chains) return output
 
     const startTimestamp = Date.now()
 
@@ -1109,7 +1109,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
     return output
-  }, [account, explorer, web3Chains, selectAssetById, selectVaultPrice, selectVaultEpochData, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
+  }, [account, web3Chains, selectAssetById, selectVaultPrice, selectVaultEpochData, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
     if (!web3 || !multiCall || !state.contractsNetworks?.[STAKING_CHAINID].length) return []
@@ -1496,6 +1496,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
   }, [web3, multiCall, web3Chains, state.contractsNetworks])
 
   const getVaultsOnchainData = useCallback( async (vaults: Vault[], enabledCalls: string[] = []): Promise<VaultsOnchainData | null> => {
+
     if (!multiCall || !web3Chains || !vaultFunctionsHelper || !genericContractsHelper) return null
 
     const checkEnabledCall = (call: string) => {
@@ -2708,11 +2709,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
   useEffect(() => {
     if (!web3 || !web3Chains || !chainId || !cacheProvider?.isLoaded) return
 
-    // Init global contracts
-    const contracts = globalContracts[chainId].map( (contract: GenericContractConfig) => {
-      return new GenericContract(web3, chainId, contract)
-    })
-
     const contractsNetworks = Object.keys(web3Chains).reduce( (contractsNetworks: Record<string, GenericContract[]>, chainId: any) => {
       if (!globalContracts[chainId]) return contractsNetworks
       contractsNetworks[chainId] = globalContracts[chainId].map( (contract: GenericContractConfig) => {
@@ -2778,6 +2774,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
       })
     })
 
+    // Init global contracts
+    const contracts = globalContracts[STAKING_CHAINID].map( (contract: GenericContractConfig) => {
+      return new GenericContract(web3, chainId, contract)
+    })
+
     // const trancheVaults: TrancheVault[] = trancheVaultsNetworks[chainId]
 
     const idleController = contracts.find(c => c.name === 'IdleController')
@@ -2808,14 +2809,19 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     const gaugeDistributorProxy = contracts.find(c => c.name === 'GaugeDistributorProxy')
 
+    if (!allVaultsNetworks[STAKING_CHAINID]){
+      allVaultsNetworks[STAKING_CHAINID] = []
+    }
+
     // Init gauges vaults
     const gaugesVaults: GaugeVault[] = Object.keys(gauges).reduce( (vaultsContracts: GaugeVault[], token) => {
       const gaugeConfig = gauges[token]
       const trancheVault = trancheVaults.find( tranche => tranche.trancheConfig.address.toLowerCase() === gaugeConfig.trancheToken.address.toLowerCase() )
       if (!trancheVault) return vaultsContracts
-      const gaugeVault = new GaugeVault({web3, chainId, gaugeConfig, trancheVault, cacheProvider, gaugeDistributorProxy})
+      const web3ToUse = +STAKING_CHAINID === +chainId ? web3 : web3Chains[STAKING_CHAINID]
+      const gaugeVault = new GaugeVault({web3: web3ToUse, chainId: STAKING_CHAINID, gaugeConfig, trancheVault, cacheProvider, gaugeDistributorProxy})
       vaultsContracts.push(gaugeVault)
-      allVaultsNetworks[chainId].push(gaugeVault)
+      allVaultsNetworks[STAKING_CHAINID].push(gaugeVault)
       return vaultsContracts
     }, [])
 
@@ -3122,9 +3128,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
   // Get tokens prices, balances, rates
   useEffect(() => {
+    // console.log('Load portfolio', state.vaults, state.contracts, multiCall, isEmpty(state.aprs), account?.address, runningEffects.current.portfolioLoading);
     if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === (account?.address || true)) return
-
-    // console.log('Load portfolio', isEmpty(state.aprs), account?.address, runningEffects.current.portfolioLoading);
 
     // Avoid refreshing if disconnected and already loaded data
     if (!isEmpty(state.aprs) && !account?.address) {
@@ -3353,11 +3358,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Get Historical data
     ;(async () => {
-
       // const startTimestamp = Date.now()
-
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
-      
       // console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
 
       if (!historicalPricesUsd) return
@@ -3419,10 +3421,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
   
   // Get historical vaults data
   useEffect(() => {
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates) || !!runningEffects.current.historicalVaults) return
 
-    // console.log('Load historical data', state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.historicalRates)
+    // console.log('Load historical data', state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.historicalRates, runningEffects.current.historicalVaults)
 
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates)) return
+    runningEffects.current.historicalVaults = true
 
     // Get Historical data
     ;(async () => {
@@ -3494,8 +3497,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
           dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { tvls: tvls[assetId], rates: rates[assetId], prices: prices[assetId] } }})
         }
       })
-
-      // console.log('prices', prices)
 
       dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})

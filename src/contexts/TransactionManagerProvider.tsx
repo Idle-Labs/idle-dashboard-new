@@ -438,7 +438,7 @@ export function TransactionManagerProvider({children}: ProviderProps) {
 
   // Get chain token price
   useEffect(() => {
-    if (!chainId || !web3 || !web3Chains) return
+    if (!chainId || !web3 || !web3Chains || !chains[chainId]) return
     ;(async () => {
       const chainToken = selectUnderlyingToken(1, chains[chainId].token)
       if (!chainToken || !chainToken.address) return

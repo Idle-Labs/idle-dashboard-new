@@ -1,4 +1,5 @@
 import { IconType } from './types'
+import { BsQuestion } from 'react-icons/bs'
 import { networksFolder } from 'constants/folders'
 
 const env = process.env;
@@ -20,6 +21,16 @@ export interface Network {
 }
 
 export const networks: Record<number, Network> = {
+  0: {
+    explorer: '',
+    provider: '',
+    baseToken: '',
+    name: 'Unknown',
+    icon: BsQuestion,
+    color: '#f6c343',
+    chainName: 'Unknown',
+    blocksPerCall: 1000000,
+  },
   1: {
     version: 'v1',
     name: 'Ethereum',
@@ -101,6 +112,18 @@ export const networks: Record<number, Network> = {
     maxPriorityFeePerGas: 1000,
     hostName: 'app.idle.finance',
     icon: `${networksFolder}optimism.svg`,
+  },
+  42161: {
+    color: '#8247E5',
+    baseToken: 'ETH',
+    network: 'mainnet',
+    provider: '',
+    name: 'Arbitrum',
+    blocksPerCall: 1000000,
+    chainName: 'Arbitrum One',
+    explorer: '',
+    maxPriorityFeePerGas: 1000,
+    icon: `${networksFolder}arbitrum.svg`,
   },
   5: {
     name: 'Görli',

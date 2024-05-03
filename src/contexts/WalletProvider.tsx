@@ -86,19 +86,18 @@ export function WalletProvider({ children }: ProviderProps) {
 
   const chainId = useMemo(() => {
     if (!connectedChain) return defaultChainId
-    const connectedChainId = Object.keys(chains).find( (chainId: string) => (chains[+chainId].id === connectedChain?.id) )
-    return !!connectedChainId ? +connectedChainId : defaultChainId
+    return parseInt(connectedChain.id)
   }, [connectedChain])
 
   const prevChainId = usePrevious<number | null>(chainId)
 
   const chainIdHex = useMemo(() => {
-    if (!chainId) return
-    return chains[chainId]?.id
-  }, [chainId])
+    if (!connectedChain) return
+    return connectedChain.id
+  }, [connectedChain])
 
   const network = useMemo(() => {
-    if (!chainId) return
+    if (!chainId || !networks[chainId]) return networks[0]
     return networks[chainId]
   }, [chainId])
 
@@ -108,7 +107,7 @@ export function WalletProvider({ children }: ProviderProps) {
   }, [network])
 
   const chainToken = useMemo(() => {
-    if (!chainId) return
+    if (!chainId || !chains[chainId]) return
     return selectUnderlyingToken(chainId, chains[chainId].token) || null
   }, [chainId])
 

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import type { MenuItemType } from 'constants/menu'
 import { MenuNavItem, NavItemText } from './MenuNavItem'
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
-import { MenuButton, Flex, MenuList, MenuItem, useTheme, IconButton } from '@chakra-ui/react'
+import { MenuButton, Flex, MenuList, MenuItem, useTheme, IconButton, Box } from '@chakra-ui/react'
 
 type MenuItemExpandableProps = {
   isOpen: boolean
@@ -68,7 +68,6 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
               menuItem.children.map( (menuItem, index) => (
                 <MenuItem
                   key={`menuItem_${index}`}
-                  // onClick={ () => { menuItem.onClick && menuItem.onClick() } }
                   onClick={ () => { menuItem.onClick ? menuItem.onClick() : (menuItem.path && navigate(menuItem.path))} }
                 >
                   <MenuNavItem {...menuItem} />
