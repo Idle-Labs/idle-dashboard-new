@@ -262,7 +262,7 @@
     },
     "tranches": {
       "tag": "Isolated",
-      "label": "Yield Tranches",
+      "label": "Isolated",
       "noVaultsAvailable": "Yield Tranches vaults are currently not available %{network}. Switch to Ethereum mainnet to explore this strategy.",
       "title": "Not all yield is created<br />equal: <span style='color:#4de3b0'>DeFi risk, adjusted</span>",
       "descriptionShort": "Yield Tranches split any DeFi yield source into risk-adjusted classes, enabling users to construct a customized yield portfolio that suits their risk tolerance.",
@@ -276,7 +276,7 @@
     },
     "best": {
       "tag": "Aggregated",
-      "label": "Best Yield",
+      "label": "Aggregated",
       "title": "Consistently seeking the <span style='color:#6AE4FF'>best yield</span><br />in an inconsistent world",
       "noVaultsAvailable": "Best Yield vaults are currently not available for %{network}. Switch to Ethereum mainnet to explore this strategy.",
       "banner": {
