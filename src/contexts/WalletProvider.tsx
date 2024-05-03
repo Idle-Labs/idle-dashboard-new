@@ -87,15 +87,12 @@ export function WalletProvider({ children }: ProviderProps) {
   const chainId = useMemo(() => {
     if (!connectedChain) return defaultChainId
     return parseInt(connectedChain.id)
-    // const connectedChainId = Object.keys(chains).find( (chainId: string) => (chains[+chainId].id === connectedChain?.id) )
-    // return !!connectedChainId ? +connectedChainId : defaultChainId
   }, [connectedChain])
 
   const prevChainId = usePrevious<number | null>(chainId)
 
   const chainIdHex = useMemo(() => {
     if (!connectedChain) return
-    // return chains[chainId]?.id
     return connectedChain.id
   }, [connectedChain])
 

@@ -164,8 +164,8 @@ const initialContextState = initialState
 
 const reducer = (state: InitialState, action: ReducerActionTypes) => {
 
-  // console.log(action.type, action.payload)
   const currTime = Date.now()
+  // console.log(action.type, action.payload)
 
   switch (action.type){
     case 'RESET_STATE':
@@ -3149,7 +3149,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
       
-      console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls, vaultsOnChainData)
+      // console.log('Loading Portfolio', account?.address, accountChanged, state.isPortfolioLoaded, state.aprs, enabledCalls, vaultsOnChainData)
 
       // console.log('Vaults Data', enabledCalls, vaultsOnChainData)
 
@@ -3358,11 +3358,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
     // Get Historical data
     ;(async () => {
-
       // const startTimestamp = Date.now()
-
       const historicalPricesUsd = await getChainlinkHistoricalPrices(state.vaults, maxDays)
-      
       // console.log('getChainlinkHistoricalPrices', maxDays, historicalPricesUsd)
 
       if (!historicalPricesUsd) return
@@ -3424,10 +3421,11 @@ export function PortfolioProvider({ children }:ProviderProps) {
   
   // Get historical vaults data
   useEffect(() => {
+    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates) || !!runningEffects.current.historicalVaults) return
 
-    // console.log('Load historical data', state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.historicalRates)
+    // console.log('Load historical data', state.vaults, state.isPortfolioLoaded, vaultFunctionsHelper, state.historicalRates, runningEffects.current.historicalVaults)
 
-    if (isEmpty(state.vaults) || !state.isPortfolioLoaded || !vaultFunctionsHelper || !isEmpty(state.historicalRates)) return
+    runningEffects.current.historicalVaults = true
 
     // Get Historical data
     ;(async () => {
@@ -3499,8 +3497,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
           dispatch({type: 'SET_ASSET_DATA', payload: { assetId, assetData: { tvls: tvls[assetId], rates: rates[assetId], prices: prices[assetId] } }})
         }
       })
-
-      // console.log('prices', prices)
 
       dispatch({type: 'SET_HISTORICAL_TVLS', payload: tvls})
       dispatch({type: 'SET_HISTORICAL_RATES', payload: rates})

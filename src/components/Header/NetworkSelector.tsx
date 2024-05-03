@@ -16,6 +16,7 @@ export const NetworkSelector: React.FC = () => {
     const menuItem = {
       icon: network.icon,
       label: network.name,
+      color: chains[chainId] ? 'brightGreen' : 'red',
       children: Object.keys(chains).filter( cId => cId !== chainId.toString() ).map( (cId: string): MenuListType => {
         const icon = networks[parseInt(cId)].icon || undefined
         return {

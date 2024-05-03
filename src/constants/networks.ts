@@ -113,6 +113,18 @@ export const networks: Record<number, Network> = {
     hostName: 'app.idle.finance',
     icon: `${networksFolder}optimism.svg`,
   },
+  42161: {
+    color: '#8247E5',
+    baseToken: 'ETH',
+    network: 'mainnet',
+    provider: '',
+    name: 'Arbitrum',
+    blocksPerCall: 1000000,
+    chainName: 'Arbitrum One',
+    explorer: '',
+    maxPriorityFeePerGas: 1000,
+    icon: `${networksFolder}arbitrum.svg`,
+  },
   5: {
     name: 'Görli',
     color: '#3099f2',

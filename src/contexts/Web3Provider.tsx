@@ -97,7 +97,7 @@ export function Web3Provider({ children }: ProviderProps) {
 
   // Check and load RPCs
   useEffect(() => {
-    if (!chainId || isEmpty(web3Chains)) return
+    if (!chainId || !isEmpty(web3Chains)) return
 
     ;(async() => {
       // Check custom RPCs otherwise use public ones
