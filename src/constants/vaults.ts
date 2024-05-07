@@ -897,6 +897,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         enabledEnvs:['beta'],
         blockNumber:19674126,
         underlyingToken:'USDC',
+        vaultType:'overcollatLending',
         adaptiveYieldSplitEnabled:true,
         flags:{
           addHarvestApy: false
@@ -912,7 +913,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_gearbox_USDC',
           address:'0x29c794B9a70752c41D65EBcCEF1c1eE697387510'
         },
-        description:'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda00000035fef4082f78def6a8903bee419fbf8e" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> and automatically earn additional GEAR rewards. This is a lending pool that gives you passive APY with no liquidations!',
+        description:'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda00000035fef4082f78def6a8903bee419fbf8e" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox USDC V3 Pool</a> generating passive yield while automatically harvesting the GEAR rewards distributed.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,
@@ -976,6 +977,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['GEAR'],
         blockNumber:19674126,
         underlyingToken:'WETH',
+        vaultType:'overcollatLending',
         adaptiveYieldSplitEnabled:true,
         flags:{
           addHarvestApy: false
@@ -991,7 +993,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
           name:'IdleStrategy_gearbox_WETH',
           address:'0xeE4043b3E4fDf830a557Aa78604E16a599701dFA'
         },
-        description:'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda0002859b2d05f66a753d8241fcde8623f26f4f" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> and automatically earn additional GEAR rewards. This is a lending pool that gives you passive APY with no liquidations!',
+        description:'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda0002859b2d05f66a753d8241fcde8623f26f4f" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> generating passive yield while automatically earning extra points distributed to the pool. It also harvests GEAR rewards tokens.',
         Tranches:{
           AA:{
             abi:ERC20 as Abi,

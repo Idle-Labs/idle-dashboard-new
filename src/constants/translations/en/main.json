@@ -212,6 +212,7 @@
     "BY": "Best-Yield",
     "AA": "Senior Tranche",
     "BB": "Junior Tranche",
+    "overcollatLending": "Overcollateralized lending",
     "diversifiedBasisYield": "Diversified Basis Yield",
     "institutionalCredit": "Institutional Credit",
     "leveragedStaking": "Leveraged staking",
