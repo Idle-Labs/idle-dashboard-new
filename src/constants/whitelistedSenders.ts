@@ -1,10 +1,16 @@
 import { Address } from 'constants/types'
-import { IDLE_MULTISIG_MAINNET, IDLE_MULTISIG_OPTIMISM, DISPERSE_APP_OPTIMISM, DISPERSE_APP_MAINNET } from 'constants/addresses'
+import { IDLE_MULTISIG_MAINNET, IDLE_MULTISIG_OPTIMISM, DISPERSE_APP_OPTIMISM_RWA, DISPERSE_APP_OPTIMISM, DISPERSE_APP_MAINNET } from 'constants/addresses'
 
 export const rewardsSenders: Record<number, Address[]> = {
   10: [
     DISPERSE_APP_OPTIMISM,
     IDLE_MULTISIG_OPTIMISM
+  ]
+}
+
+export const rewardsSendersRwa: Record<number, Address[]> = {
+  10: [
+    DISPERSE_APP_OPTIMISM_RWA
   ]
 }
 

@@ -9,6 +9,7 @@ export const FEES_COLLECTORS: Record<string, string[]> = {
 
 // Optimism
 export const DISPERSE_APP_OPTIMISM = "0xd152f549545093347a162dce210e7293f1452150"
+export const DISPERSE_APP_OPTIMISM_RWA = "0xeA173648F959790baea225cE3E75dF8A53a6BDE5"
 export const IDLE_MULTISIG_OPTIMISM = "0xfdbb4d606c199f091143bd604c85c191a526fbd0"
 
 // Mainnet

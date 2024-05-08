@@ -16,7 +16,7 @@ import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
 import type { Abi, VaultStatus, Paragraph, RewardEmission, AssetId } from './types'
-import { rewardsSenders, distributedFeesSenders } from 'constants/whitelistedSenders'
+import { rewardsSenders, rewardsSendersRwa, distributedFeesSenders } from 'constants/whitelistedSenders'
 
 export const vaultsStatusSchemes: Record<string, string> = {
   'production' : 'green',
@@ -407,7 +407,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
         vaultType:'institutionalCredit',
-        rewardsSenders:rewardsSenders[10],
+        rewardsSenders:rewardsSendersRwa[10],
         stats:{
           startTimestamp: 1698105600000
         },
