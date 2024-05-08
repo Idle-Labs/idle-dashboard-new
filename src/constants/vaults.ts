@@ -407,7 +407,7 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
         vaultType:'institutionalCredit',
-        rewardsSenders:rewardsSendersRwa[10],
+        rewardsSenders:rewardsSenders[10],
         stats:{
           startTimestamp: 1698105600000
         },
@@ -4220,7 +4220,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         address: '0x9ebcb025949ffb5a77ff6ccc142e0de649801697',
       },
       distributedTokens:['OP'],
-      rewardsSenders:rewardsSenders[10],
+      rewardsSenders:rewardsSendersRwa[10],
       stats:{
         startTimestamp: 1712620800000
       },
