@@ -6,12 +6,11 @@ import { ContractSendMethod } from 'web3-eth-contract'
 import { CacheContextProps } from 'contexts/CacheProvider'
 import { GenericContract } from 'contracts/GenericContract'
 import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
-import { distributedFeesSenders } from 'constants/whitelistedSenders'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
-import { MAX_ALLOWANCE, tokensFolder, ProtocolField, protocols, operators } from 'constants/'
-import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission, Operator } from 'constants/types'
+import { MAX_ALLOWANCE, tokensFolder, ProtocolField, protocols, operators, distributedFeesSenders } from 'constants/'
+import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission, Operator, RewardSenderParams, RewardSenders } from 'constants/types'
 import { BNify, normalizeTokenAmount, getObjectPath, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
-import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
+import { ZERO_ADDRESS, Address, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
   web3: Web3
@@ -55,7 +54,7 @@ export class TrancheVault {
   public readonly vaultType: string | undefined
   public readonly status: VaultStatus | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
-  public readonly rewardsSenders: string[] | undefined
+  public readonly rewardsSenders: RewardSenders | undefined
   public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
   public readonly rewardsEmissions: RewardEmission[] | undefined
@@ -162,10 +161,21 @@ export class TrancheVault {
     this.trancheContract = new web3.eth.Contract(this.trancheConfig.abi, this.trancheConfig.address)
   }
 
-  public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
+  public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[], startBlock: number = 0): EtherscanTransaction[] {
     if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && this.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+      const sendersAddrs = Object.keys(this.rewardsSenders as RewardSenders)
+      const foundSenderAddress = sendersAddrs.find( (addr: string) => cmpAddrs(addr, tx.from.toLowerCase()) )
+      if (foundSenderAddress){
+        const senderParams: RewardSenderParams = (this.rewardsSenders as RewardSenders)[foundSenderAddress]
+        if (
+          (!senderParams.startBlock || +tx.blockNumber>=senderParams.startBlock) &&
+          (!senderParams.endBlock || +tx.blockNumber<=senderParams.endBlock)
+        ) {
+          return +tx.blockNumber>=+startBlock && this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && cmpAddrs(tx.to, account)
+        }
+      }
+      return false
     })
   }
 
@@ -173,7 +183,7 @@ export class TrancheVault {
     const tokenAddr = this.id// his.underlyingToken?.address
     if (!this.flags?.feeDiscountEnabled || !tokenAddr || !distributedFeesSenders[this.chainId]) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return cmpAddrs(tx.contractAddress, tokenAddr as string) && distributedFeesSenders[this.chainId].map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+      return cmpAddrs(tx.contractAddress, tokenAddr as string) && Object.keys(distributedFeesSenders[this.chainId]).map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
     })
   }
 

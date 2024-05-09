@@ -15,7 +15,7 @@ import ClearpoolPool from 'abis/clearpool/ClearpoolPool.json'
 import GaugeMultiRewards from 'abis/idle/GaugeMultiRewards.json'
 import IdleCDOTrancheRewards from 'abis/idle/IdleCDOTrancheRewards.json'
 import TrancheStakingRewards from 'abis/idle/TrancheStakingRewards.json'
-import type { Abi, VaultStatus, Paragraph, RewardEmission, AssetId } from './types'
+import type { Abi, VaultStatus, Paragraph, RewardEmission, AssetId, RewardSenders } from './types'
 import { rewardsSenders, rewardsSendersRwa, distributedFeesSenders } from 'constants/whitelistedSenders'
 
 export const vaultsStatusSchemes: Record<string, string> = {
@@ -99,7 +99,7 @@ export interface TrancheConfig {
   referralEnabled?:boolean
   autoFarming?:string[]
   distributedTokens?:string[]
-  rewardsSenders?:string[]
+  rewardsSenders?:RewardSenders
   underlyingToken:string
   vaultType?:string
   modal?: any
@@ -317,8 +317,10 @@ export const tranches: Record<number, Record<string, Record<string, TrancheConfi
         autoFarming:['CPOOL'],
         underlyingToken:'USDT',
         variant:'Bastion Trading',
+        distributedTokens:['OP'],
         adaptiveYieldSplitEnabled:true,
         vaultType:'institutionalCredit',
+        rewardsSenders:rewardsSenders[10],
         flags:{
           addHarvestApy: true,
           referralEnabled: true
@@ -4196,9 +4198,9 @@ export type BestYieldConfig = {
   autoFarming?: string[]
   enabledEnvs?: string[]
   underlyingToken: string
-  rewardsSenders?:string[]
   distributedTokens?:string[]
   flags?: Record<string, any>
+  rewardsSenders?:RewardSenders
   protocols: IdleTokenProtocol[]
 }
 

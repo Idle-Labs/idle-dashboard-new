@@ -24,8 +24,8 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData } from 'constants/types'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject } from 'helpers/'
+import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address } from 'constants/types'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -609,7 +609,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
             let output = false
             state.vaults.filter( (vault: Vault) => +vault.chainId === chainIdToUse ).forEach( (vault: Vault) => {
               if (("distributedTokens" in vault) && ("rewardsSenders" in vault) && !isEmpty(vault.distributedTokens) && !isEmpty(vault.rewardsSenders)){
-                const foundTx = vault.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes((alchemyTx.rawContract.address as string).toLowerCase()) && vault.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(alchemyTx.from.toLowerCase())
+                const foundTx = vault.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes((alchemyTx.rawContract.address as string).toLowerCase()) && (Object.keys(vault.rewardsSenders as RewardSenders) as Address[]).map( addr => addr.toLowerCase() ).includes(alchemyTx.from.toLowerCase())
                 if (foundTx){
                   output = true
                 }
@@ -850,6 +850,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
     if (!account?.address || !web3Chains) return output
 
     const startTimestamp = Date.now()
+    const userChainsTransactions: Record<string, EtherscanTransaction[]> = {}
 
     await asyncForEach(Object.keys(web3Chains), async (chainId: string) => {
 
@@ -864,6 +865,9 @@ export function PortfolioProvider({ children }:ProviderProps) {
         
       const endBlock = 'latest'
       const etherscanTransactions = await getUserTransactions(startBlock, endBlock, +chainId)
+
+      // Save user transactions for later
+      userChainsTransactions[chainId] = etherscanTransactions
       
       // console.log('etherscanTransactions', chainId, account.address, startBlock, endBlock, etherscanTransactions)
 
@@ -872,50 +876,6 @@ export function PortfolioProvider({ children }:ProviderProps) {
         async (vault: Vault) => {
           if ("getTransactions" in vault){
             output.vaultsTransactions[vault.id] = await vault.getTransactions(account.address, etherscanTransactions)
-          }
-
-          if ("getDistributedRewards" in vault){
-            const distributedRewardsTxs = vault.getDistributedRewards(account.address, etherscanTransactions)
-            output.distributedRewards[vault.id] = distributedRewardsTxs.reduce( (distributedRewards: NonNullable<Asset["distributedRewards"]>, tx: EtherscanTransaction) => {
-              const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
-              if (!underlyingToken || !underlyingToken.address) return distributedRewards
-              const underlyingTokenId = underlyingToken.address.toLowerCase()
-              if (!distributedRewards[underlyingTokenId]){
-                distributedRewards[underlyingTokenId] = []
-              }
-              const distributedReward: DistributedReward = {
-                tx,
-                apr: null,
-                hash: tx.hash,
-                chainId: +chainId,
-                assetId: underlyingTokenId,
-                blockNumber: +tx.blockNumber,
-                timeStamp: +tx.timeStamp*1000,
-                value: fixTokenDecimals(tx.value, underlyingToken.decimals || 18)
-              }
-              distributedRewards[underlyingTokenId].push(distributedReward)
-              return distributedRewards
-            }, {})
-          }
-
-          if ("getDiscountedFees" in vault){
-            const discountedFeesTxs = vault.getDiscountedFees(account.address, etherscanTransactions)
-            output.discountedFees[vault.id] = discountedFeesTxs.reduce( (discountedFees: NonNullable<Asset["discountedFees"]>, tx: EtherscanTransaction) => {
-              const asset = selectAssetById(tx.contractAddress)
-              if (!asset?.id) return discountedFees
-              const discountedFee: DistributedReward = {
-                tx,
-                apr: null,
-                hash: tx.hash,
-                chainId: +chainId,
-                assetId: asset.id as string,
-                blockNumber: +tx.blockNumber,
-                timeStamp: +tx.timeStamp*1000,
-                value: fixTokenDecimals(tx.value, asset.decimals || 18)
-              }
-              discountedFees.push(discountedFee)
-              return discountedFees
-            }, [])
           }
         }
       )
@@ -1105,11 +1065,73 @@ export function PortfolioProvider({ children }:ProviderProps) {
       return vaultsPositions
     }, {})
 
+    await asyncForEach(Object.keys(web3Chains), async (chainId: string) => {
+
+      const web3Chain = web3Chains[chainId]
+      const chainVaults = vaults.filter( (vault: Vault) => +vault.chainId === +chainId )
+      const etherscanTransactions = userChainsTransactions[chainId]
+
+      await asyncForEach(
+        chainVaults,
+        async (vault: Vault) => {
+          if ("getDistributedRewards" in vault){
+            const vaultPosition = output.vaultsPositions[vault.id]
+            const vaultStartBlock = vaultPosition && vaultPosition.firstDepositTx ? +vaultPosition.firstDepositTx.blockNumber : 0
+            const distributedRewardsTxs = vault.getDistributedRewards(account.address, etherscanTransactions, vaultStartBlock)
+            output.distributedRewards[vault.id] = distributedRewardsTxs.reduce( (distributedRewards: NonNullable<Asset["distributedRewards"]>, tx: EtherscanTransaction) => {
+              const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)
+              if (!underlyingToken || !underlyingToken.address) return distributedRewards
+              const underlyingTokenId = underlyingToken.address.toLowerCase()
+              if (!distributedRewards[underlyingTokenId]){
+                distributedRewards[underlyingTokenId] = []
+              }
+
+              const distributedReward: DistributedReward = {
+                tx,
+                apr: null,
+                hash: tx.hash,
+                chainId: +chainId,
+                assetId: underlyingTokenId,
+                blockNumber: +tx.blockNumber,
+                timeStamp: +tx.timeStamp*1000,
+                value: fixTokenDecimals(tx.value, underlyingToken.decimals || 18)
+              }
+
+              distributedRewards[underlyingTokenId].push(distributedReward)
+              return distributedRewards
+            }, {})
+          }
+
+          if ("getDiscountedFees" in vault){
+            const discountedFeesTxs = vault.getDiscountedFees(account.address, etherscanTransactions)
+            output.discountedFees[vault.id] = discountedFeesTxs.reduce( (discountedFees: NonNullable<Asset["discountedFees"]>, tx: EtherscanTransaction) => {
+              const asset = selectAssetById(tx.contractAddress)
+              if (!asset?.id) return discountedFees
+              const discountedFee: DistributedReward = {
+                tx,
+                apr: null,
+                hash: tx.hash,
+                chainId: +chainId,
+                assetId: asset.id as string,
+                blockNumber: +tx.blockNumber,
+                timeStamp: +tx.timeStamp*1000,
+                value: fixTokenDecimals(tx.value, asset.decimals || 18)
+              }
+              discountedFees.push(discountedFee)
+              return discountedFees
+            }, [])
+          }
+        }
+      )
+    })
+
     // eslint-disable-next-line
     console.log('VAULTS POSITIONS LOADED in', (Date.now()-startTimestamp)/1000)
 
+    console.log('VaultsPositions', output)
+
     return output
-  }, [account, web3Chains, selectAssetById, selectVaultPrice, selectVaultEpochData, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
+  }, [account, web3Chains, /*cacheProvider,*/ selectAssetById, selectVaultPrice, selectVaultEpochData, selectAssetTotalSupply, selectAssetPriceUsd, selectAssetBalance, selectVaultGauge, getUserTransactions])
 
   const getStkIdleCalls = useCallback((): CallData[] => {
     if (!web3 || !multiCall || !state.contractsNetworks?.[STAKING_CHAINID].length) return []
@@ -3795,6 +3817,18 @@ export function PortfolioProvider({ children }:ProviderProps) {
             const genericContractsHelper = new GenericContractsHelper({chainId: assetChainId, web3: web3Chains[assetChainId], contracts: state.contractsNetworks[assetChainId]})
 
             if (state.distributedRewards[assetId][rewardId].length>0){
+
+              const distributedRewardsConversionRates = await Promise.all(
+                state.distributedRewards[assetId][rewardId].map( (distributedReward: DistributedReward) => genericContractsHelper.getConversionRate(underlyingToken, +distributedReward.blockNumber).then( (conversionRate: any) => ({blockNumber: distributedReward.blockNumber, conversionRate}) ) )
+              )
+
+              console.log('distributedRewardsConversionRates', assetId, rewardId, distributedRewardsConversionRates)
+
+              // TODO: Calculate total amount of rewards in USD
+              // TODO: Calculate rewards APR based on total rewards USD
+              // TODO: Divide calculated rewards APR for the number of vaults that share the same rewardsSenders
+              
+              /*
               await asyncForEach(state.distributedRewards[assetId][rewardId], async (distributedReward: DistributedReward) => {
                 const rewardConversionRateAtBlock = await genericContractsHelper.getConversionRate(underlyingToken, +distributedReward.blockNumber)
                 const distributedRewardAmount = distributedReward.value
@@ -3802,6 +3836,8 @@ export function PortfolioProvider({ children }:ProviderProps) {
 
                 // Add value usd
                 distributedReward.valueUsd = distributedRewardUsd
+
+                console.log('distributedRewards APR', assetId, rewardId, distributedRewardAmount.toString(), distributedRewardUsd.toString(), vaultPosition)
 
                 const apr = distributedRewardUsd.div(distributionVaults.totalRedeemable).times(52.1429).times(100).div(distributionVaults.totalVaults)
                 res[assetId][rewardId][res[assetId][rewardId].length-1].apr = apr
@@ -3813,6 +3849,7 @@ export function PortfolioProvider({ children }:ProviderProps) {
                 vaultPosition.usd.rewards = bnOrZero(vaultPosition.usd.rewards).plus(distributedRewardUsd.div(distributionVaults.totalVaults));
                 vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(distributedRewardUsd.div(distributionVaults.totalVaults));
               })
+              */
 
               // Calculate avg rewards apy
               vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).div(state.distributedRewards[assetId][rewardId].length)

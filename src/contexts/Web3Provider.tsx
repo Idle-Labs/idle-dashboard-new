@@ -47,8 +47,10 @@ export function Web3Provider({ children }: ProviderProps) {
     }
   }, [wallet?.provider, connecting, walletInitialized, web3Rpc])
 
-  // @ts-ignore // TO REMOVE
+  // @ts-ignore
   window.web3 = web3
+  // @ts-ignore
+  window.web3Chains = web3Chains
 
   useEffect(() => {
     if (!web3) return;

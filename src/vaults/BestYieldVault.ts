@@ -12,7 +12,7 @@ import { VaultFunctionsHelper } from 'classes/VaultFunctionsHelper'
 import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { IdleTokenProtocol, AggregatedVault, aggregatedVaults } from 'constants/vaults'
 import { BNify, fixTokenDecimals, getObjectPath, normalizeTokenAmount, catchPromise, asyncReduce, isEmpty, cmpAddrs } from 'helpers/'
-import type { BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters, StatsProps } from 'constants/'
+import type { RewardSenders, RewardSenderParams, BestYieldConfig, IdleToken, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalData, VaultHistoricalRates, VaultHistoricalPrices, PlatformApiFilters, StatsProps } from 'constants/'
 
 type ConstructorProps = {
   web3: Web3
@@ -47,8 +47,8 @@ export class BestYieldVault {
   public readonly tokenConfig: BestYieldConfig
   public readonly stats: StatsProps | undefined
   public readonly status: VaultStatus | undefined
-  public readonly rewardsSenders: string[] | undefined
   public readonly rewardTokens: UnderlyingTokenProps[]
+  public readonly rewardsSenders: RewardSenders | undefined
   public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly aggregatedVault: AggregatedVault | undefined
   public readonly underlyingToken: UnderlyingTokenProps | undefined
@@ -477,10 +477,21 @@ export class BestYieldVault {
     return this.getAllowanceParams(MAX_ALLOWANCE)
   }
 
-  public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
+  public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[], startBlock: number = 0): EtherscanTransaction[] {
     if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
     return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && this.rewardsSenders?.map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+      const sendersAddrs = Object.keys(this.rewardsSenders as RewardSenders)
+      const foundSenderAddress = sendersAddrs.find( (addr: string) => cmpAddrs(addr, tx.from.toLowerCase()) )
+      if (foundSenderAddress){
+        const senderParams: RewardSenderParams = (this.rewardsSenders as RewardSenders)[foundSenderAddress]
+        if (
+          (!senderParams.startBlock || +tx.blockNumber>=senderParams.startBlock) &&
+          (!senderParams.endBlock || +tx.blockNumber<=senderParams.endBlock)
+        ) {
+          return +tx.blockNumber>=+startBlock && this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && cmpAddrs(tx.to, account)
+        }
+      }
+      return false
     })
   }
 
