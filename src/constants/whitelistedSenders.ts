@@ -1,5 +1,5 @@
 import type { RewardSenders } from 'constants/types'
-import { IDLE_MULTISIG_MAINNET, IDLE_MULTISIG_OPTIMISM, DISPERSE_APP_OPTIMISM_RWA, DISPERSE_APP_OPTIMISM, DISPERSE_APP_MAINNET } from 'constants/addresses'
+import { IDLE_MULTISIG_MAINNET, IDLE_MULTISIG_OPTIMISM, DISPERSE_APP_OPTIMISM, DISPERSE_APP_MAINNET } from 'constants/addresses'
 
 export const rewardsSenders: Record<number, RewardSenders> = {
   10: {

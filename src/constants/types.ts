@@ -254,6 +254,17 @@ export type StakingData = {
   }
 }
 
+export type BalancePeriod = {
+  duration: number
+  timeStamp: number
+  blockNumber: number
+  balance: BigNumber
+  idlePrice: BigNumber
+  realizedApy: BigNumber
+  realizedApr: BigNumber
+  earningsPercentage: BigNumber
+}
+
 export type VaultPosition = {
   poolShare: BigNumber
   avgBuyPrice: BigNumber
@@ -262,13 +273,15 @@ export type VaultPosition = {
   rewardsApy?: BigNumber
   referral?: string | null
   earningsPercentage: BigNumber
+  balancePeriods: BalancePeriod[]
   firstDepositTx?: Transaction | null
+  rewardsApysByToken?: Record<AssetId, BigNumber>
   idle: {
     staked: BigNumber
     earnings: BigNumber
     deposited: BigNumber
     redeemable: BigNumber
-  },
+  }
   underlying: {
     staked: BigNumber
     earnings: BigNumber
@@ -276,7 +289,7 @@ export type VaultPosition = {
     redeemable: BigNumber
     discountedFees?: BigNumber
     depositedWithRef?: BigNumber
-  },
+  }
   usd: {
     staked: BigNumber
     earnings: BigNumber

@@ -7,7 +7,7 @@ import { Scrollable } from 'components/Scrollable/Scrollable'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { VStack, Heading, SimpleGrid, Text } from '@chakra-ui/react'
+import { VStack, Heading, SimpleGrid, Text, HStack } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
 import { BNify, sortArrayByKey, isEmpty, toDayjs, getVaultFlag, bnOrZero, getObjectPath } from 'helpers/'
@@ -112,8 +112,13 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
             const totalAmount = asset.distributedRewards?.[underlyingId] ? asset.distributedRewards[underlyingId].reduce( (totalAmount: BigNumber, reward: DistributedReward) => {
               return totalAmount.plus(reward.value)
             }, BNify(0)) : BNify(0)
+            
+            const totalAmountUsd = asset.distributedRewards?.[underlyingId] ? asset.distributedRewards[underlyingId].reduce( (totalAmount: BigNumber, reward: DistributedReward) => {
+              return totalAmount.plus(bnOrZero(reward.valueUsd))
+            }, BNify(0)) : BNify(0)
+
             const latestDistribution = asset.distributedRewards?.[underlyingId] ? sortArrayByKey(asset.distributedRewards[underlyingId], 'timeStamp', 'desc')[0] : null
-            const apr = latestDistribution?.apr || asset.apyBreakdown?.rewards || BNify(0)
+            const apr = bnOrZero(vaultPosition?.rewardsApysByToken?.[underlyingToken.address]) //latestDistribution?.apr || asset.apyBreakdown?.rewards || BNify(0)
             return (
               <Card
                 py={6}
@@ -129,7 +134,13 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
                     justifyContent={'center'}
                     alignItems={'space-between'}
                   >
-                    <TokenAmount assetId={underlyingToken.address} size={'sm'} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
+                    <HStack
+                      spacing={1}
+                      alignItems={'center'}
+                    >
+                      <TokenAmount assetId={underlyingToken.address} size={'sm'} spacing={3} amount={totalAmount} showIcon={true} textStyle={'heading'} fontSize={'h3'} />
+                      <Amount.Usd prefix={'~'} value={totalAmountUsd} color={'cta'} fontSize={'xs'} />
+                    </HStack>
                     <VStack
                       spacing={1}
                       alignItems={['flex-end', 'flex-start']}

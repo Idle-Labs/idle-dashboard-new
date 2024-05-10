@@ -10,7 +10,7 @@ import { GenericContractsHelper } from 'classes/GenericContractsHelper'
 import { MAX_ALLOWANCE, tokensFolder, ProtocolField, protocols, operators, distributedFeesSenders } from 'constants/'
 import type { Abi, NumberType, VaultStatus, Paragraph, RewardEmission, Operator, RewardSenderParams, RewardSenders } from 'constants/types'
 import { BNify, normalizeTokenAmount, getObjectPath, fixTokenDecimals, catchPromise, asyncReduce, checkAddress, isEmpty, cmpAddrs, decodeTxParams } from 'helpers/'
-import { ZERO_ADDRESS, Address, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
+import { ZERO_ADDRESS, CDO, Strategy, Pool, Tranche, GaugeConfig, StatsProps, TrancheConfig, UnderlyingTokenProps, Assets, ContractRawCall, EtherscanTransaction, Transaction, VaultHistoricalRates, VaultHistoricalPrices, VaultHistoricalData, PlatformApiFilters } from 'constants/'
 
 type ConstructorProps = {
   web3: Web3
