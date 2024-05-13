@@ -620,6 +620,10 @@ export class VaultFunctionsHelper {
         const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
         const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
+        // console.log('etherscanTxlist', chainId, feeCollectorAddress, endpoint, etherscanTxlist)
+        
+        if (!etherscanTxlist) return {}
+
         // Process transactions
         const vaultsTransactions = await asyncReduce<Vault, Record<AssetId, Transaction[]>>(
           vaults,
