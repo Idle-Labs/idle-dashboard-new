@@ -857,6 +857,16 @@ const ApyBoost: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const RewardsBoost: React.FC<AmountProps> = (props) => {
+  const { asset } = useAssetProvider()
+
+  const rewardsBoost = asset?.totalTvlUsd && asset?.tvlUsd ? bnOrZero(asset?.totalTvlUsd).div(asset?.tvlUsd) : BNify(0)
+
+  return asset?.totalTvlUsd && asset?.tvlUsd ? (
+    <Amount suffix={'x'} decimals={2} value={rewardsBoost} {...props} />
+  ) : <Spinner size={'sm'} />
+}
+
 const RewardsApy: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
@@ -1816,6 +1826,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return <ApyRatioChart width={'100%'} />
     case 'apyBoost':
       return (<ApyBoost textStyle={'tableCell'} {...props} />)
+    case 'rewardsBoost':
+      return (<RewardsBoost textStyle={'tableCell'} {...props} />)
     case 'coverage':
       return (<Coverage textStyle={'tableCell'} {...props} />)
     case 'coveragePercentage':

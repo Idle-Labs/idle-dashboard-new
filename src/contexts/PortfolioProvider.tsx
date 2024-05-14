@@ -22,7 +22,7 @@ import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors
 import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID, WEEKS_PER_YEAR } from 'constants/vars'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
-import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
+import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, RewardEmissionParams } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address } from 'constants/types'
@@ -1447,35 +1447,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
       }
       return urdAddresses
     }, [])
-
-    /*
-    // Reward tokens calls
-    const rewardTokensCallsByChainId = morphoVaults.reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, vault: Vault): Record<number, Record<AssetId, CallData>> => {
-      if (!("strategyContract" in vault) || !vault.strategyContract) return callsByChainId
-      const callData = multiCall.getCallData(vault.strategyContract, 'getRewardTokens', [], {vault})
-      if (!callData) return callsByChainId
-      if (!callsByChainId[vault.chainId]){
-        callsByChainId[vault.chainId] = {}
-      }
-      callsByChainId[vault.chainId][vault.cdoConfig.address] = callData
-      return callsByChainId
-    }, {})
-
-    const withdrawQueueLengthCallsByChainId = morphoVaults.reduce( (callsByChainId: Record<number, Record<AssetId, CallData>>, vault: Vault): Record<number, Record<AssetId, CallData>> => {
-      if (!("poolContract" in vault) || !vault.poolContract) return callsByChainId
-      const callData = multiCall.getCallData(vault.poolContract, 'withdrawQueueLength', [], {vault})
-      if (!callData) return callsByChainId
-      if (!callsByChainId[vault.chainId]){
-        callsByChainId[vault.chainId] = {}
-      }
-      // callsByChainId[vault.chainId].push(callData)
-      callsByChainId[vault.chainId][vault.cdoConfig.address] = callData
-      return callsByChainId
-    }, {})
-    */
-
-    // const withdrawQueueLengths = await multiCall.executeMulticalls(withdrawQueueLengthCalls, 1, web3Chains[1])
-    // console.log('withdrawQueueLengthCallsByChainId', withdrawQueueLengthCallsByChainId)
 
     const [
       rewardTokensByChainId,

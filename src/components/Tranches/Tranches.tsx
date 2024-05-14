@@ -61,7 +61,7 @@ type ChainsFiltersArgs = {
   setEnabledChains: Function
 }
 
-const ChainsFilters: React.FC<ChainsFiltersArgs> = ({enabledChains, setEnabledChains}) => {
+const ChainsFilters: React.FC<ChainsFiltersArgs> = ({ enabledChains, setEnabledChains }) => {
   const translate = useTranslate()
   return (
     <HStack
@@ -71,7 +71,7 @@ const ChainsFilters: React.FC<ChainsFiltersArgs> = ({enabledChains, setEnabledCh
       borderColor={'divider'}
     >
       {
-        Object.keys(chains).map( (chainId: string) => (
+        Object.keys(chains).map((chainId: string) => (
           <Tooltip
             hasArrow
             placement={'top'}
@@ -81,7 +81,7 @@ const ChainsFilters: React.FC<ChainsFiltersArgs> = ({enabledChains, setEnabledCh
               key={`index_${chainId}`}
               layerStyle={'tableFilter'}
               aria-selected={enabledChains.includes(+chainId)}
-              onClick={ () => setEnabledChains( () => enabledChains.includes(+chainId) ? removeItemFromArray([...enabledChains], +chainId) : [...enabledChains, +chainId] ) }
+              onClick={() => setEnabledChains(() => enabledChains.includes(+chainId) ? removeItemFromArray([...enabledChains], +chainId) : [...enabledChains, +chainId])}
             >
               <Image src={networks[+chainId].icon as string} />
             </Box>
@@ -225,6 +225,40 @@ export const Tranches: React.FC = () => {
         {
           productStrategies.map((strategy: string) => {
             const assetId = tranchesAssets[strategy]?.id
+            const trancheVault = selectVaultById(assetId)
+            const vaultStrategy = trancheVault.trancheConfig?.strategy || strategy
+
+            const features = strategies[vaultStrategy].features
+            const strategyLabel = strategies[strategy].label
+
+            const vaultModalField = strategies[vaultStrategy]?.modalField ? (
+              <VStack
+                spacing={1}
+                width={'full'}
+                alignItems={'flex-start'}
+              >
+                <Translation translation={`defi.${strategies[vaultStrategy].modalField}`} textStyle={'ctaStatic'} />
+                <AssetProvider.GeneralData field={strategies[vaultStrategy].modalField as string} textStyle={'captionSmall'} color={'primary'} />
+              </VStack>
+            ) : null
+            /*
+            (
+              <VStack
+                spacing={1}
+                width={'full'}
+                alignItems={'flex-start'}
+              >
+                <Translation translation={'defi.apyBoost'} textStyle={'ctaStatic'} />
+                <HStack
+                  spacing={1}
+                >
+                  <AssetProvider.ApyBoost textStyle={'captionSmall'} color={'primary'} />
+                  <Translation translation={'defi.moreThanUnderlying'} textStyle={'captionSmall'} color={'primary'} />
+                </HStack>
+              </VStack>
+            )
+            */
+
             return (
               <AssetProvider
                 wrapFlex={false}
@@ -242,10 +276,10 @@ export const Tranches: React.FC = () => {
                     sx={{
                       zIndex: 0,
                       top: "30%",
-                      width: "205%",
+                      width: "215%",
                       right: "-115%",
                       position: "absolute",
-                      height: isMobile ? "145%" : "125%",
+                      height: isMobile ? "145%" : "40em",
                       background: `radial-gradient(circle, rgba(${hexToRgb(strategies[strategy]?.color as string).join(',')},0.8) 0%, rgba(50,61,83,0) 70%)`
                     }}
                   >
@@ -255,12 +289,6 @@ export const Tranches: React.FC = () => {
                     width={'full'}
                     position={'relative'}
                   >
-                    <HStack
-                      width={'full'}
-                      justifyContent={'flex-end'}
-                    >
-                      <Image w={6} h={6} src={`${strategiesFolder}${strategy}.svg`} />
-                    </HStack>
                     <VStack
                       px={2}
                       width={'full'}
@@ -268,15 +296,16 @@ export const Tranches: React.FC = () => {
                     >
                       <HStack
                         width={'full'}
-                        justifyContent={'flex-start'}
+                        justifyContent={'space-between'}
                       >
-                        <Translation translation={strategies[strategy].label} textStyle={'ctaStatic'} fontSize={'cardTitle'} lineHeight={'initial'} />
+                        <Translation translation={strategies[vaultStrategy].label} textStyle={'ctaStatic'} fontSize={'cardTitle'} lineHeight={'initial'} />
+                        <Image w={6} h={6} src={strategies[vaultStrategy].image} />
                       </HStack>
                       <VStack
                         spacing={2}
                       >
                         {
-                          strategies[strategy].features?.map((feature: string) => (
+                          features?.map((feature: string) => (
                             <HStack
                               spacing={1}
                               alignItems={'flex-start'}
@@ -312,32 +341,7 @@ export const Tranches: React.FC = () => {
                           <AssetProvider.PoolUsd textStyle={'captionSmall'} color={'primary'} fontSize={'md'} fontWeight={'700'} />
                         </HStack>
                       </VStack>
-                      {
-                        strategy === 'AA' ? (
-                          <VStack
-                            spacing={1}
-                            width={'full'}
-                            alignItems={'flex-start'}
-                          >
-                            <Translation translation={'defi.seniorCoverage'} textStyle={'ctaStatic'} />
-                            <AssetProvider.Coverage textStyle={'captionSmall'} color={'primary'} />
-                          </VStack>
-                        ) : (
-                          <VStack
-                            spacing={1}
-                            width={'full'}
-                            alignItems={'flex-start'}
-                          >
-                            <Translation translation={'defi.apyBoost'} textStyle={'ctaStatic'} />
-                            <HStack
-                              spacing={1}
-                            >
-                              <AssetProvider.ApyBoost textStyle={'captionSmall'} color={'primary'} />
-                              <Translation translation={'defi.moreThanUnderlying'} textStyle={'captionSmall'} color={'primary'} />
-                            </HStack>
-                          </VStack>
-                        )
-                      }
+                      {vaultModalField}
                       <Box
                         width={'full'}
                       >

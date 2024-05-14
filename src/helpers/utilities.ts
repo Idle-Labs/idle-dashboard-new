@@ -14,7 +14,7 @@ export function bnOrZero(n: BNifyInput): BigNumber {
   return value.isFinite() ? value : BNify(0)
 }
 
-export function integerValue(value: BNifyInput) :string {
+export function integerValue(value: BNifyInput): string {
   return BNify(value).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
 }
 export function normalizeTokenDecimals(tokenDecimals: number): BigNumber {
@@ -30,12 +30,12 @@ export function fixTokenDecimals(tokenBalance: BNifyInput, tokenDecimals?: numbe
   return BNify(tokenBalance).div(`1e${tokenDecimals}`);
 }
 
-export function hexToRgb(hex: string): number[]{
-  const aRgbHex = hex.replace(/^#/,'').match(/.{1,2}/g)
+export function hexToRgb(hex: string): number[] {
+  const aRgbHex = hex.replace(/^#/, '').match(/.{1,2}/g)
   return [
-    parseInt(aRgbHex?.[0]||'0', 16),
-    parseInt(aRgbHex?.[1]||'0', 16),
-    parseInt(aRgbHex?.[2]||'0', 16)
+    parseInt(aRgbHex?.[0] || '0', 16),
+    parseInt(aRgbHex?.[1] || '0', 16),
+    parseInt(aRgbHex?.[2] || '0', 16)
   ]
 }
 
@@ -85,7 +85,7 @@ export function isBigNumberNaN(amount: any) {
 export function numberToPercentage(value: any, decimals = 2, maxValue = 9999, minValue = 0) {
   const isOverMaxValue = maxValue && BNify(value).gt(maxValue)
   const isBelowMinValue = minValue && BNify(value).lt(minValue)
-  return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals)))+'%'
+  return isBigNumberNaN(value) ? '-' : (isOverMaxValue ? `>${maxValue}` : (isBelowMinValue ? `<${minValue}` : BNify(value).toFixed(decimals))) + '%'
 }
 
 export function dateIsEqual(d1: Date | number | string, d2: Date | number | string): boolean {
@@ -96,7 +96,7 @@ export function floorTimestamp(timestamp: Date | number | string): number {
   return +(dayjs(timestamp).startOf('day').valueOf())
 }
 
-export function getEtherscanTransactionObject(props: Record<keyof EtherscanTransaction, any>){
+export function getEtherscanTransactionObject(props: Record<keyof EtherscanTransaction, any>) {
   const etherscanTransaction: EtherscanTransaction = {
     blockHash: '',
     confirmations: '',
@@ -120,9 +120,9 @@ export function getEtherscanTransactionObject(props: Record<keyof EtherscanTrans
   }
 
   // Override
-  Object.keys(props).forEach( (k: any) => {
-    if (k in etherscanTransaction){
-      etherscanTransaction[k as keyof EtherscanTransaction] = ''+props[k as keyof EtherscanTransaction]
+  Object.keys(props).forEach((k: any) => {
+    if (k in etherscanTransaction) {
+      etherscanTransaction[k as keyof EtherscanTransaction] = '' + props[k as keyof EtherscanTransaction]
     }
   })
 
@@ -132,9 +132,9 @@ export function getEtherscanTransactionObject(props: Record<keyof EtherscanTrans
 export function getTimeframeTimestamp(timeframe: HistoryTimeframe): number {
   if (timeframe === 'ALL') return MIN_TIMESTAMP
   const periods: Record<string, ManipulateType> = {
-    'W':'week',
-    'M':'month',
-    'Y':'year',
+    'W': 'week',
+    'M': 'month',
+    'Y': 'year',
   }
   const value = parseInt(timeframe.substr(0, 1))
   const period = periods[timeframe.substr(1)]
@@ -164,7 +164,7 @@ export function dateDiff(t1: number, t2: number, unit: any = 'ms', returnDecimal
   return Math.abs(dayjs(t1).diff(t2, unit, returnDecimals))
 }
 
-export function toDayjs(timestamp?: Date | dayjs.Dayjs | number | string) {
+export function toDayjs(timestamp?: Date | dayjs.Dayjs | number | string) {
   return dayjs(timestamp)
 }
 
@@ -172,7 +172,7 @@ export function dateToLocale(timestamp: Date | dayjs.Dayjs | number, locale: str
   return dayjs(timestamp).locale(locale).format('LLL')
 }
 
-export function formatMoney (amount: number, decimalCount = 2, decimal = ".", thousands = ","): string | null {
+export function formatMoney(amount: number, decimalCount = 2, decimal = ".", thousands = ","): string | null {
   try {
     decimalCount = Math.abs(decimalCount);
     decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
@@ -206,57 +206,57 @@ export function uniqueValues(array: any[], attribute: string) {
   return result;
 }
 
-export function formatDate (timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) {
+export function formatDate(timestamp: number | string, format = 'YYYY/MM/DD', isUTC = false) {
   const day = dayjs(+timestamp)
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? ' UTC' : '')
 }
 
-export function arrayUnique (array: any) {
+export function arrayUnique(array: any) {
   return Array.from(new Set(array).values())
 }
 
-export function splitArrayIntoChunks (array: any, chunkSize: number) {
+export function splitArrayIntoChunks(array: any, chunkSize: number) {
   const output = []
   for (let i = 0; i < array.length; i += chunkSize) {
-      const chunk = array.slice(i, i + chunkSize);
-      output.push(chunk)
+    const chunk = array.slice(i, i + chunkSize);
+    output.push(chunk)
   }
   return output
 }
 
-export function hashCode (s: string): string {
+export function hashCode(s: string): string {
   let h = 0;
   for (let i = 0; i < s.length; i++)
     h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
   return Math.abs(h).toString();
 }
 
-export function formatTime (seconds: any) {
+export function formatTime(seconds: any) {
   if (!seconds) return ['0s']
   const suffixes = ['h', 'm', 's']
-  let timesJoined = new Date(seconds * 1000).toISOString().substr(11, 8).replace(/:/g, "").replace(/^0+/g,"")
-  const zerosToPrepend = timesJoined.length%2
+  let timesJoined = new Date(seconds * 1000).toISOString().substr(11, 8).replace(/:/g, "").replace(/^0+/g, "")
+  const zerosToPrepend = timesJoined.length % 2
   if (zerosToPrepend) {
     timesJoined = `${'0'.repeat(zerosToPrepend)}${timesJoined}`
   }
   const times = timesJoined.match(/.{1,2}/g);
-  const timesFormatted = times ? times.map( (v, index) => parseInt(v)+suffixes.slice(suffixes.length-times.length)[index] ) : ['0s']
+  const timesFormatted = times ? times.map((v, index) => parseInt(v) + suffixes.slice(suffixes.length - times.length)[index]) : ['0s']
   return timesFormatted.join(' ')
 }
 
-export function sumArray (array: Array<any>) {
+export function sumArray(array: Array<any>) {
   return array.reduce(function (pv, cv) { return pv + cv; }, 0);
 }
 
-export function maxArray (array: Array<any>) {
+export function maxArray(array: Array<any>) {
   return Math.max.apply(null, array);
 }
 
-export function avgArray (array: Array<any>) {
+export function avgArray(array: Array<any>) {
   return sumArray(array) / array.length;
 }
 
-export function abbreviateNumber (value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) {
+export function abbreviateNumber(value: any, decimals = 2, maxPrecision = 5, minPrecision = 0) {
 
   const isNegative = parseFloat(value) < 0;
   let newValue: any = BNify(value).abs();
@@ -291,7 +291,7 @@ export function abbreviateNumber (value: any, decimals = 2, maxPrecision = 5, mi
     newValue = '-' + newValue;
   }
 
-  const suffix = suffixNum>=suffixes.length ? '' : suffixes[suffixNum].toLowerCase();
+  const suffix = suffixNum >= suffixes.length ? '' : suffixes[suffixNum].toLowerCase();
   newValue += suffix;
 
   return newValue;
@@ -303,14 +303,14 @@ export async function asyncWait(duration: number) {
 
 export function requestTimeout(callback: Function, delay: number) {
   // Create an object to store the timeout id and state
-  const timeout: {id: number | null, stopped: boolean} = {
+  const timeout: { id: number | null, stopped: boolean } = {
     id: null,
     stopped: false
   };
 
   const clear = () => {
     timeout.stopped = true
-    if (timeout.id){
+    if (timeout.id) {
       cancelAnimationFrame(timeout.id)
     }
   }
@@ -362,7 +362,7 @@ export function capitalize(str: string) {
 export function lazyLoadComponent(component: string) {
   return lazy(() => {
     const promise = import(`components/${component}/${component}`)
-    return promise.then(module => ({default: module[component]}))
+    return promise.then(module => ({ default: module[component] }))
   })
 }
 
@@ -372,13 +372,13 @@ export function isEmpty(object: any) {
 
 export function getDecodedError(error: any) {
   try {
-    if (error.message){
+    if (error.message) {
       const decodedError = JSON.parse(error.message.toString().split("\n").splice(1).join(" "))
-      if (decodedError?.message){
+      if (decodedError?.message) {
         return decodedError.message
       }
     }
-  } catch (error){
+  } catch (error) {
   }
   return null
 }
@@ -388,12 +388,12 @@ export function getTimestampRange(startDate: (Date | number | string), endDate: 
   const endDayTimestamp = +(dayjs(endDate).startOf('day').valueOf())
 
   const dayTimestamp = 86400000
-  const days = Math.ceil((endDayTimestamp-startDayTimestamp)/dayTimestamp)
+  const days = Math.ceil((endDayTimestamp - startDayTimestamp) / dayTimestamp)
 
   if (isBigNumberNaN(days)) return []
 
-  return Array.from(Array(days+1).keys()).map( (dayIndex: number) => {
-    return +(dayjs(startDayTimestamp+(dayTimestamp*dayIndex)).startOf('day').valueOf())
+  return Array.from(Array(days + 1).keys()).map((dayIndex: number) => {
+    return +(dayjs(startDayTimestamp + (dayTimestamp * dayIndex)).startOf('day').valueOf())
   })
 }
 
@@ -418,7 +418,7 @@ export async function callWithTimeout(asyncFunction: Function, timeout: number =
     });
 }
 
-export async function asyncReduce <T, U>(
+export async function asyncReduce<T, U>(
   array: T[],
   callback: (currentValue: T, currentIndex: number) => Promise<any>,
   aggregateFunction: (acc: U, currentValue: U) => U,
@@ -430,7 +430,7 @@ export async function asyncReduce <T, U>(
   return Promise.all(promises).then(results => results.reduce((accumulator, currentValue) => aggregateFunction(accumulator, currentValue), initialValue))
 }
 
-export async function asyncForEach (array: any[], callback: Function, asyncEnabled = true) {
+export async function asyncForEach(array: any[], callback: Function, asyncEnabled = true) {
   let output = [];
   if (asyncEnabled) {
     output = await Promise.all(array.map((c, index) => {
@@ -458,7 +458,7 @@ export function shortenHash(hash: string, startLen = 7, endLen = 4) {
   return shortHash;
 }
 
-export const divideArray = (a: any[], c: number) => Array.from({length:Math.ceil(a.length/c)},(_,i)=>a.slice(i*c,i*c+c));
+export const divideArray = (a: any[], c: number) => Array.from({ length: Math.ceil(a.length / c) }, (_, i) => a.slice(i * c, i * c + c));
 
 export function parseAndReplaceAnchorTags(inputString: string) {
   const regex = /<a\s+(?:[^>]*\s+)?href=(?:"|')([^"']+)(?:"|')(?:\s+[^>]*)?>([^<]+)<\/a>/g;
@@ -469,18 +469,18 @@ export function parseAndReplaceAnchorTags(inputString: string) {
 export function getObjectPath(object: any, path: string, fallback: any = null): any {
   if (!path) return undefined
   const dotIndex = path ? path.indexOf('.') : -1;
-  
+
   if (!object || object === undefined) {
     return fallback || undefined;
   }
-  
+
   if (dotIndex === -1) {
     if (path.length && path in object) {
       return object[path];
     }
     return fallback || undefined;
   }
-  
+
   return getObjectPath(object[path.substr(0, dotIndex)], path.substr(dotIndex + 1), fallback);
 }
 

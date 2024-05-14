@@ -1,3 +1,4 @@
+// From master
 import aToken from "abis/aave/AToken.json";
 import ERC20 from "abis/tokens/ERC20.json";
 import cToken from "abis/compound/cDAI.json";
@@ -3477,11 +3478,21 @@ export const tranches: Record<
         variant: "Re7 Capital",
         underlyingToken: "WETH",
         vaultType: "lrtLendingFarm",
-        autoFarming: ["MORPHO", "USDC"],
+        distributedTokens: ["MORPHO"],
         adaptiveYieldSplitEnabled: true,
         flags: {
           addHarvestApy: false,
-          feeDiscountEnabled: true,
+          feeDiscountEnabled: false,
+          hideStrategyDescriptionCarousel: true,
+        },
+        translations: {
+          distributedTokens: {
+            modal: {
+              cta: "defi.modals.morphoDistribution.cta",
+              text: "defi.modals.morphoDistribution.body",
+              subtitle: "defi.modals.morphoDistribution.title",
+            },
+          },
         },
         CDO: {
           abi: IdleCDO as Abi,
@@ -3506,6 +3517,7 @@ export const tranches: Record<
             abi: ERC20 as Abi,
             decimals: 18,
             tranche: "AA",
+            strategy: "YIL",
             functions: {
               stake: "stake",
               unstake: "exit",
@@ -3524,6 +3536,11 @@ export const tranches: Record<
               name: "TrancheStakingRewards_morpho_Re7WETHFarm_AA",
               address: "0x0000000000000000000000000000000000000000",
             },
+            rewardsEmissionsParams: {
+              MORPHO: {
+                aprRatio: 0,
+              },
+            },
             blockNumber: 16420584,
             name: "AA_morpho_Re7_WETH",
             token: "AA_morpho_Re7_WETH",
@@ -3534,6 +3551,7 @@ export const tranches: Record<
             abi: ERC20 as Abi,
             decimals: 18,
             tranche: "BB",
+            strategy: "REL",
             functions: {
               stake: "stake",
               claim: "claim",
@@ -3549,6 +3567,11 @@ export const tranches: Record<
               abi: IdleCDOTrancheRewards as Abi,
               name: "IdleCDOTrancheRewards_morpho_Re7WETHFarm_BB",
               address: "0x0000000000000000000000000000000000000000",
+            },
+            rewardsEmissionsParams: {
+              MORPHO: {
+                aprRatio: 100,
+              },
             },
             blockNumber: 16420584,
             name: "BB_morpho_Re7_WETH",
