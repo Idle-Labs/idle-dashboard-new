@@ -471,19 +471,24 @@ const Protocols: React.FC<ProtocolsProps> = ({ children, iconMargin, tooltipDisa
 
 type StrategiesProps = ProtocolsProps & {
   showLabel?: boolean
+  labelProps?: TextProps
 }
 
 const Strategies: React.FC<StrategiesProps> = ({
   children,
   iconMargin = 1,
   showLabel = false,
+  labelProps = {},
   ...props
 }) => {
   const { vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
   const availableStrategies = useMemo(() => {
-    if (vault instanceof TrancheVault) return [vault.type]
+    if (vault instanceof TrancheVault) {
+      const vaultStrategy = vault.trancheConfig?.strategy || vault.type
+      return [vaultStrategy]
+    }
 
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return []
     return vault.tokenConfig.protocols.reduce((availableStrategies: string[], protocolConfig: IdleTokenProtocol) => {
@@ -512,11 +517,11 @@ const Strategies: React.FC<StrategiesProps> = ({
             key={`icon_${index}`}
             label={translate(`assets.assetDetails.tooltips.riskProfiles.${vault?.type}_${strategy}`)}
           >
-            <Image src={`images/strategies/${strategy}.svg`} ml={iconMargin} {...props} />
+            <Image src={`images/strategies/${strategy}.svg`} ml={iconMargin} w={6} h={6} {...props} />
           </Tooltip>
           {
             showLabel && (
-              <Translation translation={strategyConfig.riskProfile} textStyle={'tableCell'} />
+              <Translation translation={strategyConfig.riskProfile} textStyle={'tableCell'} {...labelProps} />
             )
           }
         </HStack>
@@ -524,7 +529,7 @@ const Strategies: React.FC<StrategiesProps> = ({
     })
 
     return protocolIcons
-  }, [translate, vault, children, props, showLabel, iconMargin, availableStrategies])
+  }, [translate, vault, children, props, showLabel, labelProps, iconMargin, availableStrategies])
 
   return (
     <Flex>
@@ -716,9 +721,17 @@ type ApyProps = {
   showNet?: boolean
   showTooltip?: boolean
   addRewards?: boolean
+  showBaseApr?: boolean
 } & PercentageProps
 
-const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, addRewards = false, ...props }) => {
+const Apy: React.FC<ApyProps> = ({
+  showGross = true,
+  showNet = false,
+  showTooltip = true,
+  addRewards = false,
+  showBaseApr = false,
+  ...props
+}) => {
   const { asset, vault } = useAssetProvider()
 
   const netApy = useMemo(() => {
@@ -829,6 +842,11 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
           <Amount.Percentage value={asset?.apy} {...props} stackProps={{ spacing: 1 }} borderBottom={showTooltip && !tooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
         </TooltipContent>
       </Tooltip>
+      {
+        showBaseApr && (
+          <Amount.Percentage value={asset?.baseApr} textStyle={'captionSmaller'} color={'cta'} sx={{ textDecoration: 'line-through' }} stackProps={{ spacing: 1 }} suffix={<Translation translation={'defi.apy'} textStyle={'captionSmaller'} sx={{ textDecoration: 'line-through' }} />} />
+        )
+      }
       {
         addRewards && (
           <RewardsEmissions />
@@ -1124,6 +1142,65 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
   )
 }
 
+const TrancheExposure: React.FC = () => {
+  const { vault, asset } = useAssetProvider()
+  const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
+  if (!vault || !("cdoConfig" in vault)) return null
+
+  if (asset && vault && ['AA', 'BB'].includes(asset.type as string)) {
+    const otherVaultType = asset.type === 'AA' ? 'BB' : 'AA'
+    const otherVault = vaults.find((otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
+    if (otherVault) {
+      const otherAsset = selectAssetById(otherVault.id)
+      if (otherAsset) {
+        return (
+          <HStack
+            spacing={2}
+          >
+            <AssetProvider
+              assetId={vault.id}
+            >
+              <Flex
+                py={1}
+                px={2}
+                pr={3}
+                width={'auto'}
+                borderRadius={8}
+                border={'1px solid'}
+                borderColor={'card.bg'}
+                justifyContent={'center'}
+                backgroundColor={'card.bgLight'}
+              >
+                <AssetProvider.Strategies labelProps={{ fontWeight: 500, fontSize: 'sm' }} showLabel={true} iconMargin={0} w={6} h={6} />
+              </Flex>
+            </AssetProvider>
+            <Text color={'primary'}>/</Text>
+            <AssetProvider
+              assetId={otherAsset.id}
+            >
+              <Flex
+                py={1}
+                px={2}
+                pr={3}
+                width={'auto'}
+                borderRadius={8}
+                border={'1px solid'}
+                borderColor={'card.bg'}
+                justifyContent={'center'}
+                backgroundColor={'card.bgLight'}
+              >
+                <AssetProvider.Strategies labelProps={{ fontWeight: 500, fontSize: 'sm' }} showLabel={true} iconMargin={0} w={6} h={6} />
+              </Flex>
+            </AssetProvider>
+          </HStack>
+        )
+      }
+    }
+  }
+
+  return null
+}
+
 
 const SeniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
@@ -1253,16 +1330,22 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
 }
 
 type RewardsEmissionsProps = {
-  flexProps?: FlexProps
+  flexProps?: FlexProps,
+  layout?: 'card' | 'extended'
 } & AssetProviderPropsType
 
 // @ts-ignore
-const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps, ...props }) => {
+const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({
+  children,
+  flexProps,
+  layout,
+  ...props
+}) => {
   const { asset, translate } = useAssetProvider()
 
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
 
-  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr)
+  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr && (asset.rewardsEmissions?.[rewardId] && !asset.rewardsEmissions?.[rewardId].apr))
   return (
     <SimpleGrid
       spacing={1}
@@ -1279,30 +1362,61 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
           const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
           const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
-          return (
-            <Tooltip
-              hasArrow
-              placement={'top'}
-              label={tooltipLabel}
-              key={`reward_${rewardId}`}
-            >
-              <TooltipContent>
-                <Flex
-                  py={1}
-                  px={2}
-                  width={'auto'}
-                  borderRadius={8}
-                  border={'1px solid'}
-                  borderColor={'card.bg'}
-                  justifyContent={'center'}
-                  backgroundColor={'card.bgLight'}
-                  {...flexProps}
+
+          switch (layout) {
+            case 'card':
+            default:
+              return (
+                <Tooltip
+                  hasArrow
+                  placement={'top'}
+                  label={tooltipLabel}
+                  key={`reward_${rewardId}`}
                 >
-                  <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={false} showIcon={true} size={'2xs'} fontSize={'xs'} amountComponent={amountComponent} prefix={prefix} suffix={suffix} amount={amount} {...props} />
-                </Flex>
-              </TooltipContent>
-            </Tooltip>
-          )
+                  <TooltipContent>
+                    <Flex
+                      py={1}
+                      px={2}
+                      width={'auto'}
+                      borderRadius={8}
+                      border={'1px solid'}
+                      borderColor={'card.bg'}
+                      justifyContent={'center'}
+                      backgroundColor={'card.bgLight'}
+                      {...flexProps}
+                    >
+                      <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={false} showIcon={true} size={'2xs'} fontSize={'xs'} amountComponent={amountComponent} prefix={prefix} suffix={suffix} amount={amount} {...props} />
+                    </Flex>
+                  </TooltipContent>
+                </Tooltip>
+              )
+              break;
+            case 'extended':
+              return (
+                <HStack
+                  spacing={1}
+                >
+                  <Tooltip
+                    hasArrow
+                    placement={'top'}
+                    label={tooltipLabel}
+                    key={`reward_${rewardId}`}
+                  >
+                    <TooltipContent>
+                      <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={true} showIcon={true} size={'xs'} fontSize={'md'} fontWeight={700} amountComponent={amountComponent} borderBottom={'1px dashed'} borderBottomColor={'cta'} amount={amount} {...props} />
+                    </TooltipContent>
+                  </Tooltip>
+                  {
+                    !!rewardEmission.apr ? (
+                      <Amount.Percentage value={rewardEmission.apr} textStyle={'captionSmall'} suffix={' APY'} />
+                    ) : (
+                      <Translation translation={'defi.everyAmount'} params={{ amount: '$1000' }} prefix={'/ '} textStyle={'captionSmall'} />
+                    )
+                  }
+                </HStack>
+              )
+              break;
+          }
         })
       }
     </SimpleGrid>
@@ -1854,6 +1968,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
+    case 'trancheExposure':
+      return (<TrancheExposure {...props} />)
     case 'assetClass':
       return (
         <Categories {...props} />

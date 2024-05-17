@@ -54,6 +54,7 @@ export type StrategyProps = {
   banner?: BannerProps
   riskProfile?: string
   description?: string
+  showApyBoost?: boolean
   feesCollectors?: string[]
   columns?: StrategyColumn[]
   modalField?: string
@@ -66,23 +67,32 @@ export const strategies: Record<string, StrategyProps> = {
   YIL: {
     type: 'YIL',
     visible: false,
+    color: '#90D835',
+    showApyBoost: true,
     modalField: 'apyBoost',
+    image: `${strategiesFolder}YIL.svg`,
     label: 'strategies.yieldLeverage.title',
-    image: `${strategiesFolder}BB.svg`,
+    riskProfile: 'strategies.yieldLeverage.riskProfile',
+    description: 'strategies.yieldLeverage.description',
     features: [
       "strategies.yieldLeverage.features.yieldExposure",
       "strategies.yieldLeverage.features.yieldLeveraged",
+      "strategies.yieldLeverage.features.noRewards",
     ],
   },
   REL: {
     type: 'REL',
     visible: false,
+    color: '#E34D4D',
     modalField: 'rewardsBoost',
     image: `${strategiesFolder}REL.svg`,
     label: 'strategies.rewardsLeverage.title',
+    riskProfile: 'strategies.rewardsLeverage.riskProfile',
+    description: 'strategies.rewardsLeverage.description',
     features: [
       "strategies.rewardsLeverage.features.rewardsExposure",
       "strategies.rewardsLeverage.features.rewardsLeveraged",
+      "strategies.rewardsLeverage.features.noYield",
     ],
   },
   STK: {
@@ -423,7 +433,7 @@ export const strategies: Record<string, StrategyProps> = {
           iconMargin: 0,
           showLabel: true
         },
-        label: 'assets.assetDetails.generalData.riskProfile',
+        label: 'assets.assetDetails.generalData.vaultType',
       },
       {
         field: 'pool',
@@ -472,6 +482,7 @@ export const strategies: Record<string, StrategyProps> = {
     type: 'BB',
     visible: true,
     color: '#FFD15C',
+    showApyBoost: true,
     strategy: 'tranches',
     modalField: 'apyBoost',
     route: 'yield-tranches',
@@ -580,7 +591,7 @@ export const strategies: Record<string, StrategyProps> = {
           iconMargin: 0,
           showLabel: true
         },
-        label: 'assets.assetDetails.generalData.riskProfile',
+        label: 'assets.assetDetails.generalData.vaultType',
       },
       {
         field: 'pool',

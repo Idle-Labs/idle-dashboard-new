@@ -17,7 +17,7 @@ export type ProductProps = {
 
 export const products: ProductProps[] = [
   {
-    strategy:'best',
+    strategy: 'best',
     color: '#04117B',
     strategies: ['BY'],
     route: `best-yield`,
@@ -27,106 +27,114 @@ export const products: ProductProps[] = [
   },
   {
     color: '#008970',
-    strategy:'tranches',
+    strategy: 'tranches',
     route: `yield-tranches`,
     strategies: ['AA', 'BB'],
     label: 'strategies.isolated.title',
     bg: `${strategiesFolder}tranches-bg.png`,
     image: `${strategiesFolder}tranches.png`,
     description: 'strategies.tranches.description',
-    modal:{
-      cta:'strategies.tranches.modal.cta',
-      text:'strategies.tranches.modal.text',
-      title:'strategies.tranches.modal.title',
-      subtitle:'strategies.tranches.modal.subtitle'
+    modal: {
+      cta: 'strategies.tranches.modal.cta',
+      text: 'strategies.tranches.modal.text',
+      title: 'strategies.tranches.modal.title',
+      subtitle: 'strategies.tranches.modal.subtitle'
     },
     columns: [
       {
-        width:'25%',
-        accessor:'id',
-        id:'vaultOperatorOrProtocol',
-        sortType:'alpha',
+        width: '22%',
+        accessor: 'id',
+        id: 'vaultOperatorOrProtocol',
+        sortType: 'alpha',
         tables: ['Deposited'],
-        stackProps:{
-          justifyContent:'space-between'
+        stackProps: {
+          justifyContent: 'space-between'
         },
-        extraFields:['actionRequired', 'strategies']
+        extraFields: ['actionRequired', 'strategies']
       },
       {
-        width:'25%',
-        accessor:'id',
-        id:'vaultOperatorOrProtocol',
-        sortType:'alpha',
+        width: '22%',
+        accessor: 'id',
+        id: 'vaultOperatorOrProtocol',
+        sortType: 'alpha',
         tables: ['Available'],
-        stackProps:{
-          justifyContent:'space-between'
+        stackProps: {
+          justifyContent: 'space-between'
         },
       },
       {
-        accessor:'name',
-        sortType:'alpha',
-        id:'asset',
-        extraFields:[]
+        width: '15%',
+        accessor: 'type',
+        sortType: 'alpha',
+        id: 'trancheExposure',
+        tables: ['Available'],
+        extraFields: []
       },
       {
-        id:'tvl',
-        accessor:'tvlUsd',
+        accessor: 'name',
+        sortType: 'alpha',
+        id: 'asset',
+        extraFields: []
+      },
+      {
+        id: 'tvl',
+        accessor: 'tvlUsd',
         sortType: 'numeric',
         tables: ['Deposited']
       },
       {
-        title:'defi.tvl',
-        accessor:'tvlUsd',
-        id:'trancheTotalTvl',
+        title: 'defi.tvl',
+        accessor: 'tvlUsd',
+        id: 'trancheTotalTvl',
         tables: ['Available'],
         sortType: 'totalTvlUsd'
       },
       {
-        id:'apy',
-        accessor:'apy',
+        id: 'apy',
+        accessor: 'apy',
         sortType: 'numeric',
         tables: ['Deposited'],
-        extraFields:['rewardsEmissions'],
-        stackProps:{
+        extraFields: ['rewardsEmissions'],
+        stackProps: {
           spacing: 2,
-          direction:'row',
-          alignItems:'center',
-          justifyContent:'flex-start'
+          direction: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start'
         }
       },
       {
-        accessor:'id',
-        id:'seniorApy',
+        accessor: 'id',
+        id: 'seniorApy',
         sortType: 'trancheApy',
         tables: ['Available'],
-        extraFields:['seniorRewardsEmissions'],
-        stackProps:{
+        extraFields: ['seniorRewardsEmissions'],
+        stackProps: {
           spacing: 2,
-          direction:'row',
-          alignItems:'center',
-          justifyContent:'flex-start'
+          direction: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start'
         }
       },
       {
-        accessor:'id',
-        id:'juniorApy',
+        accessor: 'id',
+        id: 'juniorApy',
         sortType: 'trancheApy',
         tables: ['Available'],
-        extraFields:['juniorRewardsEmissions'],
-        stackProps:{
+        extraFields: ['juniorRewardsEmissions'],
+        stackProps: {
           spacing: 2,
-          direction:'row',
-          alignItems:'center',
-          justifyContent:'flex-start'
+          direction: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start'
         }
       },
       {
         width: '8%',
-        id:'chainId',
-        accessor:'id',
+        id: 'chainId',
+        accessor: 'id',
         tables: ['Available'],
-        stackProps:{
-          justifyContent:'center'
+        stackProps: {
+          justifyContent: 'center'
         },
       }
     ]

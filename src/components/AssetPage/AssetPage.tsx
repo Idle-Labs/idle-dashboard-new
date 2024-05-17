@@ -594,12 +594,12 @@ export const AssetPage: React.FC = () => {
                       borderColor={'dividerLight'}
                       alignItems={'flex-start'}
                     >
-                      <Translation translation={'defi.riskProfile'} fontSize={['sm', 'md']} color={'primary'} />
+                      <Translation translation={'defi.vaultType'} fontSize={['sm', 'md']} color={'primary'} />
                       <Flex
                         flex={1}
                         alignItems={'flex-end'}
                       >
-                        <AssetProvider.Strategies showLabel={!isMobile} iconMargin={0} w={[6, 8]} />
+                        <AssetProvider.Strategies showLabel={!isMobile} iconMargin={0} w={[6, 8]} h={[6, 8]} />
                       </Flex>
                     </VStack>
                   )

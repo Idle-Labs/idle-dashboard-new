@@ -37,8 +37,8 @@ export const Earn: React.FC = () => {
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.WEEK)
-  const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
+  const [timeframe, setTimeframe] = useState<HistoryTimeframe>(HistoryTimeframe.WEEK)
+  const [useDollarConversion, setUseDollarConversion] = useLocalForge('useDollarConversion', true)
   const {
     stakingData,
     isPortfolioLoaded,
@@ -95,7 +95,7 @@ export const Earn: React.FC = () => {
 
   useEffect(() => {
     if (!isPortfolioLoaded) return
-    if (useDollarConversion && !userHasBalance){
+    if (useDollarConversion && !userHasBalance) {
       setUseDollarConversion(false)
     }
   }, [isPortfolioLoaded, useDollarConversion, userHasBalance, setUseDollarConversion])
@@ -107,51 +107,51 @@ export const Earn: React.FC = () => {
   // }, [navigate, location])
 
   const chartHeading = useMemo(() => {
-    const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
-    const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
+    const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length - 1].value).div(chartData.total[0].value).minus(1).times(100)
+    const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length - 1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
     const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
 
     const showCurrentApy = !!asset?.flags?.showCurrentApy
-    
+
     let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
 
-    if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
+    if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)) {
       apy = apy.plus(asset?.apyBreakdown?.harvest)
     }
 
-    if (earningsPercentage && earningsDays.gt(0)){
-      if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
+    if (earningsPercentage && earningsDays.gt(0)) {
+      if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)) {
         apy = apy.plus(asset?.apyBreakdown?.rewards)
       }
     }
 
-    if (showCurrentApy){
+    if (showCurrentApy) {
       apy = asset.apy
     }
 
     return (
       <VStack
         spacing={1}
-        width={['full','auto']}
-        alignItems={['center','flex-start']}
+        width={['full', 'auto']}
+        alignItems={['center', 'flex-start']}
       >
         <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : (asset?.epochData ? 'epochs.assetPerformance' : 'dashboard.portfolio.assetPerformance')} component={Text} textStyle={'caption'} textAlign={['center','left']} />
+          <Translation translation={userHasBalance ? 'dashboard.portfolio.totalChart' : (asset?.epochData ? 'epochs.assetPerformance' : 'dashboard.portfolio.assetPerformance')} component={Text} textStyle={'caption'} textAlign={['center', 'left']} />
           <HStack
             spacing={3}
-            width={['full','auto']}
+            width={['full', 'auto']}
             alignItems={'baseline'}
           >
             {
               userHasBalance ? (
-                useDollarConversion ? <AssetProvider.BalanceUsd abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable abbreviate={false} decimals={2} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
+                useDollarConversion ? <AssetProvider.BalanceUsd abbreviate={false} textStyle={'heading'} textAlign={['center', 'left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable abbreviate={false} decimals={2} textStyle={'heading'} textAlign={['center', 'left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
               ) : (
                 <Stack
                   spacing={[0, 2]}
                   alignItems={'baseline'}
                   direction={['column', 'row']}
                 >
-                  <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} />
+                  <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center', 'left']} fontSize={'3xl'} />
                   {
                     asset?.apyBreakdown?.gauge && BNify(asset?.apyBreakdown?.gauge).gt(0) && (
                       <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.gauge} suffix={` (${translate('assets.assetDetails.apyBreakdown.gauge')})`} textStyle={'caption'} />
@@ -253,7 +253,7 @@ export const Earn: React.FC = () => {
           {
             feeDiscountEnabled ? (
               bnOrZero(stakingData?.feeDiscount).gt(0) ? (
-                <Translation translation={'assets.fundsOverview.discount'} params={{discount: bnOrZero(stakingData?.feeDiscount)}} fontWeight={'600'} color={'brightGreen'} fontSize={'xs'} />
+                <Translation translation={'assets.fundsOverview.discount'} params={{ discount: bnOrZero(stakingData?.feeDiscount) }} fontWeight={'600'} color={'brightGreen'} fontSize={'xs'} />
               ) : (
                 <NavLink to={'/stake'}>
                   <Translation translation={'feeDiscount.enable'} color={'link'} fontSize={'xs'} />
@@ -297,6 +297,7 @@ export const Earn: React.FC = () => {
 
   const strategyDescription = useMemo(() => {
     if (!vault || !("description" in vault) || !vault.description) return null
+    const vaultType = "trancheConfig" in vault && vault.trancheConfig.strategy ? vault.trancheConfig.strategy : vault.type
     return (
       <VStack
         pb={10}
@@ -307,7 +308,7 @@ export const Earn: React.FC = () => {
         alignItems={'flex-start'}
       >
         <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
-        <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
+        <Text dangerouslySetInnerHTML={{ __html: replaceTokens(vault.description, { apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale) }) }} />
         {
           (vault instanceof TrancheVault) && (
             <VStack
@@ -315,8 +316,8 @@ export const Earn: React.FC = () => {
               width={'full'}
               alignItems={'flex-start'}
             >
-              <Translation component={Heading} as={'h4'} fontSize={'h4'} translation={`trade.vaults.${vault.type}.howItWorks`} />
-              <Translation isHtml={true} translation={[strategies[vault.type].description as string, `trade.vaults.${vault.type}.ays`]} />
+              <Translation component={Heading} as={'h4'} fontSize={'h4'} translation={`trade.vaults.${vaultType}.howItWorks`} />
+              <Translation isHtml={true} leaveEmpty={true} translation={[strategies[vaultType].description as string, `trade.vaults.${vaultType}.ays`]} />
             </VStack>
           )
         }
@@ -372,7 +373,7 @@ export const Earn: React.FC = () => {
             spacing={4}
           >
             {
-              vault.risks.map( (paragraph: Paragraph, index: number) => {
+              vault.risks.map((paragraph: Paragraph, index: number) => {
                 return (
                   <VStack
                     spacing={2}
@@ -382,12 +383,12 @@ export const Earn: React.FC = () => {
                   >
                     {
                       paragraph.title && (
-                        <Heading as={'h4'} fontSize={'h4'} dangerouslySetInnerHTML={{__html: paragraph.title}} />
+                        <Heading as={'h4'} fontSize={'h4'} dangerouslySetInnerHTML={{ __html: paragraph.title }} />
                       )
                     }
                     {
                       paragraph.description && (
-                        <Text dangerouslySetInnerHTML={{__html: paragraph.description}} />
+                        <Text dangerouslySetInnerHTML={{ __html: paragraph.description }} />
                       )
                     }
                   </VStack>
@@ -403,7 +404,7 @@ export const Earn: React.FC = () => {
   const vaultRewards = useMemo(() => {
     // console.log('vaultRewards', asset)
     if (!asset || isEmpty(asset.rewards)) return null
-    const totalRewards = (Object.values(asset.rewards) as BigNumber[]).reduce( (totalRewards: BigNumber, amount: BigNumber) => totalRewards.plus(amount), BNify(0) )
+    const totalRewards = (Object.values(asset.rewards) as BigNumber[]).reduce((totalRewards: BigNumber, amount: BigNumber) => totalRewards.plus(amount), BNify(0))
     return totalRewards.gt(0) ? (
       <VaultRewards assetId={asset?.id} />
     ) : null
@@ -437,7 +438,7 @@ export const Earn: React.FC = () => {
                 spacing={2}
               >
                 <AssetProvider.Name fontWeight={600} />
-                <Switch size={'md'} isChecked={useDollarConversion} onChange={ (e) => setUseDollarConversion(e.target.checked) } />
+                <Switch size={'md'} isChecked={useDollarConversion} onChange={(e) => setUseDollarConversion(e.target.checked)} />
                 <Text fontWeight={600}>USD</Text>
               </HStack>
             )
@@ -475,7 +476,7 @@ export const Earn: React.FC = () => {
           >
             {chartHeading}
             {
-              (!userHasBalance || (chartData && chartData.total?.length>0)) && (
+              (!userHasBalance || (chartData && chartData.total?.length > 0)) && (
                 <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
               )
             }
@@ -487,10 +488,10 @@ export const Earn: React.FC = () => {
             timeframe={timeframe}
             isRainbowChart={false}
             assetIds={[params.asset]}
-            setPercentChange={() => {}}
+            setPercentChange={() => { }}
             height={isMobile ? '300px' : '350px'}
             margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={ !useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined }
+            formatFn={!useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined}
           />
         </Card.Flex>
       </Box>

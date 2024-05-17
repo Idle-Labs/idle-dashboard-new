@@ -9,6 +9,7 @@ export type TranslationProps<T = DefaultProps> = {
   suffix?: string
   joinChar?: string
   isHtml?: boolean
+  leaveEmpty?: boolean
   params?: Record<string, any>
   translation: string | null | undefined | [string, number] | string[]
   children?: FlexProps["children"]
@@ -18,10 +19,11 @@ export const Translation = <T = void>({
   component,
   translation,
   params = {},
-  prefix='',
-  suffix='',
-  joinChar=' ',
+  prefix = '',
+  suffix = '',
+  joinChar = ' ',
   isHtml = false,
+  leaveEmpty = false,
   children,
   ...props
 }: TranslationProps<T>) => {
@@ -29,17 +31,19 @@ export const Translation = <T = void>({
   const Component = component || Text
 
   const translations: any[] = Array.isArray(translation) ? translation : [translation]
-  const translatedTexts = translations.reduce( (translatedTexts: string[], key: string) => {
+  const translatedTexts = translations.reduce((translatedTexts: string[], key: string) => {
+    const translation = translate(key, params)
+    if (leaveEmpty && translation === key) return translatedTexts
     return [
       ...translatedTexts,
-      translate(key, params)
+      translation
     ]
   }, [])
   const translatedText = translatedTexts.join(joinChar)
 
   const formattedText = `${prefix}${translatedText}${suffix}`
   return isHtml ? (
-    <Component {...props} dangerouslySetInnerHTML={{__html: formattedText}} />
+    <Component {...props} dangerouslySetInnerHTML={{ __html: formattedText }} />
   ) : children ? (
     <Component {...props}>
       {children}
