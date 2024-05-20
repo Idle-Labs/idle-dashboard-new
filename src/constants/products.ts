@@ -63,7 +63,7 @@ export const products: ProductProps[] = [
         },
       },
       {
-        width: '15%',
+        width: '18%',
         accessor: 'type',
         sortType: 'alpha',
         id: 'trancheExposure',
