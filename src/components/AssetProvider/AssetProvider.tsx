@@ -21,7 +21,7 @@ import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, cmpAddrs } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
@@ -300,6 +300,30 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({ children, ...props }
   return (
     <Flex>
       {stakingRewards}
+    </Flex>
+  )
+}
+
+const DistributedRewards: React.FC<AvatarProps & BoxProps> = ({ children, ...props }) => {
+  const { vault } = useAssetProvider()
+
+  const distributedTokens = useMemo(() => {
+    if (!vault || !("distributedTokens" in vault)) return children
+
+    const rewards = vault.distributedTokens.map((rewardToken: UnderlyingTokenProps, index: number) => {
+      if (!rewardToken.address) return null
+      return (
+        <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
+          <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
+        </AssetProvider>
+      )
+    }).filter((reward: any) => !!reward)
+    return rewards.length ? rewards : children
+  }, [children, vault, props])
+
+  return (
+    <Flex>
+      {distributedTokens}
     </Flex>
   )
 }
@@ -1844,6 +1868,12 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
           <Text textStyle={'tableCell'} {...props}>-</Text>
         </StakingRewards>
       )
+    case 'distributedRewards':
+      return (
+        <DistributedRewards size={'xs'}>
+          <Text textStyle={'tableCell'} {...props}>-</Text>
+        </DistributedRewards>
+      )
     case 'autoCompounding':
       return (
         <Autocompounding size={'xs'}>
@@ -1910,5 +1940,6 @@ AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
 AssetProvider.Autocompounding = Autocompounding
 AssetProvider.RewardsEmissions = RewardsEmissions
+AssetProvider.DistributedRewards = DistributedRewards
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution

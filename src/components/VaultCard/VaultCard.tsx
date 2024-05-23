@@ -772,7 +772,7 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
                         spacing={2}
                         alignItems={'center'}
                       >
-                        <AssetProvider.Autocompounding size={'2xs'} />
+                        <AssetProvider.DistributedRewards size={'2xs'} />
                         <AssetProvider.RewardsApy fontSize={'xs'} fontWeight={600} />
                       </HStack>
                     </Card.Light>

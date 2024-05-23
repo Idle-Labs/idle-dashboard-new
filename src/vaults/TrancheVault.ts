@@ -125,7 +125,6 @@ export class TrancheVault {
       vaultConfig.distributedTokens.forEach((distributedToken: string) => {
         const underlyingToken = selectUnderlyingToken(chainId, distributedToken)
         if (underlyingToken) {
-          // this.rewardTokens.push(underlyingToken)
           this.distributedTokens.push(underlyingToken)
         }
       })
