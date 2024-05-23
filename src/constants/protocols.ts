@@ -52,7 +52,7 @@ export const protocols: Record<string, Protocol> = {
     enabled: true,
     label: "Compound",
     govTokens: ['COMP'],
-    icon:`${protocolsFolder}compound.svg`,
+    icon: `${protocolsFolder}compound.svg`,
     colors: {
       rgb: [0, 209, 146],
       hsl: ["162", "100%", "41%"]
@@ -64,7 +64,7 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: false,
     label: "Fulcrum",
-    icon:`${protocolsFolder}fulcrum.svg`,
+    icon: `${protocolsFolder}fulcrum.svg`,
     colors: {
       rgb: [2, 138, 192],
       hsl: ["197", "98%", "38%"]
@@ -73,14 +73,14 @@ export const protocols: Record<string, Protocol> = {
   dsr: {
     label: "DSR",
     enabled: false,
-    icon:`${protocolsFolder}dsr.svg`,
+    icon: `${protocolsFolder}dsr.svg`,
     colors: {
       rgb: [222, 52, 67],
       hsl: ["355", "72%", "54%"]
     }
   },
   dydx: {
-    icon:`${protocolsFolder}dydx.svg`,
+    icon: `${protocolsFolder}dydx.svg`,
     stats: {
       showLegend: true,
     },
@@ -92,12 +92,12 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   iearn: {
-    icon:`${protocolsFolder}iearn.svg`,
+    icon: `${protocolsFolder}iearn.svg`,
     label: "Yearn",
     enabled: true
   },
   aave: {
-    icon:`${protocolsFolder}aave.svg`,
+    icon: `${protocolsFolder}aave.svg`,
     label: "Aave V1",
     stats: {
       showLegend: false,
@@ -115,14 +115,14 @@ export const protocols: Record<string, Protocol> = {
     enabled: true,
     label: "Aave V2",
     govTokens: ['STKAAVE'],
-    icon:`${protocolsFolder}aave.svg`,
+    icon: `${protocolsFolder}aave.svg`,
     colors: {
       rgb: [151, 79, 141],
       hsl: ["308", "31%", "45%"]
     }
   },
   morpho: {
-    icon:`${protocolsFolder}morpho.svg`,
+    icon: `${protocolsFolder}morpho.svg`,
     label: "Morpho",
     stats: {
       showLegend: false,
@@ -134,7 +134,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   ethena: {
-    icon:`${protocolsFolder}ethena.svg`,
+    icon: `${protocolsFolder}ethena.svg`,
     label: "Ethena",
     stats: {
       showLegend: false,
@@ -145,8 +145,8 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     },
     apis: {
-      USDe:{
-        path:'stakingYield.value',
+      USDe: {
+        path: 'stakingYield.value',
         endpoint: {
           1: 'https://api.idle.finance/ethenaAprs'
         },
@@ -157,7 +157,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   amphor: {
-    icon:`${protocolsFolder}amphor.png`,
+    icon: `${protocolsFolder}amphor.png`,
     label: "Morpho",
     stats: {
       showLegend: false,
@@ -168,8 +168,8 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["223", "64%", "33%"]
     },
     apis: {
-      wstETHBase:{
-        path:'wstethVault.underlyingAPR',
+      wstETHBase: {
+        path: 'wstethVault.underlyingAPR',
         endpoint: {
           1: 'https://api.idle.finance/amphorAprs'
         },
@@ -177,8 +177,8 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
-      wstETH:{
-        path:'wstethVault.strategyNetAPR',
+      wstETH: {
+        path: 'wstethVault.strategyNetAPR',
         endpoint: {
           1: 'https://api.idle.finance/amphorAprs'
         },
@@ -186,8 +186,8 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
-      wstETHTotal:{
-        path:'wstethVault.totalNetAPR',
+      wstETHTotal: {
+        path: 'wstethVault.totalNetAPR',
         endpoint: {
           1: 'https://api.idle.finance/amphorAprs'
         },
@@ -195,7 +195,7 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
-      wstETHEpoch:{
+      wstETHEpoch: {
         endpoint: {
           1: 'https://api.idle.finance/amphorEpochInfo/wstethVault'
         },
@@ -212,7 +212,7 @@ export const protocols: Record<string, Protocol> = {
       showLegend: false,
     },
     apis: {
-      additionalRewards:{
+      additionalRewards: {
         endpoint: {
           10: 'https://api-optimism.idle.finance/opDistributionAprs'
         },
@@ -228,13 +228,13 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   instadapp: {
-    icon:`${protocolsFolder}instadapp.png`,
+    icon: `${protocolsFolder}instadapp.png`,
     label: "Instadapp",
     stats: {
       showLegend: false,
     },
     apis: {
-      stETH:{
+      stETH: {
         // path:'4.apy.apyWithFee',
         endpoint: {
           1: 'https://api.instadapp.io/v2/mainnet/lite/users/0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE/vaults'
@@ -248,7 +248,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   cream: {
-    icon:`${protocolsFolder}cream.svg`,
+    icon: `${protocolsFolder}cream.svg`,
     stats: {
       showLegend: false,
     },
@@ -260,13 +260,13 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   lido: {
-    icon:`${protocolsFolder}lido.png`,
+    icon: `${protocolsFolder}lido.png`,
     stats: {
       showLegend: false,
     },
     apis: {
-      rates:{
-        path:'apr',
+      rates: {
+        path: 'apr',
         endpoint: {
           1: 'https://api.idle.finance/poLidoStats'
         },
@@ -274,14 +274,14 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         },
       },
-      stETH:{
-        path:'data.apr',
+      stETH: {
+        path: 'data.apr',
         endpoint: {
           1: 'https://eth-api.lido.fi/v1/protocol/steth/apr/last'
         },
       },
-      checkpoints:{
-        path:'result',
+      checkpoints: {
+        path: 'result',
         endpoint: {
           1: 'https://heimdall-api.polygon.technology/checkpoints/'
         },
@@ -300,14 +300,14 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "QuickSwap",
-    icon:`${protocolsFolder}quickswap.png`,
+    icon: `${protocolsFolder}quickswap.png`,
     colors: {
       rgb: [0, 163, 255],
       hsl: ['202', '100%', '50%']
     }
   },
   convex: {
-    icon:`${protocolsFolder}convex.svg`,
+    icon: `${protocolsFolder}convex.svg`,
     stats: {
       showLegend: false,
     },
@@ -319,7 +319,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   mstable: {
-    icon:`${protocolsFolder}mstable.svg`,
+    icon: `${protocolsFolder}mstable.svg`,
     stats: {
       showLegend: false,
     },
@@ -331,7 +331,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   euler: {
-    icon:`${protocolsFolder}euler.svg`,
+    icon: `${protocolsFolder}euler.svg`,
     label: "Euler",
     stats: {
       showLegend: false,
@@ -343,7 +343,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   wintermute: {
-    icon:`${protocolsFolder}wintermute.svg`,
+    icon: `${protocolsFolder}wintermute.svg`,
     stats: {
       showLegend: false,
     },
@@ -355,55 +355,63 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   gearbox: {
-    icon:`${protocolsFolder}gearbox.svg`,
+    icon: `${protocolsFolder}gearbox.svg`,
     stats: {
       showLegend: false,
     },
     enabled: true,
     label: "Gearbox",
+    apis: {
+      tokenSupply: {
+        endpoint: {
+          1: 'https://charts-server.fly.dev/api/getBalanceAt?asset=',
+          10: 'https://optimism.gearbox.foundation/api/getBalanceAt?asset='
+        },
+      },
+    },
     colors: {
       rgb: [163, 236, 38],
       hsl: ["82", "84%", "54%"]
     }
   },
   clearpool: {
-    icon:`${protocolsFolder}clearpool.svg`,
+    icon: `${protocolsFolder}clearpool.svg`,
     stats: {
       showLegend: false,
     },
     govTokens: ['CPOOL'],
     enabled: true,
     label: "Clearpool",
-    fields:[
+    fields: [
       {
-        field:'poolSize',
-        function:'poolSize',
-        label:'assets.assetDetails.generalData.pool',
-        tooltip:'assets.assetDetails.tooltips.pool'
+        field: 'poolSize',
+        function: 'poolSize',
+        label: 'assets.assetDetails.generalData.pool',
+        tooltip: 'assets.assetDetails.tooltips.pool'
       },
       {
         decimals: 18,
-        field:'borrowRate',
-        function:'getBorrowRate',
+        field: 'borrowRate',
+        function: 'getBorrowRate',
         formatFn: (d: BigNumber) => d.times(SECONDS_IN_YEAR).times(100),
-        label:'assets.assetDetails.generalData.borrowRate',
-        tooltip:'assets.assetDetails.tooltips.borrowRate'
+        label: 'assets.assetDetails.generalData.borrowRate',
+        tooltip: 'assets.assetDetails.tooltips.borrowRate'
       },
       {
         decimals: 18,
-        field:'supplyRate',
-        function:'getSupplyRate',
+        field: 'supplyRate',
+        function: 'getSupplyRate',
         formatFn: (d: BigNumber) => d.times(SECONDS_IN_YEAR).times(100),
-        label:'assets.assetDetails.generalData.supplyRate',
-        tooltip:'assets.assetDetails.tooltips.supplyRate'
+        label: 'assets.assetDetails.generalData.supplyRate',
+        tooltip: 'assets.assetDetails.tooltips.supplyRate'
       },
       {
         decimals: 18,
-        field:'utilizationRate',
-        function:'getUtilizationRate',
+        field: 'utilizationRate',
+        function: 'getUtilizationRate',
         formatFn: (d: BigNumber) => d.times(100),
-        label:'assets.assetDetails.generalData.utilizationRate',
-        tooltip:'assets.assetDetails.tooltips.utilizationRate',
+        label: 'assets.assetDetails.generalData.utilizationRate',
+        tooltip: 'assets.assetDetails.tooltips.utilizationRate',
       }
     ],
     colors: {
@@ -417,14 +425,14 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: true,
     label: "Ribbon",
-    icon:`${protocolsFolder}ribbon.svg`,
+    icon: `${protocolsFolder}ribbon.svg`,
     colors: {
       rgb: [252, 10, 84],
       hsl: ["342", "98%", "51%"]
     }
   },
   truefi: {
-    icon:`${protocolsFolder}truefi.svg`,
+    icon: `${protocolsFolder}truefi.svg`,
     stats: {
       showLegend: false,
     },
@@ -441,14 +449,14 @@ export const protocols: Record<string, Protocol> = {
     },
     enabled: false,
     label: "Fuse",
-    icon:`${protocolsFolder}fuse.png`,
+    icon: `${protocolsFolder}fuse.png`,
     colors: {
       rgb: [0, 0, 0],
       hsl: ["0", "0%", "0%"]
     }
   },
   curve: {
-    icon:`${protocolsFolder}curve.svg`,
+    icon: `${protocolsFolder}curve.svg`,
     label: "",
     enabled: true,
     colors: {
@@ -457,7 +465,7 @@ export const protocols: Record<string, Protocol> = {
     }
   },
   idle: {
-    icon:`${protocolsFolder}idle-blue.svg`,
+    icon: `${protocolsFolder}idle-blue.svg`,
     label: "Idle",
     enabled: true,
     colors: {
@@ -465,8 +473,8 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["227", "100%", "50%"]
     },
     apis: {
-      checkSignature:{
-        endpoint:{
+      checkSignature: {
+        endpoint: {
           1: 'https://api.idle.finance/checkSignature/'
           // 1: 'http://localhost:3333/checkSignature/' // TEST
         },
@@ -474,8 +482,8 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
-      saveSignature:{
-        endpoint:{
+      saveSignature: {
+        endpoint: {
           1: 'https://api.idle.finance/saveSignature'
           // 1: 'http://localhost:3333/saveSignature' // TEST
         },
@@ -483,7 +491,7 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         }
       },
-      rates:{
+      rates: {
         endpoint: {
           1: 'https://api.idle.finance/rates/',
           10: 'https://api-optimism.idle.finance/rates/',
@@ -494,7 +502,7 @@ export const protocols: Record<string, Protocol> = {
           headers: env.REACT_APP_IDLE_KEY ? { Authorization: `Bearer ${env.REACT_APP_IDLE_KEY}` } : {},
         },
       },
-      juniorRates:{
+      juniorRates: {
         endpoint: {
           1: 'https://api.idle.finance/junior-rates/',
         },

@@ -25,7 +25,7 @@ import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath }
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, Balances } from 'constants/'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -51,7 +51,7 @@ const initialState = {
   vault: null,
   theme: null,
   assetId: null,
-  translate: () => {},
+  translate: () => { },
   underlyingAsset: null,
   underlyingAssetVault: null
 }
@@ -62,7 +62,7 @@ const AssetContext = createContext<ContextProps>(initialState)
 
 export const useAssetProvider = () => useContext(AssetContext)
 
-export const AssetProvider = ({assetId, wrapFlex = true, children, ...flexProps}: AssetCellProps) => {
+export const AssetProvider = ({ assetId, wrapFlex = true, children, ...flexProps }: AssetCellProps) => {
   const theme = useTheme()
   const translate = useTranslate()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
@@ -96,7 +96,7 @@ export const AssetProvider = ({assetId, wrapFlex = true, children, ...flexProps}
   }, [children, flexProps, wrapFlex])
 
   return (
-    <AssetContext.Provider value={{asset, vault, underlyingAsset, underlyingAssetVault, assetId, translate, theme}}>
+    <AssetContext.Provider value={{ asset, vault, underlyingAsset, underlyingAssetVault, assetId, translate, theme }}>
       {wrappedChildren}
     </AssetContext.Provider>
   )
@@ -194,7 +194,7 @@ const ActionRequired: React.FC<ImageProps> = (props) => {
   // Check Gauge disabled
   const gaugeVault = vault && ("gaugeConfig" in vault) && vault.gaugeConfig?.address && selectVaultById(vault.gaugeConfig?.address)
   const stakedBalance = bnOrZero(asset?.vaultPosition?.underlying.staked)
-  if (stakedBalance.gt(0) && gaugeVault && !gaugeVault.enabled){
+  if (stakedBalance.gt(0) && gaugeVault && !gaugeVault.enabled) {
     action = 'redeemFromGauge'
   }
 
@@ -251,7 +251,7 @@ const ProtocolIcon: React.FC<IconProps> = ({
   ...props
 }) => {
   const { vault } = useAssetProvider()
-  
+
   const protocol = useMemo(() => {
     if (!vault || !("protocol" in vault)) return null
     return protocols[vault?.protocol]
@@ -275,16 +275,16 @@ const ProtocolIcon: React.FC<IconProps> = ({
   )
 }
 
-const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
-  const {vault} = useAssetProvider();
+const StakingRewards: React.FC<AvatarProps & BoxProps> = ({ children, ...props }) => {
+  const { vault } = useAssetProvider();
   const { selectors: { selectVaultById, selectAssetById } } = usePortfolioProvider()
-  
+
   const stakingRewards = useMemo(() => {
     if (!vault || !("gaugeConfig" in vault) || !vault.gaugeConfig) return children
     const gaugeVault = ("gaugeConfig" in vault) && vault.gaugeConfig && selectVaultById(vault.gaugeConfig?.address)
     const gaugeAsset = gaugeVault && selectAssetById(gaugeVault.id)
 
-    const rewards = gaugeVault?.enabled && gaugeVault?.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
+    const rewards = gaugeVault?.enabled && gaugeVault?.rewardTokens.map((rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       const rewardTokenRate = bnOrZero(gaugeAsset?.gaugeData?.rewards[rewardToken.address]?.rate)
       if (!rewardTokenRate.gt(0)) return null
@@ -293,7 +293,7 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
           <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
-    }).filter( (reward: any) => !!reward )
+    }).filter((reward: any) => !!reward)
     return rewards.length ? rewards : children
   }, [children, vault, props, selectVaultById, selectAssetById])
 
@@ -304,20 +304,20 @@ const StakingRewards: React.FC<AvatarProps & BoxProps> = ({children, ...props}) 
   )
 }
 
-const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props}) => {
+const Autocompounding: React.FC<AvatarProps & BoxProps> = ({ children, ...props }) => {
   const { vault } = useAssetProvider()
-  
+
   const rewardTokens = useMemo(() => {
     if (!vault || !("rewardTokens" in vault)) return children
 
-    const rewards = vault.rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
+    const rewards = vault.rewardTokens.map((rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
         <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
           <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
-    }).filter( (reward: any) => !!reward )
+    }).filter((reward: any) => !!reward)
     return rewards.length ? rewards : children
   }, [children, vault, props])
 
@@ -328,7 +328,7 @@ const Autocompounding: React.FC<AvatarProps & BoxProps> = ({children, ...props})
   )
 }
 
-const Categories: React.FC<TextProps> = ({...props}) => {
+const Categories: React.FC<TextProps> = ({ ...props }) => {
   const { vault, translate } = useAssetProvider()
   if (!vault || !("categories" in vault) || isEmpty(vault.categories)) return null
   return (
@@ -337,7 +337,7 @@ const Categories: React.FC<TextProps> = ({...props}) => {
       alignItems={'flex-start'}
     >
       {
-        vault?.categories?.map( (category: string) => (
+        vault?.categories?.map((category: string) => (
           <Tag {...props} variant={'outline'} color={'primary'} size={'sm'} fontWeight={600}>{translate(`assets.categories.${category}.title`)}</Tag>
         ))
       }
@@ -346,38 +346,38 @@ const Categories: React.FC<TextProps> = ({...props}) => {
 }
 
 type RewardsProps = {
- iconMargin?: number
+  iconMargin?: number
 } & AvatarProps & BoxProps
 
-const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
+const Rewards: React.FC<RewardsProps> = ({ children, iconMargin, ...props }) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectVaultById, selectAssetById } } = usePortfolioProvider()
-  
+
   const rewardTokens = useMemo(() => {
     if (!vault || !("rewardTokens" in vault)) return children
 
     const gaugeVault = ("gaugeConfig" in vault) && vault.gaugeConfig?.address && selectVaultById(vault.gaugeConfig?.address)
-    
+
     // Add Gauge rewards
     const rewardTokens = [...vault.rewardTokens]
-    if (gaugeVault?.enabled){
+    if (gaugeVault?.enabled) {
       const gaugeAsset = selectAssetById(gaugeVault.id)
-      for (const rewardToken of gaugeVault.rewardTokens){
+      for (const rewardToken of gaugeVault.rewardTokens) {
         const rewardTokenRate = bnOrZero(gaugeAsset?.gaugeData?.rewards[rewardToken.address]?.rate)
-        if (!rewardTokens.includes(rewardToken) && rewardTokenRate.gt(0)){
+        if (!rewardTokens.includes(rewardToken) && rewardTokenRate.gt(0)) {
           rewardTokens.push(rewardToken)
         }
       }
     }
 
-    const rewards = rewardTokens.map( (rewardToken: UnderlyingTokenProps, index: number) => {
+    const rewards = rewardTokens.map((rewardToken: UnderlyingTokenProps, index: number) => {
       if (!rewardToken.address) return null
       return (
         <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
           <AssetProvider.Icon {...props} ml={index ? iconMargin !== undefined ? iconMargin : -1 : 0} showTooltip={true} />
         </AssetProvider>
       )
-    }).filter( (reward: any) => !!reward )
+    }).filter((reward: any) => !!reward)
     return rewards.length ? rewards : children
   }, [children, vault, props, selectVaultById, selectAssetById, iconMargin])
 
@@ -389,18 +389,18 @@ const Rewards: React.FC<RewardsProps> = ({children, iconMargin, ...props}) => {
 }
 
 type ProtocolsProps = {
- iconMargin?: number
- tooltipDisabled?: boolean
+  iconMargin?: number
+  tooltipDisabled?: boolean
 } & AvatarProps & BoxProps
 
-const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisabled = false, ...props}) => {
+const Protocols: React.FC<ProtocolsProps> = ({ children, iconMargin, tooltipDisabled = false, ...props }) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectVaultById } } = usePortfolioProvider()
-  
+
   const protocols = useMemo(() => {
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return children
 
-    const protocolIcons = vault.tokenConfig.protocols.reduce( (protocols: JSX.Element[], protocolConfig: IdleTokenProtocol, index: number) => {
+    const protocolIcons = vault.tokenConfig.protocols.reduce((protocols: JSX.Element[], protocolConfig: IdleTokenProtocol, index: number) => {
       const protocol = selectProtocol(protocolConfig.name)
       const vault = selectVaultById(protocolConfig.address)
       if (!protocol) return protocols
@@ -427,7 +427,7 @@ const Protocols: React.FC<ProtocolsProps> = ({children, iconMargin, tooltipDisab
                 objectFit: 'contain'
               }
             }}
-            ml={protocols.length>0 ? iconMargin !== undefined ? iconMargin : -1 : 0}
+            ml={protocols.length > 0 ? iconMargin !== undefined ? iconMargin : -1 : 0}
             {...props}
           />
         </Tooltip>
@@ -462,7 +462,7 @@ const Strategies: React.FC<StrategiesProps> = ({
     if (vault instanceof TrancheVault) return [vault.type]
 
     if (!vault || !("tokenConfig" in vault) || !("protocols" in vault.tokenConfig)) return []
-    return vault.tokenConfig.protocols.reduce( (availableStrategies: string[], protocolConfig: IdleTokenProtocol) => {
+    return vault.tokenConfig.protocols.reduce((availableStrategies: string[], protocolConfig: IdleTokenProtocol) => {
       const asset = selectAssetById(protocolConfig.address)
       if (!asset || availableStrategies.includes(asset.type)) return availableStrategies
       return [
@@ -471,11 +471,11 @@ const Strategies: React.FC<StrategiesProps> = ({
       ]
     }, [])
   }, [vault, selectAssetById])
-  
+
   const protocols = useMemo(() => {
     if (!availableStrategies.length) return children
 
-    const protocolIcons: JSX.Element[] = availableStrategies.map( (strategy: string, index: number) => {
+    const protocolIcons: JSX.Element[] = availableStrategies.map((strategy: string, index: number) => {
       const strategyConfig = strategies[strategy]
       return (
         <HStack
@@ -512,7 +512,7 @@ const Strategies: React.FC<StrategiesProps> = ({
 const Balance: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
-  
+
   return isPortfolioLoaded ? (
     <Amount value={asset?.balance} {...props} />
   ) : <Spinner size={'sm'} />
@@ -523,7 +523,7 @@ const VaultBalance: React.FC<AmountProps> = (props) => {
   const { isPortfolioLoaded } = usePortfolioProvider()
 
   const vaultBalance = asset?.balance && asset?.vaultPrice ? BNify(asset.balance).times(asset.vaultPrice) : BNify(0)
-  
+
   return isPortfolioLoaded ? (
     <Amount value={vaultBalance} {...props} />
   ) : <Spinner size={'sm'} />
@@ -531,7 +531,7 @@ const VaultBalance: React.FC<AmountProps> = (props) => {
 
 const Earnings: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.underlying.earnings ? (
     <Amount value={asset?.vaultPosition?.underlying.earnings} {...props} />
   ) : <Spinner size={'sm'} />
@@ -539,7 +539,7 @@ const Earnings: React.FC<AmountProps> = (props) => {
 
 const EarningsUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount.Usd value={asset?.vaultPosition?.usd.earnings} {...props} />
   ) : <Spinner size={'sm'} />
@@ -551,10 +551,10 @@ const NetEarnings: React.FC<AmountProps> = (props) => {
   let netEarnings = asset?.vaultPosition?.underlying.earnings ? BNify(asset?.vaultPosition?.underlying.earnings) : BNify(0)
 
   // Remove fees for BY
-  if (asset && !['AA', 'BB'].includes(asset.type as string)){
+  if (asset && !['AA', 'BB'].includes(asset.type as string)) {
     netEarnings = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset?.vaultPosition?.underlying.earnings).minus(BNify(asset.vaultPosition.underlying.earnings).times(asset.fee)) : BNify(0)
   }
-  
+
   return asset?.vaultPosition?.underlying.earnings ? (
     <Amount value={netEarnings} {...props} />
   ) : <Spinner size={'sm'} />
@@ -566,12 +566,12 @@ const NetEarningsUsd: React.FC<AmountProps> = (props) => {
   let netEarnings = asset?.vaultPosition?.usd.earnings ? BNify(asset?.vaultPosition?.usd.earnings) : BNify(0)
 
   // Remove fees for BY
-  if (asset && !['AA', 'BB'].includes(asset.type as string)){
+  if (asset && !['AA', 'BB'].includes(asset.type as string)) {
     netEarnings = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset?.vaultPosition?.usd.earnings).minus(BNify(asset.vaultPosition.usd.earnings).times(asset.fee)) : BNify(0)
   }
 
   let tooltipLabel = null
-  if (bnOrZero(asset?.vaultPosition?.usd.rewards).gt(0)){
+  if (bnOrZero(asset?.vaultPosition?.usd.rewards).gt(0)) {
     const netEarningsWithoutRewards = netEarnings.minus(bnOrZero(asset?.vaultPosition?.usd.rewards))
     tooltipLabel = (
       <VStack
@@ -604,7 +604,7 @@ const NetEarningsUsd: React.FC<AmountProps> = (props) => {
       </VStack>
     )
   }
-  
+
   return asset?.vaultPosition?.usd.earnings ? (
     <Tooltip
       hasArrow
@@ -621,7 +621,7 @@ const NetEarningsUsd: React.FC<AmountProps> = (props) => {
 
 const BalanceUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.usd.redeemable ? (
     <Amount.Usd value={asset?.vaultPosition?.usd.redeemable} {...props} />
   ) : <Spinner size={'sm'} />
@@ -629,7 +629,7 @@ const BalanceUsd: React.FC<AmountProps> = (props) => {
 
 const Redeemable: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.underlying.redeemable ? (
     <Amount value={asset?.vaultPosition?.underlying.redeemable} {...props} />
   ) : <Spinner size={'sm'} />
@@ -637,7 +637,7 @@ const Redeemable: React.FC<AmountProps> = (props) => {
 
 const EarningsPerc: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.earningsPercentage ? (
     <Amount.Percentage value={asset?.vaultPosition?.earningsPercentage.times(100)} {...props} />
   ) : <Spinner size={'sm'} />
@@ -645,7 +645,7 @@ const EarningsPerc: React.FC<PercentageProps> = (props) => {
 
 const DepositedUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.usd.deposited ? (
     <Amount.Usd value={asset?.vaultPosition?.usd.deposited} {...props} />
   ) : <Spinner size={'sm'} />
@@ -653,7 +653,7 @@ const DepositedUsd: React.FC<AmountProps> = (props) => {
 
 const Deposited: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.vaultPosition?.underlying.deposited ? (
     <Amount value={asset?.vaultPosition?.underlying.deposited} {...props} />
   ) : <Spinner size={'sm'} />
@@ -681,7 +681,7 @@ const GaugeUserDistribution: React.FC<AmountProps> = (props) => {
 
 const Apr: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.apr ? (
     <Amount.Percentage value={asset?.apr} {...props} />
   ) : <Spinner size={'sm'} />
@@ -690,25 +690,25 @@ const Apr: React.FC<PercentageProps> = (props) => {
 type ApyProps = {
   showGross?: boolean
   showNet?: boolean
-  showTooltip? : boolean
+  showTooltip?: boolean
   addRewards?: boolean
 } & PercentageProps
 
-const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, addRewards = false, ...props}) => {
+const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showTooltip = true, addRewards = false, ...props }) => {
   const { asset, vault } = useAssetProvider()
 
   const netApy = useMemo(() => {
-    if (asset?.apyBreakdown){
-      return Object.keys(asset.apyBreakdown).reduce( (totalNetApy: BigNumber, apyType: string) => {
+    if (asset?.apyBreakdown) {
+      return Object.keys(asset.apyBreakdown).reduce((totalNetApy: BigNumber, apyType: string) => {
         let netApy = bnOrZero(asset.apyBreakdown?.[apyType])
 
         let isNetApr = false
-        if (vault && "flags" in vault && !isEmpty(vault.flags?.aprBreakdownParams) && vault.flags?.aprBreakdownParams?.[apyType]){
+        if (vault && "flags" in vault && !isEmpty(vault.flags?.aprBreakdownParams) && vault.flags?.aprBreakdownParams?.[apyType]) {
           isNetApr = vault.flags?.aprBreakdownParams?.[apyType].isNet || false
         }
 
         // Remove fees on base and harvest apy
-        if (apyType !== 'rewards' && !isNetApr){
+        if (apyType !== 'rewards' && !isNetApr) {
           netApy = netApy.minus(netApy.times(bnOrZero(asset?.fee)))
         }
         return totalNetApy.plus(netApy)
@@ -718,7 +718,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
     }
   }, [asset, vault])
 
-  showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length>1
+  showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length > 1
 
   // console.log('apyBreakdown', asset?.id, asset?.apyBreakdown);
 
@@ -734,12 +734,12 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
         borderBottomColor={'cta'}
       >
         {
-          Object.keys(asset.apyBreakdown).map( (type: string) => {
+          Object.keys(asset.apyBreakdown).map((type: string) => {
             const apr = BNify(asset?.apyBreakdown?.[type])
-            if (apr.lte(0) && type!=='base') return null
+            if (apr.lte(0) && type !== 'base') return null
 
             let vaultTranslationKey = `assets.assetDetails.apyBreakdown.${type}`
-            if (vault && "translations" in vault && vault.translations?.apyBreakdown?.[type]){
+            if (vault && "translations" in vault && vault.translations?.apyBreakdown?.[type]) {
               vaultTranslationKey = vault?.translations?.apyBreakdown?.[type]
             }
 
@@ -787,7 +787,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
     </VStack>
   ) : null
 
-  const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0) || (asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length<=1)
+  const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0) || (asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length <= 1)
 
   return asset?.apy ? (
     <HStack
@@ -802,7 +802,7 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
         isDisabled={tooltipDisabled}
       >
         <TooltipContent>
-          <Amount.Percentage value={asset?.apy} {...props} stackProps={{spacing:1}} borderBottom={showTooltip && !tooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+          <Amount.Percentage value={asset?.apy} {...props} stackProps={{ spacing: 1 }} borderBottom={showTooltip && !tooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
         </TooltipContent>
       </Tooltip>
       {
@@ -812,12 +812,12 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
       }
     </HStack>
   ) : <Spinner size={'sm'} />
-  
+
 }
 
 const ApyRatio: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.aprRatio ? (
     <Amount.Percentage value={asset?.aprRatio} {...props} />
   ) : <Spinner size={'sm'} />
@@ -827,7 +827,7 @@ const ApyBoost: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const apyBoost = asset?.apy && asset?.baseApr?.gt(0) ? asset?.apy.div(asset?.baseApr) : BNify(0)
-  
+
   return asset?.apy && asset?.baseApr ? (
     <Amount suffix={'x'} decimals={2} value={apyBoost} {...props} />
   ) : <Spinner size={'sm'} />
@@ -837,7 +837,7 @@ const RewardsApy: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const rewardsApy = bnOrZero(asset?.apyBreakdown?.rewards)
-  
+
   return rewardsApy ? (
     <Amount.Percentage decimals={2} value={rewardsApy} {...props} />
   ) : <Spinner size={'sm'} />
@@ -849,7 +849,7 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
   let tooltipLabel = null
   let totalApy = bnOrZero(asset?.vaultPosition?.realizedApy)
   const rewardsApy = bnOrZero(asset?.vaultPosition?.rewardsApy)
-  if (rewardsApy.gt(0)){
+  if (rewardsApy.gt(0)) {
     // totalApy = totalApy.plus(rewardsApy)
     const netApy = BigNumber.maximum(0, totalApy.minus(rewardsApy))
     tooltipLabel = (
@@ -885,7 +885,7 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
   }
 
   // Add gauge APY to realized APY
-  if (asset?.apyBreakdown?.gauge && bnOrZero(asset?.apyBreakdown?.gauge).gt(0) && bnOrZero(asset?.vaultPosition?.underlying.staked).gt(0)){
+  if (asset?.apyBreakdown?.gauge && bnOrZero(asset?.apyBreakdown?.gauge).gt(0) && bnOrZero(asset?.vaultPosition?.underlying.staked).gt(0)) {
     totalApy = totalApy.plus(asset?.apyBreakdown.gauge)
     tooltipLabel = (
       <VStack
@@ -918,7 +918,7 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
       </VStack>
     )
   }
-  
+
   return asset?.vaultPosition?.realizedApy ? (
     <Tooltip
       hasArrow
@@ -934,7 +934,7 @@ const RealizedApy: React.FC<PercentageProps> = (props) => {
 
 const GaugeWeight: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.gaugeData?.weight ? (
     <Amount.Percentage value={asset?.gaugeData?.weight.times(100)} {...props} />
   ) : <Spinner size={'sm'} />
@@ -942,7 +942,7 @@ const GaugeWeight: React.FC<PercentageProps> = (props) => {
 
 const GaugeNextWeight: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.gaugeData?.nextWeight ? (
     <Amount.Percentage value={asset?.gaugeData?.nextWeight.times(100)} {...props} />
   ) : <Spinner size={'sm'} />
@@ -950,7 +950,7 @@ const GaugeNextWeight: React.FC<PercentageProps> = (props) => {
 
 const GaugeTotalSupply: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.gaugeData?.gaugePoolUsd ? (
     <Amount.Usd value={asset?.gaugeData?.gaugePoolUsd} {...props} />
   ) : <Spinner size={'sm'} />
@@ -960,7 +960,7 @@ const FeesUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const feeUsd = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset.vaultPosition.usd.earnings).times(asset.fee) : BNify(0)
-  
+
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount.Usd value={feeUsd} {...props} />
   ) : <Spinner size={'sm'} />
@@ -977,13 +977,13 @@ const PerformanceFee: React.FC<PercentageProps> = (props) => {
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
   const performanceFeeDiscounted = useMemo(() => (positionReferral && bnOrZero(feeDiscountOnReferral).gt(0)), [positionReferral, feeDiscountOnReferral])
   const performanceFee = useMemo(() => performanceFeeDiscounted ? feeDiscountOnReferral : bnOrZero(asset?.fee), [performanceFeeDiscounted, asset, feeDiscountOnReferral])
-  
+
   return asset?.fee ? (
     <HStack
       spacing={2}
       alignItems={'center'}
     >
-      <Amount.Percentage value={asset?.fee?.times(100)} {...props} sx={performanceFeeDiscounted ? {textDecoration:'line-through'} : {}} />
+      <Amount.Percentage value={asset?.fee?.times(100)} {...props} sx={performanceFeeDiscounted ? { textDecoration: 'line-through' } : {}} />
       {
         performanceFeeDiscounted && (
           <Amount.Percentage value={performanceFee.times(100)} color={'brightGreen'} {...props} />
@@ -1006,7 +1006,7 @@ const LastHarvest: React.FC<TextProps> = (props) => {
   // const harvestAPY = asset?.lastHarvest?.aprs[vault.type]
   // const harvestValue = asset?.lastHarvest?.value[vault.type]
   // const harvestDate = dayjs(+asset.lastHarvest.timestamp*1000).format('YYYY/MM/DD HH:mm')
-  
+
   return lastHarvest === null ? (
     <Text {...props}>-</Text>
   ) : lastHarvest ? (
@@ -1026,7 +1026,7 @@ const Fees: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
   const fee = asset?.vaultPosition?.underlying.earnings && asset?.fee ? BNify(asset.vaultPosition.underlying.earnings).times(asset.fee) : BNify(0)
-  
+
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount value={fee} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1034,7 +1034,7 @@ const Fees: React.FC<AmountProps> = (props) => {
 
 const PoolUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
-  
+
   return asset?.tvlUsd ? (
     <Amount.Usd value={asset?.tvlUsd} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1050,7 +1050,7 @@ const TrancheTotalPoolUsd: React.FC<AmountProps> = (props) => {
   const bbTrancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
 
   const totalTvlUsd = bnOrZero(aaTrancheAsset?.tvlUsd).plus(bbTrancheAsset?.tvlUsd)
-  
+
   return totalTvlUsd ? (
     <Amount.Usd value={totalTvlUsd} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1059,7 +1059,7 @@ const TrancheTotalPoolUsd: React.FC<AmountProps> = (props) => {
 const SeniorApy: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
-  
+
   if (!vault || !("vaultConfig" in vault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
@@ -1094,7 +1094,7 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
 const SeniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
-  
+
   if (!vault || !("vaultConfig" in vault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
@@ -1128,7 +1128,7 @@ const JuniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
 const SeniorPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
-  
+
   if (!vault || !("vaultConfig" in vault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
@@ -1164,17 +1164,17 @@ const TotalPoolUsd: React.FC<AmountProps> = (props) => {
   const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
 
   let totalTvlUsd = asset?.tvlUsd
-  if (asset && vault && ['AA', 'BB'].includes(asset.type as string)){
+  if (asset && vault && ['AA', 'BB'].includes(asset.type as string)) {
     const otherVaultType = asset.type === 'AA' ? 'BB' : 'AA'
-    const otherVault = vaults.find( (otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
-    if (otherVault){
+    const otherVault = vaults.find((otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
+    if (otherVault) {
       const otherAsset = selectAssetById(otherVault.id)
       if (otherAsset) {
         totalTvlUsd = BNify(totalTvlUsd).plus(otherAsset.tvlUsd)
       }
     }
   }
-  
+
   return !BNify(totalTvlUsd).isNaN() ? (
     <Amount.Usd value={totalTvlUsd} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1188,7 +1188,7 @@ const TotalDiscountedFees: React.FC<AmountProps & AssetFieldProps> = (props) => 
   //     return totalDiscountedFees.plus(bnOrZero(vaultPosition.usd.discountedFees))
   //   }, BNify(0))
   // }, [vaultsPositions])
-  
+
   return stakingData ? (
     <Amount.Usd value={stakingData.totalDiscountedFees} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1196,7 +1196,7 @@ const TotalDiscountedFees: React.FC<AmountProps & AssetFieldProps> = (props) => 
 
 const StakingTvl: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData ? (
     <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.IDLE.totalSupply} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1204,7 +1204,7 @@ const StakingTvl: React.FC<AmountProps & AssetFieldProps> = (props) => {
 
 const StkIDLESupply: React.FC<TextProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData?.stkIDLE.totalSupply ? (
     <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.stkIDLE.totalSupply} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1212,7 +1212,7 @@ const StkIDLESupply: React.FC<TextProps> = (props) => {
 
 const StkIDLEBalance: React.FC<TextProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData?.position.balance ? (
     <TokenAmount assetId={stakingData?.stkIDLE.asset?.id} showIcon={false} amount={stakingData.position.balance} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1223,12 +1223,12 @@ type RewardsEmissionsProps = {
 } & AssetProviderPropsType
 
 // @ts-ignore
-const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({children, flexProps, ...props}) => {
+const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps, ...props }) => {
   const { asset, translate } = useAssetProvider()
 
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
-  
-  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter( rewardId => !asset.rewardsEmissions?.[rewardId].apr )
+
+  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr)
   return (
     <SimpleGrid
       spacing={1}
@@ -1237,7 +1237,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({children, flexProps,
       columns={[1, visibleRewardsIds.length]}
     >
       {
-        visibleRewardsIds.map( rewardId => {
+        visibleRewardsIds.map(rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
           if (!rewardEmission || rewardEmission.apr) return null
           const prefix = rewardEmission.prefix !== undefined ? rewardEmission.prefix : '+'
@@ -1279,12 +1279,12 @@ export type IdleDistributionProps = TextProps & {
   defaultText?: string
 }
 
-const IdleDistribution: React.FC<IdleDistributionProps> = ({defaultText, ...props}) => {
+const IdleDistribution: React.FC<IdleDistributionProps> = ({ defaultText, ...props }) => {
   const { asset } = useAssetProvider()
   const IDLE = selectUnderlyingToken(GOVERNANCE_CHAINID, PROTOCOL_TOKEN)
 
   const dailyDistribution = bnOrZero(asset?.idleDistribution).times(BNify(BLOCKS_PER_YEAR).div(365))
-  
+
   return IDLE ? (
     <HStack
       spacing={0}
@@ -1309,7 +1309,7 @@ const StakingAPY: React.FC<AmountProps> = (props) => {
 
 const StakingTotalRewards: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData?.IDLE.totalRewards ? (
     <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.IDLE.totalRewards} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1317,7 +1317,7 @@ const StakingTotalRewards: React.FC<AmountProps & AssetFieldProps> = (props) => 
 
 const StakingDeposited: React.FC<AmountProps & AssetFieldProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData ? (
     <TokenAmount assetId={stakingData?.IDLE.asset?.id} showIcon={false} amount={stakingData.position.deposited} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1334,7 +1334,7 @@ const StakingEndDate: React.FC<StakingEndDateArgs> = ({
   const { stakingData } = usePortfolioProvider()
 
   const format = showTime ? 'YYYY/MM/DD HH:mm' : 'YYYY/MM/DD'
-  
+
   return stakingData?.position.lockEnd ? (
     <Text {...props}>{formatDate(stakingData.position.lockEnd, format, showTime)}</Text>
   ) : <Spinner size={'sm'} />
@@ -1342,7 +1342,7 @@ const StakingEndDate: React.FC<StakingEndDateArgs> = ({
 
 const StakingShare: React.FC<AmountProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData?.position.share ? (
     <Amount.Percentage value={stakingData.position.share} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1350,7 +1350,7 @@ const StakingShare: React.FC<AmountProps> = (props) => {
 
 const StakingFeeDiscount: React.FC<AmountProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
-  
+
   return stakingData?.feeDiscount ? (
     <Amount.Percentage value={stakingData?.feeDiscount} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1361,7 +1361,7 @@ const StakingAvgLockTime: React.FC<AmountProps> = (props) => {
   const { stakingData } = usePortfolioProvider()
 
   const avgLockTime = stakingData && `${BNify(stakingData.avgLockTime).div(365).toFixed(1)}/4 ${translate(`common.years`).toLowerCase()}`
-  
+
   return stakingData ? (
     <Text {...props}>{avgLockTime}</Text>
   ) : <Spinner size={'sm'} />
@@ -1374,21 +1374,21 @@ const StakingAvgLockTimeChart: React.FC = () => {
   if (!stakingData) return <Spinner size={'sm'} />
 
   // const remainingDays = MAX_STAKING_DAYS-stakingData.avgLockTime
-  const stakingPercentage = stakingData.avgLockTime/MAX_STAKING_DAYS*100
+  const stakingPercentage = stakingData.avgLockTime / MAX_STAKING_DAYS * 100
 
   const data: BarChartData = {
-    lock:stakingPercentage,
-    other:100-stakingPercentage
+    lock: stakingPercentage,
+    other: 100 - stakingPercentage
   }
 
   const labels = {
-    lock:`${BNify(stakingData.avgLockTime).div(365).toFixed(1)} ${translate(`common.years`).toLowerCase()}`,
-    other:null
+    lock: `${BNify(stakingData.avgLockTime).div(365).toFixed(1)} ${translate(`common.years`).toLowerCase()}`,
+    other: null
   }
 
   const colors = {
-    lock:'#6AE4FF',
-    other:'#202a3e'
+    lock: '#6AE4FF',
+    other: '#202a3e'
   }
 
   return (
@@ -1414,9 +1414,9 @@ const Status: React.FC<AmountProps> = (props) => {
   if (!asset?.status) return null
 
   const colorScheme = vaultsStatusSchemes[asset.status]
-  
+
   const status = translate(`assets.status.${asset.status}`)
-  
+
   return colorScheme ? (
     <Tag {...props} variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
   ) : <Spinner size={'sm'} />
@@ -1430,8 +1430,8 @@ const Coverage: React.FC<AmountProps> = (props) => {
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
   const coverageAmount = bbTranche.tvl && asset?.tvl && BNify(asset?.tvl).gt(0) ? bbTranche.tvl.div(asset.tvl) : 0;
-  const coverageText = translate('defi.coverageAmount', {amount: '$1', coverageAmount: `$${abbreviateNumber(coverageAmount, 2)}`})
-  
+  const coverageText = translate('defi.coverageAmount', { amount: '$1', coverageAmount: `$${abbreviateNumber(coverageAmount, 2)}` })
+
   return asset?.tvlUsd ? (
     <Text {...props}>{coverageText}</Text>
   ) : <Spinner size={'sm'} />
@@ -1445,7 +1445,7 @@ const CoveragePercentage: React.FC<AmountProps> = (props) => {
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
   const coveragePercentage = bbTranche.tvl && asset?.tvl && BNify(asset?.tvl).gt(0) ? bbTranche.tvl.div(asset.tvl) : BNify(0);
-  
+
   return asset?.tvlUsd ? (
     <Amount.Percentage value={coveragePercentage.times(100)} {...props} />
   ) : <Spinner size={'sm'} />
@@ -1459,7 +1459,7 @@ const HistoricalRates: React.FC<BoxProps> = (props) => {
       percentChange={0}
       axisEnabled={false}
       assetIds={[asset?.id]}
-      setPercentChange={() => {}}
+      setPercentChange={() => { }}
       timeframe={HistoryTimeframe.WEEK}
     />
   ) : null
@@ -1478,18 +1478,18 @@ const ApyRatioChart: React.FC<BoxProps> = (props) => {
   const otherVault = selectAssetById(vault?.vaultConfig.Tranches[otherVaultType].address)
 
   const data: BarChartData = {
-    [vaultType]:apyRatio,
-    [otherVaultType]:otherVault?.aprRatio
+    [vaultType]: apyRatio,
+    [otherVaultType]: otherVault?.aprRatio
   }
 
-  const labels = Object.keys(data).reduce( (labels: BarChartLabels, key: BarChartKey) => {
+  const labels = Object.keys(data).reduce((labels: BarChartLabels, key: BarChartKey) => {
     return {
       ...labels,
       [key]: translate(strategies[key].label)
     }
   }, {})
 
-  const colors = Object.keys(data).reduce( (colors: BarChartColors, key: BarChartKey) => {
+  const colors = Object.keys(data).reduce((colors: BarChartColors, key: BarChartKey) => {
     return {
       ...colors,
       [key]: theme.colors.strategies[key]
@@ -1585,7 +1585,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
             alignItems={'flex-start'}
           >
             <ProtocolName textStyle={'tableCell'} {...props} />
-            <VaultVariant textStyle={'vaultVariant'}  />
+            <VaultVariant textStyle={'vaultVariant'} />
           </VStack>
         </HStack>
       )
@@ -1687,7 +1687,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
             alignItems={'flex-start'}
           >
             <Name textStyle={'tableCell'} {...props} />
-            <VaultVariant textStyle={'vaultVariant'}  />
+            <VaultVariant textStyle={'vaultVariant'} />
           </VStack>
           <StatusBadge width={6} height={6} />
         </HStack>
@@ -1733,7 +1733,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'stakingTvl':
       return (<StakingTvl textStyle={'tableCell'} />)
     case 'totalDiscountedFees':
-      return (<TotalDiscountedFees textStyle={'tableCell'}/>)
+      return (<TotalDiscountedFees textStyle={'tableCell'} />)
     case 'stkIDLESupply':
       return (<StkIDLESupply textStyle={'tableCell'} />)
     case 'stkIDLEBalance':
@@ -1741,7 +1741,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'stakingAPY':
       return (<StakingAPY textStyle={'tableCell'} {...props} />)
     case 'stakingTotalRewards':
-      return (<StakingTotalRewards textStyle={'tableCell'} {...props} />)  
+      return (<StakingTotalRewards textStyle={'tableCell'} {...props} />)
     case 'stakingAvgLockTimeChart':
       return (<StakingAvgLockTimeChart {...props} />)
     case 'stakingAvgLockTime':

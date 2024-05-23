@@ -27,10 +27,10 @@ const Web3ProviderContext = React.createContext<ContextProps>(initialState)
 export const useWeb3Provider = () => useContext(Web3ProviderContext)
 
 export function Web3Provider({ children }: ProviderProps) {
-  const [ multiCall, setMultiCall ] = useState<Multicall | null>(null)
-  const [ latestBlock, setLatestBlock ] = useState<number | null>(null)
+  const [multiCall, setMultiCall] = useState<Multicall | null>(null)
+  const [latestBlock, setLatestBlock] = useState<number | null>(null)
   const { connecting, wallet, chainId, walletInitialized } = useWalletProvider()
-  const [ web3Chains, setWeb3Chains ] = useState<Record<string, Web3> | null>(null)
+  const [web3Chains, setWeb3Chains] = useState<Record<string, Web3> | null>(null)
 
   const web3Rpc = useMemo(() => {
     if (!chainId || !web3Chains || isEmpty(web3Chains)) return null
@@ -39,7 +39,7 @@ export function Web3Provider({ children }: ProviderProps) {
 
   const web3 = useMemo(() => {
     if (!walletInitialized || connecting) return null
-    if (wallet?.provider){
+    if (wallet?.provider) {
       // @ts-ignore
       return new Web3(wallet.provider)
     } else {
@@ -54,9 +54,9 @@ export function Web3Provider({ children }: ProviderProps) {
 
   useEffect(() => {
     if (!web3) return;
-    ;(async()=>{
+    ; (async () => {
       const blockNumber = await web3.eth.getBlockNumber()
-      if (blockNumber){
+      if (blockNumber) {
         setLatestBlock(blockNumber)
       }
     })()
@@ -65,7 +65,7 @@ export function Web3Provider({ children }: ProviderProps) {
   // Check and load RPCs
   useEffect(() => {
     if (!isEmpty(web3Chains)) return;
-    ;(async() => {
+    ; (async () => {
       // Check custom RPCs otherwise use public ones
       const newWeb3Chains = await asyncReduce<any, Record<string, Web3>>(
         Object.keys(chains),
@@ -79,7 +79,7 @@ export function Web3Provider({ children }: ProviderProps) {
             return {
               [chainId]: web3Private
             }
-          } catch (err){
+          } catch (err) {
             return {
               [chainId]: web3Public
             }
@@ -101,36 +101,36 @@ export function Web3Provider({ children }: ProviderProps) {
   useEffect(() => {
     if (!chainId || !isEmpty(web3Chains)) return
 
-    ;(async() => {
-      // Check custom RPCs otherwise use public ones
-      const newWeb3Chains = await asyncReduce<any, Record<string, Web3>>(
-        Object.keys(chains),
-        async (chainId: any) => {
-          const rpcUrl = chains[chainId].rpcUrl as string
-          const publicRpcUrl = chains[chainId].publicRpcUrl as string
-          const web3Private = new Web3(new Web3.providers.HttpProvider(rpcUrl))
-          const web3Public = new Web3(new Web3.providers.HttpProvider(publicRpcUrl))
-          try {
-            await web3Private.eth.getBlockNumber()
-            return {
-              [chainId]: web3Private
+      ; (async () => {
+        // Check custom RPCs otherwise use public ones
+        const newWeb3Chains = await asyncReduce<any, Record<string, Web3>>(
+          Object.keys(chains),
+          async (chainId: any) => {
+            const rpcUrl = chains[chainId].rpcUrl as string
+            const publicRpcUrl = chains[chainId].publicRpcUrl as string
+            const web3Private = new Web3(new Web3.providers.HttpProvider(rpcUrl))
+            const web3Public = new Web3(new Web3.providers.HttpProvider(publicRpcUrl))
+            try {
+              await web3Private.eth.getBlockNumber()
+              return {
+                [chainId]: web3Private
+              }
+            } catch (err) {
+              return {
+                [chainId]: web3Public
+              }
             }
-          } catch (err){
+          },
+          (web3Chains, chainWeb3) => {
             return {
-              [chainId]: web3Public
+              ...web3Chains,
+              ...chainWeb3
             }
-          }
-        },
-        (web3Chains, chainWeb3) => {
-          return {
-            ...web3Chains,
-            ...chainWeb3
-          }
-        },
-        {}
-      )
-      setWeb3Chains(newWeb3Chains)
-    })()
+          },
+          {}
+        )
+        setWeb3Chains(newWeb3Chains)
+      })()
   }, [chainId, web3Chains, setWeb3Chains])
 
   useEffect(() => {
@@ -140,7 +140,7 @@ export function Web3Provider({ children }: ProviderProps) {
   }, [web3Chains, chainId])
 
   return (
-    <Web3ProviderContext.Provider value={{web3, web3Rpc, web3Chains, multiCall, latestBlock}}>
+    <Web3ProviderContext.Provider value={{ web3, web3Rpc, web3Chains, multiCall, latestBlock }}>
       {children}
     </Web3ProviderContext.Provider>
   )

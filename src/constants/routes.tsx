@@ -8,7 +8,7 @@ import { RouteObject, Navigate } from 'react-router-dom'
 
 const Stats = lazyLoadComponent('Stats')
 const Staking = lazyLoadComponent('Staking')
-const Strategy = lazyLoadComponent('Strategy')
+// const Strategy = lazyLoadComponent('Strategy')
 const Tranches = lazyLoadComponent('Tranches')
 const Dashboard = lazyLoadComponent('Dashboard')
 const AssetPage = lazyLoadComponent('AssetPage')
@@ -18,21 +18,21 @@ export const routes: RouteObject[] = [
   {
     path: "/",
     element: <Template />,
-    children:[
+    children: [
       {
-        path:'dashboard',
-        element:<Dashboard />,
+        path: 'dashboard',
+        element: <Dashboard />,
       },
       {
-        path:'earn',
-        children:[
+        path: 'earn',
+        children: [
           {
             index: true,
-            element:<Tranches />
+            element: <Tranches />
           },
           {
-            path:':asset',
-            element:<AssetPage />
+            path: ':asset',
+            element: <AssetPage />
           },
         ]
         /*
@@ -58,29 +58,29 @@ export const routes: RouteObject[] = [
         */
       },
       {
-        path:'stake',
-        element:<Staking />
+        path: 'stake',
+        element: <Staking />
       },
       {
-        path:'stats',
-        children:[
+        path: 'stats',
+        children: [
           {
             index: true,
-            element:<Stats />
+            element: <Stats />
           },
           {
-            path:':asset',
-            element:<AssetStats />
+            path: ':asset',
+            element: <AssetStats />
           }
         ]
       },
       {
         index: true,
-        element:<Navigate to="/dashboard" replace />
+        element: <Navigate to="/dashboard" replace />
       },
       {
         path: '*',
-        element:<Navigate to="/dashboard" replace />
+        element: <Navigate to="/dashboard" replace />
       },
     ]
   },

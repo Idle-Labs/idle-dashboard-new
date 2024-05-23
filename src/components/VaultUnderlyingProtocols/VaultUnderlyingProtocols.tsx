@@ -20,8 +20,7 @@ type VaultUnderlyingProtocolsProps = {
 }
 
 export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> = ({ assetId }) => {
-  // const { chainId } = useWalletProvider()
-  const { selectors: { selectAssetById, selectVaultById, selectAssetPriceUsd, selectAssetInterestBearingTokens } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return selectAssetById && selectAssetById(assetId)
@@ -30,14 +29,6 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
   const vault = useMemo(() => {
     return selectVaultById && selectVaultById(assetId)
   }, [selectVaultById, assetId])
-
-  const interestBearingTokens = useMemo(() => {
-    return selectAssetInterestBearingTokens && selectAssetInterestBearingTokens(assetId)
-  }, [selectAssetInterestBearingTokens, assetId])
-
-  const underlyingPriceUsd = useMemo(() => {
-    return asset && selectAssetPriceUsd && selectAssetPriceUsd(asset.underlyingId)
-  }, [selectAssetPriceUsd, asset])
 
   if (!vault || !(vault instanceof BestYieldVault)) return null
   if (!("tokenConfig" in vault) || !vault.tokenConfig?.protocols.length) return null
@@ -54,89 +45,88 @@ export const VaultUnderlyingProtocols: React.FC<VaultUnderlyingProtocolsProps> =
         width={'100%'}
         columns={[1, 3]}
       >
-      {
-        vault.tokenConfig?.protocols.map( (protocol: IdleTokenProtocol) => {
-          const allocationPercentage = bnOrZero(asset.allocations?.[protocol.address.toLowerCase()])
-          // const allocationUsd = bnOrZero(interestBearingTokens?.[protocol.address.toLowerCase()]).times(underlyingPriceUsd)
-          const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
-          const isIdleVault = selectVaultById(protocol.address) !== null
+        {
+          vault.tokenConfig?.protocols.map((protocol: IdleTokenProtocol) => {
+            const allocationPercentage = bnOrZero(asset.allocations?.[protocol.address.toLowerCase()])
+            const protocolApr = asset?.protocolsAprs?.[protocol.address.toLowerCase()]
+            const isIdleVault = selectVaultById(protocol.address) !== null
 
-          return (
-            <AssetProvider
-              wrapFlex={false}
-              assetId={protocol.address}
-              key={`protocol_${protocol.address}`}
-            >
-              <Card
-                p={6}
+            return (
+              <AssetProvider
+                wrapFlex={false}
+                assetId={protocol.address}
+                key={`protocol_${protocol.address}`}
               >
-                <VStack
-                  spacing={5}
-                  width={'100%'}
-                  height={'100%'}
-                  justifyContent={'space-between'}
+                <Card
+                  p={6}
                 >
-                  <HStack
-                    spacing={2}
-                    width={'full'}
-                    alignItems={'flex-start'}
+                  <VStack
+                    spacing={5}
+                    width={'100%'}
+                    height={'100%'}
                     justifyContent={'space-between'}
                   >
                     <HStack
                       spacing={2}
+                      width={'full'}
                       alignItems={'flex-start'}
+                      justifyContent={'space-between'}
                     >
-                      {
-                        isIdleVault ? (
-                          <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'sm'} />
-                        ) : (
-                          <ProtocolLabel protocolId={protocol.name} size={'sm'} />
-                        )
-                      }
-                      {/*<AssetProvider.Strategy prefix={'('} suffix={')'} color={'primary'} />*/}
+                      <HStack
+                        spacing={2}
+                        alignItems={'flex-start'}
+                      >
+                        {
+                          isIdleVault ? (
+                            <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'sm'} />
+                          ) : (
+                            <ProtocolLabel protocolId={protocol.name} size={'sm'} />
+                          )
+                        }
+                        {/*<AssetProvider.Strategy prefix={'('} suffix={')'} color={'primary'} />*/}
+                      </HStack>
+                      <AssetProvider.StrategyBadge width={6} height={6} />
                     </HStack>
-                    <AssetProvider.StrategyBadge width={6} height={6} />
-                  </HStack>
-                  <HStack
-                    spacing={6}
-                    width={'full'}
-                    justifyContent={'space-between'}
-                  >
-                    <VStack
-                      spacing={1}
-                      alignItems={'flex-start'}
+                    <HStack
+                      spacing={6}
+                      width={'full'}
+                      justifyContent={'space-between'}
                     >
-                      <Translation component={Text} translation={'defi.poolAddress'} textStyle={'captionSmall'} />
-                      <AddressLink chainId={asset.chainId} address={protocol.address} />{/*text={protocol.token} />*/}
-                    </VStack>
-                    <VStack
-                      spacing={1}
-                      alignItems={'flex-start'}
-                    >
-                      <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
-                      {
-                        isIdleVault ? (
-                          <AssetProvider.Apy textStyle={'tableCell'} />
-                        ) : (
-                          <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
-                        )
-                      }
-                    </VStack>
-                    <VStack
-                      spacing={1}
-                      alignItems={'flex-start'}
-                    >
-                      <Translation component={Text} translation={'assets.assetDetails.generalData.allocation'} textStyle={'captionSmall'} />
-                      <Amount.Percentage value={allocationPercentage} textStyle={'tableCell'} />
-                      {/*<Amount.Usd value={allocationUsd} textStyle={'tableCell'} />*/}
-                    </VStack>
-                  </HStack>
-                </VStack>
-              </Card>
-            </AssetProvider>
-          )
-        })
-      }
+                      <VStack
+                        spacing={1}
+                        alignItems={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.poolAddress'} textStyle={'captionSmall'} />
+                        <AddressLink chainId={asset.chainId} address={protocol.address} />{/*text={protocol.token} />*/}
+                      </VStack>
+                      <VStack
+                        spacing={1}
+                        alignItems={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'defi.apy'} textStyle={'captionSmall'} />
+                        {
+                          isIdleVault ? (
+                            <AssetProvider.Apy textStyle={'tableCell'} />
+                          ) : (
+                            <Amount.Percentage value={protocolApr} textStyle={'tableCell'} />
+                          )
+                        }
+                      </VStack>
+                      <VStack
+                        spacing={1}
+                        alignItems={'flex-start'}
+                      >
+                        <Translation component={Text} translation={'assets.assetDetails.generalData.allocation'} textStyle={'captionSmall'} />
+                        <Amount.Percentage value={allocationPercentage} textStyle={'tableCell'} />
+                        {/*<Amount.Usd value={allocationUsd} textStyle={'tableCell'} />*/}
+                      </VStack>
+                    </HStack>
+                  </VStack>
+                </Card>
+              </AssetProvider>
+            )
+          })
+        }
       </SimpleGrid>
     </VStack>
   )

@@ -20,11 +20,9 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
-import { ProtocolOverview } from 'components/ProtocolOverview/ProtocolOverview'
-import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBanner'
-import { products, chains, networks, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, removeItemFromArray, abbreviateNumber } from 'helpers/'
-import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button, Tooltip } from '@chakra-ui/react'
+import { products, chains, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, abbreviateNumber } from 'helpers/'
+import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -57,6 +55,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showL
   )
 }
 
+/*
 type ChainsFiltersArgs = {
   enabledChains: number[]
   setEnabledChains: Function
@@ -92,6 +91,7 @@ const ChainsFilters: React.FC<ChainsFiltersArgs> = ({enabledChains, setEnabledCh
     </HStack>
   )
 }
+*/
 
 export const Tranches: React.FC = () => {
   const navigate = useNavigate()
@@ -100,12 +100,12 @@ export const Tranches: React.FC = () => {
   const { theme, isMobile } = useThemeProvider()
   // const { params } = useBrowserRouter()
   const { openModal, closeModal } = useModalProvider()
-  const [ availableAssetsFilter, setAvailableAssetsFilter ] = useState<string | null>(null)
-  const [ depositedAssetsFilter, setDepositedAssetsFilter ] = useState<string | null>(null)
-  const [ availableListEventSent, setAvailableListEventSent ] = useState<string | null>(null)
-  const [ depositedListEventSent, setDepositedListEventSent ] = useState<string | null>(null)
-  const [ availableAssetsChains, setAvailableAssetsChains ] = useState<number[]>(Object.keys(chains).map( chainId => +chainId ))
-  const [ depositedAssetsChains, setDepositedAssetsChains ] = useState<number[]>(Object.keys(chains).map( chainId => +chainId ))
+  const [availableAssetsFilter, setAvailableAssetsFilter] = useState<string | null>(null)
+  const [depositedAssetsFilter, setDepositedAssetsFilter] = useState<string | null>(null)
+  const [availableListEventSent, setAvailableListEventSent] = useState<string | null>(null)
+  const [depositedListEventSent, setDepositedListEventSent] = useState<string | null>(null)
+  const [availableAssetsChains, setAvailableAssetsChains] = useState<number[]>(Object.keys(chains).map(chainId => +chainId))
+  const [depositedAssetsChains, setDepositedAssetsChains] = useState<number[]>(Object.keys(chains).map(chainId => +chainId))
 
   const {
     vaults,
@@ -122,15 +122,14 @@ export const Tranches: React.FC = () => {
     }
   } = usePortfolioProvider()
 
-  const product = useMemo(() => products.find( product => product.route === 'yield-tranches' ), [])
+  const product = useMemo(() => products.find(product => product.route === 'yield-tranches'), [])
 
-  const visibleStrategies = useMemo(() => Object.keys(strategies).filter( (strategy: string) => !!strategies[strategy].visible ), [])
+  const visibleStrategies = useMemo(() => Object.keys(strategies).filter((strategy: string) => !!strategies[strategy].visible), [])
   const productStrategies = useMemo(() => (product?.strategies || []), [product])
   const strategy = useMemo(() => productStrategies?.[0], [productStrategies])
 
   const onRowClickDeposited = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
-    const strategyConfig = strategies[row.original.type as string]
     return navigate(`/earn/${row.original.id}`)
   }, [navigate])
 
@@ -158,7 +157,7 @@ export const Tranches: React.FC = () => {
           </HStack>
         </HStack>
         {
-          assets.map( (asset: Asset) => {
+          assets.map((asset: Asset) => {
             const vaultPosition = selectVaultPosition(asset.id)
             return (
               <AssetProvider
@@ -171,7 +170,7 @@ export const Tranches: React.FC = () => {
                   py={3}
                   cursor={'pointer'}
                   layerStyle={'cardLight'}
-                   onClick={() => { navigate(`/earn/${asset.id}`); closeModal() }}
+                  onClick={() => { navigate(`/earn/${asset.id}`); closeModal() }}
                 >
                   <HStack
                     width={'full'}
@@ -224,8 +223,7 @@ export const Tranches: React.FC = () => {
         columns={[1, 2]}
       >
         {
-          productStrategies.map( (strategy: string) => {
-            const route = strategies[strategy].route
+          productStrategies.map((strategy: string) => {
             const assetId = tranchesAssets[strategy]?.id
             return (
               <AssetProvider
@@ -278,7 +276,7 @@ export const Tranches: React.FC = () => {
                         spacing={2}
                       >
                         {
-                          strategies[strategy].features?.map( (feature: string) => (
+                          strategies[strategy].features?.map((feature: string) => (
                             <HStack
                               spacing={1}
                               alignItems={'flex-start'}
@@ -359,7 +357,7 @@ export const Tranches: React.FC = () => {
   const onRowClickAvailable = useCallback((asset: Asset, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, asset)
     const modalProps = {
-      subtitle:'defi.chooseTranche',
+      subtitle: 'defi.chooseTranche',
       body: getModalCards(asset.id as string)
     }
     return openModal(modalProps as ModalProps, '2xl')
@@ -383,7 +381,7 @@ export const Tranches: React.FC = () => {
     const vault1 = selectVaultById(a.original.id)
     const vault2 = selectVaultById(b.original.id)
 
-    switch (id){
+    switch (id) {
       case 'juniorApy':
         const juniorAsset1 = selectAssetById(vault1?.vaultConfig.Tranches.BB.address)
         const juniorAsset2 = selectAssetById(vault2?.vaultConfig.Tranches.BB.address)
@@ -402,7 +400,7 @@ export const Tranches: React.FC = () => {
   }, [selectVaultById, selectAssetById])
 
   const getCellSorting = useCallback((sortType?: string): Function | undefined => {
-    switch (sortType){
+    switch (sortType) {
       case 'alpha':
         return sortAlpha
       case 'numeric':
@@ -418,7 +416,7 @@ export const Tranches: React.FC = () => {
 
   const allColumnsById: Record<string, Column<Asset>> = useMemo(() => {
     if (!columns) return {}
-    return columns.reduce( (allColumns: Record<string, Column<Asset>>, column: StrategyColumn) => {
+    return columns.reduce((allColumns: Record<string, Column<Asset>>, column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       const sortTypeFn = getCellSorting(sortType)
       allColumns[id] = {
@@ -430,7 +428,7 @@ export const Tranches: React.FC = () => {
         Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor, id) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return column.extraFields && column.extraFields.length>0 ? (
+          return column.extraFields && column.extraFields.length > 0 ? (
             <Stack
               spacing={2}
               width={'full'}
@@ -444,7 +442,7 @@ export const Tranches: React.FC = () => {
                 {...column.stackProps}
               >
                 {
-                  column.extraFields.map( (extraField: string) => (
+                  column.extraFields.map((extraField: string) => (
                     <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} showLoader={false} />
                   ))
                 }
@@ -461,7 +459,7 @@ export const Tranches: React.FC = () => {
 
   const strategyColumns: Column<Asset>[] = useMemo(() => {
     if (!strategy || !columns) return []
-    return columns.filter( (column: StrategyColumn) => !column.tables || column.tables.includes('Available') ).map( (column: StrategyColumn) => {
+    return columns.filter((column: StrategyColumn) => !column.tables || column.tables.includes('Available')).map((column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       const sortTypeFn = getCellSorting(sortType)
       return {
@@ -473,7 +471,7 @@ export const Tranches: React.FC = () => {
         Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor, id) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return column.extraFields && column.extraFields.length>0 ? (
+          return column.extraFields && column.extraFields.length > 0 ? (
             <Stack
               spacing={2}
               width={'full'}
@@ -487,7 +485,7 @@ export const Tranches: React.FC = () => {
                 {...column.stackProps}
               >
                 {
-                  column.extraFields.map( (extraField: string) => (
+                  column.extraFields.map((extraField: string) => (
                     <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} showLoader={false} />
                   ))
                 }
@@ -503,7 +501,7 @@ export const Tranches: React.FC = () => {
 
   const strategyColumnsDeposit: Column<Asset>[] = useMemo(() => {
     if (!strategy || !columns) return []
-    return columns.filter( (column: StrategyColumn) => !column.tables || column.tables.includes('Deposited') ).map( (column: StrategyColumn) => {
+    return columns.filter((column: StrategyColumn) => !column.tables || column.tables.includes('Deposited')).map((column: StrategyColumn) => {
       const { id, accessor, sortType } = column
       // const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
       const sortTypeFn = getCellSorting(sortType)
@@ -516,7 +514,7 @@ export const Tranches: React.FC = () => {
         Header: translate(column.title || `defi.${id}`),
         sortType: sortTypeFn ? (a: any, b: any) => sortTypeFn(a, b, accessor, id) : undefined,
         Cell: ({ value, row }: { value: any; row: RowProps }) => {
-          return column.extraFields && column.extraFields.length>0 ? (
+          return column.extraFields && column.extraFields.length > 0 ? (
             <Stack
               spacing={2}
               width={'full'}
@@ -530,7 +528,7 @@ export const Tranches: React.FC = () => {
                 {...column.stackProps}
               >
                 {
-                  column.extraFields.map( (extraField: string) => (
+                  column.extraFields.map((extraField: string) => (
                     <TableField key={`extraField_${extraField}`} field={extraField} value={value} row={row} showLoader={false} />
                   ))
                 }
@@ -552,8 +550,8 @@ export const Tranches: React.FC = () => {
     },
     ...strategyColumnsDeposit,
     {
-      accessor:'balanceUsd',
-      Header:translate('defi.balance'),
+      accessor: 'balanceUsd',
+      Header: translate('defi.balance'),
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -564,8 +562,8 @@ export const Tranches: React.FC = () => {
       sortType: sortNumeric
     },
     {
-      accessor:'vaultPosition',
-      Header:translate('defi.realizedApy'),
+      accessor: 'vaultPosition',
+      Header: translate('defi.realizedApy'),
       Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -609,7 +607,7 @@ export const Tranches: React.FC = () => {
 
   const depositedAssetsData = useMemo(() => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded || !productStrategies || !account?.address) return []
-    return productStrategies?.reduce( (depositedAssetsData: Asset[], strategy: string) => {
+    return productStrategies?.reduce((depositedAssetsData: Asset[], strategy: string) => {
       const strategyDepositedAssets = selectVaultsAssetsWithBalance(strategy)
       return [
         ...depositedAssetsData,
@@ -628,25 +626,25 @@ export const Tranches: React.FC = () => {
     //   ]
     // }, [])
 
-    const checkDepositedAsset = (vaultAsset: Asset) => depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id)
+    const checkDepositedAsset = (vaultAsset: Asset) => depositedAssetsData.map((asset: Asset) => asset.id).includes(vaultAsset.id)
 
     const vaultsAssets = selectVaultsAssetsByType(strategy)
     // console.log('vaultsAssets', vaultsAssets)
     // return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status !== 'deprecated' )
 
-    return vaultsAssets.reduce( (vaultsAssets: Asset[], vaultAsset: Asset) => {
-      if (vaultAsset.status === 'deprecated'){
+    return vaultsAssets.reduce((vaultsAssets: Asset[], vaultAsset: Asset) => {
+      if (vaultAsset.status === 'deprecated') {
         return vaultsAssets
       }
       // Add other vault
-      if (checkDepositedAsset(vaultAsset)){
+      if (checkDepositedAsset(vaultAsset)) {
         const vault = selectVaultById(vaultAsset.id)
-        if (vault){
+        if (vault) {
           const otherVaultType = vaultAsset.type === 'AA' ? 'BB' : 'AA'
-          const otherVault = vaults.find( (otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
-          if (otherVault){
+          const otherVault = vaults.find((otherVault: Vault) => ("cdoConfig" in otherVault) && ("cdoConfig" in vault) && otherVault.type === otherVaultType && otherVault.cdoConfig.address === vault.cdoConfig.address)
+          if (otherVault) {
             const otherVaultAsset = selectAssetById(otherVault.id)
-            if (otherVaultAsset?.status !== 'deprecated' && !checkDepositedAsset(otherVaultAsset)){
+            if (otherVaultAsset?.status !== 'deprecated' && !checkDepositedAsset(otherVaultAsset)) {
               vaultsAssets.push(otherVaultAsset)
             }
           }
@@ -662,7 +660,7 @@ export const Tranches: React.FC = () => {
   const deprecatedAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(MIN_TVL_USD_DEPRECATED_VAULTS) )
+    return vaultsAssets.filter((vaultAsset: Asset) => !depositedAssetsData.map((asset: Asset) => asset.id).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(MIN_TVL_USD_DEPRECATED_VAULTS))
   }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const depositedListId = useMemo(() => {
@@ -701,8 +699,8 @@ export const Tranches: React.FC = () => {
   // Send Deposited list
   useEffect(() => {
     if (!strategy || depositedListEventSent === strategy || !depositedAssetsData.length) return
-    const items = depositedAssetsData.map( (asset: Asset) => getAssetListItem(asset, depositedListId, depositedListName))
-    
+    const items = depositedAssetsData.map((asset: Asset) => getAssetListItem(asset, depositedListId, depositedListName))
+
     // Send gtag.js event and set state
     sendViewItemList(depositedListId, depositedListName, items)
     setDepositedListEventSent(strategy)
@@ -711,7 +709,7 @@ export const Tranches: React.FC = () => {
   useEffect(() => {
     if (!strategy || availableListEventSent === strategy || !availableAssetsData.length) return
 
-    const items = availableAssetsData.map( (asset: Asset) => getAssetListItem(asset, availableListId, availableListName))
+    const items = availableAssetsData.map((asset: Asset) => getAssetListItem(asset, availableListId, availableListName))
 
     // Send gtag.js event and set state
     sendViewItemList(availableListId, availableListName, items)
@@ -730,7 +728,7 @@ export const Tranches: React.FC = () => {
       ]
     }
 
-    const depositedAssetsDataFiltered = depositedAssetsData.filter( (vaultAsset: Asset) => {
+    const depositedAssetsDataFiltered = depositedAssetsData.filter((vaultAsset: Asset) => {
       const searchCheck = !depositedAssetsFilter || !depositedAssetsFilter.length || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(depositedAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
       const chainCheck = vaultAsset?.chainId && depositedAssetsChains.includes(+vaultAsset.chainId)
       return searchCheck && chainCheck
@@ -750,7 +748,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            depositedAssetsDataFiltered.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+            depositedAssetsDataFiltered.map((asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>
@@ -769,7 +767,7 @@ export const Tranches: React.FC = () => {
             <SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />
           </HStack>
         </HStack>
-        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsDataFiltered} initialState={initialState} onRowClick={ (row) => onRowClickDeposited(row, depositedListId, depositedListName) } />
+        <ReactTable columns={depositedAssetsColumns} data={depositedAssetsDataFiltered} initialState={initialState} onRowClick={(row) => onRowClickDeposited(row, depositedListId, depositedListName)} />
       </Card>
     )
   }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedAssetsChains, /*setDepositedAssetsChains,*/ depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
@@ -786,7 +784,7 @@ export const Tranches: React.FC = () => {
       ]
     }
 
-    const availableAssetsDataFiltered = availableAssetsData.filter( (vaultAsset: Asset) => {
+    const availableAssetsDataFiltered = availableAssetsData.filter((vaultAsset: Asset) => {
       const searchCheck = !availableAssetsFilter || !availableAssetsFilter.length || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.name) !== null || new RegExp(availableAssetsFilter, 'i').exec(vaultAsset.protocol as string) !== null
       const chainCheck = vaultAsset?.chainId && availableAssetsChains.includes(+vaultAsset.chainId)
       return searchCheck && chainCheck
@@ -806,7 +804,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            availableAssetsDataFiltered.map( (asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, availableListId, availableListName) } />)
+            availableAssetsDataFiltered.map((asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={() => onRowClickAvailable(asset, availableListId, availableListName)} />)
           }
         </VStack>
       </VStack>
@@ -833,7 +831,7 @@ export const Tranches: React.FC = () => {
               <Skeleton />
             </Stack>
           ) : (
-            <ReactTable columns={availableAssetsColumns} data={availableAssetsDataFiltered} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row.original, availableListId, availableListName) } />
+            <ReactTable columns={availableAssetsColumns} data={availableAssetsDataFiltered} initialState={initialState} onRowClick={(row) => onRowClickAvailable(row.original, availableListId, availableListName)} />
           )
         }
       </Card>
@@ -866,7 +864,7 @@ export const Tranches: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            deprecatedAssetsData.map( (asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={ () => onRowClickAvailable(asset, deprecatedListId, deprecatedListName) } />)
+            deprecatedAssetsData.map((asset: Asset) => asset.id && <VaultCard.Tranche key={`vault_${asset.id}`} assetId={asset.id} onClick={() => onRowClickAvailable(asset, deprecatedListId, deprecatedListName)} />)
           }
         </VStack>
       </VStack>
@@ -881,7 +879,7 @@ export const Tranches: React.FC = () => {
               <Skeleton />
             </Stack>
           ) : (
-            <ReactTable columns={availableAssetsColumns} data={deprecatedAssetsData} initialState={initialState} onRowClick={ (row) => onRowClickAvailable(row.original, deprecatedListId, deprecatedListName) } />
+            <ReactTable columns={availableAssetsColumns} data={deprecatedAssetsData} initialState={initialState} onRowClick={(row) => onRowClickAvailable(row.original, deprecatedListId, deprecatedListName)} />
           )
         }
       </Card>
@@ -890,7 +888,6 @@ export const Tranches: React.FC = () => {
 
   const heading = useMemo(() => {
     if (!strategy) return null
-    const modalProps = product?.modal
     return (
       <VStack
         mb={20}
@@ -902,7 +899,7 @@ export const Tranches: React.FC = () => {
           left={0}
           zIndex={1}
           width={'full'}
-          height={['20em','11.5em']}
+          height={['20em', '11.5em']}
           position={'absolute'}
           background={`radial-gradient(circle, ${theme.colors.card.bg}AA 40%, ${theme.colors.card.bg}50 100%)`}
           backgroundPosition={'top left'}
@@ -926,7 +923,7 @@ export const Tranches: React.FC = () => {
           >
             <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
             <SkeletonText noOfLines={2} isLoaded={bnOrZero(protocolData.totalTvlUsd).gt(0)}>
-              <Translation translation={'stats.protocolOverview'} fontSize={['md','h4']} isHtml={true} params={{tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults}} />
+              <Translation translation={'stats.protocolOverview'} fontSize={['md', 'h4']} isHtml={true} params={{ tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults }} />
             </SkeletonText>
           </VStack>
           <Box
@@ -937,15 +934,15 @@ export const Tranches: React.FC = () => {
         </Stack>
       </VStack>
     )
-  }, [theme, strategy, product, visibleStrategies, protocolData])
+  }, [theme, strategy, visibleStrategies, protocolData])
 
   const onClickAggregatedVaults = useCallback((aggregatedVault: AggregatedVault) => {
     // sendSelectItem(item_list_id, item_list_name, asset)
-    
+
     // Show modal with choices
-    if (aggregatedVault.vaults.length>1){
+    if (aggregatedVault.vaults.length > 1) {
       const modalProps = {
-        subtitle:'defi.chooseAsset',
+        subtitle: 'defi.chooseAsset',
         body: getAggregatedVaultModal(aggregatedVault)
       }
       return openModal(modalProps as ModalProps, '2xl')
@@ -977,7 +974,7 @@ export const Tranches: React.FC = () => {
           direction={['column', 'row']}
         >
           {
-            Object.values(aggregatedVaults).map( (aggregatedVault: AggregatedVault, index: number) => {
+            Object.values(aggregatedVaults).map((aggregatedVault: AggregatedVault, index: number) => {
               return (<VaultCard.Aggregated key={`index_${index}`} aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
             })
           }

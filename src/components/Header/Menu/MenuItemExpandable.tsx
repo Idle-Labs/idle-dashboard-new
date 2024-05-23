@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import type { MenuItemType } from 'constants/menu'
 import { MenuNavItem, NavItemText } from './MenuNavItem'
 import { MdKeyboardArrowUp, MdKeyboardArrowDown } from 'react-icons/md'
-import { MenuButton, Flex, MenuList, MenuItem, useTheme, IconButton, Box } from '@chakra-ui/react'
+import { MenuButton, Flex, MenuList, MenuItem, useTheme, IconButton } from '@chakra-ui/react'
 
 type MenuItemExpandableProps = {
   isOpen: boolean
@@ -24,32 +24,32 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
     return isMobile ? (
       <MenuButton as={IconButton} variant={'cta'} m={0} alignItems={'center'} justifyContent={'center'} icon={<Icon IconComponent={menuItem?.icon as string} width={'24px'} height={'24px'} />} />
     ) : (
-      <MenuButton as={Flex} style={{cursor:'pointer'}} alignItems={'center'} justifyContent={'center'}>
+      <MenuButton as={Flex} style={{ cursor: 'pointer' }} alignItems={'center'} justifyContent={'center'}>
         <Flex
           width={'full'}
           direction={'row'}
           alignItems={'center'}
           justifyContent={'center'}
-        > 
+        >
           <NavItemText isActive={isOpen} {...menuItem} />
           {
-            menuItem.children && menuItem.children.length>0 && (
+            menuItem.children && menuItem.children.length > 0 && (
               <Flex
                 width={'24px'}
               >
-              {
-                isOpen ? (
-                  <MdKeyboardArrowUp
-                    size={24}
-                    color={theme.colors.cta}
-                  />
-                ) : (
-                  <MdKeyboardArrowDown
-                    size={24}
-                    color={theme.colors.cta}
-                  />
-                )
-              }
+                {
+                  isOpen ? (
+                    <MdKeyboardArrowUp
+                      size={24}
+                      color={theme.colors.cta}
+                    />
+                  ) : (
+                    <MdKeyboardArrowDown
+                      size={24}
+                      color={theme.colors.cta}
+                    />
+                  )
+                }
               </Flex>
             )
           }
@@ -62,13 +62,13 @@ export const MenuItemExpandable: React.FC<MenuItemExpandableProps> = ({
     <>
       {menuButton}
       {
-        menuItem.children && menuItem.children.length>0 && (
+        menuItem.children && menuItem.children.length > 0 && (
           <MenuList>
             {
-              menuItem.children.map( (menuItem, index) => (
+              menuItem.children.map((menuItem, index) => (
                 <MenuItem
                   key={`menuItem_${index}`}
-                  onClick={ () => { menuItem.onClick ? menuItem.onClick() : (menuItem.path && navigate(menuItem.path))} }
+                  onClick={() => { menuItem.onClick ? menuItem.onClick() : (menuItem.path && navigate(menuItem.path)) }}
                 >
                   <MenuNavItem {...menuItem} />
                 </MenuItem>

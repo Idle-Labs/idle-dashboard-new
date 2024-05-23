@@ -19,7 +19,7 @@ export type IconType = string | ReactIcon | React.ElementType
 export type Nullable<T> = T | null | undefined;
 
 export type RewardSenderParams = {
-  startBlock? : number | null
+  startBlock?: number | null
   endBlock?: number | null
 }
 
@@ -466,4 +466,5 @@ export type ContractRawCall = {
   data?: any
   call: ContractSendMethod
   decimals?: number
+  params?: any
 }

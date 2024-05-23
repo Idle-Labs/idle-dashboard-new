@@ -1,13 +1,12 @@
+import { useMemo } from 'react'
 import BigNumber from 'bignumber.js'
-import { useMemo, useState } from 'react'
 import { BNify, bnOrZero } from 'helpers/'
+import type { Asset } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
 import { strategies } from 'constants/strategies'
-import type { Asset, Balances } from 'constants/types'
 import { Translation } from 'components/Translation/Translation'
-import { DonutChartData } from 'components/DonutChart/DonutChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { SimpleGrid, VStack, HStack, SkeletonText, Button, TextProps } from '@chakra-ui/react'
+import { SimpleGrid, VStack, HStack, SkeletonText, TextProps } from '@chakra-ui/react'
 
 type ProtocolOverviewProps = {
   showHeader?: boolean
@@ -22,9 +21,9 @@ export const ProtocolOverview: React.FC<ProtocolOverviewProps> = ({
 }) => {
 
   const { isPortfolioLoaded, assetsData } = usePortfolioProvider()
-  const visibleAssets = useMemo(() => Object.values(assetsData).filter( (asset: Asset) => !!strategies[asset.type as string]?.visible ), [assetsData])
-  const totalTvlUsd = useMemo(() => Object.values(visibleAssets).reduce( (totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0)) , [visibleAssets])
-  const avgApy = useMemo(() => Object.values(visibleAssets).reduce( (avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0) ) , [visibleAssets]).div(totalTvlUsd)
+  const visibleAssets = useMemo(() => Object.values(assetsData).filter((asset: Asset) => !!strategies[asset.type as string]?.visible), [assetsData])
+  const totalTvlUsd = useMemo(() => Object.values(visibleAssets).reduce((totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0)), [visibleAssets])
+  const avgApy = useMemo(() => Object.values(visibleAssets).reduce((avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0)), [visibleAssets]).div(totalTvlUsd)
   const vaultsNum = useMemo(() => visibleAssets.length, [visibleAssets])
 
   if (!showLoading && !isPortfolioLoaded) return null

@@ -10,7 +10,8 @@ export const chains: Record<number, Chain> = {
     token: 'ETH',
     label: 'Ethereum Mainnet',
     publicRpcUrl: 'https://ethereum-rpc.publicnode.com',
-    rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`
+    rpcUrl: `https://mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`,
+    // rpcUrl: `https://eth-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_KEY}`
   },
   10: {
     id: '0xa',
@@ -34,5 +35,5 @@ export function selectChainById(id: number): Chain | undefined {
 }
 
 export function selectChainByHexId(hexId: string): Chain | undefined {
-  return Object.values(chains).find( (c: Chain) => c.id === hexId )
+  return Object.values(chains).find((c: Chain) => c.id === hexId)
 }

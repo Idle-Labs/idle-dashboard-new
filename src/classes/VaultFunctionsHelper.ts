@@ -90,7 +90,7 @@ export class VaultFunctionsHelper {
     const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
     // console.log('getIdleStakingRewardsTxs', endpoint, stakedIdleVault.rewardTokenConfig, stakedIdleVault.feeDistributorConfig, etherscanTxlist);
-    return etherscanTxlist ? etherscanTxlist.filter( (tx: EtherscanTransaction) => (tx.contractAddress.toLowerCase() === idleTokenConfig.address?.toLowerCase() && tx.to.toLowerCase() === feeDistributorConfig.address.toLowerCase() && BNify(tx.value).gt(0))) : []
+    return etherscanTxlist ? etherscanTxlist.filter((tx: EtherscanTransaction) => (tx.contractAddress.toLowerCase() === idleTokenConfig.address?.toLowerCase() && tx.to.toLowerCase() === feeDistributorConfig.address.toLowerCase() && BNify(tx.value).gt(0))) : []
   }
 
   public async getTrancheLastHarvest(trancheVault: TrancheVault): Promise<CdoLastHarvest> {
@@ -108,7 +108,7 @@ export class VaultFunctionsHelper {
 
     // Get explorer by vault chainId
     const explorer = this.getExporerByChainId(chainId)
-    
+
     if (!this.multiCall || !explorer || !this.web3Chains?.[+chainId]) return lastHarvest
 
     const rawCalls: CallData[] = [
@@ -116,7 +116,7 @@ export class VaultFunctionsHelper {
       this.multiCall.getCallData(trancheVault.cdoContract, 'lastNAVBB'),
       // this.multiCall.getCallData(trancheVault.cdoContract, 'latestHarvestBlock'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
-    ].filter( (call): call is CallData => !!call )
+    ].filter((call): call is CallData => !!call)
 
     const [
       multicallResults,
@@ -135,7 +135,7 @@ export class VaultFunctionsHelper {
       trancheNAVBB,
       // latestHarvestBlock,
       trancheAPRSplitRatio
-    ] = multicallResults.map( r => BNify(r.data) )
+    ] = multicallResults.map(r => BNify(r.data))
 
     const lastHarvestBlock = web3ToUse.utils.hexToNumber(lastHarvestBlockHex)
 
@@ -154,17 +154,17 @@ export class VaultFunctionsHelper {
       const callback = async () => (await makeEtherscanApiRequest(endpoint, explorer?.keys || []))
       let harvestTxs = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 0) : await callback()
 
-      if (!harvestTxs || isEmpty(harvestTxs)){
-        const blockHex = '0x'+((+lastHarvestBlock).toString(16))
+      if (!harvestTxs || isEmpty(harvestTxs)) {
+        const blockHex = '0x' + ((+lastHarvestBlock).toString(16))
         const cacheKey = `alchemyTxs_${chainId}_${trancheVault.cdoConfig.address}_${blockHex}`
         const callback = async () => (await getAlchemyTransactionHistory(chainId, undefined, trancheVault.cdoConfig.address, blockHex, blockHex))
         const harvestTxsAlchemy = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
 
         // Override harvestTxs with alchemy txs
-        if (harvestTxsAlchemy && !isEmpty(harvestTxsAlchemy)){
+        if (harvestTxsAlchemy && !isEmpty(harvestTxsAlchemy)) {
           const blockInfo = await this.web3Chains[chainId].eth.getBlock(lastHarvestBlock)
-          harvestTxs = harvestTxsAlchemy.reduce( (txs: EtherscanTransaction[], alchemyTx: AssetTransfersResult) => {
-            if (cmpAddrs(alchemyTx.rawContract.address, trancheVault.underlyingToken?.address as string)){
+          harvestTxs = harvestTxsAlchemy.reduce((txs: EtherscanTransaction[], alchemyTx: AssetTransfersResult) => {
+            if (cmpAddrs(alchemyTx.rawContract.address, trancheVault.underlyingToken?.address as string)) {
               const etherscanTx = getEtherscanTransactionObject({
                 hash: alchemyTx.hash,
                 timeStamp: blockInfo.timestamp,
@@ -182,7 +182,7 @@ export class VaultFunctionsHelper {
 
       if (!harvestTxs) return lastHarvest
 
-      const harvestTx = harvestTxs.find( (tx: EtherscanTransaction) => cmpAddrs(tx.contractAddress, trancheVault.underlyingToken?.address as string) && cmpAddrs(tx.to, trancheVault.cdoConfig.address) )
+      const harvestTx = harvestTxs.find((tx: EtherscanTransaction) => cmpAddrs(tx.contractAddress, trancheVault.underlyingToken?.address as string) && cmpAddrs(tx.to, trancheVault.cdoConfig.address))
 
       // if (+chainId === 10){
       //   console.log('harvestTx', trancheVault.cdoConfig.address, harvestTx)
@@ -233,10 +233,20 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(chainId, 'lido', 'stETH'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
-    if (!BNify(apr).isNaN()){
+    if (!BNify(apr).isNaN()) {
       return BNify(apr).div(100);
     }
     return BNify(0);
+  }
+
+  public async getGearboxTokenSupply(chainId: number, assetId: string): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(chainId, 'gearbox', 'tokenSupply', assetId)
+    const callback = async () => (await callPlatformApis(chainId, 'gearbox', 'tokenSupply', assetId))
+    const supplies = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
+
+    return supplies?.result ? supplies.result.reduce((acc: BigNumber, supply: any) => {
+      return acc.plus(supply.effective_balance)
+    }, BNify(0)) : BNify(0)
   }
 
   public async getStETHTrancheApy(trancheVault: TrancheVault): Promise<BigNumber> {
@@ -249,7 +259,7 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(chainId, 'amphor', 'wstETHBase'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(`${platformApiEndpoint}_amphor_wstETHBase`, callback) : await callback()
 
-    if (!BNify(apr).isNaN()){
+    if (!BNify(apr).isNaN()) {
       return BNify(apr).div(100);
     }
     return BNify(0);
@@ -260,7 +270,7 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(chainId, 'amphor', 'wstETH'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(`${platformApiEndpoint}_amphor_wstETH`, callback) : await callback()
 
-    if (!BNify(apr).isNaN()){
+    if (!BNify(apr).isNaN()) {
       return BNify(apr).div(100);
     }
     return BNify(0);
@@ -271,7 +281,7 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(chainId, 'amphor', 'wstETHTotal'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(`${platformApiEndpoint}_amphor_wstETHTotal`, callback) : await callback()
 
-    if (!BNify(apr).isNaN()){
+    if (!BNify(apr).isNaN()) {
       return BNify(apr);
     }
     return BNify(0);
@@ -287,7 +297,7 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(chainId, 'ethena', 'USDe'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(`${platformApiEndpoint}_ethena_USDe`, callback) : await callback()
 
-    if (!BNify(parseFloat(apr)).isNaN()){
+    if (!BNify(parseFloat(apr)).isNaN()) {
       return BNify(parseFloat(apr)).div(100);
     }
     return BNify(0);
@@ -311,10 +321,10 @@ export class VaultFunctionsHelper {
 
     if (!results) return BNify(0)
 
-    const foundVault = results.find( (r: any) => r.vault === '0xA0D3707c569ff8C87FA923d3823eC5D81c98Be78' )
+    const foundVault = results.find((r: any) => r.vault === '0xA0D3707c569ff8C87FA923d3823eC5D81c98Be78')
     const apr = bnOrZero(foundVault?.apy?.apyWithoutFee)
 
-    if (!BNify(apr).isNaN()){
+    if (!BNify(apr).isNaN()) {
       return BNify(apr).div(100);
     }
     return BNify(0);
@@ -347,7 +357,7 @@ export class VaultFunctionsHelper {
 
     if (!results) return BNify(0)
 
-    const foundVault = results.find( (r: any) => cmpAddrs(r.address, trancheVault.id) )
+    const foundVault = results.find((r: any) => cmpAddrs(r.address, trancheVault.id))
 
     // console.log('getOptimismTrancheAdditionalApy', trancheVault.id, foundVault?.apr, results, trancheVault.underlyingToken?.decimals, BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), trancheVault.underlyingToken?.decimals || 18)).toString())
     return BNify(normalizeTokenAmount(bnOrZero(foundVault?.apr), 18))
@@ -360,21 +370,21 @@ export class VaultFunctionsHelper {
       this.multiCall.getCallData(trancheVault.cdoContract, 'FULL_ALLOC'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'getCurrentAARatio'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
-    ].filter( (call): call is CallData => !!call )
+    ].filter((call): call is CallData => !!call)
 
     const multicallResults = await this.multiCall.executeMulticalls(rawCalls, ...this.getVaultMulticallParams(trancheVault));
 
     if (!multicallResults) return BNify(0)
 
-    let [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map( r => BNify(r.data) )
+    let [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map(r => BNify(r.data))
 
     const isAATranche = trancheVault.type === 'AA'
 
-    if (BNify(currentAARatio).eq(0)){
+    if (BNify(currentAARatio).eq(0)) {
       return isAATranche ? BNify(0) : BNify(strategyApr)
     }
 
-    if (BNify(strategyApr).isNaN()){
+    if (BNify(strategyApr).isNaN()) {
       return BNify(0)
     }
 
@@ -394,7 +404,7 @@ export class VaultFunctionsHelper {
     const callback = async () => (await callPlatformApis(chainId, 'lido', 'rates'))
     const apr = this.cacheProvider ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback) : await callback()
 
-    if (!BNify(apr).isNaN()){
+    if (!BNify(apr).isNaN()) {
       return BNify(apr).div(100);
     }
     return BNify(0);
@@ -408,7 +418,7 @@ export class VaultFunctionsHelper {
       this.multiCall.getCallData(trancheVault.cdoContract, 'FULL_ALLOC'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'getCurrentAARatio'),
       this.multiCall.getCallData(trancheVault.cdoContract, 'trancheAPRSplitRatio')
-    ].filter( (call): call is CallData => !!call )
+    ].filter((call): call is CallData => !!call)
 
     const [
       stratApr,
@@ -422,20 +432,20 @@ export class VaultFunctionsHelper {
 
     if (!multicallResults) return BNify(0)
 
-    const [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map( r => BNify(r.data) )
+    const [FULL_ALLOC, currentAARatio, trancheAPRSplitRatio] = multicallResults.map(r => BNify(r.data))
 
     const isAATranche = trancheVault.type === 'AA';
 
-    if (BNify(currentAARatio).eq(0)){
+    if (BNify(currentAARatio).eq(0)) {
       return isAATranche ? BNify(0) : BNify(stratApr);
     }
 
-    if (BNify(stratApr).isNaN()){
+    if (BNify(stratApr).isNaN()) {
       return BNify(0);
     }
 
     const apr = isAATranche ? BNify(stratApr).times(trancheAPRSplitRatio).div(currentAARatio) : BNify(stratApr).times(FULL_ALLOC.minus(trancheAPRSplitRatio)).div(BNify(FULL_ALLOC).minus(currentAARatio));
-    
+
     // if (!BNify(harvestApy).isNaN()){
     //   apr = apr.plus(harvestApy)
     // }
@@ -481,7 +491,7 @@ export class VaultFunctionsHelper {
     const rawCalls: CallData[] = [
       this.multiCall.getCallData(stMaticContract.contract, 'poLidoNFT'),
       this.multiCall.getCallData(stMaticContract.contract, 'stakeManager'),
-    ].filter( (call): call is CallData => !!call )
+    ].filter((call): call is CallData => !!call)
 
     const multicallResults = await this.multiCall.executeMulticalls(rawCalls, true, chainId, web3ToUse)
 
@@ -490,7 +500,7 @@ export class VaultFunctionsHelper {
     const [
       poLidoNFT_address,
       stakeManager_address
-    ] = multicallResults.map( r => r.data as string )
+    ] = multicallResults.map(r => r.data as string)
 
     const poLidoNFTContract = new GenericContract(web3ToUse, chainId, {
       name: 'poLidoNFT',
@@ -507,7 +517,7 @@ export class VaultFunctionsHelper {
     const rawCalls2: CallData[] = [
       this.multiCall.getCallData(poLidoStakeManagerContract.contract, 'epoch'),
       this.multiCall.getCallData(poLidoNFTContract.contract, 'getOwnedTokens', [account]),
-    ].filter( (call): call is CallData => !!call )
+    ].filter((call): call is CallData => !!call)
 
     const [
       multicallResults2,
@@ -522,40 +532,40 @@ export class VaultFunctionsHelper {
     let [
       poLidoStakeManagerEpoch,
       tokenIds
-    ] = multicallResults2.map( r => r.data )
+    ] = multicallResults2.map(r => r.data)
 
     if (isEmpty(tokenIds)) return []
 
     // Filter by non-zero ID
-    tokenIds = tokenIds.filter( (tokenId: string) => +tokenId !== 0 )
+    tokenIds = tokenIds.filter((tokenId: string) => +tokenId !== 0)
     // console.log('tokenIds', tokenIds)
 
     if (isEmpty(tokenIds)) return []
 
     // Decrease checkpoint
     let epochIntervalInSeconds = 2700;
-    let currentEpochTimestamp = Date.now()/1000;
+    let currentEpochTimestamp = Date.now() / 1000;
     let currentPolygonEpoch = currentPolygonHeight?.result || poLidoStakeManagerEpoch;
 
     // Get checkpoints interval
-    if (currentPolygonEpoch){
+    if (currentPolygonEpoch) {
       // Safe margin for epoch fethed from polido stake manager
-      if (!currentPolygonHeight || !currentPolygonHeight.result){
-        currentPolygonEpoch-=2;
+      if (!currentPolygonHeight || !currentPolygonHeight.result) {
+        currentPolygonEpoch -= 2;
       }
       const [
         lastEpochInfo,
         currentEpochInfo
       ] = await Promise.all([
-        callPlatformApis(chainId, 'lido', 'checkpoints', (currentPolygonEpoch-1).toString()),
+        callPlatformApis(chainId, 'lido', 'checkpoints', (currentPolygonEpoch - 1).toString()),
         callPlatformApis(chainId, 'lido', 'checkpoints', currentPolygonEpoch.toString())
       ])
 
-      if (currentEpochInfo && currentEpochInfo.result){
+      if (currentEpochInfo && currentEpochInfo.result) {
         currentEpochTimestamp = parseInt(currentEpochInfo.result.timestamp);
 
-        if (lastEpochInfo && lastEpochInfo.result){
-          epochIntervalInSeconds = (currentEpochInfo.result.timestamp-lastEpochInfo.result.timestamp);
+        if (lastEpochInfo && lastEpochInfo.result) {
+          epochIntervalInSeconds = (currentEpochInfo.result.timestamp - lastEpochInfo.result.timestamp);
         }
       }
       // console.log('epoch info', currentEpochInfo, lastEpochInfo, epochIntervalInSeconds);
@@ -574,20 +584,20 @@ export class VaultFunctionsHelper {
           stMaticContract.contract.methods.getMaticFromTokenId(tokenId).call(),
           stMaticContract.contract.methods.getToken2WithdrawRequests(tokenId).call()
         ])
-        
+
         const usersRequest = !isEmpty(token2WithdrawRequests) ? token2WithdrawRequests[0] : {
           requestEpoch: 0
         };
 
         // console.log(tokenId, 'tokenAmount', tokenAmount, 'token2WithdrawRequests', token2WithdrawRequests, 'usersRequest', usersRequest)
 
-        const status = Math.round(usersRequest.requestEpoch)>=Math.round(poLidoStakeManagerEpoch) ? 'pending' : 'available';
+        const status = Math.round(usersRequest.requestEpoch) >= Math.round(poLidoStakeManagerEpoch) ? 'pending' : 'available';
 
-        const remainingEpochs = Math.max(0, Math.round(usersRequest.requestEpoch)-Math.round(currentPolygonEpoch));
+        const remainingEpochs = Math.max(0, Math.round(usersRequest.requestEpoch) - Math.round(currentPolygonEpoch));
 
         // Calculate tokens unlock time
-        const remainingTime = Math.round(remainingEpochs)*epochIntervalInSeconds;
-        const unlockTimestamp = (currentEpochTimestamp+remainingTime)*1000
+        const remainingTime = Math.round(remainingEpochs) * epochIntervalInSeconds;
+        const unlockTimestamp = (currentEpochTimestamp + remainingTime) * 1000
         const contractSendMethod = stMaticContract.contract.methods.claimTokens(tokenId)
 
         return {
@@ -610,9 +620,9 @@ export class VaultFunctionsHelper {
   }
 
   public async getVaultsCollectedFees(vaults: Vault[]): Promise<Record<AssetId, Transaction[]>> {
-    const filteredVaults = vaults.filter( (vault: Vault) => ['BY','AA','BB'].includes(vault.type) )
+    const filteredVaults = vaults.filter((vault: Vault) => ['BY', 'AA', 'BB'].includes(vault.type))
 
-    const collectedFeesPromises = Object.keys(chains).map( (chainId: string) => asyncReduce<any, any>(
+    const collectedFeesPromises = Object.keys(chains).map((chainId: string) => asyncReduce<any, any>(
       FEES_COLLECTORS[chainId],
       async (feeCollectorAddress) => {
         const explorer = getExplorerByChainId(+chainId)
@@ -621,7 +631,7 @@ export class VaultFunctionsHelper {
         const etherscanTxlist = this.cacheProvider ? await this.cacheProvider.checkAndCache(endpoint, callback, 300) : await callback()
 
         // console.log('etherscanTxlist', chainId, feeCollectorAddress, endpoint, etherscanTxlist)
-        
+
         if (!etherscanTxlist) return {}
 
         // Process transactions
@@ -632,23 +642,23 @@ export class VaultFunctionsHelper {
               [vault.id]: await vault.getTransactions(feeCollectorAddress, etherscanTxlist)
             }
           },
-          (acc, value) => value ? {...acc, ...value} : acc,
+          (acc, value) => value ? { ...acc, ...value } : acc,
           {}
         )
 
         // console.log('vaultsTransactions', chainId, feeCollectorAddress, endpoint, vaultsTransactions)
 
-        return etherscanTxlist.reduce( (vaultsCollectedFees: Record<AssetId, Transaction[]>, tx: EtherscanTransaction) => {
+        return etherscanTxlist.reduce((vaultsCollectedFees: Record<AssetId, Transaction[]>, tx: EtherscanTransaction) => {
           // Look for incoming txs
           if (tx.to.toLowerCase() !== feeCollectorAddress.toLowerCase()) return vaultsCollectedFees
           // Lookup for tranche vault
-          let foundVault = filteredVaults.find( (vault: Vault) => vault.id === tx.contractAddress.toLowerCase())
+          let foundVault = filteredVaults.find((vault: Vault) => vault.id === tx.contractAddress.toLowerCase())
           if (foundVault) {
             // Look for vaults transactions (deposits/redeems)
-            const foundVaultTransaction = vaultsTransactions[foundVault.id].find( (vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn' )
+            const foundVaultTransaction = vaultsTransactions[foundVault.id].find((vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn')
             if (foundVaultTransaction) return vaultsCollectedFees
 
-            if (!vaultsCollectedFees[foundVault.id]){
+            if (!vaultsCollectedFees[foundVault.id]) {
               vaultsCollectedFees[foundVault.id] = []
             }
 
@@ -665,21 +675,21 @@ export class VaultFunctionsHelper {
             // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, 18).toString())
           } else {
             // Lookup for BY vault
-            foundVault = filteredVaults.find( (vault: Vault) => vault.id === tx.from.toLowerCase())
-            if (foundVault && ("underlyingToken" in foundVault)){
+            foundVault = filteredVaults.find((vault: Vault) => vault.id === tx.from.toLowerCase())
+            if (foundVault && ("underlyingToken" in foundVault)) {
 
               // Look for vaults transactions (deposits/redeems)
-              const foundVaultTransaction = vaultsTransactions[foundVault.id].find( (vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn' )
+              const foundVaultTransaction = vaultsTransactions[foundVault.id].find((vaultTx: Transaction) => vaultTx.hash.toLowerCase() === tx.hash.toLowerCase() && vaultTx.subAction === 'swapIn')
               if (foundVaultTransaction) return vaultsCollectedFees
 
               // Init vault array
-              if (!vaultsCollectedFees[foundVault.id]){
+              if (!vaultsCollectedFees[foundVault.id]) {
                 vaultsCollectedFees[foundVault.id] = []
               }
 
               // Check for same vault underlying collected
               const isSameUnderlying = cmpAddrs(foundVault.underlyingToken?.address as string, tx.contractAddress)
-              if (isSameUnderlying){ 
+              if (isSameUnderlying) {
                 vaultsCollectedFees[foundVault.id].push({
                   ...tx,
                   action: 'fee',
@@ -693,8 +703,8 @@ export class VaultFunctionsHelper {
                 // console.log(foundVault.id, tx.hash, 'from', tx.from, 'to', tx.to, feeCollectorAddress, fixTokenDecimals(tx.value, foundVault.underlyingToken?.decimals).toString())
               } else {
                 // Check for collected rewards tokens instead
-                const rewardToken = foundVault.rewardTokens.find( (rewardToken: UnderlyingTokenProps) => cmpAddrs(rewardToken.address as string, tx.contractAddress) )
-                if (rewardToken?.address){
+                const rewardToken = foundVault.rewardTokens.find((rewardToken: UnderlyingTokenProps) => cmpAddrs(rewardToken.address as string, tx.contractAddress))
+                if (rewardToken?.address) {
                   vaultsCollectedFees[foundVault.id].push({
                     ...tx,
                     action: 'fee',
@@ -715,9 +725,9 @@ export class VaultFunctionsHelper {
       // (acc, value) => value ? {...acc, ...value} : acc,
       (acc, vaultsCollectedFees) => {
         // value ? {...acc, ...value} : acc
-        if (vaultsCollectedFees){
-          Object.keys(vaultsCollectedFees).forEach( (vaultId: AssetId) => {
-            if (!acc[vaultId]){
+        if (vaultsCollectedFees) {
+          Object.keys(vaultsCollectedFees).forEach((vaultId: AssetId) => {
+            if (!acc[vaultId]) {
               acc[vaultId] = []
             }
             acc[vaultId] = [
@@ -732,9 +742,9 @@ export class VaultFunctionsHelper {
     ))
 
     const collectedFeesResults = await Promise.all(collectedFeesPromises)
-    return collectedFeesResults.reduce( (collectedFees: Record<AssetId, any[]>, vaultsTxs: any) => {
-      Object.keys(vaultsTxs).forEach( (assetId: AssetId) => {
-        if (!collectedFees[assetId]){
+    return collectedFeesResults.reduce((collectedFees: Record<AssetId, any[]>, vaultsTxs: any) => {
+      Object.keys(vaultsTxs).forEach((assetId: AssetId) => {
+        if (!collectedFees[assetId]) {
           collectedFees[assetId] = []
         }
         collectedFees[assetId] = collectedFees[assetId].concat(vaultsTxs[assetId])
@@ -750,9 +760,9 @@ export class VaultFunctionsHelper {
     const AA_RATIO_LIM_DOWN = 50
 
     let aux = BNify(0)
-    if (ratio.gte(AA_RATIO_LIM_UP)){
+    if (ratio.gte(AA_RATIO_LIM_UP)) {
       aux = BNify(AA_RATIO_LIM_UP)
-    } else if (ratio.gt(AA_RATIO_LIM_DOWN)){
+    } else if (ratio.gt(AA_RATIO_LIM_DOWN)) {
       aux = BNify(ratio)
     } else {
       aux = BNify(AA_RATIO_LIM_DOWN)
@@ -762,14 +772,14 @@ export class VaultFunctionsHelper {
   }
 
   public getVaultNewApr(asset: Asset, vault: Vault, liqToAdd: BigNumber): BigNumber {
-    if (!liqToAdd || isBigNumberNaN(liqToAdd)){
+    if (!liqToAdd || isBigNumberNaN(liqToAdd)) {
       return BNify(0)
     }
 
     if (vault instanceof TrancheVault) {
       const FULL_ALLOC = 100
       const newTotalTvl = BNify(asset.totalTvl).plus(liqToAdd)
-      switch (vault.type){
+      switch (vault.type) {
         case 'AA':
           const newTvlRatioAA = BNify(BNify(asset.tvl).plus(liqToAdd)).times(FULL_ALLOC).div(newTotalTvl)
           const newAprSplitAA = this.calcNewAPRSplit(newTvlRatioAA)
@@ -781,7 +791,7 @@ export class VaultFunctionsHelper {
           // console.log('calcNewAPRSplit - BB', newTvlRatioBB.toString(), BNify(FULL_ALLOC).minus(newAprSplitBB).toString(), BNify(FULL_ALLOC).minus(newAprSplitBB).div(BNify(FULL_ALLOC).minus(newTvlRatioBB)).toString())
           return BNify(asset.baseApr).times(BNify(FULL_ALLOC).minus(newAprSplitBB).div(BNify(FULL_ALLOC).minus(newTvlRatioBB)))
         default:
-        break;
+          break;
       }
     }
 
@@ -794,13 +804,13 @@ export class VaultFunctionsHelper {
         case 'IdleCDO_amphor_wstETH':
           const epochData = await this.getAmphorwstETHEpochData(+vault.chainId)
           let index = 0;
-          const weeklyThresholds: EpochData["weeklyThresholds"] = Object.keys(epochData).filter( key => key.match(/ET[\d]Price/) ).reduce( (weeklyThresholds: EpochData["weeklyThresholds"], thresholdKey: string) => {
-            const start = !index ? toDayjs(epochData.epochStart) : toDayjs(weeklyThresholds[index-1].end).add(1, 'day')
+          const weeklyThresholds: EpochData["weeklyThresholds"] = Object.keys(epochData).filter(key => key.match(/ET[\d]Price/)).reduce((weeklyThresholds: EpochData["weeklyThresholds"], thresholdKey: string) => {
+            const start = !index ? toDayjs(epochData.epochStart) : toDayjs(weeklyThresholds[index - 1].end).add(1, 'day')
             const end = !index ? start.add(+epochData.first_week_duration, 'day') : start.add(6, 'day')
-            if (end.isSameOrBefore(toDayjs(epochData.epochEnd))){
+            if (end.isSameOrBefore(toDayjs(epochData.epochEnd))) {
               // console.log('weeklyThresholds', index, dateToLocale(start, 'en'), dateToLocale(end, 'en'), epochData[thresholdKey])
               weeklyThresholds[index] = {
-                number: index+1,
+                number: index + 1,
                 end: end.valueOf(),
                 start: start.valueOf(),
                 threshold: BNify(epochData[thresholdKey])
@@ -864,7 +874,7 @@ export class VaultFunctionsHelper {
               }
             case 'IdleCDO_amphor_wstETH':
               return {
-                type:'strategy',
+                type: 'strategy',
                 vaultId: vault.id,
                 cdoId: vault.cdoConfig.address,
                 apr: await this.getAmphorwstETHTrancheApy(vault)
@@ -908,7 +918,7 @@ export class VaultFunctionsHelper {
               }
           }
         default:
-        break;
+          break;
       }
       // console.log('getVaultAdditionalApr', vault.cdoConfig.name, vault.type)
     }
@@ -920,7 +930,7 @@ export class VaultFunctionsHelper {
   }
 
   public getRewardsEmissionTotalApr(vault: Vault, asset: Asset): VaultAdditionalApr {
-    if (vault instanceof BestYieldVault){
+    if (vault instanceof BestYieldVault) {
       switch (vault.idleConfig.token) {
         case 'idleUSDTRWA':
           return {
@@ -945,9 +955,9 @@ export class VaultFunctionsHelper {
     if (vault instanceof TrancheVault) {
       switch (vault.cdoConfig.name) {
         case 'IdleCDO_ethena_USDe':
-          if (assetsData[vault.id]?.type === 'AA'){
-            const otherVault = vaults.find( (otherVault: Vault) => otherVault instanceof TrancheVault && otherVault.type === 'BB' && otherVault.cdoConfig.address === vault.cdoConfig.address )
-            if (otherVault){
+          if (assetsData[vault.id]?.type === 'AA') {
+            const otherVault = vaults.find((otherVault: Vault) => otherVault instanceof TrancheVault && otherVault.type === 'BB' && otherVault.cdoConfig.address === vault.cdoConfig.address)
+            if (otherVault) {
               const seniorTvlUsd = bnOrZero(assetsData[vault.id].tvlUsd)
               const juniorTvlUsd = bnOrZero(assetsData[otherVault.id].tvlUsd)
               return [
@@ -957,15 +967,25 @@ export class VaultFunctionsHelper {
                   annualDistribution: BigNumber(0),
                   annualDistributionUsd: BigNumber(0),
                   assetId: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
-                  tooltip:'assets.assetDetails.tooltips.ethenaShardsRewardEmission',
+                  tooltip: 'assets.assetDetails.tooltips.ethenaShardsRewardEmission',
                   annualDistributionOn1000Usd: BNify(1).plus(bnOrZero(juniorTvlUsd).div(bnOrZero(seniorTvlUsd))),
                 }
               ]
             }
           }
-        break;
+          break;
+        // case 'IdleCDO_gearbox_WETH':
+        //   return [
+        //     {
+        //       annualDistribution: BigNumber(0),
+        //       annualDistributionUsd: BigNumber(0),
+        //       annualDistributionOn1000Usd: BNify(1000),
+        //       assetId: '0x8E3A59427B1D87Db234Dd4ff63B25E4BF94672f4',
+        //       tooltip: 'assets.assetDetails.tooltips.gearboxKelpMilesRewardEmission',
+        //     }
+        //   ]
         default:
-        break;
+          break;
       }
     }
 
@@ -998,7 +1018,7 @@ export class VaultFunctionsHelper {
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0)
           return {
             apr,
-            type:'base',
+            type: 'base',
             vaultId: vault.id,
             cdoId: vault.cdoConfig.address
           }
@@ -1034,31 +1054,31 @@ export class VaultFunctionsHelper {
   }
 
   private async getSubgraphData(vault: Vault, filters?: PlatformApiFilters): Promise<SubgraphData> {
-    const currTime = Math.ceil(Date.now()/1000)
+    const currTime = Math.ceil(Date.now() / 1000)
 
     const cacheKey = `subgraph_${vault.chainId}_${vault.id}`
     const cachedData = this.cacheProvider ? await this.cacheProvider.getCachedUrl(cacheKey) : null
     const lastFetchTimestamp = cachedData && cachedData.timestamp
-    const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timeStamp), 0)
+    const latestTimestamp = cachedData && cachedData.data.reduce((t: number, d: any) => Math.max(t, +d.timeStamp), 0)
 
     if (filters) {
       // Replace start timestamp with latest cached timestamp
-      if (latestTimestamp){
-        filters.start = latestTimestamp+1
+      if (latestTimestamp) {
+        filters.start = latestTimestamp + 1
       }
 
       // End timestamp cannot be after current time
-      if (filters.end){
+      if (filters.end) {
         filters.end = Math.min(currTime, +filters.end)
       }
     }
 
     // Retrieve new data if the latest cached is more than 1 day and 1 hour old
-    const daysDiff = latestTimestamp && dayDiff(latestTimestamp*1000, currTime*1000)
-    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp*1000, currTime*1000, 'h', true)
-    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
+    const daysDiff = latestTimestamp && dayDiff(latestTimestamp * 1000, currTime * 1000)
+    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp * 1000, currTime * 1000, 'h', true)
+    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime * 1000, 'h', true)
 
-    const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=1)
+    const fetchData = !cachedData || (daysDiff >= 1 && hoursDiff >= 1 && lastFetchTimeDiff >= 1)
 
     // console.log('getSubgraphData', vault.id, latestTimestamp, currTime, daysDiff, hoursDiff, lastFetchTimeDiff, fetchData)
 
@@ -1069,20 +1089,20 @@ export class VaultFunctionsHelper {
 
       const dataToCache = new Map()
 
-      if (cachedData){
+      if (cachedData) {
         for (const result of cachedData.data) {
-          const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
+          const date = +(dayjs(+result.timeStamp * 1000).startOf('day').valueOf())
           dataToCache.set(date, result)
         }
       }
 
       for (const result of results) {
-        const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
+        const date = +(dayjs(+result.timeStamp * 1000).startOf('day').valueOf())
         dataToCache.set(date, result)
       }
 
       results = Array.from(dataToCache.values())
-      if (this.cacheProvider){
+      if (this.cacheProvider) {
         this.cacheProvider.saveData(cacheKey, results, 0)
       }
     }
@@ -1099,12 +1119,12 @@ export class VaultFunctionsHelper {
   }
 
   public async getVaultHistoricalDataFromSubgraph(vault: Vault, filters?: PlatformApiFilters): Promise<VaultHistoricalData> {
-    
+
     const {
       results
     } = await this.getSubgraphData(vault, filters)
 
-    if (!results){
+    if (!results) {
       return {
         vaultId: vault.id,
         tvls: [],
@@ -1115,9 +1135,9 @@ export class VaultFunctionsHelper {
 
     // console.log('getVaultHistoricalDataFromSubgraph', vault.id, results)
 
-    const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
-      
-      const date = +(dayjs(+result.timeStamp*1000).startOf('day').valueOf())
+    const dailyData = results.reduce((dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
+
+      const date = +(dayjs(+result.timeStamp * 1000).startOf('day').valueOf())
       const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
       const price = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
       const rate = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
@@ -1162,9 +1182,9 @@ export class VaultFunctionsHelper {
     const {
       results
     } = await this.getSubgraphData(vault, filters)
-    
-    historicalPrices.prices = results.map( (result: any) => {
-      const date = +result.timeStamp*1000
+
+    historicalPrices.prices = results.map((result: any) => {
+      const date = +result.timeStamp * 1000
       const decimals = ("underlyingToken" in vault) && vault.underlyingToken?.decimals ? vault.underlyingToken?.decimals : 18
       const value = parseFloat(fixTokenDecimals(result.virtualPrice, decimals).toFixed(8))
 
@@ -1191,8 +1211,8 @@ export class VaultFunctionsHelper {
       results
     } = await this.getSubgraphData(vault, filters)
 
-    historicalRates.rates = results.map( (result: any) => {
-      const date = +result.timeStamp*1000
+    historicalRates.rates = results.map((result: any) => {
+      const date = +result.timeStamp * 1000
       const value = parseFloat(fixTokenDecimals(result.apr, 18).toFixed(8))
       return {
         date,
@@ -1211,7 +1231,7 @@ export class VaultFunctionsHelper {
       }
     }
 
-    const currTime = Math.ceil(Date.now()/1000)
+    const currTime = Math.ceil(Date.now() / 1000)
 
     const apiType = ("flags" in vault) && vault.flags?.apiType ? vault.flags?.apiType : 'rates'
     const address = apiType === 'rates' ? vault.underlyingToken?.address : vault.id
@@ -1220,21 +1240,21 @@ export class VaultFunctionsHelper {
     const cachedData = this.cacheProvider ? await this.cacheProvider.getCachedUrl(cacheKey) : null
 
     const lastFetchTimestamp = cachedData && cachedData.timestamp
-    const latestTimestamp = cachedData && cachedData.data.reduce( (t: number, d: any) => Math.max(t, +d.timestamp), 0)
+    const latestTimestamp = cachedData && cachedData.data.reduce((t: number, d: any) => Math.max(t, +d.timestamp), 0)
 
     // Retrieve new data if the latest cached is more than 1 day and 1 hour old
-    const daysDiff = latestTimestamp && dayDiff(latestTimestamp*1000, currTime*1000)
-    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp*1000, currTime*1000, 'h', true)
-    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime*1000, 'h', true)
+    const daysDiff = latestTimestamp && dayDiff(latestTimestamp * 1000, currTime * 1000)
+    const hoursDiff = latestTimestamp && dateDiff(latestTimestamp * 1000, currTime * 1000, 'h', true)
+    const lastFetchTimeDiff = lastFetchTimestamp && dateDiff(lastFetchTimestamp, currTime * 1000, 'h', true)
 
     if (filters) {
       // Replace start timestamp with latest cached timestamp
-      if (latestTimestamp){
-        filters.start = latestTimestamp+1
+      if (latestTimestamp) {
+        filters.start = latestTimestamp + 1
       }
 
       // End timestamp cannot be after current time
-      if (filters.end){
+      if (filters.end) {
         filters.end = Math.min(currTime, +filters.end)
       }
     }/* else {
@@ -1243,7 +1263,7 @@ export class VaultFunctionsHelper {
     filters.order = 'desc'
     */
 
-    const fetchData = !cachedData || (daysDiff>=1 && hoursDiff>=1 && lastFetchTimeDiff>=0.5)
+    const fetchData = !cachedData || (daysDiff >= 1 && hoursDiff >= 1 && lastFetchTimeDiff >= 0.5)
     let results = fetchData ? await callPlatformApis(vault.chainId, 'idle', apiType as string, address, filters) : cachedData.data
 
     // if (vault.id === '0x3fe7940616e5bc47b0775a0dccf6237893353bb4'){
@@ -1258,9 +1278,9 @@ export class VaultFunctionsHelper {
       const dataToCache = new Map()
 
       let latestIdlePrice = BNify(0)
-      if (cachedData){
+      if (cachedData) {
         for (const result of cachedData.data) {
-          const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
+          const date = +(dayjs(+result.timestamp * 1000).startOf('day').valueOf())
           dataToCache.set(date, result)
           latestIdlePrice = BigNumber.maximum(latestIdlePrice, BNify(result.idlePrice))
         }
@@ -1270,15 +1290,15 @@ export class VaultFunctionsHelper {
         latestIdlePrice = BigNumber.maximum(latestIdlePrice, BNify(result.idlePrice))
         result.idlePrice = BigNumber.maximum(BNify(result.idlePrice), latestIdlePrice).toString()
         // console.log(`REPLACE idlePrice: ${result.idlePrice}<${latestIdlePrice}`)
-        const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
+        const date = +(dayjs(+result.timestamp * 1000).startOf('day').valueOf())
         dataToCache.set(date, result)
-        
+
       }
 
       // Replace results with cached data
       results = Array.from(dataToCache.values())
 
-      if (this.cacheProvider){
+      if (this.cacheProvider) {
         // console.log('dataToCache', cacheKey, dataToCache)
         this.cacheProvider.saveData(cacheKey, results, 0)
       }
@@ -1312,9 +1332,9 @@ export class VaultFunctionsHelper {
 
     if (!results) return historicalData
 
-    const dailyData = results.reduce( (dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
+    const dailyData = results.reduce((dailyData: Record<string, Record<number, HistoryData>>, result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
-      const date = +(dayjs(+result.timestamp*1000).startOf('day').valueOf())
+      const date = +(dayjs(+result.timestamp * 1000).startOf('day').valueOf())
       const price = parseFloat(fixTokenDecimals(result.idlePrice, decimals).toFixed(8))
       const rate = parseFloat(fixTokenDecimals(result.idleRate, 18).toFixed(8))
       const tvl = parseFloat(fixTokenDecimals(result.idleSupply, 18).times(fixTokenDecimals(result.idlePrice, decimals)).toFixed(8))
@@ -1361,9 +1381,9 @@ export class VaultFunctionsHelper {
       results
     } = await this.getIdleRatesData(vault, filters)
 
-    historicalPrices.prices = results.map( (result: any) => {
+    historicalPrices.prices = results.map((result: any) => {
       const decimals = vault.underlyingToken?.decimals || 18
-      const date = +result.timestamp*1000
+      const date = +result.timestamp * 1000
       const value = parseFloat(fixTokenDecimals(result.idlePrice, decimals).toFixed(8))
       return {
         date,
@@ -1387,8 +1407,8 @@ export class VaultFunctionsHelper {
       results
     } = await this.getIdleRatesData(vault, filters)
 
-    historicalRates.rates = results.map( (result: any) => {
-      const date = +result.timestamp*1000
+    historicalRates.rates = results.map((result: any) => {
+      const date = +result.timestamp * 1000
       const value = parseFloat(fixTokenDecimals(result.idleRate, 18).toFixed(8))
       return {
         date,

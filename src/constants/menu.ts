@@ -1,7 +1,7 @@
 import { IconType } from './types'
 import { BsStars } from "react-icons/bs";
 import { getLegacyDashboardUrl } from 'helpers/'
-import { ProductProps, products } from 'constants/products'
+// import { ProductProps, products } from 'constants/products'
 
 export type MenuListType = {
   path?: string

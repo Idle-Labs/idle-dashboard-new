@@ -62,7 +62,7 @@ const Inline = ({ assetId, fields, onClick, showDivider = true, ...cardProps }: 
           >
             <AssetProvider.Icon size={'xs'} />
             {
-              fields.map( (fieldInfo: VaultCardField, index: number) => (
+              fields.map((fieldInfo: VaultCardField, index: number) => (
                 <React.Fragment key={`field_${index}`}>
                   {
                     showDivider && (
@@ -121,7 +121,7 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
         <Card
           p={4}
           onClick={() => handleClick(asset)}
-          backgroundColor={ isOpen ? 'card.bgLight' : 'card.bg'}
+          backgroundColor={isOpen ? 'card.bgLight' : 'card.bg'}
           {...cardProps}
         >
           <VStack
@@ -177,7 +177,7 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
               width={'full'}
             >
               {
-                asset.subRows.map( (asset: Asset) => (
+                asset.subRows.map((asset: Asset) => (
                   <AssetProvider
                     wrapFlex={false}
                     assetId={asset.id as string}
@@ -195,44 +195,44 @@ const Stats = ({ asset, handleClick, onRowClick, isOpen, ...cardProps }: VaultCa
                         width={'100%'}
                         justifyContent={'space-between'}
                       >
-                      {
-                        ['AA', 'BB'].includes(asset.type as string) ? (
-                          <HStack
-                            width={'100%'}
-                            justifyContent={'space-between'}
-                          >
-                            <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'xs'} />
+                        {
+                          ['AA', 'BB'].includes(asset.type as string) ? (
                             <HStack
-                              spacing={1}
+                              width={'100%'}
+                              justifyContent={'space-between'}
                             >
-                              <AssetProvider.SeniorApy color={strategies.AA.color} textStyle={'tableCell'} />
-                              <Text>-</Text>
-                              <AssetProvider.JuniorApy color={strategies.BB.color} textStyle={'tableCell'} />
-                            </HStack>
-                          </HStack>
-                        ) : asset.type === 'BY' && (
-                          <HStack
-                            width={'100%'}
-                            justifyContent={'space-between'}
-                          >
-                            <HStack
-                              flex={1}
-                            >
-                              <Flex
-                                width={'40%'}
+                              <AssetProvider.GeneralData field={'vaultOperatorOrProtocol'} size={'xs'} />
+                              <HStack
+                                spacing={1}
                               >
-                                <AssetProvider.GeneralData field={'protocols'} size={'xs'} />
-                              </Flex>
-                              <AssetProvider.GeneralData field={'strategies'} />
+                                <AssetProvider.SeniorApy color={strategies.AA.color} textStyle={'tableCell'} />
+                                <Text>-</Text>
+                                <AssetProvider.JuniorApy color={strategies.BB.color} textStyle={'tableCell'} />
+                              </HStack>
                             </HStack>
-                            <AssetProvider.Apy showTooltip={false} textStyle={'tableCell'} />
-                          </HStack>
-                        )
-                      }
-                      <MdKeyboardArrowRight
-                        size={24}
-                        color={theme.colors.primary}
-                      />
+                          ) : asset.type === 'BY' && (
+                            <HStack
+                              width={'100%'}
+                              justifyContent={'space-between'}
+                            >
+                              <HStack
+                                flex={1}
+                              >
+                                <Flex
+                                  width={'40%'}
+                                >
+                                  <AssetProvider.GeneralData field={'protocols'} size={'xs'} />
+                                </Flex>
+                                <AssetProvider.GeneralData field={'strategies'} />
+                              </HStack>
+                              <AssetProvider.Apy showTooltip={false} textStyle={'tableCell'} />
+                            </HStack>
+                          )
+                        }
+                        <MdKeyboardArrowRight
+                          size={24}
+                          color={theme.colors.primary}
+                        />
                       </HStack>
                     </Card>
                   </AssetProvider>
@@ -263,7 +263,7 @@ const Tranche = ({ assetId, onClick }: VaultCardProps) => {
 
   const aaTrancheAsset = useMemo(() => selectAssetById(vault?.vaultConfig.Tranches.AA.address), [vault, selectAssetById])
   const bbTrancheAsset = useMemo(() => selectAssetById(vault?.vaultConfig.Tranches.BB.address), [vault, selectAssetById])
-  
+
   return (
     <AssetProvider
       wrapFlex={false}
@@ -328,7 +328,7 @@ const Tranche = ({ assetId, onClick }: VaultCardProps) => {
   )
 }
 
-export const Minimal = ({assetId}: VaultCardProps) => {
+export const Minimal = ({ assetId }: VaultCardProps) => {
   const navigate = useNavigate()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
@@ -344,7 +344,7 @@ export const Minimal = ({assetId}: VaultCardProps) => {
     >
       <Card
         p={4}
-        layerStyle={['card','cardHover']}
+        layerStyle={['card', 'cardHover']}
         onClick={() => navigate(getVaultPath(asset?.type, asset?.id))}
       >
         <VStack
@@ -395,14 +395,13 @@ type AggregatedProps = {
   aggregatedVault: AggregatedVault
 }
 
-export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
+export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
 
   const theme = useTheme()
   const { isMobile } = useThemeProvider()
 
   const {
     isPortfolioLoaded,
-    isVaultsPositionsLoaded,
     selectors: {
       selectAssetById,
       selectAssetsByIds,
@@ -415,21 +414,21 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
   }, [selectAssetsByIds, aggregatedVault.vaults])
 
   const maxApy = useMemo((): BigNumber => {
-    return assets.reduce( (maxApy: BigNumber, asset: Asset) => BigNumber.maximum(maxApy, BNify(asset.apy)), BNify(0))
+    return assets.reduce((maxApy: BigNumber, asset: Asset) => BigNumber.maximum(maxApy, BNify(asset.apy)), BNify(0))
   }, [assets])
 
   const totalTvl = useMemo((): BigNumber => {
-    return assets.reduce( (totalTvl: BigNumber, asset: Asset) => totalTvl.plus(BNify(asset.tvlUsd)), BNify(0))
+    return assets.reduce((totalTvl: BigNumber, asset: Asset) => totalTvl.plus(BNify(asset.tvlUsd)), BNify(0))
   }, [assets])
 
   const network = useMemo((): Network => {
     return networks[aggregatedVault.chainId]
   }, [aggregatedVault])
 
-  const vaultsPosition = useMemo((): {assets: string[], balance: BigNumber, realizedApy: BigNumber} => {
-    const vaultsPosition = aggregatedVault.vaults.reduce( (vaultsPosition: {assets: string[], balance: BigNumber, realizedApy: BigNumber}, vaultId: AssetId) => {
+  const vaultsPosition = useMemo((): { assets: string[], balance: BigNumber, realizedApy: BigNumber } => {
+    const vaultsPosition = aggregatedVault.vaults.reduce((vaultsPosition: { assets: string[], balance: BigNumber, realizedApy: BigNumber }, vaultId: AssetId) => {
       const vaultPosition = selectVaultPosition(vaultId)
-      if (vaultPosition){
+      if (vaultPosition) {
         const asset = selectAssetById(vaultId)
         vaultsPosition.assets.push(asset.underlyingId)
         vaultsPosition.balance = vaultsPosition.balance.plus(bnOrZero(vaultPosition.usd.redeemable))
@@ -443,7 +442,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
     })
 
     // Calculate weighted-realized APY
-    if (vaultsPosition.realizedApy.gt(0)){
+    if (vaultsPosition.realizedApy.gt(0)) {
       vaultsPosition.realizedApy = vaultsPosition.realizedApy.div(vaultsPosition.balance)
     }
 
@@ -511,7 +510,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                     spacing={2}
                     alignItems={'baseline'}
                   >
-                    <Amount fontSize={['lg','2xl']} suffix={(<small style={{fontSize: 24}}>%</small>)} textStyle={'bodyTitle'} value={vaultsPosition.realizedApy} lineHeight={1} />
+                    <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: 24 }}>%</small>)} textStyle={'bodyTitle'} value={vaultsPosition.realizedApy} lineHeight={1} />
                   </HStack>
                 </VStack>
                 <VStack
@@ -522,7 +521,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                   alignItems={'flex-start'}
                 >
                   <Translation translation={'defi.balance'} textStyle={'captionSmall'} />
-                  <Amount.Usd fontSize={['lg','2xl']} textStyle={'bodyTitle'} value={vaultsPosition.balance} lineHeight={1} />
+                  <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={vaultsPosition.balance} lineHeight={1} />
                 </VStack>
                 <VStack
                   spacing={2}
@@ -533,7 +532,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                     spacing={-2}
                   >
                     {
-                      vaultsPosition.assets.map( (assetId: string) => {
+                      vaultsPosition.assets.map((assetId: string) => {
                         return (
                           <AssetProvider
                             wrapFlex={false}
@@ -571,7 +570,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <Amount fontSize={['lg','2xl']} suffix={(<small style={{fontSize: isMobile ? 18 : 24}}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                        <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: isMobile ? 18 : 24 }}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
                       )
                     }
                     {
@@ -593,7 +592,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                     !isPortfolioLoaded ? (
                       <Spinner size={'md'} />
                     ) : (
-                      <Amount.Usd fontSize={['lg','2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                      <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
                     )
                   }
                 </VStack>
@@ -606,7 +605,7 @@ export const Aggregated = ({aggregatedVault, onClick}: AggregatedProps) => {
                     spacing={-2}
                   >
                     {
-                      assets.map( (asset: Asset) => {
+                      assets.map((asset: Asset) => {
                         return (
                           <AssetProvider
                             wrapFlex={false}
@@ -751,7 +750,7 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
             <Flex
               width={'auto'}
             >
-              <AssetProvider.RewardsEmissions flexProps={{borderRadius:24, height: 8, alignItems: 'center'}} fontWeight={600}>
+              <AssetProvider.RewardsEmissions flexProps={{ borderRadius: 24, height: 8, alignItems: 'center' }} fontWeight={600}>
                 <Tooltip
                   hasArrow
                   placement={'top'}

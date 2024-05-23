@@ -23,7 +23,7 @@ import { sortNumeric, sortAlpha, sendSelectItem, bnOrZero, BNify, isEmpty, getRo
 import { Flex, HStack, VStack, Button, ButtonProps, Stack, SkeletonText, Stat, StatNumber, StatArrow, Image } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
-type ColumnProps = Column<Asset> & {cellSx?: any}
+type ColumnProps = Column<Asset> & { cellSx?: any }
 
 export const DepositedAssetsTable: React.FC = () => {
 
@@ -40,14 +40,14 @@ export const DepositedAssetsTable: React.FC = () => {
     }
   } = usePortfolioProvider()
   const translate = useTranslate()
-  const [ page, setPage ] = useState<number>(1)
+  const [page, setPage] = useState<number>(1)
   const { theme, isMobile } = useThemeProvider()
   const { account, prevAccount } = useWalletProvider()
-  const [ mode, setMode ] = useState<Tables>('Available')
+  const [mode, setMode] = useState<Tables>('Available')
   const prevMode = usePrevious<Tables>(mode)
 
   useEffect(() => {
-    if (mode !== prevMode){
+    if (mode !== prevMode) {
       return setPage(1)
     }
   }, [mode, prevMode, setPage])
@@ -56,56 +56,56 @@ export const DepositedAssetsTable: React.FC = () => {
     return [
       {
         width: '28%',
-        accessor:'id',
-        id:'vaultOperatorOrProtocol',
-        sortType:'alpha',
+        accessor: 'id',
+        id: 'vaultOperatorOrProtocol',
+        sortType: 'alpha',
         fieldProps: {
           size: 'xs'
         },
-        stackProps:{
-          justifyContent:'space-between'
+        stackProps: {
+          justifyContent: 'space-between'
         },
-        extraFields:['strategies']
+        extraFields: ['strategies']
       },
       {
         width: '15%',
-        accessor:'name',
-        sortType:'alpha',
-        id:'asset',
+        accessor: 'name',
+        sortType: 'alpha',
+        id: 'asset',
       },
       {
-        id:'tvl',
+        id: 'tvl',
         width: '13%',
-        accessor:'tvlUsd',
+        accessor: 'tvlUsd',
         sortType: 'numeric'
       },
       {
-        id:'apyWithRewards',
+        id: 'apyWithRewards',
         width: '13%',
-        accessor:'apy',
+        accessor: 'apy',
         sortType: 'numeric',
       },
       {
-        id:'apy7',
+        id: 'apy7',
         width: '13%',
-        accessor:'apy7',
-        sortType: 'numeric',
-        tables: ['Available']
-      },
-      {
-        id:'apy30',
-        width: '13%',
-        accessor:'apy30',
+        accessor: 'apy7',
         sortType: 'numeric',
         tables: ['Available']
       },
       {
-        width:'5%',
-        accessor:'id',
-        id:'chainId',
-        cellSx: {p:'0!important',alignItems:'center'},
-        stackProps:{
-          justifyContent:'center'
+        id: 'apy30',
+        width: '13%',
+        accessor: 'apy30',
+        sortType: 'numeric',
+        tables: ['Available']
+      },
+      {
+        width: '5%',
+        accessor: 'id',
+        id: 'chainId',
+        cellSx: { p: '0!important', alignItems: 'center' },
+        stackProps: {
+          justifyContent: 'center'
         },
         tables: ['Available']
       }
@@ -113,9 +113,9 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [])
 
   const allColumnsById: Record<string, ColumnProps> = useMemo(() => {
-    return columns.reduce( (allColumns: Record<string, ColumnProps>, column: StrategyColumn) => {
+    return columns.reduce((allColumns: Record<string, ColumnProps>, column: StrategyColumn) => {
       const { id, accessor, sortType } = column
-      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      const sortTypeFn = sortType === 'alpha' ? sortAlpha : sortType === 'numeric' ? sortNumeric : undefined
       allColumns[id] = {
         id,
         accessor,
@@ -136,7 +136,7 @@ export const DepositedAssetsTable: React.FC = () => {
             >
               <TableField field={id} assetId={row.original.id} value={value} props={column.fieldProps} />
               {
-                column.extraFields?.map( (extraField: string) => (
+                column.extraFields?.map((extraField: string) => (
                   <TableField key={`extraField_${extraField}`} assetId={row.original.id} field={extraField} value={value} />
                 ))
               }
@@ -149,9 +149,9 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [columns, translate])
 
   const strategyColumnsDeposit: ColumnProps[] = useMemo(() => {
-    return columns.filter( (col: StrategyColumn) => !col.tables || col.tables.includes(mode) ).map( (column: StrategyColumn) => {
+    return columns.filter((col: StrategyColumn) => !col.tables || col.tables.includes(mode)).map((column: StrategyColumn) => {
       const { id, accessor, sortType } = column
-      const sortTypeFn = sortType==='alpha' ? sortAlpha : sortType==='numeric' ? sortNumeric : undefined
+      const sortTypeFn = sortType === 'alpha' ? sortAlpha : sortType === 'numeric' ? sortNumeric : undefined
       return {
         id,
         accessor,
@@ -172,7 +172,7 @@ export const DepositedAssetsTable: React.FC = () => {
             >
               <TableField field={id} value={value} assetId={row.original.id} props={column.fieldProps} />
               {
-                column.extraFields?.map( (extraField: string) => (
+                column.extraFields?.map((extraField: string) => (
                   <TableField key={`extraField_${extraField}`} field={extraField} value={value} assetId={row.original.id} />
                 ))
               }
@@ -201,8 +201,8 @@ export const DepositedAssetsTable: React.FC = () => {
     ...strategyColumnsDeposit,
     {
       width: '13%',
-      accessor:'balanceUsd',
-      Header:translate('defi.balance'),
+      accessor: 'balanceUsd',
+      Header: translate('defi.balance'),
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -214,8 +214,8 @@ export const DepositedAssetsTable: React.FC = () => {
     },
     {
       width: '13%',
-      accessor:'vaultPosition',
-      Header:translate('defi.realizedApy'),
+      accessor: 'vaultPosition',
+      Header: translate('defi.realizedApy'),
       Cell: ({ value, row }: { value: VaultPosition | undefined; row: RowProps }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -256,8 +256,8 @@ export const DepositedAssetsTable: React.FC = () => {
     ...strategyColumnsDeposit,
     {
       width: '13%',
-      accessor:'balanceUsd',
-      Header:translate('defi.balance'),
+      accessor: 'balanceUsd',
+      Header: translate('defi.balance'),
       Cell: ({ value/*, row*/ }: { value: BigNumber | undefined/*; row: RowProps*/ }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -269,8 +269,8 @@ export const DepositedAssetsTable: React.FC = () => {
     },
     {
       width: '13%',
-      accessor:'vaultPosition',
-      Header:translate('defi.discountedFees'),
+      accessor: 'vaultPosition',
+      Header: translate('defi.discountedFees'),
       Cell: ({ value }: { value: VaultPosition | undefined }) => {
         return (
           <SkeletonText noOfLines={2} isLoaded={!!value}>
@@ -284,32 +284,32 @@ export const DepositedAssetsTable: React.FC = () => {
   ], [allColumnsById, strategyColumnsDeposit, translate])
 
   const allStrategies = useMemo(() => {
-    return products.reduce( (allStrategies: (keyof typeof strategies)[], product: ProductProps) => {
+    return products.reduce((allStrategies: (keyof typeof strategies)[], product: ProductProps) => {
       return [...allStrategies, ...product.strategies]
     }, [])
   }, [])
 
   const featuredAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType) return []
-    const allVaultsAssets = allStrategies.reduce( (allVaults: Asset[], strategy: string) => {
+    const allVaultsAssets = allStrategies.reduce((allVaults: Asset[], strategy: string) => {
       return [
         ...allVaults,
         ...selectVaultsAssetsByType(strategy)
       ]
     }, [])
     return allVaultsAssets
-            .filter( (asset: Asset) => asset.status !== 'deprecated' )
-            .sort( (a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1 )
-            .slice(0, 15)
-            .sort( (a1: Asset, a2: Asset) => BNify(a1.apy).lt(BNify(a2.apy)) ? 1 : -1 )
-            .slice(0, 10)
+      .filter((asset: Asset) => asset.status !== 'deprecated')
+      .sort((a1: Asset, a2: Asset) => BNify(a1.tvlUsd).lt(BNify(a2.tvlUsd)) ? 1 : -1)
+      .slice(0, 15)
+      .sort((a1: Asset, a2: Asset) => BNify(a1.apy).lt(BNify(a2.apy)) ? 1 : -1)
+      .slice(0, 10)
   }, [selectVaultsAssetsByType, allStrategies])
 
   const depositedAssetsData = useMemo(() => {
     if (!selectVaultsWithBalance || !isPortfolioLoaded) return []
-    return allStrategies.reduce( (vaultsAssetsWithBalance: Asset[], strategy) => {
+    return allStrategies.reduce((vaultsAssetsWithBalance: Asset[], strategy) => {
       const strategyVaultsAssetsWithBalance = selectVaultsAssetsWithBalance(strategy)
-      if (strategyVaultsAssetsWithBalance){
+      if (strategyVaultsAssetsWithBalance) {
         return [...vaultsAssetsWithBalance, ...strategyVaultsAssetsWithBalance]
       }
       return vaultsAssetsWithBalance
@@ -318,7 +318,7 @@ export const DepositedAssetsTable: React.FC = () => {
 
   const discountedAssetsData = useMemo(() => {
     if (!isPortfolioLoaded/* || bnOrZero(stakingData?.position.deposited).lte(0)*/) return []
-    return depositedAssetsData.filter( (asset: Asset) => {
+    return depositedAssetsData.filter((asset: Asset) => {
       const vaultPosition = selectVaultPosition(asset.id)
       return !!asset.flags?.feeDiscountEnabled && vaultPosition && bnOrZero(vaultPosition.usd.discountedFees).gt(0)
     })
@@ -328,7 +328,7 @@ export const DepositedAssetsTable: React.FC = () => {
   useEffect(() => {
     if (account && mode === 'Available')
       return setMode('Deposited')
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, [])
 
   // Disabled Deposited
@@ -341,35 +341,34 @@ export const DepositedAssetsTable: React.FC = () => {
 
   const onRowClick = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
-    const strategyRoute = strategies[row.original.type as string].route
     return navigate(getVaultPath(row.original.type as string, row.original.id as string))
   }, [navigate])
 
   const rowsPerPage = useMemo(() => 5, [])
   const totalPages = useMemo(() => {
-    switch (mode){
+    switch (mode) {
       case 'Deposited':
-        return Math.ceil(depositedAssetsData.length/rowsPerPage)
+        return Math.ceil(depositedAssetsData.length / rowsPerPage)
       case 'Discount':
-        return Math.ceil(discountedAssetsData.length/rowsPerPage)
+        return Math.ceil(discountedAssetsData.length / rowsPerPage)
       default:
       case 'Available':
-        return Math.ceil(featuredAssetsData.length/rowsPerPage)
+        return Math.ceil(featuredAssetsData.length / rowsPerPage)
     }
   }, [mode, featuredAssetsData, depositedAssetsData, discountedAssetsData, rowsPerPage])
 
   const goBack = useCallback(() => {
     if (!page) return false
-    setPage( (prevPage: number) => {
-      return Math.max(1, prevPage-1)
+    setPage((prevPage: number) => {
+      return Math.max(1, prevPage - 1)
     })
     return true
   }, [setPage, page])
 
   const goNext = useCallback(() => {
-    if (page===totalPages) return false
-    setPage( (prevPage: number) => {
-      return Math.min(totalPages, prevPage+1)
+    if (page === totalPages) return false
+    setPage((prevPage: number) => {
+      return Math.min(totalPages, prevPage + 1)
     })
   }, [setPage, page, totalPages])
 
@@ -383,7 +382,7 @@ export const DepositedAssetsTable: React.FC = () => {
       ]
     }
 
-    if (isEmpty(depositedAssetsData)){
+    if (isEmpty(depositedAssetsData)) {
       return (
         <Card>
           <VStack
@@ -421,7 +420,7 @@ export const DepositedAssetsTable: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            depositedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+            depositedAssetsData.map((asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>
@@ -431,16 +430,16 @@ export const DepositedAssetsTable: React.FC = () => {
         width={'full'}
       >
         <Card>
-          <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />
+          <ReactTable columns={depositedAssetsColumns} data={depositedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={(row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited')} />
         </Card>
         {
-          totalPages>1 && (
+          totalPages > 1 && (
             <Pagination
               activePage={page}
               pages={totalPages}
               justifyContent={'center'}
               onPrevArrowClick={() => { if (page) goBack() }}
-              onNextArrowClick={() => { if (page<totalPages) goNext()}}
+              onNextArrowClick={() => { if (page < totalPages) goNext() }}
               prevArrowColor={page === 1 ? theme.colors.ctaDisabled : theme.colors.primary}
               nextArrowColor={page === totalPages ? theme.colors.ctaDisabled : theme.colors.primary}
             />
@@ -475,7 +474,7 @@ export const DepositedAssetsTable: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            featuredAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+            featuredAssetsData.map((asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>
@@ -492,16 +491,16 @@ export const DepositedAssetsTable: React.FC = () => {
           >
             {/*<SearchBar placeholder={'defi.searchToken'} handleSearchChange={setDepositedAssetsFilter} />*/}
           </HStack>
-          <ReactTable columns={featuredAssetsColumns} data={featuredAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited') } />
+          <ReactTable columns={featuredAssetsColumns} data={featuredAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={(row) => onRowClick(row, 'dashboard_deposited', 'Dashboard deposited')} />
         </Card>
         {
-          totalPages>1 && (
+          totalPages > 1 && (
             <Pagination
               activePage={page}
               pages={totalPages}
               justifyContent={'center'}
               onPrevArrowClick={() => { if (page) goBack() }}
-              onNextArrowClick={() => { if (page<totalPages) goNext()}}
+              onNextArrowClick={() => { if (page < totalPages) goNext() }}
               prevArrowColor={page === 1 ? theme.colors.ctaDisabled : theme.colors.primary}
               nextArrowColor={page === totalPages ? theme.colors.ctaDisabled : theme.colors.primary}
             />
@@ -522,7 +521,7 @@ export const DepositedAssetsTable: React.FC = () => {
       ]
     }
 
-    if (isEmpty(discountedAssetsData)){
+    if (isEmpty(discountedAssetsData)) {
       return (
         <Card>
           <VStack
@@ -560,7 +559,7 @@ export const DepositedAssetsTable: React.FC = () => {
           alignItems={'flex-start'}
         >
           {
-            discountedAssetsData.map( (asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
+            discountedAssetsData.map((asset: Asset) => asset.id && <VaultCard key={`vault_${asset.id}`} assetId={asset.id} />)
           }
         </VStack>
       </VStack>
@@ -570,16 +569,16 @@ export const DepositedAssetsTable: React.FC = () => {
         width={'full'}
       >
         <Card>
-          <ReactTable columns={discountedAssetsColumns} data={discountedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={ (row) => onRowClick(row, 'dashboard_discounted', 'Dashboard discounted') } />
+          <ReactTable columns={discountedAssetsColumns} data={discountedAssetsData} initialState={initialState} rowsPerPage={rowsPerPage} page={page} onRowClick={(row) => onRowClick(row, 'dashboard_discounted', 'Dashboard discounted')} />
         </Card>
         {
-          totalPages>1 && (
+          totalPages > 1 && (
             <Pagination
               activePage={page}
               pages={totalPages}
               justifyContent={'center'}
               onPrevArrowClick={() => { if (page) goBack() }}
-              onNextArrowClick={() => { if (page<totalPages) goNext()}}
+              onNextArrowClick={() => { if (page < totalPages) goNext() }}
               prevArrowColor={page === 1 ? theme.colors.ctaDisabled : theme.colors.primary}
               nextArrowColor={page === totalPages ? theme.colors.ctaDisabled : theme.colors.primary}
             />
@@ -590,7 +589,7 @@ export const DepositedAssetsTable: React.FC = () => {
   }, [isMobile, page, totalPages, theme, discountedAssetsColumns, discountedAssetsData, navigate, rowsPerPage, onRowClick, goBack, goNext])
 
   const selectedTable = useMemo(() => {
-    switch (mode){
+    switch (mode) {
       case 'Deposited':
         return depositedAssets
       case 'Discount':
@@ -612,9 +611,9 @@ export const DepositedAssetsTable: React.FC = () => {
       <HStack
         spacing={3}
       >
-        <Translation<ButtonProps> component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode==='Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited') } />
-        <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode==='Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available') } />
-        <Translation<ButtonProps> component={Button} leftIcon={<IoPricetagsOutline size={24} />} translation={`common.discount`} variant={'filter'} aria-selected={mode==='Discount'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Discount') } />
+        <Translation<ButtonProps> component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode === 'Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited')} />
+        <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode === 'Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available')} />
+        <Translation<ButtonProps> component={Button} leftIcon={<IoPricetagsOutline size={24} />} translation={`common.discount`} variant={'filter'} aria-selected={mode === 'Discount'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Discount')} />
       </HStack>
       {selectedTable}
     </VStack>

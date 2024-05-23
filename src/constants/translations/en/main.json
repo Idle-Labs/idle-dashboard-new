@@ -197,11 +197,11 @@
     }
   },
   "about": {
-    "cdo":"CDO",
-    "BY":"Best Yield LP token",
-    "AA":"Senior LP token",
-    "BB":"Junior LP token",
-    "strategy":"Strategy token",
+    "cdo": "CDO",
+    "BY": "Best Yield LP token",
+    "AA": "Senior LP token",
+    "BB": "Junior LP token",
+    "strategy": "Strategy token",
     "governance": "Governance",
     "guardian": "Guardian",
     "rewards": "Rewards",
@@ -243,11 +243,11 @@
       "howItWorks": {
         "title": "How does it work?",
         "modalTitle": "Enable fee discount",
-        "steps":{
+        "steps": {
           "cta1": "Get IDLE",
           "cta2": "Lock your IDLE",
           "cta3": "Enjoy fee discount"
-        } 
+        }
       },
       "dashboard": {
         "description": "Stake IDLE to unlock a performance <span class='linkStatic'>fee discount</span> as a liquidity provider."
@@ -293,31 +293,31 @@
       "descriptionShort": "Best Yield vaults are designed to maximize yields. Like robo-advisors, deposits are routed through different strategies which seek out the highest yield available in DeFi.",
       "description": "Best Yield vaults are designed to maximize yields. Like robo-advisors, they accept deposits and route them through different strategies which seek out the highest yield available in DeFi. Users benefit from gas cost socialization, automated rebalancing process and algorithmic capital reallocation as opportunities arise.",
       "carousel": {
-        "pooledDeposits":{
+        "pooledDeposits": {
           "title": "Pooled deposits",
           "description": "Deposits are pooled together and deployed according to the last optimal allocation. Yield is compounded at every block."
         },
-        "yieldMonitoring":{
+        "yieldMonitoring": {
           "title": "Automatic yield monitoring",
           "description": "Vault scans yields every 1h to check if the current allocation is optimal across different DeFi protocols."
         },
-        "dynamicRebalance":{
+        "dynamicRebalance": {
           "title": "Algorithmic and dynamic rebalance",
           "description": "If the vault finds new opportunities, it performs a dynamic capital reallocation across different DeFi protocols to maximize yield for the liquidity present in the pool."
         },
-        "depositsProtection":{
+        "depositsProtection": {
           "title": "Built-in deposit protection",
           "description": "Senior Tranches are protected by a novel risk tranching model: any loss of capital is first absorbed by Junior Tranches, letting Senior Tranches generate yield more safely."
         },
-        "gauges":{
+        "gauges": {
           "title": "Participate in Gauges",
           "description": "Users who provide liquidity get the possibility to receive ownership of the protocol with $IDLE tokens via Gauges. Check out the Stake tab to learn more about it."
         },
-        "boostedYield":{
+        "boostedYield": {
           "title": "Junior Tranches",
           "description": "Junior Tranches allow advanced users to provide first-loss capital to specific strategies. Because they get the losses first, they also get a proportionally bigger share of the profits."
         },
-        "defaultManagement":{
+        "defaultManagement": {
           "title": "Automatic default management",
           "description": "Default events are automatically mitigated: as soon as a vault signals a loss, funds get locked and redistributed to Senior first, and then to Junior Tranches."
         }
@@ -345,7 +345,7 @@
     }
   },
   "social": {
-    "title":"Tweets from the factory"
+    "title": "Tweets from the factory"
   },
   "partnerPrograms": {
     "title": "Partnership Programs",
@@ -411,7 +411,7 @@
       "vaults": {
         "title": "Vaults Rewards",
         "cta": "Explore vaults",
-        "empty" : {
+        "empty": {
           "body": "You don't have any rewards yet. Deposit in the Best-Yield vaults to start earnings additional rewards.",
           "cta": "Explore vaults"
         }
@@ -419,7 +419,7 @@
       "staking": {
         "title": "IDLE Staking",
         "cta": "Manage staking",
-        "empty" : {
+        "empty": {
           "body": "Following <a href='https://gov.idle.finance/t/iip-36-update-best-yield-usdc-weth-yield-sources-and-pause-the-staking-rewards-for-idle-stakers/1171' class='link' target='_blank' rel='noopener'>IIP-36</a>, the recurrent IDLE buyback has been paused. A revamp of stkIDLE introducing new use cases is in the work. <a href='https://gov.idle.finance/t/idle-staking-update/1165' class='link' target='_blank' rel='noopener'>Follow the discussion</a>.",
           "cta": "Go to Staking"
         }
@@ -427,7 +427,7 @@
       "gauges": {
         "title": "Gauges Rewards",
         "cta": "Explore vaults",
-        "empty" : {
+        "empty": {
           "body": "Gauges are no longer available since February 21st 2023.",
           "cta": "Explore vaults"
         }
@@ -846,13 +846,13 @@
     "yourstkIDLE": "Your stkIDLE",
     "increaseTime": "Increase time",
     "increaseLock": "Increase lock",
-    "stkIDLESupply":"stkIDLE supply",
+    "stkIDLESupply": "stkIDLE supply",
     "globalstkIDLE": "Global stkIDLE",
     "increaseAmount": "Increase amount",
-    "receivedRewards":"Received rewards",
+    "receivedRewards": "Received rewards",
     "lockExpired": "Your lock is expired",
     "noStake": "You haven't staked any IDLE",
-    "distributedRewards":"Distributed rewards",
+    "distributedRewards": "Distributed rewards",
     "networkNotSupported": "Network not supported",
     "lockNotExpired": "Your lock is not expired yet",
     "assetStakingBalance": "%{assetSymbol} Staking Balance",
@@ -907,7 +907,7 @@
     "wallet": "Wallet",
     "explore": "Explore"
   },
-  "stats":{
+  "stats": {
     "performances": "Performances",
     "volumes": "Volumes",
     "totalVolume": "Total volume",
@@ -1074,25 +1074,25 @@
     "depositGauge": "Stake your tokens in the Gauge to earn additional rewards",
     "vaults": {
       "GG": {
-        "disabled":"This gauge has been deactivated, unstake your tranche tokens or claim your rewards",
-        "disabledCta":"Unstake"
+        "disabled": "This gauge has been deactivated, unstake your tranche tokens or claim your rewards",
+        "disabledCta": "Unstake"
       },
       "BY": {
-        "disabled":"This vault has been deactivated, please withdraw your funds",
-        "disabledCta":"Withdraw"
+        "disabled": "This vault has been deactivated, please withdraw your funds",
+        "disabledCta": "Withdraw"
       },
       "AA": {
-        "disabledCta":"Withdraw",
+        "disabledCta": "Withdraw",
         "cta": "Deposit with Senior",
         "howItWorks": "How Senior tranches work",
-        "disabled":"This vault has been deactivated, please withdraw your funds",
+        "disabled": "This vault has been deactivated, please withdraw your funds",
         "ays": "The APR is dynamically adjusted according to the boost provided to the counterpart Junior tranche thanks to the <a href=\"https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35\" class=\"link\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Adaptive Yield Split</a>."
       },
       "BB": {
-        "disabledCta":"Withdraw",
+        "disabledCta": "Withdraw",
         "cta": "Deposit with Junior",
         "howItWorks": "How Junior tranches work",
-        "disabled":"This vault has been deactivated, please withdraw your funds",
+        "disabled": "This vault has been deactivated, please withdraw your funds",
         "ays": "The APR is dynamically adjusted according to the coverage provided to the counterpart Senior tranche thanks to the <a href=\"https://medium.com/idle-finance/adaptive-yield-split-foster-pyts-liquidity-scalability-a796fa17ea35\" class=\"link\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">Adaptive Yield Split</a>."
       }
     },
@@ -1170,8 +1170,8 @@
           }
         }
       },
-      "redeemInterestBearing":{
-        "label":"Withdraw interest bearing tokens",
+      "redeemInterestBearing": {
+        "label": "Withdraw interest bearing tokens",
         "description": "This feature is only available when the vault is paused. By enabling it, you will receive the interest bearing tokens, representing your share in the pool. Please use it knowledgeably."
       },
       "withdraw": {
@@ -1981,7 +1981,7 @@
   },
   "authWall": {
     "title": "It looks like you're new to idle.finance or are using a new device to connect. Please accept the following terms and sign a message with your wallet to continue.",
-    "signatureTitle":"By accessing or using Idle App, I hereby represent and warrant that:", 
+    "signatureTitle": "By accessing or using Idle App, I hereby represent and warrant that:",
     "ctaAgree": "Agree & Login",
     "ctaCancel": "Cancel",
     "checkError": "There was a problem during the verification of your signature, please retry or sign again.",
@@ -2029,63 +2029,63 @@
     },
     "assetDetails": {
       "generalData": {
-        "protocol":"Protocol",
-        "rewards":"Rewards",
+        "protocol": "Protocol",
+        "rewards": "Rewards",
         "strategy": "Strategy",
         "riskProfile": "Risk profile",
-        "totalLocked":"Total locked",
-        "totalIDLELocked":"Total IDLE locked",
-        "allocation":"Allocation",
+        "totalLocked": "Total locked",
+        "totalIDLELocked": "Total IDLE locked",
+        "allocation": "Allocation",
         "totalDiscountedFees": "Total discounted fees",
-        "totalStkIDLESupply":"Total stkIDLE supply",
-        "stkIDLESupply":"stkIDLE supply",
-        "lockedIDLE":"Locked IDLE",
-        "lockedUntil":"Locked until",
-        "lockEndDate":"Lock end date",
-        "estimatedApy":"Est. APY",
-        "stkIDLEBalance":"stkIDLE balance",
-        "tvl":"TVL",
-        "idleDistribution":"IDLE distribution",
-        "stakingRewards":"Staking Rewards",
-        "gaugeRewards":"Gauge Rewards",
-        "autoCompounding":"Auto Compounding",
-        "performanceFee":"Performance Fee",
-        "claimableRewards":"Claimable Rewards",
-        "avgLockTime":"Avg. Lock Time",
-        "totalRewards":"Total rewards",
-        "status":"Status",
-        "pool":"Pool",
-        "apy":"APY",
-        "borrowRate":"Borrow rate",
-        "supplyRate":"Supply rate",
-        "utilizationRate":"Utilization rate",
-        "apyRatio":"APY Ratio",
-        "apyBoost":"APY Boost",
-        "coverage":"Coverage",
-        "weight":"Weight",
-        "nextWeight":"Next weight",
-        "totalSupply":"Total supply",
-        "totalIDLEStaked":"Total staked",
-        "lastHarvest":"Last Harvest"
+        "totalStkIDLESupply": "Total stkIDLE supply",
+        "stkIDLESupply": "stkIDLE supply",
+        "lockedIDLE": "Locked IDLE",
+        "lockedUntil": "Locked until",
+        "lockEndDate": "Lock end date",
+        "estimatedApy": "Est. APY",
+        "stkIDLEBalance": "stkIDLE balance",
+        "tvl": "TVL",
+        "idleDistribution": "IDLE distribution",
+        "stakingRewards": "Staking Rewards",
+        "gaugeRewards": "Gauge Rewards",
+        "autoCompounding": "Auto Compounding",
+        "performanceFee": "Performance Fee",
+        "claimableRewards": "Claimable Rewards",
+        "avgLockTime": "Avg. Lock Time",
+        "totalRewards": "Total rewards",
+        "status": "Status",
+        "pool": "Pool",
+        "apy": "APY",
+        "borrowRate": "Borrow rate",
+        "supplyRate": "Supply rate",
+        "utilizationRate": "Utilization rate",
+        "apyRatio": "APY Ratio",
+        "apyBoost": "APY Boost",
+        "coverage": "Coverage",
+        "weight": "Weight",
+        "nextWeight": "Next weight",
+        "totalSupply": "Total supply",
+        "totalIDLEStaked": "Total staked",
+        "lastHarvest": "Last Harvest"
       },
       "operatorOverview": {
         "curator": "Curator overview",
         "borrower": "Borrower overview"
       },
       "requiredActions": {
-        "redeemFromGauge":"Please unstake your tranche tokens from the Gauge"
+        "redeemFromGauge": "Please unstake your tranche tokens from the Gauge"
       },
       "tooltips": {
-        "pool":"Pool",
-        "borrowRate":"Borrow rate",
-        "supplyRate":"Supply rate",
-        "utilizationRate":"Utilization rate",
-        "stkIDLESupply":"Total supply of stkIDLE minted",
-        "discount":"This vault is eligible for fee discount",
+        "pool": "Pool",
+        "borrowRate": "Borrow rate",
+        "supplyRate": "Supply rate",
+        "utilizationRate": "Utilization rate",
+        "stkIDLESupply": "Total supply of stkIDLE minted",
+        "discount": "This vault is eligible for fee discount",
         "boosted": "This vault is boosted by additional rewards",
         "maintenance": "This vault is temporarily under maintenance",
         "totalSupply": "Total amount of assets staked in this gauge",
-        "totalIDLEStaked":"The total amount of IDLE your have locked",
+        "totalIDLEStaked": "The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
         "paused": "This vault is paused, deposits are momentarily disabled",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
@@ -2099,9 +2099,11 @@
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
         "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprecated",
+        "pointsEmissionOn1000Usd": "Additional points you will get per year for a $1000 worth position.",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
-        "stkIDLEBalance":"This is your stkIDLE balance, the longer you stake the higher this balance will be",
+        "stkIDLEBalance": "This is your stkIDLE balance, the longer you stake the higher this balance will be",
         "ethenaShardsRewardEmission": "Shards multiplier that you will get by depositing in the Senior tranche",
+        "gearboxKelpMilesPointsEmission": "Kelp Miles points you will get per year for a $1000 worth position.",
         "juniorTrancheApy": "The APY is calculated by adding together the Base APY, Harvest APY and Rewards APY",
         "seniorTrancheApy": "The APY is calculated by adding together the Base APY, Harvest APY and Rewards APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",
@@ -2113,9 +2115,9 @@
         "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy. Rewards are harvested weekly and distributed over a week",
         "rewardEmissionToken": "Tokens that will be distributed per year for the entire pool. Received rewards will be harvested monthly and distributed over a week",
-        "AA":"This Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
+        "AA": "This Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
         "rewardEmissionTokenOn1000Usd": "Tokens that will be distributed per year for a $1000 worth position. Received rewards, once transferrable, will be harvested monthly and distributed over a week",
-        "BB":"This Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
+        "BB": "This Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
         "riskProfiles": {
           "BY_AA": "This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
           "BY_BB": "This Best Yield Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",

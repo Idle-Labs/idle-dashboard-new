@@ -1,7 +1,5 @@
 import Web3 from 'web3'
-import type { Abi } from 'constants/types'
 import { ContractRawCall } from 'constants/'
-import Multicall3 from 'abis/multicall/Multicall3.json'
 import { Contract, ContractSendMethod } from 'web3-eth-contract'
 import { splitArrayIntoChunks, hashCode, asyncWait, callWithTimeout, isEmpty } from 'helpers/'
 
@@ -26,14 +24,14 @@ export type CachedRequest = {
 }
 
 export type DecodedResult = {
-  data:any,
+  data: any,
   callData: CallData,
   extraData: Record<string, any>
 }
 
 export type BatchesResults = Record<number, DecodedResult[]>
 
-export class  Multicall {
+export class Multicall {
 
   readonly web3: Web3
   readonly chainId: number
@@ -52,9 +50,9 @@ export class  Multicall {
   }
 
   getCallsFromRawCalls(rawCalls: ContractRawCall[]): CallData[] {
-    return rawCalls.reduce( (calls: CallData[], rawCall: ContractRawCall) => {
+    return rawCalls.reduce((calls: CallData[], rawCall: ContractRawCall) => {
       const callData = this.getDataFromRawCall(rawCall.call, rawCall)
-      if (callData){
+      if (callData) {
         calls.push(callData)
       }
       return calls
@@ -73,9 +71,9 @@ export class  Multicall {
     const methodAbi = contract.options.jsonInterface.find(f => f.name === methodName && f.inputs?.length === params.length);
     if (!methodAbi || !methodAbi.inputs || !methodAbi.outputs) return null
 
-    const inputTypes = methodAbi.inputs.map( i => i.type );
-    const returnTypes = methodAbi.outputs.map( i => i.type );
-    const returnFields = methodAbi.outputs.map( i => i.name );
+    const inputTypes = methodAbi.inputs.map(i => i.type);
+    const returnTypes = methodAbi.outputs.map(i => i.type);
+    const returnFields = methodAbi.outputs.map(i => i.name);
 
     if (contract.options.address === '0x0000000000000000000000000000000000000000') return null
 
@@ -83,9 +81,9 @@ export class  Multicall {
       return address ? address.match(/^0x[a-fA-F0-9]{40}$/) !== null : false;
     }
 
-    const args:Param[] = params.map( (p: Param,i: number):any => {
+    const args: Param[] = params.map((p: Param, i: number): any => {
       const inputType = inputTypes[i];
-      if (inputType === 'address' && !checkAddress(p as string)){
+      if (inputType === 'address' && !checkAddress(p as string)) {
         p = '0x0000000000000000000000000000000000000000';
       }
       return [p].concat(inputType);
@@ -93,13 +91,13 @@ export class  Multicall {
 
     return {
       args,
-      batchId:0,
+      batchId: 0,
       extraData,
       returnTypes,
       returnFields,
-      target:contract.options.address,
-      method:methodName+'('+inputTypes.join(',')+')',
-      rawCall:contract.methods[methodName](...params)
+      target: contract.options.address,
+      method: methodName + '(' + inputTypes.join(',') + ')',
+      rawCall: contract.methods[methodName](...params)
     };
   }
 
@@ -130,7 +128,7 @@ export class  Multicall {
     const calldata = this.web3.eth.abi.encodeParameters(
       [
         {
-          components: [{ type: 'address' }, {type: 'bool'}, { type: 'bytes' }],
+          components: [{ type: 'address' }, { type: 'bool' }, { type: 'bytes' }],
           name: 'data',
           type: 'tuple[]'
         }
@@ -141,25 +139,25 @@ export class  Multicall {
     // const methodSignature = this.web3.utils.keccak256('aggregate((address,bytes)[])').substr(0, 10)
     const methodSignature = this.web3.utils.keccak256('aggregate3((address,bool,bytes)[])').substr(0, 10)
 
-    return methodSignature+strip0x(calldata);
+    return methodSignature + strip0x(calldata);
   }
 
   async executeMultipleBatches(callBatches: CallData[][], chainId?: number, web3?: Web3): Promise<DecodedResult[][]> {
     // Assign batch Id to every call
-    const calls = callBatches.reduce( (calls, batchedCalls, batchId) => {
-      batchedCalls.forEach( call => {
+    const calls = callBatches.reduce((calls, batchedCalls, batchId) => {
+      batchedCalls.forEach(call => {
         call.batchId = batchId;
         calls.push(call);
       });
       return calls;
     }, []);
-      
+
     // Execute calls
-    const results = await this.executeMulticalls(calls, true, chainId, web3);
+    const results = await this.executeMulticalls(calls, false, chainId, web3);
 
     // Group by BatchID
-    const output = Array.from(Array(callBatches.length).keys()).reduce( (output: BatchesResults, batchId: number) => {
-      output[batchId] = results?.filter( call => call.callData.batchId === batchId ) || []
+    const output = Array.from(Array(callBatches.length).keys()).reduce((output: BatchesResults, batchId: number) => {
+      output[batchId] = results?.filter(call => call.callData.batchId === batchId) || []
       return output
     }, {});
 
@@ -185,11 +183,11 @@ export class  Multicall {
   // Split multicall into smaller chunks and execute
   async executeMulticallsChunks(calls: CallData[], singleCallsEnabled = false, chainId?: number, web3?: Web3): Promise<DecodedResult[] | null> {
     const callsChunks = splitArrayIntoChunks(calls, this.maxBatchSize)
-    const chunksResults = await Promise.all(callsChunks.map( chunk => this.executeMulticalls(chunk, singleCallsEnabled, chainId, web3) ))
+    const chunksResults = await Promise.all(callsChunks.map(chunk => this.executeMulticalls(chunk, singleCallsEnabled, chainId, web3)))
 
     if (!chunksResults) return null
 
-    return chunksResults.reduce( (results: DecodedResult[], chunkResults: any): DecodedResult[] => {
+    return chunksResults.reduce((results: DecodedResult[], chunkResults: any): DecodedResult[] => {
       if (!chunkResults) return results
       return results.concat(...chunkResults)
     }, [])
@@ -198,10 +196,10 @@ export class  Multicall {
   async checkCachedRequests(hash: string, count: number = 1): Promise<DecodedResult[] | null> {
     if (this.cachedRequests[hash]) {
       const status = this.cachedRequests[hash].status
-      if (status === 'pending'){
-        if (count<=5){
+      if (status === 'pending') {
+        if (count <= 5) {
           await asyncWait(100)
-          return await this.checkCachedRequests(hash, count+1)
+          return await this.checkCachedRequests(hash, count + 1)
         } else {
           return null
         }
@@ -212,7 +210,7 @@ export class  Multicall {
     return null
   }
 
-  async executeMulticalls(calls: CallData[], singleCallsEnabled = true, chainId?: number, web3?: Web3 | null, debug: boolean = false): Promise<DecodedResult[] | null> {
+  async executeMulticalls(calls: CallData[], singleCallsEnabled = false, chainId?: number, web3?: Web3 | null, debug: boolean = false): Promise<DecodedResult[] | null> {
 
     // Get chainId
     chainId = chainId || this.chainId
@@ -234,7 +232,7 @@ export class  Multicall {
     const hash = hashCode(`${calldata}_${chainId}`)
 
     const cachedResults = await this.checkCachedRequests(hash);
-    if (cachedResults){
+    if (cachedResults) {
       // console.warn('Multicall - TAKE CACHED DATA', hash, cachedResults)
       return cachedResults
     }
@@ -258,7 +256,7 @@ export class  Multicall {
       // eslint-disable-next-line
       // console.log(multicallId, 'Multicall Error:', chainId, calls, err, singleCallsEnabled)
 
-      if (/Timeout exceeded/.test(err as string)){
+      if (/Timeout exceeded/.test(err as string)) {
         // eslint-disable-next-line
         console.log('Multicall timed out', chainId, calls)
         return null
@@ -275,29 +273,29 @@ export class  Multicall {
         return null
       }
 
-      const callPromises = calls.map( call => this.catchEm(call.rawCall.call()))
+      const callPromises = calls.map(call => this.catchEm(call.rawCall.call()))
       const decodedCalls = await this.catchEm(callWithTimeout(() => Promise.all(callPromises), MULTICALL_TIMEOUT))
 
-      if (!!decodedCalls[0]){
+      if (!!decodedCalls[0]) {
         // console.log('Single calls failed', chainId, calls, decodedCalls[0])
         return null
       }
 
-      const decodedData = decodedCalls[1].reduce( (decodedResults: any, decodedCall: any, i: number) => {
+      const decodedData = decodedCalls[1].reduce((decodedResults: any, decodedCall: any, i: number) => {
         const output = {
-          data:null,
-          callData:calls[i],
-          extraData:calls[i].extraData
+          data: null,
+          callData: calls[i],
+          extraData: calls[i].extraData
         };
         const [, result] = decodedCall
 
-        if (result){
+        if (result) {
           output.data = result;
         }
 
         decodedResults.push(output)
         return decodedResults
-      },[])
+      }, [])
 
       this.cachedRequests[hash] = {
         status: 'success',
@@ -312,18 +310,18 @@ export class  Multicall {
     if (!results) return null
 
     const decodedResults = this.web3.eth.abi.decodeParameters(['(bool,bytes)[]'], results as string);
-      
+
     // console.log(multicallId, 'Multicall - decodedResults', results, decodedResults)
 
-    if (decodedResults && decodedResults[0].length){
+    if (decodedResults && decodedResults[0].length) {
 
-      const decodedData = decodedResults[0].map( (callResult: any, index: number ) => {
+      const decodedData = decodedResults[0].map((callResult: any, index: number) => {
         const success = callResult[0]
         const decodedResult = callResult[1]
         const output = {
-          data:null,
-          callData:calls[index],
-          extraData:calls[index].extraData
+          data: null,
+          callData: calls[index],
+          extraData: calls[index].extraData
         };
 
         if (!success) return output
@@ -334,20 +332,20 @@ export class  Multicall {
         try {
           const decodedValues = Object.values(this.web3.eth.abi.decodeParameters(returnTypes, decodedResult));
 
-          if (debug){
+          if (debug) {
             // eslint-disable-next-line
             // console.log(returnTypes, returnFields, decodedResult, decodedValues)
           }
 
-          if (returnTypes.length === 1){
+          if (returnTypes.length === 1) {
             output.data = decodedValues[0];
           } else {
-            const values = decodedValues.splice(0,returnTypes.length);
-            output.data = values ? values.reduce( (acc, v, j) => {
+            const values = decodedValues.splice(0, returnTypes.length);
+            output.data = values ? values.reduce((acc, v, j) => {
               acc[j] = v;
               acc[returnFields[j]] = v;
               return acc;
-            },{}) : {};
+            }, {}) : {};
           }
         } catch (error) {
           // console.log('Decode error: ', error, calls[index], success, returnTypes, returnFields, decodedResult)

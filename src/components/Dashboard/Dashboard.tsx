@@ -15,7 +15,6 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { bnOrZero, BNify, getRoutePath, formatMoney } from 'helpers/'
 import { BoostedVaults } from 'components/BoostedVaults/BoostedVaults'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
-import { VaultsCarousel } from 'components/VaultsCarousel/VaultsCarousel'
 import { selectVisibleStrategies } from 'selectors/selectVisibleStrategies'
 import { PartnersPrograms } from 'components/PartnersPrograms/PartnersPrograms'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
@@ -31,9 +30,9 @@ import { Box, Text, SkeletonText, SimpleGrid, Stack, VStack, HStack, Heading, Fl
 
 export const Dashboard: React.FC = () => {
   const { theme } = useThemeProvider()
-  const [ , setPercentChange ] = useState(0)
+  const [, setPercentChange] = useState(0)
   const selectedStrategies = useMemo(() => Object.keys(strategies), [])
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
+  const [timeframe, setTimeframe] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
   const { network } = useWalletProvider()
@@ -57,15 +56,15 @@ export const Dashboard: React.FC = () => {
     if (!selectAssetsByIds) return []
     const assetIds = Object.keys(vaultsPositions)
     const assets = selectAssetsByIds(assetIds)
-    return assets.filter( (asset: Asset) => !selectedStrategies || !asset.type || (selectedStrategies.includes(asset.type) && enabledStrategies.includes(asset.type)) ).map( (asset: Asset) => asset.id )
+    return assets.filter((asset: Asset) => !selectedStrategies || !asset.type || (selectedStrategies.includes(asset.type) && enabledStrategies.includes(asset.type))).map((asset: Asset) => asset.id)
   }, [vaultsPositions, selectedStrategies, enabledStrategies, selectAssetsByIds])
 
   const allAssetIds = useMemo(() => {
-    return Object.values(assetsData).filter( (asset: Asset) => asset.id && (!asset.type || enabledStrategies.includes(asset.type)) ).map( (asset: Asset) => asset.id as string )
+    return Object.values(assetsData).filter((asset: Asset) => asset.id && (!asset.type || enabledStrategies.includes(asset.type))).map((asset: Asset) => asset.id as string)
   }, [assetsData, enabledStrategies])
 
   const aggregatedUsdPosition: VaultPosition["usd"] = useMemo(() => {
-    return Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (aggregatedUsdPosition: VaultPosition["usd"], vaultPosition: VaultPosition) => {
+    return Object.keys(vaultsPositions).filter(assetId => assetIds.includes(assetId)).map(assetId => vaultsPositions[assetId]).reduce((aggregatedUsdPosition: VaultPosition["usd"], vaultPosition: VaultPosition) => {
       aggregatedUsdPosition.staked = aggregatedUsdPosition.staked.plus(vaultPosition.usd.staked)
       aggregatedUsdPosition.earnings = aggregatedUsdPosition.earnings.plus(vaultPosition.usd.earnings)
       aggregatedUsdPosition.deposited = aggregatedUsdPosition.deposited.plus(vaultPosition.usd.deposited)
@@ -84,7 +83,7 @@ export const Dashboard: React.FC = () => {
   }, [aggregatedUsdPosition])
 
   const avgRealizedApy = useMemo(() => {
-    const realizedApyData = Object.keys(vaultsPositions).filter( assetId => assetIds.includes(assetId) ).map( assetId => vaultsPositions[assetId] ).reduce( (realizedApyData: Record<string, BigNumber>, vaultPosition: VaultPosition) => {
+    const realizedApyData = Object.keys(vaultsPositions).filter(assetId => assetIds.includes(assetId)).map(assetId => vaultsPositions[assetId]).reduce((realizedApyData: Record<string, BigNumber>, vaultPosition: VaultPosition) => {
       realizedApyData.num = realizedApyData.num.plus(bnOrZero(vaultPosition.usd.redeemable).times(bnOrZero(vaultPosition.realizedApy)))
       realizedApyData.den = realizedApyData.den.plus(vaultPosition.usd.redeemable)
       // console.log('avgRealizedApy', vaultPosition.usd.redeemable.toString(), vaultPosition.realizedApy.toString())
@@ -103,7 +102,7 @@ export const Dashboard: React.FC = () => {
   // console.log('vaultsPositions', vaultsPositions)
 
   const totalDiscountedFeesUsd = useMemo(() => {
-    return Object.values(vaultsPositions).reduce( (totalDiscountedFees: BigNumber, vaultPosition: VaultPosition) => {
+    return Object.values(vaultsPositions).reduce((totalDiscountedFees: BigNumber, vaultPosition: VaultPosition) => {
       return totalDiscountedFees.plus(bnOrZero(vaultPosition.usd.discountedFees))
     }, BNify(0))
   }, [vaultsPositions])
@@ -181,7 +180,7 @@ export const Dashboard: React.FC = () => {
             isPortfolioAccountReady ? (
               <Amount.Usd abbreviate={false} textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.deposited} />
             ) : (
-              <Spinner size={'sm'} /> 
+              <Spinner size={'sm'} />
             )
           }
         </VStack>
@@ -194,7 +193,7 @@ export const Dashboard: React.FC = () => {
             isPortfolioAccountReady ? (
               <Amount.Usd abbreviate={false} textStyle={'heading'} fontSize={'h3'} value={aggregatedUsdPosition.earnings} />
             ) : (
-              <Spinner size={'sm'} /> 
+              <Spinner size={'sm'} />
             )
           }
         </VStack>
@@ -208,7 +207,7 @@ export const Dashboard: React.FC = () => {
             isPortfolioAccountReady ? (
               <Amount.Percentage textStyle={'heading'} fontSize={'h3'} value={avgRealizedApy} />
             ) : (
-              <Spinner size={'sm'} /> 
+              <Spinner size={'sm'} />
             )
           }
         </VStack>
@@ -222,7 +221,7 @@ export const Dashboard: React.FC = () => {
             isPortfolioAccountReady ? (
               <Amount.Usd abbreviate={false} textStyle={'heading'} fontSize={'h3'} value={totalDiscountedFeesUsd} />
             ) : (
-              <Spinner size={'sm'} /> 
+              <Spinner size={'sm'} />
             )
           }
         </VStack>
@@ -387,16 +386,16 @@ export const Dashboard: React.FC = () => {
         spacing={[4, 6]}
       >
         {
-          products.map( (productConfig: ProductProps) => {
+          products.map((productConfig: ProductProps) => {
             const strategyPath = getRoutePath('earn')
-            const productAssets = productConfig.strategies.reduce( (productAssets: Asset[], strategy: string) => {
+            const productAssets = productConfig.strategies.reduce((productAssets: Asset[], strategy: string) => {
               return [
                 ...productAssets,
                 ...selectVaultsAssetsByType(strategy)
               ]
             }, [])
 
-            const aggregatedData = productAssets.filter( (asset: Asset) => asset.status !== 'deprecated' ).reduce( (aggregatedData: Record<string, BigNumber | null>, asset: Asset) => {
+            const aggregatedData = productAssets.filter((asset: Asset) => asset.status !== 'deprecated').reduce((aggregatedData: Record<string, BigNumber | null>, asset: Asset) => {
               aggregatedData.totalTVL = bnOrZero(aggregatedData.totalTVL).plus(bnOrZero(asset.tvlUsd))
               aggregatedData.minApy = bnOrZero(aggregatedData.minApy).lte(0) ? bnOrZero(asset.apy) : BigNumber.minimum(bnOrZero(aggregatedData.minApy), bnOrZero(asset.apy))
               aggregatedData.maxApy = !aggregatedData.maxApy ? bnOrZero(asset.apy) : BigNumber.maximum(bnOrZero(aggregatedData.maxApy), bnOrZero(asset.apy))
@@ -407,8 +406,8 @@ export const Dashboard: React.FC = () => {
               totalTVL: BNify(0)
             })
 
-            const productPositions = Object.keys(vaultsPositions).filter( (assetId: AssetId) => {
-              return productAssets.find( (asset: Asset) => asset.id === assetId )
+            const productPositions = Object.keys(vaultsPositions).filter((assetId: AssetId) => {
+              return productAssets.find((asset: Asset) => asset.id === assetId)
             })
 
             return (
@@ -418,8 +417,8 @@ export const Dashboard: React.FC = () => {
                 cursor={'pointer'}
                 bg={productConfig.color}
                 sx={{
-                  ':hover':{
-                    backgroundColor:`${productConfig.color}CC`
+                  ':hover': {
+                    backgroundColor: `${productConfig.color}CC`
                   }
                 }}
                 key={`product_${productConfig.strategy}`}
@@ -449,11 +448,11 @@ export const Dashboard: React.FC = () => {
                             width={'full'}
                             alignItems={'flex-start'}
                           >
-                            <Translation translation={`strategies.${productConfig.strategy}.noVaultsAvailable`} params={{network: network?.chainName}} textStyle={'caption'} />
+                            <Translation translation={`strategies.${productConfig.strategy}.noVaultsAvailable`} params={{ network: network?.chainName }} textStyle={'caption'} />
                             <SwitchNetworkButton chainId={1} size={'xs'} px={4} py={3} height={'auto'} />
                           </VStack>
-                        ) : productPositions.length>0 ? (
-                          <StrategyOverview showHeader={false} strategies={productConfig.strategies} textProps={{fontSize:['md', 'lg']}} />
+                        ) : productPositions.length > 0 ? (
+                          <StrategyOverview showHeader={false} strategies={productConfig.strategies} textProps={{ fontSize: ['md', 'lg'] }} />
                         ) : (
                           <SimpleGrid
                             columns={3}
@@ -493,7 +492,7 @@ export const Dashboard: React.FC = () => {
                       }
                     </VStack>
                     {
-                      productAssets.length>0 && (
+                      productAssets.length > 0 && (
                         <MdKeyboardArrowRight
                           size={24}
                           color={theme.colors.primary}
@@ -512,7 +511,7 @@ export const Dashboard: React.FC = () => {
   }, [isPortfolioLoaded, navigate, selectVaultsAssetsByType, network, vaultsPositions, feeDiscountCard, theme])
 
   const chartColor = useMemo(() => {
-    if (selectedStrategies.length===1){
+    if (selectedStrategies.length === 1) {
       return strategies[selectedStrategies[0]].color
     }
     return undefined
@@ -523,7 +522,6 @@ export const Dashboard: React.FC = () => {
       mt={5}
       width={'full'}
     >
-      {/*<VaultsCarousel />*/}
       <VStack
         pt={12}
         spacing={10}

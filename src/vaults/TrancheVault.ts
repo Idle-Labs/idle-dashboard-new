@@ -58,6 +58,7 @@ export class TrancheVault {
   public readonly distributedTokens: UnderlyingTokenProps[]
   public readonly gaugeConfig: GaugeConfig | null | undefined
   public readonly rewardsEmissions: RewardEmission[] | undefined
+  public readonly pointsEmission: TrancheConfig["pointsEmission"]
   public readonly underlyingToken: UnderlyingTokenProps | undefined
 
   // Contracts
@@ -70,7 +71,7 @@ export class TrancheVault {
   // Read only contracts
   public readonly cdoContractRpc: Contract | undefined // Used for calls on specific blocks
 
-  constructor(props: ConstructorProps){
+  constructor(props: ConstructorProps) {
 
     const {
       web3,
@@ -82,7 +83,7 @@ export class TrancheVault {
       gaugeConfig,
       cacheProvider
     } = props
-    
+
     // Init global data
     this.web3 = web3
     this.type = type
@@ -103,26 +104,27 @@ export class TrancheVault {
     this.translations = vaultConfig.translations
     this.trancheConfig = vaultConfig.Tranches[type]
     this.rewardsSenders = vaultConfig.rewardsSenders
+    this.pointsEmission = vaultConfig.pointsEmission
     this.rewardsEmissions = this.trancheConfig.rewardsEmissions
-    this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
+    this.vaultFunctionsHelper = new VaultFunctionsHelper({ chainId, web3, cacheProvider })
     this.underlyingToken = selectUnderlyingToken(chainId, vaultConfig.underlyingToken)
 
     this.rewardTokens = []
     this.distributedTokens = []
 
-    if (vaultConfig.autoFarming){
-      vaultConfig.autoFarming.forEach( (rewardToken: string) => {
+    if (vaultConfig.autoFarming) {
+      vaultConfig.autoFarming.forEach((rewardToken: string) => {
         const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
-        if (underlyingToken){
+        if (underlyingToken) {
           this.rewardTokens.push(underlyingToken)
         }
       })
     }
 
-    if (vaultConfig.distributedTokens){
-      vaultConfig.distributedTokens.forEach( (distributedToken: string) => {
+    if (vaultConfig.distributedTokens) {
+      vaultConfig.distributedTokens.forEach((distributedToken: string) => {
         const underlyingToken = selectUnderlyingToken(chainId, distributedToken)
-        if (underlyingToken){
+        if (underlyingToken) {
           // this.rewardTokens.push(underlyingToken)
           this.distributedTokens.push(underlyingToken)
         }
@@ -142,17 +144,17 @@ export class TrancheVault {
     }
 
     // Init Strategy contract
-    if (this.strategyConfig.abi && this.strategyConfig.address){
+    if (this.strategyConfig.abi && this.strategyConfig.address) {
       this.strategyContract = new web3.eth.Contract(this.strategyConfig.abi, this.strategyConfig.address)
     }
 
     // Init Pool contract
-    if (this.poolConfig?.abi && this.poolConfig?.address){
+    if (this.poolConfig?.abi && this.poolConfig?.address) {
       this.poolContract = new web3.eth.Contract(this.poolConfig.abi, this.poolConfig.address)
     }
 
     // Init underlying token contract
-    if (this.underlyingToken){
+    if (this.underlyingToken) {
       const abi: Abi = this.underlyingToken?.abi || ERC20 as Abi
       this.underlyingContract = new web3.eth.Contract(abi, this.underlyingToken.address)
     }
@@ -163,16 +165,16 @@ export class TrancheVault {
 
   public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[], startBlock: number = 0): EtherscanTransaction[] {
     if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
-    return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
+    return etherscanTransactions.filter((tx: EtherscanTransaction) => {
       const sendersAddrs = Object.keys(this.rewardsSenders as RewardSenders)
-      const foundSenderAddress = sendersAddrs.find( (addr: string) => cmpAddrs(addr, tx.from.toLowerCase()) )
-      if (foundSenderAddress){
+      const foundSenderAddress = sendersAddrs.find((addr: string) => cmpAddrs(addr, tx.from.toLowerCase()))
+      if (foundSenderAddress) {
         const senderParams: RewardSenderParams = (this.rewardsSenders as RewardSenders)[foundSenderAddress]
         if (
-          (!senderParams.startBlock || +tx.blockNumber>=senderParams.startBlock) &&
-          (!senderParams.endBlock || +tx.blockNumber<=senderParams.endBlock)
+          (!senderParams.startBlock || +tx.blockNumber >= senderParams.startBlock) &&
+          (!senderParams.endBlock || +tx.blockNumber <= senderParams.endBlock)
         ) {
-          return +tx.blockNumber>=+startBlock && this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && cmpAddrs(tx.to, account)
+          return +tx.blockNumber >= +startBlock && this.distributedTokens.map((distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase()).includes(tx.contractAddress.toLowerCase()) && cmpAddrs(tx.to, account)
         }
       }
       return false
@@ -182,14 +184,14 @@ export class TrancheVault {
   public getDiscountedFees(account: string, etherscanTransactions: EtherscanTransaction[]): EtherscanTransaction[] {
     const tokenAddr = this.id// his.underlyingToken?.address
     if (!this.flags?.feeDiscountEnabled || !tokenAddr || !distributedFeesSenders[this.chainId]) return []
-    return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
-      return cmpAddrs(tx.contractAddress, tokenAddr as string) && Object.keys(distributedFeesSenders[this.chainId]).map( addr => addr.toLowerCase() ).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
+    return etherscanTransactions.filter((tx: EtherscanTransaction) => {
+      return cmpAddrs(tx.contractAddress, tokenAddr as string) && Object.keys(distributedFeesSenders[this.chainId]).map(addr => addr.toLowerCase()).includes(tx.from.toLowerCase()) && cmpAddrs(tx.to, account)
     })
   }
 
   public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
 
-    const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
+    const transactionsByHash = etherscanTransactions.reduce((transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
       if (!transactions[transaction.hash]) {
         transactions[transaction.hash] = []
       }
@@ -197,7 +199,7 @@ export class TrancheVault {
       transactions[transaction.hash].push(transaction)
 
       return transactions
-    },{})
+    }, {})
 
     // const startTimestamp = Date.now();
 
@@ -241,16 +243,16 @@ export class TrancheVault {
             swapOut: isSwapOutTx,
           }
 
-          const action = Object.keys(actions).find( (action: string) => !!actions[action] )
-          let subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
+          const action = Object.keys(actions).find((action: string) => !!actions[action])
+          let subAction = Object.keys(subActions).find((subAction: string) => !!subActions[subAction])
 
           if (action) {
 
             // Get tx referral
-            if (action === 'deposit' && tx.functionName && /^deposit(AA|BB)Ref/.test(tx.functionName)){
+            if (action === 'deposit' && tx.functionName && /^deposit(AA|BB)Ref/.test(tx.functionName)) {
               subAction = 'depositWithRef'
               const decodedParams = decodeTxParams(this.web3, tx, this.cdoContract)
-              if (decodedParams?.length && this.checkReferralAllowed(decodedParams[1])){
+              if (decodedParams?.length && this.checkReferralAllowed(decodedParams[1])) {
                 tx.referral = decodedParams[1]
               }
             }
@@ -259,10 +261,10 @@ export class TrancheVault {
 
             // Get idle token tx and underlying token tx
             const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : ZERO_ADDRESS) : account
-            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
+            const idleTokenTx = internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()))
             const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
-            
-            const underlyingTokenTx = internalTxs.find( iTx => {
+
+            const underlyingTokenTx = internalTxs.find(iTx => {
               const underlyingTokenDirectionAddress = action === 'redeem' ? iTx.to : iTx.from
               const underlyingAmount = fixTokenDecimals(iTx.value, this.underlyingToken?.decimals)
               return iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && underlyingTokenDirectionAddress.toLowerCase() === account.toLowerCase() && underlyingAmount.gte(idleAmount)
@@ -272,14 +274,14 @@ export class TrancheVault {
             let idlePrice = underlyingTokenTxAmount?.gt(0) ? underlyingTokenTxAmount.div(idleAmount) : BNify(1)
 
             let underlyingAmount = BNify(0)
-            if (!underlyingTokenTxAmount){
+            if (!underlyingTokenTxAmount) {
               const pricesCalls = this.getPricesCalls()
 
-              if (getTokenPrice){
+              if (getTokenPrice) {
                 const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
                 try {
                   // @ts-ignore
-                  const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+                  const callback = async () => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
                   const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
                   idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
                 } catch (err) {
@@ -295,14 +297,14 @@ export class TrancheVault {
 
             // console.log(this.id, action, tx.hash, idlePrice.toString(), underlyingAmount.toString(), idleAmount.toString(), tx)
 
-            if (!insertedTxs[txHashKey]){
+            if (!insertedTxs[txHashKey]) {
               transactions.push({
                 ...tx,
                 action,
                 subAction,
                 idlePrice,
                 idleAmount,
-                assetId:this.id,
+                assetId: this.id,
                 underlyingAmount,
                 chainId: this.chainId
               })
@@ -332,8 +334,8 @@ export class TrancheVault {
   public getBalancesCalls(params: any[] = []): any[] {
     return [
       {
-        assetId:this.id,
-        call:this.trancheContract.methods.balanceOf(...params),
+        assetId: this.id,
+        call: this.trancheContract.methods.balanceOf(...params),
       },
     ]
   }
@@ -350,18 +352,18 @@ export class TrancheVault {
     ]
   }
 
-  public getPricesUsdCalls(contracts: GenericContract[]): any[] {
+  public getPricesUsdCalls(contracts: GenericContract[]): ContractRawCall[] {
     if (!this.underlyingToken) return []
-    
-    const genericContractsHelper = new GenericContractsHelper({chainId: this.chainId, web3: this.web3, contracts})
+
+    const genericContractsHelper = new GenericContractsHelper({ chainId: this.chainId, web3: this.web3, contracts })
     const conversionRateParams = genericContractsHelper.getConversionRateParams(this.underlyingToken)
     if (!conversionRateParams) return []
 
     return [
       {
-        assetId:this.id,
-        params:conversionRateParams,
-        call:conversionRateParams.call,
+        assetId: this.id,
+        params: conversionRateParams,
+        call: conversionRateParams.call,
       },
     ]
   }
@@ -369,8 +371,8 @@ export class TrancheVault {
   public getFeesCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.cdoContract.methods.fee()
+        assetId: this.id,
+        call: this.cdoContract.methods.fee()
       }
     ]
   }
@@ -378,8 +380,8 @@ export class TrancheVault {
   public getLimitsCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.cdoContract.methods.limit(),
+        assetId: this.id,
+        call: this.cdoContract.methods.limit(),
         decimals: this.underlyingToken?.decimals || 18
       }
     ]
@@ -399,8 +401,8 @@ export class TrancheVault {
   public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.trancheContract.methods.totalSupply()
+        assetId: this.id,
+        call: this.trancheContract.methods.totalSupply()
       },
     ]
   }
@@ -408,8 +410,8 @@ export class TrancheVault {
   public getPausedCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.cdoContract.methods.paused()
+        assetId: this.id,
+        call: this.cdoContract.methods.paused()
       },
     ]
   }
@@ -417,8 +419,8 @@ export class TrancheVault {
   public getAprRatioCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.cdoContract.methods.trancheAPRSplitRatio()
+        assetId: this.id,
+        call: this.cdoContract.methods.trancheAPRSplitRatio()
       },
     ]
   }
@@ -427,8 +429,8 @@ export class TrancheVault {
     if (!this.strategyContract) return []
     return [
       {
-        assetId:this.id,
-        call:this.strategyContract.methods.getApr()
+        assetId: this.id,
+        call: this.strategyContract.methods.getApr()
       },
     ]
   }
@@ -438,8 +440,8 @@ export class TrancheVault {
     return [
       {
         data,
-        assetId:this.id,
-        call:this.poolContract.methods[methodName](...params)
+        assetId: this.id,
+        call: this.poolContract.methods[methodName](...params)
       },
     ]
   }
@@ -447,15 +449,15 @@ export class TrancheVault {
   public getPoolDataCalls(): ContractRawCall[] {
     const protocolFields = protocols[this.protocol]?.fields
     if (!this.poolContract || !protocolFields) return []
-    return protocolFields.map( (protocolField: ProtocolField) => ({
-      assetId:this.id,
-      data:{
+    return protocolFields.map((protocolField: ProtocolField) => ({
+      assetId: this.id,
+      data: {
         formatFn: protocolField.formatFn,
         cdoAddress: this.cdoConfig.address,
         protocolField: protocolField.field,
         decimals: protocolField.decimals || this.underlyingToken?.decimals || 18
       },
-      call:this.poolContract?.methods[protocolField.function]()
+      call: this.poolContract?.methods[protocolField.function]()
     }))
   }
 
@@ -463,8 +465,8 @@ export class TrancheVault {
     if (!this.poolContract || !this.poolConfig?.functions?.vaultIsOpen) return []
     return [
       {
-        assetId:this.id,
-        call:this.poolContract.methods[this.poolConfig.functions.vaultIsOpen]()
+        assetId: this.id,
+        call: this.poolContract.methods[this.poolConfig.functions.vaultIsOpen]()
       },
     ]
   }
@@ -488,7 +490,7 @@ export class TrancheVault {
       //   token: this.cdoConfig.name,
       //   decimals: this.cdoConfig.decimals
       // },
-      [this.id]:{
+      [this.id]: {
         type: this.type,
         token: this.trancheConfig.token,
         decimals: this.trancheConfig.decimals,
@@ -507,7 +509,7 @@ export class TrancheVault {
   }
 
   public getMethodDefaultGasLimit(methodName: string): number | undefined {
-    switch (methodName){
+    switch (methodName) {
       case 'deposit':
         return 246316
       case 'withdraw':
@@ -545,26 +547,26 @@ export class TrancheVault {
     if (!checkAddress(referral)) return false
     const allowedReferrals = this.flags?.allowedReferrals || []
     if (isEmpty(allowedReferrals)) return true
-    return allowedReferrals.find( (addr: string) => cmpAddrs(addr, referral) ) !== undefined
+    return allowedReferrals.find((addr: string) => cmpAddrs(addr, referral)) !== undefined
   }
 
   // eslint-disable-next-line
   public getDepositParams(amount: NumberType, _referral: string | undefined | null = null): any[] {
     const decimals = this.underlyingToken?.decimals || 18
     const params: any[] = [normalizeTokenAmount(amount, decimals)]
-    if (this.flags?.referralEnabled && this.checkReferralAllowed(_referral)){
+    if (this.flags?.referralEnabled && this.checkReferralAllowed(_referral)) {
       params.push(_referral)
     }
     return params
   }
 
-  public getFlag(flag: string): any{
+  public getFlag(flag: string): any {
     return getObjectPath(this, `flags.${flag}`)
   }
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
     // Check enabled and valid referral
-    if (this.flags?.referralEnabled && this.checkReferralAllowed(params[1])){
+    if (this.flags?.referralEnabled && this.checkReferralAllowed(params[1])) {
       return this.cdoContract.methods[`deposit${this.type}Ref`](...params)
     }
     return this.cdoContract.methods[`deposit${this.type}`](...params)

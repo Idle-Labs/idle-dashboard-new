@@ -9,8 +9,6 @@ import { useWalletProvider } from 'contexts/WalletProvider'
 import { Stake } from 'components/OperativeComponent/Stake'
 import { DatePicker } from 'components/DatePicker/DatePicker'
 import { AssetStats } from 'components/AssetStats/AssetStats'
-import { AssetLabel } from 'components/AssetLabel/AssetLabel'
-import { ProductTag } from 'components/ProductTag/ProductTag'
 import { Deposit } from 'components/OperativeComponent/Deposit'
 import { Approve } from 'components/OperativeComponent/Approve'
 import { Translation } from 'components/Translation/Translation'
@@ -28,8 +26,8 @@ import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Hea
 import { operators, AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
 
 type TabType = {
-  id:string
-  label:string
+  id: string
+  label: string
   icon?: null | {
     src: string
     props?: ImageProps,
@@ -52,8 +50,8 @@ const initialState: ContextProps = {
   referral: null,
   stakingEnabled: false,
   isNetworkCorrect: false,
-  setStakingEnabled: () => {},
-  toggleStakingEnabled: () => {}
+  setStakingEnabled: () => { },
+  toggleStakingEnabled: () => { }
 }
 
 const StakeIDLE: React.FC = () => {
@@ -85,14 +83,14 @@ export const AssetPage: React.FC = () => {
   const { chainId } = useWalletProvider()
   const { isMobile, theme, environment } = useThemeProvider()
   const { params, location, searchParams } = useBrowserRouter()
-  const [ selectedTabIndex, setSelectedTabIndex ] = useState<number>(0)
-  const [ stakingEnabled, setStakingEnabled ] = useState<boolean>(false)
-  const [ latestAssetUpdate, setLatestAssetUpdate ] = useState<number>(0)
-  const [ viewItemEventSent, setViewItemEventSent ] = useState<AssetId | undefined>()
-  const [ getSearchParams, setSearchParams ] = useMemo(() => searchParams, [searchParams]) 
-  const [ dateRange, setDateRange ] = useState<DateRange>({ startDate: null, endDate: null })
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["WEEK"])
-  const [ storedReferrals, setStoredReferrals, , storedReferralsLoaded ] = useLocalForge('storedReferrals', {})
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0)
+  const [stakingEnabled, setStakingEnabled] = useState<boolean>(false)
+  const [latestAssetUpdate, setLatestAssetUpdate] = useState<number>(0)
+  const [viewItemEventSent, setViewItemEventSent] = useState<AssetId | undefined>()
+  const [getSearchParams, setSearchParams] = useMemo(() => searchParams, [searchParams])
+  const [dateRange, setDateRange] = useState<DateRange>({ startDate: null, endDate: null })
+  const [timeframe, setTimeframe] = useState<HistoryTimeframe | undefined>(HistoryTimeframe["WEEK"])
+  const [storedReferrals, setStoredReferrals, , storedReferralsLoaded] = useLocalForge('storedReferrals', {})
   const {
     isPortfolioLoaded,
     portfolioTimestamp,
@@ -129,14 +127,14 @@ export const AssetPage: React.FC = () => {
     let referral = getSearchParams.get('_referral')
 
     // if no referral get stored one
-    if (!referral && storedReferralsLoaded && checkAddress(storedReferrals[vault.id])){
+    if (!referral && storedReferralsLoaded && checkAddress(storedReferrals[vault.id])) {
       referral = storedReferrals[vault.id]
     }
 
     if (!referral || !checkAddress(referral) || referral === ZERO_ADDRESS) return
 
     // Check allowed referrals
-    if ("checkReferralAllowed" in vault){
+    if ("checkReferralAllowed" in vault) {
       const referralAllowed = vault.checkReferralAllowed(referral)
       if (!referralAllowed) return
     }
@@ -156,13 +154,13 @@ export const AssetPage: React.FC = () => {
   }, [vault, referral, storedReferrals, setStoredReferrals, storedReferralsLoaded])
 
   useEffect(() => {
-    if (useDateRange){
+    if (useDateRange) {
       setTimeframe(undefined)
     }
   }, [useDateRange, setTimeframe])
 
   useEffect(() => {
-    if (timeframe){
+    if (timeframe) {
       setDateRange({
         endDate: null,
         startDate: null
@@ -171,7 +169,7 @@ export const AssetPage: React.FC = () => {
   }, [timeframe, setDateRange])
 
   const toggleStakingEnabled = useCallback(() => {
-    return setStakingEnabled( prevState => !prevState )
+    return setStakingEnabled(prevState => !prevState)
   }, [setStakingEnabled])
 
   // Update asset
@@ -197,7 +195,7 @@ export const AssetPage: React.FC = () => {
 
   const claimableRewards = useMemo(() => {
     if (!assetGauge || !("gaugeData" in assetGauge) || !assetGauge.gaugeData?.rewards) return BNify(0)
-    return (Object.values(assetGauge.gaugeData.rewards) as Array<GaugeRewardData>).reduce( (claimableRewards: BigNumber, gaugeRewardData: GaugeRewardData) => {
+    return (Object.values(assetGauge.gaugeData.rewards) as Array<GaugeRewardData>).reduce((claimableRewards: BigNumber, gaugeRewardData: GaugeRewardData) => {
       return claimableRewards.plus(bnOrZero(gaugeRewardData.balance))
     }, BNify(0))
   }, [assetGauge])
@@ -205,14 +203,14 @@ export const AssetPage: React.FC = () => {
   // Check asset exists
   useEffect(() => {
     if (!isPortfolioLoaded || !selectAssetById || !location || !latestAssetUpdate) return
-    if (!asset){
+    if (!asset) {
       return navigate(location.pathname.replace(`/${params.asset}`, ''))
     }
   }, [isPortfolioLoaded, selectAssetById, latestAssetUpdate, asset, params.asset, location, navigate])
 
   // Send viewItem event
   useEffect(() => {
-    if (!isPortfolioAccountReady || !asset || viewItemEventSent === asset?.id || !portfolioTimestamp || !assetsDataTimestamp || portfolioTimestamp>assetsDataTimestamp || assetsDataTimestamp>latestAssetUpdate) return
+    if (!isPortfolioAccountReady || !asset || viewItemEventSent === asset?.id || !portfolioTimestamp || !assetsDataTimestamp || portfolioTimestamp > assetsDataTimestamp || assetsDataTimestamp > latestAssetUpdate) return
     // console.log(asset, portfolioTimestamp, assetsDataTimestamp, latestAssetUpdate, BNify(asset?.priceUsd).toString(), assetBalance.toString())
     sendViewItem(asset, assetBalanceUsd)
     setViewItemEventSent(asset.id)
@@ -229,7 +227,7 @@ export const AssetPage: React.FC = () => {
           {
             type: 'approve',
             component: Approve,
-            label:'modals.approve.header',
+            label: 'modals.approve.header',
           }
         ]
       },
@@ -241,7 +239,7 @@ export const AssetPage: React.FC = () => {
       }
     ]
 
-    if (stakingEnabled){
+    if (stakingEnabled) {
       actions.push({
         type: 'stake',
         component: StakeIDLE,
@@ -254,7 +252,7 @@ export const AssetPage: React.FC = () => {
             props: {
               amountUsd: null
             },
-            label:'modals.approve.header',
+            label: 'modals.approve.header',
           }
         ]
       })
@@ -262,22 +260,22 @@ export const AssetPage: React.FC = () => {
 
     const tabs: TabType[] = [
       {
-        id:'earn',
-        label:'navBar.earn',
+        id: 'earn',
+        label: 'navBar.earn',
         component: Earn,
         actions
       }
     ]
-    
+
     const vaultDisabled = vaultGauge && ("enabled" in vaultGauge) && !vaultGauge.enabled
-    
-    if (vaultGauge && (!vaultDisabled || bnOrZero(assetGauge?.balance).gt(0) || bnOrZero(claimableRewards).gt(0))){
+
+    if (vaultGauge && (!vaultDisabled || bnOrZero(assetGauge?.balance).gt(0) || bnOrZero(claimableRewards).gt(0))) {
       tabs.push(
         {
-          id:'gauge',
-          label:'navBar.gauge',
+          id: 'gauge',
+          label: 'navBar.gauge',
           component: GaugeStaking,
-          icon: vaultDisabled && (BNify(assetGauge?.balance).gt(0) || bnOrZero(claimableRewards).gt(0)) ? {src:`${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props:{width:5, height:5}} : null,
+          icon: vaultDisabled && (BNify(assetGauge?.balance).gt(0) || bnOrZero(claimableRewards).gt(0)) ? { src: `${imageFolder}vaults/deprecated.png`, tooltip: 'trade.vaults.GG.disabled', props: { width: 5, height: 5 } } : null,
           actions: [
             {
               type: 'stake',
@@ -287,7 +285,7 @@ export const AssetPage: React.FC = () => {
                 {
                   type: 'approve',
                   component: Approve,
-                  label:'modals.approve.header',
+                  label: 'modals.approve.header',
                 }
               ]
             },
@@ -305,10 +303,10 @@ export const AssetPage: React.FC = () => {
     const statsEnabled = (!vault?.flags || vault.flags.statsEnabled === undefined || vault.flags.statsEnabled)
 
     // Add stats tab
-    if (checkSectionEnabled('stats', environment) && statsEnabled){
+    if (checkSectionEnabled('stats', environment) && statsEnabled) {
       tabs.push({
-        id:'stats',
-        label:'navBar.stats',
+        id: 'stats',
+        label: 'navBar.stats',
         component: AssetStats,
         componentProps: {
           timeframe,
@@ -332,8 +330,8 @@ export const AssetPage: React.FC = () => {
   useEffect(() => {
     if (selectedTabId) {
       // console.log('selectedTabId', selectedTabId)
-      const foundTab = tabs.find( tab => tab.id.toString() === selectedTabId.toString() )
-      if (foundTab){
+      const foundTab = tabs.find(tab => tab.id.toString() === selectedTabId.toString())
+      if (foundTab) {
         const tabIndex = tabs.indexOf(foundTab)
         // console.log('setSelectedTabIndex', selectedTabId, foundTab, tabIndex)
         setSelectedTabIndex(tabIndex)
@@ -375,8 +373,8 @@ export const AssetPage: React.FC = () => {
       >
         <TabList>
           {
-            tabs.map( (tab, index) => (
-              <IconTab key={`tab_${index}`} width={[`${100/tabs.length}%`, 'auto']} icon={tab.icon} onClick={() => selectTab(index)}>
+            tabs.map((tab, index) => (
+              <IconTab key={`tab_${index}`} width={[`${100 / tabs.length}%`, 'auto']} icon={tab.icon} onClick={() => selectTab(index)}>
                 <Translation translation={tab.label} />
               </IconTab>
             ))
@@ -393,46 +391,6 @@ export const AssetPage: React.FC = () => {
     )
   }, [selectedTab, asset, vaultId])
 
-  const vaultDetails = useMemo(() => {
-    return (
-      <HStack
-        mb={[0, '3 !important']}
-        spacing={4}
-        pl={[0, selectedTab.id === 'stats' ? 5 : 0]}
-        justifyContent={['center', 'flex-end']}
-        borderLeft={!isMobile && selectedTab.id === 'stats' ? '1px solid' : 'none'}
-        borderLeftColor={'divider'}
-      >
-        <HStack
-          spacing={1}
-        >
-          <ProductTag type={asset?.type} fontSize={'md'} h={8} />
-          <AssetProvider.Strategies h={8} w={8} />
-        </HStack>
-        <HStack
-          pl={4}
-          borderLeft={'1px solid'}
-          borderLeftColor={'divider'}
-        >
-          <AssetProvider.Protocols tooltipDisabled={true} size={'sm'}>
-            <AssetProvider.ProtocolIcon size={'sm'} />
-          </AssetProvider.Protocols>
-        </HStack>
-        {
-          /*
-          <HStack
-            pl={4}
-            borderLeft={'1px solid'}
-            borderLeftColor={'divider'}
-          >
-            <AssetProvider.ChainIcon width={8} height={8} />
-          </HStack>
-          */
-        }
-      </HStack>
-    )
-  }, [selectedTab, asset, isMobile])
-
   const headerRightSide = useMemo(() => {
     return (
       <Stack
@@ -447,7 +405,7 @@ export const AssetPage: React.FC = () => {
               width={['full', 'auto']}
               direction={['column', 'row']}
               alignItems={['auto', 'center']}
-              justifyContent={['flex-start','center']}
+              justifyContent={['flex-start', 'center']}
             >
               <TimeframeSelector variant={'button'} timeframe={timeframe} setTimeframe={setTimeframe} width={['100%', 'auto']} justifyContent={['center', 'initial']} />
               <DatePicker selected={useDateRange} setDateRange={setDateRange} />
@@ -522,7 +480,7 @@ export const AssetPage: React.FC = () => {
   }, [vault, operatorInfo])
 
   return (
-    <AssetPageProviderContext.Provider value={{stakingEnabled, setStakingEnabled, toggleStakingEnabled, isNetworkCorrect, referral}}>
+    <AssetPageProviderContext.Provider value={{ stakingEnabled, setStakingEnabled, toggleStakingEnabled, isNetworkCorrect, referral }}>
       <AssetProvider
         wrapFlex={true}
         assetId={params.asset}
@@ -569,7 +527,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.apy'} fontSize={['sm','md']} color={'primary'} />
+                  <Translation translation={'defi.apy'} fontSize={['sm', 'md']} color={'primary'} />
                   <HStack
                     flex={1}
                     spacing={0}
@@ -579,7 +537,7 @@ export const AssetPage: React.FC = () => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <AssetProvider.Apy showTooltip={false} fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.Apy showTooltip={false} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                       )
                     }
                   </HStack>
@@ -592,7 +550,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.tvl'} fontSize={['sm','md']} color={'primary'} />
+                  <Translation translation={'defi.tvl'} fontSize={['sm', 'md']} color={'primary'} />
                   <HStack
                     flex={1}
                     spacing={0}
@@ -602,7 +560,7 @@ export const AssetPage: React.FC = () => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <AssetProvider.PoolUsd fontSize={['h4','2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.PoolUsd fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                       )
                     }
                   </HStack>
@@ -617,7 +575,7 @@ export const AssetPage: React.FC = () => {
                       borderColor={'dividerLight'}
                       alignItems={'flex-start'}
                     >
-                      <Translation translation={'defi.composition'} fontSize={['sm','md']} color={'primary'} />
+                      <Translation translation={'defi.composition'} fontSize={['sm', 'md']} color={'primary'} />
                       <Flex
                         flex={1}
                         alignItems={'flex-end'}
@@ -636,7 +594,7 @@ export const AssetPage: React.FC = () => {
                       borderColor={'dividerLight'}
                       alignItems={'flex-start'}
                     >
-                      <Translation translation={'defi.riskProfile'} fontSize={['sm','md']} color={'primary'} />
+                      <Translation translation={'defi.riskProfile'} fontSize={['sm', 'md']} color={'primary'} />
                       <Flex
                         flex={1}
                         alignItems={'flex-end'}
@@ -651,7 +609,7 @@ export const AssetPage: React.FC = () => {
                   height={'100%'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.chain'} fontSize={['sm','md']} color={'primary'} />
+                  <Translation translation={'defi.chain'} fontSize={['sm', 'md']} color={'primary'} />
                   <Flex
                     flex={1}
                     alignItems={'flex-end'}
@@ -721,7 +679,7 @@ export const AssetPage: React.FC = () => {
             */
           }
           <HStack
-            mt={['4em','7em']}
+            mt={['4em', '7em']}
             width={'100%'}
             spacing={[0, 10]}
             alignItems={'space-between'}
@@ -731,7 +689,7 @@ export const AssetPage: React.FC = () => {
               mt={'7.5em'}
               mb={[20, 0]}
               spacing={10}
-              width={['100%', 14/20]}
+              width={['100%', 14 / 20]}
             >
               <Stack
                 flex={1}

@@ -45,9 +45,9 @@ export interface UnderlyingTokenProps {
 }
 
 export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProps>> = {
-  1:{
+  1: {
     DAI: {
-      token:'DAI',
+      token: 'DAI',
       decimals: 18,
       enabled: true,
       abi: DAI as Abi,
@@ -60,8 +60,8 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     },
     ETH: {
       abi: null,
-      symbol:'Ξ',
-      token:'ETH',
+      symbol: 'Ξ',
+      token: 'ETH',
       decimals: 18,
       enabled: true,
       colors: {
@@ -74,7 +74,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     STETH: {
       decimals: 18,
       enabled: true,
-      token:'stETH',
+      token: 'stETH',
       label: 'stETH',
       colors: {
         hex: '#00a3ff',
@@ -89,7 +89,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     WSTETH: {
       decimals: 18,
       enabled: true,
-      token:'wstETH',
+      token: 'wstETH',
       label: 'wstETH',
       colors: {
         hex: '#00a3ff',
@@ -108,7 +108,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       address: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0'
     },
     CVX: {
-      token:'CVX',
+      token: 'CVX',
       label: 'CVX',
       decimals: 18,
       enabled: true,
@@ -120,7 +120,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       address: '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b'
     },
     LDO: {
-      token:'LDO',
+      token: 'LDO',
       label: 'LDO',
       decimals: 18,
       enabled: true,
@@ -607,7 +607,30 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         address: '0x00000000000000000000000000000000000003d2'
       },
       address: '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8'
-    }
+    },
+    KELP: {
+      token: 'KELP',
+      decimals: 18,
+      enabled: true,
+      label: 'Kelp Mile',
+      colors: {
+        hex: '#F7B24A',
+        rgb: [250, 184, 51],
+        hsl: ['40', '95%', '59%']
+      },
+      address: '0x8E3A59427B1D87Db234Dd4ff63B25E4BF94672f4'
+    },
+    RSETH: {
+      decimals: 18,
+      enabled: true,
+      token: 'rsETH',
+      colors: {
+        hex: '#F7B24A',
+        rgb: [250, 184, 51],
+        hsl: ['40', '95%', '59%']
+      },
+      address: '0xa1290d69c65a6fe4df752f95823fae25cb99e5a7'
+    },
     // WMATIC: {
     //   decimals: 18,
     //   enabled: true,
@@ -623,8 +646,8 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
   10: {
     ETH: {
       abi: null,
-      symbol:'Ξ',
-      token:'ETH',
+      symbol: 'Ξ',
+      token: 'ETH',
       decimals: 18,
       enabled: true,
       colors: {
@@ -671,7 +694,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
     },
     DAI: {
-      token:'DAI',
+      token: 'DAI',
       decimals: 18,
       enabled: true,
       abi: DAI as Abi,
@@ -703,7 +726,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [254, 2, 33],
         hsl: ["353, 99%, 50%"]
       },
-      conversionRate:{
+      conversionRate: {
         protocolContract: 'UniswapV3Quoter',
         routerMethod: 'quoteExactInputSingle',
         addressFrom: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58'
@@ -711,11 +734,11 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       address: "0x4200000000000000000000000000000000000042",
     }
   },
-  1101:{
+  1101: {
     ETH: {
       abi: null,
-      symbol:'Ξ',
-      token:'ETH',
+      symbol: 'Ξ',
+      token: 'ETH',
       decimals: 18,
       enabled: true,
       colors: {
@@ -760,9 +783,9 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       address: "0x1E4a5963aBFD975d8c9021ce480b42188849D41d",
     },
   },
-  137:{
+  137: {
     DAI: {
-      token:'DAI',
+      token: 'DAI',
       decimals: 18,
       enabled: true,
       abi: DAI as Abi,
@@ -831,7 +854,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
     MATIC: {
       decimals: 18,
       enabled: true,
-      symbol:' MATIC',
+      symbol: ' MATIC',
       token: 'MATIC',
       colors: {
         hex: '#8247E5',
@@ -843,7 +866,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
       },
       address: '0x0000000000000000000000000000000000001010'
     },
-    DQUICK:{
+    DQUICK: {
       decimals: 18,
       enabled: true,
       label: 'DQUICK',
@@ -853,7 +876,7 @@ export const underlyingTokens: Record<number, Record<string, UnderlyingTokenProp
         rgb: [29, 139, 207],
         hsl: ['203', '75%', '46%']
       },
-      conversionRate:{
+      conversionRate: {
         invertTokens: true,
         protocolContract: 'QuickswapRouter',
       },
