@@ -399,6 +399,7 @@ export type Asset = {
   totalTvlUsd?: BigNumber
   aprBreakdown?: Balances
   apyBreakdown?: Balances
+  currentRatio?: BigNumber
   protocolsAprs?: Balances
   pricesUsd?: HistoryData[]
   additionalApr?: BigNumber

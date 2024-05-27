@@ -424,6 +424,15 @@ export class TrancheVault {
     ]
   }
 
+  public getCurrentAARatioCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId: this.id,
+        call: this.cdoContract.methods.getCurrentAARatio()
+      },
+    ]
+  }
+
   public getBaseAprCalls(): ContractRawCall[] {
     if (!this.strategyContract) return []
     return [
