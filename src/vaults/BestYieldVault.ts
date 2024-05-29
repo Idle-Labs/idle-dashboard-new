@@ -61,7 +61,7 @@ export class BestYieldVault {
   public readonly contractRpc: Contract | undefined // Used for calls on specific blocks
   public readonly idleController: GenericContract | undefined
 
-  constructor(props: ConstructorProps){
+  constructor(props: ConstructorProps) {
 
     const {
       web3,
@@ -72,7 +72,7 @@ export class BestYieldVault {
       cacheProvider,
       idleController
     } = props
-    
+
     // Init global data
     this.web3 = web3
     this.type = type
@@ -90,31 +90,31 @@ export class BestYieldVault {
     this.description = tokenConfig.description
     this.id = this.idleConfig.address.toLowerCase()
     this.rewardsSenders = tokenConfig.rewardsSenders
-    this.vaultFunctionsHelper = new VaultFunctionsHelper({chainId, web3, cacheProvider})
+    this.vaultFunctionsHelper = new VaultFunctionsHelper({ chainId, web3, cacheProvider })
     this.underlyingToken = selectUnderlyingToken(chainId, tokenConfig.underlyingToken)
 
     this.distributedTokens = []
-    if (tokenConfig.distributedTokens){
-      tokenConfig.distributedTokens.forEach( (distributedToken: string) => {
+    if (tokenConfig.distributedTokens) {
+      tokenConfig.distributedTokens.forEach((distributedToken: string) => {
         const underlyingToken = selectUnderlyingToken(chainId, distributedToken)
-        if (underlyingToken){
+        if (underlyingToken) {
           this.distributedTokens.push(underlyingToken)
         }
       })
     }
 
-    if (tokenConfig.aggregatedVaultId){
+    if (tokenConfig.aggregatedVaultId) {
       this.aggregatedVault = aggregatedVaults[tokenConfig.aggregatedVaultId]
     }
 
     this.rewardTokens = []
-    this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce( (rewards: UnderlyingTokenProps[], rewardToken: string) => {
+    this.rewardTokens = tokenConfig.autoFarming ? tokenConfig.autoFarming.reduce((rewards: UnderlyingTokenProps[], rewardToken: string) => {
       const underlyingToken = selectUnderlyingToken(chainId, rewardToken)
-      if (underlyingToken){
+      if (underlyingToken) {
         rewards.push(underlyingToken)
       }
       return rewards
-    },[]) : []
+    }, []) : []
 
     // Init idle token contract
     this.contract = new web3.eth.Contract(this.idleConfig.abi, this.idleConfig.address)
@@ -131,7 +131,7 @@ export class BestYieldVault {
 
   public async getTransactions(account: string, etherscanTransactions: EtherscanTransaction[], getTokenPrice: boolean = true): Promise<Transaction[]> {
 
-    const transactionsByHash = etherscanTransactions.reduce( (transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
+    const transactionsByHash = etherscanTransactions.reduce((transactions: Record<string, EtherscanTransaction[]>, transaction: EtherscanTransaction) => {
       if (!transactions[transaction.hash]) {
         transactions[transaction.hash] = []
       }
@@ -139,7 +139,7 @@ export class BestYieldVault {
       transactions[transaction.hash].push(transaction)
 
       return transactions
-    },{})
+    }, {})
 
     const transactions: Transaction[] = await asyncReduce<Transaction[], Transaction[]>(
       (Object.values(transactionsByHash) as Transaction[][]),
@@ -179,8 +179,8 @@ export class BestYieldVault {
             swapOut: isSwapOutTx,
           }
 
-          const action = Object.keys(actions).find( (action: string) => !!actions[action] )
-          const subAction = Object.keys(subActions).find( (subAction: string) => !!subActions[subAction] )
+          const action = Object.keys(actions).find((action: string) => !!actions[action])
+          const subAction = Object.keys(subActions).find((subAction: string) => !!subActions[subAction])
 
 
           if (action) {
@@ -188,30 +188,30 @@ export class BestYieldVault {
 
             // Get idle token tx and underlying token tx
             const idleTokenToAddress = action === 'redeem' ? (isSendTransferTx ? null : ZERO_ADDRESS) : account
-            const idleTokenTx = internalTxs.find( iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()) )
+            const idleTokenTx = internalTxs.find(iTx => iTx.contractAddress.toLowerCase() === this.id && (!idleTokenToAddress || iTx.to.toLowerCase() === idleTokenToAddress.toLowerCase()))
             const idleAmount = idleTokenTx ? fixTokenDecimals(idleTokenTx.value, 18) : BNify(0)
-            
-            const underlyingTokenTx = internalTxs.find( iTx => {
+
+            const underlyingTokenTx = internalTxs.find(iTx => {
               const underlyingTokenDirectionAddress = action === 'redeem' ? iTx.to : iTx.from
               const underlyingAmount = fixTokenDecimals(iTx.value, this.underlyingToken?.decimals)
-              return iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && underlyingTokenDirectionAddress.toLowerCase() === account.toLowerCase() && underlyingAmount.gte(idleAmount) /*|| this.tokenConfig.proxies?.includes(underlyingTokenDirectionAddress.toLowerCase()*/ 
+              return iTx.contractAddress.toLowerCase() === this.underlyingToken?.address?.toLowerCase() && underlyingTokenDirectionAddress.toLowerCase() === account.toLowerCase() && underlyingAmount.gte(idleAmount) /*|| this.tokenConfig.proxies?.includes(underlyingTokenDirectionAddress.toLowerCase()*/
             })
 
             const underlyingTokenTxAmount = underlyingTokenTx ? fixTokenDecimals(underlyingTokenTx.value, this.underlyingToken?.decimals) : null
             let idlePrice = underlyingTokenTxAmount?.gt(0) ? underlyingTokenTxAmount.div(idleAmount) : BNify(1)
 
             let underlyingAmount = BNify(0)
-            if (!underlyingTokenTxAmount){
+            if (!underlyingTokenTxAmount) {
               const pricesCalls = this.getPricesCalls()
 
-              if (getTokenPrice){
+              if (getTokenPrice) {
                 const cacheKey = `tokenPrice_${this.chainId}_${this.id}_${tx.blockNumber}`
                 try {
                   // @ts-ignore
-                  const callback = async() => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
+                  const callback = async () => await catchPromise(pricesCalls[0].call.call({}, parseInt(tx.blockNumber)))
                   const tokenPrice = this.cacheProvider ? await this.cacheProvider.checkAndCache(cacheKey, callback, 0) : await callback()
                   idlePrice = tokenPrice ? fixTokenDecimals(tokenPrice, this.underlyingToken?.decimals) : BNify(1)
-                } catch (err){
+                } catch (err) {
                 }
               }
 
@@ -220,14 +220,14 @@ export class BestYieldVault {
               underlyingAmount = underlyingTokenTxAmount
             }
 
-            if (!insertedTxs[txHashKey]){
+            if (!insertedTxs[txHashKey]) {
               transactions.push({
                 ...tx,
                 action,
                 subAction,
                 idlePrice,
                 idleAmount,
-                assetId:this.id,
+                assetId: this.id,
                 underlyingAmount,
                 chainId: this.chainId
               })
@@ -257,8 +257,8 @@ export class BestYieldVault {
     const contract = this.contractRpc || this.contract
     return [
       {
-        assetId:this.id,
-        call:contract.methods.balanceOf(...params),
+        assetId: this.id,
+        call: contract.methods.balanceOf(...params),
       },
     ]
   }
@@ -276,16 +276,16 @@ export class BestYieldVault {
 
   public getPricesUsdCalls(contracts: GenericContract[]): any[] {
     if (!this.underlyingToken) return []
-    
-    const genericContractsHelper = new GenericContractsHelper({chainId: this.chainId, web3: this.web3, contracts})
+
+    const genericContractsHelper = new GenericContractsHelper({ chainId: this.chainId, web3: this.web3, contracts })
     const conversionRateParams = genericContractsHelper.getConversionRateParams(this.underlyingToken)
     if (!conversionRateParams) return []
 
     return [
       {
-        assetId:this.id,
-        params:conversionRateParams,
-        call:conversionRateParams.call
+        assetId: this.id,
+        params: conversionRateParams,
+        call: conversionRateParams.call
       }
     ]
   }
@@ -293,8 +293,8 @@ export class BestYieldVault {
   public getFeesCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.fee()
+        assetId: this.id,
+        call: this.contract.methods.fee()
       }
     ]
   }
@@ -307,9 +307,9 @@ export class BestYieldVault {
   public getAprsCalls(): ContractRawCall[] {
     return [
       {
-        decimals:18,
-        assetId:this.id,
-        call:this.contract.methods.getAvgAPR()
+        decimals: 18,
+        assetId: this.id,
+        call: this.contract.methods.getAvgAPR()
       }
     ]
   }
@@ -317,8 +317,8 @@ export class BestYieldVault {
   public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.totalSupply()
+        assetId: this.id,
+        call: this.contract.methods.totalSupply()
       }
     ]
   }
@@ -326,8 +326,8 @@ export class BestYieldVault {
   public getProtocolsCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.getAPRs()
+        assetId: this.id,
+        call: this.contract.methods.getAPRs()
       }
     ]
   }
@@ -335,8 +335,8 @@ export class BestYieldVault {
   public getPausedCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.paused()
+        assetId: this.id,
+        call: this.contract.methods.paused()
       }
     ]
   }
@@ -345,21 +345,21 @@ export class BestYieldVault {
     return [
       {
         data,
-        assetId:this.id,
-        call:this.contract.methods.lastAllocations(index)
+        assetId: this.id,
+        call: this.contract.methods.lastAllocations(index)
       }
     ]
   }
 
   public getInterestBearingTokensExchangeRatesCalls(): ContractRawCall[] {
-    return this.tokenConfig.protocols.reduce( (calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
+    return this.tokenConfig.protocols.reduce((calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
       // Exchange rate call
       const exchangeRateFunction = protocolToken.functions?.exchangeRate
-      if (exchangeRateFunction){
+      if (exchangeRateFunction) {
         const protocolAbi = protocolToken.abi ? protocolToken.abi as Abi : ERC20 as Abi
         const protocolAddress = exchangeRateFunction.target || protocolToken.address
         const protocolTokenContract = new this.web3.eth.Contract(protocolAbi, protocolAddress)
-        if (protocolTokenContract.methods[exchangeRateFunction.name]){
+        if (protocolTokenContract.methods[exchangeRateFunction.name]) {
           calls.push({
             assetId: this.id,
             data: {
@@ -376,7 +376,7 @@ export class BestYieldVault {
   }
 
   public getInterestBearingTokensCalls(): ContractRawCall[] {
-    const calls = this.tokenConfig.protocols.reduce( (calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
+    const calls = this.tokenConfig.protocols.reduce((calls: ContractRawCall[], protocolToken: IdleTokenProtocol) => {
       const protocolTokenContract = new this.web3.eth.Contract(ERC20 as Abi, protocolToken.address)
 
       // Balance call
@@ -388,8 +388,8 @@ export class BestYieldVault {
 
       return calls
     }, [])
-    
-    if (this.underlyingToken?.address && this.underlyingContract){
+
+    if (this.underlyingToken?.address && this.underlyingContract) {
       calls.push({
         assetId: this.id,
         data: {
@@ -406,8 +406,8 @@ export class BestYieldVault {
   public getRewardTokensCalls(): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.getGovTokens()
+        assetId: this.id,
+        call: this.contract.methods.getGovTokens()
       }
     ]
   }
@@ -415,8 +415,8 @@ export class BestYieldVault {
   public getRewardTokensAmounts(account: string): ContractRawCall[] {
     return [
       {
-        assetId:this.id,
-        call:this.contract.methods.getGovTokensAmounts(account)
+        assetId: this.id,
+        call: this.contract.methods.getGovTokensAmounts(account)
       }
     ]
   }
@@ -435,8 +435,8 @@ export class BestYieldVault {
 
   public getAssetsData(): Assets {
     return {
-      [this.id]:{
-        decimals:18,
+      [this.id]: {
+        decimals: 18,
         type: this.type,
         token: this.idleConfig.token,
         color: this.underlyingToken?.colors.hex,
@@ -453,7 +453,7 @@ export class BestYieldVault {
   }
 
   public getMethodDefaultGasLimit(methodName: string): number | undefined {
-    switch (methodName){
+    switch (methodName) {
       case 'deposit':
         return 723882
       case 'withdraw':
@@ -463,7 +463,7 @@ export class BestYieldVault {
     }
   }
 
-  public getFlag(flag: string): any{
+  public getFlag(flag: string): any {
     return getObjectPath(this, `flags.${flag}`)
   }
 
@@ -479,16 +479,16 @@ export class BestYieldVault {
 
   public getDistributedRewards(account: string, etherscanTransactions: EtherscanTransaction[], startBlock: number = 0): EtherscanTransaction[] {
     if (!this.distributedTokens.length || isEmpty(this.rewardsSenders)) return []
-    return etherscanTransactions.filter( (tx: EtherscanTransaction) => {
+    return etherscanTransactions.filter((tx: EtherscanTransaction) => {
       const sendersAddrs = Object.keys(this.rewardsSenders as RewardSenders)
-      const foundSenderAddress = sendersAddrs.find( (addr: string) => cmpAddrs(addr, tx.from.toLowerCase()) )
-      if (foundSenderAddress){
+      const foundSenderAddress = sendersAddrs.find((addr: string) => cmpAddrs(addr, tx.from.toLowerCase()))
+      if (foundSenderAddress) {
         const senderParams: RewardSenderParams = (this.rewardsSenders as RewardSenders)[foundSenderAddress]
         if (
-          (!senderParams.startBlock || +tx.blockNumber>=senderParams.startBlock) &&
-          (!senderParams.endBlock || +tx.blockNumber<=senderParams.endBlock)
+          (!senderParams.startBlock || +tx.blockNumber >= senderParams.startBlock) &&
+          (!senderParams.endBlock || +tx.blockNumber <= senderParams.endBlock)
         ) {
-          return +tx.blockNumber>=+startBlock && this.distributedTokens.map( (distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase() ).includes(tx.contractAddress.toLowerCase()) && cmpAddrs(tx.to, account)
+          return +tx.blockNumber >= +startBlock && this.distributedTokens.map((distributedToken: UnderlyingTokenProps) => distributedToken.address?.toLowerCase()).includes(tx.contractAddress.toLowerCase()) && cmpAddrs(tx.to, account)
         }
       }
       return false
