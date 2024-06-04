@@ -4379,6 +4379,8 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           </tr>
         </tbody>
       </table>
+      <br />
+      The incentive program will last 1 month, until June 30th, 2024.<br />
       <br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are collected from the underlying vaults and airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>`,
       protocols: [
         {
