@@ -4367,15 +4367,15 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         <tbody>
           <tr>
             <td>Up to $2,000,000</td>
-            <td>20%</td>
+            <td align="right">20%</td>
           </tr>
           <tr>
             <td>Up to $3,000,000</td>
-            <td>18%</td>
+            <td align="right">18%</td>
           </tr>
           <tr>
             <td>Up to $5,000,000</td>
-            <td>16%</td>
+            <td align="right">16%</td>
           </tr>
         </tbody>
       </table>
