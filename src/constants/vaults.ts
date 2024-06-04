@@ -4356,7 +4356,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       },
       description: `The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a conservative risk profile thanks to <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Seniors’ built-in coverage</a>.<br /><br />
       <h3 style="font-weight:bold">OP Incentive program</h3>
-      <p>This vault, thanks to OP rewards, always maintains a constant APY based on the following TVL thresholds:</p>
+      <p>This vault, thanks to the OP rewards, always offers a constant APY based on the following thresholds. OP rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.<br /><br />The incentive program will last 1 month, until June 30th, 2024.</p>
       <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
         <thead>
           <tr>
@@ -4378,10 +4378,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
             <td align="right">16%</td>
           </tr>
         </tbody>
-      </table>
-      <br />
-      The incentive program will last 1 month, until June 30th, 2024.<br />
-      <br /><h3 style="font-weight:bold">Rewards distribution</h3><p>OP rewards are collected from the underlying vaults and airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.</p>`,
+      </table>`,
       protocols: [
         {
           decimals: 18,
