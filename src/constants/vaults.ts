@@ -938,9 +938,9 @@ export const tranches: Record<
   1: {
     gearbox: {
       USDC: {
+        enabledEnvs: [],
         protocol: "gearbox",
         autoFarming: ["GEAR"],
-        enabledEnvs: ["beta"],
         blockNumber: 19674126,
         underlyingToken: "USDC",
         vaultType: "overcollatLending",
@@ -991,7 +991,7 @@ export const tranches: Record<
             token: "AA_gearbox_USDC",
             address: "0x450C055a00226F1Eba09E8D9627034565b7C4C8A",
             description: `<h3 style="font-weight:bold">Incentive program</h3>
-            <p>This vault offers a constant minimum APY based on the following thresholds. GEAR and USDC/WETH rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.
+            <p>This vault offers a constant minimum APY based on the following thresholds. GEAR and USDC rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.
             <br /><br />The incentive program will last at most 3 months, until September 11th, 2024.</p>
             <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
               <thead>
@@ -1045,8 +1045,8 @@ export const tranches: Record<
         },
       },
       WETH: {
+        enabledEnvs: [],
         protocol: "gearbox",
-        enabledEnvs: ["beta"],
         autoFarming: ["GEAR"],
         blockNumber: 19674126,
         underlyingToken: "WETH",
@@ -1112,7 +1112,7 @@ export const tranches: Record<
             token: "AA_gearbox_WETH",
             address: "0x0f09A04AD551Dd941b589625BD2360FC962FF9f7",
             description: `<h3 style="font-weight:bold">Incentive program</h3>
-            <p>This vault offers a constant minimum APY based on the following thresholds. GEAR and USDC/WETH rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.
+            <p>This vault offers a constant minimum APY based on the following thresholds. GEAR and WETH rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.
             <br /><br />The incentive program will last at most 3 months, until September 11th, 2024.</p>
             <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
               <thead>
