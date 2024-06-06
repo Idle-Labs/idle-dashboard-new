@@ -946,6 +946,7 @@ export const tranches: Record<
         adaptiveYieldSplitEnabled: true,
         flags: {
           addHarvestApy: false,
+          referralEnabled: true,
         },
         CDO: {
           abi: IdleCDO as Abi,
@@ -1027,6 +1028,7 @@ export const tranches: Record<
         adaptiveYieldSplitEnabled: true,
         flags: {
           addHarvestApy: false,
+          referralEnabled: true,
         },
         pointsEmission: {
           RSETH: {
