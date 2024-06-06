@@ -320,6 +320,17 @@ export const Earn: React.FC = () => {
             </VStack>
           )
         }
+        {
+          (vault instanceof TrancheVault && vault.trancheConfig.description) && (
+            <VStack
+              spacing={2}
+              width={'full'}
+              alignItems={'flex-start'}
+            >
+              <Translation isHtml={true} translation={vault.trancheConfig.description} />
+            </VStack>
+          )
+        }
       </VStack>
     )
   }, [vault, asset, locale])

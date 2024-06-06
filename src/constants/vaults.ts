@@ -89,6 +89,7 @@ export interface Tranche {
   name: string;
   token: string;
   address: string;
+  description?: string;
 }
 
 export type StatsProps = {
@@ -989,6 +990,31 @@ export const tranches: Record<
             name: "AA_gearbox_USDC",
             token: "AA_gearbox_USDC",
             address: "0x450C055a00226F1Eba09E8D9627034565b7C4C8A",
+            description: `<h3 style="font-weight:bold">Incentive program</h3>
+            <p>This vault offers a constant minimum APY based on the following thresholds. GEAR and USDC/WETH rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.
+            <br /><br />The incentive program will last at most 3 months, until September 11th, 2024.</p>
+            <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
+              <thead>
+                <tr>
+                  <th>TVL thresholds</th>
+                  <th>Net APY offered</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Up to $500,000</td>
+                  <td align="right">10%</td>
+                </tr>
+                <tr>
+                  <td>Up to $1,000,000</td>
+                  <td align="right">9%</td>
+                </tr>
+                <tr>
+                  <td>Up to $2,000,000</td>
+                  <td align="right">8%</td>
+                </tr>
+              </tbody>
+            </table>`,
           },
           BB: {
             abi: ERC20 as Abi,
@@ -1056,7 +1082,7 @@ export const tranches: Record<
           address: "0xda0002859b2d05f66a753d8241fcde8623f26f4f",
         },
         description:
-          'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda0002859b2d05f66a753d8241fcde8623f26f4f" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> generating passive yield while automatically earning extra Kelp Miles points distributed to the pool (<a href="https://kelp.gitbook.io/kelp/explore-rseth/kelp-miles-and-eigenlayer-points" class="link" rel="nofollow noopener noreferrer" target="_blank">read more</a>). It also harvests GEAR rewards tokens.',
+          'This strategy deploys funds in the <a href="https://app.gearbox.fi/pools/0xda0002859b2d05f66a753d8241fcde8623f26f4f" class="link" rel="nofollow noopener noreferrer" target="_blank">Gearbox ETH V3 Pool</a> generating passive yield while automatically harvesting the GEAR rewards distributed. The pool also benefits from <a href="https://kelp.gitbook.io/kelp/explore-rseth/kelp-miles-and-eigenlayer-points" class="link" rel="nofollow noopener noreferrer" target="_blank">Kelp Miles</a>.',
         Tranches: {
           AA: {
             abi: ERC20 as Abi,
@@ -1085,6 +1111,31 @@ export const tranches: Record<
             name: "AA_gearbox_WETH",
             token: "AA_gearbox_WETH",
             address: "0x0f09A04AD551Dd941b589625BD2360FC962FF9f7",
+            description: `<h3 style="font-weight:bold">Incentive program</h3>
+            <p>This vault offers a constant minimum APY based on the following thresholds. GEAR and USDC/WETH rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.
+            <br /><br />The incentive program will last at most 3 months, until September 11th, 2024.</p>
+            <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
+              <thead>
+                <tr>
+                  <th>TVL thresholds</th>
+                  <th>Net APY offered</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Up to $500,000</td>
+                  <td align="right">10%</td>
+                </tr>
+                <tr>
+                  <td>Up to $1,000,000</td>
+                  <td align="right">9%</td>
+                </tr>
+                <tr>
+                  <td>Up to $2,000,000</td>
+                  <td align="right">8%</td>
+                </tr>
+              </tbody>
+            </table>`,
           },
           BB: {
             abi: ERC20 as Abi,
@@ -4180,8 +4231,8 @@ export const tranches: Record<
         messages: {
           defaulted: `The <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor ETH/USDC</a> pool experienced a loss, redistributed to safeguard Senior liquidity. If you've deposited in Junior, there may be an impact on your funds.`,
         },
-        // eslint-disable-next-line
         description:
+          // eslint-disable-next-line
           'This strategy deploys funds in the <a href="https://app.amphor.io/earn" class="link" rel="nofollow noopener noreferrer" target="_blank">Amphor ETH/USDC</a> pool.<br />The synthetic LP replicates the payoff of a position in Uniswap v3 liquidity pool while hedging against Impermanent Loss on ETH/USDC.<br />As long as ETH/USDC is trading <span class="bold" style="color: #fff;">{aboveBelow}</span> the "Risk threshold", the vault generates a total net <span class="bold" style="color: #fff;">{totalApr}% APR</span> for the entire pool.<br />Every week, the vault early terminates if ETH price closes <span class="bold" style="color: #fff;">{aboveBelow}</span> the "Termination threshold".<br />If the vault reaches its maturity and ETH price ends <span class="bold" style="color: #fff;">{aboveBelowInverse}</span> the "Risk threshold" of <span class="bold" style="color: #fff;">${riskThreshold}</span>, on <span class="bold" style="color: #fff;">{epochEnd}</span>, the capital would be at risk. To prevent any loss, the position will be restructured by the Amphor team if the ETH price gets too close to the "Risk threshold".',
         Tranches: {
           AA: {

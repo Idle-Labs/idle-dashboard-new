@@ -551,6 +551,19 @@ export class VaultFunctionsHelper {
     return BigNumber.maximum(0, targetApy.minus(bnOrZero(asset.apy)));
   }
 
+  public getGearboxSrTrancheAdditionalApy(asset: Asset): BigNumber {
+    let targetApy = BNify(0);
+    if (bnOrZero(asset.totalTvlUsd).lte(500000)) {
+      targetApy = BNify(10);
+    } else if (bnOrZero(asset.totalTvlUsd).lte(1000000)) {
+      targetApy = BNify(9);
+    } else if (bnOrZero(asset.totalTvlUsd).lte(2000000)) {
+      targetApy = BNify(8);
+    }
+
+    return BigNumber.maximum(0, targetApy.minus(bnOrZero(asset.apy)));
+  }
+
   public async getOptimismTrancheAdditionalApy(
     trancheVault: TrancheVault
   ): Promise<BigNumber> {
@@ -1322,6 +1335,24 @@ export class VaultFunctionsHelper {
             vaultId: vault.id,
             apr: this.getBestYieldRWAAdditionalApy(asset),
           };
+        default:
+          return {
+            apr: BNify(0),
+            vaultId: vault.id,
+          };
+      }
+    } else if (vault instanceof TrancheVault) {
+      switch (vault.cdoConfig.name) {
+        case "IdleCDO_gearbox_USDC":
+        case "IdleCDO_gearbox_WETH":
+          if (vault.type === "AA") {
+            return {
+              type: "rewards",
+              vaultId: vault.id,
+              apr: this.getGearboxSrTrancheAdditionalApy(asset),
+            };
+          }
+          break;
         default:
           return {
             apr: BNify(0),

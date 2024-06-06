@@ -331,7 +331,7 @@
       },
       "riskProfile": "Senior",
       "title": "Senior Tranches",
-      "description": "Senior Tranches provide a shielded access to any DeFi yield sources. The default coverage is provided by Junior Tranches and automatically enforced by design. This makes them perfect for high-profile users that want to access DeFi yields witouth compromising their risk profile."
+      "description": "Senior Tranches provide shielded access to any DeFi yield sources. The default coverage is provided by Junior Tranches and automatically enforced by design. This makes them perfect for high-profile users who want to access DeFi yields without compromising their risk profile."
     },
     "boosted": {
       "features": {
