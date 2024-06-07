@@ -194,7 +194,9 @@ export class VaultFunctionsHelper {
       trancheAPRSplitRatio,
     ] = multicallResults.map((r) => BNify(r.data));
 
-    const lastHarvestBlock = web3ToUse.utils.hexToNumber(lastHarvestBlockHex);
+    const lastHarvestBlock =
+      trancheVault.getFlag("lastHarvestBlock") ||
+      web3ToUse.utils.hexToNumber(lastHarvestBlockHex);
 
     // console.log('getTrancheLastHarvest', trancheVault.id, lastHarvestBlockHex, lastHarvestBlock)
 

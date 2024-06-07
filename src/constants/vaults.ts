@@ -354,6 +354,7 @@ export const tranches: Record<
         flags: {
           addHarvestApy: true,
           referralEnabled: true,
+          lastHarvestBlock: 120998560,
         },
         CDO: {
           decimals: 18,
@@ -647,6 +648,7 @@ export const tranches: Record<
         flags: {
           addHarvestApy: true,
           referralEnabled: true,
+          lastHarvestBlock: 120998560,
         },
         CDO: {
           abi: IdleCDO as Abi,
@@ -755,6 +757,7 @@ export const tranches: Record<
         flags: {
           addHarvestApy: true,
           referralEnabled: true,
+          lastHarvestBlock: 120998560,
         },
         CDO: {
           decimals: 18,
