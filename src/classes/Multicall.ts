@@ -161,7 +161,7 @@ export class Multicall {
       values
     );
 
-    console.log("prepareMulticallData", calls, values);
+    // console.log("prepareMulticallData", calls, values);
 
     // const methodSignature = this.web3.utils.keccak256('aggregate((address,bytes)[])').substr(0, 10)
     const methodSignature = this.web3.utils
