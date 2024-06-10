@@ -1,4 +1,3 @@
-// From master
 import aToken from "abis/aave/AToken.json";
 import ERC20 from "abis/tokens/ERC20.json";
 import cToken from "abis/compound/cDAI.json";
@@ -85,12 +84,15 @@ export interface Tranche {
   functions: Record<string, string | null>;
   CDORewards: CDOReward;
   rewardsEmissions?: RewardEmission[];
+  rewardsEmissionsParams?: Record<string, RewardEmissionParams>;
+  features?: string[];
   blockNumber: number;
   label: string;
   name: string;
   token: string;
   address: string;
   description?: string;
+  strategy?: string;
 }
 
 export type StatsProps = {
@@ -108,6 +110,11 @@ export type PointEmission = {
   assetName: string;
   tooltip?: string;
 };
+
+export interface RewardEmissionParams {
+  aprRatio?: number;
+  vaultShare?: number;
+}
 
 export interface TrancheConfig {
   protocol: string;

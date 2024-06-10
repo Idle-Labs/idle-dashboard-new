@@ -1583,7 +1583,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
             annualDistribution,
             annualDistributionUsd,
             assetId: rewardTokenAddress,
-            totalSupply: vaultTotalSupply
+            totalSupply: vaultTotalSupply,
+            tooltip:'assets.assetDetails.tooltips.rewardEmissionTokenOn1000UsdAirDrop',
           }
 
           if (!rewardsEmissions[cdoAddress]) {
@@ -4315,7 +4316,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
               if (BNify(vaultRewardEmission.annualDistributionUsd).gt(0)) {
                 vaultRewardEmission.apr = BNify(vaultRewardEmission.annualDistributionUsd).div(bnOrZero(assetsData[vault.id].tvlUsd)).times(100)
               }
-
               rewardsEmissions[rewardId] = vaultRewardEmission
             }
             return rewardsEmissions

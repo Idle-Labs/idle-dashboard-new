@@ -1,79 +1,79 @@
-import { StackProps } from '@chakra-ui/react'
-import type { BannerProps } from 'constants/types'
-import { strategiesCarouselFolder, strategiesFolder } from 'constants/folders'
+import { StackProps } from "@chakra-ui/react";
+import type { BannerProps } from "constants/types";
+import { strategiesCarouselFolder, strategiesFolder } from "constants/folders";
 
 export type GeneralDataField = {
-  props?: any
-  field: string
-  label: string
-  tooltip?: string
-  inlineField?: string
-}
+  props?: any;
+  field: string;
+  label: string;
+  tooltip?: string;
+  inlineField?: string;
+};
 
 export type StrategyCarouselItem = {
-  image: string
-  title: string
-  description: string
-}
+  image: string;
+  title: string;
+  description: string;
+};
 
-export type Tables = "Available" | "Deposited" | "Discount"
+export type Tables = "Available" | "Deposited" | "Discount";
 
 export type StrategyColumn = {
-  id?: any
-  title?: any
-  width?: any
-  accessor: any
-  cellSx?: any
-  textAlign?: any
-  tables?: Tables[]
-  extraFields?: string[]
-  stackProps?: StackProps
-  fieldProps?: any
-  sortType?: string
-}
+  id?: any;
+  title?: any;
+  width?: any;
+  accessor: any;
+  cellSx?: any;
+  textAlign?: any;
+  tables?: Tables[];
+  extraFields?: string[];
+  stackProps?: StackProps;
+  fieldProps?: any;
+  sortType?: string;
+};
 
 type StatsProps = {
-  header: Record<string, any>
-  strategyData?: Record<string, any>
-}
+  header: Record<string, any>;
+  strategyData?: Record<string, any>;
+};
 
-export type DynamicActionFields = Record<string, string[]>
+export type DynamicActionFields = Record<string, string[]>;
 
 export type StrategyProps = {
-  bg?: string
-  type?: string,
-  color?: string
-  route?: string
-  label?: string
-  title?: string
-  image?: string
-  visible: boolean
-  strategy?: string,
-  stats?: StatsProps
-  features?: string[]
-  banner?: BannerProps
-  riskProfile?: string
-  description?: string
-  showApyBoost?: boolean
-  feesCollectors?: string[]
-  columns?: StrategyColumn[]
-  modalField?: string
-  generalDataFields?: GeneralDataField[]
-  carouselItems?: StrategyCarouselItem[]
-  dynamicActionFields?: DynamicActionFields
-}
+  bg?: string;
+  type?: string;
+  color?: string;
+  route?: string;
+  label?: string;
+  title?: string;
+  image?: string;
+  visible: boolean;
+  strategy?: string;
+  stats?: StatsProps;
+  features?: string[];
+  banner?: BannerProps;
+  riskProfile?: string;
+  description?: string;
+  showApyBoost?: boolean;
+  feesCollectors?: string[];
+  columns?: StrategyColumn[];
+  modalField?: string;
+  generalDataFields?: GeneralDataField[];
+  carouselItems?: StrategyCarouselItem[];
+  dynamicActionFields?: DynamicActionFields;
+};
 
 export const strategies: Record<string, StrategyProps> = {
   YIL: {
-    type: 'YIL',
+    type: "YIL",
     visible: false,
-    color: '#90D835',
+    color: "#90D835",
     showApyBoost: true,
-    modalField: 'apyBoost',
+    modalField: "apyBoost",
     image: `${strategiesFolder}YIL.svg`,
-    label: 'strategies.yieldLeverage.title',
-    riskProfile: 'strategies.yieldLeverage.riskProfile',
-    description: 'strategies.yieldLeverage.description',
+    label: "strategies.yieldLeverage.title",
+    riskProfile: "strategies.yieldLeverage.riskProfile",
+    description: "strategies.yieldLeverage.description",
     features: [
       "strategies.yieldLeverage.features.yieldExposure",
       "strategies.yieldLeverage.features.yieldLeveraged",
@@ -81,95 +81,135 @@ export const strategies: Record<string, StrategyProps> = {
     ],
   },
   REL: {
-    type: 'REL',
+    type: "REL",
     visible: false,
-    color: '#E34D4D',
-    modalField: 'rewardsBoost',
+    color: "#E34D4D",
+    modalField: "rewardsBoost",
     image: `${strategiesFolder}REL.svg`,
-    label: 'strategies.rewardsLeverage.title',
-    riskProfile: 'strategies.rewardsLeverage.riskProfile',
-    description: 'strategies.rewardsLeverage.description',
+    label: "strategies.rewardsLeverage.title",
+    riskProfile: "strategies.rewardsLeverage.riskProfile",
+    description: "strategies.rewardsLeverage.description",
     features: [
       "strategies.rewardsLeverage.features.rewardsExposure",
       "strategies.rewardsLeverage.features.rewardsLeveraged",
       "strategies.rewardsLeverage.features.noYield",
     ],
-  },
-  STK: {
-    type: 'STK',
-    visible: false,
-    label: 'strategies.staking.title',
     generalDataFields: [
       {
-        field: 'stakingTvl',
-        label: 'assets.assetDetails.generalData.totalIDLELocked',
-        tooltip: 'assets.assetDetails.tooltips.totalIDLELocked'
+        field: "protocol",
+        props: {
+          size: "xs",
+        },
+        label: "assets.assetDetails.generalData.protocol",
       },
       {
-        field: 'stkIDLESupply',
-        label: 'assets.assetDetails.generalData.totalStkIDLESupply',
-        tooltip: 'assets.assetDetails.tooltips.stkIDLESupply'
+        field: "strategies",
+        props: {
+          iconMargin: 0,
+          showLabel: true,
+        },
+        label: "assets.assetDetails.generalData.vaultType",
       },
       {
-        field: 'totalDiscountedFees',
-        label: 'assets.assetDetails.generalData.totalDiscountedFees',
-        tooltip: 'assets.assetDetails.tooltips.totalDiscountedFees'
+        field: "pool",
+        label: "assets.assetDetails.generalData.pool",
+        props: {
+          abbreviate: false,
+        },
       },
       {
-        field: 'stakingAvgLockTimeChart',
-        inlineField: 'stakingAvgLockTime',
-        label: 'assets.assetDetails.generalData.avgLockTime',
-        tooltip: 'assets.assetDetails.tooltips.stakingAvgLockTime',
-      }
+        field: "rewardsEmissions",
+        label: "assets.assetDetails.generalData.rewards",
+        props: {
+          layout: "extended",
+        },
+      },
+      {
+        field: "status",
+        label: "assets.assetDetails.generalData.status",
+        tooltip: "assets.assetDetails.tooltips.vaultStatus",
+      },
+      {
+        field: "performanceFee",
+        label: "assets.assetDetails.generalData.performanceFee",
+      },
+    ],
+  },
+  STK: {
+    type: "STK",
+    visible: false,
+    label: "strategies.staking.title",
+    generalDataFields: [
+      {
+        field: "stakingTvl",
+        label: "assets.assetDetails.generalData.totalIDLELocked",
+        tooltip: "assets.assetDetails.tooltips.totalIDLELocked",
+      },
+      {
+        field: "stkIDLESupply",
+        label: "assets.assetDetails.generalData.totalStkIDLESupply",
+        tooltip: "assets.assetDetails.tooltips.stkIDLESupply",
+      },
+      {
+        field: "totalDiscountedFees",
+        label: "assets.assetDetails.generalData.totalDiscountedFees",
+        tooltip: "assets.assetDetails.tooltips.totalDiscountedFees",
+      },
+      {
+        field: "stakingAvgLockTimeChart",
+        inlineField: "stakingAvgLockTime",
+        label: "assets.assetDetails.generalData.avgLockTime",
+        tooltip: "assets.assetDetails.tooltips.stakingAvgLockTime",
+      },
     ],
     dynamicActionFields: {
-      stake: ['stkIDLE', 'feeDiscount'],
-      increaseTime: ['stkIDLEAfterIncrease', 'feeDiscount'],
-      increaseAmount: ['stkIDLEAfterIncrease', 'feeDiscount']
+      stake: ["stkIDLE", "feeDiscount"],
+      increaseTime: ["stkIDLEAfterIncrease", "feeDiscount"],
+      increaseAmount: ["stkIDLEAfterIncrease", "feeDiscount"],
     },
   },
   GG: {
-    type: 'GG',
+    type: "GG",
     visible: false,
-    label: 'strategies.gauge.title',
+    label: "strategies.gauge.title",
     generalDataFields: [
       {
-        field: 'gaugeTotalSupply',
-        tooltip: 'assets.assetDetails.tooltips.totalSupply',
-        label: 'assets.assetDetails.generalData.totalSupply'
+        field: "gaugeTotalSupply",
+        tooltip: "assets.assetDetails.tooltips.totalSupply",
+        label: "assets.assetDetails.generalData.totalSupply",
       },
       {
-        field: 'weight',
-        tooltip: 'assets.assetDetails.tooltips.weight',
-        label: 'assets.assetDetails.generalData.weight'
+        field: "weight",
+        tooltip: "assets.assetDetails.tooltips.weight",
+        label: "assets.assetDetails.generalData.weight",
       },
       {
-        field: 'nextWeight',
-        tooltip: 'assets.assetDetails.tooltips.nextWeight',
-        label: 'assets.assetDetails.generalData.nextWeight'
+        field: "nextWeight",
+        tooltip: "assets.assetDetails.tooltips.nextWeight",
+        label: "assets.assetDetails.generalData.nextWeight",
       },
       {
-        field: 'rewards',
-        tooltip: 'assets.assetDetails.tooltips.gaugeRewards',
-        label: 'assets.assetDetails.generalData.gaugeRewards'
-      }
+        field: "rewards",
+        tooltip: "assets.assetDetails.tooltips.gaugeRewards",
+        label: "assets.assetDetails.generalData.gaugeRewards",
+      },
     ],
     carouselItems: [
       {
         image: `${strategiesCarouselFolder}AA-gauges.gif`,
-        title: 'strategies.best.carousel.gauges.title',
-        description: 'strategies.best.carousel.gauges.description'
-      }
-    ]
+        title: "strategies.best.carousel.gauges.title",
+        description: "strategies.best.carousel.gauges.description",
+      },
+    ],
   },
   BY: {
-    type: 'BY',
+    type: "BY",
     visible: true,
-    color: '#6AE4FF',
-    strategy: 'best',
-    route: 'best-yield',
-    title: 'strategies.best.title',
-    label: 'strategies.best.label',
+    color: "#6AE4FF",
+    strategy: "best",
+    route: "best-yield",
+    title: "strategies.best.title",
+    label: "strategies.best.label",
     /*
     banner:{
       text:'strategies.best.banner.text',
@@ -185,46 +225,46 @@ export const strategies: Record<string, StrategyProps> = {
     feesCollectors: [
       "0xbecc659bfc6edca552fa1a67451cc6b38a0108e4",
       "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",
-      "0x69a62c24f16d4914a48919613e8ee330641bcb94"
+      "0x69a62c24f16d4914a48919613e8ee330641bcb94",
     ],
-    description: 'strategies.best.description',
+    description: "strategies.best.description",
     bg: `${strategiesFolder}best-yield-bg.svg`,
     image: `${strategiesFolder}best-yield.png`,
     dynamicActionFields: {
       // deposit:['coverage' ,'newApy'],
-      withdraw: ['totalGain', 'fee', 'netGain']
+      withdraw: ["totalGain", "fee", "netGain"],
     },
     carouselItems: [
       {
         image: `${strategiesCarouselFolder}BY-pooled-funds.gif`,
-        title: 'strategies.best.carousel.pooledDeposits.title',
-        description: 'strategies.best.carousel.pooledDeposits.description'
+        title: "strategies.best.carousel.pooledDeposits.title",
+        description: "strategies.best.carousel.pooledDeposits.description",
       },
       {
         image: `${strategiesCarouselFolder}BY-yield-monitoring.gif`,
-        title: 'strategies.best.carousel.yieldMonitoring.title',
-        description: 'strategies.best.carousel.yieldMonitoring.description'
+        title: "strategies.best.carousel.yieldMonitoring.title",
+        description: "strategies.best.carousel.yieldMonitoring.description",
       },
       {
         image: `${strategiesCarouselFolder}BY-dynamic-rebalance.gif`,
-        title: 'strategies.best.carousel.dynamicRebalance.title',
-        description: 'strategies.best.carousel.dynamicRebalance.description'
-      }
+        title: "strategies.best.carousel.dynamicRebalance.title",
+        description: "strategies.best.carousel.dynamicRebalance.description",
+      },
     ],
     stats: {
       header: {
-        fields: ['protocols']
-      }
+        fields: ["protocols"],
+      },
     },
     columns: [
       {
-        accessor: 'name',
-        sortType: 'alpha',
-        title: 'defi.asset',
-        id: 'assetWithStatus',
-        extraFields: ['strategies'],
+        accessor: "name",
+        sortType: "alpha",
+        title: "defi.asset",
+        id: "assetWithStatus",
+        extraFields: ["strategies"],
         stackProps: {
-          justifyContent: 'space-between'
+          justifyContent: "space-between",
         },
       },
       /*
@@ -237,190 +277,188 @@ export const strategies: Record<string, StrategyProps> = {
       },
       */
       {
-        id: 'tvl',
-        accessor: 'tvlUsd',
-        sortType: 'numeric'
+        id: "tvl",
+        accessor: "tvlUsd",
+        sortType: "numeric",
       },
       {
-        id: 'apy',
-        accessor: 'apy',
-        sortType: 'numeric',
-        extraFields: ['idleDistribution'],
+        id: "apy",
+        accessor: "apy",
+        sortType: "numeric",
+        extraFields: ["idleDistribution"],
         stackProps: {
-          direction: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start'
+          direction: "column",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
         },
       },
       {
-        id: 'apy7',
-        accessor: 'apy7',
-        sortType: 'numeric',
-        tables: ['Available']
+        id: "apy7",
+        accessor: "apy7",
+        sortType: "numeric",
+        tables: ["Available"],
       },
       {
-        id: 'apy30',
-        accessor: 'apy30',
-        sortType: 'numeric',
-        tables: ['Available']
+        id: "apy30",
+        accessor: "apy30",
+        sortType: "numeric",
+        tables: ["Available"],
       },
       {
-        id: 'protocols',
-        accessor: 'id'
+        id: "protocols",
+        accessor: "id",
       },
       {
-        width: '8%',
-        id: 'chainId',
-        accessor: 'id',
-        textAlign: 'center',
-        tables: ['Available'],
+        width: "8%",
+        id: "chainId",
+        accessor: "id",
+        textAlign: "center",
+        tables: ["Available"],
         stackProps: {
-          justifyContent: 'center'
+          justifyContent: "center",
         },
-      }
+      },
     ],
     generalDataFields: [
       {
-        field: 'pool',
-        label: 'assets.assetDetails.generalData.pool',
+        field: "pool",
+        label: "assets.assetDetails.generalData.pool",
         props: {
-          abbreviate: false
-        }
-      },
-      {
-        field: 'apy',
-        label: 'assets.assetDetails.generalData.apy',
-        tooltip: 'assets.assetDetails.tooltips.spotApy'
-      },
-      {
-        field: 'idleDistribution',
-        props: {
-          size: 'xs',
-          fontSize: 'md',
-          defaultText: '-'
+          abbreviate: false,
         },
-        label: 'assets.assetDetails.generalData.idleDistribution',
-        tooltip: 'assets.assetDetails.tooltips.idleDistribution'
       },
       {
-        field: 'rewards',
+        field: "apy",
+        label: "assets.assetDetails.generalData.apy",
+        tooltip: "assets.assetDetails.tooltips.spotApy",
+      },
+      {
+        field: "idleDistribution",
         props: {
-          size: 'xs',
+          size: "xs",
+          fontSize: "md",
+          defaultText: "-",
         },
-        label: 'assets.assetDetails.generalData.rewards'
+        label: "assets.assetDetails.generalData.idleDistribution",
+        tooltip: "assets.assetDetails.tooltips.idleDistribution",
       },
       {
-        field: 'performanceFee',
-        label: 'assets.assetDetails.generalData.performanceFee'
+        field: "rewards",
+        props: {
+          size: "xs",
+        },
+        label: "assets.assetDetails.generalData.rewards",
+      },
+      {
+        field: "performanceFee",
+        label: "assets.assetDetails.generalData.performanceFee",
       },
       // {
       //   field:'allocation',
       //   label:'assets.assetDetails.generalData.allocation'
       // }
-    ]
+    ],
   },
   AA: {
-    type: 'AA',
+    type: "AA",
     visible: true,
-    color: '#4DE3B0',
-    strategy: 'tranches',
-    route: 'yield-tranches',
-    modalField: 'coverage',
+    color: "#4DE3B0",
+    strategy: "tranches",
+    route: "yield-tranches",
+    modalField: "coverage",
     image: `${strategiesFolder}AA.svg`,
-    label: 'strategies.protected.title',
-    riskProfile: 'strategies.protected.riskProfile',
-    description: 'strategies.protected.description',
+    label: "strategies.protected.title",
+    riskProfile: "strategies.protected.riskProfile",
+    description: "strategies.protected.description",
     bg: `${strategiesFolder}protected-yield-bg.png`,
     dynamicActionFields: {
-      deposit: ['coverage', 'newApy'],
-      withdraw: ['withdrawFee', 'totalGain', 'fee', 'netGain']
+      deposit: ["coverage", "newApy"],
+      withdraw: ["withdrawFee", "totalGain", "fee", "netGain"],
     },
-    feesCollectors: [
-      "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",
-    ],
+    feesCollectors: ["0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814"],
     features: [
       "strategies.protected.features.builtInProtection",
       "strategies.protected.features.minimumYield",
-      "strategies.protected.features.compoundedRewards"
+      "strategies.protected.features.compoundedRewards",
     ],
     stats: {
       header: {
-        fields: ['vaultOperatorOrProtocol']
+        fields: ["vaultOperatorOrProtocol"],
       },
       strategyData: {
-        fields: ['coveragePercentage']
-      }
+        fields: ["coveragePercentage"],
+      },
     },
     carouselItems: [
       {
         image: `${strategiesCarouselFolder}AA-pooled-funds.gif`,
-        title: 'strategies.best.carousel.pooledDeposits.title',
-        description: 'strategies.best.carousel.pooledDeposits.description'
+        title: "strategies.best.carousel.pooledDeposits.title",
+        description: "strategies.best.carousel.pooledDeposits.description",
       },
       {
         image: `${strategiesCarouselFolder}AA-deposits-protection.gif`,
-        title: 'strategies.best.carousel.depositsProtection.title',
-        description: 'strategies.best.carousel.depositsProtection.description'
+        title: "strategies.best.carousel.depositsProtection.title",
+        description: "strategies.best.carousel.depositsProtection.description",
       },
       {
         image: `${strategiesCarouselFolder}AA-default-management.gif`,
-        title: 'strategies.best.carousel.defaultManagement.title',
-        description: 'strategies.best.carousel.defaultManagement.description'
-      }
+        title: "strategies.best.carousel.defaultManagement.title",
+        description: "strategies.best.carousel.defaultManagement.description",
+      },
     ],
     columns: [
       {
-        accessor: 'id',
-        sortType: 'alpha',
-        id: 'vaultOperatorOrProtocol',
-        extraFields: ['statusBadge', 'actionRequired']
+        accessor: "id",
+        sortType: "alpha",
+        id: "vaultOperatorOrProtocol",
+        extraFields: ["statusBadge", "actionRequired"],
       },
       {
-        id: 'asset',
-        accessor: 'name',
-        sortType: 'alpha',
+        id: "asset",
+        accessor: "name",
+        sortType: "alpha",
         // extraFields:[]
       },
       {
-        id: 'tvl',
-        accessor: 'tvlUsd',
-        sortType: 'numeric'
+        id: "tvl",
+        accessor: "tvlUsd",
+        sortType: "numeric",
       },
       {
-        id: 'apy',
-        accessor: 'apy',
-        sortType: 'numeric',
-        extraFields: ['rewardsEmissions'],
+        id: "apy",
+        accessor: "apy",
+        sortType: "numeric",
+        extraFields: ["rewardsEmissions"],
         stackProps: {
-          direction: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start'
-        }
+          direction: "column",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+        },
       },
       {
-        id: 'apy7',
-        accessor: 'apy7',
-        sortType: 'numeric',
-        tables: ['Available']
+        id: "apy7",
+        accessor: "apy7",
+        sortType: "numeric",
+        tables: ["Available"],
       },
       {
-        id: 'apy30',
-        accessor: 'apy30',
-        sortType: 'numeric',
-        tables: ['Available']
+        id: "apy30",
+        accessor: "apy30",
+        sortType: "numeric",
+        tables: ["Available"],
       },
       {
-        id: 'rewards',
-        accessor: 'id'
-      }
+        id: "rewards",
+        accessor: "id",
+      },
     ],
     generalDataFields: [
       {
-        field: 'protocol',
+        field: "protocol",
         props: {
-          size: 'xs'
+          size: "xs",
         },
-        label: 'assets.assetDetails.generalData.protocol'
+        label: "assets.assetDetails.generalData.protocol",
       },
       // {
       //   field:'stakingRewards',
@@ -428,212 +466,210 @@ export const strategies: Record<string, StrategyProps> = {
       //   label:'assets.assetDetails.generalData.stakingRewards'
       // },
       {
-        field: 'strategies',
+        field: "strategies",
         props: {
           iconMargin: 0,
-          showLabel: true
+          showLabel: true,
         },
-        label: 'assets.assetDetails.generalData.vaultType',
+        label: "assets.assetDetails.generalData.vaultType",
       },
       {
-        field: 'pool',
-        label: 'assets.assetDetails.generalData.pool',
+        field: "pool",
+        label: "assets.assetDetails.generalData.pool",
         props: {
-          abbreviate: false
-        }
+          abbreviate: false,
+        },
       },
       {
-        field: 'apyWithRewards',
-        label: 'assets.assetDetails.generalData.apy',
-        tooltip: 'assets.assetDetails.tooltips.seniorTrancheApy'
+        field: "apyWithRewards",
+        label: "assets.assetDetails.generalData.apy",
+        tooltip: "assets.assetDetails.tooltips.seniorTrancheApy",
       },
       {
-        field: 'status',
-        label: 'assets.assetDetails.generalData.status',
-        tooltip: 'assets.assetDetails.tooltips.vaultStatus'
+        field: "status",
+        label: "assets.assetDetails.generalData.status",
+        tooltip: "assets.assetDetails.tooltips.vaultStatus",
       },
       {
-        field: 'performanceFee',
-        label: 'assets.assetDetails.generalData.performanceFee'
+        field: "performanceFee",
+        label: "assets.assetDetails.generalData.performanceFee",
       },
       {
-        field: 'coverage',
-        tooltip: 'assets.assetDetails.tooltips.coverage',
-        label: 'assets.assetDetails.generalData.coverage'
+        field: "coverage",
+        tooltip: "assets.assetDetails.tooltips.coverage",
+        label: "assets.assetDetails.generalData.coverage",
       },
       {
-        field: 'autoCompounding',
-        tooltip: 'assets.assetDetails.tooltips.autoCompounding',
-        label: 'assets.assetDetails.generalData.autoCompounding'
+        field: "autoCompounding",
+        tooltip: "assets.assetDetails.tooltips.autoCompounding",
+        label: "assets.assetDetails.generalData.autoCompounding",
       },
       {
-        field: 'lastHarvest',
-        tooltip: 'assets.assetDetails.tooltips.lastHarvest',
-        label: 'assets.assetDetails.generalData.lastHarvest'
+        field: "lastHarvest",
+        tooltip: "assets.assetDetails.tooltips.lastHarvest",
+        label: "assets.assetDetails.generalData.lastHarvest",
       },
       {
-        field: 'apyRatio',
-        tooltip: 'assets.assetDetails.tooltips.apyRatio',
-        label: 'assets.assetDetails.generalData.apyRatio'
+        field: "apyRatio",
+        tooltip: "assets.assetDetails.tooltips.apyRatio",
+        label: "assets.assetDetails.generalData.apyRatio",
       },
-    ]
+    ],
   },
   BB: {
-    type: 'BB',
+    type: "BB",
     visible: true,
-    color: '#FFD15C',
+    color: "#FFD15C",
     showApyBoost: true,
-    strategy: 'tranches',
-    modalField: 'apyBoost',
-    route: 'yield-tranches',
-    label: 'strategies.boosted.title',
+    strategy: "tranches",
+    modalField: "apyBoost",
+    route: "yield-tranches",
+    label: "strategies.boosted.title",
     image: `${strategiesFolder}BB.svg`,
-    riskProfile: 'strategies.boosted.riskProfile',
-    description: 'strategies.boosted.description',
+    riskProfile: "strategies.boosted.riskProfile",
+    description: "strategies.boosted.description",
     bg: `${strategiesFolder}boosted-yield-bg.png`,
     dynamicActionFields: {
-      deposit: ['boost', 'overperformance', 'newApy'],
-      withdraw: ['withdrawFee', 'totalGain', 'fee', 'netGain']
+      deposit: ["boost", "overperformance", "newApy"],
+      withdraw: ["withdrawFee", "totalGain", "fee", "netGain"],
     },
-    feesCollectors: [
-      "0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814",
-    ],
+    feesCollectors: ["0xfb3bd022d5dacf95ee28a6b07825d4ff9c5b3814"],
     features: [
       "strategies.boosted.features.higherYield",
       "strategies.boosted.features.outperformUnderlying",
-      "strategies.boosted.features.compoundedRewards"
+      "strategies.boosted.features.compoundedRewards",
     ],
     stats: {
       header: {
-        fields: ['vaultOperatorOrProtocol']
+        fields: ["vaultOperatorOrProtocol"],
       },
       strategyData: {
-        fields: ['apyBoost']
-      }
+        fields: ["apyBoost"],
+      },
     },
     carouselItems: [
       {
         image: `${strategiesCarouselFolder}BB-pooled-funds.gif`,
-        title: 'strategies.best.carousel.pooledDeposits.title',
-        description: 'strategies.best.carousel.pooledDeposits.description'
+        title: "strategies.best.carousel.pooledDeposits.title",
+        description: "strategies.best.carousel.pooledDeposits.description",
       },
       {
         image: `${strategiesCarouselFolder}BB-boosted-yield.gif`,
-        title: 'strategies.best.carousel.boostedYield.title',
-        description: 'strategies.best.carousel.boostedYield.description'
+        title: "strategies.best.carousel.boostedYield.title",
+        description: "strategies.best.carousel.boostedYield.description",
       },
       {
         image: `${strategiesCarouselFolder}BB-default-management.gif`,
-        title: 'strategies.best.carousel.defaultManagement.title',
-        description: 'strategies.best.carousel.defaultManagement.description'
-      }
+        title: "strategies.best.carousel.defaultManagement.title",
+        description: "strategies.best.carousel.defaultManagement.description",
+      },
     ],
     columns: [
       {
-        accessor: 'id',
-        sortType: 'alpha',
-        id: 'vaultOperatorOrProtocol',
-        extraFields: ['statusBadge']
+        accessor: "id",
+        sortType: "alpha",
+        id: "vaultOperatorOrProtocol",
+        extraFields: ["statusBadge"],
       },
       {
-        id: 'asset',
-        accessor: 'name',
-        sortType: 'alpha'
+        id: "asset",
+        accessor: "name",
+        sortType: "alpha",
       },
       {
-        id: 'tvl',
-        accessor: 'tvlUsd',
-        sortType: 'numeric',
+        id: "tvl",
+        accessor: "tvlUsd",
+        sortType: "numeric",
       },
       {
-        id: 'apy',
-        accessor: 'apy',
-        sortType: 'numeric',
-        extraFields: ['rewardsEmissions'],
+        id: "apy",
+        accessor: "apy",
+        sortType: "numeric",
+        extraFields: ["rewardsEmissions"],
         stackProps: {
-          direction: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'flex-start'
-        }
+          direction: "column",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+        },
       },
       {
-        id: 'apy7',
-        accessor: 'apy7',
-        sortType: 'numeric',
-        tables: ['Available']
+        id: "apy7",
+        accessor: "apy7",
+        sortType: "numeric",
+        tables: ["Available"],
       },
       {
-        id: 'apy30',
-        accessor: 'apy30',
-        sortType: 'numeric',
-        tables: ['Available']
+        id: "apy30",
+        accessor: "apy30",
+        sortType: "numeric",
+        tables: ["Available"],
       },
       {
-        id: 'rewards',
-        accessor: 'id'
-      }
+        id: "rewards",
+        accessor: "id",
+      },
     ],
     generalDataFields: [
       {
-        field: 'protocol',
+        field: "protocol",
         props: {
-          size: 'xs'
+          size: "xs",
         },
-        label: 'assets.assetDetails.generalData.protocol'
+        label: "assets.assetDetails.generalData.protocol",
       },
       // {
       //   field:'stakingRewards',
       //   label:'assets.assetDetails.generalData.stakingRewards'
       // },
       {
-        field: 'strategies',
+        field: "strategies",
         props: {
           iconMargin: 0,
-          showLabel: true
+          showLabel: true,
         },
-        label: 'assets.assetDetails.generalData.vaultType',
+        label: "assets.assetDetails.generalData.vaultType",
       },
       {
-        field: 'pool',
-        label: 'assets.assetDetails.generalData.pool',
+        field: "pool",
+        label: "assets.assetDetails.generalData.pool",
         props: {
-          abbreviate: false
-        }
+          abbreviate: false,
+        },
       },
       {
-        field: 'apyWithRewards',
-        label: 'assets.assetDetails.generalData.apy',
-        tooltip: 'assets.assetDetails.tooltips.juniorTrancheApy'
+        field: "apyWithRewards",
+        label: "assets.assetDetails.generalData.apy",
+        tooltip: "assets.assetDetails.tooltips.juniorTrancheApy",
       },
       {
-        field: 'status',
-        label: 'assets.assetDetails.generalData.status',
-        tooltip: 'assets.assetDetails.tooltips.vaultStatus'
+        field: "status",
+        label: "assets.assetDetails.generalData.status",
+        tooltip: "assets.assetDetails.tooltips.vaultStatus",
       },
       {
-        field: 'performanceFee',
-        label: 'assets.assetDetails.generalData.performanceFee'
+        field: "performanceFee",
+        label: "assets.assetDetails.generalData.performanceFee",
       },
       {
-        field: 'apyBoost',
-        label: 'assets.assetDetails.generalData.apyBoost',
-        tooltip: 'assets.assetDetails.tooltips.apyBoost',
+        field: "apyBoost",
+        label: "assets.assetDetails.generalData.apyBoost",
+        tooltip: "assets.assetDetails.tooltips.apyBoost",
       },
       {
-        field: 'autoCompounding',
-        tooltip: 'assets.assetDetails.tooltips.autoCompounding',
-        label: 'assets.assetDetails.generalData.autoCompounding'
+        field: "autoCompounding",
+        tooltip: "assets.assetDetails.tooltips.autoCompounding",
+        label: "assets.assetDetails.generalData.autoCompounding",
       },
       {
-        field: 'lastHarvest',
-        label: 'assets.assetDetails.generalData.lastHarvest',
-        tooltip: 'assets.assetDetails.tooltips.lastHarvest',
+        field: "lastHarvest",
+        label: "assets.assetDetails.generalData.lastHarvest",
+        tooltip: "assets.assetDetails.tooltips.lastHarvest",
       },
       {
-        field: 'apyRatio',
-        tooltip: 'assets.assetDetails.tooltips.apyRatio',
-        label: 'assets.assetDetails.generalData.apyRatio'
+        field: "apyRatio",
+        tooltip: "assets.assetDetails.tooltips.apyRatio",
+        label: "assets.assetDetails.generalData.apyRatio",
       },
-    ]
+    ],
   },
-}
+};

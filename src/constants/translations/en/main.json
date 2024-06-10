@@ -526,6 +526,11 @@
         "title": "Fee Discount program",
         "body": "IDLE stakers can benefit from a performance fee discount distributed on a monthly basis in the underlying token of the pool, directly in your wallet. stkIDLE linearly decreases from the lockup date to the end date."
       },
+      "morphoDistribution": {
+        "cta": "Got it",
+        "title": "Morpho distribution",
+        "body": "MORPHO tokens will be collected by this vault once per month. Collected rewards, once transferrable, will be distributed directly to depositors wallets."
+      },
       "opDistribution": {
         "cta": "Got it",
         "title": "OP distribution program",
@@ -2155,6 +2160,7 @@
         "rewardEmissionToken": "Tokens that will be distributed per year for the entire pool. Received rewards will be harvested monthly and distributed over a week",
         "AA": "This Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
         "rewardEmissionTokenOn1000Usd": "Tokens that will be distributed per year for a $1000 worth position. Received rewards, once transferrable, will be harvested monthly and distributed over a week",
+        "rewardEmissionTokenOn1000UsdAirDrop": "Tokens that will be distributed per year for a $1000 worth position. Received rewards, once transferrable, will be distributed directly to depositors wallets",
         "BB": "This Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
         "riskProfiles": {
           "BY_AA": "This Best Yield Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",

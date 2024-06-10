@@ -9,7 +9,8 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, GeneralDataField } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
-import { useTheme, HStack, VStack, SimpleGrid, Text, Tooltip } from '@chakra-ui/react'
+import { useTheme, HStack, VStack, SimpleGrid, Text, Tooltip, Stack, Wrap, WrapItem } from '@chakra-ui/react'
+import { splitArrayIntoChunks } from 'helpers'
 
 type AssetGeneralDataArgs = {
   assetId?: AssetId
@@ -80,20 +81,33 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
     return selectVaultById && selectVaultById(assetId)
   }, [selectVaultById, assetId])
 
-  const strategy = useMemo(() => {
-    return asset?.type && strategies[asset.type]
-  }, [asset])
+  const vaultType = useMemo(() => {
+    if (!vault) return
+    return ("trancheConfig" in vault) && vault.trancheConfig.strategy ? vault.trancheConfig.strategy : vault.type
+  }, [vault])
+
+  const strategyGeneralFields = useMemo(() => {
+    return (vaultType && strategies[vaultType]?.generalDataFields) || (asset?.type && strategies[asset.type]?.generalDataFields)
+  }, [asset, vaultType])
 
   const generalDataFields = useMemo(() => {
-    if (!vault || !("getFlag" in vault)) return strategy?.generalDataFields || []
+    if (!vault || !("getFlag" in vault)) return strategyGeneralFields || []
     const vaultGeneralDataFields = vault.getFlag("generalDataFields")
     if (vaultGeneralDataFields){
-      return strategy?.generalDataFields ? strategy?.generalDataFields.filter( (generalDataField: GeneralDataField) => {
+      return strategyGeneralFields ? strategyGeneralFields.filter( (generalDataField: GeneralDataField) => {
         return vaultGeneralDataFields[generalDataField.field] === undefined || vaultGeneralDataFields[generalDataField.field] === true
       }) : []
     }
-    return strategy?.generalDataFields || []
-  }, [strategy, vault])
+    return strategyGeneralFields || []
+  }, [strategyGeneralFields, vault])
+
+  const chunkSize = useMemo(() => {
+    return vaultType === 'REL' ? 4 : 5
+  }, [vaultType])
+
+  const generalDataFieldsChunks = useMemo(() => {
+    return splitArrayIntoChunks(generalDataFields, chunkSize)
+  }, [generalDataFields, chunkSize])
 
   return (
     <AssetProvider
@@ -101,33 +115,24 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
       assetId={assetId}
     >
       <Card.Dark>
-        <SimpleGrid
-          spacing={[6, 0]}
-          columns={[2, Math.min(generalDataFields.length, 5)]}
-        >
-          {
-            generalDataFields && generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => (
-              <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
-            ))
-          }
-        </SimpleGrid>
         {
-          generalDataFields && generalDataFields.length>5 && (
+          generalDataFieldsChunks.map( (chunkFields, index: number) => (
             <SimpleGrid
-              pt={6}
-              mt={6}
+              key={`row_${index}`}
               spacing={[6, 0]}
-              columns={[2, Math.min(generalDataFields.length, 5)]}
-              borderTop={'1px solid'}
-              borderTopColor={'divider'}
+              pt={index ? 6 : 0}
+              mt={index ? 6 : 0}
+              borderTop={index ? '1px solid' : 'none'}
+              borderTopColor={index ? 'divider' : 'none'}
+              columns={[2, chunkSize]}
             >
               {
-                generalDataFields.slice(5).map( (generalData: GeneralDataField) => (
+                chunkFields.map( (generalData: GeneralDataField) => (
                   <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
                 ))
               }
             </SimpleGrid>
-          )
+          ))
         }
       </Card.Dark>
     </AssetProvider>

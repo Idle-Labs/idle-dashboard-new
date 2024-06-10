@@ -425,6 +425,11 @@ export const AssetPage: React.FC = () => {
     return theme.colors.banner.bg
   }, [vault, theme])
 
+  const vaultType = useMemo(() => {
+    if (!vault) return
+    return ("trancheConfig" in vault) && vault.trancheConfig.strategy ? vault.trancheConfig.strategy : vault.type
+  }, [vault]) 
+
   const operatorInfo = useMemo(() => {
     const operatorName = getObjectPath(vault, 'vaultConfig.operators.0.name')
     return operatorName ? operators[operatorName] : null
@@ -514,8 +519,7 @@ export const AssetPage: React.FC = () => {
               justifyContent={'flex-start'}
             >
               {vaultHeader}
-              <SimpleGrid
-                columns={4}
+              <HStack
                 spacing={[4, 6]}
                 alignItems={'flex-start'}
               >
@@ -527,7 +531,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.apy'} fontSize={['sm', 'md']} color={'primary'} />
+                  <Translation translation={vaultType === 'REL' ? 'defi.rewards' : 'defi.apy'} fontSize={['sm', 'md']} color={'primary'} />
                   <HStack
                     flex={1}
                     spacing={0}
@@ -536,8 +540,10 @@ export const AssetPage: React.FC = () => {
                     {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
+                      ) : vaultType === 'REL' ? (
+                          <AssetProvider.RewardsEmissions layout={'extended'} />
                       ) : (
-                        <AssetProvider.Apy showTooltip={false} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.Apy showTooltip={false} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} /> 
                       )
                     }
                   </HStack>
@@ -617,7 +623,7 @@ export const AssetPage: React.FC = () => {
                     <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
                   </Flex>
                 </VStack>
-              </SimpleGrid>
+              </HStack>
             </VStack>
           </Flex>
           {

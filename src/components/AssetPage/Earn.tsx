@@ -105,6 +105,11 @@ export const Earn: React.FC = () => {
   // const onTabClick = useCallback((row: RowProps) => {
   //   return navigate(`${location?.pathname}/${row.original.id}`)
   // }, [navigate, location])
+  
+  const vaultType = useMemo(() => {
+    if (!vault) return
+    return ("trancheConfig" in vault) && vault.trancheConfig.strategy ? vault.trancheConfig.strategy : vault.type
+  }, [vault]) 
 
   const chartHeading = useMemo(() => {
     const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length - 1].value).div(chartData.total[0].value).minus(1).times(100)
@@ -297,7 +302,6 @@ export const Earn: React.FC = () => {
 
   const strategyDescription = useMemo(() => {
     if (!vault || !("description" in vault) || !vault.description) return null
-    const vaultType = "trancheConfig" in vault && vault.trancheConfig.strategy ? vault.trancheConfig.strategy : vault.type
     return (
       <VStack
         pb={10}
@@ -334,7 +338,7 @@ export const Earn: React.FC = () => {
         }
       </VStack>
     )
-  }, [vault, asset, locale])
+  }, [vault, asset, locale, vaultType])
 
   const vaultOperatorOverview = useMemo(() => {
     if (!vault || !("vaultConfig" in vault) || !("operators" in vault?.vaultConfig)) return null
@@ -420,81 +424,85 @@ export const Earn: React.FC = () => {
       width={'full'}
     >
       {strategyDescription}
-      <Box
-        width={'full'}
-      >
-        <HStack
-          mb={6}
-          spacing={6}
-          width={'full'}
-          alignItems={'center'}
-        >
-          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-            <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
-          </SkeletonText>
-          {
-            userHasBalance && (
+        {
+          vaultType !== 'REL' && (
+            <Box
+              width={'full'}
+            >
               <HStack
-                spacing={2}
+                mb={6}
+                spacing={6}
+                width={'full'}
+                alignItems={'center'}
               >
-                <AssetProvider.Name fontWeight={600} />
-                <Switch size={'md'} isChecked={useDollarConversion} onChange={(e) => setUseDollarConversion(e.target.checked)} />
-                <Text fontWeight={600}>USD</Text>
+                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+                  <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
+                </SkeletonText>
+                {
+                  userHasBalance && (
+                    <HStack
+                      spacing={2}
+                    >
+                      <AssetProvider.Name fontWeight={600} />
+                      <Switch size={'md'} isChecked={useDollarConversion} onChange={(e) => setUseDollarConversion(e.target.checked)} />
+                      <Text fontWeight={600}>USD</Text>
+                    </HStack>
+                  )
+                }
               </HStack>
-            )
-          }
-        </HStack>
-        <Card.Flex
-          p={0}
-          border={0}
-          width={'full'}
-          overflow={'hidden'}
-          direction={'column'}
-          minH={['auto', 460]}
-          position={'relative'}
-          layerStyle={'cardDark'}
-          justifyContent={'space-between'}
-        >
-          {
-            chartData && !chartData.total?.length && (
-              <Center
-                layerStyle={'overlay'}
+              <Card.Flex
+                p={0}
+                border={0}
+                width={'full'}
+                overflow={'hidden'}
+                direction={'column'}
+                minH={['auto', 460]}
+                position={'relative'}
+                layerStyle={'cardDark'}
+                justifyContent={'space-between'}
               >
-                <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
-              </Center>
-            )
-          }
-          <Stack
-            pt={0}
-            px={0}
-            pb={[4, 0]}
-            zIndex={9}
-            width={'full'}
-            alignItems={'flex-start'}
-            direction={['column', 'row']}
-            justifyContent={['center', 'space-between']}
-          >
-            {chartHeading}
-            {
-              (!userHasBalance || (chartData && chartData.total?.length > 0)) && (
-                <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
-              )
-            }
-          </Stack>
-          <GenericChart
-            data={chartData}
-            percentChange={0}
-            color={strategyColor}
-            timeframe={timeframe}
-            isRainbowChart={false}
-            assetIds={[params.asset]}
-            setPercentChange={() => { }}
-            height={isMobile ? '300px' : '350px'}
-            margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={!useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined}
-          />
-        </Card.Flex>
-      </Box>
+                {
+                  chartData && !chartData.total?.length && (
+                    <Center
+                      layerStyle={'overlay'}
+                    >
+                      <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                    </Center>
+                  )
+                }
+                <Stack
+                  pt={0}
+                  px={0}
+                  pb={[4, 0]}
+                  zIndex={9}
+                  width={'full'}
+                  alignItems={'flex-start'}
+                  direction={['column', 'row']}
+                  justifyContent={['center', 'space-between']}
+                >
+                  {chartHeading}
+                  {
+                    (!userHasBalance || (chartData && chartData.total?.length > 0)) && (
+                      <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+                    )
+                  }
+                </Stack>
+                <GenericChart
+                  data={chartData}
+                  percentChange={0}
+                  color={strategyColor}
+                  timeframe={timeframe}
+                  isRainbowChart={false}
+                  assetIds={[params.asset]}
+                  setPercentChange={() => { }}
+                  height={isMobile ? '300px' : '350px'}
+                  margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+                  formatFn={!useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined}
+                />
+              </Card.Flex>
+            </Box>
+          )
+        }
       {fundsOverview}
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />
