@@ -22,7 +22,7 @@ import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath } from 'helpers/'
-import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
+import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps, StackProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
@@ -472,6 +472,7 @@ const Protocols: React.FC<ProtocolsProps> = ({ children, iconMargin, tooltipDisa
 type StrategiesProps = ProtocolsProps & {
   showLabel?: boolean
   labelProps?: TextProps
+  stackProps?: StackProps
 }
 
 const Strategies: React.FC<StrategiesProps> = ({
@@ -479,6 +480,7 @@ const Strategies: React.FC<StrategiesProps> = ({
   iconMargin = 1,
   showLabel = false,
   labelProps = {},
+  stackProps = {},
   ...props
 }) => {
   const { vault, translate } = useAssetProvider()
@@ -510,6 +512,7 @@ const Strategies: React.FC<StrategiesProps> = ({
         <HStack
           spacing={2}
           key={`strategy_${index}`}
+          {...stackProps}
         >
           <Tooltip
             hasArrow
@@ -529,7 +532,7 @@ const Strategies: React.FC<StrategiesProps> = ({
     })
 
     return protocolIcons
-  }, [translate, vault, children, props, showLabel, labelProps, iconMargin, availableStrategies])
+  }, [translate, vault, children, props, showLabel, stackProps, labelProps, iconMargin, availableStrategies])
 
   return (
     <Flex>
@@ -1142,7 +1145,7 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
   )
 }
 
-const TrancheExposure: React.FC = () => {
+const TrancheType: React.FC = () => {
   const { vault, asset } = useAssetProvider()
   const { vaults, selectors: { selectAssetById } } = usePortfolioProvider()
   if (!vault || !("cdoConfig" in vault)) return null
@@ -1155,42 +1158,27 @@ const TrancheExposure: React.FC = () => {
       if (otherAsset) {
         return (
           <HStack
-            spacing={2}
+            spacing={1}
+            sx={{py: 1,
+              px: 2,
+              pr: 3,
+              width: 'auto',
+              borderRadius: 8,
+              border: '1px solid',
+              borderColor: 'card.bg',
+              justifyContent: 'center',
+              backgroundColor: 'card.bgLight'}}
           >
             <AssetProvider
               assetId={vault.id}
             >
-              <Flex
-                py={1}
-                px={2}
-                pr={3}
-                width={'auto'}
-                borderRadius={8}
-                border={'1px solid'}
-                borderColor={'card.bg'}
-                justifyContent={'center'}
-                backgroundColor={'card.bgLight'}
-              >
-                <AssetProvider.Strategies labelProps={{ fontWeight: 500, fontSize: 'sm' }} showLabel={true} iconMargin={0} w={6} h={6} />
-              </Flex>
+              <AssetProvider.Strategies stackProps={{spacing: 1}} labelProps={{ fontWeight: 500, fontSize: 'sm' }} showLabel={true} iconMargin={0} w={6} h={6} />
             </AssetProvider>
-            <Text color={'primary'}>/</Text>
+            <Text pl={2} color={'divider'}>|</Text>
             <AssetProvider
               assetId={otherAsset.id}
             >
-              <Flex
-                py={1}
-                px={2}
-                pr={3}
-                width={'auto'}
-                borderRadius={8}
-                border={'1px solid'}
-                borderColor={'card.bg'}
-                justifyContent={'center'}
-                backgroundColor={'card.bgLight'}
-              >
-                <AssetProvider.Strategies labelProps={{ fontWeight: 500, fontSize: 'sm' }} showLabel={true} iconMargin={0} w={6} h={6} />
-              </Flex>
+              <AssetProvider.Strategies stackProps={{spacing: 1}} labelProps={{ fontWeight: 500, fontSize: 'sm' }} showLabel={true} iconMargin={0} w={6} h={6} />
             </AssetProvider>
           </HStack>
         )
@@ -1968,8 +1956,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
-    case 'trancheExposure':
-      return (<TrancheExposure {...props} />)
+    case 'trancheType':
+      return (<TrancheType {...props} />)
     case 'assetClass':
       return (
         <Categories {...props} />
