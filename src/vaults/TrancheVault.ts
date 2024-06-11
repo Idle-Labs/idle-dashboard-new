@@ -102,6 +102,7 @@ export class TrancheVault {
   public readonly distributedTokens: UnderlyingTokenProps[];
   public readonly gaugeConfig: GaugeConfig | null | undefined;
   public readonly rewardsEmissions: RewardEmission[] | undefined;
+  public readonly pointsEmission: TrancheConfig["pointsEmission"];
   public readonly underlyingToken: UnderlyingTokenProps | undefined;
 
   // Contracts
@@ -146,6 +147,7 @@ export class TrancheVault {
     this.translations = vaultConfig.translations;
     this.trancheConfig = vaultConfig.Tranches[type];
     this.rewardsSenders = vaultConfig.rewardsSenders;
+    this.pointsEmission = vaultConfig.pointsEmission;
     this.rewardsEmissions = this.trancheConfig.rewardsEmissions;
     this.vaultFunctionsHelper = new VaultFunctionsHelper({
       chainId,
@@ -652,6 +654,15 @@ export class TrancheVault {
       {
         assetId: this.id,
         call: this.cdoContract.methods.trancheAPRSplitRatio(),
+      },
+    ];
+  }
+
+  public getCurrentAARatioCalls(): ContractRawCall[] {
+    return [
+      {
+        assetId: this.id,
+        call: this.cdoContract.methods.getCurrentAARatio(),
       },
     ];
   }

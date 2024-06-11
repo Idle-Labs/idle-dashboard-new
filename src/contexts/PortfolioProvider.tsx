@@ -4293,17 +4293,32 @@ export function PortfolioProvider({ children }: ProviderProps) {
           const vaultRewardsEmissions = state.morphoRewardsEmissions[vault.cdoConfig.address]
           assetsData[vault.id].rewardsEmissions = Object.keys(vaultRewardsEmissions).reduce((rewardsEmissions: NonNullable<Asset["rewardsEmissions"]>, rewardId: AssetId) => {
             const rewardEmission = vaultRewardsEmissions[rewardId]
-            if (bnOrZero(assetsData[vault.id].totalTvl).gt(0) && bnOrZero(assetsData[vault.id].tvlUsd).gt(0) && bnOrZero(assetsData[vault.id].aprRatio).gt(0)) {
+            if (bnOrZero(assetsData[vault.id].totalTvl).gt(0)/* && bnOrZero(assetsData[vault.id].tvlUsd).gt(0) && bnOrZero(assetsData[vault.id].aprRatio).gt(0)*/) {
 
               const totalTvl = bnOrZero(assetsData[vault.id].totalTvl)
 
-              const vaultShare = totalTvl.div(rewardEmission.totalSupply)
+              let aprRatio = bnOrZero(assetsData[vault.id].aprRatio)
+              let vaultShare = totalTvl.div(rewardEmission.totalSupply)
+
+              const rewardUnderlyingToken = selectUnderlyingTokenByAddress(+vault.chainId, rewardId)
+              if (rewardUnderlyingToken && ("trancheConfig" in vault) && vault.trancheConfig.rewardsEmissionsParams) {
+                const vaultRewardEmissionParams: RewardEmissionParams = vault.trancheConfig.rewardsEmissionsParams[rewardUnderlyingToken.token]
+                // console.log('vaultRewardEmissionParams', vault.id, vault.type, vaultRewardEmissionParams)
+                if (vaultRewardEmissionParams?.aprRatio !== undefined) {
+                  aprRatio = bnOrZero(vaultRewardEmissionParams.aprRatio)
+                }
+              }
 
               const annualDistributionWholePool = rewardEmission.annualDistribution.times(vaultShare)
               const annualDistributionWholePoolUsd = rewardEmission.annualDistributionUsd.times(vaultShare)
 
-              const annualDistribution = annualDistributionWholePool.times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
-              const annualDistributionUsd = annualDistributionWholePoolUsd.times(bnOrZero(assetsData[vault.id].aprRatio).div(100))
+              // Skip if no rewards per year
+              if (aprRatio.lte(0)) {
+                return rewardsEmissions
+              }
+
+              const annualDistribution = annualDistributionWholePool.times(aprRatio.div(100))
+              const annualDistributionUsd = annualDistributionWholePoolUsd.times(aprRatio.div(100))
               const annualDistributionOn1000Usd = annualDistribution.times(1000).div(bnOrZero(assetsData[vault.id].tvlUsd))
 
               const vaultRewardEmission: RewardEmission = {
