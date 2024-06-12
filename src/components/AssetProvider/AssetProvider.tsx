@@ -13,7 +13,7 @@ import { ProductTag } from 'components/ProductTag/ProductTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import React, { useMemo, createContext, useContext } from 'react'
-import { selectProtocol, selectUnderlyingToken } from 'selectors/'
+import { selectProtocol, selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors/'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { AllocationChart } from 'components/AllocationChart/AllocationChart'
@@ -25,7 +25,7 @@ import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath }
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps, StackProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, RewardEmission } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -324,6 +324,37 @@ const DistributedRewards: React.FC<AvatarProps & BoxProps> = ({ children, ...pro
   return (
     <Flex>
       {distributedTokens}
+    </Flex>
+  )
+}
+
+type DistributedPointsProps = {
+  flexProps?: FlexProps
+} & AvatarProps & BoxProps
+
+const DistributedPoints: React.FC<DistributedPointsProps> = ({ children, flexProps, ...props }) => {
+  const { vault } = useAssetProvider()
+
+  const distributedPoints = useMemo(() => {
+    if (!vault || !("trancheConfig" in vault) || !("distributedPoints" in vault.trancheConfig) || !vault.trancheConfig.distributedPoints) return children
+
+    const rewards = vault.trancheConfig.distributedPoints!.map((tokenName: string, index: number) => {
+      const rewardToken = selectUnderlyingToken(+vault.chainId!, tokenName)
+      if (!rewardToken?.address) return null
+      return (
+        <AssetProvider key={`asset_${rewardToken.address}_${index}`} assetId={rewardToken.address}>
+          <AssetProvider.Icon {...props} ml={index ? -1 : 0} showTooltip={true} />
+        </AssetProvider>
+      )
+    }).filter((reward: any) => !!reward)
+    return rewards.length ? rewards : children
+  }, [children, vault, props])
+
+  return (
+    <Flex
+      {...flexProps}
+    >
+      {distributedPoints}
     </Flex>
   )
 }
@@ -829,6 +860,18 @@ const Apy: React.FC<ApyProps> = ({
 
   const tooltipDisabled = !showTooltip || bnOrZero(asset?.apy).lte(0) || (asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length <= 1)
 
+
+  // Don't show any APY if it's Rewards tranche
+  if (vault instanceof TrancheVault && vault.trancheConfig.strategy === 'REL'){
+    return (
+      <HStack
+        spacing={1}
+      >
+        <RewardsEmissionMultiplier size={'xs'} textProps={props} group={true} />
+      </HStack>
+    )
+  }
+
   return asset?.apy ? (
     <HStack
       spacing={2}
@@ -1209,15 +1252,16 @@ const SeniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
 
 const JuniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
 
   if (!vault || !("vaultConfig" in vault)) return null
 
-  const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+  const trancheVault = selectVaultById(vault?.vaultConfig.Tranches.BB.address)
+  // const layout = vault instanceof TrancheVault && trancheVault.trancheConfig.strategy === 'REL' ? 'extended' : 'card'
 
   return (
     <AssetProvider
-      assetId={trancheAsset?.id}
+      assetId={trancheVault?.id}
     >
       <AssetProvider.RewardsEmissions {...props} />
     </AssetProvider>
@@ -1317,6 +1361,113 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+
+type RewardsEmissionMultiplierProps = {
+  flexProps?: FlexProps,
+  textProps?: TextProps,
+  group?: boolean
+} & AssetProviderPropsType
+
+// @ts-ignore
+const RewardsEmissionMultiplier: React.FC<RewardsEmissionMultiplierProps> = ({
+  flexProps,
+  textProps,
+  group,
+  ...props
+}) => {
+  const { asset, translate } = useAssetProvider()
+
+  if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return null
+
+  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr && (asset.rewardsEmissions?.[rewardId] && !asset.rewardsEmissions?.[rewardId].apr))
+
+  const rewardsBoost = asset?.totalTvlUsd && asset?.tvlUsd ? bnOrZero(asset?.totalTvlUsd).div(asset?.tvlUsd) : BNify(0)
+
+  return group ? (
+    <HStack
+      py={1}
+      px={2}
+      borderRadius={8}
+      border={'1px solid'}
+      borderColor={'card.bg'}
+      justifyContent={'center'}
+      backgroundColor={'card.bgLight'}
+    >
+      <HStack
+        spacing={-1}
+      >
+        {
+          visibleRewardsIds.map( rewardId => (
+            <Tooltip
+              hasArrow
+              placement={'top'}
+              label={selectUnderlyingTokenByAddress(+asset.chainId!, rewardId)?.token}
+              key={`reward_${rewardId}`}
+            >
+              <TooltipContent>
+                <AssetProvider
+                  wrapFlex={false}
+                  assetId={rewardId}
+                >
+                  <AssetProvider.Icon {...props} />
+                </AssetProvider>
+              </TooltipContent>
+            </Tooltip>
+          ))
+        }
+      </HStack>
+      <Text fontSize={'md'} {...textProps}>{rewardsBoost.toFixed(2)}x</Text>
+    </HStack>
+  ) : (
+    <SimpleGrid
+      spacing={1}
+      width={'full'}
+      justifyContent={'flex-start'}
+      columns={[1, visibleRewardsIds.length]}
+    >
+      {
+        visibleRewardsIds.map(rewardId => {
+          const rewardEmission: RewardEmission | undefined = asset.rewardsEmissions?.[rewardId]
+          const rewardToken = selectUnderlyingTokenByAddress(+asset.chainId!, rewardId)
+          if (!rewardToken || !rewardEmission) return null
+          const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
+          const amount = rewardEmission.annualDistributionOn1000Usd
+          const amountComponent = rewardEmission.apr ? Amount.Percentage : null
+          const tooltipLabel = translate('assets.assetDetails.tooltips.rewardEmissionOn1000UsdPerYear', {
+            amount: amount?.toFixed(4),
+            token: rewardToken?.token
+          })
+
+          return (
+            <Tooltip
+              hasArrow
+              placement={'top'}
+              label={tooltipLabel}
+              key={`reward_${rewardId}`}
+            >
+              <TooltipContent>
+                <Flex
+                  py={1}
+                  px={2}
+                  width={'auto'}
+                  borderRadius={8}
+                  border={'1px solid'}
+                  borderColor={'card.bg'}
+                  justifyContent={'center'}
+                  backgroundColor={'card.bgLight'}
+                  {...flexProps}
+                >
+                  <TokenAmount assetId={rewardId} abbreviate={false} decimals={2} showName={false} showIcon={true} size={'xs'} fontSize={'md'} amountComponent={amountComponent} suffix={`x${suffix}`} amount={rewardsBoost} {...textProps} />
+                </Flex>
+              </TooltipContent>
+            </Tooltip>
+          )
+        })
+      }
+    </SimpleGrid>
+  )
+}
+
 type RewardsEmissionsProps = {
   flexProps?: FlexProps,
   layout?: 'card' | 'extended'
@@ -1333,7 +1484,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({
 
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
 
-  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr && (asset.rewardsEmissions?.[rewardId] && !asset.rewardsEmissions?.[rewardId].apr))
+  const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => asset.rewardsEmissions?.[rewardId] && !asset.rewardsEmissions?.[rewardId].apr && bnOrZero(asset.rewardsEmissions?.[rewardId].annualDistributionOn1000Usd).gt(0))
   return (
     <SimpleGrid
       spacing={1}
@@ -1344,10 +1495,10 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({
       {
         visibleRewardsIds.map(rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
-          if (!rewardEmission || rewardEmission.apr) return null
+          const amount = rewardEmission?.apr || rewardEmission?.annualDistributionOn1000Usd
+          if (!rewardEmission || bnOrZero(amount).lte(0)) return null
           const prefix = rewardEmission.prefix !== undefined ? rewardEmission.prefix : '+'
           const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
-          const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
           const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
 
@@ -1378,7 +1529,6 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({
                   </TooltipContent>
                 </Tooltip>
               )
-              break;
             case 'extended':
               return (
                 <HStack
@@ -1391,7 +1541,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({
                     key={`reward_${rewardId}`}
                   >
                     <TooltipContent>
-                      <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={true} showIcon={true} size={'xs'} fontSize={'md'} fontWeight={700} amountComponent={amountComponent} borderBottom={'1px dashed'} borderBottomColor={'cta'} amount={amount} {...props} />
+                      <TokenAmount assetId={rewardId} abbreviate={false} decimals={bnOrZero(amount).gt(999) ? 0 : 2} showName={true} showIcon={true} size={'xs'} fontSize={'md'} fontWeight={700} amountComponent={amountComponent} amount={amount} {...props} />
                     </TooltipContent>
                   </Tooltip>
                   {
@@ -1403,7 +1553,6 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({
                   }
                 </HStack>
               )
-              break;
           }
         })
       }
@@ -2056,6 +2205,7 @@ AssetProvider.PerformanceFee = PerformanceFee
 AssetProvider.HistoricalRates = HistoricalRates
 AssetProvider.Autocompounding = Autocompounding
 AssetProvider.RewardsEmissions = RewardsEmissions
+AssetProvider.DistributedPoints = DistributedPoints
 AssetProvider.DistributedRewards = DistributedRewards
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution

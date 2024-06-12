@@ -1403,16 +1403,26 @@ export class VaultFunctionsHelper {
             }
           }
           break;
-        // case 'IdleCDO_gearbox_WETH':
-        //   return [
-        //     {
-        //       annualDistribution: BigNumber(0),
-        //       annualDistributionUsd: BigNumber(0),
-        //       annualDistributionOn1000Usd: BNify(1000),
-        //       assetId: '0x8E3A59427B1D87Db234Dd4ff63B25E4BF94672f4',
-        //       tooltip: 'assets.assetDetails.tooltips.gearboxKelpMilesRewardEmission',
-        //     }
-        //   ]
+        case "IdleCDO_morpho_Re7WETHFarm":
+          if (vault.type === "BB") {
+            return [
+              {
+                annualDistribution: BigNumber(0),
+                annualDistributionUsd: BigNumber(0),
+                annualDistributionOn1000Usd: BNify(0),
+                assetId: "0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB",
+                tooltip: "assets.assetDetails.tooltips.etherFiPointsEmission",
+              },
+              {
+                annualDistribution: BigNumber(0),
+                annualDistributionUsd: BigNumber(0),
+                annualDistributionOn1000Usd: BNify(0),
+                assetId: "0x3b50805453023a91a8bf641e279401a0b23fa6f9",
+                tooltip: "assets.assetDetails.tooltips.renzoPointsEmission",
+              },
+            ];
+          }
+          break;
         default:
           break;
       }

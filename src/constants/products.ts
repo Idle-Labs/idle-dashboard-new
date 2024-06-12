@@ -107,7 +107,9 @@ export const products: ProductProps[] = [
         id: "seniorApy",
         sortType: "trancheApy",
         tables: ["Available"],
-        extraFields: ["seniorRewardsEmissions"],
+        fieldProps: {
+          addRewards: true,
+        },
         stackProps: {
           spacing: 2,
           direction: "row",
@@ -120,7 +122,9 @@ export const products: ProductProps[] = [
         id: "juniorApy",
         sortType: "trancheApy",
         tables: ["Available"],
-        extraFields: ["juniorRewardsEmissions"],
+        fieldProps: {
+          addRewards: true,
+        },
         stackProps: {
           spacing: 2,
           direction: "row",

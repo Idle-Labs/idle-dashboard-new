@@ -6,7 +6,6 @@ import type { BigNumber } from 'bignumber.js'
 import { useNavigate } from 'react-router-dom'
 import { Amount } from 'components/Amount/Amount'
 import { MdArrowForwardIos } from 'react-icons/md'
-import { strategiesFolder } from 'constants/folders'
 import { useModalProvider } from 'contexts/ModalProvider'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { SearchBar } from 'components/SearchBar/SearchBar'
@@ -30,10 +29,11 @@ type TableFieldProps = {
   row: RowProps
   field: string
   value: any
+  fieldProps?: any
   showLoader?: boolean
 }
 
-export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showLoader = true }) => {
+export const TableField: React.FC<TableFieldProps> = ({ field, row, value, fieldProps, showLoader = true }) => {
   const assetId = row.original.id
 
   if (!showLoader) {
@@ -41,7 +41,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showL
       <AssetProvider
         assetId={assetId}
       >
-        <AssetProvider.GeneralData section={'strategy'} field={field} />
+        <AssetProvider.GeneralData section={'strategy'} field={field} {...fieldProps} />
       </AssetProvider>
     )
   }
@@ -49,7 +49,7 @@ export const TableField: React.FC<TableFieldProps> = ({ field, row, value, showL
   return (
     <SkeletonText noOfLines={2} isLoaded={!!value}>
       <AssetProvider assetId={assetId}>
-        <AssetProvider.GeneralData section={'strategy'} field={field} />
+        <AssetProvider.GeneralData section={'strategy'} field={field} {...fieldProps} />
       </AssetProvider>
     </SkeletonText>
   )
@@ -448,7 +448,7 @@ export const Tranches: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} />
+              <TableField field={id} value={value} row={row} fieldProps={column.fieldProps} />
               <Flex
                 flex={1}
                 {...column.stackProps}
@@ -461,7 +461,7 @@ export const Tranches: React.FC = () => {
               </Flex>
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} />
+            <TableField field={id} value={value} row={row} fieldProps={column.fieldProps} />
           )
         }
       }
@@ -491,7 +491,7 @@ export const Tranches: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} />
+              <TableField field={id} value={value} row={row} fieldProps={column.fieldProps} />
               <Flex
                 flex={1}
                 {...column.stackProps}
@@ -504,7 +504,7 @@ export const Tranches: React.FC = () => {
               </Flex>
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} />
+            <TableField field={id} value={value} row={row} fieldProps={column.fieldProps} />
           )
         }
       }
@@ -534,7 +534,7 @@ export const Tranches: React.FC = () => {
               alignItems={'center'}
               {...column.stackProps}
             >
-              <TableField field={id} value={value} row={row} />
+              <TableField field={id} value={value} row={row} fieldProps={column.fieldProps} />
               <Flex
                 flex={1}
                 {...column.stackProps}
@@ -547,7 +547,7 @@ export const Tranches: React.FC = () => {
               </Flex>
             </Stack>
           ) : (
-            <TableField field={id} value={value} row={row} />
+            <TableField field={id} value={value} row={row} fieldProps={column.fieldProps} />
           )
         }
       }
@@ -630,19 +630,10 @@ export const Tranches: React.FC = () => {
 
   const availableAssetsData = useMemo(() => {
     if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
-    // const vaultsAssets = productStrategies.reduce( (vaultsAssets: Asset[], strategy: string) => {
-    //   const strategyAssets = selectVaultsAssetsByType(strategy)
-    //   return [
-    //     ...vaultsAssets,
-    //     ...strategyAssets
-    //   ]
-    // }, [])
 
     const checkDepositedAsset = (vaultAsset: Asset) => depositedAssetsData.map((asset: Asset) => asset.id).includes(vaultAsset.id)
 
     const vaultsAssets = selectVaultsAssetsByType(strategy)
-    // console.log('vaultsAssets', vaultsAssets)
-    // return vaultsAssets.filter( (vaultAsset: Asset) => !depositedAssetsData.map( (asset: Asset) => asset.id ).includes(vaultAsset.id) && vaultAsset.status !== 'deprecated' )
 
     return vaultsAssets.reduce((vaultsAssets: Asset[], vaultAsset: Asset) => {
       if (vaultAsset.status === 'deprecated') {

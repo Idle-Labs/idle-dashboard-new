@@ -83,6 +83,7 @@ export interface Tranche {
   tranche: string;
   functions: Record<string, string | null>;
   CDORewards: CDOReward;
+  distributedPoints?: string[];
   rewardsEmissions?: RewardEmission[];
   rewardsEmissionsParams?: Record<string, RewardEmissionParams>;
   features?: string[];
@@ -3494,6 +3495,7 @@ export const tranches: Record<
         },
         translations: {
           distributedTokens: {
+            title: "staking.collectedRewards",
             modal: {
               cta: "defi.modals.morphoDistribution.cta",
               text: "defi.modals.morphoDistribution.body",
@@ -3575,6 +3577,7 @@ export const tranches: Record<
               name: "IdleCDOTrancheRewards_morpho_Re7WETHFarm_BB",
               address: "0x0000000000000000000000000000000000000000",
             },
+            // distributedPointss: ["ETHERFI", "RENZO"],
             rewardsEmissionsParams: {
               MORPHO: {
                 aprRatio: 100,
