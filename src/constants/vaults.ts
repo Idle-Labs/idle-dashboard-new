@@ -3656,6 +3656,7 @@ export const tranches: Record<
       bbWETH: {
         enabledEnvs: [],
         protocol: "morpho",
+        status: "deprecated",
         blockNumber: 16420584,
         underlyingToken: "WETH",
         operators: [
