@@ -328,7 +328,7 @@ export const Tranches: React.FC = () => {
                               height={'2em'}
                               alignItems={'baseline'}
                             >
-                              <AssetProvider.RewardsEmissions layout={'extended'} />
+                              <AssetProvider.RewardsEmissionMultiplier group={true} />
                             </HStack>
                           ) : (
                             <HStack

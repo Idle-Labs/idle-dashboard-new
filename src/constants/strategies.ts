@@ -79,6 +79,53 @@ export const strategies: Record<string, StrategyProps> = {
       "strategies.yieldLeverage.features.yieldLeveraged",
       "strategies.yieldLeverage.features.noRewards",
     ],
+    generalDataFields: [
+      {
+        field: "protocol",
+        props: {
+          size: "xs",
+        },
+        label: "assets.assetDetails.generalData.protocol",
+      },
+      // {
+      //   field:'stakingRewards',
+      //   label:'assets.assetDetails.generalData.stakingRewards'
+      // },
+      {
+        field: "strategies",
+        props: {
+          iconMargin: 0,
+          showLabel: true,
+        },
+        label: "assets.assetDetails.generalData.vaultType",
+      },
+      {
+        field: "pool",
+        label: "assets.assetDetails.generalData.pool",
+        props: {
+          abbreviate: false,
+        },
+      },
+      {
+        field: "apyWithRewards",
+        label: "assets.assetDetails.generalData.apy",
+        tooltip: "assets.assetDetails.tooltips.juniorTrancheApy",
+      },
+      {
+        field: "apyBoost",
+        label: "assets.assetDetails.generalData.apyBoost",
+        tooltip: "assets.assetDetails.tooltips.apyBoost",
+      },
+      {
+        field: "performanceFee",
+        label: "assets.assetDetails.generalData.performanceFee",
+      },
+      {
+        field: "status",
+        label: "assets.assetDetails.generalData.status",
+        tooltip: "assets.assetDetails.tooltips.vaultStatus",
+      },
+    ],
   },
   REL: {
     type: "REL",
@@ -118,10 +165,10 @@ export const strategies: Record<string, StrategyProps> = {
         },
       },
       {
-        field: "rewardsEmissions",
+        field: "rewardsEmissionMultiplier",
         label: "assets.assetDetails.generalData.rewards",
         props: {
-          layout: "extended",
+          group: true,
         },
       },
       {

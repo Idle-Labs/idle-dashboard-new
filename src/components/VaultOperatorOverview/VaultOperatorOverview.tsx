@@ -51,7 +51,6 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                     spacing={2}
                     alignItems={'flex-start'}
                   >
-                    <Translation component={Text} translation={'common.businessDescription'} textStyle={'titleSmall'} />
                     <Text>{operatorInfo.description}</Text>
                   </VStack>
                   <SimpleGrid

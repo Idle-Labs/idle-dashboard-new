@@ -541,7 +541,7 @@ export const AssetPage: React.FC = () => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : vaultType === 'REL' ? (
-                          <AssetProvider.RewardsEmissions layout={'extended'} />
+                          <AssetProvider.RewardsEmissionMultiplier group={true} stackProps={{p:0, backgroundColor:'none',border:'none'}} size={'sm'} textProps={{fontSize: ['h4', '2xl'], lineHeight: 1, textStyle: 'tableCell'}} />
                       ) : (
                         <AssetProvider.Apy showTooltip={false} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} /> 
                       )
@@ -600,7 +600,7 @@ export const AssetPage: React.FC = () => {
                       borderColor={'dividerLight'}
                       alignItems={'flex-start'}
                     >
-                      <Translation translation={'defi.vaultType'} fontSize={['sm', 'md']} color={'primary'} />
+                      <Translation translation={'common.type'} fontSize={['sm', 'md']} color={'primary'} />
                       <Flex
                         flex={1}
                         alignItems={'flex-end'}

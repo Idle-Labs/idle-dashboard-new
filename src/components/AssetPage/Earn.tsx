@@ -311,7 +311,7 @@ export const Earn: React.FC = () => {
         borderColor={'divider'}
         alignItems={'flex-start'}
       >
-        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
+        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyOverview'} />
         <Text dangerouslySetInnerHTML={{ __html: replaceTokens(vault.description, { apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale) }) }} />
         {
           (vault instanceof TrancheVault) && (

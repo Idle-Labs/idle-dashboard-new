@@ -1364,6 +1364,7 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
 
 type RewardsEmissionMultiplierProps = {
   flexProps?: FlexProps,
+  stackProps?: StackProps,
   textProps?: TextProps,
   group?: boolean
 } & AssetProviderPropsType
@@ -1371,6 +1372,7 @@ type RewardsEmissionMultiplierProps = {
 // @ts-ignore
 const RewardsEmissionMultiplier: React.FC<RewardsEmissionMultiplierProps> = ({
   flexProps,
+  stackProps,
   textProps,
   group,
   ...props
@@ -1392,7 +1394,9 @@ const RewardsEmissionMultiplier: React.FC<RewardsEmissionMultiplierProps> = ({
       borderColor={'card.bg'}
       justifyContent={'center'}
       backgroundColor={'card.bgLight'}
+      {...stackProps}
     >
+      <Text fontSize={'md'} {...textProps}>{rewardsBoost.toFixed(2)}x</Text>
       <HStack
         spacing={-1}
       >
@@ -1409,14 +1413,13 @@ const RewardsEmissionMultiplier: React.FC<RewardsEmissionMultiplierProps> = ({
                   wrapFlex={false}
                   assetId={rewardId}
                 >
-                  <AssetProvider.Icon {...props} />
+                  <AssetProvider.Icon size={'xs'} {...props} />
                 </AssetProvider>
               </TooltipContent>
             </Tooltip>
           ))
         }
       </HStack>
-      <Text fontSize={'md'} {...textProps}>{rewardsBoost.toFixed(2)}x</Text>
     </HStack>
   ) : (
     <SimpleGrid
@@ -2000,6 +2003,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (
         <RewardsEmissions {...props} />
       )
+    case 'rewardsEmissionMultiplier':
+      return (
+        <RewardsEmissionMultiplier {...props} />
+      )
     /*
     case 'fields':
       console.log(field, fields, fieldsProps, props)
@@ -2209,3 +2216,4 @@ AssetProvider.DistributedPoints = DistributedPoints
 AssetProvider.DistributedRewards = DistributedRewards
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution
+AssetProvider.RewardsEmissionMultiplier = RewardsEmissionMultiplier

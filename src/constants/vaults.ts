@@ -3485,7 +3485,7 @@ export const tranches: Record<
         status: "experimental",
         variant: "Re7 Capital",
         underlyingToken: "WETH",
-        vaultType: "lrtLendingFarm",
+        vaultType: "lrtLending",
         distributedTokens: ["MORPHO"],
         adaptiveYieldSplitEnabled: true,
         flags: {
@@ -3520,7 +3520,7 @@ export const tranches: Record<
           address: "0x38989BBA00BDF8181F4082995b3DEAe96163aC5D",
         },
         description:
-          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
+          'The vault curated by <a href="https://www.re7.capital/" class="link" rel="nofollow noopener noreferrer" target="_blank">Re7 Labs</a> aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
         Tranches: {
           AA: {
             abi: ERC20 as Abi,
