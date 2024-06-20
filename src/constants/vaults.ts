@@ -3103,6 +3103,7 @@ export const tranches: Record<
             name: "fasanara",
           },
         ],
+        status: "deprecated",
         protocol: "clearpool",
         blockNumber: 16790250,
         autoFarming: ["CPOOL"],
