@@ -3261,6 +3261,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const vaultBlocks = cacheProvider
         ? await cacheProvider.checkAndCache(cacheKey, callback, 300)
         : await callback();
+      
+      if (!vaultBlocks){
+        runningEffects.current.vaultsLoading = false
+        dispatch({ type: 'SET_VAULTS_LOADED', payload: true })
+        return
+      }
 
       const aprs: Balances = {}
       const pricesUsd: Balances = {}
