@@ -85,6 +85,7 @@ export async function getLatestVaultBlocks(vaultsIds: string[]): Promise<any> {
   });
 
   const results = await Promise.all(promises);
+  if (!results) return;
 
   return results.map((res) => res.data).flat();
 }
