@@ -21,7 +21,7 @@ export const rewardsSendersRwa: Record<number, RewardSenders> = {
       startBlock: 119519917,
     },
     [IDLE_MULTISIG_OPTIMISM]: {
-      // startBlock: 119519916,
+      startBlock: 119519916,
       endBlock: 119519916,
     },
   },
