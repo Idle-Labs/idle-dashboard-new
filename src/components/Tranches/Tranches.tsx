@@ -110,6 +110,7 @@ export const Tranches: React.FC = () => {
   const {
     vaults,
     protocolData,
+    isVaultsLoaded,
     isPortfolioLoaded,
     selectors: {
       selectVaultById,
@@ -617,7 +618,7 @@ export const Tranches: React.FC = () => {
   }, [isPortfolioLoaded, account, selectVaultsWithBalance, selectVaultsAssetsWithBalance, productStrategies])
 
   const availableAssetsData = useMemo(() => {
-    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
+    if (!selectVaultsAssetsByType || !isVaultsLoaded) return []
     // const vaultsAssets = productStrategies.reduce( (vaultsAssets: Asset[], strategy: string) => {
     //   const strategyAssets = selectVaultsAssetsByType(strategy)
     //   return [
@@ -655,13 +656,13 @@ export const Tranches: React.FC = () => {
       return vaultsAssets
     }, [])
 
-  }, [isPortfolioLoaded, vaults, selectAssetById, selectVaultById, selectVaultsAssetsByType, depositedAssetsData, strategy])
+  }, [isVaultsLoaded, vaults, selectAssetById, selectVaultById, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const deprecatedAssetsData = useMemo(() => {
-    if (!selectVaultsAssetsByType || !isPortfolioLoaded) return []
+    if (!selectVaultsAssetsByType || !isVaultsLoaded) return []
     const vaultsAssets = selectVaultsAssetsByType(strategy)
     return vaultsAssets.filter((vaultAsset: Asset) => !depositedAssetsData.map((asset: Asset) => asset.id).includes(vaultAsset.id) && vaultAsset.status === 'deprecated' && bnOrZero(vaultAsset.tvlUsd).gt(MIN_TVL_USD_DEPRECATED_VAULTS))
-  }, [isPortfolioLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
+  }, [isVaultsLoaded, selectVaultsAssetsByType, depositedAssetsData, strategy])
 
   const depositedListId = useMemo(() => {
     if (!strategy) return ''
@@ -773,7 +774,7 @@ export const Tranches: React.FC = () => {
   }, [isMobile, depositedAssetsColumns, depositedAssetsFilter, setDepositedAssetsFilter, depositedAssetsChains, /*setDepositedAssetsChains,*/ depositedListId, depositedListName, depositedAssetsData, onRowClickDeposited])
 
   const availableAssets = useMemo(() => {
-    if (isPortfolioLoaded && !availableAssetsData.length) return null
+    if (isVaultsLoaded && !availableAssetsData.length) return null
 
     const initialState = {
       sortBy: [
@@ -824,7 +825,7 @@ export const Tranches: React.FC = () => {
           </HStack>
         </HStack>
         {
-          !isPortfolioLoaded ? (
+          !isVaultsLoaded ? (
             <Stack
             >
               <Skeleton />
@@ -836,10 +837,10 @@ export const Tranches: React.FC = () => {
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsChains/*, setAvailableAssetsChains*/, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
+  }, [isMobile, isVaultsLoaded, availableAssetsFilter, setAvailableAssetsFilter, availableAssetsChains/*, setAvailableAssetsChains*/, availableAssetsColumns, availableListId, availableListName, availableAssetsData, onRowClickAvailable])
 
   const deprecatedAssets = useMemo(() => {
-    if (!isPortfolioLoaded || !deprecatedAssetsData.length) return null
+    if (!isVaultsLoaded || !deprecatedAssetsData.length) return null
 
     const initialState = {
       sortBy: [
@@ -884,7 +885,7 @@ export const Tranches: React.FC = () => {
         }
       </Card>
     )
-  }, [isMobile, isPortfolioLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
+  }, [isMobile, isVaultsLoaded, availableAssetsColumns, deprecatedListId, deprecatedListName, deprecatedAssetsData, onRowClickAvailable])
 
   const heading = useMemo(() => {
     if (!strategy) return null

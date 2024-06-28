@@ -34,6 +34,7 @@ import type {
   EpochData,
   CdoEvents,
   RewardEmission,
+  ApisProps,
 } from "constants/";
 import {
   bnOrZero,
@@ -54,7 +55,13 @@ import {
   isEmpty,
   getAlchemyTransactionHistory,
   getEtherscanTransactionObject,
+  getPlatformApiConfig,
+  makePostRequest,
+  makeRequest,
+  floorTimestamp,
+  sortArrayByKey,
 } from "helpers/";
+import { isConstructSignatureDeclaration } from "typescript";
 
 export interface CdoLastHarvest {
   cdoId: string;
@@ -1579,6 +1586,159 @@ export class VaultFunctionsHelper {
       fetchData,
       cachedData,
       latestTimestamp,
+    };
+  }
+
+  public async getIdleAPIV2Page(
+    endpoint: string,
+    apiConfig: ApisProps | null,
+    offset: number = 0,
+    limit: number = 200
+  ): Promise<any> {
+    return await makeRequest(
+      endpoint + `&offset=${offset}&limit=${limit}`,
+      apiConfig?.config
+    );
+  }
+
+  public async getIdleAPIV2AllPages(
+    endpoint: string,
+    apiConfig: ApisProps | null,
+    limit: number = 200
+  ): Promise<any> {
+    const firstPageResults = await this.getIdleAPIV2Page(
+      endpoint,
+      apiConfig,
+      0
+    );
+    const totalCount = firstPageResults?.totalCount;
+    const totalRequests = Math.ceil((totalCount - limit) / limit);
+
+    let output = [...firstPageResults.data];
+    if (totalRequests > 0) {
+      const promises = Array.from(Array(totalRequests).keys()).map(
+        (index: number) => {
+          return this.getIdleAPIV2Page(
+            endpoint,
+            apiConfig,
+            limit * (+index + 1),
+            limit
+          );
+        }
+      );
+
+      const results = await Promise.all(promises);
+      output = [...output, ...results.map((res) => res.data).flat()];
+    }
+
+    return output;
+  }
+
+  public async getVaultHistoricalDataFromApiV2(
+    vault: Vault,
+    filters?: PlatformApiFilters
+  ): Promise<VaultHistoricalData> {
+    const output = {
+      vaultId: vault.id,
+      tvls: [],
+      rates: [],
+      prices: [],
+    };
+
+    const vaultData = await callPlatformApis(
+      vault.chainId,
+      "idle",
+      "vaults",
+      "",
+      {
+        limit: 1,
+        address: vault.id,
+      }
+    );
+
+    if (!vaultData) return output;
+
+    // console.log("vaultData", vault.id, vaultData);
+
+    const apiConfig = getPlatformApiConfig(
+      vault.chainId,
+      "idle",
+      "vaultBlocks"
+    );
+    const endpoint = getPlatformApisEndpoint(
+      vault.chainId,
+      "idle",
+      "vaultBlocks",
+      "",
+      {
+        ...filters,
+        vaultId: vaultData._id,
+      }
+    );
+
+    if (!endpoint) return output;
+
+    const results = await this.getIdleAPIV2AllPages(endpoint, apiConfig);
+
+    const { tvls, rates, prices } = sortArrayByKey(
+      results,
+      "block.number"
+    ).reduce(
+      (acc: Record<string, HistoryData[]>, result: any) => {
+        const date = floorTimestamp(+result.block.timestamp * 1000);
+
+        const decimals =
+          "underlyingToken" in vault && vault.underlyingToken?.decimals
+            ? vault.underlyingToken?.decimals
+            : 18;
+        const tvl = {
+          date,
+          value: fixTokenDecimals(bnOrZero(result.TVL?.token), 18).toNumber(),
+        };
+        const rate = {
+          date,
+          value: bnOrZero(result.APRs[0]?.rate).toNumber(),
+        };
+        const price = {
+          date,
+          value: fixTokenDecimals(result.price, decimals).toNumber(),
+        };
+
+        return {
+          tvls: {
+            ...acc.tvls,
+            [date]: tvl,
+          },
+          rates: {
+            ...acc.rates,
+            [date]: rate,
+          },
+          prices: {
+            ...acc.prices,
+            [date]: price,
+          },
+        };
+      },
+      {
+        tvls: {},
+        rates: {},
+        prices: {},
+      }
+    );
+
+    // console.log(
+    //   "getVaultHistoricalDataFromApiV2",
+    //   vault.id,
+    //   tvls,
+    //   rates,
+    //   prices
+    // );
+
+    return {
+      vaultId: vault.id,
+      tvls: Object.values(tvls),
+      rates: Object.values(rates),
+      prices: Object.values(prices),
     };
   }
 
