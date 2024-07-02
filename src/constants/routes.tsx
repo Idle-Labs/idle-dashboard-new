@@ -20,10 +20,6 @@ export const routes: RouteObject[] = [
     element: <Template />,
     children: [
       {
-        path: 'dashboard',
-        element: <Dashboard />,
-      },
-      {
         path: 'earn',
         children: [
           {
@@ -35,27 +31,10 @@ export const routes: RouteObject[] = [
             element: <AssetPage />
           },
         ]
-        /*
-        children:[
-          {
-            path:'yield-tranches',
-            element:<Tranches />,
-          },
-          {
-            path:':strategy',
-            children:[
-              {
-                index: true,
-                element:<Strategy />
-              },
-              {
-                path:':asset',
-                element:<AssetPage />
-              },
-            ]
-          },
-        ]
-        */
+      },
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
       },
       {
         path: 'stake',
@@ -76,11 +55,11 @@ export const routes: RouteObject[] = [
       },
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />
+        element: <Navigate to="/earn" replace />
       },
       {
         path: '*',
-        element: <Navigate to="/dashboard" replace />
+        element: <Navigate to="/earn" replace />
       },
     ]
   },

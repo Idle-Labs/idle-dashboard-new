@@ -2102,7 +2102,7 @@
         "pointsEmissionOn1000Usd": "Additional points you will get per year for a $1000 worth position.",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
         "stkIDLEBalance": "This is your stkIDLE balance, the longer you stake the higher this balance will be",
-        "ethenaShardsRewardEmission": "Shards multiplier that you will get by depositing in the Senior tranche",
+        "ethenaShardsRewardEmission": "Sats multiplier that you will get by depositing in the Senior tranche",
         "gearboxKelpMilesPointsEmission": "Kelp Miles you will get per year for a $1000 worth position.",
         "juniorTrancheApy": "The APY is calculated by adding together the Base APY, Harvest APY and Rewards APY",
         "seniorTrancheApy": "The APY is calculated by adding together the Base APY, Harvest APY and Rewards APY",
