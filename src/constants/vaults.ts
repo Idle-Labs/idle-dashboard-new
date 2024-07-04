@@ -4828,6 +4828,23 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
             },
           },
         },
+        {
+          decimals: 18,
+          enabled: true,
+          name: "clearpool",
+          abi: IdleCDO as Abi,
+          token: "AA_morpho_steak_USDC",
+          label: "Morpho Steak USDC (Senior)",
+          address: "0x2B0E31B8EE653D2077db86dea3ACf3F34ae9d5D2",
+          functions: {
+            exchangeRate: {
+              decimals: 6,
+              name: "virtualPrice",
+              target: "0x87E53bE99975DA318056af5c4933469a6B513768",
+              params: ["0x2B0E31B8EE653D2077db86dea3ACf3F34ae9d5D2"],
+            },
+          },
+        },
         /*
         {
           abi: IdleCDO as Abi,
