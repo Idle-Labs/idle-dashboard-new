@@ -509,14 +509,38 @@ export const protocols: Record<string, Protocol> = {
             : {},
         },
       },
+      transactions: {
+        endpoint: {
+          1: "https://api-staging.idle.finance/v1/transactions",
+          10: "https://api-staging.idle.finance/v1/transactions",
+          137: "https://api-staging.idle.finance/v1/transactions",
+        },
+        path: "data",
+        filters: ["walletAddress", "limit", "startBlock", "endBlock"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
+      chains: {
+        endpoint: {
+          1: "https://api-staging.idle.finance/v1/chains",
+          10: "https://api-staging.idle.finance/v1/chains",
+          137: "https://api-staging.idle.finance/v1/chains",
+        },
+        path: "data",
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
       vaults: {
         endpoint: {
           1: "https://api-staging.idle.finance/v1/vaults",
           10: "https://api-staging.idle.finance/v1/vaults",
           137: "https://api-staging.idle.finance/v1/vaults",
-          // 1: "http://127.0.0.1:3000/v1/vaults",
-          // 10: "http://127.0.0.1:3000/v1/vaults",
-          // 137: "http://127.0.0.1:3000/v1/vaults",
         },
         path: "data",
         filters: ["address", "limit"],
@@ -531,9 +555,6 @@ export const protocols: Record<string, Protocol> = {
           1: "https://api-staging.idle.finance/v1/token-blocks",
           10: "https://api-staging.idle.finance/v1/token-blocks",
           137: "https://api-staging.idle.finance/v1/token-blocks",
-          // 1: "http://127.0.0.1:3000/v1/token-blocks",
-          // 10: "http://127.0.0.1:3000/v1/token-blocks",
-          // 137: "http://127.0.0.1:3000/v1/token-blocks",
         },
         filters: [
           /*"start", "end",*/
@@ -555,9 +576,6 @@ export const protocols: Record<string, Protocol> = {
           1: "https://api-staging.idle.finance/v1/vault-blocks",
           10: "https://api-staging.idle.finance/v1/vault-blocks",
           137: "https://api-staging.idle.finance/v1/vault-blocks",
-          // 1: "http://127.0.0.1:3000/v1/vault-blocks",
-          // 10: "http://127.0.0.1:3000/v1/vault-blocks",
-          // 137: "http://127.0.0.1:3000/v1/vault-blocks",
         },
         filters: [
           /*"start", "end",*/
@@ -568,18 +586,6 @@ export const protocols: Record<string, Protocol> = {
           "order",
           "sort",
         ],
-        config: {
-          headers: env.REACT_APP_IDLE_API_V2_KEY
-            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
-            : {},
-        },
-      },
-      transactions: {
-        endpoint: {
-          1: "https://api-staging.idle.finance/v1/transactions/",
-          10: "https://api-staging.idle.finance/v1/transactions/",
-          137: "https://api-staging.idle.finance/v1/transactions/",
-        },
         config: {
           headers: env.REACT_APP_IDLE_API_V2_KEY
             ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }

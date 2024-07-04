@@ -62,6 +62,7 @@ import {
   sortArrayByKey,
 } from "helpers/";
 import { isConstructSignatureDeclaration } from "typescript";
+import { getIdleAPIV2AllPages } from "helpers/apiv2";
 
 export interface CdoLastHarvest {
   cdoId: string;
@@ -1589,51 +1590,6 @@ export class VaultFunctionsHelper {
     };
   }
 
-  public async getIdleAPIV2Page(
-    endpoint: string,
-    apiConfig: ApisProps | null,
-    offset: number = 0,
-    limit: number = 200
-  ): Promise<any> {
-    return await makeRequest(
-      endpoint + `&offset=${offset}&limit=${limit}`,
-      apiConfig?.config
-    );
-  }
-
-  public async getIdleAPIV2AllPages(
-    endpoint: string,
-    apiConfig: ApisProps | null,
-    limit: number = 200
-  ): Promise<any> {
-    const firstPageResults = await this.getIdleAPIV2Page(
-      endpoint,
-      apiConfig,
-      0
-    );
-    const totalCount = firstPageResults?.totalCount;
-    const totalRequests = Math.ceil((totalCount - limit) / limit);
-
-    let output = [...firstPageResults.data];
-    if (totalRequests > 0) {
-      const promises = Array.from(Array(totalRequests).keys()).map(
-        (index: number) => {
-          return this.getIdleAPIV2Page(
-            endpoint,
-            apiConfig,
-            limit * (+index + 1),
-            limit
-          );
-        }
-      );
-
-      const results = await Promise.all(promises);
-      output = [...output, ...results.map((res) => res.data).flat()];
-    }
-
-    return output;
-  }
-
   public async getVaultHistoricalDataFromApiV2(
     vault: Vault,
     filters?: PlatformApiFilters
@@ -1678,7 +1634,7 @@ export class VaultFunctionsHelper {
 
     if (!endpoint) return output;
 
-    const results = await this.getIdleAPIV2AllPages(endpoint, apiConfig);
+    const results = await getIdleAPIV2AllPages(endpoint, apiConfig);
 
     const { tvls, rates, prices } = sortArrayByKey(
       results,

@@ -11,6 +11,7 @@ import type {
   PlatformApiFilters,
   ApisProps,
   Nullable,
+  TransactionDataApiV2,
 } from "constants/";
 
 export const makeRequest = async (
