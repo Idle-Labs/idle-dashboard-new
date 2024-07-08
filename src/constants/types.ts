@@ -34,7 +34,7 @@ export interface TransactionDataApiV2 {
   walletId: string;
   walletAddress: string;
   tokenId: string;
-  type: "DEPOSIT" | "REDEEM" | "HARVEST";
+  type: string;
   hash: string;
   block: Block;
   amount: string;

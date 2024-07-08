@@ -3,6 +3,7 @@ import {
   TransactionDataApiV2,
   EtherscanTransaction,
   Vault,
+  Transaction,
 } from "constants/";
 import {
   getPlatformApiConfig,
@@ -75,14 +76,14 @@ export async function getUserTransactionsFromApiV2(
   console.log("getUserTransactionsFromApiV2", transactions);
 
   return transactions.reduce(
-    (acc: EtherscanTransaction[], transaction: TransactionDataApiV2) => {
+    (acc: Transaction[], transaction: TransactionDataApiV2) => {
       const vault = vaults.find((vault) =>
         cmpAddrs(vault.id, transaction.vaultAddress)
       );
       if (!vault) return acc;
 
-      const etherscanTransaction: EtherscanTransaction = {
-        action: transaction.type as string,
+      const userTransaction: Transaction = {
+        action: transaction.type,
         subAction: "",
         chainId: vault.chainId,
         assetId: vault.id,
@@ -111,7 +112,7 @@ export async function getUserTransactionsFromApiV2(
         value: transaction.amount,
       };
 
-      return [...acc, etherscanTransaction];
+      return [...acc, userTransaction];
     },
     []
   );
