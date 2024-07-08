@@ -428,7 +428,6 @@ export const tranches: Record<
       },
       USDCWin: {
         enabledEnvs: [],
-        status: "boosted",
         variant: "wincent",
         operators: [
           {
@@ -437,6 +436,7 @@ export const tranches: Record<
           },
         ],
         autoFarming: ["OP"],
+        status: "deprecated",
         protocol: "clearpool",
         blockNumber: 17413683,
         underlyingToken: "USDC",
