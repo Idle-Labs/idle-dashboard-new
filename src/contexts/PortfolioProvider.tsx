@@ -24,7 +24,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address } from 'constants/types'
 
 type VaultsPositions = {
@@ -71,6 +71,7 @@ type InitialState = {
   vaults: Vault[]
   assetsData: Assets
   balancesUsd: Balances
+  isVaultsLoaded: boolean
   helpers: Record<any, any>
   vaultsChain: number | null
   protocolData: ProtocolData
@@ -148,6 +149,7 @@ const initialState: InitialState = {
   vaultsPositions: {},
   historicalRates: {},
   historicalPrices: {},
+  isVaultsLoaded: false,
   idleDistributions: {},
   historicalTvlsUsd: {},
   contractsNetworks: {},
@@ -222,6 +224,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return { ...state, protocolToken: action.payload }
     case 'SET_PORTFOLIO_TIMESTAMP':
       return { ...state, portfolioTimestamp: action.payload }
+    case 'SET_VAULTS_LOADED':
+      return { ...state, isVaultsLoaded: action.payload }
     case 'SET_PORTFOLIO_LOADED':
       return { ...state, isPortfolioLoaded: action.payload, portfolioTimestamp: currTime }
     case 'SET_PORTFOLIO_ACCOUNT_READY':
@@ -2966,8 +2970,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     const assetsData = generateAssetsData(allVaults)
 
-    // console.log('assetsData', assetsData)
-
     dispatch({ type: 'SET_VAULTS', payload: allVaults })
     dispatch({ type: 'SET_CONTRACTS', payload: contracts })
     dispatch({ type: 'SET_VAULTS_CHAIN', payload: chainId })
@@ -3230,13 +3232,96 @@ export function PortfolioProvider({ children }: ProviderProps) {
     return historicalPricesUsd
   }, [web3, web3Chains, multiCall, selectAssetById])
 
+  useEffect(() => {
+    if (isEmpty(state.vaults) || state.isVaultsLoaded || runningEffects.current.vaultsLoading === true) return
+
+    ;(async() => {
+
+      runningEffects.current.vaultsLoading = true
+
+      const startTimestamp = Date.now()
+      // Get vaults from APIs
+      const cacheKeyVaults = `apiv2_vaults`
+      const callbackVaults = async () => getVaultsFromApiV2()
+      const vaultsData = cacheProvider
+        ? await cacheProvider.checkAndCache(cacheKeyVaults, callbackVaults, 300)
+        : await callbackVaults();
+
+      if (!vaultsData){
+        runningEffects.current.vaultsLoading = false
+        dispatch({ type: 'SET_VAULTS_LOADED', payload: true })
+        return
+      }
+
+      // Get latest vaultBlocks from APIs
+      const vaultIds = vaultsData.map( (vaultData: any) => vaultData._id )
+
+      const cacheKey = `apiv2_latest_vaultBlocks`
+      const callback = async () => getLatestVaultBlocks(vaultIds)
+      const vaultBlocks = cacheProvider
+        ? await cacheProvider.checkAndCache(cacheKey, callback, 300)
+        : await callback();
+      
+      if (!vaultBlocks){
+        runningEffects.current.vaultsLoading = false
+        dispatch({ type: 'SET_VAULTS_LOADED', payload: true })
+        return
+      }
+
+      const aprs: Balances = {}
+      const pricesUsd: Balances = {}
+      const totalSupplies: Balances = {}
+      const vaultsPrices: Balances = {}
+      const aprsBreakdown: Record<AssetId, Balances> = {}
+
+      vaultBlocks.forEach( (vaultBlock: any) => {
+        const vault = state.vaults.find( (vault: Vault) => cmpAddrs(vault.id, vaultBlock.vaultAddress) )
+
+        if (!vault){
+          console.log('Vault not found: ', vaultBlock.vaultAddress)
+          return
+        }
+
+        const decimals =
+          "underlyingToken" in vault && vault.underlyingToken?.decimals
+            ? vault.underlyingToken?.decimals
+            : 18;
+        
+        const apr = bnOrZero(vaultBlock.APRs[0]?.rate)
+        const priceUsd = bnOrZero(vaultBlock.TVL.USD).eq(vaultBlock.TVL.token) ? BNify(1) : fixTokenDecimals(vaultBlock.TVL.USD, 6).div(fixTokenDecimals(vaultBlock.TVL.token, 18))
+        const totalSupply = fixTokenDecimals(vaultBlock.totalSupply, 18)
+        const vaultPrice = fixTokenDecimals(vaultBlock.price, decimals)
+
+        aprs[vault.id] = apr
+        pricesUsd[vault.id] = priceUsd
+        totalSupplies[vault.id] = totalSupply
+        vaultsPrices[vault.id] = vaultPrice
+        aprsBreakdown[vault.id] = {
+          base: apr
+        }
+      })
+
+      console.log('VAULTS DATA LOADED in ', (Date.now() - startTimestamp) / 1000, 'seconds')
+      runningEffects.current.vaultsLoading = false
+
+      // Set portfolio loaded = true
+      dispatch({ type: 'SET_APRS', payload: aprs })
+      dispatch({ type: 'SET_APRS_BREAKDOWN', payload: aprsBreakdown })
+      dispatch({ type: 'SET_PRICES_USD', payload: pricesUsd })
+      dispatch({ type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies })
+      dispatch({ type: 'SET_VAULTS_PRICES', payload: vaultsPrices })
+      dispatch({ type: 'SET_VAULTS_LOADED', payload: true })
+      dispatch({ type: 'SET_PORTFOLIO_LOADED', payload: true })
+    })()
+  }, [state.vaults, state.isVaultsLoaded, cacheProvider])
+
   // Get tokens prices, balances, rates
   useEffect(() => {
     // console.log('Load portfolio', state.vaults, state.contracts, multiCall, isEmpty(state.aprs), account?.address, runningEffects.current.portfolioLoading);
-    if (!state.vaults.length || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === (account?.address || true)) return
+    if (!state.isVaultsLoaded || !state.contracts.length || !multiCall || runningEffects.current.portfolioLoading === (account?.address || true)) return
 
     // Avoid refreshing if disconnected and already loaded data
-    if (!isEmpty(state.aprs) && !account?.address) {
+    if (!isEmpty(state.fees) && !account?.address) {
       return dispatch({ type: 'SET_PORTFOLIO_LOADED', payload: true })
     }
 
@@ -3249,7 +3334,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const startTimestamp = Date.now()
 
       // Update balances only if account changed
-      const enabledCalls = isEmpty(state.aprs) ? [] : ['balances', 'rewards']
+      const enabledCalls: string[] = isEmpty(state.fees) ? [] : ['balances', 'rewards']
 
       const vaultsOnChainData = await getVaultsOnchainData(state.vaults, enabledCalls)
 
@@ -3434,7 +3519,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       // console.log('RESET PORTFOLIO')
     };
     // eslint-disable-next-line
-  }, [account, state.vaults, state.contracts])
+  }, [account, state.vaults, state.isVaultsLoaded, state.contracts])
 
   // Get historical underlying prices from chainlink
   useEffect(() => {

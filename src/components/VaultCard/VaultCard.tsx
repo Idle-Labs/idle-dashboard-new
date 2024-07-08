@@ -401,7 +401,7 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
   const { isMobile } = useThemeProvider()
 
   const {
-    isPortfolioLoaded,
+    isVaultsLoaded,
     selectors: {
       selectAssetById,
       selectAssetsByIds,
@@ -567,7 +567,7 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
                     alignItems={'baseline'}
                   >
                     {
-                      !isPortfolioLoaded ? (
+                      !isVaultsLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
                         <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: isMobile ? 18 : 24 }}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
@@ -589,7 +589,7 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
                 >
                   <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
                   {
-                    !isPortfolioLoaded ? (
+                    !isVaultsLoaded ? (
                       <Spinner size={'md'} />
                     ) : (
                       <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />

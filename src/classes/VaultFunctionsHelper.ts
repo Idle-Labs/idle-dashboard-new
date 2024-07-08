@@ -34,6 +34,7 @@ import type {
   EpochData,
   CdoEvents,
   RewardEmission,
+  ApisProps,
 } from "constants/";
 import {
   bnOrZero,
@@ -54,7 +55,14 @@ import {
   isEmpty,
   getAlchemyTransactionHistory,
   getEtherscanTransactionObject,
+  getPlatformApiConfig,
+  makePostRequest,
+  makeRequest,
+  floorTimestamp,
+  sortArrayByKey,
 } from "helpers/";
+import { isConstructSignatureDeclaration } from "typescript";
+import { getIdleAPIV2AllPages } from "helpers/apiv2";
 
 export interface CdoLastHarvest {
   cdoId: string;
@@ -1579,6 +1587,114 @@ export class VaultFunctionsHelper {
       fetchData,
       cachedData,
       latestTimestamp,
+    };
+  }
+
+  public async getVaultHistoricalDataFromApiV2(
+    vault: Vault,
+    filters?: PlatformApiFilters
+  ): Promise<VaultHistoricalData> {
+    const output = {
+      vaultId: vault.id,
+      tvls: [],
+      rates: [],
+      prices: [],
+    };
+
+    const vaultData = await callPlatformApis(
+      vault.chainId,
+      "idle",
+      "vaults",
+      "",
+      {
+        limit: 1,
+        address: vault.id,
+      }
+    );
+
+    if (!vaultData) return output;
+
+    // console.log("vaultData", vault.id, vaultData);
+
+    const apiConfig = getPlatformApiConfig(
+      vault.chainId,
+      "idle",
+      "vaultBlocks"
+    );
+    const endpoint = getPlatformApisEndpoint(
+      vault.chainId,
+      "idle",
+      "vaultBlocks",
+      "",
+      {
+        ...filters,
+        vaultId: vaultData._id,
+      }
+    );
+
+    if (!endpoint) return output;
+
+    const results = await getIdleAPIV2AllPages(endpoint, apiConfig);
+
+    const { tvls, rates, prices } = sortArrayByKey(
+      results,
+      "block.number"
+    ).reduce(
+      (acc: Record<string, HistoryData[]>, result: any) => {
+        const date = floorTimestamp(+result.block.timestamp * 1000);
+
+        const decimals =
+          "underlyingToken" in vault && vault.underlyingToken?.decimals
+            ? vault.underlyingToken?.decimals
+            : 18;
+        const tvl = {
+          date,
+          value: fixTokenDecimals(bnOrZero(result.TVL?.token), 18).toNumber(),
+        };
+        const rate = {
+          date,
+          value: bnOrZero(result.APRs[0]?.rate).toNumber(),
+        };
+        const price = {
+          date,
+          value: fixTokenDecimals(result.price, decimals).toNumber(),
+        };
+
+        return {
+          tvls: {
+            ...acc.tvls,
+            [date]: tvl,
+          },
+          rates: {
+            ...acc.rates,
+            [date]: rate,
+          },
+          prices: {
+            ...acc.prices,
+            [date]: price,
+          },
+        };
+      },
+      {
+        tvls: {},
+        rates: {},
+        prices: {},
+      }
+    );
+
+    // console.log(
+    //   "getVaultHistoricalDataFromApiV2",
+    //   vault.id,
+    //   tvls,
+    //   rates,
+    //   prices
+    // );
+
+    return {
+      vaultId: vault.id,
+      tvls: Object.values(tvls),
+      rates: Object.values(rates),
+      prices: Object.values(prices),
     };
   }
 
