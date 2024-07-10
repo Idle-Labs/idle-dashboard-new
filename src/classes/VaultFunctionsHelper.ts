@@ -1339,12 +1339,12 @@ export class VaultFunctionsHelper {
   ): VaultAdditionalApr {
     if (vault instanceof BestYieldVault) {
       switch (vault.idleConfig.token) {
-        case "idleUSDTRWA":
-          return {
-            type: "rewards",
-            vaultId: vault.id,
-            apr: this.getBestYieldRWAAdditionalApy(asset),
-          };
+        // case "idleUSDTRWA":
+        //   return {
+        //     type: "rewards",
+        //     vaultId: vault.id,
+        //     apr: this.getBestYieldRWAAdditionalApy(asset),
+        //   };
         default:
           return {
             apr: BNify(0),

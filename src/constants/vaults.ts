@@ -4412,31 +4412,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
         hideStrategyDescriptionCarousel: true,
         addUnderlyingProtocolsAdditionalApr: true,
       },
-      description: `The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a conservative risk profile thanks to <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Seniors’ built-in coverage</a>.<br /><br />
-      <h3 style="font-weight:bold">OP Incentive program</h3>
-      <p>This vault, thanks to the OP rewards, always offers a constant APY based on the following thresholds. OP rewards are airdropped every Wednesday directly to the depositors' wallets. Additional rewards received by the vault are automatically harvested and distributed over a week.<br /><br />The incentive program will last 1 month, until June 30th, 2024.</p>
-      <table border="1" class="bordered" cellpadding="8" style="margin-top:8px;border-color:#555B67">
-        <thead>
-          <tr>
-            <th>TVL thresholds</th>
-            <th>Net APY offered</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Up to $2,000,000</td>
-            <td align="right">20%</td>
-          </tr>
-          <tr>
-            <td>Up to $3,000,000</td>
-            <td align="right">18%</td>
-          </tr>
-          <tr>
-            <td>Up to $5,000,000</td>
-            <td align="right">16%</td>
-          </tr>
-        </tbody>
-      </table>`,
+      description: `The RWA Best Yield vault offers a fixed allocation and simplified access to institutional real-world asset (RWA) credit lending while keeping a conservative risk profile thanks to <a href="https://docs.idle.finance/products/perpetual-yield-tranches" class="link" rel="nofollow noopener noreferrer" target="_blank">Seniors’ built-in coverage</a>.`,
       protocols: [
         {
           decimals: 18,
