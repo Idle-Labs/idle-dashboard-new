@@ -1096,6 +1096,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
                 distributedRewards[underlyingTokenId] = []
               }
 
+
               const distributedReward: DistributedReward = {
                 tx,
                 apr: null,
@@ -3949,7 +3950,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
   // Calculate distributed rewards APYs
   useEffect(() => {
-    if (!web3Chains || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.distributedRewards) || runningEffects.current.distributedRewards === (account?.address || true)) return;
+    if (!web3Chains || isEmpty(state.historicalPricesUsd) || !state.contractsNetworks || !state.isVaultsPositionsLoaded || isEmpty(state.distributedRewards) || runningEffects.current.distributedRewards === (account?.address || true)) return;
+  
     ; (async () => {
 
       runningEffects.current.distributedRewards = account?.address || true
@@ -3968,24 +3970,30 @@ export function PortfolioProvider({ children }: ProviderProps) {
       })
       */
 
+      // console.log('historicalPricesUsd', state.historicalPricesUsd)
+
       const distributedRewards = await asyncReduce<AssetId, VaultsPositions["distributedRewards"]>(
         Object.keys(state.distributedRewards),
         async (assetId) => {
           const distributedRewardsOutput = state.distributedRewards
           const asset = selectAssetById(assetId)
           const vaultPosition = selectVaultPosition(assetId)
-          if (!asset || !vaultPosition || !asset.chainId) return distributedRewardsOutput
+          if (!asset || !vaultPosition || !asset.chainId || !asset.underlyingId){
+            return distributedRewardsOutput
+          }
           const assetChainId = +asset.chainId
+          const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, asset.underlyingId)
+
           await asyncForEach(Object.keys(state.distributedRewards[assetId]), async (rewardId: AssetId) => {
-            const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, rewardId)
-            if (!underlyingToken) return
+            const rewardToken = selectUnderlyingTokenByAddress(assetChainId, rewardId)
+            if (!rewardToken) return
 
             const genericContractsHelper = new GenericContractsHelper({ chainId: assetChainId, web3: web3Chains[assetChainId], contracts: state.contractsNetworks[assetChainId] })
 
             if (state.distributedRewards[assetId][rewardId].length > 0) {
 
               const distributedRewardsConversionRates = await Promise.all(
-                state.distributedRewards[assetId][rewardId].map((distributedReward: DistributedReward) => genericContractsHelper.getConversionRate(underlyingToken, +distributedReward.blockNumber).then((conversionRate: any) => ({ blockNumber: distributedReward.blockNumber, conversionRate })))
+                state.distributedRewards[assetId][rewardId].map((distributedReward: DistributedReward) => genericContractsHelper.getConversionRate(rewardToken, +distributedReward.blockNumber).then((conversionRate: any) => ({ blockNumber: distributedReward.blockNumber, conversionRate })))
               )
 
               const {
@@ -3999,6 +4007,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
                 if (conversionRateData && latestBalance.gt(0)) {
                   distributedReward.valueUsd = conversionRateData.conversionRate.times(distributedReward.value)
 
+                  // Convert reward in vault underlying token
+                  const foundConversionRate = state.historicalPricesUsd[asset.underlyingId as string]?.find( (rate: HistoryData) => rate.date === +dayjs(+distributedReward.timeStamp).startOf("day").valueOf() )
+                  const underlyingTokenConversionRateUsd = BNify(foundConversionRate?.value || 1)
+
+                  const latestBalanceUsd = latestBalance.times(underlyingTokenConversionRateUsd)
+
                   // Check if first deposit is older than a week, otherwise annualize using the balance period
                   let distributedRewardUsdAnnualized = BNify(0)
                   const secondsFromFirstDeposit = BNify(distributedReward.timeStamp).div(1000).minus(bnOrZero(vaultPosition.firstDepositTx?.timeStamp))
@@ -4008,12 +4022,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
                     distributedRewardUsdAnnualized = bnOrZero(distributedReward.valueUsd).times(SECONDS_IN_YEAR).div(secondsFromFirstDeposit)
                   }
 
-                  distributedReward.apr = distributedRewardUsdAnnualized.div(latestBalance).times(100)
+                  distributedReward.apr = distributedRewardUsdAnnualized.div(latestBalanceUsd).times(100)
 
                   acc.den = acc.den.plus(latestBalance)
                   acc.num = acc.num.plus(distributedReward.apr.times(latestBalance))
                   acc.totalRewardsUsd = acc.totalRewardsUsd.plus(bnOrZero(distributedReward.valueUsd))
-                  // console.log('Reward avgAPY', assetId, rewardId, distributedReward.timeStamp, bnOrZero(vaultPosition.firstDepositTx?.timeStamp).toString(), secondsFromFirstDeposit.toString(), latestBalance.toString(), distributedReward.value.toString(), conversionRateData.conversionRate.toString(), bnOrZero(distributedReward.valueUsd).toString(), distributedRewardUsdAnnualized.toString(), distributedReward.apr.toString())
+                  // console.log('Reward avgAPY', assetId, rewardId, distributedReward.timeStamp, bnOrZero(vaultPosition.firstDepositTx?.timeStamp).toString(), secondsFromFirstDeposit.toString(), latestBalance.toString(), underlyingTokenConversionRateUsd.toString(), latestBalanceUsd.toString(), distributedReward.value.toString(), conversionRateData.conversionRate.toString(), bnOrZero(distributedReward.valueUsd).toString(), distributedRewardUsdAnnualized.toString(), distributedReward.apr.toString())
                 }
                 return acc
               }, {
@@ -4032,6 +4046,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
               if (!vaultPosition.rewardsApysByToken?.[rewardId]) {
                 vaultPosition.rewardsApysByToken[rewardId] = BNify(0)
               }
+
+              // console.log('distributedRewardsAvgApy', rewardId, distributedRewardsAvgApy.toString())
 
               vaultPosition.rewardsApysByToken[rewardId] = vaultPosition.rewardsApysByToken[rewardId].plus(distributedRewardsAvgApy)
 
@@ -4060,7 +4076,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       // runningEffects.current.distributedRewards = false
       // dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
     }
-  }, [state.distributedRewards, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
+  }, [state.distributedRewards, state.historicalPricesUsd, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
 
   // Set isPortfolioAccountReady
   useEffect(() => {

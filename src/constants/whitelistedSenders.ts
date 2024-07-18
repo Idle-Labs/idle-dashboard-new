@@ -7,6 +7,10 @@ import {
 } from "constants/addresses";
 
 export const rewardsSenders: Record<number, RewardSenders> = {
+  1: {
+    [DISPERSE_APP_OPTIMISM]: {},
+    [IDLE_MULTISIG_MAINNET]: {},
+  },
   10: {
     [DISPERSE_APP_OPTIMISM]: {
       endBlock: 119519916,

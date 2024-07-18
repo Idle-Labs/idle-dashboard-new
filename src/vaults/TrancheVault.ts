@@ -238,10 +238,23 @@ export class TrancheVault {
     etherscanTransactions: EtherscanTransaction[],
     startBlock: number = 0
   ): EtherscanTransaction[] {
-    if (!this.distributedTokens.length || isEmpty(this.rewardsSenders))
-      return [];
+    if (!this.distributedTokens.length) return [];
     return etherscanTransactions.filter((tx: EtherscanTransaction) => {
-      const sendersAddrs = Object.keys(this.rewardsSenders as RewardSenders);
+      const sendersAddrs = !isEmpty(this.rewardsSenders)
+        ? Object.keys(this.rewardsSenders as RewardSenders)
+        : [];
+
+      const checkTx =
+        +tx.blockNumber >= +startBlock &&
+        this.distributedTokens
+          .map((distributedToken: UnderlyingTokenProps) =>
+            distributedToken.address?.toLowerCase()
+          )
+          .includes(tx.contractAddress.toLowerCase()) &&
+        cmpAddrs(tx.to, account);
+
+      if (isEmpty(sendersAddrs)) return checkTx;
+
       const foundSenderAddress = sendersAddrs.find((addr: string) =>
         cmpAddrs(addr, tx.from.toLowerCase())
       );
@@ -254,15 +267,7 @@ export class TrancheVault {
             +tx.blockNumber >= senderParams.startBlock) &&
           (!senderParams.endBlock || +tx.blockNumber <= senderParams.endBlock)
         ) {
-          return (
-            +tx.blockNumber >= +startBlock &&
-            this.distributedTokens
-              .map((distributedToken: UnderlyingTokenProps) =>
-                distributedToken.address?.toLowerCase()
-              )
-              .includes(tx.contractAddress.toLowerCase()) &&
-            cmpAddrs(tx.to, account)
-          );
+          return checkTx;
         }
       }
       return false;

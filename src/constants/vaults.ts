@@ -1055,6 +1055,8 @@ export const tranches: Record<
         underlyingToken: "WETH",
         vaultType: "overcollatLending",
         adaptiveYieldSplitEnabled: true,
+        rewardsSenders: rewardsSenders[1],
+        distributedTokens: ["GEAR", "WETH"],
         flags: {
           addHarvestApy: false,
           referralEnabled: true,

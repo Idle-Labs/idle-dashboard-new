@@ -118,7 +118,9 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
             }, BNify(0)) : BNify(0)
 
             const latestDistribution = asset.distributedRewards?.[underlyingId] ? sortArrayByKey(asset.distributedRewards[underlyingId], 'timeStamp', 'desc')[0] : null
-            const apr = bnOrZero(vaultPosition?.rewardsApysByToken?.[underlyingToken.address]) //latestDistribution?.apr || asset.apyBreakdown?.rewards || BNify(0)
+            const apr = bnOrZero(vaultPosition?.rewardsApysByToken?.[underlyingToken.address.toLowerCase()]) //latestDistribution?.apr || asset.apyBreakdown?.rewards || BNify(0)
+
+            // console.log('RewardApr', underlyingToken.address, vaultPosition, apr.toString())
             return (
               <Card
                 py={6}
