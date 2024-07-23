@@ -325,8 +325,8 @@ export type VaultPosition = {
   rewardsApy?: BigNumber;
   referral?: string | null;
   earningsPercentage: BigNumber;
-  balancePeriods: BalancePeriod[];
-  firstDepositTx?: Transaction | null;
+  balancePeriods?: BalancePeriod[];
+  firstBlock?: Block;
   rewardsApysByToken?: Record<AssetId, BigNumber>;
   idle: {
     staked: BigNumber;
