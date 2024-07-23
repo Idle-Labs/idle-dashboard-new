@@ -12,6 +12,7 @@ import type {
   ApisProps,
   Nullable,
   TransactionDataApiV2,
+  AssetId,
 } from "constants/";
 
 export const makeRequest = async (
@@ -56,6 +57,51 @@ export const getPlatformApiConfig = (
   return apiConfig;
 };
 
+export async function getWalletPerformancesFromApiV2(
+  walletAddress: string
+): Promise<Record<AssetId, any>> {
+  const response = await callPlatformApis(1, "idle", "wallets", "", {
+    address: walletAddress,
+    limit: 1,
+  });
+
+  if (!response) return [];
+
+  const wallet = response[0];
+
+  // Call walletLatestBlocks
+  const walletLatestBlocks = await callPlatformApis(
+    1,
+    "idle",
+    "walletLatestBlocks",
+    "",
+    {
+      walletId: wallet._id,
+    }
+  );
+
+  const promises = walletLatestBlocks.map((walletLatestBlock: any) =>
+    callPlatformApis(
+      1,
+      "idle",
+      "walletPerformance",
+      "",
+      {
+        vaultId: walletLatestBlock.vaultId,
+        startBlock: 1,
+      },
+      {
+        walletId: wallet._id,
+      }
+    ).then((performance) => ({
+      vaultId: walletLatestBlock.vaultAddress,
+      performance,
+    }))
+  );
+
+  return await Promise.all(promises);
+}
+
 export async function getVaultsFromApiV2(): Promise<any> {
   return await callPlatformApis(1, "idle", "vaults");
 }
@@ -75,7 +121,7 @@ export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {
   return results.map((res) => res.data).flat();
 }
 
-export async function getLatestVaultBlocks(vaultsIds: string[]): Promise<any> {
+export async function getLatestVaultsBlocks(vaultsIds: string[]): Promise<any> {
   const promises = vaultsIds.map((vaultId) => {
     return callPlatformApis(1, "idle", "vaultBlocks", "", {
       vaultId,
@@ -96,7 +142,8 @@ export const getPlatformApisEndpoint = (
   protocol: string,
   api: string,
   endpointSuffix?: string,
-  filters?: PlatformApiFilters
+  filters?: PlatformApiFilters,
+  params?: any
 ): string | null => {
   const apiConfig = getPlatformApiConfig(chainId, protocol, api);
   if (!apiConfig) return null;
@@ -111,10 +158,20 @@ export const getPlatformApisEndpoint = (
       return applyFilters;
     }, []);
 
-  return (
+  let endpoint =
     `${apiConfig.endpoint[chainId]}${endpointSuffix || ""}` +
-    (queryStringParams ? `?${queryStringParams.join("&")}` : "")
-  );
+    (queryStringParams ? `?${queryStringParams.join("&")}` : "");
+
+  if (params) {
+    endpoint = Object.entries(params).reduce(
+      (endpoint: string, [param, value]) => {
+        return endpoint.replace(`:${param}`, value as string);
+      },
+      endpoint
+    );
+  }
+
+  return endpoint;
 };
 
 export const callPlatformApis = async (
@@ -122,14 +179,16 @@ export const callPlatformApis = async (
   protocol: string,
   api: string,
   endpointSuffix?: string,
-  filters?: PlatformApiFilters
+  filters?: PlatformApiFilters,
+  params?: any
 ): Promise<any> => {
   const endpoint = getPlatformApisEndpoint(
     chainId,
     protocol,
     api,
     endpointSuffix,
-    filters
+    filters,
+    params
   );
   if (!endpoint) return null;
 
@@ -140,6 +199,32 @@ export const callPlatformApis = async (
   if (!apiConfig || !apiConfig.endpoint[chainId]) return null;
 
   const results = await makeRequest(endpoint, apiConfig.config);
+  return apiConfig.path ? getObjectPath(results, apiConfig.path) : results;
+};
+
+export const callPlatformApisPost = async (
+  chainId: number,
+  protocol: string,
+  api: string,
+  endpointSuffix?: string,
+  postData?: PlatformApiFilters
+): Promise<any> => {
+  const endpoint = getPlatformApisEndpoint(
+    chainId,
+    protocol,
+    api,
+    endpointSuffix
+  );
+
+  if (!endpoint) return null;
+
+  const protocolApis = protocols[protocol];
+  if (!protocolApis || !protocolApis.apis) return null;
+
+  const apiConfig = protocolApis.apis[api];
+  if (!apiConfig || !apiConfig.endpoint[chainId]) return null;
+
+  const results = await makePostRequest(endpoint, postData, apiConfig.config);
   return apiConfig.path ? getObjectPath(results, apiConfig.path) : results;
 };
 
