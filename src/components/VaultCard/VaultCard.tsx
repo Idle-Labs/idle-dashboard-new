@@ -433,6 +433,7 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
         vaultsPosition.assets.push(asset.underlyingId)
         vaultsPosition.balance = vaultsPosition.balance.plus(bnOrZero(vaultPosition.usd.redeemable))
         vaultsPosition.realizedApy = vaultsPosition.realizedApy.plus(bnOrZero(vaultPosition.realizedApy).times(vaultPosition.usd.redeemable))
+        console.log(vaultId, vaultPosition.realizedApy.toString(), vaultPosition.usd.redeemable.toString(), vaultsPosition.realizedApy.toString())
       }
       return vaultsPosition
     }, {
@@ -448,6 +449,8 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
 
     return vaultsPosition
   }, [aggregatedVault, selectAssetById, selectVaultPosition])
+
+  // console.log('vaultsPosition', aggregatedVault.vaults, vaultsPosition.realizedApy.toString())
 
   return (
     <Card.Flex

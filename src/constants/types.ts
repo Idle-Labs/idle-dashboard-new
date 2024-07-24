@@ -307,14 +307,9 @@ export type StakingData = {
 };
 
 export type BalancePeriod = {
-  duration: number;
   timeStamp: number;
   blockNumber: number;
   balance: BigNumber;
-  idlePrice: BigNumber;
-  realizedApy: BigNumber;
-  realizedApr: BigNumber;
-  earningsPercentage: BigNumber;
 };
 
 export type VaultPosition = {
