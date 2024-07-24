@@ -546,7 +546,7 @@ export const protocols: Record<string, Protocol> = {
           137: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
         },
         path: "data",
-        filters: ["walletId", "vaultId"],
+        filters: ["walletId", "vaultId", "balance:gt"],
         config: {
           headers: env.REACT_APP_IDLE_API_V2_KEY
             ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }

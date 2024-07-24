@@ -77,8 +77,11 @@ export async function getWalletPerformancesFromApiV2(
     "",
     {
       walletId: wallet._id,
+      "balance:gt": 0,
     }
   );
+
+  console.log("walletLatestBlocks", walletLatestBlocks);
 
   const promises = walletLatestBlocks.map((walletLatestBlock: any) =>
     callPlatformApis(

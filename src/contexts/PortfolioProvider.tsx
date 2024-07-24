@@ -901,10 +901,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
       }
 
       const decimals = ("underlyingToken" in vault) ? vault.underlyingToken?.decimals || 18 : 18;
-      const decimalsUSDDeposits = BNify(performance.deposits.USD).eq(performance.deposits.token) ? 18 : 6
-      const decimalsUSDEarnings = BNify(performance.earnings.USD).eq(performance.earnings.token) ? 18 : 6
 
-      // console.log(vault.id, performance.deposits.USD, decimalsUSDDeposits, fixTokenDecimals(performance.deposits.USD, decimalsUSDDeposits).toString())
+      console.log(vault.id, performance.deposits.token, performance.deposits.USD, fixTokenDecimals(performance.deposits.USD, 6).toString(), performance.realizedAPY.toString())
 
       return  {
         ...vaultsPositions,
@@ -918,6 +916,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
           earningsPercentage: BNify(performance.earnings.percentage),
           firstBlock: performance.firstBlock,
           rewardsApysByToken: {},
+          balancePeriods: performance.balances.map( (balancePeriod: any) => ({
+            timeStamp: balancePeriod.block.timestamp,
+            blockNumber: balancePeriod.block.number,
+            balance: fixTokenDecimals(balancePeriod.tokenBalance, decimals)
+          })),
           idle: {
             staked: BNify(0),
             earnings: fixTokenDecimals(performance.earnings.token, 18),
@@ -935,9 +938,9 @@ export function PortfolioProvider({ children }: ProviderProps) {
           usd: {
             staked: BNify(0),
             rewards: BNify(0),
-            earnings: fixTokenDecimals(performance.earnings.USD, decimalsUSDEarnings),
-            deposited: fixTokenDecimals(performance.deposits.USD, decimalsUSDDeposits),
-            redeemable: fixTokenDecimals(performance.deposits.USD, decimalsUSDDeposits).plus(fixTokenDecimals(performance.earnings.USD, decimalsUSDEarnings)),
+            earnings: fixTokenDecimals(performance.earnings.USD, 6),
+            deposited: fixTokenDecimals(performance.deposits.USD, 6),
+            redeemable: fixTokenDecimals(performance.deposits.USD, 6).plus(fixTokenDecimals(performance.earnings.USD, 6)),
             discountedFees: BNify(0),
             depositedWithRef: BNify(0),
           }
@@ -4196,7 +4199,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
                   acc.den = acc.den.plus(latestBalance)
                   acc.num = acc.num.plus(distributedReward.apr.times(latestBalance))
                   acc.totalRewardsUsd = acc.totalRewardsUsd.plus(bnOrZero(distributedReward.valueUsd))
-                  // console.log('Reward avgAPY', assetId, rewardId, distributedReward.timeStamp, bnOrZero(vaultPosition.firstBlock?.timeStamp).toString(), secondsFromFirstDeposit.toString(), latestBalance.toString(), underlyingTokenConversionRateUsd.toString(), latestBalanceUsd.toString(), distributedReward.value.toString(), conversionRateData.conversionRate.toString(), bnOrZero(distributedReward.valueUsd).toString(), distributedRewardUsdAnnualized.toString(), distributedReward.apr.toString())
+                  console.log('Reward avgAPY', assetId, rewardId, distributedReward.timeStamp, bnOrZero(vaultPosition.firstBlock?.timestamp).toString(), secondsFromFirstDeposit.toString(), latestBalance.toString(), underlyingTokenConversionRateUsd.toString(), latestBalanceUsd.toString(), distributedReward.value.toString(), conversionRateData.conversionRate.toString(), bnOrZero(distributedReward.valueUsd).toString(), distributedRewardUsdAnnualized.toString(), distributedReward.apr.toString())
                 }
                 return acc
               }, {
@@ -4205,7 +4208,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
                 totalRewardsUsd: BNify(0)
               })
 
-              const distributedRewardsAvgApy = num.div(den)
+              const distributedRewardsAvgApy = bnOrZero(num.div(den))
 
               // Initialize rewardsApysByToken object
               if (!vaultPosition.rewardsApysByToken) {
@@ -4225,6 +4228,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
               vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(totalRewardsUsd);
               vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).plus(distributedRewardsAvgApy)
               vaultPosition.realizedApy = vaultPosition.realizedApy.plus(vaultPosition.rewardsApy);
+              console.log('RewardApy', assetId, vaultPosition.rewardsApy.toString(), vaultPosition.realizedApy.toString())
             }
           })
           return distributedRewardsOutput
