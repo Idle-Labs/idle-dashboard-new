@@ -91,6 +91,10 @@ export const Portfolio: React.FC = () => {
     return realizedApyData.num.div(realizedApyData.den)
   }, [assetIds, vaultsPositions])
 
+  if (!account){
+    return null
+  }
+
   return (
     <Box
       mt={5}
