@@ -378,7 +378,7 @@ export const Staking: React.FC = () => {
         justifyContent={'flex-start'}
         alignItems={['center','flex-start']}
       >
-        <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} size={'3xl'} />
+        <Translation translation={'navBar.stakeIDLE'} component={Heading} as={'h2'} fontSize={'3xl'} />
       </VStack>
       <HStack
         width={'100%'}
