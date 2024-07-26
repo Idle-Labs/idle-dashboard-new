@@ -902,7 +902,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       const decimals = ("underlyingToken" in vault) ? vault.underlyingToken?.decimals || 18 : 18;
 
-      console.log(vault.id, performance.deposits.token, performance.deposits.USD, fixTokenDecimals(performance.deposits.USD, 6).toString(), performance.realizedAPY.toString())
+      // console.log(vault.id, performance.deposits.token, performance.deposits.USD, fixTokenDecimals(performance.deposits.USD, 6).toString(), performance.realizedAPY.toString())
 
       return  {
         ...vaultsPositions,
@@ -923,15 +923,15 @@ export function PortfolioProvider({ children }: ProviderProps) {
           })),
           idle: {
             staked: BNify(0),
-            earnings: fixTokenDecimals(performance.earnings.token, 18),
-            deposited: fixTokenDecimals(performance.deposits.token, 18),
-            redeemable: fixTokenDecimals(BNify(performance.deposits.token).plus(performance.earnings.token), 18),
+            earnings: BNify(0),
+            deposited: fixTokenDecimals(performance.deposits.vault, 18),
+            redeemable: fixTokenDecimals(performance.deposits.vault, 18),
           },
           underlying: {
             staked: BNify(0),
-            earnings: fixTokenDecimals(performance.earnings.underlying, decimals),
-            deposited: fixTokenDecimals(performance.deposits.underlying, decimals),
-            redeemable: fixTokenDecimals(BNify(performance.deposits.underlying).plus(performance.earnings.underlying), decimals),
+            earnings: fixTokenDecimals(performance.earnings.token, decimals),
+            deposited: fixTokenDecimals(performance.deposits.token, decimals),
+            redeemable: fixTokenDecimals(BNify(performance.deposits.token).plus(performance.earnings.token), decimals),
             discountedFees: BNify(0),
             depositedWithRef: BNify(0),
           },
@@ -948,7 +948,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       }
     }, {})
 
-    // console.log('output.vaultsPositions', output.vaultsPositions)
+    console.log('output.vaultsPositions', output.vaultsPositions)
 
     /*
     output.vaultsPositions = Object.keys(output.vaultsTransactions).reduce((vaultsPositions: Record<AssetId, VaultPosition>, assetId: AssetId) => {
@@ -3412,7 +3412,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         const totalSupply = fixTokenDecimals(vaultBlock.totalSupply, 18)
         const vaultPrice = fixTokenDecimals(vaultBlock.price, decimals)
 
-        fees[vault.id]= BNify(vaultData.feePercentage).div(1e05)
+        fees[vault.id]= BNify(vaultData.feePercentage).div(100)
         aprs[vault.id] = apr
         pricesUsd[vault.id] = priceUsd
         totalSupplies[vault.id] = totalSupply
@@ -4199,7 +4199,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
                   acc.den = acc.den.plus(latestBalance)
                   acc.num = acc.num.plus(distributedReward.apr.times(latestBalance))
                   acc.totalRewardsUsd = acc.totalRewardsUsd.plus(bnOrZero(distributedReward.valueUsd))
-                  console.log('Reward avgAPY', assetId, rewardId, distributedReward.timeStamp, bnOrZero(vaultPosition.firstBlock?.timestamp).toString(), secondsFromFirstDeposit.toString(), latestBalance.toString(), underlyingTokenConversionRateUsd.toString(), latestBalanceUsd.toString(), distributedReward.value.toString(), conversionRateData.conversionRate.toString(), bnOrZero(distributedReward.valueUsd).toString(), distributedRewardUsdAnnualized.toString(), distributedReward.apr.toString())
+                  // console.log('Reward avgAPY', assetId, rewardId, distributedReward.timeStamp, bnOrZero(vaultPosition.firstBlock?.timestamp).toString(), secondsFromFirstDeposit.toString(), latestBalance.toString(), underlyingTokenConversionRateUsd.toString(), latestBalanceUsd.toString(), distributedReward.value.toString(), conversionRateData.conversionRate.toString(), bnOrZero(distributedReward.valueUsd).toString(), distributedRewardUsdAnnualized.toString(), distributedReward.apr.toString())
                 }
                 return acc
               }, {
@@ -4228,7 +4228,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
               vaultPosition.usd.earnings = vaultPosition.usd.earnings.plus(totalRewardsUsd);
               vaultPosition.rewardsApy = bnOrZero(vaultPosition.rewardsApy).plus(distributedRewardsAvgApy)
               vaultPosition.realizedApy = vaultPosition.realizedApy.plus(vaultPosition.rewardsApy);
-              console.log('RewardApy', assetId, vaultPosition.rewardsApy.toString(), vaultPosition.realizedApy.toString())
+              // console.log('RewardApy', assetId, vaultPosition.rewardsApy.toString(), vaultPosition.realizedApy.toString())
             }
           })
           return distributedRewardsOutput
@@ -4349,6 +4349,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
   */
 
   // Set Gauges Rewards
+  /*
   useEffect(() => {
     if (!state.isPortfolioLoaded || !state.isVaultsPositionsLoaded || isEmpty(state.vaultsPositions)) return
 
@@ -4408,6 +4409,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     }
 
   }, [state.vaultsPositions, state.isVaultsPositionsLoaded, state.isPortfolioLoaded, selectVaultsAssetsByType, selectVaultById])
+  */
 
   // Generate Assets Data
   useEffect(() => {

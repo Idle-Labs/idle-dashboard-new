@@ -90,11 +90,11 @@ export async function getWalletPerformancesFromApiV2(
       "walletPerformance",
       "",
       {
-        vaultId: walletLatestBlock.vaultId,
         startBlock: 1,
       },
       {
         walletId: wallet._id,
+        vaultId: walletLatestBlock.vaultId,
       }
     ).then((performance) => ({
       vaultId: walletLatestBlock.vaultAddress,
