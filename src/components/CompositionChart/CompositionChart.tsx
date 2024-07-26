@@ -47,15 +47,14 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({
   }
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
+    const totalItems = compositions[type].length
+    // const totalFunds = compositions[type].reduce( (total: number, asset: DonutChartData) => total += asset.value, 0)
+    const label = selectedSlice?.label || translate(`dashboard.portfolio.filters.${type}`)
+    const value = selectedSlice ? numberToPercentage(selectedSlice.extraData.allocation.times(100), 1) : totalItems
     switch (type){
       case 'assets':
-        const totalAssets = compositions[type].length
-        const totalFunds = compositions[type].reduce( (total: number, asset: DonutChartData) => total += asset.value, 0)
-        const formatFn = (n: any) => `$${abbreviateNumber(n)}`
         const asset = selectedSlice?.extraData?.asset
-        const icon = asset?.icon || protocolToken?.icon
-        const label = asset?.name || translate('navBar.assets')
-        const value = selectedSlice ? numberToPercentage(selectedSlice.extraData.allocation.times(100), 1) : totalAssets
+        // icon = asset?.icon || protocolToken?.icon
 
         if (selectedSlice && !asset) return null
 
@@ -85,10 +84,40 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({
             </text>
           </>
         )
+        case 'chains':
+          const network = selectedSlice?.extraData?.network
+          if (selectedSlice && !network) return null
+  
+          return (
+            <>
+              <text
+                x={'50%'}
+                y={'52%'}
+                fill={"white"}
+                fontSize={32}
+                fontWeight={600}
+                textAnchor={"middle"}
+                pointerEvents={"none"}
+              >
+                {value}
+              </text>
+              <text
+                x={'50%'}
+                y={'67%'}
+                fontSize={16}
+                fontWeight={500}
+                textAnchor={"middle"}
+                pointerEvents={"none"}
+                fill={theme.colors.cta}
+              >
+                {label}
+              </text>
+            </>
+          )
       default:
       break;
     }
-  }, [protocolToken, compositions, theme, translate, type])
+  }, [compositions, theme, translate, type])
 
   const getSliceDataEmpty = useCallback(() => {
     return (

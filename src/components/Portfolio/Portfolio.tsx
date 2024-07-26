@@ -1,7 +1,6 @@
-import { Box, HStack, Heading, Image, SimpleGrid, SkeletonText, VStack } from "@chakra-ui/react"
+import { Box, Button, ButtonProps, HStack, Heading, Image, SimpleGrid, SkeletonText, VStack } from "@chakra-ui/react"
 import { Amount } from "components/Amount/Amount"
 import { Card } from "components/Card/Card"
-import { CompositionChart } from "components/CompositionChart/CompositionChart"
 import { DepositedAssetsTable } from "components/DepositedAssetsTable/DepositedAssetsTable"
 import { Translation } from "components/Translation/Translation"
 import { strategies } from "constants/strategies"
@@ -9,13 +8,14 @@ import { VaultPosition, Asset, HistoryTimeframe, BigNumber } from "constants/typ
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
-import { BNify, bnOrZero } from "helpers/"
+import { BNify, bnOrZero, shortenHash } from "helpers/"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import { selectVisibleStrategies } from "selectors/"
 import { PortfolioAllocation } from "./PortfolioAllocation"
+import { BiSolidCoinStack } from "react-icons/bi";
 import { CompositionType } from "hooks/useCompositionChartData/useCompositionChartData"
-
+import { SiBnbchain } from "react-icons/si";
 
 export const Portfolio: React.FC = () => {
   const { theme } = useThemeProvider()
@@ -25,7 +25,7 @@ export const Portfolio: React.FC = () => {
   const [timeframe, setTimeframe] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { network } = useWalletProvider()
+  const { account, network } = useWalletProvider()
   const {
     assetsData,
     stakingData,
@@ -107,79 +107,105 @@ export const Portfolio: React.FC = () => {
           columns={[1, 2]}
           justifyContent={'space-between'}
         >
-          <Card.Flex
-            p={0}
-            width={'full'}
-            bg={'card.bgLight'}
-            flexDirection={'column'}
+          <VStack
+            spacing={4}
           >
+            <HStack
+              height={10}
+              spacing={3}
+              width={'full'}
+            >
+              <Translation translation={'defi.portfolio'} component={Heading} as={'h3'} fontSize={'xl'} />
+              <Heading as={'h3'} fontSize={'xl'} color={'ctaDisabled'}>({shortenHash(account?.address as string)})</Heading>
+            </HStack>
+            <Card.Flex
+              p={0}
+              flex={1}
+              width={'full'}
+              bg={'card.bgLight'}
+              flexDirection={'column'}
+            >
+              <Card
+                py={4}
+                px={5}
+                flex={1}
+              >
+                <VStack
+                  spacing={6}
+                  align={'flex-start'}
+                >
+                  <Translation translation={'defi.totalFunds'} component={Heading} as={'h3'} fontSize={'md'} />
+                  <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
+                    <VStack
+                      spacing={[1, 3]}
+                      alignItems={'baseline'}
+                    >
+                      <Amount.Usd abbreviate={false} value={totalFunds} textStyle={'heading'} fontSize={'6xl'} />
+                    </VStack>
+                  </SkeletonText>
+                </VStack>
+              </Card>
+              <SimpleGrid
+                px={5}
+                py={1}
+                columns={3}
+                width={'full'}
+                spacing={5}
+              >
+                <HStack
+                  pr={5}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                  justifyContent={'space-between'}
+                >
+                  <Translation translation={'defi.lastDay'} />
+                  <Amount.Percentage prefix={'+'} value={15} textStyle={'ctaStatic'} color={'brightGreen'} />
+                </HStack>
+                <HStack
+                  pr={5}
+                  borderRight={'1px solid'}
+                  borderColor={'divider'}
+                  justifyContent={'space-between'}
+                >
+                  <Translation translation={'defi.lastWeek'} />
+                  <Amount.Percentage prefix={'+'} value={15} textStyle={'ctaStatic'} color={'brightGreen'} />
+                </HStack>
+                <HStack
+                  justifyContent={'space-between'}
+                >
+                  <Translation translation={'defi.lastYear'} />
+                  <Amount.Percentage prefix={'+'} value={15} textStyle={'ctaStatic'} color={'brightGreen'} />
+                </HStack>
+              </SimpleGrid>
+            </Card.Flex>
+          </VStack>
+
+          <VStack
+            spacing={4}
+          >
+            <HStack
+              height={10}
+              spacing={3}
+              width={'full'}
+              justifyContent={'flex-end'}
+            >
+              <Translation<ButtonProps> component={Button} leftIcon={<BiSolidCoinStack size={24} />} translation={`navBar.assets`} variant={'filter'} aria-selected={allocationType === 'assets'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setAllocationType('assets')} />
+              <Translation<ButtonProps> component={Button} leftIcon={<SiBnbchain size={24} />} translation={`defi.chains`} variant={'filter'} aria-selected={allocationType === 'chains'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setAllocationType('chains')} />
+            </HStack>
             <Card
               py={4}
               px={5}
-              flex={1}
             >
               <VStack
+                width={'full'}
                 spacing={6}
-                align={'flex-start'}
+                alignItems={'flex-start'}
               >
-                <Translation translation={'defi.totalFunds'} component={Heading} as={'h3'} fontSize={'md'} />
-                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
-                  <VStack
-                    spacing={[1, 3]}
-                    alignItems={'baseline'}
-                  >
-                    <Amount.Usd abbreviate={false} value={totalFunds} textStyle={'heading'} fontSize={'6xl'} />
-                  </VStack>
-                </SkeletonText>
+                <Translation translation={'dashboard.portfolio.allocation'} component={Heading} as={'h3'} fontSize={'md'} />
+                <PortfolioAllocation type={allocationType} assetIds={assetIds} strategies={enabledStrategies} />
               </VStack>
             </Card>
-            <SimpleGrid
-              px={5}
-              py={1}
-              columns={3}
-              width={'full'}
-              spacing={5}
-            >
-              <HStack
-                pr={5}
-                borderRight={'1px solid'}
-                borderColor={'divider'}
-                justifyContent={'space-between'}
-              >
-                <Translation translation={'defi.lastDay'} />
-                <Amount.Percentage prefix={'+'} value={15} textStyle={'ctaStatic'} color={'brightGreen'} />
-              </HStack>
-              <HStack
-                pr={5}
-                borderRight={'1px solid'}
-                borderColor={'divider'}
-                justifyContent={'space-between'}
-              >
-                <Translation translation={'defi.lastWeek'} />
-                <Amount.Percentage prefix={'+'} value={15} textStyle={'ctaStatic'} color={'brightGreen'} />
-              </HStack>
-              <HStack
-                justifyContent={'space-between'}
-              >
-                <Translation translation={'defi.lastYear'} />
-                <Amount.Percentage prefix={'+'} value={15} textStyle={'ctaStatic'} color={'brightGreen'} />
-              </HStack>
-            </SimpleGrid>
-          </Card.Flex>
-
-          <Card
-            py={4}
-            px={5}
-          >
-            <VStack
-              width={'full'}
-              spacing={6}
-              alignItems={'flex-start'}
-            >
-              <Translation translation={'dashboard.portfolio.allocation'} component={Heading} as={'h3'} fontSize={'md'} />
-              <PortfolioAllocation type={allocationType} assetIds={assetIds} strategies={enabledStrategies} />
-            </VStack>
-          </Card>
+          </VStack>
         </SimpleGrid>
         <SimpleGrid
           width={'full'}
@@ -197,7 +223,7 @@ export const Portfolio: React.FC = () => {
                 alignItems={'space-between'}
               >
                 <Translation translation={'defi.earnings'} component={Heading} color={'primary'} as={'h3'} fontSize={'md'} />
-                <SkeletonText noOfLines={1} isLoaded={!!isPortfolioAccountReady}>
+                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                   <Amount.Usd abbreviate={true} fontSize={'3xl'} fontWeight={600} value={aggregatedUsdPosition.earnings} />
                 </SkeletonText>
               </VStack>
@@ -215,7 +241,7 @@ export const Portfolio: React.FC = () => {
                 alignItems={'space-between'}
               >
                 <Translation translation={'defi.roi'} component={Heading} color={'primary'} as={'h3'} fontSize={'md'} />
-                <SkeletonText noOfLines={1} isLoaded={!!isPortfolioAccountReady}>
+                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                   <Amount.Percentage minValue={0.01} fontSize={'3xl'} fontWeight={600} value={totalROI} />
                 </SkeletonText>
               </VStack>
@@ -233,7 +259,7 @@ export const Portfolio: React.FC = () => {
                 alignItems={'space-between'}
               >
                 <Translation translation={'defi.avgRealizedApy'} component={Heading} color={'primary'} as={'h3'} fontSize={'md'} />
-                <SkeletonText noOfLines={1} isLoaded={!!isPortfolioAccountReady}>
+                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                   <Amount.Percentage fontSize={'3xl'} fontWeight={600} value={avgRealizedApy} />
                 </SkeletonText>
               </VStack>
@@ -251,7 +277,7 @@ export const Portfolio: React.FC = () => {
                 alignItems={'space-between'}
               >
                 <Translation translation={'defi.vaults'} component={Heading} color={'primary'} as={'h3'} fontSize={'md'} />
-                <SkeletonText noOfLines={1} isLoaded={!!isPortfolioAccountReady}>
+                <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                   <Amount.Int fontSize={'3xl'} fontWeight={600} value={totalVaults} />
                 </SkeletonText>
               </VStack>
