@@ -538,12 +538,12 @@ export const protocols: Record<string, Protocol> = {
       },
       walletLatestBlocks: {
         endpoint: {
-          // 1: "https://api-staging.idle.finance/v1/wallet-latest-blocks",
-          // 10: "https://api-staging.idle.finance/v1/wallet-latest-blocks",
-          // 137: "https://api-staging.idle.finance/v1/wallet-latest-blocks",
-          1: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
-          10: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
-          137: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
+          1: "https://api-staging.idle.finance/v1/wallet-latest-blocks",
+          10: "https://api-staging.idle.finance/v1/wallet-latest-blocks",
+          137: "https://api-staging.idle.finance/v1/wallet-latest-blocks",
+          // 1: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
+          // 10: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
+          // 137: "http://127.0.0.1:3000/v1/wallet-latest-blocks",
         },
         path: "data",
         filters: ["walletId", "vaultId", "balance:gt"],
@@ -555,14 +555,14 @@ export const protocols: Record<string, Protocol> = {
       },
       walletPerformance: {
         endpoint: {
-          // 1: "https://api-staging.idle.finance/v1/wallets",
-          // 10: "https://api-staging.idle.finance/v1/wallets",
-          // 137: "https://api-staging.idle.finance/v1/wallets",
-          1: "http://127.0.0.1:3000/v1/wallets/:walletId/performance",
-          10: "http://127.0.0.1:3000/v1/wallets/:walletId/performance",
-          137: "http://127.0.0.1:3000/v1/wallets/:walletId/performance",
+          1: "https://api-staging.idle.finance/v1/wallets/:walletId/vault/:vaultId",
+          10: "https://api-staging.idle.finance/v1/wallets/:walletId/vault/:vaultId",
+          137: "https://api-staging.idle.finance/v1/wallets/:walletId/vault/:vaultId",
+          // 1: "http://127.0.0.1:3000/v1/wallets/:walletId/vault/:vaultId",
+          // 10: "http://127.0.0.1:3000/v1/wallets/:walletId/vault/:vaultId",
+          // 137: "http://127.0.0.1:3000/v1/wallets/:walletId/vault/:vaultId",
         },
-        filters: ["vaultId", "startBlock"],
+        filters: ["startBlock"],
         config: {
           headers: env.REACT_APP_IDLE_API_V2_KEY
             ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
@@ -571,12 +571,12 @@ export const protocols: Record<string, Protocol> = {
       },
       wallets: {
         endpoint: {
-          // 1: "https://api-staging.idle.finance/v1/wallets",
-          // 10: "https://api-staging.idle.finance/v1/wallets",
-          // 137: "https://api-staging.idle.finance/v1/wallets",
-          1: "http://127.0.0.1:3000/v1/wallets",
-          10: "http://127.0.0.1:3000/v1/wallets",
-          137: "http://127.0.0.1:3000/v1/wallets",
+          1: "https://api-staging.idle.finance/v1/wallets",
+          10: "https://api-staging.idle.finance/v1/wallets",
+          137: "https://api-staging.idle.finance/v1/wallets",
+          // 1: "http://127.0.0.1:3000/v1/wallets",
+          // 10: "http://127.0.0.1:3000/v1/wallets",
+          // 137: "http://127.0.0.1:3000/v1/wallets",
         },
         path: "data",
         filters: ["address", "limit"],

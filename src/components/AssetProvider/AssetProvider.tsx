@@ -695,6 +695,8 @@ const NetEarningsUsd: React.FC<AmountProps> = (props) => {
 const BalanceUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
+  console.log('redeemable', bnOrZero(asset?.vaultPosition?.usd.redeemable).toString())
+
   return asset?.vaultPosition?.usd.redeemable ? (
     <Amount.Usd value={asset?.vaultPosition?.usd.redeemable} {...props} />
   ) : <Spinner size={'sm'} />
