@@ -413,6 +413,11 @@
       "value": "Value",
       "priceChange": "Price Change",
       "allocation": "Allocation",
+      "filters": {
+        "assets": "Assets",
+        "chains": "Chains",
+        "strategies": "Strategies"
+      },
       "empty": {
         "title": "Cricket noises...",
         "cta": "Send yourself some crypto!"
@@ -615,6 +620,7 @@
       }
     },
     "borrower": "Borrower",
+    "portfolio": "Portfolio",
     "ratingProvidedBy": "Rating provided by",
     "yourWallet": "Your Wallet",
     "amountToStake": "Amount to Stake",

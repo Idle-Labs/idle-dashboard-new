@@ -1,5 +1,5 @@
-import { AssetId } from "constants/"
-import { Box, Flex, HStack, SimpleGrid, VStack, Wrap, WrapItem } from "@chakra-ui/react"
+import { AssetId, networks } from "constants/"
+import { Box, Flex, HStack, Image, SimpleGrid, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react"
 import { CompositionChart } from "components/CompositionChart/CompositionChart"
 import { CompositionType, UseCompositionChartDataReturn, useCompositionChartData } from "hooks/useCompositionChartData/useCompositionChartData"
 import { AssetProvider } from "components/AssetProvider/AssetProvider"
@@ -8,6 +8,7 @@ import { Amount } from "components/Amount/Amount"
 import { sortArrayByKey } from "helpers"
 import { useMemo, useState } from "react"
 import { useThemeProvider } from "contexts/ThemeProvider"
+import { Icon } from "components/Icon/Icon"
 
 type PortfolioAllocationArgs = {
   type: CompositionType,
@@ -102,6 +103,29 @@ export const PortfolioAllocation: React.FC<PortfolioAllocationArgs> = ({
                       <Amount.Usd value={composition.value} />
                     </HStack>
                   )
+                  case 'chains':
+                    return (
+                      <HStack
+                        spacing={4}
+                        cursor={'pointer'}
+                        key={`index_${index}`}
+                        justifyContent={'space-between'}
+                        sx={{
+                          filter: `grayscale(${composition.label === selectedLabel ? 0 : 1})`
+                        }}
+                        onMouseOut={() => setSelectedLabel(undefined)}
+                        onMouseOver={() => setSelectedLabel(composition.label)}
+                        opacity={ composition.label === selectedLabel ? 1 : 0.7 }
+                      >
+                        <HStack
+                          spacing={2}
+                        >
+                          <Icon IconComponent={composition.extraData.network.icon} w={8} h={8} />
+                          <Text textStyle={'tableCell'}>{composition.label}</Text>
+                        </HStack>
+                        <Amount.Usd value={composition.value} />
+                      </HStack>
+                    )
                 case 'strategies':
                   return null
                 default:

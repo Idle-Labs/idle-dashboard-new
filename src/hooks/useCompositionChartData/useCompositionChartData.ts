@@ -8,9 +8,10 @@ import type {
   DonutChartData,
   DonutChartColors,
 } from "components/DonutChart/DonutChart";
-import { selectUnderlyingToken } from "selectors";
+import { chains } from "constants/chains";
+import { networks } from "constants/networks";
 
-export type CompositionType = "assets" | "strategies";
+export type CompositionType = "assets" | "strategies" | "chains";
 
 type UseCompositionChartDataArgs = {
   assetIds: AssetId[];
@@ -118,6 +119,28 @@ export const useCompositionChartData: UseCompositionChartData = ({
     }, {});
   }, [assets, enabledStrategies, selectAssetById]);
 
+  const chainsBalances: Record<string, BigNumber> = useMemo(() => {
+    const filteredAssets = assets.filter(
+      (asset: Asset) =>
+        asset.type &&
+        (!enabledStrategies || enabledStrategies.includes(asset.type))
+    );
+    return filteredAssets.reduce((chainsBalances: Balances, asset: Asset) => {
+      if (!asset.underlyingId || !asset.vaultPosition) return chainsBalances;
+
+      const underlyingAsset = selectAssetById(asset.underlyingId);
+      if (!underlyingAsset) return chainsBalances;
+
+      if (!chainsBalances[underlyingAsset.chainId]) {
+        chainsBalances[underlyingAsset.chainId] = BNify(0);
+      }
+      chainsBalances[underlyingAsset.chainId] = chainsBalances[
+        underlyingAsset.chainId
+      ].plus(asset.vaultPosition.usd.redeemable);
+      return chainsBalances;
+    }, {});
+  }, [assets, enabledStrategies, selectAssetById]);
+
   const totalFunds = useMemo(() => {
     return Object.values(assetsBalances).reduce(
       (acc: BigNumber, value: BigNumber) => acc.plus(BNify(value)),
@@ -127,6 +150,7 @@ export const useCompositionChartData: UseCompositionChartData = ({
 
   const compositions: Compositions = {
     assets: [],
+    chains: [],
     strategies: [],
   };
 
@@ -198,10 +222,51 @@ export const useCompositionChartData: UseCompositionChartData = ({
     );
   }, [assetsNameBalances, totalFunds]);
 
+  compositions.chains = useMemo((): DonutChartData[] => {
+    return Object.keys(chainsBalances).reduce(
+      (compositionAssets: DonutChartData[], chainId: string) => {
+        const network = networks[+chainId];
+        if (!network) {
+          return compositionAssets;
+        }
+        const allocation = chainsBalances[chainId].div(totalFunds);
+        return [
+          ...compositionAssets,
+          {
+            label: network.name,
+            extraData: {
+              network,
+              allocation,
+            },
+            value: chainsBalances[chainId].toNumber(),
+          },
+        ];
+      },
+      []
+    );
+  }, [chainsBalances, totalFunds]);
+
   const colors: Colors = {
     assets: {},
     strategies: {},
+    chains: {},
   };
+
+  colors.chains = useMemo((): DonutChartColors => {
+    return Object.keys(chains).reduce(
+      (colors: DonutChartColors, chainId: string) => {
+        const network = networks[+chainId];
+        if (!network) {
+          return colors;
+        }
+        return {
+          ...colors,
+          [network.name]: network.color,
+        };
+      },
+      {}
+    );
+  }, []);
 
   colors.strategies = useMemo((): DonutChartColors => {
     return Object.values(strategies).reduce(
