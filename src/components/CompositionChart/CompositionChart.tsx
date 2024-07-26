@@ -1,62 +1,71 @@
 import { useCallback } from 'react'
-import { abbreviateNumber } from 'helpers/'
+import { abbreviateNumber, numberToPercentage } from 'helpers/'
 import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
 import { useTheme, Box } from '@chakra-ui/react'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { DonutChart } from 'components/DonutChart/DonutChart'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import type { DonutChartData } from 'components/DonutChart/DonutChart'
+import type { DonutChartColors, DonutChartData } from 'components/DonutChart/DonutChart'
 import { useCompositionChartData, Compositions, UseCompositionChartDataReturn } from 'hooks/useCompositionChartData/useCompositionChartData'
 
 type CompositionChartArgs = {
   type: keyof Compositions
   assetIds: AssetId[],
   strategies?: string[]
+  height?: number,
+  donutThickness?: number
+  colors?: DonutChartColors
+  selectedSlice?: DonutChartData
 }
 
-export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, strategies: enabledStrategies, type }) => {
+export const CompositionChart: React.FC<CompositionChartArgs> = ({
+  assetIds,
+  strategies: enabledStrategies,
+  type,
+  colors: colorsOverride,
+  height = 350,
+  donutThickness,
+  selectedSlice
+}) => {
   const theme = useTheme()
   const translate = useTranslate()
   const { isMobile } = useThemeProvider()
   const { protocolToken } = usePortfolioProvider()
 
   const {
-    colors,
+    colors: activeColors,
     compositions
   }: UseCompositionChartDataReturn = useCompositionChartData({ assetIds, strategies: enabledStrategies })
+
+  const colors = JSON.parse(JSON.stringify(activeColors))
+
+  if (colorsOverride){
+    Object.entries(colorsOverride).forEach( ([asset, color]) => {
+      colors[type][asset] = color
+    })
+  }
 
   const getSliceData = useCallback((selectedSlice: DonutChartData) => {
     switch (type){
       case 'assets':
+        const totalAssets = compositions[type].length
         const totalFunds = compositions[type].reduce( (total: number, asset: DonutChartData) => total += asset.value, 0)
         const formatFn = (n: any) => `$${abbreviateNumber(n)}`
         const asset = selectedSlice?.extraData?.asset
         const icon = asset?.icon || protocolToken?.icon
-        const label = asset?.name || translate('dashboard.portfolio.totalChart')
-        const value = selectedSlice ? formatFn(selectedSlice.value) : formatFn(totalFunds)
+        const label = asset?.name || translate('navBar.assets')
+        const value = selectedSlice ? numberToPercentage(selectedSlice.extraData.allocation.times(100), 1) : totalAssets
 
         if (selectedSlice && !asset) return null
 
         return (
           <>
-            {
-              icon && (
-                <image
-                  y={'35%'}
-                  href={icon}
-                  height={"34"}
-                  width={"34"}
-                  textAnchor={"middle"}
-                  x={isMobile ? '44.5%' : '46.5%'}
-                />
-              )
-            }
             <text
               x={'50%'}
-              y={'54%'}
+              y={'52%'}
               fill={"white"}
-              fontSize={26}
+              fontSize={32}
               fontWeight={600}
               textAnchor={"middle"}
               pointerEvents={"none"}
@@ -65,9 +74,9 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
             </text>
             <text
               x={'50%'}
-              y={'61%'}
-              fontSize={14}
-              fontWeight={400}
+              y={'67%'}
+              fontSize={16}
+              fontWeight={500}
               textAnchor={"middle"}
               pointerEvents={"none"}
               fill={theme.colors.cta}
@@ -79,31 +88,41 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
       default:
       break;
     }
-  }, [protocolToken, compositions, theme, translate, type, isMobile])
+  }, [protocolToken, compositions, theme, translate, type])
 
   const getSliceDataEmpty = useCallback(() => {
-    const formatFn = (n: any) => `$${abbreviateNumber(n)}`
     return (
-      <text
-        x={'50%'}
-        y={'54%'}
-        fill={"white"}
-        fontSize={26}
-        fontWeight={600}
-        textAnchor={"middle"}
-        pointerEvents={"none"}
-      >
-        {formatFn(0)}
-      </text>
+      <>
+        <text
+          x={'50%'}
+          y={'52%'}
+          fill={"white"}
+          fontSize={32}
+          fontWeight={600}
+          textAnchor={"middle"}
+          pointerEvents={"none"}
+        >
+          0
+        </text>
+        <text
+          x={'50%'}
+          y={'67%'}
+          fontSize={16}
+          fontWeight={500}
+          textAnchor={"middle"}
+          pointerEvents={"none"}
+          fill={theme.colors.cta}
+        >
+          Assets
+        </text>
+      </>
     )
-  }, [])
-
-  // console.log('compositions', compositions)
+  }, [theme])
 
   return (
     <Box
-      height={350}
-      width={'100%'}
+      height={height}
+      width={'auto'}
     >
       {
         compositions && compositions[type] && compositions[type].length ? (
@@ -111,10 +130,16 @@ export const CompositionChart: React.FC<CompositionChartArgs> = ({ assetIds, str
             colors={colors[type]}
             data={compositions[type]}
             getSliceData={getSliceData}
+            donutThickness={donutThickness}
+            selectedSlice={selectedSlice}
+            activeColors={activeColors[type]}
           />
         ) : (
           <DonutChart
+            selectedSlice={selectedSlice}
+            donutThickness={donutThickness}
             getSliceData={getSliceDataEmpty}
+            activeColors={activeColors[type]}
             colors={{
               placeholder1:'#555B67',
               // placeholder2:'#2a3243',

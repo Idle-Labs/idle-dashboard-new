@@ -1,3 +1,4 @@
+// import { Portfolio } from 'components/Portfolio/Portfolio'
 import { Template } from 'components/Template/Template'
 // import { Strategy } from 'components/Strategy/Strategy'
 // import { Dashboard } from 'components/Dashboard/Dashboard'
@@ -11,6 +12,7 @@ const Staking = lazyLoadComponent('Staking')
 // const Strategy = lazyLoadComponent('Strategy')
 const Tranches = lazyLoadComponent('Tranches')
 const Dashboard = lazyLoadComponent('Dashboard')
+const Portfolio = lazyLoadComponent('Portfolio')
 const AssetPage = lazyLoadComponent('AssetPage')
 const AssetStats = lazyLoadComponent('AssetStats')
 const CreditVaults = lazyLoadComponent('CreditVaults')
@@ -50,7 +52,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'dashboard',
-        element: <Dashboard />,
+        element: <Portfolio />,
       },
       {
         path: 'stake',

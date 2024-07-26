@@ -171,12 +171,12 @@ export const theme = extendTheme({
     h2: "36px",
     "2xl": "28px",
     "3xl": "36px",
-    "4xl": "36px",
-    "5xl": "36px",
-    "6xl": "36px",
-    "7xl": "36px",
-    "8xl": "36px",
-    "9xl": "36px",
+    "4xl": "42px",
+    "5xl": "48px",
+    "6xl": "56px",
+    "7xl": "64px",
+    "8xl": "72px",
+    "9xl": "80px",
   },
   fonts: {
     heading: `'Open Sans', sans-serif`,
@@ -273,6 +273,22 @@ export const theme = extendTheme({
       cursor: "pointer",
       _hover: {
         backgroundColor: "card.bgLight",
+      },
+    },
+    carouselDot: {
+      w: 3,
+      h: 3,
+      opacity: 1,
+      cursor: "pointer",
+      borderRadius: "50%",
+      backgroundColor: "card.bgLight",
+      _selected: {
+        opacity: 1,
+        backgroundColor: "primary",
+      },
+      _hover: {
+        opacity: 1,
+        backgroundColor: "primary",
       },
     },
     tableFilter: {

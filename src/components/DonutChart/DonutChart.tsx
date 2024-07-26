@@ -9,6 +9,7 @@ export type DonutChartKey = string
 export type DonutChartData = {
   label: DonutChartKey
   value: number
+  icon?: string
   extraData?: any
 }
 export type DonutChartColors = Record<DonutChartKey, string>
@@ -18,6 +19,8 @@ export type DonutChartInitialData = {
   data: DonutChartData[]
   colors: DonutChartColors
   donutThickness?: number
+  activeColors?: DonutChartColors
+  selectedSlice?: DonutChartData
 }
 
 const defaultMargin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -35,12 +38,16 @@ export function PieChart({
   colors,
   width,
   height,
+  activeColors,
   margin = defaultMargin,
   donutThickness = 30,
   animate = true,
+  selectedSlice: selectedSliceOverride,
   getSliceData
 }: PieProps) {
   const [selectedSlice, setSelectedSlice] = useState<DonutChartData | null>(null);
+
+  const selectedSliceToUse = selectedSliceOverride || selectedSlice
 
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -49,14 +56,14 @@ export function PieChart({
   const centerX = innerWidth / 2;
 
   const keys = data.map( d => d.label )
-  const keysColors = keys.map( key => colors[key] )
+  const keysColors = keys.map( key => activeColors && selectedSliceToUse?.label === key ? activeColors[key] : colors[key] )
 
   const getColor = scaleOrdinal({
     domain: keys,
     range: keysColors,
   })
 
-  const sliceData = getSliceData && getSliceData(selectedSlice)
+  const sliceData = getSliceData && getSliceData(selectedSliceToUse)
 
   // accessor functions
   const pieValue = (d: DonutChartData) => d.value;
@@ -67,12 +74,12 @@ export function PieChart({
       {sliceData}
       <Group top={centerY + margin.top} left={centerX + margin.left}>
         <Pie
-          padAngle={0}
+          padAngle={0.01}
           cornerRadius={0}
           pieValue={pieValue}
           outerRadius={radius}
           innerRadius={radius - donutThickness}
-          data={data/*selectedSlice ? data.filter( d => d.label === selectedSlice ) : data*/}
+          data={data}
         >
           {(pie) => (
             <AnimatedPie<DonutChartData>
@@ -164,6 +171,7 @@ export const DonutChart = ({
   data,
   colors,
   getSliceData,
+  activeColors,
   ...props
 }: DonutChartInitialData) => {
   return (
@@ -174,6 +182,7 @@ export const DonutChart = ({
           colors={colors}
           width={parent.width}
           height={parent.height}
+          activeColors={activeColors}
           getSliceData={getSliceData}
           {...props}
         />

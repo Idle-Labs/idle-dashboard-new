@@ -922,7 +922,7 @@ export const Tranches: React.FC = () => {
             direction={'column'}
             alignItems={['center', 'flex-start']}
           >
-            <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
+            <Translation isHtml={true} translation={'strategies.general.title'} component={Heading} fontFamily={'body'} as={'h2'} fontSize={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
             <SkeletonText noOfLines={2} isLoaded={bnOrZero(protocolData.totalTvlUsd).gt(0)}>
               <Translation translation={'stats.protocolOverview'} fontSize={['md', 'h4']} isHtml={true} params={{ tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: `${protocolData.uniqueVaults} ${protocolData.uniqueVaults === 1 ? 'vault' : 'vaults'}` }} />
             </SkeletonText>
