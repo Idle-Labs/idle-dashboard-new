@@ -246,7 +246,7 @@ export const Portfolio: React.FC = () => {
               >
                 <Translation translation={'defi.roi'} component={Heading} color={'primary'} as={'h3'} fontSize={'md'} />
                 <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
-                  <Amount.Percentage minValue={0.01} fontSize={'3xl'} fontWeight={600} value={totalROI} />
+                  <Amount.Percentage minValue={0.01} fontSize={'3xl'} fontWeight={600} value={totalROI.times(100)} />
                 </SkeletonText>
               </VStack>
             </HStack>
