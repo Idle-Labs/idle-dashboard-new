@@ -874,6 +874,8 @@
     }
   },
   "navBar": {
+    "portfolio": "Portfolio",
+    "credit": "Credit",
     "dashboard": "Dashboard",
     "governance": "Governance",
     "notifications": {

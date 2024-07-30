@@ -236,7 +236,7 @@ export type EpochWeekThreshold = {
   threshold: BigNumber;
 };
 
-export type EpochData = {
+export type AmphorEpoch = {
   cdoId?: string;
   apr: BigNumber;
   number: number;
@@ -247,6 +247,22 @@ export type EpochData = {
   riskThreshold: BigNumber;
   weeklyThresholds: Record<number, EpochWeekThreshold>;
 };
+
+export type CreditVaultEpoch = {
+  cdoId?: string;
+  isRunning: boolean;
+  apr: BigNumber;
+  netInterest: BigNumber;
+  last?: {
+    apr: BigNumber;
+    netInterest: BigNumber;
+  };
+  number: number;
+  start: number;
+  end: number;
+};
+
+export type EpochData = AmphorEpoch | CreditVaultEpoch;
 
 export type StakingData = {
   maxApr: BigNumber;

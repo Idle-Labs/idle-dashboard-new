@@ -29,6 +29,7 @@ import {
   rewardsSendersRwa,
   distributedFeesSenders,
 } from "constants/whitelistedSenders";
+import { operators } from "./operators";
 
 export const vaultsStatusSchemes: Record<string, string> = {
   production: "green",
@@ -48,12 +49,42 @@ export interface CDO {
   address: string;
 }
 
+export interface ContractConfig {
+  decimals: number;
+  abi: Abi;
+  name: string;
+  address: string;
+}
+
 export interface Strategy {
   abi: Abi;
   name: string;
   address?: string;
   harvestEnabled?: boolean;
 }
+
+export interface CreditVaultConfig {
+  manager: keyof typeof operators;
+  borrower: keyof typeof operators;
+  name: string;
+  Token: ContractConfig;
+  CDO: CDO;
+  Strategy: Strategy;
+  blockNumber: number;
+  status?: VaultStatus;
+  description: string;
+  underlyingToken: string;
+  flags?: Record<string, any>;
+  distributedTokens?: string[];
+  vaultType: "CREDIT" | "STRATEGY";
+  translations?: Record<string, any>;
+  rewardsEmissions?: RewardEmission[];
+  enabledEnvs?: string[];
+}
+
+export const credits: Record<number, CreditVaultConfig[]> = {
+  10: [],
+};
 
 export interface Pool {
   abi: Abi;

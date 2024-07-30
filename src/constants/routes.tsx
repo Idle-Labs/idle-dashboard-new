@@ -13,6 +13,7 @@ const Tranches = lazyLoadComponent('Tranches')
 const Dashboard = lazyLoadComponent('Dashboard')
 const AssetPage = lazyLoadComponent('AssetPage')
 const AssetStats = lazyLoadComponent('AssetStats')
+const CreditVaults = lazyLoadComponent('CreditVaults')
 
 export const routes: RouteObject[] = [
   {
@@ -25,6 +26,19 @@ export const routes: RouteObject[] = [
           {
             index: true,
             element: <Tranches />
+          },
+          {
+            path: ':asset',
+            element: <AssetPage />
+          },
+        ]
+      },
+      {
+        path: 'credit',
+        children: [
+          {
+            index: true,
+            element: <CreditVaults />
           },
           {
             path: ':asset',

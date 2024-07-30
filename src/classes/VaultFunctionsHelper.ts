@@ -35,6 +35,7 @@ import type {
   CdoEvents,
   RewardEmission,
   ApisProps,
+  AmphorEpoch,
 } from "constants/";
 import {
   bnOrZero,
@@ -1190,13 +1191,13 @@ export class VaultFunctionsHelper {
         case "IdleCDO_amphor_wstETH":
           const epochData = await this.getAmphorwstETHEpochData(+vault.chainId);
           let index = 0;
-          const weeklyThresholds: EpochData["weeklyThresholds"] = Object.keys(
+          const weeklyThresholds: AmphorEpoch["weeklyThresholds"] = Object.keys(
             epochData
           )
             .filter((key) => key.match(/ET[\d]Price/))
             .reduce(
               (
-                weeklyThresholds: EpochData["weeklyThresholds"],
+                weeklyThresholds: AmphorEpoch["weeklyThresholds"],
                 thresholdKey: string
               ) => {
                 const start = !index

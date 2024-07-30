@@ -33,8 +33,12 @@ export const menu: MenuItemType[] = [
     */
   },
   {
+    path: "credit",
+    label: "navBar.credit",
+  },
+  {
     path: "dashboard",
-    label: "navBar.dashboard",
+    label: "navBar.portfolio",
   },
   {
     path: "stake",

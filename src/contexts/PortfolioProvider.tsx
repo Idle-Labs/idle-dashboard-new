@@ -22,10 +22,11 @@ import { selectUnderlyingToken, selectUnderlyingTokenByAddress } from 'selectors
 import { SECONDS_IN_YEAR, STAKING_CHAINID, GOVERNANCE_CHAINID, WEEKS_PER_YEAR } from 'constants/vars'
 import { createContext, useContext, useEffect, useMemo, useCallback, useReducer, useRef } from 'react'
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
-import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS } from 'constants/'
+import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address } from 'constants/types'
+import { CreditVault } from 'vaults/CreditVault'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -1649,6 +1650,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     const rawCallsByChainId = vaults.filter((vault: Vault) => checkAddress(vault.id)).reduce((rawCalls: Record<number, CallData[][]>, vault: Vault): Record<number, CallData[][]> => {
       const aggregatedRawCalls = [
+        ("getEpochData" in vault) ? vault.getEpochData() : [],
         ("getPausedCalls" in vault) ? vault.getPausedCalls() : [],
         ("getPoolVaultOpen" in vault) ? vault.getPoolVaultOpen() : [],
         account && checkEnabledCall('balances') ? vault.getBalancesCalls([account.address]) : [],
@@ -1755,7 +1757,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     // Get vaults last harvests
     const vaultsLastHarvestsPromises = vaults.reduce((promises: Map<AssetId, Promise<CdoLastHarvest> | undefined>, vault: Vault): Map<AssetId, Promise<CdoLastHarvest> | undefined> => {
-      if (!("cdoConfig" in vault) || promises.has(vault.cdoConfig.address)) return promises
+      if (!(vault instanceof TrancheVault) || promises.has(vault.cdoConfig.address)) return promises
       promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getTrancheLastHarvest(vault))
       return promises
     }, new Map())
@@ -1866,6 +1868,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     Object.keys(rawCallsByChainId).forEach((chainId, resultIndex) => {
       const [
+        epochDataResults,
         pausedCallsResults,
         openVaultsCallsResults,
         balanceCallsResults,
@@ -1884,6 +1887,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
       ]: DecodedResult[][] = rawCallsResultsByChain[resultIndex]
 
       const poolsDataResults = poolDataRawCallsResultsByChain[resultIndex]
+
+      console.log('epochDataResults', epochDataResults)
       // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
 
       if (poolsDataResults) {
@@ -2883,6 +2888,25 @@ export function PortfolioProvider({ children }: ProviderProps) {
       })
     })
 
+    // Init tranches vaults
+    const creditVaults: CreditVault[] = []
+    Object.keys(web3Chains).forEach((vaultChainId: any) => {
+      if (!allVaultsNetworks[vaultChainId]) {
+        allVaultsNetworks[vaultChainId] = []
+      }
+
+      const web3ToUse = +vaultChainId === +chainId ? web3 : web3Chains[vaultChainId]
+      const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
+
+      credits[vaultChainId]?.forEach( (vaultConfig: CreditVaultConfig) => {
+        if (checkVaultEnv(vaultConfig)) {
+          const creditVault = new CreditVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, vaultConfig, type: 'AA', cacheProvider })
+          allVaultsNetworks[vaultChainId].push(creditVault)
+          creditVaults.push(creditVault)
+        }
+      })
+    })
+
     // Init global contracts
     const contracts = globalContracts[STAKING_CHAINID].map((contract: GenericContractConfig) => {
       return new GenericContract(web3, chainId, contract)
@@ -2941,7 +2965,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     // console.log('allVaultsNetworks', allVaultsNetworks)
 
-    const allVaults: Vault[] = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults]
+    const allVaults: Vault[] = [...underlyingTokensVaults, ...trancheVaults, ...bestYieldVaults, ...gaugesVaults, ...creditVaults]
 
     if (stkIdleConfig) {
 

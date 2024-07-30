@@ -1071,7 +1071,7 @@ const TrancheTotalPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const aaTrancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
   const bbTrancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
@@ -1087,7 +1087,7 @@ const SeniorApy: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
 
@@ -1104,7 +1104,7 @@ const JuniorApy: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
 
@@ -1122,7 +1122,7 @@ const SeniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
 
@@ -1139,7 +1139,7 @@ const JuniorRewardsEmissions: React.FC<AssetProviderPropsType> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
 
@@ -1156,7 +1156,7 @@ const SeniorPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.AA.address)
 
@@ -1173,7 +1173,7 @@ const JuniorPoolUsd: React.FC<AmountProps> = (props) => {
   const { vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const trancheAsset = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
 
@@ -1453,7 +1453,7 @@ const Coverage: React.FC<AmountProps> = (props) => {
   const { asset, vault, translate } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
+  if (vault?.type !== 'AA' || !(vault instanceof TrancheVault)) return null
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
   const coverageAmount = bbTranche.tvl && asset?.tvl && BNify(asset?.tvl).gt(0) ? bbTranche.tvl.div(asset.tvl) : 0;
@@ -1468,7 +1468,7 @@ const CoveragePercentage: React.FC<AmountProps> = (props) => {
   const { asset, vault } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (vault?.type !== 'AA' || !("vaultConfig" in vault)) return null
+  if (vault?.type !== 'AA' || !(vault instanceof TrancheVault)) return null
 
   const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
   const coveragePercentage = bbTranche.tvl && asset?.tvl && BNify(asset?.tvl).gt(0) ? bbTranche.tvl.div(asset.tvl) : BNify(0);
@@ -1496,7 +1496,7 @@ const ApyRatioChart: React.FC<BoxProps> = (props) => {
   const { asset, vault, translate, theme } = useAssetProvider()
   const { selectors: { selectAssetById } } = usePortfolioProvider()
 
-  if (!vault || !("vaultConfig" in vault)) return null
+  if (!vault || !(vault instanceof TrancheVault)) return null
 
   const vaultType = vault?.type
   const apyRatio = asset?.aprRatio
