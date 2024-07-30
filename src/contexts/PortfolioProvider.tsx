@@ -3608,7 +3608,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         const totalSupply = fixTokenDecimals(vaultBlock.totalSupply, 18)
         const vaultPrice = fixTokenDecimals(vaultBlock.price, decimals)
 
-        fees[vault.id]= BNify(vaultData.feePercentage).div(100)
+        fees[vault.id]= BNify(vaultData.feePercentage).div(100000)
         aprs[vault.id] = apr
         pricesUsd[vault.id] = priceUsd
         totalSupplies[vault.id] = totalSupply
