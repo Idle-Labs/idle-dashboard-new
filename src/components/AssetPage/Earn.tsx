@@ -343,7 +343,7 @@ export const Earn: React.FC = () => {
   }, [vault])
 
   const epochThresholds = useMemo(() => {
-    if (!asset || !asset.epochData) return null
+    if (!asset || !asset.epochData || !asset.epochData.weeklyThresholds) return null
     return (
       <VStack
         pt={4}

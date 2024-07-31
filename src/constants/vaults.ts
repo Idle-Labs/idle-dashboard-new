@@ -11,9 +11,11 @@ import GearboxPool from "abis/gearbox/GearboxPool.json";
 // import RibbonPool from 'abis/ribbon/RibbonPool.json'
 import IdleCDOPolygon from "abis/idle/IdleCDOPolygon.json";
 import LiquidityGauge from "abis/idle/LiquidityGauge.json";
+import IdleCreditVault from "abis/idle/IdleCreditVault.json";
 import { AMPHOR_WSTETH_REFERRAL } from "constants/addresses";
 import ClearpoolPool from "abis/clearpool/ClearpoolPool.json";
 import GaugeMultiRewards from "abis/idle/GaugeMultiRewards.json";
+import IdleCDOEpochVariant from "abis/idle/IdleCDOEpochVariant.json";
 import IdleCDOTrancheRewards from "abis/idle/IdleCDOTrancheRewards.json";
 import TrancheStakingRewards from "abis/idle/TrancheStakingRewards.json";
 import type {
@@ -76,14 +78,45 @@ export interface CreditVaultConfig {
   underlyingToken: string;
   flags?: Record<string, any>;
   distributedTokens?: string[];
-  vaultType: "CREDIT" | "STRATEGY";
+  mode: "CREDIT" | "STRATEGY";
+  vaultType?: string;
   translations?: Record<string, any>;
   rewardsEmissions?: RewardEmission[];
   enabledEnvs?: string[];
 }
 
 export const credits: Record<number, CreditVaultConfig[]> = {
-  10: [],
+  10: [
+    {
+      mode: "STRATEGY",
+      manager: "fasanara",
+      borrower: "fasanara",
+      status: "experimental",
+      underlyingToken: "USDC",
+      name: "Fasanara Credit Vault",
+      vaultType: "diversifiedBasisYield",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_fasanara_USDC",
+        address: "0xD04319282Fdd87F7E46BD72160eFdA02bF791515",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_fasanara_USDC",
+        address: "0xFf5a45994a79732B9FEEC1055419290BBa70EeEE",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_clearpool_bastion_USDT",
+        address: "0x2D445eCA81bE26692F88ec33dA583068C48b8197",
+      },
+      blockNumber: 0,
+      description:
+        "Invest in Fasanara Capital, an Hedge Fund founded in 2011 and specialised in fintech strategies",
+    },
+  ],
 };
 
 export interface Pool {
@@ -457,6 +490,7 @@ export const tranches: Record<
           },
         },
       },
+      /*
       USDCWin: {
         enabledEnvs: [],
         variant: "wincent",
@@ -561,6 +595,7 @@ export const tranches: Record<
           },
         },
       },
+      */
       USDCWinOld: {
         enabledEnvs: [],
         autoFarming: [],

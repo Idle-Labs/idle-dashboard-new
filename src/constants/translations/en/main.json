@@ -234,6 +234,12 @@
       "title": "Aggregated vaults",
       "description": "Aggregated pools offering automated or diversified allocation to optimize yields."
     },
+    "credit": {
+      "tag": "Credit",
+      "title": "Credit vaults",
+      "explore": "Explore Credit Vaults",
+      "description": "Credit vaults for super sophisticated faggots."
+    },
     "isolated": {
       "title": "Isolated vaults",
       "description": "Siloed pools offering direct exposure to specific strategies with different risk-return profiles."
@@ -594,6 +600,7 @@
         "claimYour": "Claim your %{opportunity}"
       }
     },
+    "borrower": "Borrower",
     "ratingProvidedBy": "Rating provided by",
     "yourWallet": "Your Wallet",
     "amountToStake": "Amount to Stake",
@@ -1020,6 +1027,12 @@
     "noSupportedAssets": "No supported assets in portfolio."
   },
   "dynamicActionFields": {
+    "epochStatus": "Epoch Status",
+    "epochDuration": "Epoch Duration",
+    "epochAPR": "Epoch APR",
+    "epochExpectedInterest": "Epoch expected interests",
+    "lastEpochApr": "Last epoch APR",
+    "lastEpochInterest": "Last epoch interests",
     "depositLimit": "Available to deposit",
     "stakingPoolShare": "Pool share",
     "feeDiscount": "Fee discount",
@@ -2027,10 +2040,20 @@
       "beta": "Beta",
       "experimental": "Experimental",
       "deprecated": "Deprecated",
-      "disabled": "Disabled"
+      "disabled": "Disabled",
+      "epoch": {
+        "running": "Ongoing",
+        "open": "Open"
+      }
     },
     "assetDetails": {
       "generalData": {
+        "epoch": {
+          "duration": "Epoch duration",
+          "startDate": "Epoch start",
+          "endDate": "Epoch end",
+          "status": "Epoch status"
+        },
         "protocol": "Protocol",
         "rewards": "Rewards",
         "strategy": "Strategy",

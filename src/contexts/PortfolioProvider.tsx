@@ -959,10 +959,10 @@ export function PortfolioProvider({ children }: ProviderProps) {
           let endTimestamp = Date.now()
           // Get epoch date instead of current
           if (vaultEpochData) {
-            if (toDayjs(vaultEpochData.end).isAfter(endTimestamp)) {
-              endTimestamp = vaultEpochData.start
+            if (toDayjs(vaultEpochData.epochEndDate).isAfter(endTimestamp)) {
+              endTimestamp = vaultEpochData.epochStartDate
             } else {
-              endTimestamp = vaultEpochData.end
+              endTimestamp = vaultEpochData.epochEndDate
             }
           }
 
@@ -1886,9 +1886,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
         interestBearingTokensExchangeRatesCallsResults,
       ]: DecodedResult[][] = rawCallsResultsByChain[resultIndex]
 
+      // console.log('aprsCallsResults', aprsCallsResults)
+      console.log('epochDataResults', epochDataResults)
+
       const poolsDataResults = poolDataRawCallsResultsByChain[resultIndex]
 
-      console.log('epochDataResults', epochDataResults)
+      // console.log('epochDataResults', epochDataResults)
       // console.log('idleDistributionResults', idleDistributionResults, idleDistribution)
 
       if (poolsDataResults) {
@@ -2136,6 +2139,35 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
         return epochsData
       }, epochsData)
+
+      // console.log('epochDataResults', epochDataResults)
+
+      if (!isEmpty(epochDataResults)){
+        // @ts-ignore
+        const vaultsEpochsData = epochDataResults.reduce( (vaultsEpochsData: Record<AssetId, CreditVaultEpoch>, callResult: DecodedResult) => {
+          // @ts-ignore
+          const assetId = callResult.extraData.assetId
+          if (!assetId) return vaultsEpochsData
+          const methodName = callResult.callData.method.replace('()', '')
+          return {
+            ...vaultsEpochsData,
+            [assetId]: {
+              ...vaultsEpochsData[assetId],
+              [methodName]: callResult.data
+            }
+          }
+        }, {})
+
+        Object.keys(vaultsEpochsData).forEach( (assetId: AssetId) => {
+          const vaultEpochData = vaultsEpochsData[assetId]
+          // Set epoch start date
+          vaultEpochData.epochStartDate = BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).toNumber()
+          console.log('vaultEpochData', assetId, vaultEpochData)
+          epochsData[assetId] = vaultEpochData
+        })
+      }
+
+      console.log('epochsData', epochsData)
 
       // Process total aprs
       totalAprs = vaultsTotalAprs.reduce((totalAprs: Balances, vaultTotalApr: VaultAdditionalApr | null) => {
@@ -2900,7 +2932,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       credits[vaultChainId]?.forEach( (vaultConfig: CreditVaultConfig) => {
         if (checkVaultEnv(vaultConfig)) {
-          const creditVault = new CreditVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, vaultConfig, type: 'AA', cacheProvider })
+          const creditVault = new CreditVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, vaultConfig, type: 'CR', cacheProvider })
           allVaultsNetworks[vaultChainId].push(creditVault)
           creditVaults.push(creditVault)
         }

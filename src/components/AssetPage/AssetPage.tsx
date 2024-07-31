@@ -24,6 +24,8 @@ import type { OperativeComponentAction } from 'components/OperativeComponent/Ope
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs, getObjectPath } from 'helpers/'
 import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps, Spinner } from '@chakra-ui/react'
 import { operators, AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
+import { BestYieldVault } from 'vaults/BestYieldVault'
+import { CreditVault } from 'vaults/CreditVault'
 
 type TabType = {
   id: string
@@ -426,7 +428,7 @@ export const AssetPage: React.FC = () => {
   }, [vault, theme])
 
   const operatorInfo = useMemo(() => {
-    const operatorName = getObjectPath(vault, 'vaultConfig.operators.0.name')
+    const operatorName = getObjectPath(vault, 'vaultConfig.operators.0.name') || getObjectPath(vault, 'vaultConfig.borrower')
     return operatorName ? operators[operatorName] : null
   }, [vault])
 
@@ -566,7 +568,7 @@ export const AssetPage: React.FC = () => {
                   </HStack>
                 </VStack>
                 {
-                  !(vault instanceof TrancheVault) ? (
+                  (vault instanceof BestYieldVault) ? (
                     <VStack
                       pr={[4, 6]}
                       spacing={2}
@@ -585,7 +587,25 @@ export const AssetPage: React.FC = () => {
                         </AssetProvider.Protocols>
                       </Flex>
                     </VStack>
-                  ) : (
+                  ) :
+                  (vault instanceof CreditVault) ? (
+                    <VStack
+                      pr={[4, 6]}
+                      spacing={2}
+                      height={'100%'}
+                      borderRight={'1px solid'}
+                      borderColor={'dividerLight'}
+                      alignItems={'flex-start'}
+                    >
+                      <Translation translation={'defi.status'} fontSize={['sm', 'md']} color={'primary'} />
+                      <Flex
+                        flex={1}
+                        alignItems={'flex-end'}
+                      >
+                        <AssetProvider.EpochInfo field={'isEpochRunning'} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                      </Flex>
+                    </VStack>
+                  ) : (vault instanceof TrancheVault) && (
                     <VStack
                       pr={[4, 6]}
                       spacing={2}

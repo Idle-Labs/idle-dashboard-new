@@ -17,7 +17,7 @@ import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
-import { strategies, AggregatedVault, networks, Network } from 'constants/'
+import { strategies, AggregatedVault, networks, Network, operators } from 'constants/'
 import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, Spinner, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image } from '@chakra-ui/react'
 
 export type VaultCardProps = {
@@ -669,6 +669,252 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
     </Card.Flex>
   )
 }
+type CreditProps = {
+  onClick: Function
+  assetId: AssetId
+}
+
+export const Credit = ({ assetId, onClick }: CreditProps) => {
+
+  const theme = useTheme()
+  const { isMobile } = useThemeProvider()
+
+  const {
+    isVaultsLoaded,
+    selectors: {
+      selectAssetById,
+      selectVaultById,
+      selectVaultPosition
+    }
+  } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    return selectAssetById(assetId)
+  }, [selectAssetById, assetId])
+
+  const vault = useMemo(() => {
+    return selectVaultById(assetId)
+  }, [selectVaultById, assetId])
+
+  const maxApy = useMemo((): BigNumber => {
+    return asset.apy
+  }, [asset])
+
+  const totalTvl = useMemo((): BigNumber => {
+    return asset.tvlUsd
+  }, [asset])
+
+  const network = useMemo((): Network => {
+    return networks[asset.chainId]
+  }, [asset])
+
+  const borrower = useMemo(() => operators[vault.vaultConfig.borrower], [vault]) 
+  const vaultsPosition = useMemo(() => selectVaultPosition(asset.id), [asset, selectVaultPosition])
+
+  return (
+    <AssetProvider
+      wrapFlex={false}
+      assetId={asset.id}
+    >
+      <Card.Flex
+        p={0}
+        pb={5}
+        maxWidth={['full', '32em']}
+        layerStyle={['card', 'cardHover']}
+        onClick={() => onClick ? onClick() : null}
+      >
+        <VStack
+          spacing={[4, 7]}
+          width={'full'}
+        >
+          <HStack
+            px={5}
+            py={4}
+            spacing={4}
+            width={'full'}
+            alignItems={['flex-start', 'center']}
+            borderRadius={'8px 8px 0 0'}
+            justifyContent={'flex-start'}
+            backgroundColor={'card.bgLight'}
+            // background={`radial-gradient(circle, ${aggregatedVault.color}50 40%, ${aggregatedVault.color}cc 100%)`}
+            backgroundPosition={'top left'}
+            backgroundSize={'300%'}
+          >
+            <Image src={borrower.image} w={[10, 14]} h={[10, 14]} />
+            <VStack
+              spacing={[1, 2]}
+              alignItems={'space-between'}
+            >
+              <Translation translation={borrower.nameShort} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+              <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
+            </VStack>
+          </HStack>
+          <VStack
+            px={5}
+            spacing={[4, 7]}
+            width={'full'}
+            alignItems={'flex-start'}
+          >
+            <Text color={'primary'} textStyle={'caption'}>{vault.description}</Text>
+            {
+              bnOrZero(vaultsPosition?.balance).gt(0) ? (
+                <SimpleGrid
+                  columns={3}
+                  spacing={4}
+                  width={'full'}
+                  justifyContent={'space-between'}
+                >
+                  <VStack
+                    pr={4}
+                    spacing={2}
+                    borderRight={'1px solid'}
+                    borderColor={'divider'}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={'defi.realizedApy'} textStyle={'captionSmall'} />
+                    <HStack
+                      spacing={2}
+                      alignItems={'baseline'}
+                    >
+                      <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: 24 }}>%</small>)} textStyle={'bodyTitle'} value={vaultsPosition.realizedApy} lineHeight={1} />
+                    </HStack>
+                  </VStack>
+                  <VStack
+                    pr={4}
+                    spacing={2}
+                    borderRight={'1px solid'}
+                    borderColor={'divider'}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={'defi.balance'} textStyle={'captionSmall'} />
+                    <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={vaultsPosition.balance} lineHeight={1} />
+                  </VStack>
+                  <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={'defi.depositedAssets'} textStyle={'captionSmall'} />
+                    <HStack
+                      spacing={-2}
+                    >
+                      {
+                        vaultsPosition.assets.map((assetId: string) => {
+                          return (
+                            <AssetProvider
+                              wrapFlex={false}
+                              assetId={assetId}
+                              key={`index_${assetId}`}
+                            >
+                              <AssetProvider.Icon size={'xs'} />
+                            </AssetProvider>
+                          )
+                        })
+                      }
+                    </HStack>
+                  </VStack>
+                </SimpleGrid>
+              ) : (
+                <SimpleGrid
+                  columns={3}
+                  spacing={4}
+                  width={'full'}
+                  justifyContent={'space-between'}
+                >
+                  <VStack
+                    pr={4}
+                    spacing={2}
+                    borderRight={'1px solid'}
+                    borderColor={'divider'}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
+                    <HStack
+                      spacing={2}
+                      alignItems={'baseline'}
+                    >
+                      {
+                        !isVaultsLoaded ? (
+                          <Spinner size={'md'} />
+                        ) : (
+                          <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: isMobile ? 18 : 24 }}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                        )
+                      }
+                    </HStack>
+                  </VStack>
+                  <VStack
+                    pr={4}
+                    spacing={2}
+                    borderRight={'1px solid'}
+                    borderColor={'divider'}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
+                    {
+                      !isVaultsLoaded ? (
+                        <Spinner size={'md'} />
+                      ) : (
+                        <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                      )
+                    }
+                  </VStack>
+                  <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                  >
+                    <Translation translation={'defi.status'} textStyle={'captionSmall'} />
+                    <AssetProvider.EpochInfo field={'isEpochRunning'} textStyle={'bodytitle'} lineHeight={1} fontSize={['lg', '2xl']} />
+                  </VStack>
+                </SimpleGrid>
+              )
+            }
+            <HStack
+              width={'full'}
+              alignItems={'center'}
+              justifyContent={'space-between'}
+            >
+              <HStack
+                spacing={2}
+              >
+                <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
+                <Card.Light
+                  py={0}
+                  px={1}
+                  pr={2}
+                  height={8}
+                  width={'auto'}
+                  display={'flex'}
+                  borderRadius={24}
+                  border={'1px solid'}
+                  alignItems={'center'}
+                  backgroundColor={'primary'}
+                >
+                  <HStack
+                    spacing={1}
+                  >
+                    <Image src={network.icon as string} width={6} height={6} />
+                    <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{network.name}</Text>
+                  </HStack>
+                </Card.Light>
+              </HStack>
+              <IconButton
+                size={'sm'}
+                borderRadius={'50%'}
+                colorScheme={'mattWhite'}
+                aria-label={'explore'}
+                icon={
+                  <CgArrowRight
+                    size={20}
+                    color={theme.colors.card.bg}
+                  />
+                }
+              />
+            </HStack>
+          </VStack>
+        </VStack>
+      </Card.Flex>
+    </AssetProvider>
+  )
+}
 
 export const New = ({ assetId, onClick }: VaultCardProps) => {
   // const theme = useTheme()
@@ -899,6 +1145,7 @@ export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
 VaultCard.New = New
 VaultCard.Stats = Stats
 VaultCard.Inline = Inline
+VaultCard.Credit = Credit
 VaultCard.Minimal = Minimal
 VaultCard.Tranche = Tranche
 VaultCard.Aggregated = Aggregated

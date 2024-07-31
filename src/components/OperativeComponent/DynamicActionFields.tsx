@@ -12,7 +12,7 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
-import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs } from 'helpers/'
+import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod } from 'helpers/'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -135,11 +135,20 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
       dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.gt(9999) ? `>9999` : apyBoost.toFixed(2)}x</Text>)
     break;
+    case 'epochDuration':
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(asset?.epochData?.epochDuration || 0)}</Text>)
+    break;
     case 'epochEnd':
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.end || 0, locale)}</Text>)
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.endDate || 0, locale)}</Text>)
     break;
     case 'epochStart':
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.start || 0, locale)}</Text>)
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
+    break;
+    case 'lastEpochApr':
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochApr} />)
+    break;
+    case 'lastEpochInterest':
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochInterest} />)
     break;
     case 'riskThreshold':
       dynamicActionField = (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData.riskThreshold} />)
@@ -298,13 +307,13 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     // Add epoch end
     if (action === 'deposit' && asset?.epochData) {
       // Epoch started
-      if (toDayjs(asset.epochData.start).isBefore(Date.now())) {
+      if (toDayjs(asset.epochData.startDate).isBefore(Date.now())) {
         fields = [
           'riskThreshold',
           'epochEnd',
           ...fields
         ]
-      } else if (toDayjs(asset.epochData.start).isAfter(Date.now())) {
+      } else if (toDayjs(asset.epochData.startDate).isAfter(Date.now())) {
         fields = [
           'riskThreshold',
           'epochStart',

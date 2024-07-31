@@ -240,8 +240,8 @@ export type AmphorEpoch = {
   cdoId?: string;
   apr: BigNumber;
   number: number;
-  start: number;
-  end: number;
+  epochStartDate: number;
+  epochEndDate: number;
   bullish: boolean;
   underlyingToken: string;
   riskThreshold: BigNumber;
@@ -250,16 +250,17 @@ export type AmphorEpoch = {
 
 export type CreditVaultEpoch = {
   cdoId?: string;
-  isRunning: boolean;
-  apr: BigNumber;
-  netInterest: BigNumber;
-  last?: {
-    apr: BigNumber;
-    netInterest: BigNumber;
-  };
-  number: number;
-  start: number;
-  end: number;
+  isEpochRunning: boolean;
+  expectedEpochInterest: BigNumber;
+  instantWithdrawDeadline: number;
+  allowInstantWithdraw: boolean;
+  disableInstantWithdraw: boolean;
+  defaulted: boolean;
+  lastEpochApr: BigNumber;
+  lastEpochInterest: BigNumber;
+  epochDuration: BigNumber;
+  epochStartDate: number;
+  epochEndDate: number;
 };
 
 export type EpochData = AmphorEpoch | CreditVaultEpoch;

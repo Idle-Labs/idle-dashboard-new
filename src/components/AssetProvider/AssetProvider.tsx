@@ -21,11 +21,11 @@ import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID } from 'constants/'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -1302,6 +1302,42 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
   )
 }
 
+type EpochInfoArgs = {
+  field: string
+} & TextProps
+
+const EpochInfo: React.FC<EpochInfoArgs> = ({
+  field,
+  ...props
+}) => {
+  const { asset } = useAssetProvider()
+
+  if (!asset || !asset.epochData){
+    return null
+  }
+
+  const value = asset.epochData[field as keyof EpochData]
+
+  // Waiting for value
+  if (value === undefined){
+    return (<Spinner size={'sm'} />)
+  }
+  
+  switch (field){
+    case 'epochStartDate':
+    case 'epochEndDate':
+      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value, 'YYYY/MM/DD', false)}</Text>)
+    case 'epochDuration':
+      return (<Text {...props}>{secondsToPeriod(value)}</Text>)
+    case 'isEpochRunning':
+      if (!("isEpochRunning" in asset.epochData)) return null
+      const status = asset.epochData.isEpochRunning ? 'running' : 'open'
+      return (<Translation translation={`assets.status.epoch.${status}`} {...props} />)
+    default:
+      return null
+  }
+}
+
 export type IdleDistributionProps = TextProps & {
   defaultText?: string
 }
@@ -1845,6 +1881,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
+    case 'epochDuration':
+    case 'epochStartDate':
+    case 'epochEndDate':
+      return (<EpochInfo field={field} {...props} />)
     case 'assetClass':
       return (
         <Categories {...props} />
@@ -1910,6 +1950,7 @@ AssetProvider.Earnings = Earnings
 AssetProvider.ApyRatio = ApyRatio
 AssetProvider.Strategy = Strategy
 AssetProvider.ApyBoost = ApyBoost
+AssetProvider.EpochInfo = EpochInfo
 AssetProvider.SeniorApy = SeniorApy
 AssetProvider.JuniorApy = JuniorApy
 AssetProvider.Protocols = Protocols

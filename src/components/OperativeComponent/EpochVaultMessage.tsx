@@ -46,7 +46,7 @@ export const EpochVaultMessage: React.FC<Args> = ({action}) => {
             )
           }
         </Box>
-        <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.${epochVaultLocked ? 'vaultLocked' : 'vaultOpen'}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.start || 0, locale), epochEnd: dateToLocale(asset?.epochData?.end || 0, locale)}} textAlign={'left'} />
+        <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.${epochVaultLocked ? 'vaultLocked' : 'vaultOpen'}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.epochStartDate || 0, locale), epochEnd: dateToLocale(asset?.epochData?.epochEndDate || 0, locale)}} textAlign={'left'} />
       </HStack>
     </Card.Dark>
   )

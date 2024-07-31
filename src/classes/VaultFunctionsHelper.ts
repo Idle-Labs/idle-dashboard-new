@@ -1228,8 +1228,8 @@ export class VaultFunctionsHelper {
             apr: BNify(epochData.epochApr),
             number: +epochData.epochNumber,
             underlyingToken: epochData.underlying,
-            end: toDayjs(epochData.epochEnd).valueOf(),
-            start: toDayjs(epochData.epochStart).valueOf(),
+            epochEndDate: toDayjs(epochData.epochEnd).valueOf(),
+            epochStartDate: toDayjs(epochData.epochStart).valueOf(),
             riskThreshold: BNify(epochData.protection_band),
           };
         default:

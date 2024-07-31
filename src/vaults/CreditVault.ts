@@ -79,6 +79,7 @@ export class CreditVault {
   public readonly variant: string | undefined;
   public readonly poolConfig: Pool | undefined;
   public readonly vaultConfig: CreditVaultConfig;
+  public readonly mode: CreditVaultConfig["mode"];
   public readonly status: VaultStatus | undefined;
   public readonly rewardTokens: UnderlyingTokenProps[];
   public readonly rewardsSenders: RewardSenders | undefined;
@@ -104,6 +105,7 @@ export class CreditVault {
     this.type = type;
     this.web3Rpc = web3Rpc;
     this.chainId = chainId;
+    this.mode = vaultConfig.mode;
     this.vaultConfig = vaultConfig;
     this.status = vaultConfig.status;
     this.cacheProvider = cacheProvider;

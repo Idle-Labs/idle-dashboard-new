@@ -305,6 +305,28 @@ export function hashCode(s: string): string {
   return Math.abs(h).toString();
 }
 
+export function secondsToPeriod(seconds: any) {
+  const units = [
+    { label: "year", seconds: 31536000 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 },
+    { label: "second", seconds: 1 },
+  ];
+
+  let timeString = "";
+
+  for (const unit of units) {
+    const unitValue = Math.floor(seconds / unit.seconds);
+    if (unitValue > 0) {
+      timeString += `${unitValue} ${unit.label}${unitValue > 1 ? "s" : ""} `;
+      seconds %= unit.seconds;
+    }
+  }
+
+  return timeString.trim();
+}
+
 export function formatTime(seconds: any) {
   if (!seconds) return ["0s"];
   const suffixes = ["h", "m", "s"];
