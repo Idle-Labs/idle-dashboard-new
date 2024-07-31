@@ -2073,6 +2073,7 @@
         "borrower": "Borrower overview"
       },
       "requiredActions": {
+        "deprecated": "This vault is sunsetting, please withdraw your funds",
         "redeemFromGauge": "Please unstake your tranche tokens from the Gauge"
       },
       "tooltips": {

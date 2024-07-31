@@ -187,15 +187,18 @@ const StatusBadge: React.FC<ImageProps> = (props) => {
 
 const ActionRequired: React.FC<ImageProps> = (props) => {
   const { vault, asset, translate } = useAssetProvider()
-  const { selectors: { selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById, selectVaultPosition } } = usePortfolioProvider()
 
   let action = null
 
   // Check Gauge disabled
   const gaugeVault = vault && ("gaugeConfig" in vault) && vault.gaugeConfig?.address && selectVaultById(vault.gaugeConfig?.address)
   const stakedBalance = bnOrZero(asset?.vaultPosition?.underlying.staked)
+  const depositedBalance = bnOrZero(asset?.vaultPosition?.underlying.deposited)
   if (stakedBalance.gt(0) && gaugeVault && !gaugeVault.enabled) {
     action = 'redeemFromGauge'
+  } else if (depositedBalance.gt(0) && asset?.status === 'deprecated') {
+    action = 'deprecated'
   }
 
   if (!action) return null
@@ -206,7 +209,7 @@ const ActionRequired: React.FC<ImageProps> = (props) => {
       placement={'top'}
       label={translate(`assets.assetDetails.requiredActions.${action}`)}
     >
-      <Image src={`images/vaults/information.png`} {...props} />
+      <Image src={`images/vaults/warning.png`} {...props} />
     </Tooltip>
   )
 }

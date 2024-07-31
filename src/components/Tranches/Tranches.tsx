@@ -98,7 +98,6 @@ export const Tranches: React.FC = () => {
   const translate = useTranslate()
   const { account } = useWalletProvider()
   const { theme, isMobile } = useThemeProvider()
-  // const { params } = useBrowserRouter()
   const { openModal, closeModal } = useModalProvider()
   const [availableAssetsFilter, setAvailableAssetsFilter] = useState<string | null>(null)
   const [depositedAssetsFilter, setDepositedAssetsFilter] = useState<string | null>(null)
