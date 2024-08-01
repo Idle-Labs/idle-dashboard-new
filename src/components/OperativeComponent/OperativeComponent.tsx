@@ -1,3 +1,5 @@
+import { MdError } from "react-icons/md"
+import { MdVerifiedUser } from "react-icons/md"
 import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
@@ -18,6 +20,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, u
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
 import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError, getStakingPower, getStkIDLE, getFeeDiscount, fixTokenDecimals, getExplorerByChainId } from 'helpers/'
+import { useThemeProvider } from "contexts/ThemeProvider";
 
 export type ActionComponentArgs = {
   itemIndex: number
@@ -634,6 +637,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   defaultActiveIndex = 0,
   ...cardProps
 }) => {
+  const {theme} = useThemeProvider()
   const intervalId = useRef<any>(null)
   const translate = useTranslate()
   const [ activeItem, setActiveItem ] = useState<number>(0)
@@ -641,7 +645,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   const [ actionIndex, setActionIndex ] = useState<number>(defaultActiveIndex)
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
 
-  const { selectors: { selectAssetById } } = usePortfolioProvider()
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   const { state: { gasPrice, transaction: transactionState }, retry, cleanTransaction, updateGasPrices } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
@@ -742,12 +746,44 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     }
   }, [transactionState, cleanTransaction, activeAction, state.activeStep, txActionType, state.depositAmount])
 
+  const kycVerificationStatus = useMemo(() => {
+    const asset = selectAssetById(assetId)
+    const vault = selectVaultById(assetId)
+    const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
+    if (!checkWalletAllowed) return null
+    
+    const walletAllowed = asset.walletAllowed
+    const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.loss
+    const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `#FF000015`
+    
+    return (
+      <HStack
+        px={2}
+        spacing={1}
+        height={10}
+        borderRadius={8}
+        bg={statusColorBg}
+        border={'1px solid'}
+        borderColor={statusColor}
+      >
+        {
+          walletAllowed ? (
+            <MdVerifiedUser color={statusColor} size={18} />
+          ) : (
+            <MdError color={statusColor} size={18} />
+          )
+        }
+        <Translation translation={walletAllowed ? 'common.verified' : `common.kyc`} textStyle={'base'} color={'primary'} />
+      </HStack>
+    )
+  }, [theme, assetId, selectVaultById, selectAssetById])
+
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null
     return transactionSpeedSelectorOpened ? (
       <Flex
-        top={5}
-        right={8}
+        top={0}
+        right={0}
         zIndex={11}
         position={'absolute'}
       >
@@ -760,11 +796,9 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
     ) :  (
       <Button
         p={2}
-        right={4}
         zIndex={11}
         borderRadius={8}
         variant={'ctaBlue'}
-        position={'absolute'}
         onClick={() => setTransactionSpeedSelectorOpened( prevValue => !prevValue )}
       >
         <HStack
@@ -812,11 +846,14 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
           id={'operative-component'}
           {...cardProps}
         >
-          {
-          /*<VaultNetworkCheck>
-            </VaultNetworkCheck>
-          */}
-          {transationSpeedToggler}
+          <HStack
+            right={4}
+            spacing={3}
+            position={'absolute'}
+          >
+            {kycVerificationStatus}
+            {transationSpeedToggler}
+          </HStack>
           {
             transactionSpeedSelectorOpened && (
               <VStack

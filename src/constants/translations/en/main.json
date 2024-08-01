@@ -8,6 +8,7 @@
     "close": "Close",
     "continue": "Continue",
     "sign": "Sign",
+    "kyc": "KYC",
     "approve": "Approve",
     "confirm": "Confirm",
     "retry": "Retry",
@@ -108,6 +109,7 @@
     "confirmOnWallet": "Confirm On Wallet",
     "login": "Log In",
     "verify": "Verify",
+    "verified": "Verified",
     "notRobot": "I am not a Robot",
     "skip": "Skip",
     "generalError": "An error has occurred",
@@ -238,7 +240,13 @@
       "tag": "Credit",
       "title": "Credit vaults",
       "explore": "Explore Credit Vaults",
-      "description": "Credit vaults for super sophisticated faggots."
+      "description": "Credit vaults for super sophisticated faggots.",
+      "kyc": {
+        "required": "KYC Required",
+        "complete": "Complete the KYC verification process to interact.",
+        "cta": "Start KYC verification",
+        "providedBy": "Verification provided by"
+      }
     },
     "isolated": {
       "title": "Isolated vaults",

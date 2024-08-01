@@ -74,6 +74,7 @@ export class CreditVault {
   // Raw config
   public readonly type: string;
   public readonly cdoConfig: CDO;
+  public readonly kycRequired: boolean;
   public readonly strategyConfig: Strategy;
   public readonly tokenConfig: ContractConfig;
   public readonly variant: string | undefined;
@@ -110,6 +111,7 @@ export class CreditVault {
     this.status = vaultConfig.status;
     this.cacheProvider = cacheProvider;
     this.vaultType = vaultConfig.vaultType;
+    this.kycRequired = vaultConfig.kycRequired;
     this.description = vaultConfig.description;
     this.rewardsEmissions = vaultConfig.rewardsEmissions;
     this.vaultFunctionsHelper = new VaultFunctionsHelper({

@@ -24,7 +24,7 @@ import { TranslationProps, Translation } from 'components/Translation/Translatio
 import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image } from '@chakra-ui/react'
+import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
 
 type AssetCellProps = {
@@ -1311,6 +1311,11 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   ...props
 }) => {
   const { asset } = useAssetProvider()
+  const { isPortfolioLoaded } = usePortfolioProvider()
+
+  if (!isPortfolioLoaded){
+    return (<Spinner size={'sm'} />)
+  }
 
   if (!asset || !asset.epochData){
     return null
@@ -1331,8 +1336,23 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
     case 'isEpochRunning':
       if (!("isEpochRunning" in asset.epochData)) return null
+      const color = asset.epochData.isEpochRunning ? 'red' : 'brightGreen'
       const status = asset.epochData.isEpochRunning ? 'running' : 'open'
-      return (<Translation translation={`assets.status.epoch.${status}`} {...props} />)
+      return (
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+        >
+          <Translation translation={`assets.status.epoch.${status}`} {...props} />
+          <Box
+            width={2}
+            height={2}
+            borderRadius={'50%'}
+            bg={color}
+          >
+          </Box>
+        </HStack>
+      )
     default:
       return null
   }

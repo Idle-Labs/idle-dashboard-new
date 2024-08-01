@@ -21,6 +21,7 @@ import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetwor
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
+import { VaultKycCheck } from './VaultKycCheck'
 
 export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
@@ -332,106 +333,110 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [asset, vault, selectAssetById])
 
   return (
-    <AssetProvider
-      flex={1}
-      width={'100%'}
+    <VaultKycCheck
       assetId={asset?.id}
     >
-      <VStack
-        pt={8}
+      <AssetProvider
         flex={1}
-        spacing={6}
         width={'100%'}
-        height={'100%'}
-        id={'withdraw-container'}
-        alignItems={'space-between'}
-        justifyContent={'flex-start'}
+        assetId={asset?.id}
       >
         <VStack
+          pt={8}
           flex={1}
           spacing={6}
           width={'100%'}
-          alignItems={'flex-start'}
+          height={'100%'}
+          id={'withdraw-container'}
+          alignItems={'space-between'}
+          justifyContent={'flex-start'}
         >
-          <HStack
+          <VStack
+            flex={1}
+            spacing={6}
             width={'100%'}
-            spacing={[3, 4]}
             alignItems={'flex-start'}
           >
-            <Box
-              pt={8}
-            >
-              <AssetLabel assetId={asset?.id} />
-            </Box>
-            <VStack
-              spacing={1}
+            <HStack
               width={'100%'}
+              spacing={[3, 4]}
               alignItems={'flex-start'}
             >
-              <Card
-                px={4}
-                py={2}
-                layerStyle={'cardLight'}
+              <Box
+                pt={8}
               >
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
-                >
-                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} isDisabled={inputDisabled} />
-                  <HStack
-                    width={'100%'}
-                    justifyContent={'space-between'}
-                  >
-                    <HStack
-                      spacing={1}
-                    >
-                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                      <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
-                    </HStack>
-                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
-                  </HStack>
-                </VStack>
-              </Card>
-              {
-                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-              }
-            </VStack>
-          </HStack>
-          {vaultMessage}
-          {
-            redeemInterestBearingEnabled && redeemInterestBearing ?
-              interestBearingTokens
-            : (
-              <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
-            )
-          }
-        </VStack>
-        <VStack
-          spacing={4}
-          id={'footer'}
-          alignItems={'flex-start'}
-        >
-          {
-            /*
-            <Card.Outline px={4} py={2}>
-              <HStack
+                <AssetLabel assetId={asset?.id} />
+              </Box>
+              <VStack
                 spacing={1}
+                width={'100%'}
+                alignItems={'flex-start'}
               >
-                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                <AssetProvider
-                  assetId={asset?.id}
+                <Card
+                  px={4}
+                  py={2}
+                  layerStyle={'cardLight'}
                 >
-                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                </AssetProvider>
-              </HStack>
-            </Card.Outline>
-            */
-          }
-          {withdrawInterestBearingToken}
-          <EstimatedGasFees />
-          {withdrawButton}
+                  <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                  >
+                    <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} isDisabled={inputDisabled} />
+                    <HStack
+                      width={'100%'}
+                      justifyContent={'space-between'}
+                    >
+                      <HStack
+                        spacing={1}
+                      >
+                        <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                        <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                      </HStack>
+                      <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                    </HStack>
+                  </VStack>
+                </Card>
+                {
+                  error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+                }
+              </VStack>
+            </HStack>
+            {vaultMessage}
+            {
+              redeemInterestBearingEnabled && redeemInterestBearing ?
+                interestBearingTokens
+              : (
+                <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
+              )
+            }
+          </VStack>
+          <VStack
+            spacing={4}
+            id={'footer'}
+            alignItems={'flex-start'}
+          >
+            {
+              /*
+              <Card.Outline px={4} py={2}>
+                <HStack
+                  spacing={1}
+                >
+                  <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                  <AssetProvider
+                    assetId={asset?.id}
+                  >
+                    <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
+                  </AssetProvider>
+                </HStack>
+              </Card.Outline>
+              */
+            }
+            {withdrawInterestBearingToken}
+            <EstimatedGasFees />
+            {withdrawButton}
+          </VStack>
         </VStack>
-      </VStack>
-    </AssetProvider>
+      </AssetProvider>
+    </VaultKycCheck>
   )
 }

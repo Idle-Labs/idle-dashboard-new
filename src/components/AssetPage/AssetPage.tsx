@@ -602,7 +602,7 @@ export const AssetPage: React.FC = () => {
                         flex={1}
                         alignItems={'flex-end'}
                       >
-                        <AssetProvider.EpochInfo field={'isEpochRunning'} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.EpochInfo field={'isEpochRunning'} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} fontWeight={500} lineHeight={1} />
                       </Flex>
                     </VStack>
                   ) : (vault instanceof TrancheVault) && (

@@ -68,6 +68,7 @@ export interface Strategy {
 export interface CreditVaultConfig {
   manager: keyof typeof operators;
   borrower: keyof typeof operators;
+  kycRequired: boolean;
   name: string;
   Token: ContractConfig;
   CDO: CDO;
@@ -89,6 +90,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
   10: [
     {
       mode: "STRATEGY",
+      kycRequired: true,
       manager: "fasanara",
       borrower: "fasanara",
       status: "experimental",

@@ -59,6 +59,7 @@ type VaultsOnchainData = {
   openVaults: Record<AssetId, boolean>
   allocations: Record<AssetId, Balances>
   pausedVaults: Record<AssetId, boolean>
+  walletAllowed: Record<AssetId, boolean>
   protocolsAprs: Record<AssetId, Balances>
   aprsBreakdown: Record<AssetId, Balances>
   epochsData: Record<AssetId, Asset["epochData"]>
@@ -128,6 +129,7 @@ const initialState: InitialState = {
   vaultsPrices: {},
   transactions: {},
   pausedVaults: {},
+  walletAllowed: {},
   currentRatios: {},
   protocolData: {
     uniqueVaults: 0,
@@ -1665,7 +1667,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
         ("getBaseAprCalls" in vault) && checkEnabledCall('aprs') ? vault.getBaseAprCalls() : [],
         ("getProtocolsCalls" in vault) && checkEnabledCall('protocols') ? vault.getProtocolsCalls() : [],
         ("getInterestBearingTokensCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensCalls() : [],
-        ("getInterestBearingTokensExchangeRatesCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensExchangeRatesCalls() : []
+        ("getInterestBearingTokensExchangeRatesCalls" in vault) && checkEnabledCall('protocols') ? vault.getInterestBearingTokensExchangeRatesCalls() : [],
+        account && checkEnabledCall('auth') && ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
       ]
 
       if (!rawCalls[vault.chainId]) {
@@ -1859,6 +1862,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     let openVaults: Record<AssetId, boolean> = {}
     let allocations: Record<AssetId, Balances> = {}
     let pausedVaults: Record<AssetId, boolean> = {}
+    let walletAllowed: Record<AssetId, boolean> = {}
     let protocolsAprs: Record<AssetId, Balances> = {}
     let aprsBreakdown: Record<AssetId, Balances> = {}
     let poolsData: VaultsOnchainData["poolsData"] = {}
@@ -1884,10 +1888,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
         protocolsResults,
         interestBearingTokensCallsResults,
         interestBearingTokensExchangeRatesCallsResults,
+        walletAllowedResults
       ]: DecodedResult[][] = rawCallsResultsByChain[resultIndex]
 
       // console.log('aprsCallsResults', aprsCallsResults)
-      console.log('epochDataResults', epochDataResults)
+      // console.log('epochDataResults', epochDataResults)
+      // console.log('walletAllowedResults', walletAllowedResults)
 
       const poolsDataResults = poolDataRawCallsResultsByChain[resultIndex]
 
@@ -1915,6 +1921,16 @@ export function PortfolioProvider({ children }: ProviderProps) {
           return poolsData
         }, {})
       }
+
+      // Process wallet allowed
+      walletAllowed = walletAllowedResults.reduce((walletAllowed: Record<AssetId, boolean>, callResult: DecodedResult) => {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        walletAllowed[assetId] = !!callResult.data
+        return {
+          ...walletAllowed,
+          [assetId]: !!callResult.data
+        }
+      }, walletAllowed)
 
       // Process paused vaults
       pausedVaults = pausedCallsResults.reduce((pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
@@ -2431,6 +2447,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       totalSupplies,
       aprsBreakdown,
       protocolsAprs,
+      walletAllowed,
       vaultsRewards,
       currentRatios,
       additionalAprs,
@@ -2524,6 +2541,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         lastHarvests,
         pausedVaults,
         vaultsPrices,
+        walletAllowed,
         totalSupplies,
         protocolsAprs,
         aprsBreakdown,
@@ -2558,6 +2576,17 @@ export function PortfolioProvider({ children }: ProviderProps) {
           [vaultId]: pausedVaults[vaultId]
         }
       }, { ...state.pausedVaults })
+
+      const newWalletAllowed = vaults.map((vault: Vault) => vault.id).reduce((newWalletAllowed: Record<AssetId, boolean>, vaultId: AssetId) => {
+        if (!walletAllowed[vaultId]) {
+          newWalletAllowed[vaultId] = false
+          return newWalletAllowed
+        }
+        return {
+          ...newWalletAllowed,
+          [vaultId]: walletAllowed[vaultId]
+        }
+      }, { ...state.walletAllowed })
 
       const newOpenVaults = vaults.map((vault: Vault) => vault.id).reduce((newOpenVaults: Record<AssetId, boolean>, vaultId: AssetId) => {
         if (!openVaults[vaultId]) {
@@ -2834,6 +2863,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         pausedVaults: newPausedVaults,
         lastHarvests: newLastHarvests,
         vaultsPrices: newVaultsPrices,
+        walletAllowed: newWalletAllowed,
         currentRatios: newCurrentRatios,
         protocolsAprs: newProtocolsAprs,
         vaultsRewards: newVaultsRewards,
@@ -3431,6 +3461,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         totalSupplies,
         currentRatios,
         additionalAprs,
+        walletAllowed,
         ethenaCooldowns,
         idleDistributions,
         interestBearingTokens,
@@ -3453,6 +3484,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       newState.openVaults = { ...state.openVaults, ...openVaults }
       newState.lastHarvests = { ...state.lastHarvests, ...lastHarvests }
       newState.pausedVaults = { ...state.pausedVaults, ...pausedVaults }
+      newState.walletAllowed = { ...state.walletAllowed, ...walletAllowed }
       newState.interestBearingTokens = { ...state.interestBearingTokens, ...interestBearingTokens }
 
       if (!enabledCalls.length || enabledCalls.includes('fees')) {
@@ -4335,6 +4367,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       assetsData[vault.id].balanceUsd = state.balancesUsd[vault.id] || BNify(0)
       assetsData[vault.id].discountedFees = state.discountedFees[vault.id] || []
       assetsData[vault.id].vaultPrice = state.vaultsPrices[vault.id] || BNify(1)
+      assetsData[vault.id].walletAllowed = false // state.walletAllowed[vault.id] ?? true
       assetsData[vault.id].totalSupply = state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].additionalApr = state.additionalAprs[vault.id] || BNify(0)
@@ -4690,6 +4723,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     state.vaultsRewards,
     state.currentRatios,
     state.aprsBreakdown,
+    state.walletAllowed,
     state.protocolsAprs,
     state.additionalAprs,
     state.vaultsNetworks,

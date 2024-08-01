@@ -23,6 +23,7 @@ import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalle
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Image, Box, VStack, HStack, Text, Button, Link } from '@chakra-ui/react'
 import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
+import { VaultKycCheck } from './VaultKycCheck'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
@@ -387,105 +388,109 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [asset, isEpochVault, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
   return (
-    <AssetProvider
-      flex={1}
-      width={'full'}
-      assetId={asset?.underlyingId}
+    <VaultKycCheck
+      assetId={asset?.id}
     >
-      <VStack
-        pt={8}
+      <AssetProvider
         flex={1}
-        spacing={6}
-        height={'100%'}
-        id={'deposit-container'}
-        alignItems={'space-between'}
-        justifyContent={'flex-start'}
+        width={'full'}
+        assetId={asset?.underlyingId}
       >
         <VStack
+          pt={8}
           flex={1}
           spacing={6}
-          width={'100%'}
-          alignItems={'flex-start'}
+          height={'100%'}
+          id={'deposit-container'}
+          alignItems={'space-between'}
+          justifyContent={'flex-start'}
         >
-          <HStack
+          <VStack
+            flex={1}
+            spacing={6}
             width={'100%'}
-            spacing={[3, 4]}
             alignItems={'flex-start'}
           >
-            <Box
-              pt={8}
-            >
-              <AssetLabel assetId={asset?.id} />
-            </Box>
-            <VStack
-              spacing={1}
+            <HStack
               width={'100%'}
+              spacing={[3, 4]}
               alignItems={'flex-start'}
             >
-              <Card
-                px={4}
-                py={2}
-                layerStyle={'cardLight'}
+              <Box
+                pt={8}
               >
-                <VStack
-                  spacing={2}
-                  alignItems={'flex-start'}
-                >
-                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
-                  <HStack
-                    width={'100%'}
-                    justifyContent={'space-between'}
-                  >
-                    <HStack
-                      spacing={1}
-                    >
-                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                      <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
-                    </HStack>
-                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
-                  </HStack>
-                </VStack>
-              </Card>
-              {
-                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-              }
-            </VStack>
-          </HStack>
-          <VStack
-            spacing={3}
-            width={'full'}
-          >
-            {referralMessage}
-            {vaultMessage}
-          </VStack>
-          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
-          <FeeDiscountToggler assetId={asset?.id} />
-        </VStack>
-        <VStack
-          spacing={4}
-          id={'footer'}
-          alignItems={'flex-start'}
-        >
-          {
-            /*
-            <Card.Outline px={4} py={2}>
-              <HStack
+                <AssetLabel assetId={asset?.id} />
+              </Box>
+              <VStack
                 spacing={1}
+                width={'100%'}
+                alignItems={'flex-start'}
               >
-                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                <AssetProvider
-                  assetId={asset?.id}
+                <Card
+                  px={4}
+                  py={2}
+                  layerStyle={'cardLight'}
                 >
-                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                </AssetProvider>
-              </HStack>
-            </Card.Outline>
-            */
-          }
-          <EstimatedGasFees />
-          {depositButton}
+                  <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                  >
+                    <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
+                    <HStack
+                      width={'100%'}
+                      justifyContent={'space-between'}
+                    >
+                      <HStack
+                        spacing={1}
+                      >
+                        <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                        <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
+                      </HStack>
+                      <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                    </HStack>
+                  </VStack>
+                </Card>
+                {
+                  error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+                }
+              </VStack>
+            </HStack>
+            <VStack
+              spacing={3}
+              width={'full'}
+            >
+              {referralMessage}
+              {vaultMessage}
+            </VStack>
+            <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+            <FeeDiscountToggler assetId={asset?.id} />
+          </VStack>
+          <VStack
+            spacing={4}
+            id={'footer'}
+            alignItems={'flex-start'}
+          >
+            {
+              /*
+              <Card.Outline px={4} py={2}>
+                <HStack
+                  spacing={1}
+                >
+                  <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                  <AssetProvider
+                    assetId={asset?.id}
+                  >
+                    <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
+                  </AssetProvider>
+                </HStack>
+              </Card.Outline>
+              */
+            }
+            <EstimatedGasFees />
+            {depositButton}
+          </VStack>
         </VStack>
-      </VStack>
-    </AssetProvider>
+      </AssetProvider>
+    </VaultKycCheck>
   )
 }
