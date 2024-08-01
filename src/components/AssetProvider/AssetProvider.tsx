@@ -986,7 +986,7 @@ const GaugeTotalSupply: React.FC<PercentageProps> = (props) => {
 const FeesUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
 
-  const feeUsd = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset.vaultPosition.usd.earnings).times(asset.fee) : BNify(0)
+  const feeUsd = asset?.vaultPosition?.usd.earnings && asset?.fee ? BNify(asset.vaultPosition.usd.earnings).minus(bnOrZero(asset.vaultPosition.usd.rewards)).times(asset.fee) : BNify(0)
 
   return asset?.vaultPosition?.usd.earnings ? (
     <Amount.Usd value={feeUsd} {...props} />
