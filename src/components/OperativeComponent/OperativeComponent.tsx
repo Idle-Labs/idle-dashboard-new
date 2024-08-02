@@ -1,5 +1,5 @@
 import { MdError } from "react-icons/md"
-import { MdVerifiedUser } from "react-icons/md"
+import { MdVerified } from "react-icons/md"
 import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
@@ -18,9 +18,10 @@ import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetP
 import { TransactionSpeed, STAKING_CHAINID, PROTOCOL_TOKEN, STAKING_FEE_DISCOUNTS } from 'constants/'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
+import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps, Tooltip } from '@chakra-ui/react'
 import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError, getStakingPower, getStkIDLE, getFeeDiscount, fixTokenDecimals, getExplorerByChainId } from 'helpers/'
 import { useThemeProvider } from "contexts/ThemeProvider";
+import { TooltipContent } from "components/TooltipContent/TooltipContent"
 
 export type ActionComponentArgs = {
   itemIndex: number
@@ -645,7 +646,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   const [ actionIndex, setActionIndex ] = useState<number>(defaultActiveIndex)
   const [ transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened ] = useState<boolean>(false)
 
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { isPortfolioLoaded, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
   const { state: { gasPrice, transaction: transactionState }, retry, cleanTransaction, updateGasPrices } = useTransactionManager()
 
   const handleActionChange = (index: number) => {
@@ -747,36 +748,50 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   }, [transactionState, cleanTransaction, activeAction, state.activeStep, txActionType, state.depositAmount])
 
   const kycVerificationStatus = useMemo(() => {
+    if (!isPortfolioLoaded || transactionSpeedSelectorOpened) return null
+
     const asset = selectAssetById(assetId)
     const vault = selectVaultById(assetId)
     const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
     if (!checkWalletAllowed) return null
     
-    const walletAllowed = asset.walletAllowed
+    const walletAllowed = !!asset.walletAllowed
     const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.loss
     const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `#FF000015`
     
     return (
-      <HStack
-        px={2}
-        spacing={1}
-        height={10}
-        borderRadius={8}
-        bg={statusColorBg}
-        border={'1px solid'}
-        borderColor={statusColor}
+      <Flex
+        zIndex={11}
       >
-        {
-          walletAllowed ? (
-            <MdVerifiedUser color={statusColor} size={18} />
-          ) : (
-            <MdError color={statusColor} size={18} />
-          )
-        }
-        <Translation translation={walletAllowed ? 'common.verified' : `common.kyc`} textStyle={'base'} color={'primary'} />
-      </HStack>
+        <Tooltip
+          hasArrow
+          placement={'top'}
+          label={translate(`strategies.credit.kyc.tooltips.${walletAllowed ? 'completed' : 'required'}`)}
+        >
+          <TooltipContent>
+            <HStack
+              px={2}
+              spacing={1}
+              height={10}
+              borderRadius={8}
+              bg={statusColorBg}
+              border={'1px solid'}
+              borderColor={statusColor}
+            >
+              {
+                walletAllowed ? (
+                  <MdVerified color={statusColor} size={18} />
+                ) : (
+                  <MdError color={statusColor} size={18} />
+                )
+              }
+              <Translation translation={walletAllowed ? 'common.verified' : `common.kyc`} textStyle={'base'} color={'primary'} />
+            </HStack>
+          </TooltipContent>
+        </Tooltip>
+      </Flex>
     )
-  }, [theme, assetId, selectVaultById, selectAssetById])
+  }, [theme, translate, transactionSpeedSelectorOpened, isPortfolioLoaded, assetId, selectVaultById, selectAssetById])
 
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null

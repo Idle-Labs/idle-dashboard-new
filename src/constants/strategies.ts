@@ -147,6 +147,7 @@ export const strategies: Record<string, StrategyProps> = {
         "lastEpochApr",
         "lastEpochInterest",
       ],
+      withdraw: ["epochWithdrawType", "epochClaimPeriod"],
     },
 
     generalDataFields: [

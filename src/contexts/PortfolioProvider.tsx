@@ -4367,7 +4367,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       assetsData[vault.id].balanceUsd = state.balancesUsd[vault.id] || BNify(0)
       assetsData[vault.id].discountedFees = state.discountedFees[vault.id] || []
       assetsData[vault.id].vaultPrice = state.vaultsPrices[vault.id] || BNify(1)
-      assetsData[vault.id].walletAllowed = false // state.walletAllowed[vault.id] ?? true
+      assetsData[vault.id].walletAllowed = state.walletAllowed[vault.id] ?? true
       assetsData[vault.id].totalSupply = state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].additionalApr = state.additionalAprs[vault.id] || BNify(0)

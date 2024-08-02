@@ -245,7 +245,11 @@
         "required": "KYC Required",
         "complete": "Complete the KYC verification process to interact.",
         "cta": "Start KYC verification",
-        "providedBy": "Verification provided by"
+        "providedBy": "Verification provided by",
+        "tooltips": {
+          "required": "KYC verification required",
+          "completed": "KYC verification completed"
+        }
       }
     },
     "isolated": {
