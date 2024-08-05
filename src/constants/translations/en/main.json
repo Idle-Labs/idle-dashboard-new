@@ -1137,6 +1137,7 @@
         "confirmed": "You have deposited",
         "messages": {
           "epoch": {
+            "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
             "running": "The deposit window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to deposit.",
             "open": "The deposit window has started. You can deposit until a new epoch begins."
           },
@@ -1214,6 +1215,7 @@
         "confirmed": "You have withdrawn",
         "messages": {
           "epoch": {
+            "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
             "running": "The withdraw window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
             "open": "The withdraw window has started. You can withdraw until a new epoch begins."
           },

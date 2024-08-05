@@ -6,6 +6,7 @@ import { useI18nProvider } from 'contexts/I18nProvider'
 import { Translation } from 'components/Translation/Translation'
 import { BsFillUnlockFill, BsFillShieldLockFill } from "react-icons/bs"
 import { useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { MdOutlineRemoveCircle } from 'react-icons/md'
 
 type Args = {
   action?: string
@@ -47,7 +48,9 @@ export const EpochVaultMessage: React.FC<Args> = ({action}) => {
           pl={2}
         >
           {
-            epochVaultLocked ? (
+            status === 'default' ? (
+              <MdOutlineRemoveCircle size={24} />
+            ) : epochVaultLocked ? (
               <BsFillShieldLockFill size={24} />
             ) : (
               <BsFillUnlockFill size={24} />
