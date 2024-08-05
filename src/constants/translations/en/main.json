@@ -2059,7 +2059,7 @@
       "deprecated": "Deprecated",
       "disabled": "Disabled",
       "epoch": {
-        "defaulted": "Defaulted",
+        "default": "Default",
         "running": "Ongoing",
         "open": "Open",
         "instant": "Instant",
