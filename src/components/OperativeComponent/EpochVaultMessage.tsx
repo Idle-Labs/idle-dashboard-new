@@ -19,11 +19,19 @@ export const EpochVaultMessage: React.FC<Args> = ({action}) => {
     return asset && !!asset.epochData
   }, [asset])
 
-  const epochVaultLocked = useMemo(() => {
-    return isEpochVault && asset && asset.vaultIsOpen === false
+  const status = useMemo(() => {
+    if (!isEpochVault || !asset) return null
+    if (asset?.epochData && ("status" in asset.epochData)){
+      return asset?.epochData.status
+    }
+    return asset.vaultIsOpen === false ? 'open' : 'running'
   }, [asset, isEpochVault])
 
-  if (!isEpochVault) return null
+  const epochVaultLocked = useMemo(() => {
+    return status && ['default', 'running'].includes(status)
+  }, [status])
+
+  if (!status) return null
 
   return (
     <Card.Dark
@@ -46,7 +54,7 @@ export const EpochVaultMessage: React.FC<Args> = ({action}) => {
             )
           }
         </Box>
-        <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.${epochVaultLocked ? 'vaultLocked' : 'vaultOpen'}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.epochStartDate || 0, locale), epochEnd: dateToLocale(asset?.epochData?.epochEndDate || 0, locale)}} textAlign={'left'} />
+        <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.epoch.${status}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.epochStartDate || 0, locale), epochEnd: dateToLocale(asset?.epochData?.epochEndDate || 0, locale)}} textAlign={'left'} />
       </HStack>
     </Card.Dark>
   )

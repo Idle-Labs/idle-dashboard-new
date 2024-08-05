@@ -534,17 +534,6 @@ export class CreditVault {
     ];
   }
 
-  public getAprsCalls(): ContractRawCall[] {
-    const contract = this.cdoContractRpc || this.cdoContract;
-    return [
-      {
-        decimals: 18,
-        assetId: this.id,
-        call: contract.methods.getApr(this.id),
-      },
-    ];
-  }
-
   public getTotalSupplyCalls(): ContractRawCall[] {
     return [
       {
@@ -613,6 +602,17 @@ export class CreditVault {
     ];
   }
 
+  public getAprsCalls(): ContractRawCall[] {
+    if (!this.strategyContract) return [];
+    return [
+      {
+        decimals: 18,
+        assetId: this.id,
+        call: this.strategyContract.methods.getApr(),
+      },
+    ];
+  }
+
   public getEpochData(): ContractRawCall[] {
     if (!this.cdoContract || !this.strategyContract) return [];
     return [
@@ -654,7 +654,33 @@ export class CreditVault {
       },
       {
         assetId: this.id,
+        call: this.cdoContract.methods.instantWithdrawDelay(),
+      },
+      {
+        assetId: this.id,
         call: this.cdoContract.methods.defaulted(),
+      },
+    ];
+  }
+
+  public getUserInstantWithdrawRequestCalls(
+    account: string
+  ): ContractRawCall[] {
+    if (!this.strategyContract) return [];
+    return [
+      {
+        assetId: this.id,
+        call: this.strategyContract.methods.instantWithdrawsRequests(account),
+      },
+    ];
+  }
+
+  public getUserWithdrawRequestCalls(account: string): ContractRawCall[] {
+    if (!this.strategyContract) return [];
+    return [
+      {
+        assetId: this.id,
+        call: this.strategyContract.methods.withdrawsRequests(account),
       },
     ];
   }
@@ -760,19 +786,29 @@ export class CreditVault {
     return getObjectPath(this, `flags.${flag}`);
   }
 
+  public getClaimContractSendMethod(
+    account: string
+  ): ContractSendMethod | null {
+    if (!this.strategyContract) return null;
+    return this.strategyContract.methods.claimWithdrawRequest(account);
+  }
+
+  public getRequestInstantWithdrawContractSendMethod(
+    account: string
+  ): ContractSendMethod | null {
+    if (!this.strategyContract) return null;
+    return this.strategyContract.methods.requestInstantWithdraw(account);
+  }
+
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {
-    // Check enabled and valid referral
-    if (this.flags?.referralEnabled && this.checkReferralAllowed(params[1])) {
-      return this.cdoContract.methods[`deposit${this.type}Ref`](...params);
-    }
-    return this.cdoContract.methods[`deposit${this.type}`](...params);
+    return this.cdoContract.methods.depositAA(...params);
   }
 
   public getWithdrawParams(amount: NumberType): any[] {
-    return [normalizeTokenAmount(amount, this.cdoConfig.decimals)];
+    return [normalizeTokenAmount(amount, this.cdoConfig.decimals), this.id];
   }
 
   public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
-    return this.cdoContract.methods[`withdraw${this.type}`](...params);
+    return this.cdoContract.methods.requestWithdraw(...params);
   }
 }

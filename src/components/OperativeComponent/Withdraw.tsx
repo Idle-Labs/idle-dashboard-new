@@ -46,6 +46,9 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [asset])
 
   const epochVaultLocked = useMemo(() => {
+    if (asset?.epochData && ("isEpochRunning" in asset.epochData)){
+      return !!asset.epochData.isEpochRunning
+    }
     return asset && isEpochVault && asset.vaultIsOpen === false
   }, [asset, isEpochVault])
 
@@ -131,7 +134,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       // @ts-ignore
       const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw)
 
-      // console.log('withdrawParams', withdrawParams, BNify(amount).toString(), vaultPrice.toString(), amountToWithdraw.toString())
+      console.log('withdrawParams', withdrawParams, BNify(amount).toString(), vaultPrice.toString(), amountToWithdraw.toString())
 
       // @ts-ignore
       const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)

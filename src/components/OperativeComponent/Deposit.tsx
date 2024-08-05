@@ -68,6 +68,9 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [asset])
 
   const epochVaultLocked = useMemo(() => {
+    if (asset?.epochData && ("isEpochRunning" in asset.epochData)){
+      return !!asset.epochData.isEpochRunning
+    }
     return asset && isEpochVault && asset.vaultIsOpen === false
   }, [asset, isEpochVault])
 

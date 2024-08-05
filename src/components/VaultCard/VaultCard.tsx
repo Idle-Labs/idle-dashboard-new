@@ -730,24 +730,31 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
           <HStack
             px={5}
             py={4}
-            spacing={4}
             width={'full'}
-            alignItems={['flex-start', 'center']}
+            alignItems={'center'}
+            justifyContent={'space-between'}
             borderRadius={'8px 8px 0 0'}
-            justifyContent={'flex-start'}
             backgroundColor={'card.bgLight'}
             // background={`radial-gradient(circle, ${aggregatedVault.color}50 40%, ${aggregatedVault.color}cc 100%)`}
             backgroundPosition={'top left'}
             backgroundSize={'300%'}
           >
-            <Image src={borrower.image} w={[10, 14]} h={[10, 14]} />
-            <VStack
-              spacing={[1, 2]}
-              alignItems={'space-between'}
+            <HStack
+              spacing={4}
+              width={'full'}
+              alignItems={['flex-start', 'center']}
+              justifyContent={'flex-start'}
             >
-              <Translation translation={borrower.nameShort} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
-              <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
-            </VStack>
+              <Image src={borrower.image} w={[10, 14]} h={[10, 14]} />
+              <VStack
+                spacing={[1, 2]}
+                alignItems={'space-between'}
+              >
+                <Translation translation={borrower.nameShort} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+                <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
+              </VStack>
+            </HStack>
+            <AssetProvider.KycVerificationBadge />
           </HStack>
           <VStack
             px={5}

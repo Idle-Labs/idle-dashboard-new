@@ -25,7 +25,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks } from 'helpers/'
-import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData } from 'constants/types'
 import { CreditVault } from 'vaults/CreditVault'
 
 type VaultsPositions = {
@@ -89,6 +89,7 @@ type InitialState = {
   selectors: Record<string, Function>
   vaultsNetworks: Record<string, Vault[]>
   transactions: Record<string, Transaction[]>
+  vaultsAccountData: VaultsAccountData | null
   historicalTvls: Record<AssetId, HistoryData[]>
   vaultsPositions: Record<AssetId, VaultPosition>
   historicalRates: Record<AssetId, HistoryData[]>
@@ -153,6 +154,7 @@ const initialState: InitialState = {
   historicalRates: {},
   historicalPrices: {},
   isVaultsLoaded: false,
+  vaultsAccountData: {},
   idleDistributions: {},
   historicalTvlsUsd: {},
   contractsNetworks: {},
@@ -235,6 +237,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return { ...state, isPortfolioAccountReady: action.payload }
     case 'SET_VAULTS_POSITIONS_LOADED':
       return { ...state, isVaultsPositionsLoaded: action.payload }
+    case 'SET_VAULTS_ACCOUNT_DATA':
+      return { ...state, vaultsAccountData: action.payload }
     case 'SET_SELECTORS':
       return { ...state, selectors: action.payload }
     case 'SET_HELPERS':
@@ -848,6 +852,99 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     return userTransactions
   }, [account?.address, lastTransaction, web3Chains, chainId, cacheProvider, selectVaultById, selectVaultByCdoAddress, state.vaults])
+
+  /**
+   * Get vaults data based on connected account
+   */
+  const getVaultsAccountData = useCallback(async (vaults: Vault[]): Promise<VaultsAccountData> => {
+
+    const output: VaultsAccountData =  {
+      walletAllowed: {},
+      creditVaultsWithdrawRequests: {},
+      creditVaultsInstantWithdrawRequests: {}
+    }
+
+    if (!account || !multiCall || !web3Chains) return output
+
+    const rawCallsByChainId = vaults.filter((vault: Vault) => checkAddress(vault.id)).reduce((rawCalls: Record<number, CallData[][]>, vault: Vault): Record<number, CallData[][]> => {
+      const aggregatedRawCalls = [
+        ("getUserWithdrawRequestCalls" in vault) ? vault.getUserWithdrawRequestCalls(account.address) : [],
+        ("getUserInstantWithdrawRequestCalls" in vault) ? vault.getUserInstantWithdrawRequestCalls(account.address) : [],
+        ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
+      ]
+
+      if (!rawCalls[vault.chainId]) {
+        rawCalls[vault.chainId] = []
+      }
+
+      aggregatedRawCalls.forEach((calls: ContractRawCall[], index: number) => {
+        // Init array index
+        if (rawCalls[vault.chainId].length <= index) {
+          rawCalls[vault.chainId].push([])
+        }
+
+        calls.forEach((rawCall: ContractRawCall) => {
+          const callData = multiCall.getDataFromRawCall(rawCall.call, rawCall)
+          if (callData) {
+            rawCalls[vault.chainId][index].push(callData)
+          }
+        })
+      })
+
+      return rawCalls
+    }, {})
+
+    const resultsByChainId = await Promise.all(Object.keys(rawCallsByChainId).map(chainId => multiCall.executeMultipleBatches(rawCallsByChainId[+chainId], +chainId, web3Chains[chainId])))
+
+    Object.keys(rawCallsByChainId).forEach((chainId, resultIndex) => {
+      const [
+        withdrawRequestResults,
+        instantWithdrawRequestResults,
+        walletAllowedResults
+      ]: DecodedResult[][] = resultsByChainId[resultIndex]
+
+      if (withdrawRequestResults){
+        output.creditVaultsWithdrawRequests = withdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsWithdrawRequests"], callResult: DecodedResult) => {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          if (bnOrZero(callResult.data).lte(0)) return acc
+          return {
+            ...acc,
+            [assetId]: {
+              amount: bnOrZero(callResult.data),
+              isInstant: false,
+            }
+          }
+        }, output.creditVaultsWithdrawRequests)
+      }
+
+      if (instantWithdrawRequestResults){
+        output.creditVaultsInstantWithdrawRequests = instantWithdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsInstantWithdrawRequests"], callResult: DecodedResult) => {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          if (bnOrZero(callResult.data).lte(0)) return acc
+          return {
+            ...acc,
+            [assetId]: {
+              amount: bnOrZero(callResult.data),
+              isInstant: true,
+            }
+          }
+        }, output.creditVaultsInstantWithdrawRequests)
+      }
+
+      if (walletAllowedResults){
+        output.walletAllowed = instantWithdrawRequestResults.reduce( (acc: VaultsAccountData["walletAllowed"], callResult: DecodedResult) => {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          return {
+            ...acc,
+            [assetId]: !!callResult.data
+          }
+        }, output.walletAllowed)
+      }
+    })
+
+    return output
+
+  }, [account, multiCall, web3Chains])
 
   const getVaultsPositions = useCallback(async (vaults: Vault[]): Promise<VaultsPositions> => {
 
@@ -2177,7 +2274,13 @@ export function PortfolioProvider({ children }: ProviderProps) {
         Object.keys(vaultsEpochsData).forEach( (assetId: AssetId) => {
           const vaultEpochData = vaultsEpochsData[assetId]
           // Set epoch start date
-          vaultEpochData.epochStartDate = BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).toNumber()
+          if (vaultEpochData.defaulted){
+            vaultEpochData.status = 'default'  
+          } else {
+            vaultEpochData.status = vaultEpochData.isEpochRunning ? 'running' : 'open'
+          }
+          vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
+          vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
           console.log('vaultEpochData', assetId, vaultEpochData)
           epochsData[assetId] = vaultEpochData
         })
@@ -3937,7 +4040,13 @@ export function PortfolioProvider({ children }: ProviderProps) {
       ; (async () => {
         runningEffects.current.vaultsPositions = account?.address || true
 
-        const results = await getVaultsPositions(state.vaults)
+        const [
+          results,
+          vaultsAccountData
+        ] = await Promise.all([
+          getVaultsPositions(state.vaults),
+          getVaultsAccountData(state.vaults)
+        ])
 
         const {
           vaultsPositions,
@@ -3946,9 +4055,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
           vaultsTransactions
         } = results
 
+        console.log('vaultsAccountData', vaultsAccountData)
+
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })
         dispatch({ type: 'SET_VAULTS_POSITIONS', payload: vaultsPositions })
+        dispatch({ type: 'SET_VAULTS_ACCOUNT_DATA', payload: vaultsAccountData })
         dispatch({ type: 'SET_DISTRIBUTED_REWARDS', payload: distributedRewards })
         dispatch({ type: 'SET_VAULTS_TRANSACTIONS', payload: vaultsTransactions })
 
@@ -3961,10 +4073,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
       dispatch({ type: 'SET_VAULTS_POSITIONS', payload: {} })
       dispatch({ type: 'SET_DISTRIBUTED_REWARDS', payload: {} })
       dispatch({ type: 'SET_VAULTS_TRANSACTIONS', payload: [] })
+      dispatch({ type: 'SET_VAULTS_ACCOUNT_DATA', payload: {} })
       dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: false })
     }
     // eslint-disable-next-line
-  }, [account, state.isPortfolioLoaded, disconnecting, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
+  }, [account, state.isPortfolioLoaded, getVaultsAccountData, disconnecting, state.balances, state.portfolioTimestamp, walletInitialized, connecting])
 
   // Calculate discounted fees
   useEffect(() => {
@@ -4367,7 +4480,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       assetsData[vault.id].balanceUsd = state.balancesUsd[vault.id] || BNify(0)
       assetsData[vault.id].discountedFees = state.discountedFees[vault.id] || []
       assetsData[vault.id].vaultPrice = state.vaultsPrices[vault.id] || BNify(1)
-      assetsData[vault.id].walletAllowed = state.walletAllowed[vault.id] ?? true
+      assetsData[vault.id].walletAllowed = (state.walletAllowed[vault.id] ?? true)
       assetsData[vault.id].totalSupply = state.totalSupplies[vault.id] || BNify(0)
       assetsData[vault.id].collectedFees = state.vaultsCollectedFees[vault.id] || []
       assetsData[vault.id].additionalApr = state.additionalAprs[vault.id] || BNify(0)

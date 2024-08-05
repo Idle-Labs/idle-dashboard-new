@@ -36,12 +36,15 @@ import { operators } from "./operators";
 export const vaultsStatusSchemes: Record<string, string> = {
   production: "green",
   paused: "gray",
+  defaulted: "gray",
   disabled: "gray",
   beta: "blue",
   experimental: "purple",
   discount: "blue",
   deprecated: "gray",
   boosted: "red",
+  open: "green",
+  running: "blue",
 };
 
 export interface CDO {
@@ -76,6 +79,7 @@ export interface CreditVaultConfig {
   blockNumber: number;
   status?: VaultStatus;
   description: string;
+  operators?: VaultOperator[];
   underlyingToken: string;
   flags?: Record<string, any>;
   distributedTokens?: string[];
@@ -95,6 +99,12 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       borrower: "fasanara",
       status: "experimental",
       underlyingToken: "USDC",
+      operators: [
+        {
+          type: "borrower",
+          name: "fasanara",
+        },
+      ],
       name: "Fasanara Credit Vault",
       vaultType: "diversifiedBasisYield",
       Token: {

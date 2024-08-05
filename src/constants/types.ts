@@ -248,6 +248,20 @@ export type AmphorEpoch = {
   weeklyThresholds: Record<number, EpochWeekThreshold>;
 };
 
+export type CreditVaultWithdrawRequest = {
+  amount: BigNumber;
+  isInstant: boolean;
+};
+
+export type VaultsAccountData = {
+  walletAllowed?: Record<AssetId, boolean>;
+  creditVaultsWithdrawRequests?: Record<AssetId, CreditVaultWithdrawRequest>;
+  creditVaultsInstantWithdrawRequests?: Record<
+    AssetId,
+    CreditVaultWithdrawRequest
+  >;
+};
+
 export type CreditVaultEpoch = {
   cdoId?: string;
   isEpochRunning: boolean;
@@ -255,12 +269,14 @@ export type CreditVaultEpoch = {
   instantWithdrawDeadline: number;
   allowInstantWithdraw: boolean;
   disableInstantWithdraw: boolean;
+  instantWithdrawDelay: BigNumber;
   defaulted: boolean;
   lastEpochApr: BigNumber;
   lastEpochInterest: BigNumber;
   epochDuration: BigNumber;
   epochStartDate: number;
   epochEndDate: number;
+  status: "running" | "open" | "default";
 };
 
 export type EpochData = AmphorEpoch | CreditVaultEpoch;

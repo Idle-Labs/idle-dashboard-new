@@ -144,16 +144,16 @@ export const strategies: Record<string, StrategyProps> = {
       deposit: [
         "epochStatus",
         "epochDuration",
-        "lastEpochApr",
+        "epochAprChange",
         "lastEpochInterest",
       ],
       withdraw: ["epochWithdrawType", "epochClaimPeriod"],
     },
-
     generalDataFields: [
       {
-        field: "borrower",
-        label: "defi.borrower",
+        field: "mode",
+        label: "assets.assetDetails.generalData.vaultType",
+        tooltip: "assets.assetDetails.tooltips.creditVaultType",
       },
       {
         field: "pool",
@@ -168,13 +168,18 @@ export const strategies: Record<string, StrategyProps> = {
         tooltip: "assets.assetDetails.tooltips.apy",
       },
       {
-        field: "status",
-        label: "assets.assetDetails.generalData.status",
-        tooltip: "assets.assetDetails.tooltips.vaultStatus",
+        field: "lastEpochApr",
+        label: "assets.assetDetails.generalData.epoch.lastAPY",
+        tooltip: "assets.assetDetails.tooltips.apy",
       },
       {
         field: "performanceFee",
         label: "assets.assetDetails.generalData.performanceFee",
+      },
+      {
+        field: "epochStatus",
+        label: "assets.assetDetails.generalData.epoch.status",
+        tooltip: "assets.assetDetails.tooltips.epochStatus",
       },
       {
         field: "epochDuration",

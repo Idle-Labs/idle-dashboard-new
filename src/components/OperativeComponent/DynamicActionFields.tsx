@@ -13,6 +13,8 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
 import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod } from 'helpers/'
+import { MdArrowForward } from 'react-icons/md'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -130,6 +132,19 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   let textColor = ''
   let dynamicActionField = null
 
+  const tooltipTranslateKey = useMemo(() => `dynamicActionFields.tooltips.${field}`, [field]) 
+
+  const tooltipText = useMemo(() => {
+    return translate(tooltipTranslateKey, {underlying: asset?.epochData?.underlyingToken})
+  }, [asset, tooltipTranslateKey, translate])
+
+  const hasTooltip = useMemo(() => {
+    return tooltipText !== tooltipTranslateKey
+  }, [tooltipText, tooltipTranslateKey])
+
+  let disableInstantWithdraw = false
+  let allowInstantWithdraw = false
+
   switch (field){
     case 'boost':
       const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
@@ -143,6 +158,42 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     break;
     case 'epochStart':
       dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
+    break;
+    case 'epochWithdrawType':
+      disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+      allowInstantWithdraw = !!asset?.epochData.allowInstantWithdraw && !disableInstantWithdraw
+      dynamicActionField = (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={'primary'} />)
+    break;
+    case 'epochClaimPeriod':
+      disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+      allowInstantWithdraw = !!asset?.epochData.allowInstantWithdraw && !disableInstantWithdraw
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(allowInstantWithdraw ? asset?.epochData?.instantWithdrawDelay : asset?.epochData?.epochDuration)}</Text>)
+    break;
+    case 'epochWithdrawDeadline':
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
+    break;
+    case 'epochAprChange':
+      if (vault.mode === 'STRATEGY'){
+        return (<DynamicActionField
+          field={'lastEpochApr'}
+          assetId={assetId}
+          amount={amount}
+          amountUsd={amountUsd}
+          stakingPower={stakingPower}
+          {...textProps}
+        />)
+      }
+
+      dynamicActionField = (
+        <HStack>
+          <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={asset?.epochData?.lastEpochApr} />
+          <MdArrowForward size={16} />
+          <Amount.Percentage textStyle={'titleSmall'} color={'brightGreen'} {...textProps} value={asset?.apr} />
+        </HStack>
+      )
+    break;
+    case 'epochInterestChange':
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochApr} />)
     break;
     case 'lastEpochApr':
       dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochApr} />)
@@ -220,16 +271,6 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     default:
       dynamicActionField = null
   }
-
-  const tooltipTranslateKey = useMemo(() => `dynamicActionFields.tooltips.${field}`, [field]) 
-
-  const tooltipText = useMemo(() => {
-    return translate(tooltipTranslateKey, {underlying: asset?.epochData?.underlyingToken})
-  }, [asset, tooltipTranslateKey, translate])
-
-  const hasTooltip = useMemo(() => {
-    return tooltipText !== tooltipTranslateKey
-  }, [tooltipText, tooltipTranslateKey])
 
   if (!dynamicActionField) return null
 

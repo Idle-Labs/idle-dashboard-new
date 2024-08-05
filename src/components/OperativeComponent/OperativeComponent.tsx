@@ -749,56 +749,27 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
 
   const kycVerificationStatus = useMemo(() => {
     if (!isPortfolioLoaded || transactionSpeedSelectorOpened) return null
-
-    const asset = selectAssetById(assetId)
-    const vault = selectVaultById(assetId)
-    const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
-    if (!checkWalletAllowed) return null
-    
-    const walletAllowed = !!asset.walletAllowed
-    const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.loss
-    const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `#FF000015`
     
     return (
       <Flex
         zIndex={11}
       >
-        <Tooltip
-          hasArrow
-          placement={'top'}
-          label={translate(`strategies.credit.kyc.tooltips.${walletAllowed ? 'completed' : 'required'}`)}
+        <AssetProvider
+          assetId={assetId}
+          wrapFlex={false}
         >
-          <TooltipContent>
-            <HStack
-              px={2}
-              spacing={1}
-              height={10}
-              borderRadius={8}
-              bg={statusColorBg}
-              border={'1px solid'}
-              borderColor={statusColor}
-            >
-              {
-                walletAllowed ? (
-                  <MdVerified color={statusColor} size={18} />
-                ) : (
-                  <MdError color={statusColor} size={18} />
-                )
-              }
-              <Translation translation={walletAllowed ? 'common.verified' : `common.kyc`} textStyle={'base'} color={'primary'} />
-            </HStack>
-          </TooltipContent>
-        </Tooltip>
+          <AssetProvider.KycVerificationBadge />
+        </AssetProvider>
       </Flex>
     )
-  }, [theme, translate, transactionSpeedSelectorOpened, isPortfolioLoaded, assetId, selectVaultById, selectAssetById])
+  }, [transactionSpeedSelectorOpened, isPortfolioLoaded, assetId])
 
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null
     return transactionSpeedSelectorOpened ? (
       <Flex
-        top={0}
-        right={0}
+        top={1}
+        right={2}
         zIndex={11}
         position={'absolute'}
       >

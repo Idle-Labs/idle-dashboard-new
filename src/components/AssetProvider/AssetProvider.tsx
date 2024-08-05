@@ -26,6 +26,7 @@ import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImagePr
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
+import { MdError, MdVerified } from 'react-icons/md'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -160,6 +161,49 @@ const VaultVariant: React.FC<TextProps> = (props) => {
 
   return (
     <Translation translation={`products.${vaultType}`} textStyle={'tableCell'} {...props} />
+  )
+}
+
+const KycVerificationBadge: React.FC = () => {
+  const { asset, vault, translate, theme } = useAssetProvider()
+  const { isPortfolioLoaded } = usePortfolioProvider()
+
+  if (!asset || !isPortfolioLoaded) return null
+
+    const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
+    if (!checkWalletAllowed) return null
+    
+    const walletAllowed = !!asset.walletAllowed
+    const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.loss
+    const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `#FF000015`
+
+  return (
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={translate(`strategies.credit.kyc.tooltips.${walletAllowed ? 'completed' : 'required'}`)}
+    >
+      <TooltipContent>
+        <HStack
+          px={2}
+          spacing={1}
+          height={10}
+          borderRadius={8}
+          bg={statusColorBg}
+          border={'1px solid'}
+          borderColor={statusColor}
+        >
+          {
+            walletAllowed ? (
+              <MdVerified color={statusColor} size={18} />
+            ) : (
+              <MdError color={statusColor} size={18} />
+            )
+          }
+          <Translation translation={walletAllowed ? 'common.verified' : `common.kyc`} textStyle={'base'} color={'primary'} />
+        </HStack>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -1302,6 +1346,15 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
   )
 }
 
+
+const CreditVaultMode: React.FC<Partial<TranslationProps>> = (...props) => {
+  const { vault } = useAssetProvider()
+  if (!vault || !("mode" in vault)) return null
+  return (
+    <Translation translation={`assets.assetDetails.generalData.epoch.mode.${vault.mode}`} {...props} />
+  )
+}
+
 type EpochInfoArgs = {
   field: string
 } & TextProps
@@ -1331,13 +1384,16 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   switch (field){
     case 'epochStartDate':
     case 'epochEndDate':
-      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value, 'YYYY/MM/DD', false)}</Text>)
+      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value, 'YYYY/MM/DD HH:mm', true)}</Text>)
     case 'epochDuration':
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
+    case 'lastEpochApr':
+      return (<Amount.Percentage value={value} textStyle={'tableCell'} {...props} />)
     case 'isEpochRunning':
       if (!("isEpochRunning" in asset.epochData)) return null
-      const color = asset.epochData.isEpochRunning ? 'red' : 'brightGreen'
-      const status = asset.epochData.isEpochRunning ? 'running' : 'open'
+      const isDefaulted = !!asset.epochData.defaulted
+      const color = isDefaulted ? 'red' : vaultsStatusSchemes[asset.epochData.status]
+      const status = asset.epochData.status
       return (
         <HStack
           spacing={2}
@@ -1499,6 +1555,22 @@ const Status: React.FC<AmountProps> = (props) => {
   const colorScheme = vaultsStatusSchemes[asset.status]
 
   const status = translate(`assets.status.${asset.status}`)
+
+  return colorScheme ? (
+    <Tag {...props} variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
+  ) : <Spinner size={'sm'} />
+}
+
+const EpochStatus: React.FC<AmountProps> = (props) => {
+  const { asset, translate } = useAssetProvider()
+
+  if (!asset?.epochData || !("status" in asset.epochData)) return null
+
+  const statusKey = asset?.epochData.status
+
+  const colorScheme = vaultsStatusSchemes[statusKey]
+
+  const status = translate(`assets.status.epoch.${statusKey}`)
 
   return colorScheme ? (
     <Tag {...props} variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
@@ -1901,9 +1973,12 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
+    case 'mode':
+      return (<CreditVaultMode textStyle={'tableCell'} {...props} />)
     case 'epochDuration':
     case 'epochStartDate':
     case 'epochEndDate':
+    case 'lastEpochApr':
       return (<EpochInfo field={field} {...props} />)
     case 'assetClass':
       return (
@@ -1923,6 +1998,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       )
     case 'status':
       return (<Status size={'md'}></Status>)
+    case 'epochStatus':
+      return (<EpochStatus size={'md'}></EpochStatus>)
     case 'allocation':
       return (<Allocation />)
     case 'stakingRewards':
@@ -2006,4 +2083,5 @@ AssetProvider.Autocompounding = Autocompounding
 AssetProvider.RewardsEmissions = RewardsEmissions
 AssetProvider.DistributedRewards = DistributedRewards
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
+AssetProvider.KycVerificationBadge = KycVerificationBadge
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution

@@ -1042,6 +1042,10 @@
     "epochStatus": "Epoch Status",
     "epochDuration": "Epoch Duration",
     "epochAPR": "Epoch APR",
+    "epochAprChange": "Epoch new APR",
+    "epochWithdrawType": "Withdraw type",
+    "epochWithdrawDeadline": "Withdraw deadline",
+    "epochClaimPeriod": "Claim period",
     "epochExpectedInterest": "Epoch expected interests",
     "lastEpochApr": "Last epoch APR",
     "lastEpochInterest": "Last epoch interests",
@@ -1132,6 +1136,10 @@
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
         "messages": {
+          "epoch": {
+            "running": "The deposit window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to deposit.",
+            "open": "The deposit window has started. You can deposit until a new epoch begins."
+          },
           "buyCta": "Top up",
           "buy": "Running low on %{asset}?",
           "boosted": "The APY of this vault is boosted by additional rewards.",
@@ -1205,6 +1213,10 @@
         "confirm": "You are withdrawing",
         "confirmed": "You have withdrawn",
         "messages": {
+          "epoch": {
+            "running": "The withdraw window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
+            "open": "The withdraw window has started. You can withdraw until a new epoch begins."
+          },
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "vaultOpen": "The vault is now open. You can withdraw until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
           "ethenaUSDeWithdraw": "By withdrawing a cooldown period of 7 days will be triggered, after which you will be able to claim back your USDe.",
@@ -1377,13 +1389,6 @@
           "title": "Success",
           "description": "You have backed up your wallet. Remember to store your Secret Recovery Phrase somewhere safe."
         }
-      }
-    },
-    "stake": {
-      "txFees": {
-        "low": "Low",
-        "medium": "Medium",
-        "high": "High"
       }
     },
     "send": {
@@ -2054,8 +2059,11 @@
       "deprecated": "Deprecated",
       "disabled": "Disabled",
       "epoch": {
+        "defaulted": "Defaulted",
         "running": "Ongoing",
-        "open": "Open"
+        "open": "Open",
+        "instant": "Instant",
+        "standard": "Standard"
       }
     },
     "assetDetails": {
@@ -2064,8 +2072,14 @@
           "duration": "Epoch duration",
           "startDate": "Epoch start",
           "endDate": "Epoch end",
-          "status": "Epoch status"
+          "status": "Epoch status",
+          "lastAPY": "Last APY",
+          "mode": {
+            "CREDIT": "Credit",
+            "STRATEGY": "Strategy"
+          }
         },
+        "vaultType": "Vault type",
         "protocol": "Protocol",
         "rewards": "Rewards",
         "strategy": "Strategy",
@@ -2126,8 +2140,10 @@
         "totalIDLEStaked": "The total amount of IDLE your have locked",
         "experimental": "This vault is experimental, use at your own risk",
         "paused": "This vault is paused, deposits are momentarily disabled",
+        "creditVaultType": "The Credit Vault type can be Credit or Strategy",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
+        "epochStatus": "This badge shows whether the epoch is open or running",
         "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
         "totalDiscountedFees": "The total amount of fees redistributed to users",
         "spotApy": "The annualized yield this vault is providing at the current block",
@@ -2138,10 +2154,10 @@
         "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
         "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprecated",
         "pointsEmissionOn1000Usd": "Additional points you will get per year for a $1000 worth position.",
+        "gearboxKelpMilesPointsEmission": "Kelp Miles you will get per year for a $1000 worth position.",
         "apyBoost": "This value indicates how many times this vault performs better than the base strategy",
         "stkIDLEBalance": "This is your stkIDLE balance, the longer you stake the higher this balance will be",
         "ethenaShardsRewardEmission": "Sats multiplier that you will get by depositing in the Senior tranche",
-        "gearboxKelpMilesPointsEmission": "Kelp Miles you will get per year for a $1000 worth position.",
         "juniorTrancheApy": "The APY is calculated by adding together the Base APY, Harvest APY and Rewards APY",
         "seniorTrancheApy": "The APY is calculated by adding together the Base APY, Harvest APY and Rewards APY",
         "coverage": "In case of hack, the Senior tranche is covered by the funds deposited in the Junior tranche",
