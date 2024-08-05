@@ -36,7 +36,7 @@ import { operators } from "./operators";
 export const vaultsStatusSchemes: Record<string, string> = {
   production: "green",
   paused: "gray",
-  defaulted: "gray",
+  default: "gray",
   disabled: "gray",
   beta: "blue",
   experimental: "purple",
