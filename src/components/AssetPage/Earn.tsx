@@ -30,6 +30,7 @@ import { AssetDistributedRewards } from 'components/AssetDistributedRewards/Asse
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
+import { EpochWithdrawRequest } from 'components/EpochWithdrawRequest/EpochWithdrawRequest'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -419,6 +420,7 @@ export const Earn: React.FC = () => {
       width={'full'}
     >
       {strategyDescription}
+      <EpochWithdrawRequest assetId={asset?.id} />
       <Box
         width={'full'}
       >

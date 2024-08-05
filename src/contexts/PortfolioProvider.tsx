@@ -861,7 +861,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
     const output: VaultsAccountData =  {
       walletAllowed: {},
       creditVaultsWithdrawRequests: {},
-      creditVaultsInstantWithdrawRequests: {}
     }
 
     if (!account || !multiCall || !web3Chains) return output
@@ -909,26 +908,32 @@ export function PortfolioProvider({ children }: ProviderProps) {
           if (bnOrZero(callResult.data).lte(0)) return acc
           return {
             ...acc,
-            [assetId]: {
-              amount: bnOrZero(callResult.data),
-              isInstant: false,
-            }
+            [assetId]: [
+              ...(acc?.[assetId] || []),
+              {
+                amount: bnOrZero(callResult.data),
+                isInstant: false,
+              }
+            ]
           }
         }, output.creditVaultsWithdrawRequests)
       }
 
       if (instantWithdrawRequestResults){
-        output.creditVaultsInstantWithdrawRequests = instantWithdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsInstantWithdrawRequests"], callResult: DecodedResult) => {
+        output.creditVaultsWithdrawRequests = instantWithdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsWithdrawRequests"], callResult: DecodedResult) => {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
           if (bnOrZero(callResult.data).lte(0)) return acc
           return {
             ...acc,
-            [assetId]: {
-              amount: bnOrZero(callResult.data),
-              isInstant: true,
-            }
+            [assetId]: [
+              ...(acc?.[assetId] || []),
+              {
+                amount: bnOrZero(callResult.data),
+                isInstant: true,
+              }
+            ]
           }
-        }, output.creditVaultsInstantWithdrawRequests)
+        }, output.creditVaultsWithdrawRequests)
       }
 
       if (walletAllowedResults){

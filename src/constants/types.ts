@@ -255,11 +255,7 @@ export type CreditVaultWithdrawRequest = {
 
 export type VaultsAccountData = {
   walletAllowed?: Record<AssetId, boolean>;
-  creditVaultsWithdrawRequests?: Record<AssetId, CreditVaultWithdrawRequest>;
-  creditVaultsInstantWithdrawRequests?: Record<
-    AssetId,
-    CreditVaultWithdrawRequest
-  >;
+  creditVaultsWithdrawRequests?: Record<AssetId, CreditVaultWithdrawRequest[]>;
 };
 
 export type CreditVaultEpoch = {

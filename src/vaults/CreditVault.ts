@@ -786,18 +786,12 @@ export class CreditVault {
     return getObjectPath(this, `flags.${flag}`);
   }
 
-  public getClaimContractSendMethod(
-    account: string
-  ): ContractSendMethod | null {
-    if (!this.strategyContract) return null;
-    return this.strategyContract.methods.claimWithdrawRequest(account);
+  public getClaimContractSendMethod(): ContractSendMethod | null {
+    return this.cdoContract.methods.claimWithdrawRequest();
   }
 
-  public getRequestInstantWithdrawContractSendMethod(
-    account: string
-  ): ContractSendMethod | null {
-    if (!this.strategyContract) return null;
-    return this.strategyContract.methods.requestInstantWithdraw(account);
+  public getClaimInstantContractSendMethod(): ContractSendMethod | null {
+    return this.cdoContract.methods.claimInstantWithdrawRequest();
   }
 
   public getDepositContractSendMethod(params: any[] = []): ContractSendMethod {

@@ -748,6 +748,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   }, [transactionState, cleanTransaction, activeAction, state.activeStep, txActionType, state.depositAmount])
 
   const kycVerificationStatus = useMemo(() => {
+    if (activeItem > activeAction.steps.length) return null
     if (!isPortfolioLoaded || transactionSpeedSelectorOpened) return null
     
     return (
@@ -762,7 +763,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
         </AssetProvider>
       </Flex>
     )
-  }, [transactionSpeedSelectorOpened, isPortfolioLoaded, assetId])
+  }, [transactionSpeedSelectorOpened, isPortfolioLoaded, assetId, activeItem, activeAction])
 
   const transationSpeedToggler = useMemo(() => {
     if (activeItem > activeAction.steps.length) return null
