@@ -49,8 +49,6 @@ export function BrowserRouterProvider() {
     match,
   }), [searchParams, location, params, query, match])
 
-  console.log('router', router)
-
   useEffect(() => {
     window.scrollTo(0, 0)
     sendPageview()

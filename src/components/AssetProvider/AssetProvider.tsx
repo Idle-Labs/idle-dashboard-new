@@ -1392,7 +1392,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     case 'isEpochRunning':
       if (!("isEpochRunning" in asset.epochData)) return null
       const isDefaulted = !!asset.epochData.defaulted
-      const color = isDefaulted ? 'red' : vaultsStatusSchemes[asset.epochData.status]
+      const color = isDefaulted ? 'red' : (value ? 'yellow' : 'green')
       const status = asset.epochData.status
       return (
         <HStack

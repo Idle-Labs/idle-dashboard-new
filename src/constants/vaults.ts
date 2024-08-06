@@ -88,6 +88,7 @@ export interface CreditVaultConfig {
   translations?: Record<string, any>;
   rewardsEmissions?: RewardEmission[];
   enabledEnvs?: string[];
+  accessCodes?: string[];
 }
 
 export const credits: Record<number, CreditVaultConfig[]> = {
@@ -99,6 +100,18 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       borrower: "fasanara",
       status: "experimental",
       underlyingToken: "USDC",
+      accessCodes: [
+        "6G8R7Q",
+        "GSER6L",
+        "CDDA2X",
+        "S58PHT",
+        "J2998A",
+        "YM9Y7P",
+        "66M55D",
+        "ZG8S4A",
+        "3WSBSD",
+        "P26JQ3",
+      ],
       operators: [
         {
           type: "borrower",
@@ -111,18 +124,18 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         decimals: 18,
         abi: ERC20 as Abi,
         name: "IdleCreditVault_fasanara_USDC",
-        address: "0xD04319282Fdd87F7E46BD72160eFdA02bF791515",
+        address: "0x55cf0BB9F893De8000D4d63F5c621283eE930e59",
       },
       CDO: {
         decimals: 18,
         abi: IdleCDOEpochVariant as Abi,
         name: "IdleCreditVault_fasanara_USDC",
-        address: "0xFf5a45994a79732B9FEEC1055419290BBa70EeEE",
+        address: "0x0581f1F01E05b77612Feaf529da3E048E1424A7E",
       },
       Strategy: {
         abi: IdleCreditVault as Abi,
         name: "IdleStrategy_clearpool_bastion_USDT",
-        address: "0x2D445eCA81bE26692F88ec33dA583068C48b8197",
+        address: "0x6C748E4ea9f15e9c4121b90b5e5689c4deE3a938",
       },
       blockNumber: 0,
       description:

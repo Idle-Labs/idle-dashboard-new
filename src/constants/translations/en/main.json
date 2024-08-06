@@ -239,6 +239,7 @@
     },
     "credit": {
       "tag": "Credit",
+      "label": "Credit",
       "title": "Credit vaults",
       "explore": "Explore Credit Vaults",
       "description": "Credit vaults for super sophisticated faggots.",

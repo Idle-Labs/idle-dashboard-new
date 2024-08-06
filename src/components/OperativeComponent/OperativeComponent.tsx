@@ -748,7 +748,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
   }, [transactionState, cleanTransaction, activeAction, state.activeStep, txActionType, state.depositAmount])
 
   const kycVerificationStatus = useMemo(() => {
-    if (activeItem > activeAction.steps.length) return null
+    if (activeItem > 0) return null
     if (!isPortfolioLoaded || transactionSpeedSelectorOpened) return null
     
     return (
@@ -763,10 +763,10 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
         </AssetProvider>
       </Flex>
     )
-  }, [transactionSpeedSelectorOpened, isPortfolioLoaded, assetId, activeItem, activeAction])
+  }, [transactionSpeedSelectorOpened, isPortfolioLoaded, assetId, activeItem])
 
   const transationSpeedToggler = useMemo(() => {
-    if (activeItem > activeAction.steps.length) return null
+    if (activeItem > 0) return null
     return transactionSpeedSelectorOpened ? (
       <Flex
         top={1}
@@ -796,7 +796,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
         </HStack>
       </Button>
     )
-  }, [activeAction, activeItem, gasPrice, transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened])
+  }, [activeItem, gasPrice, transactionSpeedSelectorOpened, setTransactionSpeedSelectorOpened])
 
   const goBack = useCallback((resetStep = false, actionIndex = null) => {
     if (resetStep){
