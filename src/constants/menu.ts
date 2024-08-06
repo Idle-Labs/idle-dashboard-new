@@ -24,6 +24,7 @@ export const menu: MenuItemType[] = [
   {
     path: "earn",
     label: "navBar.earn",
+    enabledEnvs: ["prod", "beta"],
     /*
     children: Object.values(products).map( (product: ProductProps) => ({
       path: `earn/${product.route}`,

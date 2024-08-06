@@ -21,7 +21,7 @@ import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { products, chains, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, abbreviateNumber } from 'helpers/'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, abbreviateNumber, checkVaultEnv } from 'helpers/'
 import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
@@ -97,8 +97,8 @@ export const Tranches: React.FC = () => {
   const navigate = useNavigate()
   const translate = useTranslate()
   const { account } = useWalletProvider()
-  const { theme, isMobile } = useThemeProvider()
   const { openModal, closeModal } = useModalProvider()
+  const { theme, isMobile, environment } = useThemeProvider()
   const [availableAssetsFilter, setAvailableAssetsFilter] = useState<string | null>(null)
   const [depositedAssetsFilter, setDepositedAssetsFilter] = useState<string | null>(null)
   const [availableListEventSent, setAvailableListEventSent] = useState<string | null>(null)
@@ -127,6 +127,7 @@ export const Tranches: React.FC = () => {
   const visibleStrategies = useMemo(() => Object.keys(strategies).filter((strategy: string) => !!strategies[strategy].visible), [])
   const productStrategies = useMemo(() => (product?.strategies || []), [product])
   const strategy = useMemo(() => productStrategies?.[0], [productStrategies])
+  const visibleAggregatedVaults = useMemo(() => Object.values(aggregatedVaults).filter( (aggregatedVault: AggregatedVault) => checkVaultEnv(aggregatedVault, environment) ), [environment])
 
   const onRowClickDeposited = useCallback((row: RowProps, item_list_id: string, item_list_name: string) => {
     sendSelectItem(item_list_id, item_list_name, row.original)
@@ -974,14 +975,14 @@ export const Tranches: React.FC = () => {
           direction={['column', 'row']}
         >
           {
-            Object.values(aggregatedVaults).map((aggregatedVault: AggregatedVault, index: number) => {
+            Object.values(visibleAggregatedVaults).map((aggregatedVault: AggregatedVault, index: number) => {
               return (<VaultCard.Aggregated key={`index_${index}`} aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
             })
           }
         </Stack>
       </VStack>
     )
-  }, [onClickAggregatedVaults])
+  }, [visibleAggregatedVaults, onClickAggregatedVaults])
 
   return (
     <Flex

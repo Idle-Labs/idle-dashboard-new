@@ -222,7 +222,7 @@ export const tranches: Record<
     clearpool: {
       USDCFas: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "fasanara",
         operators: [
           {
@@ -314,7 +314,7 @@ export const tranches: Record<
         },
       },
       USDT: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         status: "boosted",
         variant: "portofino",
         operators: [
@@ -411,7 +411,7 @@ export const tranches: Record<
   10: {
     clearpool: {
       USDTBas: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         operators: [
           {
             type: "borrower",
@@ -504,7 +504,7 @@ export const tranches: Record<
       },
       /*
       USDCWin: {
-        enabledEnvs: [],
+        enabledEnvs: ['prod', 'beta'],
         variant: "wincent",
         operators: [
           {
@@ -609,7 +609,7 @@ export const tranches: Record<
       },
       */
       USDCWinOld: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         autoFarming: [],
         variant: "wincent",
         operators: [
@@ -703,7 +703,7 @@ export const tranches: Record<
         },
       },
       USDTFas: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         status: "boosted",
         autoFarming: ["OP"],
         variant: "fasanara",
@@ -812,7 +812,7 @@ export const tranches: Record<
         },
       },
       USDTPor: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         status: "boosted",
         autoFarming: ["OP"],
         variant: "portofino",
@@ -1019,7 +1019,7 @@ export const tranches: Record<
   1: {
     gearbox: {
       USDC: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "gearbox",
         autoFarming: ["GEAR"],
         blockNumber: 19674126,
@@ -1126,7 +1126,7 @@ export const tranches: Record<
         },
       },
       WETH: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "gearbox",
         autoFarming: ["GEAR"],
         blockNumber: 19674126,
@@ -1252,7 +1252,7 @@ export const tranches: Record<
     instadapp: {
       stETH: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "instadapp",
         blockNumber: 17519660,
         underlyingToken: "stETH",
@@ -1372,6 +1372,7 @@ export const tranches: Record<
         blockNumber: 13776954,
         underlyingToken: "stETH",
         vaultType: "liquidStaking",
+        enabledEnvs: ["prod", "beta"],
         CDO: {
           decimals: 18,
           abi: IdleCDO as Abi,
@@ -1461,7 +1462,7 @@ export const tranches: Record<
       MATIC: {
         autoFarming: [],
         protocol: "lido",
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         status: "deprecated",
         blockNumber: 15623682,
         underlyingToken: "MATIC",
@@ -1896,7 +1897,7 @@ export const tranches: Record<
     euler: {
       USDC: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         status: "deprecated",
         blockNumber: 14785127,
@@ -1977,7 +1978,7 @@ export const tranches: Record<
       },
       DAI: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         status: "deprecated",
         blockNumber: 14961854,
@@ -2058,7 +2059,7 @@ export const tranches: Record<
       },
       USDT: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         status: "deprecated",
         blockNumber: 14961973,
@@ -2139,7 +2140,7 @@ export const tranches: Record<
       },
       USDCStaking: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         variant: "staking",
         status: "deprecated",
@@ -2222,7 +2223,7 @@ export const tranches: Record<
       },
       USDTStaking: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         variant: "staking",
         status: "deprecated",
@@ -2305,7 +2306,7 @@ export const tranches: Record<
       },
       WETHStaking: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         variant: "staking",
         status: "deprecated",
@@ -2388,7 +2389,7 @@ export const tranches: Record<
       },
       DAIStaking: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         variant: "staking",
         status: "deprecated",
@@ -2471,7 +2472,7 @@ export const tranches: Record<
       },
       AGEUR: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "euler",
         status: "deprecated",
         blockNumber: 15055915,
@@ -2816,7 +2817,7 @@ export const tranches: Record<
     */
     clearpool: {
       USDC: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "portofino",
         operators: [
           {
@@ -2907,7 +2908,7 @@ export const tranches: Record<
       },
       USDCWin: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         status: "deprecated",
         variant: "wintermute",
         operators: [
@@ -2997,7 +2998,7 @@ export const tranches: Record<
       },
       USDCWinc: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "wincent",
         operators: [
           {
@@ -3088,7 +3089,7 @@ export const tranches: Record<
       },
       USDCFolk: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "folkvang",
         operators: [
           {
@@ -3176,7 +3177,7 @@ export const tranches: Record<
         },
       },
       USDT: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "fasanara",
         operators: [
           {
@@ -3266,7 +3267,7 @@ export const tranches: Record<
         },
       },
       USDCFas: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "fasanara",
         operators: [
           {
@@ -3356,7 +3357,7 @@ export const tranches: Record<
       },
       DAI: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         variant: "portofino",
         operators: [
           {
@@ -3448,7 +3449,7 @@ export const tranches: Record<
     ethena: {
       USDe: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "ethena",
         blockNumber: 19389806,
         underlyingToken: "USDE",
@@ -3736,7 +3737,7 @@ export const tranches: Record<
         },
       },
       bbWETH: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "morpho",
         status: "deprecated",
         blockNumber: 16420584,
@@ -3835,7 +3836,7 @@ export const tranches: Record<
         },
       },
       steakUSDC: {
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "morpho",
         blockNumber: 16420584,
         distributedTokens: [],
@@ -4261,7 +4262,7 @@ export const tranches: Record<
     amphor: {
       wstETH: {
         autoFarming: [],
-        enabledEnvs: [],
+        enabledEnvs: ["prod", "beta"],
         protocol: "amphor",
         status: "deprecated",
         blockNumber: 18769315,
@@ -4416,6 +4417,7 @@ export type AggregatedVault = {
   vaults: AssetId[];
   description: string;
   categories?: string[];
+  enabledEnvs?: string[];
 };
 
 export const aggregatedVaults: Record<string, AggregatedVault> = {
@@ -4423,6 +4425,7 @@ export const aggregatedVaults: Record<string, AggregatedVault> = {
     chainId: 1,
     color: "#4de3b0",
     type: "Yield Aggregator",
+    enabledEnvs: ["prod", "beta"],
     icon: "images/strategies/AA.svg",
     name: "Optimized Secured Lending",
     vaults: [
@@ -4437,6 +4440,7 @@ export const aggregatedVaults: Record<string, AggregatedVault> = {
     chainId: 10,
     color: "#627eea",
     type: "Yield Index",
+    enabledEnvs: ["prod", "beta"],
     name: "Diversified RWA Lending",
     icon: "images/strategies/RWA.svg",
     vaults: ["0x9ebcb025949ffb5a77ff6ccc142e0de649801697"],
@@ -4469,7 +4473,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   10: {
     // Optimism
     USDT: {
-      enabledEnvs: [],
+      enabledEnvs: ["prod", "beta"],
       autoFarming: ["OP"],
       blockNumber: 117936837,
       underlyingToken: "USDT",
@@ -4554,6 +4558,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAI: {
       blockNumber: 10595640,
       underlyingToken: "DAI",
+      enabledEnvs: ["prod", "beta"],
       aggregatedVaultId: "stableSecuredLending",
       idle: {
         decimals: 18,
@@ -4633,6 +4638,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDCBB: {
       status: "deprecated",
       blockNumber: 16277063,
+      enabledEnvs: ["prod", "beta"],
       flags: {
         // depositsDisabled:true,
         apiType: "juniorRates",
@@ -4704,7 +4710,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     },
     USDTBB: {
       status: "deprecated",
-      enabledEnvs: ["beta"],
+      enabledEnvs: ["prod", "beta"],
       blockNumber: 16277063,
       flags: {
         apiType: "juniorRates",
@@ -4760,6 +4766,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAIBB: {
       status: "deprecated",
       blockNumber: 16519501,
+      enabledEnvs: ["prod", "beta"],
       flags: {
         referralEnabled: true,
         apiType: "juniorRates",
@@ -4813,6 +4820,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       aggregatedVaultId: "stableSecuredLending",
       blockNumber: 10618515,
       underlyingToken: "USDC",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -4924,6 +4932,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       blockNumber: 10627792,
       underlyingToken: "USDT",
       aggregatedVaultId: "stableSecuredLending",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -5034,6 +5043,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       status: "deprecated",
       blockNumber: 11815164,
       underlyingToken: "WETH",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -5077,6 +5087,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       status: "deprecated",
       blockNumber: 16733433,
       underlyingToken: "WETH",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -5113,6 +5124,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
       status: "deprecated",
       blockNumber: 10627962,
       underlyingToken: "WBTC",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -5154,7 +5166,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     RAI: {
       blockNumber: 12317005,
       underlyingToken: 'RAI',
-      enabledEnvs: [],
+      enabledEnvs: ['prod', 'beta'],
       idle: {
         decimals:18,
         abi: IdleTokenV4 as Abi,
@@ -5182,6 +5194,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     DAI: {
       blockNumber: 15152893,
       underlyingToken: "DAI",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -5203,6 +5216,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     USDC: {
       blockNumber: 15451334,
       underlyingToken: "USDC",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,
@@ -5224,6 +5238,7 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
     WETH: {
       blockNumber: 15473520,
       underlyingToken: "WETH",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         abi: IdleTokenV4 as Abi,

@@ -1347,7 +1347,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
 }
 
 
-const CreditVaultMode: React.FC<Partial<TranslationProps>> = (...props) => {
+const CreditVaultMode: React.FC<Partial<TextProps>> = (...props) => {
   const { vault } = useAssetProvider()
   if (!vault || !("mode" in vault)) return null
   return (
@@ -1979,7 +1979,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'epochStartDate':
     case 'epochEndDate':
     case 'lastEpochApr':
-      return (<EpochInfo field={field} {...props} />)
+      return (<EpochInfo field={field} textStyle={'tableCell'} {...props} />)
     case 'assetClass':
       return (
         <Categories {...props} />

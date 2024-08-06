@@ -218,6 +218,18 @@ export function toDayjs(timestamp?: Date | dayjs.Dayjs | number | string) {
   return dayjs(timestamp);
 }
 
+export function checkVaultEnv(vaultConfig: any, environment: string) {
+  if (!("enabledEnvs" in vaultConfig)) return true;
+  if ("enabledEnvs" in vaultConfig && isEmpty(vaultConfig.enabledEnvs))
+    return true;
+  if (
+    "enabledEnvs" in vaultConfig &&
+    vaultConfig.enabledEnvs.includes(environment)
+  )
+    return true;
+  return false;
+}
+
 export function dateToLocale(
   timestamp: Date | dayjs.Dayjs | number,
   locale: string

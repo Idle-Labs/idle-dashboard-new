@@ -24,7 +24,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks, checkVaultEnv } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData } from 'constants/types'
 import { CreditVault } from 'vaults/CreditVault'
 
@@ -3001,13 +3001,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
       return contractsNetworks
     }, {})
 
-    const checkVaultEnv = (vaultConfig: any) => {
-      if (!("enabledEnvs" in vaultConfig)) return true
-      if (("enabledEnvs" in vaultConfig) && isEmpty(vaultConfig.enabledEnvs)) return true
-      if (("enabledEnvs" in vaultConfig) && vaultConfig.enabledEnvs.includes(environment)) return true
-      return false
-    }
-
     // Init all vaults networks
     const allVaultsNetworks: Record<string, Vault[]> = {}
 
@@ -3045,7 +3038,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       Object.keys(tranches[vaultChainId]).forEach(protocol => {
         Object.keys(tranches[vaultChainId][protocol]).forEach(token => {
           const vaultConfig = tranches[vaultChainId][protocol][token]
-          if (checkVaultEnv(vaultConfig)) {
+          if (checkVaultEnv(vaultConfig, environment)) {
             const gaugeConfig = Object.values(gauges).find(gaugeConfig => gaugeConfig.trancheToken.address.toLowerCase() === vaultConfig.Tranches.AA.address.toLowerCase())
             const trancheVaultAA = new TrancheVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig, type: 'AA', cacheProvider })
             const trancheVaultBB = new TrancheVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, protocol, vaultConfig, gaugeConfig: null, type: 'BB', cacheProvider })
@@ -3069,7 +3062,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
 
       credits[vaultChainId]?.forEach( (vaultConfig: CreditVaultConfig) => {
-        if (checkVaultEnv(vaultConfig)) {
+        if (checkVaultEnv(vaultConfig, environment)) {
           const creditVault = new CreditVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, vaultConfig, type: 'CR', cacheProvider })
           allVaultsNetworks[vaultChainId].push(creditVault)
           creditVaults.push(creditVault)
@@ -3100,7 +3093,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       Object.keys(bestYield[vaultChainId]).forEach(token => {
         const tokenConfig = bestYield[vaultChainId][token]
-        if (checkVaultEnv(tokenConfig)) {
+        if (checkVaultEnv(tokenConfig, environment)) {
           const bestYieldVault = new BestYieldVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, tokenConfig, type: 'BY', cacheProvider, idleController })
           allVaultsNetworks[vaultChainId].push(bestYieldVault)
           bestYieldVaults.push(bestYieldVault)
