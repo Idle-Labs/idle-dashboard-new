@@ -41,12 +41,14 @@ export const menu: MenuItemType[] = [
   {
     path: "dashboard",
     label: "navBar.portfolio",
+    enabledEnvs: ["prod", "beta"],
   },
   {
     path: "stake",
     label: "navBar.stake",
     icon: BsStars,
     iconPosition: "right",
+    enabledEnvs: ["prod", "beta"],
     iconProps: {
       size: 18,
       color: "orange",
@@ -62,11 +64,13 @@ export const menu: MenuItemType[] = [
   // },
   {
     label: "navBar.legacyApp",
+    enabledEnvs: ["prod", "beta"],
     link: getLegacyDashboardUrl(""),
   },
   {
     // path:'governance',
     label: "navBar.governance",
+    enabledEnvs: ["prod", "beta"],
     link: "https://www.tally.xyz/gov/eip155:1:0x3D5Fc645320be0A085A32885F078F7121e5E5375",
   },
 ];

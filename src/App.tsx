@@ -8,6 +8,7 @@ import { CacheProvider } from 'contexts/CacheProvider'
 import { ThemeProvider } from 'contexts/ThemeProvider'
 import { ModalProvider } from 'contexts/ModalProvider'
 import { WalletProvider } from 'contexts/WalletProvider'
+import { AuthCodeProvider } from "contexts/AuthCodeProvider"
 import { PortfolioProvider } from 'contexts/PortfolioProvider'
 import { BrowserRouterProvider } from 'contexts/BrowserRouterProvider'
 import { TransactionManagerProvider } from 'contexts/TransactionManagerProvider'
@@ -17,19 +18,21 @@ export const App = () => (
     <ChakraProvider theme={theme}>
       <ThemeProvider>
         <I18nProvider>
-          <WalletProvider>
-            <Web3Provider>
-              <CacheProvider TTL={300}>
-                <TransactionManagerProvider>
-                  <PortfolioProvider>
-                    <ModalProvider>
-                      <BrowserRouterProvider />
-                    </ModalProvider>
-                  </PortfolioProvider>
-                </TransactionManagerProvider>
-              </CacheProvider>
-            </Web3Provider>
-          </WalletProvider>
+          <AuthCodeProvider>
+            <WalletProvider>
+              <Web3Provider>
+                <CacheProvider TTL={300}>
+                  <TransactionManagerProvider>
+                    <PortfolioProvider>
+                      <ModalProvider>
+                        <BrowserRouterProvider />
+                      </ModalProvider>
+                    </PortfolioProvider>
+                  </TransactionManagerProvider>
+                </CacheProvider>
+              </Web3Provider>
+            </WalletProvider>
+          </AuthCodeProvider>
         </I18nProvider>
       </ThemeProvider>
     </ChakraProvider>

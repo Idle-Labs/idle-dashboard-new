@@ -1,13 +1,14 @@
 import { Asset } from "constants/"
-import { Box, Flex, Heading, SkeletonText, Stack, VStack } from "@chakra-ui/react"
+import { Box, Center, Flex, Heading, Image, SkeletonText, Stack, VStack } from "@chakra-ui/react"
 import { Translation } from "components/Translation/Translation"
 import { VaultCard } from "components/VaultCard/VaultCard"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useCallback, useMemo } from "react"
 import { useThemeProvider } from "contexts/ThemeProvider"
-import { abbreviateNumber, bnOrZero } from "helpers"
+import { abbreviateNumber, bnOrZero, isEmpty } from "helpers"
 import { StrategyOverview } from "components/StrategyOverview/StrategyOverview"
 import { useNavigate } from "react-router"
+import { Card } from "components/Card/Card"
 
 export const CreditVaults: React.FC = () => {
   const navigate = useNavigate()
@@ -24,8 +25,6 @@ export const CreditVaults: React.FC = () => {
   const creditVaults = useMemo(() => {
     return selectVaultsAssetsByType('CR')
   }, [selectVaultsAssetsByType])
-
-  console.log('creditVaults', creditVaults)
 
   const heading = useMemo(() => {
     return (
@@ -75,7 +74,22 @@ export const CreditVaults: React.FC = () => {
     return navigate(`/credit/${asset.id}`)
   }, [navigate])
 
-  return (
+  return isEmpty(creditVaults) ? (
+    <Center width={'full'} pt={10} mt={10} flex={1}>
+      <Card maxW={'52em'}>
+        <VStack
+          py={10}
+          spacing={4}
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'center'}
+        >
+          <Image src={'images/vaults/information.png'} width={8} />
+          <Translation textAlign={'center'} translation={'defi.empty.vaults.body'} color={'cta'} isHtml />
+        </VStack>
+      </Card>
+    </Center>
+  ) : (
     <Flex
       mt={10}
       width={'100%'}

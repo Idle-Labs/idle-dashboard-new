@@ -21,8 +21,8 @@ import type { Asset, VaultPosition, ModalProps } from 'constants/types'
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { StrategyOverview } from 'components/StrategyOverview/StrategyOverview'
 import { products, chains, MIN_TVL_USD_DEPRECATED_VAULTS, strategies, StrategyColumn, aggregatedVaults, AggregatedVault } from 'constants/'
-import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, abbreviateNumber, checkVaultEnv } from 'helpers/'
-import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button } from '@chakra-ui/react'
+import { sortNumeric, sortAlpha, sendViewItemList, getAssetListItem, sendSelectItem, hexToRgb, BNify, bnOrZero, abbreviateNumber, checkVaultEnv, isEmpty } from 'helpers/'
+import { Box, Flex, HStack, VStack, Heading, Image, SimpleGrid, Stack, Skeleton, SkeletonText, Stat, StatNumber, StatArrow, Button, Center } from '@chakra-ui/react'
 
 type RowProps = Row<Asset>
 
@@ -984,7 +984,22 @@ export const Tranches: React.FC = () => {
     )
   }, [visibleAggregatedVaults, onClickAggregatedVaults])
 
-  return (
+  return isEmpty(visibleAggregatedVaults) && isEmpty(availableAssetsData) && isEmpty(depositedAssetsData) ? (
+    <Center width={'full'} pt={10} mt={10} flex={1}>
+      <Card maxW={'52em'}>
+        <VStack
+          py={10}
+          spacing={4}
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'center'}
+        >
+          <Image src={'images/vaults/information.png'} width={8} />
+          <Translation textAlign={'center'} translation={'defi.empty.vaults.body'} color={'cta'} isHtml />
+        </VStack>
+      </Card>
+    </Center>
+  ) : (
     <Flex
       mt={10}
       width={'100%'}

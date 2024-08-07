@@ -218,6 +218,16 @@ export function toDayjs(timestamp?: Date | dayjs.Dayjs | number | string) {
   return dayjs(timestamp);
 }
 
+export function checkVaultAuthCode(
+  vaultConfig: any,
+  authCode?: string
+): boolean {
+  if (!("accessCodes" in vaultConfig) || isEmpty(vaultConfig.accessCodes)) {
+    return true;
+  }
+  return vaultConfig.accessCodes.includes(authCode);
+}
+
 export function checkVaultEnv(vaultConfig: any, environment: string) {
   if (!("enabledEnvs" in vaultConfig)) return true;
   if ("enabledEnvs" in vaultConfig && isEmpty(vaultConfig.enabledEnvs))

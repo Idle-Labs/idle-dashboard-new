@@ -1,7 +1,7 @@
 import { MdMenu } from 'react-icons/md'
 import { MobileMenu } from './MobileMenu'
 import { MenuNavItem } from './MenuNavItem'
-import { checkSectionEnabled } from 'helpers/'
+import { checkMenuItemEnv, checkSectionEnabled } from 'helpers/'
 import { menu, MenuItemType } from 'constants/menu'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { MenuItemExpandable } from './MenuItemExpandable'
@@ -27,7 +27,7 @@ export const TopBarMenu: React.FC = () => {
   }, [mobileMenuOpened, isMobile, setScrollLocked])
 
   const enabledMenuItems = useMemo(() => {
-    return menu.filter( (menuItem: MenuItemType) => !menuItem.path || checkSectionEnabled(menuItem.path as string, environment) )
+    return menu.filter( menuItem => checkMenuItemEnv(menuItem, environment) ).filter( (menuItem: MenuItemType) => !menuItem.path || checkSectionEnabled(menuItem.path as string, environment) )
   }, [environment])
 
   return (

@@ -24,10 +24,10 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks, checkVaultEnv } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData } from 'constants/types'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, checkVaultEnv, checkVaultAuthCode } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript'
+import { useAuthCodeProvider } from './AuthCodeProvider'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -350,6 +350,7 @@ export const usePortfolioProvider = () => useContext(PortfolioProviderContext)
 export function PortfolioProvider({ children }: ProviderProps) {
   const cacheProvider = useCacheProvider()
   const { environment } = useThemeProvider()
+  const { authCode } = useAuthCodeProvider()
   const [state, dispatch] = useReducer(reducer, initialState)
   const { state: { lastTransaction } } = useTransactionManager()
   const { web3, web3Chains, web3Rpc, multiCall } = useWeb3Provider()
@@ -3064,7 +3065,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const web3RpcToUse = +vaultChainId === +chainId ? web3Rpc : web3Chains[vaultChainId]
 
       credits[vaultChainId]?.forEach( (vaultConfig: CreditVaultConfig) => {
-        if (checkVaultEnv(vaultConfig, environment)) {
+        if (checkVaultEnv(vaultConfig, environment) && checkVaultAuthCode(vaultConfig, authCode)) {
           const creditVault = new CreditVault({ web3: web3ToUse, web3Rpc: web3RpcToUse, chainId: vaultChainId, vaultConfig, type: 'CR', cacheProvider })
           allVaultsNetworks[vaultChainId].push(creditVault)
           creditVaults.push(creditVault)
@@ -3176,7 +3177,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     };
 
     // eslint-disable-next-line
-  }, [web3, web3Rpc, web3Chains, chainId, environment, cacheProvider?.isLoaded])
+  }, [web3, web3Rpc, web3Chains, chainId, environment, authCode, cacheProvider?.isLoaded])
 
   // Set selectors
   useEffect(() => {
@@ -3333,6 +3334,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
       feedsUsdLatestTimestampResults,
       // @ts-ignore
     ] = await multiCall.executeMultipleBatches(feedsUsdRoundBoundsCalls, 1, web3Chains[1])
+
+    if (!feedsUsdTimestampResults) return
 
     // console.log('feedsUsdRoundBoundsResults', feedsUsdTimestampResults, feedsUsdLatestRoundResults, feedsUsdLatestTimestampResults)
 

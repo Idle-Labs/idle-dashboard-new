@@ -485,6 +485,7 @@ export const AssetPage: React.FC = () => {
     <AssetPageProviderContext.Provider value={{ stakingEnabled, setStakingEnabled, toggleStakingEnabled, isNetworkCorrect, referral }}>
       <AssetProvider
         wrapFlex={true}
+        flex={1}
         assetId={params.asset}
       >
         <Box

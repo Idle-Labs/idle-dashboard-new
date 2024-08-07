@@ -29,7 +29,7 @@ export function ThemeProvider({ children }: ProviderProps) {
   const theme = useTheme()
   const { breakpoints } = theme
   const [ scrollLocked, setScrollLocked ] = useState<boolean>(false)
-  const environment = useMemo(() =>  ENVIRONMENTS_HOSTNAMES[window.location.hostname.toLowerCase()] || 'credit', [])
+  const environment = useMemo(() =>  ENVIRONMENTS_HOSTNAMES[window.location.hostname.toLowerCase()] || 'beta', [])
 
   const [isSmall] = useMediaQuery(`(min-width: ${breakpoints.base}) and (max-width: ${breakpoints.sm})`)
   const [isMedium] = useMediaQuery(`(min-width: ${breakpoints.sm}) and (max-width: ${breakpoints.md})`)

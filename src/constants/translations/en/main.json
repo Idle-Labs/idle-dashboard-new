@@ -242,7 +242,7 @@
       "label": "Credit",
       "title": "Credit vaults",
       "explore": "Explore Credit Vaults",
-      "description": "Credit vaults for super sophisticated faggots.",
+      "description": "Siloed pools offering direct exposure to specific borrowers with different risk-return profiles.",
       "kyc": {
         "required": "KYC Required",
         "complete": "Complete the KYC verification process to interact.",
@@ -779,6 +779,9 @@
         "title": "Gauges Rewards",
         "body": "Stake your Senior Tranches tokens to start earnings additional IDLE rewards.",
         "cta": "Explore vaults"
+      },
+      "vaults": {
+        "body": "You don't have access to any vault on this section."
       },
       "pools": {
         "body": "You have not deposited into any liquidity pools.",

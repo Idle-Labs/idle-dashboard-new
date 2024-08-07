@@ -9,7 +9,7 @@ import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
 import React, { useState, useMemo, useReducer, useCallback, useEffect } from 'react'
-import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image } from '@chakra-ui/react'
+import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image, Flex } from '@chakra-ui/react'
 import { saveSignature, checkSignature, verifySignature, parseAndReplaceAnchorTags } from 'helpers/'
 
 type InitialState = Record<string, boolean>
@@ -185,11 +185,12 @@ export const AuthWall = ({ children }: ProviderProps) => {
 
   if (walletInitialized && (!account || account?.isCustom === true || signatureTimestamp)){
     return (
-      <Box
+      <Flex
         width={'full'}
+        flex={1}
       >
         {children}
-      </Box>
+      </Flex>
     )
   }
 
