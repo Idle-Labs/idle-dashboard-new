@@ -289,11 +289,11 @@ export function uniqueValues(array: any[], attribute: string) {
 }
 
 export function formatDate(
-  timestamp: number | string,
+  timestamp: number | string | Dayjs,
   format = "YYYY/MM/DD",
   isUTC = false
 ) {
-  const day = dayjs(+timestamp);
+  const day = dayjs(typeof timestamp === "object" ? timestamp : +timestamp);
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? " UTC" : "");
 }
 

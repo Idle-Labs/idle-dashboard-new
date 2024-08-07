@@ -27,6 +27,7 @@ import { globalContracts, bestYield, tranches, gauges, underlyingTokens, Ethersc
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, getLatestTokenBlocks, checkVaultEnv } from 'helpers/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData } from 'constants/types'
 import { CreditVault } from 'vaults/CreditVault'
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -2267,11 +2268,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
           const assetId = callResult.extraData.assetId
           if (!assetId) return vaultsEpochsData
           const methodName = callResult.callData.method.replace('()', '')
+          const fieldName = callResult.extraData?.data?.field || methodName
           return {
             ...vaultsEpochsData,
             [assetId]: {
               ...vaultsEpochsData[assetId],
-              [methodName]: callResult.data
+              [fieldName]: callResult.data
             }
           }
         }, {})

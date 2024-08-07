@@ -103,6 +103,7 @@ export const theme = extendTheme({
       pending: "#FFD15C",
       production: "#00AE8F",
       claimable: "#4DE3B0",
+      instant: "#4DE3B0",
     },
     darkGreen: "#00AE8F",
     brightGreen: "#4DE3B0",

@@ -1,4 +1,5 @@
 import { HStack, Stack, VStack, Text } from "@chakra-ui/react"
+import { BigNumber } from "alchemy-sdk"
 import { Amount } from "components/Amount/Amount"
 import { AssetLabel } from "components/AssetLabel/AssetLabel"
 import { AssetProvider, useAssetProvider } from "components/AssetProvider/AssetProvider"
@@ -6,12 +7,13 @@ import { Card } from "components/Card/Card"
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { TransactionButton } from "components/TransactionButton/TransactionButton"
 import { Translation } from "components/Translation/Translation"
-import { AssetId, CreditVaultWithdrawRequest } from "constants/"
+import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, SECONDS_IN_YEAR } from "constants/"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
-import { BNify, isEmpty, secondsToPeriod, toDayjs } from "helpers"
+import { BNify, bnOrZero, fixTokenDecimals, formatDate, isEmpty, secondsToPeriod, toDayjs } from "helpers"
 import { useCallback, useMemo } from "react"
+import { useTranslate } from "react-polyglot"
 import { CreditVault } from "vaults/CreditVault"
 
 
@@ -24,26 +26,57 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
 }) => {
   const { isMobile } = useThemeProvider()
   const { asset, vault } = useAssetProvider()
+  const translate = useTranslate()
+
+  const epochData = useMemo(() => {
+    return asset?.epochData
+  }, [asset])
 
   const claimDeadline = useMemo(() => {
-    if (!asset || !asset.epochData || !("instantWithdrawDeadline" in asset.epochData)) return null
+    if (!epochData || !("instantWithdrawDeadline" in epochData)) return null
 
     // Instant
     if (withdrawRequest.isInstant){
-      return toDayjs(asset.epochData?.instantWithdrawDeadline*1000)
+      if (!epochData?.isEpochRunning){
+        return null
+      }
+      return toDayjs(epochData?.instantWithdrawDeadline*1000)
     }
 
     // Standard
-    if (!!asset.epochData?.isEpochRunning){
-      return null
+    if (!!epochData?.isEpochRunning){
+      return toDayjs(epochData?.epochEndDate)
     }
 
-    return toDayjs(asset.epochData?.epochEndDate)
-  }, [asset, withdrawRequest])
+    return null
+  }, [epochData, withdrawRequest])
 
   const status = useMemo(() => {
-    return claimDeadline && claimDeadline.isSameOrBefore(toDayjs()) ? 'claimable' : 'pending'
-  }, [claimDeadline])
+    if (!epochData || !("isEpochRunning" in epochData)){
+      return 'pending'
+    }
+
+    if (withdrawRequest.isInstant){
+      if (!epochData.isEpochRunning){
+        return 'pending'
+      }
+      return claimDeadline && claimDeadline.isSameOrBefore(toDayjs()) ? 'claimable' : 'pending'
+    }
+
+    return !!epochData?.isEpochRunning ? 'pending' : (bnOrZero(epochData?.pendingWithdraws).lte(0) ? 'claimable' : 'pending')
+  }, [withdrawRequest, epochData, claimDeadline])
+
+  const claimableOnText = useMemo(() => {
+    if (!epochData || status === 'claimable'){
+      return '-'
+    }
+
+    if (withdrawRequest.isInstant){
+      return claimDeadline ? formatDate(claimDeadline, DATETIME_FORMAT, true) : translate('assets.assetCards.rewards.duringNextEpoch')
+    }
+
+    return claimDeadline ? formatDate(claimDeadline, DATETIME_FORMAT, true) : (("pendingWithdraws" in epochData) && bnOrZero(epochData?.pendingWithdraws).lte(0) ? '-' : translate('assets.assetCards.rewards.nextEpochEnd'))
+  }, [withdrawRequest, claimDeadline, status, epochData, translate])
 
   const contractSendMethod = useMemo(() => {
     if (withdrawRequest.isInstant){
@@ -58,10 +91,12 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
     return status !== 'claimable'
   }, [status])
 
-  if (!asset || !contractSendMethod){
+  if (!asset || !vault || !contractSendMethod || !("underlyingToken" in vault)){
     return null
   }
 
+  const amount = fixTokenDecimals(withdrawRequest.amount, (vault?.underlyingToken?.decimals || 18))
+  
   return isMobile ? (
     <Card
       p={6}
@@ -90,7 +125,7 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
               spacing={1}
               justifyContent={'flex-start'}
             >
-              <Translation translation={'common.pending'} textStyle={'heading'} fontSize={'h3'} />
+              <Translation translation={`transactionRow.${status}`} color={`status.${status}`} fontSize={'h4'} textStyle={'heading'} />
             </HStack>
           </VStack>
           <VStack
@@ -98,10 +133,10 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
             alignItems={'flex-end'}
           >
             <Translation translation={'transactionRow.amount'} textStyle={'captionSmall'} />
-            <TokenAmount assetId={asset?.id} showIcon={false} amount={0} decimals={2} textStyle={'heading'} fontSize={'h3'} />
+            <TokenAmount assetId={asset?.id} showIcon={false} amount={amount} decimals={2} textStyle={'heading'} fontSize={'h3'} />
           </VStack>
         </HStack>
-        <TransactionButton text={'defi.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={'0'} width={'100%'} disabled={isDisabled} />
+        <TransactionButton text={'defi.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={amount.toFixed(2)} width={'100%'} disabled={isDisabled} />
       </VStack>
     </Card>
   ) : (
@@ -127,18 +162,7 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
           justifyContent={'flex-start'}
         >
           <Translation translation={'transactionRow.amount'} textStyle={'captionSmall'} />
-          <TokenAmount assetId={asset?.underlyingId} showIcon={false} amount={0} decimals={2} textStyle={'heading'} fontSize={'h4'} />
-        </VStack>
-        
-        <VStack
-          pb={[2, 0]}
-          spacing={[1, 2]}
-          width={['50%','auto']}
-          alignItems={'flex-start'}
-          justifyContent={'flex-start'}
-        >
-          <Translation translation={'assets.assetCards.rewards.claimableOn'} textStyle={'captionSmall'} />
-          <Text textStyle={'heading'} fontSize={'h4'}>{claimDeadline?.format('YYYY/MM/DD HH:mm') || '-'}</Text>
+          <TokenAmount assetId={asset?.underlyingId} showIcon={false} amount={amount} decimals={2} textStyle={'heading'} fontSize={'h4'} />
         </VStack>
 
         <VStack
@@ -151,8 +175,19 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
           <Translation translation={'defi.status'} textStyle={'captionSmall'} />
           <Translation translation={`transactionRow.${status}`} color={`status.${status}`} fontSize={'h4'} textStyle={'heading'} />
         </VStack>
+        
+        <VStack
+          pb={[2, 0]}
+          spacing={[1, 2]}
+          width={['50%','auto']}
+          alignItems={'flex-start'}
+          justifyContent={'flex-start'}
+        >
+          <Translation translation={'assets.assetCards.rewards.claimableOn'} textStyle={'captionSmall'} />
+          <Text textStyle={'heading'} fontSize={'h4'}>{claimableOnText}</Text>
+        </VStack>
 
-        <TransactionButton text={'defi.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={'0'} width={['100%', '150px']} disabled={false} />
+        <TransactionButton text={'defi.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={amount.toFixed(2)} width={['100%', '150px']} disabled={isDisabled} />
       </Stack>
     </Card>
   )
@@ -183,8 +218,6 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
   if (!account?.address || !asset || !vault || !(vault instanceof CreditVault) || !("getClaimContractSendMethod" in vault) || isEmpty(withdrawRequests)){
     return null
   }
-
-  console.log('vaultsAccountData', vaultsAccountData)
 
   return (
     <AssetProvider

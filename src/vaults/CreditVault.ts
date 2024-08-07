@@ -107,6 +107,7 @@ export class CreditVault {
     this.web3Rpc = web3Rpc;
     this.chainId = chainId;
     this.mode = vaultConfig.mode;
+    this.flags = vaultConfig.flags;
     this.vaultConfig = vaultConfig;
     this.status = vaultConfig.status;
     this.cacheProvider = cacheProvider;
@@ -638,6 +639,17 @@ export class CreditVault {
       },
       {
         assetId: this.id,
+        call: this.strategyContract.methods.getApr(),
+        data: {
+          field: "epochApr",
+        },
+      },
+      {
+        assetId: this.id,
+        call: this.cdoContract.methods.instantWithdrawAprDelta(),
+      },
+      {
+        assetId: this.id,
         call: this.cdoContract.methods.lastEpochApr(),
       },
       {
@@ -659,6 +671,14 @@ export class CreditVault {
       {
         assetId: this.id,
         call: this.cdoContract.methods.defaulted(),
+      },
+      {
+        assetId: this.id,
+        call: this.strategyContract.methods.pendingWithdraws(),
+      },
+      {
+        assetId: this.id,
+        call: this.strategyContract.methods.pendingInstantWithdraws(),
       },
     ];
   }

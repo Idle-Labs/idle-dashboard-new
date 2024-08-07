@@ -21,7 +21,7 @@ import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
@@ -1388,7 +1388,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     case 'epochDuration':
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
     case 'lastEpochApr':
-      return (<Amount.Percentage value={value} textStyle={'tableCell'} {...props} />)
+      return (<Amount.Percentage value={fixTokenDecimals(value, 18)} textStyle={'tableCell'} {...props} />)
     case 'isEpochRunning':
       if (!("isEpochRunning" in asset.epochData)) return null
       const isDefaulted = !!asset.epochData.defaulted
@@ -1937,6 +1937,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<StrategyBadge {...props} />)
     case 'apy':
       return (<Apy showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
+    case 'apr':
+      return (<Apr textStyle={'tableCell'} {...props} />)
     case 'apyWithRewards':
       return (<Apy addRewards={true} showNet={section === 'asset'} textStyle={'tableCell'} {...props} />)
     case 'apy7':

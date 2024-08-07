@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { BsStars } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
-import { VAULT_LIMIT_MAX } from 'constants/vars'
+import { SECONDS_IN_YEAR, VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
 import { TrancheVault } from 'vaults/TrancheVault'
@@ -12,7 +12,7 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
-import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod } from 'helpers/'
+import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals } from 'helpers/'
 import { MdArrowForward } from 'react-icons/md'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
@@ -159,15 +159,27 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     case 'epochStart':
       dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
     break;
+    case 'epochExpectedInterest':
+      disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+      allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+      if (allowInstantWithdraw){
+        return null
+      }
+      const apr = BNify(asset.apr)
+      const epochDuration = bnOrZero(asset?.epochData?.epochDuration)
+      const expectedInterest = BNify(amount).times(apr.div(100)).times(epochDuration).div(SECONDS_IN_YEAR)
+      dynamicActionField = (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest} />)
+    break;
     case 'epochWithdrawType':
       disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
-      allowInstantWithdraw = !!asset?.epochData.allowInstantWithdraw && !disableInstantWithdraw
-      dynamicActionField = (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={'primary'} />)
+      allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+
+      dynamicActionField = (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={allowInstantWithdraw ? 'brightGreen' : 'primary'} />)
     break;
     case 'epochClaimPeriod':
       disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
-      allowInstantWithdraw = !!asset?.epochData.allowInstantWithdraw && !disableInstantWithdraw
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(allowInstantWithdraw ? asset?.epochData?.instantWithdrawDelay : asset?.epochData?.epochDuration)}</Text>)
+      allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(allowInstantWithdraw ? asset?.epochData?.instantWithdrawDelay : asset?.epochData?.epochDuration)} { allowInstantWithdraw ? translate('assets.assetCards.rewards.afterEpochStart') : '' }</Text>)
     break;
     case 'epochWithdrawDeadline':
       dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
@@ -186,20 +198,20 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
 
       dynamicActionField = (
         <HStack>
-          <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={asset?.epochData?.lastEpochApr} />
+          <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />
           <MdArrowForward size={16} />
-          <Amount.Percentage textStyle={'titleSmall'} color={'brightGreen'} {...textProps} value={asset?.apr} />
+          <Amount.Percentage textStyle={'titleSmall'} color={'brightGreen'} {...textProps} value={fixTokenDecimals(asset?.epochData?.epochApr, 18)} />
         </HStack>
       )
     break;
     case 'epochInterestChange':
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochApr} />)
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />)
     break;
     case 'lastEpochApr':
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochApr} />)
+      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />)
     break;
     case 'lastEpochInterest':
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData?.lastEpochInterest} />)
+      dynamicActionField = (<Amount suffix={` ${underlyingAsset.token}`} textStyle={'titleSmall'} decimals={4} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochInterest, underlyingAsset.decimals)} />)
     break;
     case 'riskThreshold':
       dynamicActionField = (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData.riskThreshold} />)

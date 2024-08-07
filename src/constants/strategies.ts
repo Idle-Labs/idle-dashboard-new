@@ -142,7 +142,11 @@ export const strategies: Record<string, StrategyProps> = {
     image: `${strategiesFolder}best-yield.png`,
     dynamicActionFields: {
       deposit: ["epochDuration", "epochAprChange", "lastEpochInterest"],
-      withdraw: ["epochWithdrawType", "epochClaimPeriod"],
+      withdraw: [
+        "epochWithdrawType",
+        "epochClaimPeriod",
+        "epochExpectedInterest",
+      ],
     },
     generalDataFields: [
       {

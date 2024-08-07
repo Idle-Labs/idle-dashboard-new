@@ -1074,6 +1074,8 @@
     "withdrawFee": "Withdraw fee",
     "netGain": "Net gain",
     "tooltips": {
+      "epochExpectedInterest": "Additional tokens you will receive at the end of the epoch",
+      "epochClaimPeriod": "Waiting time required to claim your funds after the start of the next epoch",
       "riskThreshold": "If the vault reaches its maturity and %{underlying} price ends below this price, the capital would be at risk"
     }
   },
@@ -2112,6 +2114,7 @@
         "totalRewards": "Total rewards",
         "status": "Status",
         "pool": "Pool",
+        "apr": "APR",
         "apy": "APY",
         "borrowRate": "Borrow rate",
         "supplyRate": "Supply rate",
@@ -2251,6 +2254,9 @@
         "yourRewards": "Your Rewards",
         "currentAPYLabel": "The current APY for your rewards",
         "claimRewards": "Claim Rewards",
+        "nextEpochEnd": "Next epoch end",
+        "duringNextEpoch": "During next epoch",
+        "afterEpochStart": "after epoch start",
         "distributedRewards": "By depositing is this vault you will receive additional rewards that are distributed weekly."
       },
       "accounts": "Accounts",

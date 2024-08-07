@@ -267,11 +267,15 @@ export type CreditVaultEpoch = {
   disableInstantWithdraw: boolean;
   instantWithdrawDelay: BigNumber;
   defaulted: boolean;
+  epochApr: BigNumber;
   lastEpochApr: BigNumber;
   lastEpochInterest: BigNumber;
   epochDuration: BigNumber;
   epochStartDate: number;
   epochEndDate: number;
+  pendingWithdraws: BigNumber;
+  pendingInstantWithdraws: BigNumber;
+  instantWithdrawAprDelta: BigNumber;
   status: "running" | "open" | "default";
 };
 
