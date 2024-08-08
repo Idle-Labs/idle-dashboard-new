@@ -871,7 +871,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const aggregatedRawCalls = [
         ("getUserWithdrawRequestCalls" in vault) ? vault.getUserWithdrawRequestCalls(account.address) : [],
         ("getUserInstantWithdrawRequestCalls" in vault) ? vault.getUserInstantWithdrawRequestCalls(account.address) : [],
-        ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
+        // ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
       ]
 
       if (!rawCalls[vault.chainId]) {
@@ -901,7 +901,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const [
         withdrawRequestResults,
         instantWithdrawRequestResults,
-        walletAllowedResults
+        // walletAllowedResults
       ]: DecodedResult[][] = resultsByChainId[resultIndex]
 
       if (withdrawRequestResults){
@@ -938,6 +938,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }, output.creditVaultsWithdrawRequests)
       }
 
+      /*
       if (walletAllowedResults){
         output.walletAllowed = instantWithdrawRequestResults.reduce( (acc: VaultsAccountData["walletAllowed"], callResult: DecodedResult) => {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -947,6 +948,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           }
         }, output.walletAllowed)
       }
+      */
     })
 
     return output
