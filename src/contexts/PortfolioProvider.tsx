@@ -2291,12 +2291,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
           }
           vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
           vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
-          console.log('vaultEpochData', assetId, vaultEpochData)
+          // console.log('vaultEpochData', assetId, vaultEpochData)
           epochsData[assetId] = vaultEpochData
         })
       }
 
-      console.log('epochsData', epochsData)
+      // console.log('epochsData', epochsData)
 
       // Process total aprs
       totalAprs = vaultsTotalAprs.reduce((totalAprs: Balances, vaultTotalApr: VaultAdditionalApr | null) => {
@@ -4060,7 +4060,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           vaultsTransactions
         } = results
 
-        console.log('vaultsAccountData', vaultsAccountData)
+        // console.log('vaultsAccountData', vaultsAccountData)
 
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })
