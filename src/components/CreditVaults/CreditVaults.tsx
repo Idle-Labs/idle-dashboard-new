@@ -71,7 +71,7 @@ export const CreditVaults: React.FC = () => {
   }, [theme, protocolData, isPortfolioLoaded])
 
   const onVaultClick = useCallback((asset: Asset) => {
-    return navigate(`/vaults/${asset.id}`)
+    return navigate(`/credit/${asset.id}`)
   }, [navigate])
 
   return isEmpty(creditVaults) ? (
