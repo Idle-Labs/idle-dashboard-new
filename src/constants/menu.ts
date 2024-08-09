@@ -35,7 +35,7 @@ export const menu: MenuItemType[] = [
   },
   {
     path: "credit",
-    label: "navBar.credit",
+    label: "navBar.earn",
     enabledEnvs: ["credit"],
   },
   {

@@ -73,7 +73,7 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                       <Text>{operatorInfo.founded}</Text>
                     </VStack>
                     {
-                      operator.type === 'borrower' && (
+                      ['borrower', 'strategist'].includes(operator.type) && (
                         <VStack
                           spacing={2}
                           alignItems={'flex-start'}
@@ -121,7 +121,7 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                     </VStack>
                   </SimpleGrid>
                   {
-                    operator.type === 'borrower' && (
+                    ['borrower', 'strategist'].includes(operator.type) && (
                       <Link display={'flex'} justifyContent={'center'} href={'https://credora.io/credit-evaluations'} isExternal>
                         <HStack
                           spacing={1}

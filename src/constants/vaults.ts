@@ -78,6 +78,7 @@ export interface CreditVaultConfig {
   Strategy: Strategy;
   blockNumber: number;
   status?: VaultStatus;
+  descriptionShort: string;
   description: string;
   operators?: VaultOperator[];
   underlyingToken: string;
@@ -115,7 +116,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       operators: [
         {
-          type: "borrower",
+          type: "strategist",
           name: "fasanara",
         },
       ],
@@ -142,8 +143,9 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x1cbd086e16f1188e0e15a153124d6f5c81e57f3e",
       },
       blockNumber: 0,
-      description:
-        "Invest in Fasanara Capital, an Hedge Fund founded in 2011 and specialised in fintech strategies",
+      descriptionShort:
+        "Yield strategy using market making, cross-exchange arbitrage and funding rate arbitrage",
+      description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $10bn per month through strategies like market making, cross-exchange arbitrage and funding rate arbitrage. Through Idle Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.<br /><br />Users will need to be KYC’d via <a href="https://app.keyring.network/connect" class="link" rel="nofollow noopener noreferrer" target="_blank">Keyring</a> to deposit in this strategy`,
     },
   ],
   /*
@@ -246,7 +248,7 @@ export type StatsProps = {
 };
 
 export type VaultOperator = {
-  type: "borrower" | "curator";
+  type: "borrower" | "curator" | "strategist";
   name: string;
 };
 

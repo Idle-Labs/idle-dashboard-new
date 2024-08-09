@@ -240,9 +240,9 @@
     "credit": {
       "tag": "Credit",
       "label": "Credit",
-      "title": "Credit vaults",
-      "explore": "Explore Credit Vaults",
-      "description": "Siloed pools offering direct exposure to specific borrowers with different risk-return profiles.",
+      "title": "Strategist vaults",
+      "explore": "Explore vaults",
+      "description": "Yield vaults managed by experienced institutional players.",
       "kyc": {
         "required": "KYC Required",
         "complete": "Complete the KYC verification process to interact.",
@@ -952,7 +952,7 @@
     "tvlDistribution": "TVL distribution",
     "collectedFeesEmpty": "Collected fees will appear here",
     "selectDateRange": "Select a date range",
-    "protocolOverview": "Over <strong class='linkStatic'>$%{tvlUsd}</strong> deposited in Idle with <strong>%{avgApy}%</strong> avg APY across <strong>%{vaults} vaults</strong>.",
+    "protocolOverview": "Over <strong class='linkStatic'>$%{tvlUsd}</strong> deposited in Idle with <strong>%{avgApy}%</strong> avg APY across <strong>%{vaults}</strong>.",
     "filters": {
       "strategies": "Strategies",
       "assets": "Assets",
@@ -2133,7 +2133,8 @@
       },
       "operatorOverview": {
         "curator": "Curator overview",
-        "borrower": "Borrower overview"
+        "borrower": "Borrower overview",
+        "strategist": "Strategist overview"
       },
       "requiredActions": {
         "deprecated": "This vault is sunsetting, please withdraw your funds",
