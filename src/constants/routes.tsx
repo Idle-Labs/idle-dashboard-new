@@ -35,7 +35,7 @@ export const routes: RouteObject[] = [
         ]
       },
       {
-        path: 'credit',
+        path: 'vaults',
         handle: ['credit'],
         children: [
           {
