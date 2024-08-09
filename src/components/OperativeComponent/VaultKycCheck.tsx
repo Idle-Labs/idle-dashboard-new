@@ -76,7 +76,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
         justifyContent={'center'}
       >
         <Translation component={Text} translation={`strategies.credit.kyc.providedBy`} textStyle={'captionSmaller'} textAlign={'center'} />
-        <Link display={'flex'} justifyContent={'center'} href={'keyring.network'} isExternal>
+        <Link display={'flex'} justifyContent={'center'} href={'https://app.keyring.network/connect'} isExternal>
           <Image src={'images/partners/keyring.svg'} height={'10px'} />
         </Link>
       </HStack>
