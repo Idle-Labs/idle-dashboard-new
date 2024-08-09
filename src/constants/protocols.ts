@@ -523,6 +523,23 @@ export const protocols: Record<string, Protocol> = {
             : {},
         },
       },
+      walletsVaultsPerformances: {
+        endpoint: {
+          // 1: "https://api-staging.idle.finance/v1/wallet-performances",
+          // 10: "https://api-staging.idle.finance/v1/wallet-performances",
+          // 137: "https://api-staging.idle.finance/v1/wallet-performances",
+          1: "http://127.0.0.1/v1/wallet-performances",
+          10: "http://127.0.0.1/v1/wallet-performances",
+          137: "http://127.0.0.1/v1/wallet-performances",
+        },
+        path: "data",
+        filters: ["walletId", "vaultId", "sort", "order"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
       chains: {
         endpoint: {
           1: "https://api-staging.idle.finance/v1/chains",
@@ -553,7 +570,7 @@ export const protocols: Record<string, Protocol> = {
             : {},
         },
       },
-      walletPerformance: {
+      walletVaultPerformance: {
         endpoint: {
           1: "https://api-staging.idle.finance/v1/wallets/:walletId/vault/:vaultId",
           10: "https://api-staging.idle.finance/v1/wallets/:walletId/vault/:vaultId",

@@ -608,13 +608,17 @@ export const DepositedAssetsTable: React.FC = () => {
       width={'full'}
       alignItems={'flex-start'}
     >
-      <HStack
-        spacing={3}
-      >
-        <Translation<ButtonProps> component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode === 'Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited')} />
-        <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode === 'Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available')} />
-        <Translation<ButtonProps> component={Button} leftIcon={<IoPricetagsOutline size={24} />} translation={`common.discount`} variant={'filter'} aria-selected={mode === 'Discount'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Discount')} />
-      </HStack>
+      {
+        /*
+        <HStack
+          spacing={3}
+        >
+          <Translation<ButtonProps> component={Button} leftIcon={<MdOutlineAccountBalanceWallet size={24} />} translation={`common.wallet`} variant={'filter'} aria-selected={mode === 'Deposited'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Deposited')} />
+          <Translation<ButtonProps> component={Button} leftIcon={<MdStarBorder size={24} />} translation={`common.featured`} variant={'filter'} aria-selected={mode === 'Available'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Available')} />
+          <Translation<ButtonProps> component={Button} leftIcon={<IoPricetagsOutline size={24} />} translation={`common.discount`} variant={'filter'} aria-selected={mode === 'Discount'} fontSize={'sm'} borderRadius={'80px'} px={4} onClick={() => setMode('Discount')} />
+        </HStack>
+        */
+      }
       {selectedTable}
     </VStack>
   )
