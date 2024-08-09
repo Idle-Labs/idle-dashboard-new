@@ -98,13 +98,11 @@ export async function getWalletPerformancesFromApiV2(
     }
   );
 
-  console.log("walletLatestBlocks", walletLatestBlocks);
-
   const promises = walletLatestBlocks.map((walletLatestBlock: any) =>
     callPlatformApis(
       1,
       "idle",
-      "walletPerformance",
+      "walletVaultPerformance",
       "",
       {
         startBlock: 1,

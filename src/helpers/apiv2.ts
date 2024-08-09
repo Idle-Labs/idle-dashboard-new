@@ -6,6 +6,7 @@ import {
   Transaction,
 } from "constants/";
 import {
+  callPlatformApis,
   getPlatformApiConfig,
   getPlatformApisEndpoint,
   makeRequest,
@@ -53,6 +54,39 @@ export async function getIdleAPIV2AllPages(
   return output;
 }
 
+export async function getWalletsVaultsPerformancesFromApiV2(
+  vaults: Vault[],
+  walletAddress: string,
+  startBlock: number = 0,
+  endBlock: string | number = "latest"
+): Promise<any> {
+  const response = await callPlatformApis(1, "idle", "wallets", "", {
+    address: walletAddress,
+    limit: 1,
+  });
+
+  if (!response) return [];
+
+  const wallet = response[0];
+
+  const filters: any = {
+    startBlock,
+    walletId: wallet._id,
+    vaultId: vaults.map((vault) => vault.id),
+  };
+  if (endBlock !== "latest") {
+    filters.endBlock = endBlock;
+  }
+
+  return await callPlatformApis(
+    1,
+    "idle",
+    "walletsVaultsPerformances",
+    "",
+    filters
+  ).then((performance) => performance);
+}
+
 export async function getUserTransactionsFromApiV2(
   vaults: Vault[],
   walletAddress: string,
@@ -72,8 +106,6 @@ export async function getUserTransactionsFromApiV2(
     endpoint,
     apiConfig
   );
-
-  console.log("getUserTransactionsFromApiV2", transactions);
 
   return transactions.reduce(
     (acc: Transaction[], transaction: TransactionDataApiV2) => {

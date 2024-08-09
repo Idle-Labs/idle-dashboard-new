@@ -72,6 +72,10 @@ export const Portfolio: React.FC = () => {
     return aggregatedUsdPosition.deposited.plus(aggregatedUsdPosition.earnings)
   }, [aggregatedUsdPosition])
 
+  console.log('enabledStrategies', enabledStrategies)
+  console.log('vaultsPositions', vaultsPositions)
+  console.log('aggregatedUsdPosition', aggregatedUsdPosition)
+
   const totalROI = useMemo(() => {
     return Object.keys(vaultsPositions).filter(assetId => assetIds.includes(assetId)).map(assetId => vaultsPositions[assetId]).reduce((totalROI: BigNumber, vaultPosition: VaultPosition) => {
       return totalROI.plus(vaultPosition.earningsPercentage)
