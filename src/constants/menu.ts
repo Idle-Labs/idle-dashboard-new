@@ -57,6 +57,7 @@ export const menu: MenuItemType[] = [
   {
     path: "stats",
     label: "navBar.stats",
+    enabledEnvs: ["prod", "beta"],
   },
   // {
   //   label: 'navBar.gauges',

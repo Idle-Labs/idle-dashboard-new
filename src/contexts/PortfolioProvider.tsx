@@ -2038,6 +2038,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
       }, walletAllowed)
 
+      console.log('walletAllowed', walletAllowed)
+
       // Process paused vaults
       pausedVaults = pausedCallsResults.reduce((pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()

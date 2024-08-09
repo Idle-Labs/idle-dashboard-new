@@ -58,6 +58,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'stats',
+        handle: ['prod', 'beta'],
         children: [
           {
             index: true,
