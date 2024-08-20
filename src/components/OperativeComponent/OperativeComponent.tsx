@@ -1,5 +1,3 @@
-import { MdError } from "react-icons/md"
-import { MdVerified } from "react-icons/md"
 import { useTranslate } from 'react-polyglot'
 import { Amount } from 'components/Amount/Amount'
 import { TILDE, MAX_ALLOWANCE } from 'constants/vars'
@@ -18,10 +16,9 @@ import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetP
 import { TransactionSpeed, STAKING_CHAINID, PROTOCOL_TOKEN, STAKING_FEE_DISCOUNTS } from 'constants/'
 import React, { useState, useRef, useEffect, useCallback, useMemo, useReducer, useContext, createContext } from 'react'
 import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefresh, MdOutlineDone, MdOutlineClose } from 'react-icons/md'
-import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps, Tooltip } from '@chakra-ui/react'
+import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError, getStakingPower, getStkIDLE, getFeeDiscount, fixTokenDecimals, getExplorerByChainId } from 'helpers/'
 import { useThemeProvider } from "contexts/ThemeProvider";
-import { TooltipContent } from "components/TooltipContent/TooltipContent"
 
 export type ActionComponentArgs = {
   itemIndex: number

@@ -27,6 +27,7 @@ import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } f
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
+import { useWalletProvider } from 'contexts/WalletProvider'
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -165,6 +166,7 @@ const VaultVariant: React.FC<TextProps> = (props) => {
 }
 
 const KycVerificationBadge: React.FC = () => {
+  const { account } = useWalletProvider()
   const { asset, vault, translate, theme } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
 
@@ -173,9 +175,9 @@ const KycVerificationBadge: React.FC = () => {
     const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
     if (!checkWalletAllowed) return null
     
-    const walletAllowed = !!asset.walletAllowed
-    const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.loss
-    const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `#FF000015`
+    const walletAllowed = account?.address && !!asset.walletAllowed
+    const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.orange
+    const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `${theme.colors.orange}15`
 
   return (
     <Tooltip

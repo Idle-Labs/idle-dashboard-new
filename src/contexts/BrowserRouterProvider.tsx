@@ -2,9 +2,11 @@ import { Location } from 'history'
 import { routes } from 'constants/routes'
 import { useQuery } from 'hooks/useQuery'
 import { sendPageview } from 'helpers/analytics'
-import { useLocation, useRoutes, useSearchParams } from 'react-router-dom'
+import { Navigate, RouteObject, useLocation, useRoutes, useSearchParams } from 'react-router-dom'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
 import React, { useMemo, createContext, useContext, useEffect } from 'react'
+import { useThemeProvider } from './ThemeProvider'
+import { isEmpty } from 'helpers'
 
 export type BrowserRouterContextProps = {
   location: Location | null
@@ -30,8 +32,27 @@ export function BrowserRouterProvider() {
   const query = useQuery()
   const location = useLocation()
   const searchParams = useSearchParams()
-  const renderedRoutes = useRoutes(routes)
+  const { environment } = useThemeProvider()
   const { cleanTransaction } = useTransactionManager()
+
+  
+  const filteredRoutes = useMemo(() => {
+    const route = {...routes[0]}
+    route.children = route.children?.filter( (route: RouteObject) => !route.handle || isEmpty(route.handle) || route.handle.includes(environment) )
+    route.children?.push(
+      {
+        index: true,
+        element: <Navigate to={`/${route.children[0].path}`} replace />
+      },
+      {
+        path: '*',
+        element: <Navigate to={`/${route.children[0].path}`} replace />
+      }
+    )
+    return [route]
+  }, [environment])
+
+  const renderedRoutes = useRoutes(filteredRoutes)
   
   const match = useMemo(() => {
     return renderedRoutes?.props.match

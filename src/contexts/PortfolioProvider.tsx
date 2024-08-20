@@ -871,7 +871,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const aggregatedRawCalls = [
         ("getUserWithdrawRequestCalls" in vault) ? vault.getUserWithdrawRequestCalls(account.address) : [],
         ("getUserInstantWithdrawRequestCalls" in vault) ? vault.getUserInstantWithdrawRequestCalls(account.address) : [],
-        ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
+        // ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
       ]
 
       if (!rawCalls[vault.chainId]) {
@@ -901,7 +901,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const [
         withdrawRequestResults,
         instantWithdrawRequestResults,
-        walletAllowedResults
+        // walletAllowedResults
       ]: DecodedResult[][] = resultsByChainId[resultIndex]
 
       if (withdrawRequestResults){
@@ -938,6 +938,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }, output.creditVaultsWithdrawRequests)
       }
 
+      /*
       if (walletAllowedResults){
         output.walletAllowed = instantWithdrawRequestResults.reduce( (acc: VaultsAccountData["walletAllowed"], callResult: DecodedResult) => {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -947,6 +948,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           }
         }, output.walletAllowed)
       }
+      */
     })
 
     return output
@@ -2036,6 +2038,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
       }, walletAllowed)
 
+      console.log('walletAllowed', walletAllowed)
+
       // Process paused vaults
       pausedVaults = pausedCallsResults.reduce((pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -2289,12 +2293,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
           }
           vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
           vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
-          console.log('vaultEpochData', assetId, vaultEpochData)
+          // console.log('vaultEpochData', assetId, vaultEpochData)
           epochsData[assetId] = vaultEpochData
         })
       }
 
-      console.log('epochsData', epochsData)
+      // console.log('epochsData', epochsData)
 
       // Process total aprs
       totalAprs = vaultsTotalAprs.reduce((totalAprs: Balances, vaultTotalApr: VaultAdditionalApr | null) => {
@@ -4058,7 +4062,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           vaultsTransactions
         } = results
 
-        console.log('vaultsAccountData', vaultsAccountData)
+        // console.log('vaultsAccountData', vaultsAccountData)
 
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })

@@ -78,6 +78,7 @@ export interface CreditVaultConfig {
   Strategy: Strategy;
   blockNumber: number;
   status?: VaultStatus;
+  descriptionShort: string;
   description: string;
   operators?: VaultOperator[];
   underlyingToken: string;
@@ -92,6 +93,62 @@ export interface CreditVaultConfig {
 }
 
 export const credits: Record<number, CreditVaultConfig[]> = {
+  1: [
+    {
+      mode: "STRATEGY",
+      kycRequired: true,
+      manager: "fasanara",
+      borrower: "fasanara",
+      status: "experimental",
+      underlyingToken: "USDC",
+      enabledEnvs: ["credit"],
+      accessCodes: [
+        "6G8R7Q",
+        "GSER6L",
+        "CDDA2X",
+        "S58PHT",
+        "J2998A",
+        "YM9Y7P",
+        "66M55D",
+        "ZG8S4A",
+        "3WSBSD",
+        "P26JQ3",
+      ],
+      operators: [
+        {
+          type: "strategist",
+          name: "fasanara",
+        },
+      ],
+      flags: {
+        compoundApr: false,
+      },
+      name: "Fasanara Credit Vault",
+      vaultType: "diversifiedBasisYield",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_fasanara_USDC",
+        address: "0x3283FA1EeC2A50783813f30EBE60Eb27f8A40dEd",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_fasanara_USDC",
+        address: "0xFb77eE48b6A69b4C97af7474b4f175591AeB61b3",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_clearpool_bastion_USDT",
+        address: "0x1cbd086e16f1188e0e15a153124d6f5c81e57f3e",
+      },
+      blockNumber: 0,
+      descriptionShort:
+        "Yield strategy using market making, cross-exchange arbitrage and funding rate arbitrage",
+      description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $10bn per month through strategies like market making, cross-exchange arbitrage and funding rate arbitrage. Through Idle Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.<br /><br />Users will need to be KYC’d via <a href="https://app.keyring.network/connect" class="link" rel="nofollow noopener noreferrer" target="_blank">Keyring</a> to deposit in this strategy`,
+    },
+  ],
+  /*
   10: [
     {
       mode: "STRATEGY",
@@ -146,6 +203,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         "Invest in Fasanara Capital, an Hedge Fund founded in 2011 and specialised in fintech strategies",
     },
   ],
+  */
 };
 
 export interface Pool {
@@ -190,7 +248,7 @@ export type StatsProps = {
 };
 
 export type VaultOperator = {
-  type: "borrower" | "curator";
+  type: "borrower" | "curator" | "strategist";
   name: string;
 };
 

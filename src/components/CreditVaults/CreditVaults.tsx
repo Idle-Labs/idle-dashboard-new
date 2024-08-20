@@ -61,14 +61,14 @@ export const CreditVaults: React.FC = () => {
             alignItems={['center', 'flex-start']}
           >
             <Translation isHtml={true} translation={'strategies.credit.explore'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
-            <SkeletonText noOfLines={2} isLoaded={bnOrZero(protocolData.totalTvlUsd).gt(0)}>
-              <Translation translation={'stats.protocolOverview'} fontSize={['md', 'h4']} isHtml={true} params={{ tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: protocolData.totalAvgApy.toFixed(2), vaults: protocolData.uniqueVaults }} />
+            <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+              <Translation translation={'stats.protocolOverview'} fontSize={['md', 'h4']} isHtml={true} params={{ tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: bnOrZero(protocolData.totalAvgApy).toFixed(2), vaults: `${protocolData.uniqueVaults} ${protocolData.uniqueVaults === 1 ? 'vault' : 'vaults'}` }} />
             </SkeletonText>
           </VStack>
         </Stack>
       </VStack>
     )
-  }, [theme, protocolData])
+  }, [theme, protocolData, isPortfolioLoaded])
 
   const onVaultClick = useCallback((asset: Asset) => {
     return navigate(`/credit/${asset.id}`)

@@ -35,7 +35,7 @@ export const menu: MenuItemType[] = [
   },
   {
     path: "credit",
-    label: "navBar.credit",
+    label: "navBar.earn",
     enabledEnvs: ["credit"],
   },
   {
@@ -57,6 +57,7 @@ export const menu: MenuItemType[] = [
   {
     path: "stats",
     label: "navBar.stats",
+    enabledEnvs: ["prod", "beta"],
   },
   // {
   //   label: 'navBar.gauges',

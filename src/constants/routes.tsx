@@ -22,6 +22,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         path: 'earn',
+        handle: ['prod', 'beta'],
         children: [
           {
             index: true,
@@ -35,6 +36,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'credit',
+        handle: ['credit'],
         children: [
           {
             index: true,
@@ -56,6 +58,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: 'stats',
+        handle: ['prod', 'beta'],
         children: [
           {
             index: true,
@@ -66,14 +69,6 @@ export const routes: RouteObject[] = [
             element: <AssetStats />
           }
         ]
-      },
-      {
-        index: true,
-        element: <Navigate to="/earn" replace />
-      },
-      {
-        path: '*',
-        element: <Navigate to="/earn" replace />
       },
     ]
   },

@@ -762,7 +762,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
             width={'full'}
             alignItems={'flex-start'}
           >
-            <Text color={'primary'} textStyle={'caption'}>{vault.description}</Text>
+            <Text color={'primary'} textStyle={'caption'} dangerouslySetInnerHTML={{__html: vault.vaultConfig.descriptionShort}} />
             {
               bnOrZero(vaultsPosition?.balance).gt(0) ? (
                 <SimpleGrid

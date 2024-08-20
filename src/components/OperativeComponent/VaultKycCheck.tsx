@@ -5,6 +5,8 @@ import { VStack, Text, Center, BoxProps, Button, HStack, Image, Link } from '@ch
 import { AssetId } from 'constants/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { openWindow } from 'helpers'
+import { useWalletProvider } from 'contexts/WalletProvider'
+import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 
 type VaultKycCheckProps = {
   assetId?: AssetId
@@ -14,6 +16,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   assetId,
   children
 }) => {
+  const { account } = useWalletProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -25,7 +28,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     return vault && ("kycRequired" in vault) && !!vault.kycRequired
   }, [assetId, selectVaultById])
 
-  const isWalletAllowed = useMemo(() => !!asset?.walletAllowed, [asset])
+  const isWalletAllowed = useMemo(() => !checkWalletAllowed || (!!asset?.walletAllowed && account?.address), [checkWalletAllowed, asset, account])
 
   const fallbackComponent = (
     <React.Fragment>
@@ -57,7 +60,13 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
           >
             <Translation component={Text} translation={"strategies.credit.kyc.required"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
             <Translation component={Text} translation={`strategies.credit.kyc.complete`} textStyle={'captionSmall'} textAlign={'center'} />
-            <Translation component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} onClick={() => openWindow('https://app.keyring.network/connect') } />
+            {
+              account?.address ? (
+                <Translation component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} onClick={() => openWindow('https://app.keyring.network/connect') } />
+              ) : (
+                <ConnectWalletButton variant={'ctaFull'} />
+              )
+            }
           </VStack>
         </VStack>
       </Center>
@@ -67,7 +76,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
         justifyContent={'center'}
       >
         <Translation component={Text} translation={`strategies.credit.kyc.providedBy`} textStyle={'captionSmaller'} textAlign={'center'} />
-        <Link display={'flex'} justifyContent={'center'} href={'keyring.network'} isExternal>
+        <Link display={'flex'} justifyContent={'center'} href={'https://app.keyring.network/connect'} isExternal>
           <Image src={'images/partners/keyring.svg'} height={'10px'} />
         </Link>
       </HStack>
