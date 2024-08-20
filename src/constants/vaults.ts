@@ -779,7 +779,7 @@ export const tranches: Record<
       },
       USDTFas: {
         enabledEnvs: ["prod", "beta"],
-        status: "boosted",
+        status: "deprecated",
         autoFarming: ["OP"],
         variant: "fasanara",
         operators: [
