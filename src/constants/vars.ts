@@ -30,5 +30,7 @@ export const DATETIME_FORMAT = "YYYY/MM/DD HH:mm";
 export const MIN_STAKING_INCREASE_SECONDS = 604800; // 1 week
 export const DASHBORD_URL = "https://app.idle.finance";
 export const LEGACY_DASHBOARD_URL = "https://legacy.idle.finance/#/";
+export const APIV2_LOCALHOST_URL = "http://127.0.0.1:3000/v1";
+export const APIV2_STAGING_URL = "https://api-staging.idle.finance/v1";
 export const MAX_ALLOWANCE =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";

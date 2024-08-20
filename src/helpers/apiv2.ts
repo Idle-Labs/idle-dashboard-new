@@ -4,6 +4,7 @@ import {
   EtherscanTransaction,
   Vault,
   Transaction,
+  AssetId,
 } from "constants/";
 import {
   callPlatformApis,
@@ -25,11 +26,11 @@ export async function getIdleAPIV2Page(
   );
 }
 
-export async function getIdleAPIV2AllPages(
+export async function getIdleAPIV2AllPages<T = any>(
   endpoint: string,
   apiConfig: ApisProps | null,
   limit: number = 200
-): Promise<any> {
+): Promise<T[]> {
   const firstPageResults = await getIdleAPIV2Page(endpoint, apiConfig, 0);
   const totalCount = firstPageResults?.totalCount;
   const totalRequests = Math.ceil((totalCount - limit) / limit);
@@ -54,11 +55,62 @@ export async function getIdleAPIV2AllPages(
   return output;
 }
 
+export async function getWalletPerformancesFromApiV2(
+  walletAddress: string
+): Promise<Record<AssetId, any>> {
+  const response = await callPlatformApis(1, "idle", "wallets", "", {
+    address: walletAddress,
+    limit: 1,
+  });
+
+  if (!response) return [];
+
+  const wallet = response[0];
+
+  // Call walletLatestBlocks
+  const walletLatestBlocks = await callPlatformApis(
+    1,
+    "idle",
+    "walletLatestBlocks",
+    "",
+    {
+      walletId: wallet._id,
+      "balance:gt": 0,
+    }
+  );
+
+  const promises = walletLatestBlocks.map((walletLatestBlock: any) =>
+    callPlatformApis(
+      1,
+      "idle",
+      "walletVaultPerformance",
+      "",
+      {
+        startBlock: 1,
+      },
+      {
+        walletId: wallet._id,
+        vaultId: walletLatestBlock.vaultId,
+      }
+    ).then((performance) => ({
+      vaultId: walletLatestBlock.vaultAddress,
+      performance,
+    }))
+  );
+
+  return await Promise.all(promises);
+}
+
+export async function getVaultsFromApiV2(): Promise<any> {
+  return await callPlatformApis(1, "idle", "vaults");
+}
+
 export async function getWalletsVaultsPerformancesFromApiV2(
-  vaults: Vault[],
   walletAddress: string,
-  startBlock: number = 0,
-  endBlock: string | number = "latest"
+  startTimestamp?: number,
+  endTimestamp?: number,
+  sort?: string,
+  order?: string
 ): Promise<any> {
   const response = await callPlatformApis(1, "idle", "wallets", "", {
     address: walletAddress,
@@ -70,24 +122,172 @@ export async function getWalletsVaultsPerformancesFromApiV2(
   const wallet = response[0];
 
   const filters: any = {
-    startBlock,
     walletId: wallet._id,
-    vaultId: vaults.map((vault) => vault.id),
   };
-  if (endBlock !== "latest") {
-    filters.endBlock = endBlock;
+
+  if (startTimestamp) {
+    filters["timestamp:gte"] = startTimestamp;
+  }
+  if (endTimestamp) {
+    filters["timestamp:lte"] = endTimestamp;
   }
 
-  return await callPlatformApis(
+  if (sort) {
+    filters["sort"] = sort;
+  }
+  if (order) {
+    filters["order"] = order;
+  }
+
+  const apiConfig = getPlatformApiConfig(
+    1,
+    "idle",
+    "walletsVaultsPerformances"
+  );
+  const endpoint = getPlatformApisEndpoint(
     1,
     "idle",
     "walletsVaultsPerformances",
     "",
     filters
-  ).then((performance) => performance);
+  );
+
+  if (!endpoint) return [];
+
+  return getIdleAPIV2AllPages<TransactionDataApiV2>(endpoint, apiConfig);
 }
 
-export async function getUserTransactionsFromApiV2(
+export async function getTransactionsFromApiV2(
+  walletAddress: string,
+  startTimestamp?: number,
+  endTimestamp?: number,
+  sort?: string,
+  order?: string
+): Promise<TransactionDataApiV2[]> {
+  const apiConfig = getPlatformApiConfig(1, "idle", "transactions");
+
+  const filters: any = {
+    walletAddress,
+  };
+
+  if (startTimestamp) {
+    filters["timestamp:gte"] = startTimestamp;
+  }
+  if (endTimestamp) {
+    filters["timestamp:lte"] = endTimestamp;
+  }
+
+  if (sort) {
+    filters["sort"] = sort;
+  }
+  if (order) {
+    filters["order"] = order;
+  }
+
+  const endpoint = getPlatformApisEndpoint(
+    1,
+    "idle",
+    "transactions",
+    "",
+    filters
+  );
+
+  if (!endpoint) return [];
+
+  return getIdleAPIV2AllPages<TransactionDataApiV2>(endpoint, apiConfig);
+}
+
+export async function getWalletBlocksFromApiV2(
+  walletAddress: string,
+  startTimestamp?: number,
+  endTimestamp?: number,
+  sort?: string,
+  order?: string
+): Promise<any[]> {
+  const apiConfig = getPlatformApiConfig(1, "idle", "walletBlocks");
+
+  const filters: any = {
+    walletAddress,
+  };
+
+  if (startTimestamp) {
+    filters["timestamp:gte"] = startTimestamp;
+  }
+  if (endTimestamp) {
+    filters["timestamp:lte"] = endTimestamp;
+  }
+
+  if (sort) {
+    filters["sort"] = sort;
+  }
+  if (order) {
+    filters["order"] = order;
+  }
+
+  const endpoint = getPlatformApisEndpoint(
+    1,
+    "idle",
+    "walletBlocks",
+    "",
+    filters
+  );
+
+  if (!endpoint) return [];
+
+  return getIdleAPIV2AllPages<any>(endpoint, apiConfig);
+}
+
+export async function getTokensFromApiV2(
+  tokenId: string | string[]
+): Promise<any[]> {
+  const apiConfig = getPlatformApiConfig(1, "idle", "tokens");
+
+  const filters: any = {
+    _id: tokenId,
+  };
+
+  const endpoint = getPlatformApisEndpoint(1, "idle", "tokens", "", filters);
+
+  if (!endpoint) return [];
+
+  return getIdleAPIV2AllPages<any>(endpoint, apiConfig);
+}
+
+export async function getTokenBlocksFromApiV2(
+  tokenId: string,
+  block?: number | number[],
+  startTimestamp?: number,
+  endTimestamp?: number
+): Promise<any[]> {
+  const apiConfig = getPlatformApiConfig(1, "idle", "tokenBlocks");
+
+  const filters: any = {
+    tokenId,
+  };
+  if (startTimestamp) {
+    filters["timestamp:gte"] = startTimestamp;
+  }
+  if (endTimestamp) {
+    filters["timestamp:lte"] = endTimestamp;
+  }
+  if (block) {
+    filters["block"] = block;
+  }
+
+  const endpoint = getPlatformApisEndpoint(
+    1,
+    "idle",
+    "tokenBlocks",
+    "",
+    filters
+  );
+
+  if (!endpoint) return [];
+
+  return getIdleAPIV2AllPages<any>(endpoint, apiConfig);
+}
+
+export async function getUserEtherscanTransactionsFromApiV2(
   vaults: Vault[],
   walletAddress: string,
   startBlock: number = 0,
@@ -124,7 +324,7 @@ export async function getUserTransactionsFromApiV2(
         amountUsd: BNify(0),
         underlyingAmount: BNify(transaction.tokenAmount),
         blockHash: "",
-        blockNumber: transaction.block.number,
+        blockNumber: "" + transaction.block.number,
         confirmations: "1",
         contractAddress: "",
         cumulativeGasUsed: "0",
@@ -148,4 +348,35 @@ export async function getUserTransactionsFromApiV2(
     },
     []
   );
+}
+
+export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {
+  const promises = tokenIds.map((tokenId) => {
+    return callPlatformApis(1, "idle", "tokenBlocks", "", {
+      tokenId,
+      sort: "block",
+      order: "desc",
+      limit: 1,
+    });
+  });
+
+  const results = await Promise.all(promises);
+
+  return results.map((res) => res.data).flat();
+}
+
+export async function getLatestVaultsBlocks(vaultsIds: string[]): Promise<any> {
+  const promises = vaultsIds.map((vaultId) => {
+    return callPlatformApis(1, "idle", "vaultBlocks", "", {
+      vaultId,
+      sort: "block",
+      order: "desc",
+      limit: 1,
+    });
+  });
+
+  const results = await Promise.all(promises);
+  if (!results) return;
+
+  return results.map((res) => res.data).flat();
 }

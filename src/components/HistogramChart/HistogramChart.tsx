@@ -39,6 +39,8 @@ type HistogramChartInitialData = {
   data: HistogramChartData
   colors: HistogramChartColors
   labels: HistogramChartLabels
+  axisEnabled?: boolean,
+  margin?: { top: number; right: number; bottom: number; left: number }
 }
 
 export type HistogramChartWithTooltipProps = {
@@ -62,6 +64,7 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
     tooltip = true,
     margin = defaultMargin,
     tooltipOpen,
+    axisEnabled,
     // tooltipLeft = 0,
     tooltipTop,
     tooltipData,
@@ -71,8 +74,10 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
     const theme = useTheme()
     const { locale } = useI18nProvider()
     
-    const getDate = (d: any) => d.date// toDayjs(d.date).toDate()
-    const formatDate = (d: any) => toDayjs(getDate(d)).locale(locale).format('LLL')
+    const getDate = (d: any) => d.date
+    const formatDate = (d: any) => {
+      return toDayjs(+getDate(d)).locale(locale).format('LLL')
+    }
 
     const strokeColor = 'white'
     const axisLabelColor = theme.colors.table.axisLabel
@@ -209,23 +214,31 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
               textAnchor: 'middle',
             })}
           />*/}
-          <AxisBottom
-            strokeWidth={1}
-            hideTicks={true}
-            top={yMax/2 + margin.top}
-            scale={dateScale}
-            stroke={strokeColor}
-            tickFormat={() => ''}
-          />
-          <AxisBottom
-            hideTicks
-            hideAxisLine
-            numTicks={5}
-            scale={timeScale}
-            top={height - margin.bottom}
-            // tickFormat={formatDate}
-            tickLabelProps={() => AXIS_BOTTOM_TICK_LABEL_PROPS}
-          />
+          {
+            axisEnabled && (
+              <AxisBottom
+                strokeWidth={1}
+                hideTicks={true}
+                top={yMax/2 + margin.top}
+                scale={dateScale}
+                stroke={strokeColor}
+                tickFormat={() => ''}
+              />
+            )
+          }
+          {
+            axisEnabled && (
+              <AxisBottom
+                hideTicks
+                hideAxisLine
+                numTicks={5}
+                scale={timeScale}
+                top={height - margin.bottom}
+                // tickFormat={formatDate}
+                tickLabelProps={() => AXIS_BOTTOM_TICK_LABEL_PROPS}
+              />
+            )
+          }
         </ScaleSVG>
         {tooltip && tooltipOpen && tooltipData && (
           <TooltipWithBounds
@@ -310,7 +323,9 @@ export const HistogramChart = ({
   data,
   colors,
   labels,
-  tooltip
+  tooltip,
+  axisEnabled = true,
+  margin = defaultMargin
 }: HistogramChartInitialData) => {
   return (
     <ParentSize debounceTime={10}>
@@ -319,6 +334,8 @@ export const HistogramChart = ({
           width={parent.width}
           height={parent.height}
           data={data}
+          margin={margin}
+          axisEnabled={axisEnabled}
           tooltip={tooltip}
           colors={colors}
           labels={labels}

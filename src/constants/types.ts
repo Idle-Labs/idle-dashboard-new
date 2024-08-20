@@ -24,7 +24,7 @@ export type RewardSenderParams = {
 };
 
 export interface Block {
-  number: string;
+  number: number;
   timestamp: number;
 }
 
@@ -108,7 +108,9 @@ export type ChartData = {
   rainbow: RainbowData[];
 };
 
-export type PlatformApiFilters = Record<string, string | number>;
+export type FilterValue = string | number;
+
+export type PlatformApiFilters = Record<string, FilterValue | FilterValue[]>;
 
 export type DateRange = {
   startDate: moment.Moment | null;

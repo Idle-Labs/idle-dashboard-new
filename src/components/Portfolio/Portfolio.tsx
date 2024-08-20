@@ -16,6 +16,7 @@ import { PortfolioAllocation } from "./PortfolioAllocation"
 import { BiSolidCoinStack } from "react-icons/bi";
 import { CompositionType } from "hooks/useCompositionChartData/useCompositionChartData"
 import { SiBnbchain } from "react-icons/si";
+import { EarningsChart } from "components/EarningsChart/EarningsChart"
 
 export const Portfolio: React.FC = () => {
   const { theme } = useThemeProvider()
@@ -72,9 +73,9 @@ export const Portfolio: React.FC = () => {
     return aggregatedUsdPosition.deposited.plus(aggregatedUsdPosition.earnings)
   }, [aggregatedUsdPosition])
 
-  console.log('enabledStrategies', enabledStrategies)
-  console.log('vaultsPositions', vaultsPositions)
-  console.log('aggregatedUsdPosition', aggregatedUsdPosition)
+  // console.log('enabledStrategies', enabledStrategies)
+  // console.log('vaultsPositions', vaultsPositions)
+  // console.log('aggregatedUsdPosition', aggregatedUsdPosition)
 
   const totalROI = useMemo(() => {
     return Object.keys(vaultsPositions).filter(assetId => assetIds.includes(assetId)).map(assetId => vaultsPositions[assetId]).reduce((totalROI: BigNumber, vaultPosition: VaultPosition) => {
@@ -133,17 +134,19 @@ export const Portfolio: React.FC = () => {
               bg={'card.bgLight'}
               flexDirection={'column'}
             >
-              <Card
+              <Card.Flex
                 py={4}
                 px={5}
+                pb={0}
                 flex={1}
               >
                 <VStack
-                  spacing={6}
+                  flex={1}
+                  spacing={4}
                   align={'flex-start'}
                 >
                   <Translation translation={'defi.totalFunds'} component={Heading} as={'h3'} fontSize={'md'} />
-                  <SkeletonText noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
+                  <SkeletonText flex={1} noOfLines={2} isLoaded={!!isPortfolioAccountReady}>
                     <VStack
                       spacing={[1, 3]}
                       alignItems={'baseline'}
@@ -151,8 +154,14 @@ export const Portfolio: React.FC = () => {
                       <Amount.Usd abbreviate={false} value={totalFunds} textStyle={'heading'} fontSize={'6xl'} />
                     </VStack>
                   </SkeletonText>
+                  <Box
+                    height={75}
+                    width={'full'}
+                  >
+                    <EarningsChart assetIds={[]} margin={{ top: 0, left: 0, right: 0, bottom: -85 }} />
+                  </Box>
                 </VStack>
-              </Card>
+              </Card.Flex>
               <SimpleGrid
                 px={5}
                 py={1}

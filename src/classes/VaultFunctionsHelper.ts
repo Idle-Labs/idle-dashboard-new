@@ -1552,8 +1552,8 @@ export class VaultFunctionsHelper {
       ? await getSubgraphTrancheInfo(
           vault.chainId,
           vault.id,
-          filters?.start,
-          filters?.end
+          filters?.start as string,
+          filters?.end as string
         )
       : cachedData.data;
 

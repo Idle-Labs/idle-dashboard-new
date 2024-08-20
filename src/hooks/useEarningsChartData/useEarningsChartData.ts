@@ -1,7 +1,20 @@
-import { strategies } from "constants/";
+import BigNumber from "bignumber.js";
+import { DATE_FORMAT, strategies, TransactionDataApiV2 } from "constants/";
 import { useState, useMemo, useEffect } from "react";
-import { BNify, getChartTimestampBounds } from "helpers/";
-import { usePortfolioProvider } from "contexts/PortfolioProvider";
+import {
+  BNify,
+  bnOrZero,
+  fixTokenDecimals,
+  floorTimestamp,
+  getChartTimestampBounds,
+  getTokenBlocksFromApiV2,
+  getTokensFromApiV2,
+  getTransactionsFromApiV2,
+  getWalletBlocksFromApiV2,
+  getWalletsVaultsPerformancesFromApiV2,
+  sortArrayByKey,
+  toDayjs,
+} from "helpers/";
 import {
   HistogramChartLabels,
   HistogramChartColors,
@@ -14,6 +27,8 @@ import {
   DateRange,
   Asset,
 } from "constants/types";
+import { useWalletProvider } from "contexts/WalletProvider";
+import { useThemeProvider } from "contexts/ThemeProvider";
 
 export type EarningsChartData = {
   total: HistoryData[];
@@ -47,130 +62,235 @@ export const useEarningsChartData: UseEarningsChartData = ({
   timeframe,
   useDollarConversion = true,
 }) => {
+  const { theme } = useThemeProvider();
+  const { account } = useWalletProvider();
+
+  const [earningsChartData, setEarningsChartData] = useState<EarningsChartData>(
+    {
+      total: [],
+      rainbow: [],
+    }
+  );
   const [earningsChartDataLoading, setEarningsChartDataLoading] =
     useState<boolean>(true);
-  const {
-    historicalTvls,
-    selectors: {
-      selectAssetsByIds,
-      selectVaultById,
-      selectAssetHistoricalTvls,
-      selectAssetHistoricalTvlsUsd,
-    },
-  } = usePortfolioProvider();
-
-  const assets = useMemo(() => {
-    if (!selectAssetsByIds) return [];
-    return selectAssetsByIds(assetIds);
-  }, [assetIds, selectAssetsByIds]);
 
   const [timeframeStartTimestamp, timeframeEndTimestamp] = useMemo(
     () => getChartTimestampBounds(timeframe, dateRange),
     [timeframe, dateRange]
   );
 
-  const earningsChartData = useMemo((): EarningsChartData => {
-    const chartData: EarningsChartData = {
-      total: [],
-      rainbow: [],
-    };
+  useEffect(() => {
+    if (!account?.address) return;
+    console.log("account", account);
+    (async () => {
+      const transactions = await getTransactionsFromApiV2(
+        account.address,
+        timeframeStartTimestamp,
+        timeframeEndTimestamp,
+        "timestamp",
+        "asc"
+      );
 
-    if (!Object.keys(historicalTvls).length) return chartData;
+      const walletPerformances = await getWalletsVaultsPerformancesFromApiV2(
+        account.address,
+        timeframeStartTimestamp,
+        timeframeEndTimestamp,
+        "timestamp",
+        "asc"
+      );
 
-    const volumeByDate = assets.reduce(
-      (volumeByDate: Record<number, RainbowData>, asset: Asset) => {
-        if (!asset.id) return volumeByDate;
-        const tvls = useDollarConversion
-          ? selectAssetHistoricalTvlsUsd(asset.id)
-          : selectAssetHistoricalTvls(asset.id);
-        if (!tvls) return volumeByDate;
-        const vault = selectVaultById(asset.id);
+      console.log("transactions", transactions);
+      console.log("walletPerformances", walletPerformances);
 
-        let prevTvl: HistoryData | null = null;
-        tvls.forEach((tvl: HistoryData) => {
-          const date = tvl.date;
+      const tokenIdsBlocks = transactions.reduce(
+        (acc: Record<string, number[]>, transaction: TransactionDataApiV2) => {
+          return {
+            ...acc,
+            [transaction.tokenId]: [
+              ...(acc[transaction.tokenId] || []),
+              transaction.block.number,
+            ],
+          };
+        },
+        {}
+      );
 
-          const assetStartTimestamp =
-            "stats" in vault && vault.stats?.startTimestamp;
-          const startTimestampToUse =
-            assetStartTimestamp && assetStartTimestamp > timeframeStartTimestamp
-              ? assetStartTimestamp
-              : timeframeStartTimestamp;
+      const tokensById: any = (
+        await getTokensFromApiV2(Object.keys(tokenIdsBlocks))
+      ).reduce(
+        (acc: Record<string, any>, token: any) => ({
+          ...acc,
+          [token._id]: token,
+        }),
+        {}
+      );
+
+      console.log("tokensById", tokensById);
+
+      const tokenBlocksPromises = Object.entries(tokenIdsBlocks).map(
+        ([tokenId, blocks]) =>
+          getTokenBlocksFromApiV2(tokenId, blocks).then((tokenBlocks) => ({
+            [tokenId]: tokenBlocks,
+          }))
+      );
+
+      const tokenBlocks = (await Promise.all(tokenBlocksPromises)).reduce(
+        (acc: Record<string, any>, response: any) => {
+          const tokenId = Object.keys(response)[0] as any;
+          const tokenBlocks = Object.values(response)[0] as any;
+          if (!tokenBlocks.length) return acc;
+          return {
+            ...acc,
+            [tokenId]: tokenBlocks.reduce(
+              (acc: Record<string, any>, tokenBlock: any) => {
+                return {
+                  ...acc,
+                  [tokenBlock.block.number]: tokenBlock,
+                };
+              },
+              {}
+            ),
+          };
+        },
+        {}
+      );
+
+      console.log("tokenBlocks", tokenBlocks);
+
+      const cumulativeVaultsEarnings: Record<string, BigNumber> = {};
+      const dailyVaultsEarnings = walletPerformances.reduce(
+        (acc: Record<string, BigNumber>, walletPerformance: any) => {
+          const dayTimestamp = floorTimestamp(
+            walletPerformance.block.timestamp * 1000
+          );
 
           if (
-            date < startTimestampToUse ||
-            (timeframeEndTimestamp && date > timeframeEndTimestamp)
-          )
-            return;
-
-          if (prevTvl && asset.id) {
-            if (!volumeByDate[date]) {
-              volumeByDate[date] = {
-                date,
-                total: 0,
-              };
-            }
-            const volume = BNify(tvl.value).minus(prevTvl.value);
-            volumeByDate[date][asset.id] = Number(volume.toFixed(8));
-            volumeByDate[date].total = Number(
-              BNify(volumeByDate[date].total).plus(volume).toFixed(8)
-            );
+            !cumulativeVaultsEarnings[walletPerformance.vaultId] ||
+            BNify(walletPerformance.earnings.USD).lte(0)
+          ) {
+            cumulativeVaultsEarnings[walletPerformance.vaultId] = BNify(0);
+          } else {
+            cumulativeVaultsEarnings[walletPerformance.vaultId] =
+              cumulativeVaultsEarnings[walletPerformance.vaultId].plus(
+                walletPerformance.earnings.USD
+              );
           }
 
-          prevTvl = tvl;
-        });
-        return volumeByDate;
-      },
-      {}
-    );
+          const totalBalance = Object.values(cumulativeVaultsEarnings)
+            .reduce((sum: BigNumber, balance: BigNumber) => {
+              return sum.plus(balance);
+            }, BNify(0))
+            .div(1e6);
 
-    chartData.total = (Object.values(volumeByDate) as Array<RainbowData>).map(
-      (v: RainbowData) => ({
-        date: v.date,
-        value: v.total,
-      })
-    );
+          console.log(
+            walletPerformance.block.timestamp,
+            walletPerformance.vaultId,
+            walletPerformance.earnings.USD.toString(),
+            totalBalance.toString()
+          );
 
-    chartData.rainbow = Object.values(volumeByDate);
+          return {
+            ...acc,
+            [dayTimestamp]: totalBalance,
+          };
+        },
+        {}
+      );
 
-    return chartData;
+      let cumulativeBalance = BNify(0);
+      const dailyBalances = transactions.reduce(
+        (acc: Record<string, BigNumber>, transaction: any) => {
+          const token = tokensById[transaction.tokenId];
+          const tokenDecimals = token?.decimals || 18;
+          const tokenPrice = fixTokenDecimals(
+            tokenBlocks[transaction.tokenId]?.[transaction.block.number]
+              ?.price || 1000000,
+            6
+          );
+          const amountUsd = fixTokenDecimals(
+            transaction.tokenAmount,
+            tokenDecimals
+          ).times(tokenPrice);
+
+          const dayTimestamp = floorTimestamp(
+            transaction.block.timestamp * 1000
+          );
+
+          cumulativeBalance =
+            transaction.type === "DEPOSIT"
+              ? bnOrZero(cumulativeBalance).plus(amountUsd)
+              : BigNumber.maximum(
+                  0,
+                  bnOrZero(cumulativeBalance).minus(amountUsd)
+                );
+
+          return {
+            ...acc,
+            [dayTimestamp]: cumulativeBalance,
+          };
+        },
+        {}
+      );
+
+      // console.log("dailyVaultsEarnings", dailyVaultsEarnings);
+
+      setEarningsChartData({
+        total: Object.entries(dailyBalances).reduce(
+          (acc: HistoryData[], [timestamp, balance]: any) => {
+            return [
+              ...acc,
+              {
+                date: timestamp,
+                value: parseFloat(
+                  bnOrZero(dailyVaultsEarnings[timestamp])
+                    .plus(balance)
+                    .toFixed(2)
+                ),
+              },
+            ];
+          },
+          []
+        ),
+        rainbow: Object.entries(dailyBalances).reduce(
+          (acc: RainbowData[], [timestamp, balance]: any) => {
+            return [
+              ...acc,
+              {
+                date: timestamp,
+                total: balance.toFixed(2),
+                deposited: parseFloat(balance.toFixed(2)),
+                earnings: parseFloat(
+                  bnOrZero(dailyVaultsEarnings[timestamp]).toFixed(2)
+                ),
+              },
+            ];
+          },
+          []
+        ),
+      });
+
+      // console.log("dailyBalances", dailyBalances);
+    })();
   }, [
-    assets,
-    useDollarConversion,
-    selectVaultById,
-    historicalTvls,
-    selectAssetHistoricalTvls,
-    selectAssetHistoricalTvlsUsd,
+    account,
     timeframeStartTimestamp,
     timeframeEndTimestamp,
+    setEarningsChartData,
   ]);
 
-  const extraData = useMemo((): ExtraData => {
-    if (!assets.length)
-      return {
-        labels: {},
-        colors: {},
-      };
-    return assets.reduce(
-      (extraData: ExtraData, asset: Asset) => {
-        return {
-          ...extraData,
-          labels: {
-            ...extraData.labels,
-            [asset.id as string]: asset.name,
-          },
-          colors: {
-            ...extraData.colors,
-            [asset.id as string]: strategies[asset.type as string].color,
-          },
-        };
+  const extraData = useMemo(
+    (): ExtraData => ({
+      labels: {
+        deposited: "Deposited",
+        earnings: "Earnings",
       },
-      {
-        labels: {},
-        colors: {},
-      }
-    );
-  }, [assets]);
+      colors: {
+        deposited: "#0519D3",
+        earnings: theme.colors.gain,
+      },
+    }),
+    [theme]
+  );
 
   useEffect(() => {
     if (!earningsChartData.rainbow.length) return;

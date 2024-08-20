@@ -74,87 +74,6 @@ export const getPlatformApiConfig = (
   return apiConfig;
 };
 
-export async function getWalletPerformancesFromApiV2(
-  walletAddress: string
-): Promise<Record<AssetId, any>> {
-  const response = await callPlatformApis(1, "idle", "wallets", "", {
-    address: walletAddress,
-    limit: 1,
-  });
-
-  if (!response) return [];
-
-  const wallet = response[0];
-
-  // Call walletLatestBlocks
-  const walletLatestBlocks = await callPlatformApis(
-    1,
-    "idle",
-    "walletLatestBlocks",
-    "",
-    {
-      walletId: wallet._id,
-      "balance:gt": 0,
-    }
-  );
-
-  const promises = walletLatestBlocks.map((walletLatestBlock: any) =>
-    callPlatformApis(
-      1,
-      "idle",
-      "walletVaultPerformance",
-      "",
-      {
-        startBlock: 1,
-      },
-      {
-        walletId: wallet._id,
-        vaultId: walletLatestBlock.vaultId,
-      }
-    ).then((performance) => ({
-      vaultId: walletLatestBlock.vaultAddress,
-      performance,
-    }))
-  );
-
-  return await Promise.all(promises);
-}
-
-export async function getVaultsFromApiV2(): Promise<any> {
-  return await callPlatformApis(1, "idle", "vaults");
-}
-
-export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {
-  const promises = tokenIds.map((tokenId) => {
-    return callPlatformApis(1, "idle", "tokenBlocks", "", {
-      tokenId,
-      sort: "block",
-      order: "desc",
-      limit: 1,
-    });
-  });
-
-  const results = await Promise.all(promises);
-
-  return results.map((res) => res.data).flat();
-}
-
-export async function getLatestVaultsBlocks(vaultsIds: string[]): Promise<any> {
-  const promises = vaultsIds.map((vaultId) => {
-    return callPlatformApis(1, "idle", "vaultBlocks", "", {
-      vaultId,
-      sort: "block",
-      order: "desc",
-      limit: 1,
-    });
-  });
-
-  const results = await Promise.all(promises);
-  if (!results) return;
-
-  return results.map((res) => res.data).flat();
-}
-
 export const getPlatformApisEndpoint = (
   chainId: number,
   protocol: string,
@@ -171,7 +90,14 @@ export const getPlatformApisEndpoint = (
     filters &&
     Object.keys(filters).reduce((applyFilters: string[], field: string) => {
       if (protocolFilters && protocolFilters.includes(field)) {
-        applyFilters.push(`${field}=${filters[field]}`);
+        const values: any = Array.isArray(filters[field])
+          ? filters[field]
+          : [filters[field]];
+
+        return [
+          ...applyFilters,
+          ...values.map((value: any) => `${field}=${value}`),
+        ];
       }
       return applyFilters;
     }, []);

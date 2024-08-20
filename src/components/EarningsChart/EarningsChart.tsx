@@ -5,10 +5,11 @@ import { useEarningsChartData } from 'hooks/useEarningsChartData/useEarningsChar
 type EarningsChartArgs = {
   assetIds: AssetId[]
   dateRange?: DateRange
-  timeframe?: HistoryTimeframe
+  timeframe?: HistoryTimeframe,
+  margin?: { top: number; right: number; bottom: number; left: number }
 }
 
-export const EarningsChart: React.FC<EarningsChartArgs> = ({ assetIds, timeframe, dateRange }) => {
+export const EarningsChart: React.FC<EarningsChartArgs> = ({ assetIds, timeframe, dateRange, margin }) => {
   const {
     labels,
     colors,
@@ -20,7 +21,9 @@ export const EarningsChart: React.FC<EarningsChartArgs> = ({ assetIds, timeframe
     <HistogramChart
       colors={colors}
       labels={labels}
+      axisEnabled={false}
       data={earningsChartData.rainbow}
+      margin={margin}
     />
   ) : null
 }
