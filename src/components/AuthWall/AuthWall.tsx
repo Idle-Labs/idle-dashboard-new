@@ -185,12 +185,12 @@ export const AuthWall = ({ children }: ProviderProps) => {
 
   if (walletInitialized && (!account || account?.isCustom === true || signatureTimestamp)){
     return (
-      <Flex
+      <Box
         width={'full'}
         flex={1}
       >
         {children}
-      </Flex>
+      </Box>
     )
   }
 
@@ -203,7 +203,7 @@ export const AuthWall = ({ children }: ProviderProps) => {
   }
 
   return (
-    <Center width={'full'} pt={10} mt={10} flex={1}>
+    <Center width={'100%'} pt={10} mt={10} flex={1}>
       <Card maxW={'52em'}>
         {
           signatureCheckError && !signatureCheckErrorContinue ? (
