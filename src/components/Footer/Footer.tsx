@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react'
 import { HiChatAlt2 } from 'react-icons/hi'
+import { FaXTwitter } from "react-icons/fa6";
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { Box, Stack, SimpleGrid, Link } from '@chakra-ui/react'
-import { SiMedium, SiTwitter, SiDiscord } from 'react-icons/si'
+import { SiMedium, SiDiscord } from 'react-icons/si'
 import { Translation } from 'components/Translation/Translation'
 
 export const Footer: React.FC = () => {
@@ -54,7 +55,7 @@ export const Footer: React.FC = () => {
             <SiMedium size={24} color={theme.colors.divider} />
           </Link>
           <Link display={'flex'} justifyContent={'center'} href={"https://twitter.com/idlefinance"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
-            <SiTwitter size={24} color={theme.colors.divider} />
+            <FaXTwitter size={24} color={theme.colors.divider} />
           </Link>
           <Link display={'flex'} justifyContent={'center'} href={"https://discord.gg/mpySAJp"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
             <SiDiscord size={24} color={theme.colors.divider} />
