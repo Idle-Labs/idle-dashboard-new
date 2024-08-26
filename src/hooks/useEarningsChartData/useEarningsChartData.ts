@@ -166,7 +166,8 @@ export const useEarningsChartData: UseEarningsChartData = ({
 
           if (
             !cumulativeVaultsEarnings[walletPerformance.vaultId] ||
-            BNify(walletPerformance.earnings.USD).lte(0)
+            (BNify(walletPerformance.earnings.USD).lte(0) &&
+              BNify(walletPerformance.poolSharePercentage).lte(0))
           ) {
             cumulativeVaultsEarnings[walletPerformance.vaultId] = BNify(0);
           } else {

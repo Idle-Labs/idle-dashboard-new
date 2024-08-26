@@ -21,6 +21,7 @@ export const EarningsChart: React.FC<EarningsChartArgs> = ({ assetIds, timeframe
     <HistogramChart
       colors={colors}
       labels={labels}
+      usePlainLabels={true}
       axisEnabled={false}
       data={earningsChartData.rainbow}
       margin={margin}

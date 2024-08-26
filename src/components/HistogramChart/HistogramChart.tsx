@@ -16,6 +16,7 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { defaultStyles, withTooltip, TooltipWithBounds } from '@visx/tooltip'
 import { scaleBand, scaleLinear, scaleOrdinal, scaleTime } from '@visx/scale'
 import { WithTooltipProvidedProps } from '@visx/tooltip/lib/enhancers/withTooltip'
+import { Translation } from 'components/Translation/Translation'
 
 export type HistogramChartKey = string
 export type HistogramChartColors = Record<HistogramChartKey, string>
@@ -40,6 +41,7 @@ type HistogramChartInitialData = {
   colors: HistogramChartColors
   labels: HistogramChartLabels
   axisEnabled?: boolean,
+  usePlainLabels?: boolean,
   margin?: { top: number; right: number; bottom: number; left: number }
 }
 
@@ -70,6 +72,7 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
     tooltipData,
     hideTooltip,
     showTooltip,
+    usePlainLabels,
   }: HistogramChartWithTooltipProps & WithTooltipProvidedProps<TooltipData>) => {
     const theme = useTheme()
     const { locale } = useI18nProvider()
@@ -279,15 +282,21 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
                       width={'full'}
                       alignItems={'flex-start'}
                     >
-                      <AssetProvider assetId={assetId}>
-                        <HStack
-                          spacing={1}
-                        >
-                          <AssetProvider.Icon size={'2xs'} />
-                          <AssetProvider.Name fontWeight={'bold'} />
-                          <AssetProvider.Strategy color={'gray.500'} fontWeight={'bold'} prefix={'('} suffix={')'} />
-                        </HStack>
-                      </AssetProvider>
+                      {
+                        usePlainLabels ? (
+                          <Translation translation={`defi.${assetId}`} textStyle={'tableCell'} fontWeight={'bold'} />
+                        ) : (
+                          <AssetProvider assetId={assetId}>
+                            <HStack
+                              spacing={1}
+                            >
+                              <AssetProvider.Icon size={'2xs'} />
+                              <AssetProvider.Name fontWeight={'bold'} />
+                              <AssetProvider.Strategy color={'gray.500'} fontWeight={'bold'} prefix={'('} suffix={')'} />
+                            </HStack>
+                          </AssetProvider>
+                        )
+                      }
                       <Amount.Usd abbreviate={false} decimals={0} fontWeight={'bold'} fontSize={'md'} value={tooltipData.bar.data[assetId]} color={colorScale(assetId)} />
                     </VStack>
                   ))
@@ -325,7 +334,8 @@ export const HistogramChart = ({
   labels,
   tooltip,
   axisEnabled = true,
-  margin = defaultMargin
+  margin = defaultMargin,
+  usePlainLabels = false,
 }: HistogramChartInitialData) => {
   return (
     <ParentSize debounceTime={10}>
@@ -339,6 +349,7 @@ export const HistogramChart = ({
           tooltip={tooltip}
           colors={colors}
           labels={labels}
+          usePlainLabels={usePlainLabels}
         />
       )}
     </ParentSize>
