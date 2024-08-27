@@ -84,21 +84,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
 
         epochsInterests.forEach((epochInterests: CreditVaultEpochInterests) => {
           const date = epochInterests.endTimestamp;
-          const value = bnOrZero(epochInterests.apr?.gross)
-            .times(100)
-            .toNumber();
-          // const assetStartTimestamp =
-          //   "stats" in vault && vault.stats?.startTimestamp;
-          // const startTimestampToUse =
-          //   assetStartTimestamp && assetStartTimestamp > timeframeStartTimestamp
-          //     ? assetStartTimestamp
-          //     : timeframeStartTimestamp;
-
-          // if (
-          //   date < startTimestampToUse ||
-          //   (timeframeEndTimestamp && date > timeframeEndTimestamp)
-          // )
-          //   return;
+          const value = bnOrZero(epochInterests.apr?.net).times(100).toNumber();
 
           if (!amountsByDate[date]) {
             amountsByDate[date] = {
