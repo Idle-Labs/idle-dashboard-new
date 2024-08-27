@@ -2,6 +2,7 @@ import Web3 from "web3";
 import dayjs from "dayjs";
 import { Vault } from "vaults/";
 import BigNumber from "bignumber.js";
+import { EventData } from "web3-eth-contract";
 import { Multicall, CallData } from "classes/";
 import stMATIC_abi from "abis/lido/stMATIC.json";
 import { TrancheVault } from "vaults/TrancheVault";
@@ -14,6 +15,7 @@ import { explorers, networks, chains } from "constants/";
 import { StakedIdleVault } from "vaults/StakedIdleVault";
 import { CacheContextProps } from "contexts/CacheProvider";
 import { GenericContract } from "contracts/GenericContract";
+import type { Transaction as Web3Transaction } from "web3-core";
 import PoLidoStakeManager_abi from "abis/lido/PoLidoStakeManager.json";
 import type {
   Abi,
@@ -61,9 +63,13 @@ import {
   makeRequest,
   floorTimestamp,
   sortArrayByKey,
+  decodeTxParams,
+  getBlock,
 } from "helpers/";
 import { isConstructSignatureDeclaration } from "typescript";
 import { getIdleAPIV2AllPages } from "helpers/apiv2";
+import { CreditVault } from "vaults/CreditVault";
+import { eventNames } from "process";
 
 export interface CdoLastHarvest {
   cdoId: string;
@@ -732,6 +738,50 @@ export class VaultFunctionsHelper {
         trancheVault.underlyingToken?.decimals || 18
       )
     );
+  }
+
+  public async getCreditVaultEpochsInterests(vault: Vault): Promise<any> {
+    if (!(vault instanceof CreditVault)) return null;
+
+    const accrueInterestEvents = await vault.getAccrueInterestEvents();
+
+    const epochs = await Promise.all(
+      accrueInterestEvents.map((event: EventData) =>
+        vault.cdoContract.methods
+          .getContractValue()
+          .call({}, event.blockNumber)
+          .then(async (contractValue: string) => {
+            const grossPercentage = BNify(event.returnValues.interest).div(
+              contractValue
+            );
+            const netPercentage = BNify(event.returnValues.interest)
+              .minus(event.returnValues.fees)
+              .div(contractValue);
+
+            const block = await getBlock(
+              vault.web3Rpc as Web3,
+              event.blockNumber
+            );
+
+            return {
+              earnings: {
+                gross: grossPercentage,
+                net: netPercentage,
+              },
+              endTimestamp: block?.timestamp,
+              blockNumber: event.blockNumber,
+              fees: BNify(event.returnValues.fees),
+              interest: BNify(event.returnValues.interest),
+            };
+          })
+      )
+    );
+
+    return {
+      epochs,
+      assetId: vault.id,
+      cdoId: vault.cdoConfig.address,
+    };
   }
 
   public async getEthenaCooldownsEvents(

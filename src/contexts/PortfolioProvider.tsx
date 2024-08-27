@@ -24,7 +24,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, CreditVaultEpochInterests } from 'constants/types'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, checkVaultEnv, checkVaultAuthCode } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 import { useAuthCodeProvider } from './AuthCodeProvider'
@@ -1894,6 +1894,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
     const morphoRewardsEmissionsPromise = getMorphoRewardsEmissions(vaults)
     const gearboxPointsEmissionsPromise = getGearboxPointsEmissions(vaults)
     const ethenaCooldownsPromises = account?.address ? getEthenaCooldowns(vaults, account?.address) : []
+    
+    const creditVaultsEpochsInterestsPromises = vaults.reduce((promises: Map<AssetId, Promise<any | null>>, vault: Vault): Map<AssetId, Promise<any | null>> => {
+      if (!(vault instanceof CreditVault)) return promises
+      promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getCreditVaultEpochsInterests(vault))
+      return promises
+    }, new Map())
 
     // console.log('vaultsAdditionalBaseAprsPromises', vaultsAdditionalBaseAprsPromises)
 
@@ -1909,6 +1915,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       morphoRewardsEmissions,
       gearboxPointsEmissions,
       // stakedIdleVaultRewards,
+      creditVaultsEpochsInterests,
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
@@ -1937,6 +1944,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       morphoRewardsEmissionsPromise,
       gearboxPointsEmissionsPromise,
       // stakedIdleVaultRewardsPromise,
+      Promise.all(Array.from(creditVaultsEpochsInterestsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
@@ -1948,7 +1956,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       multiCall.executeMultipleBatches(mainnetRawCalls, STAKING_CHAINID, web3Chains[STAKING_CHAINID]),
     ])
 
-    // console.log('ethenaCooldowns', ethenaCooldowns)
+    // console.log('creditVaultsEpochs', creditVaultsEpochs)
     // console.log('gearboxPointsEmissions', gearboxPointsEmissions)
 
     let fees: Balances = {}
@@ -2293,12 +2301,30 @@ export function PortfolioProvider({ children }: ProviderProps) {
           }
           vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
           vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
-          // console.log('vaultEpochData', assetId, vaultEpochData)
+
+          // Process epochs interests
+          const vaultEpochsInterests = creditVaultsEpochsInterests?.find( epochInterests => cmpAddrs(epochInterests.assetId, assetId) )
+          if (vaultEpochsInterests){
+            // console.log('vaultEpochsInterests', assetId, vaultEpochData, vaultEpochsInterests)
+            vaultEpochData.epochsInterests = vaultEpochsInterests.epochs.map( (epoch: CreditVaultEpochInterests) => {
+              const apr = {
+                net: epoch.earnings.net.times(SECONDS_IN_YEAR).div(vaultEpochData.epochDuration),
+                gross: epoch.earnings.gross.times(SECONDS_IN_YEAR).div(vaultEpochData.epochDuration)
+              }
+              return {
+                ...epoch,
+                apr,
+                startTimestamp: BigNumber.maximum(0, BNify(epoch.endTimestamp).minus(vaultEpochData.epochDuration)).toNumber()
+              }
+            })
+            vaultEpochData.epochsInterests = sortArrayByKey(vaultEpochData.epochsInterests, 'endTimestamp', 'asc')
+          }
           epochsData[assetId] = vaultEpochData
         })
       }
 
-      // console.log('epochsData', epochsData)
+      console.log('epochsData', epochsData)
+      // console.log('aprsCallsResults', aprsCallsResults)
 
       // Process total aprs
       totalAprs = vaultsTotalAprs.reduce((totalAprs: Balances, vaultTotalApr: VaultAdditionalApr | null) => {
@@ -2322,7 +2348,21 @@ export function PortfolioProvider({ children }: ProviderProps) {
             if (!aprs[assetId]) {
               aprs[assetId] = BNify(0)
             }
-            aprs[assetId] = aprs[assetId].plus(BNify(callResult.data.toString()).div(`1e${decimals}`))
+
+            // Check APR for Credit Vault
+            if (vault instanceof CreditVault && vault.vaultConfig.mode === 'STRATEGY'){
+              const epochData = epochsData[assetId]
+              if (epochData && "epochsInterests" in epochData){
+                const epochsInterests = epochData.epochsInterests
+                if (epochsInterests){
+                  aprs[assetId] = epochsInterests.slice(-3).reduce( (acc: BigNumber, epochInterests: CreditVaultEpochInterests) => {
+                    return acc.plus(bnOrZero(epochInterests.apr?.gross).div(3).times(100))
+                  }, BNify(0))
+                }
+              }
+            } else {
+              aprs[assetId] = aprs[assetId].plus(BNify(callResult.data.toString()).div(`1e${decimals}`))
+            }
 
             aprsBreakdown[assetId] = {
               base: aprs[assetId]

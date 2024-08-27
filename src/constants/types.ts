@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js";
 import type { AbiItem } from "web3-utils";
 import type { EventLog } from "web3-core";
 import { IconType as ReactIcon } from "react-icons";
-import { ContractSendMethod } from "web3-eth-contract";
+import { ContractSendMethod, EventData } from "web3-eth-contract";
 
 export type { Vault } from "vaults/";
 export type { BigNumber } from "bignumber.js";
@@ -54,7 +54,7 @@ export type VaultAdditionalApr = {
 export type CdoEvents = {
   data: any;
   cdoId: AssetId;
-  events: EventLog[];
+  events: EventLog[] | EventData[];
 };
 
 export interface ErrnoException extends Error {
@@ -258,6 +258,22 @@ export type VaultsAccountData = {
   creditVaultsWithdrawRequests?: Record<AssetId, CreditVaultWithdrawRequest[]>;
 };
 
+export type CreditVaultEpochInterests = {
+  startTimestamp?: number;
+  endTimestamp?: number;
+  blockNumber: number;
+  fees: BigNumber;
+  interest: BigNumber;
+  earnings: {
+    gross: BigNumber;
+    net: BigNumber;
+  };
+  apr?: {
+    net: BigNumber;
+    gross: BigNumber;
+  };
+};
+
 export type CreditVaultEpoch = {
   cdoId?: string;
   isEpochRunning: boolean;
@@ -274,6 +290,7 @@ export type CreditVaultEpoch = {
   epochDuration: BigNumber;
   epochStartDate: number;
   epochEndDate: number;
+  epochsInterests?: CreditVaultEpochInterests[];
   pendingWithdraws: BigNumber;
   pendingInstantWithdraws: BigNumber;
   instantWithdrawAprDelta: BigNumber;

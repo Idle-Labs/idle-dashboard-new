@@ -2,9 +2,9 @@ import Web3 from "web3";
 import ERC20 from "abis/tokens/ERC20.json";
 import { Contract } from "web3-eth-contract";
 import { selectUnderlyingToken } from "selectors/";
-import { ContractSendMethod } from "web3-eth-contract";
 import { CacheContextProps } from "contexts/CacheProvider";
 import { GenericContract } from "contracts/GenericContract";
+import { ContractSendMethod, EventData } from "web3-eth-contract";
 import { VaultFunctionsHelper } from "classes/VaultFunctionsHelper";
 import { GenericContractsHelper } from "classes/GenericContractsHelper";
 import {
@@ -47,6 +47,7 @@ import {
   EtherscanTransaction,
   Transaction,
 } from "constants/";
+import { EventLog } from "ethers";
 
 type ConstructorProps = {
   web3: Web3;
@@ -92,7 +93,7 @@ export class CreditVault {
   // Contracts
   public readonly cdoContract: Contract;
   public readonly tokenContract: Contract;
-  public readonly strategyContract: Contract | undefined;
+  public readonly strategyContract: Contract;
   public readonly underlyingContract: Contract | undefined;
 
   // Read only contracts
@@ -159,12 +160,10 @@ export class CreditVault {
     }
 
     // Init Strategy contract
-    if (this.strategyConfig.abi && this.strategyConfig.address) {
-      this.strategyContract = new web3.eth.Contract(
-        this.strategyConfig.abi,
-        this.strategyConfig.address
-      );
-    }
+    this.strategyContract = new web3.eth.Contract(
+      this.strategyConfig.abi,
+      this.strategyConfig.address
+    );
 
     // Init underlying token contract
     if (this.underlyingToken) {
@@ -828,5 +827,12 @@ export class CreditVault {
 
   public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
     return this.cdoContract.methods.requestWithdraw(...params);
+  }
+
+  public async getAccrueInterestEvents(): Promise<EventData[]> {
+    return this.cdoContract.getPastEvents("AccrueInterest", {
+      toBlock: "latest",
+      fromBlock: this.vaultConfig.blockNumber,
+    });
   }
 }
