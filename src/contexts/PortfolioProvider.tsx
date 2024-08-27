@@ -2314,7 +2314,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
               return {
                 ...epoch,
                 apr,
-                startTimestamp: BigNumber.maximum(0, BNify(epoch.endTimestamp).minus(vaultEpochData.epochDuration)).toNumber()
+                startTimestamp: BigNumber.maximum(0, BNify(epoch.endTimestamp).minus(bnOrZero(vaultEpochData.epochDuration).times(1000))).toNumber()
               }
             })
             vaultEpochData.epochsInterests = sortArrayByKey(vaultEpochData.epochsInterests, 'endTimestamp', 'asc')

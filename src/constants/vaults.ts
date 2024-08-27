@@ -171,7 +171,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       operators: [
         {
-          type: "borrower",
+          type: "strategist",
           name: "fasanara",
         },
       ],

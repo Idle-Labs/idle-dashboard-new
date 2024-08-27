@@ -23,7 +23,7 @@ import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelecto
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
 import { EpochThresholdsTable } from 'components/EpochThresholdsTable/EpochThresholdsTable'
-import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale } from 'helpers/'
+import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
 import { VaultOperatorOverview } from 'components/VaultOperatorOverview/VaultOperatorOverview'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
@@ -31,6 +31,7 @@ import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/Va
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 import { EpochWithdrawRequest } from 'components/EpochWithdrawRequest/EpochWithdrawRequest'
+import { useEpochsChartData } from 'hooks/useEpochsChartData/useEpochsChartData'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -86,43 +87,42 @@ export const Earn: React.FC = () => {
 
   const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
   const { performanceChartData } = usePerformanceChartData({ assetIds: [asset?.id], timeframe })
+  const { epochsChartData } = useEpochsChartData({ assetIds: [asset?.id], timeframe })
 
-  // console.log('balanceChartData', balanceChartData)
+  // console.log('epochsChartData', epochsChartData)
 
   const chartData = useMemo(() => {
     if (!isPortfolioLoaded) return
-    return userHasBalance ? balanceChartData : performanceChartData
-  }, [isPortfolioLoaded, userHasBalance, balanceChartData, performanceChartData])
+    return asset?.epochData ? epochsChartData : (userHasBalance ? balanceChartData : performanceChartData)
+  }, [asset, isPortfolioLoaded, userHasBalance, epochsChartData, balanceChartData, performanceChartData])
 
   useEffect(() => {
     if (!isPortfolioLoaded) return
-    if (useDollarConversion && !userHasBalance){
+    if (useDollarConversion && (!userHasBalance || !!asset?.epochData)){
       setUseDollarConversion(false)
     }
-  }, [isPortfolioLoaded, useDollarConversion, userHasBalance, setUseDollarConversion])
-
-  // console.log('performanceChartData', timeframe, performanceChartData)
-
-  // const onTabClick = useCallback((row: RowProps) => {
-  //   return navigate(`${location?.pathname}/${row.original.id}`)
-  // }, [navigate, location])
+  }, [isPortfolioLoaded, useDollarConversion, userHasBalance, setUseDollarConversion, asset?.epochData])
 
   const chartHeading = useMemo(() => {
-    const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
-    const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
-    const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
-
+    let apy = BNify(0)
     const showCurrentApy = !!asset?.flags?.showCurrentApy
-    
-    let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
-
-    if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
-      apy = apy.plus(asset?.apyBreakdown?.harvest)
-    }
-
-    if (earningsPercentage && earningsDays.gt(0)){
-      if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
-        apy = apy.plus(asset?.apyBreakdown?.rewards)
+    const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
+    if (asset?.epochData || showCurrentApy){
+      apy = bnOrZero(asset?.apy)
+    } else {
+      const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
+      const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
+      
+      let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
+  
+      if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
+        apy = apy.plus(asset?.apyBreakdown?.harvest)
+      }
+  
+      if (earningsPercentage && earningsDays.gt(0)){
+        if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
+          apy = apy.plus(asset?.apyBreakdown?.rewards)
+        }
       }
     }
 
@@ -156,36 +156,10 @@ export const Earn: React.FC = () => {
                   {
                     asset?.apyBreakdown?.gauge && BNify(asset?.apyBreakdown?.gauge).gt(0) && (
                       <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.gauge} suffix={` (${translate('assets.assetDetails.apyBreakdown.gauge')})`} textStyle={'caption'} />
-                    )/* : asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0) && (
-                      <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.harvest} suffix={` (${translate('assets.assetDetails.apyBreakdown.harvest')})`} textStyle={'caption'} />
-                    )*/
+                    )
                   }
                 </Stack>
               )
-            }
-            {
-              /*
-                <Stat>
-                  <HStack spacing={2}>
-                    {
-                      userHasBalance ? (
-                        <AssetProvider.RealizedApy suffix={' APY'} textStyle={'caption'} />
-                      ) : apy.gt(0) && (
-                        <HStack
-                          spacing={1}
-                        >
-                          <Amount.Percentage value={apy} suffix={' APY'} textStyle={'caption'} />
-                        </HStack>
-                      )
-                    }
-                    {
-                      earningsPercentage && (
-                        <StatArrow type={earningsPercentage.gt(0) ? 'increase' : 'decrease'} />
-                      )
-                    }
-                  </HStack>
-                </Stat>
-              */
             }
           </HStack>
         </SkeletonText>
@@ -217,21 +191,6 @@ export const Earn: React.FC = () => {
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
-        {
-          /*
-          <VStack
-            spacing={2}
-            justifyContent={'center'}
-          >
-            <Translation component={Text} translation={'defi.redeemable'} textStyle={'titleSmall'} />
-            <AssetProvider.BalanceUsd textStyle={'heading'} fontSize={'h3'} />
-            <HStack spacing={1}>
-              <AssetProvider.Redeemable decimals={4} textStyle={'captionSmaller'} />
-              <AssetProvider.Name textStyle={'captionSmaller'} />
-            </HStack>
-          </VStack>
-          */
-        }
 
         <VStack
           spacing={2}
@@ -492,7 +451,7 @@ export const Earn: React.FC = () => {
             setPercentChange={() => {}}
             height={isMobile ? '300px' : '350px'}
             margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={ !useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined }
+            formatFn={ asset?.epochData ? (n: any) => `${numberToPercentage(n, 2, 9999, 0.01)}` : (!useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined) }
           />
         </Card.Flex>
       </Box>

@@ -260,7 +260,7 @@ export type VaultsAccountData = {
 
 export type CreditVaultEpochInterests = {
   startTimestamp?: number;
-  endTimestamp?: number;
+  endTimestamp: number;
   blockNumber: number;
   fees: BigNumber;
   interest: BigNumber;

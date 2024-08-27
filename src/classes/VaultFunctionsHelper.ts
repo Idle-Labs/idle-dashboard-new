@@ -768,10 +768,10 @@ export class VaultFunctionsHelper {
                 gross: grossPercentage,
                 net: netPercentage,
               },
-              endTimestamp: block?.timestamp,
               blockNumber: event.blockNumber,
               fees: BNify(event.returnValues.fees),
               interest: BNify(event.returnValues.interest),
+              endTimestamp: bnOrZero(block?.timestamp).times(1000).toNumber(),
             };
           })
       )
