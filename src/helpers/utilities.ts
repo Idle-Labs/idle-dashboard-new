@@ -535,7 +535,9 @@ export function getTimestampRange(
   const startDayTimestamp = +dayjs(Math.max(MIN_TIMESTAMP, startDate as number))
     .startOf("day")
     .valueOf();
-  const endDayTimestamp = +dayjs(endDate).startOf("day").valueOf();
+  const endDayTimestamp = +dayjs(endDate || Date.now())
+    .startOf("day")
+    .valueOf();
 
   const dayTimestamp = 86400000;
   const days = Math.ceil((endDayTimestamp - startDayTimestamp) / dayTimestamp);

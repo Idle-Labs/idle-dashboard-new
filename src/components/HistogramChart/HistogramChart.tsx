@@ -205,18 +205,6 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
               }
             </BarStack>
           </Group>
-          {/*<AxisBottom
-            top={height - margin.top}
-            scale={dateScale}
-            tickFormat={formatDate}
-            stroke={purple3}
-            tickStroke={purple3}
-            tickLabelProps={() => ({
-              fill: purple3,
-              fontSize: 11,
-              textAnchor: 'middle',
-            })}
-          />*/}
           {
             axisEnabled && (
               <AxisBottom
@@ -237,7 +225,6 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
                 numTicks={5}
                 scale={timeScale}
                 top={height - margin.bottom}
-                // tickFormat={formatDate}
                 tickLabelProps={() => AXIS_BOTTOM_TICK_LABEL_PROPS}
               />
             )
@@ -306,21 +293,6 @@ const HistogramChartWithTooltip = withTooltip<HistogramChartWithTooltipProps, To
                 {formatDate(tooltipData.bar.data)}
               </Text>
             </VStack>
-            {
-              /*
-              <ul style={{ padding: '0', margin: '0', listStyle: 'none' }}>
-                <li>
-                  <Translation translation={`common.${tooltipData.key.toLowerCase()}`} fontWeight={'bold'} color={colorScale(tooltipData.key)} />
-                </li>
-                <li>
-                  <Amount.Usd abbreviate={false} fontWeight='bold' fontSize='lg' my={2} value={tooltipData.bar.data[tooltipData.key]} />
-                </li>
-                <li style={{ paddingBottom: '0.25rem', fontSize: '12px', color: theme.colors.gray[300] }}>
-                  {formatDate(tooltipData.bar.data)}
-                </li>
-              </ul>
-              */
-            }
           </TooltipWithBounds>
         )}
       </div>

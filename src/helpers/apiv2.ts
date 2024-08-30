@@ -12,13 +12,13 @@ import {
   getPlatformApisEndpoint,
   makeRequest,
 } from "./apis";
-import { BNify, cmpAddrs } from "./utilities";
+import { BNify, cmpAddrs, isEmpty } from "./utilities";
 
 export async function getIdleAPIV2Page(
   endpoint: string,
   apiConfig: ApisProps | null,
   offset: number = 0,
-  limit: number = 200
+  limit: number = 100
 ): Promise<any> {
   return await makeRequest(
     endpoint + `&offset=${offset}&limit=${limit}`,
@@ -29,13 +29,13 @@ export async function getIdleAPIV2Page(
 export async function getIdleAPIV2AllPages<T = any>(
   endpoint: string,
   apiConfig: ApisProps | null,
-  limit: number = 200
+  limit: number = 100
 ): Promise<T[]> {
   const firstPageResults = await getIdleAPIV2Page(endpoint, apiConfig, 0);
   const totalCount = firstPageResults?.totalCount;
   const totalRequests = Math.ceil((totalCount - limit) / limit);
 
-  let output = [...firstPageResults.data];
+  let output = [...(firstPageResults?.data || [])];
   if (totalRequests > 0) {
     const promises = Array.from(Array(totalRequests).keys()).map(
       (index: number) => {
@@ -56,7 +56,9 @@ export async function getIdleAPIV2AllPages<T = any>(
 }
 
 export async function getWalletPerformancesFromApiV2(
-  walletAddress: string
+  walletAddress: string,
+  filters?: Record<string, string | number>,
+  vaultInfos?: any
 ): Promise<Record<AssetId, any>> {
   const response = await callPlatformApis(1, "idle", "wallets", "", {
     address: walletAddress,
@@ -67,33 +69,42 @@ export async function getWalletPerformancesFromApiV2(
 
   const wallet = response[0];
 
-  // Call walletLatestBlocks
-  const walletLatestBlocks = await callPlatformApis(
-    1,
-    "idle",
-    "walletLatestBlocks",
-    "",
-    {
-      walletId: wallet._id,
-      "balance:gt": 0,
-    }
-  );
+  if (!filters || isEmpty(filters)) {
+    filters = {
+      "block:gte": 1,
+    };
+  }
 
-  const promises = walletLatestBlocks.map((walletLatestBlock: any) =>
-    callPlatformApis(
+  // Call walletLatestBlocks
+  if (!vaultInfos || isEmpty(vaultInfos)) {
+    const walletLatestBlocks = await callPlatformApis(
       1,
       "idle",
-      "walletVaultPerformance",
+      "walletLatestBlocks",
       "",
       {
-        startBlock: 1,
-      },
-      {
         walletId: wallet._id,
-        vaultId: walletLatestBlock.vaultId,
+        "balance:gt": 0,
       }
-    ).then((performance) => ({
-      vaultId: walletLatestBlock.vaultAddress,
+    );
+
+    vaultInfos = walletLatestBlocks.map((walletLatestBlock: any) => ({
+      _id: walletLatestBlock.vaultId,
+      address: walletLatestBlock.vaultAddress,
+    }));
+  }
+
+  if (!vaultInfos?.length) {
+    return [];
+  }
+
+  const promises = vaultInfos.map((vaultInfo: any) =>
+    callPlatformApis(1, "idle", "walletVaultPerformance", "", filters, {
+      walletId: wallet._id,
+      vaultId: vaultInfo._id,
+    }).then((performance) => ({
+      vaultId: vaultInfo._id,
+      vaultAddress: vaultInfo.address,
       performance,
     }))
   );
@@ -121,15 +132,17 @@ export async function getWalletsVaultsPerformancesFromApiV2(
 
   const wallet = response[0];
 
+  if (!wallet) return [];
+
   const filters: any = {
     walletId: wallet._id,
   };
 
   if (startTimestamp) {
-    filters["timestamp:gte"] = startTimestamp;
+    filters["timestamp:gte"] = Math.floor(startTimestamp / 1000);
   }
   if (endTimestamp) {
-    filters["timestamp:lte"] = endTimestamp;
+    filters["timestamp:lte"] = Math.floor(endTimestamp / 1000);
   }
 
   if (sort) {
@@ -171,10 +184,10 @@ export async function getTransactionsFromApiV2(
   };
 
   if (startTimestamp) {
-    filters["timestamp:gte"] = startTimestamp;
+    filters["timestamp:gte"] = Math.floor(startTimestamp / 1000);
   }
   if (endTimestamp) {
-    filters["timestamp:lte"] = endTimestamp;
+    filters["timestamp:lte"] = Math.floor(endTimestamp / 1000);
   }
 
   if (sort) {
@@ -211,10 +224,10 @@ export async function getWalletBlocksFromApiV2(
   };
 
   if (startTimestamp) {
-    filters["timestamp:gte"] = startTimestamp;
+    filters["timestamp:gte"] = Math.floor(startTimestamp / 1000);
   }
   if (endTimestamp) {
-    filters["timestamp:lte"] = endTimestamp;
+    filters["timestamp:lte"] = Math.floor(endTimestamp / 1000);
   }
 
   if (sort) {
@@ -240,6 +253,10 @@ export async function getWalletBlocksFromApiV2(
 export async function getTokensFromApiV2(
   tokenId: string | string[]
 ): Promise<any[]> {
+  if (!tokenId || isEmpty(tokenId)) {
+    return [];
+  }
+
   const apiConfig = getPlatformApiConfig(1, "idle", "tokens");
 
   const filters: any = {
@@ -265,10 +282,10 @@ export async function getTokenBlocksFromApiV2(
     tokenId,
   };
   if (startTimestamp) {
-    filters["timestamp:gte"] = startTimestamp;
+    filters["timestamp:gte"] = Math.floor(startTimestamp / 1000);
   }
   if (endTimestamp) {
-    filters["timestamp:lte"] = endTimestamp;
+    filters["timestamp:lte"] = Math.floor(endTimestamp / 1000);
   }
   if (block) {
     filters["block"] = block;
@@ -362,7 +379,7 @@ export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {
 
   const results = await Promise.all(promises);
 
-  return results.map((res) => res.data).flat();
+  return results.map((res) => res.data || []).flat();
 }
 
 export async function getLatestVaultsBlocks(vaultsIds: string[]): Promise<any> {
@@ -378,5 +395,5 @@ export async function getLatestVaultsBlocks(vaultsIds: string[]): Promise<any> {
   const results = await Promise.all(promises);
   if (!results) return;
 
-  return results.map((res) => res.data).flat();
+  return results.map((res) => res.data || []).flat();
 }

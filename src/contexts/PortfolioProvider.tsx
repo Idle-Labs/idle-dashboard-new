@@ -73,6 +73,7 @@ type VaultsOnchainData = {
 type InitialState = {
   vaults: Vault[]
   assetsData: Assets
+  vaultsApiData: any
   balancesUsd: Balances
   isVaultsLoaded: boolean
   helpers: Record<any, any>
@@ -132,6 +133,7 @@ const initialState: InitialState = {
   transactions: {},
   pausedVaults: {},
   walletAllowed: {},
+  vaultsApiData: [],
   currentRatios: {},
   protocolData: {
     uniqueVaults: 0,
@@ -232,6 +234,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return { ...state, portfolioTimestamp: action.payload }
     case 'SET_VAULTS_LOADED':
       return { ...state, isVaultsLoaded: action.payload }
+    case 'SET_VAULTS_API_DATA':
+      return { ...state, vaultsApiData: action.payload }
     case 'SET_PORTFOLIO_LOADED':
       return { ...state, isPortfolioLoaded: action.payload, portfolioTimestamp: currTime }
     case 'SET_PORTFOLIO_ACCOUNT_READY':
@@ -413,6 +417,10 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
   const selectAssetById = useCallback((assetId: AssetId | undefined): Asset | null => {
     return assetId && state.assetsData ? state.assetsData[assetId.toLowerCase()] : null
+  }, [state.assetsData])
+
+  const selectAssetByApiId = useCallback((vaultApiId: string | undefined): Asset | null | undefined => {
+    return vaultApiId && state.assetsData ? (Object.values(state.assetsData) as Asset[]).find( (asset: Asset) => cmpAddrs(asset.vaultId, vaultApiId) ) : null
   }, [state.assetsData])
 
   const selectVaultTransactions = useCallback((vaultId: AssetId | undefined): Transaction[] => {
@@ -1002,9 +1010,9 @@ export function PortfolioProvider({ children }: ProviderProps) {
     
     output.vaultsPositions = walletPerformances.reduce( (vaultsPositions: Record<AssetId, VaultPosition>, walletPerformance: any) => {
 
-      const { vaultId, performance } = walletPerformance
+      const { vaultAddress, performance } = walletPerformance
 
-      const vault = vaults.find( vault => cmpAddrs(vault.id, vaultId) )
+      const vault = vaults.find( vault => cmpAddrs(vault.id, vaultAddress) )
       if (!vault){
         return vaultsPositions
       }
@@ -3261,6 +3269,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       selectVaultGauge,
       selectAssetsByIds,
       selectVaultsByType,
+      selectAssetByApiId,
       selectAssetBalance,
       selectVaultPosition,
       selectAssetPriceUsd,
@@ -3291,6 +3300,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     selectVaultPrice,
     selectAssetsByIds,
     selectVaultsByType,
+    selectAssetByApiId,
     selectAssetBalance,
     selectAssetPriceUsd,
     selectVaultPosition,
@@ -3667,6 +3677,17 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       console.timeEnd('VAULTS_DATA_API')
       runningEffects.current.vaultsLoading = false
+
+      const vaultsApiData = vaultsData.map( (vaultData: any) => ({
+        _id: vaultData._id,
+        address: vaultData.address,
+        tokenId: vaultData.tokenId
+      }))
+
+      console.log('vaultsApiData', vaultsApiData)
+
+      // SET VAULTS API DATA
+      dispatch({ type: 'SET_VAULTS_API_DATA', payload: vaultsApiData})
 
       // Set portfolio loaded = true
       dispatch({ type: 'SET_APRS', payload: aprs })
@@ -4638,11 +4659,14 @@ export function PortfolioProvider({ children }: ProviderProps) {
         assetsData[vault.id].status = 'paused'
       }
 
+      const vaultApiData = state.vaultsApiData.find( (vaultData: any) => cmpAddrs(vaultData.address, vault.id) )
+
       assetsData[vault.id].tvl = BNify(0)
       assetsData[vault.id].tvlUsd = BNify(0)
       assetsData[vault.id].totalTvl = BNify(0)
       assetsData[vault.id].flags = vault.flags
       assetsData[vault.id].fee = state.fees[vault.id]
+      assetsData[vault.id].vaultId = vaultApiData?._id
       assetsData[vault.id].rewards = state.rewards[vault.id]
       assetsData[vault.id].poolData = state.poolsData[vault.id]
       assetsData[vault.id].aprRatio = state.aprRatios[vault.id]
@@ -5019,6 +5043,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     state.aprsBreakdown,
     state.walletAllowed,
     state.protocolsAprs,
+    state.vaultsApiData,
     state.additionalAprs,
     state.vaultsNetworks,
     state.discountedFees,

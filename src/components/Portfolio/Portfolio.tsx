@@ -26,18 +26,12 @@ export const Portfolio: React.FC = () => {
   const [timeframe, setTimeframe] = useState<HistoryTimeframe>(HistoryTimeframe.YEAR)
 
   const navigate = useNavigate()
-  const { account, network } = useWalletProvider()
+  const { account } = useWalletProvider()
   const {
-    assetsData,
-    stakingData,
     isPortfolioAccountReady,
-    // isVaultsPositionsLoaded,
-    isPortfolioLoaded,
     vaultsPositions,
     selectors: {
       selectAssetsByIds,
-      // selectAssetStrategies,
-      selectVaultsAssetsByType,
     }
   } = usePortfolioProvider()
 
@@ -158,7 +152,7 @@ export const Portfolio: React.FC = () => {
                     height={75}
                     width={'full'}
                   >
-                    <EarningsChart assetIds={[]} margin={{ top: 0, left: 0, right: 0, bottom: -85 }} />
+                    <EarningsChart timeframe={HistoryTimeframe.ALL} assetIds={[]} margin={{ top: 0, left: 0, right: 0, bottom: -85 }} />
                   </Box>
                 </VStack>
               </Card.Flex>

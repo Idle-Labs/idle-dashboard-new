@@ -515,12 +515,9 @@ export const protocols: Record<string, Protocol> = {
       },
       transactions: {
         endpoint: {
-          // 1: `${APIV2_STAGING_URL}/transactions`,
-          // 10: `${APIV2_STAGING_URL}/transactions`,
-          // 137: `${APIV2_STAGING_URL}/transactions`,
-          1: `${APIV2_LOCALHOST_URL}/transactions`,
-          10: `${APIV2_LOCALHOST_URL}/transactions`,
-          137: `${APIV2_LOCALHOST_URL}/transactions`,
+          1: `${APIV2_STAGING_URL}/transactions`,
+          10: `${APIV2_STAGING_URL}/transactions`,
+          137: `${APIV2_STAGING_URL}/transactions`,
         },
         path: "data",
         filters: [
@@ -541,12 +538,9 @@ export const protocols: Record<string, Protocol> = {
       },
       walletsVaultsPerformances: {
         endpoint: {
-          // 1: `${APIV2_STAGING_URL}/wallet-performances`,
-          // 10: `${APIV2_STAGING_URL}/wallet-performances`,
-          // 137: `${APIV2_STAGING_URL}/wallet-performances`,
-          1: `${APIV2_LOCALHOST_URL}/wallet-performances`,
-          10: `${APIV2_LOCALHOST_URL}/wallet-performances`,
-          137: `${APIV2_LOCALHOST_URL}/wallet-performances`,
+          1: `${APIV2_STAGING_URL}/wallet-performances`,
+          10: `${APIV2_STAGING_URL}/wallet-performances`,
+          137: `${APIV2_STAGING_URL}/wallet-performances`,
         },
         path: "data",
         filters: [
@@ -556,6 +550,8 @@ export const protocols: Record<string, Protocol> = {
           "vaultAddress",
           "sort",
           "order",
+          "timestamp:gte",
+          "timestamp:lte",
         ],
         config: {
           headers: env.REACT_APP_IDLE_API_V2_KEY
@@ -578,9 +574,9 @@ export const protocols: Record<string, Protocol> = {
       },
       walletBlocks: {
         endpoint: {
-          1: `${APIV2_LOCALHOST_URL}/wallet-blocks`,
-          10: `${APIV2_LOCALHOST_URL}/wallet-blocks`,
-          137: `${APIV2_LOCALHOST_URL}/wallet-blocks`,
+          1: `${APIV2_STAGING_URL}/wallet-blocks`,
+          10: `${APIV2_STAGING_URL}/wallet-blocks`,
+          137: `${APIV2_STAGING_URL}/wallet-blocks`,
         },
         path: "data",
         filters: [
@@ -603,9 +599,6 @@ export const protocols: Record<string, Protocol> = {
           1: `${APIV2_STAGING_URL}/wallet-latest-blocks`,
           10: `${APIV2_STAGING_URL}/wallet-latest-blocks`,
           137: `${APIV2_STAGING_URL}/wallet-latest-blocks`,
-          // 1: `${APIV2_LOCALHOST_URL}/wallet-latest-blocks`,
-          // 10: `${APIV2_LOCALHOST_URL}/wallet-latest-blocks`,
-          // 137: `${APIV2_LOCALHOST_URL}/wallet-latest-blocks`,
         },
         path: "data",
         filters: ["walletId", "vaultId", "balance:gt"],
@@ -620,11 +613,8 @@ export const protocols: Record<string, Protocol> = {
           1: `${APIV2_STAGING_URL}/wallets/:walletId/vault/:vaultId`,
           10: `${APIV2_STAGING_URL}/wallets/:walletId/vault/:vaultId`,
           137: `${APIV2_STAGING_URL}/wallets/:walletId/vault/:vaultId`,
-          // 1: `${APIV2_LOCALHOST_URL}/wallets/:walletId/vault/:vaultId`,
-          // 10: `${APIV2_LOCALHOST_URL}/wallets/:walletId/vault/:vaultId`,
-          // 137: `${APIV2_LOCALHOST_URL}/wallets/:walletId/vault/:vaultId`,
         },
-        filters: ["startBlock"],
+        filters: ["block:gte", "timestamp:gte", "timestamp:lte"],
         config: {
           headers: env.REACT_APP_IDLE_API_V2_KEY
             ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
@@ -636,9 +626,6 @@ export const protocols: Record<string, Protocol> = {
           1: `${APIV2_STAGING_URL}/wallets`,
           10: `${APIV2_STAGING_URL}/wallets`,
           137: `${APIV2_STAGING_URL}/wallets`,
-          // 1: `${APIV2_LOCALHOST_URL}/wallets`,
-          // 10: `${APIV2_LOCALHOST_URL}/wallets`,
-          // 137: `${APIV2_LOCALHOST_URL}/wallets`,
         },
         path: "data",
         filters: ["address", "limit"],
@@ -678,12 +665,9 @@ export const protocols: Record<string, Protocol> = {
       },
       tokenBlocks: {
         endpoint: {
-          // 1: `${APIV2_STAGING_URL}/token-blocks`,
-          // 10: `${APIV2_STAGING_URL}/token-blocks`,
-          // 137: `${APIV2_STAGING_URL}/token-blocks`,
-          1: `${APIV2_LOCALHOST_URL}/token-blocks`,
-          10: `${APIV2_LOCALHOST_URL}/token-blocks`,
-          137: `${APIV2_LOCALHOST_URL}/token-blocks`,
+          1: `${APIV2_STAGING_URL}/token-blocks`,
+          10: `${APIV2_STAGING_URL}/token-blocks`,
+          137: `${APIV2_STAGING_URL}/token-blocks`,
         },
         filters: [
           "offset",
