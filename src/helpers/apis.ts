@@ -4,7 +4,14 @@ import { ethers } from "ethers";
 import GnosisSafe from "abis/gnosis/GnosisSafe.json";
 import { GenericContract } from "contracts/GenericContract";
 import { getObjectPath, asyncWait, cmpAddrs } from "helpers/";
-import { protocols, subgraphs, explorers, networks, chains } from "constants/";
+import {
+  protocols,
+  subgraphs,
+  explorers,
+  networks,
+  chains,
+  API_REQUEST_TIMEOUT,
+} from "constants/";
 import type {
   Abi,
   Explorer,
@@ -19,11 +26,16 @@ export const makeRequest = async (
   config?: any,
   error_callback?: Function
 ): Promise<any> => {
-  const data = await axios.get(endpoint, config).catch((err) => {
-    if (typeof error_callback === "function") {
-      error_callback(err);
-    }
-  });
+  const data = await axios
+    .get(endpoint, {
+      ...config,
+      signal: (AbortSignal as any).timeout(API_REQUEST_TIMEOUT),
+    })
+    .catch((err) => {
+      if (typeof error_callback === "function") {
+        error_callback(err);
+      }
+    });
 
   return data?.data || null;
 };
@@ -34,11 +46,16 @@ export const makePostRequest = async (
   config?: any,
   error_callback?: Function
 ) => {
-  const data = await axios.post(endpoint, postData, config).catch((err) => {
-    if (typeof error_callback === "function") {
-      error_callback(err);
-    }
-  });
+  const data = await axios
+    .post(endpoint, postData, {
+      ...config,
+      signal: (AbortSignal as any).timeout(API_REQUEST_TIMEOUT),
+    })
+    .catch((err) => {
+      if (typeof error_callback === "function") {
+        error_callback(err);
+      }
+    });
   return data?.data;
 };
 

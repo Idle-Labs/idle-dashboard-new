@@ -12,6 +12,7 @@ export const stkIDLE_TOKEN = "STKIDLE";
 export const BLOCKS_PER_YEAR = 2613400;
 export const DATE_FORMAT = "YYYY/MM/DD";
 export const SECONDS_IN_YEAR = 31536000;
+export const API_REQUEST_TIMEOUT = 10000;
 export const VAULT_LIMIT_MAX = 200000000;
 export const MIN_TIMESTAMP = 1609459200000;
 export const DEFAULT_ENVIRONMENT = "beta";

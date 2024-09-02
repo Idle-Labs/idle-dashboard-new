@@ -1190,6 +1190,9 @@ export class VaultFunctionsHelper {
       switch (vault.cdoConfig.name) {
         case "IdleCDO_amphor_wstETH":
           const epochData = await this.getAmphorwstETHEpochData(+vault.chainId);
+          if (!epochData) {
+            return null;
+          }
           let index = 0;
           const weeklyThresholds: AmphorEpoch["weeklyThresholds"] = Object.keys(
             epochData
