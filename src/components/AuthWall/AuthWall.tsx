@@ -8,7 +8,7 @@ import { useCacheProvider } from 'contexts/CacheProvider'
 import type { ProviderProps } from 'contexts/common/types'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { Translation } from 'components/Translation/Translation'
-import React, { useState, useMemo, useReducer, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useReducer, useCallback, useEffect, useRef } from 'react'
 import { Center, Heading, Button, HStack, VStack, Checkbox, Box, Spinner, Image, Flex } from '@chakra-ui/react'
 import { saveSignature, checkSignature, verifySignature, parseAndReplaceAnchorTags } from 'helpers/'
 
@@ -17,6 +17,7 @@ type InitialState = Record<string, boolean>
 export const AuthWall = ({ children }: ProviderProps) => {
   const translate = useTranslate()
   const { web3 } = useWeb3Provider()
+  const timeoutRef = useRef<number>(0)
   const { messages } = useI18nProvider()
   const cacheProvider = useCacheProvider()
   const [ sending, setSending ] = useState<boolean>(false)
@@ -78,7 +79,10 @@ export const AuthWall = ({ children }: ProviderProps) => {
 
       // Try to send signature again in case of no response
       if (!response){
-        setTimeout(() => {
+        if (timeoutRef.current){
+          clearTimeout(timeoutRef.current)
+        }
+        timeoutRef.current = setTimeout(() => {
           sendSignature(signature)
         }, 60000)
       }
