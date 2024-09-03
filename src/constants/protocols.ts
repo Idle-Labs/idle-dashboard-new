@@ -610,9 +610,9 @@ export const protocols: Record<string, Protocol> = {
       },
       walletVaultPerformance: {
         endpoint: {
-          1: `${APIV2_STAGING_URL}/wallets/:walletId/vault/:vaultId`,
-          10: `${APIV2_STAGING_URL}/wallets/:walletId/vault/:vaultId`,
-          137: `${APIV2_STAGING_URL}/wallets/:walletId/vault/:vaultId`,
+          1: `${APIV2_LOCALHOST_URL}/wallets/:walletId/vault/:vaultId`,
+          10: `${APIV2_LOCALHOST_URL}/wallets/:walletId/vault/:vaultId`,
+          137: `${APIV2_LOCALHOST_URL}/wallets/:walletId/vault/:vaultId`,
         },
         filters: ["block:gte", "timestamp:gte", "timestamp:lte"],
         config: {

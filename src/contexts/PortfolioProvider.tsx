@@ -25,9 +25,10 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData } from 'constants/types'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, getLatestVaultBlocks, checkVaultEnv, checkVaultAuthCode } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, getVaultsFromApiV2, checkVaultEnv, checkVaultAuthCode, getWalletPerformancesFromApiV2, getLatestVaultsBlocks } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 import { useAuthCodeProvider } from './AuthCodeProvider'
+import { instanceOf } from 'prop-types'
 
 type VaultsPositions = {
   vaultsPositions: Record<AssetId, VaultPosition>
@@ -3562,7 +3563,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
        // Get vaults last harvests
       const vaultsLastHarvestsPromises = state.vaults.reduce((promises: Map<AssetId, Promise<CdoLastHarvest> | undefined>, vault: Vault): Map<AssetId, Promise<CdoLastHarvest> | undefined> => {
-        if (!("cdoConfig" in vault) || promises.has(vault.cdoConfig.address)) return promises
+        if (!(vault instanceof TrancheVault) || promises.has(vault.cdoConfig.address)) return promises
         promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getTrancheLastHarvest(vault))
         return promises
       }, new Map())
