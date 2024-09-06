@@ -1357,16 +1357,16 @@ export class VaultFunctionsHelper {
       }
     } else if (vault instanceof TrancheVault) {
       switch (vault.cdoConfig.name) {
-        case "IdleCDO_gearbox_USDC":
-        case "IdleCDO_gearbox_WETH":
-          if (vault.type === "AA") {
-            return {
-              type: "rewards",
-              vaultId: vault.id,
-              apr: this.getGearboxSrTrancheAdditionalApy(asset),
-            };
-          }
-          break;
+        // case "IdleCDO_gearbox_USDC":
+        // case "IdleCDO_gearbox_WETH":
+        //   if (vault.type === "AA") {
+        //     return {
+        //       type: "rewards",
+        //       vaultId: vault.id,
+        //       apr: this.getGearboxSrTrancheAdditionalApy(asset),
+        //     };
+        //   }
+        //   break;
         default:
           return {
             apr: BNify(0),
