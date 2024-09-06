@@ -1538,7 +1538,6 @@ export const tranches: Record<
         autoFarming: [],
         protocol: "lido",
         enabledEnvs: ["prod", "beta"],
-        status: "deprecated",
         blockNumber: 15623682,
         underlyingToken: "MATIC",
         vaultType: "liquidStaking",

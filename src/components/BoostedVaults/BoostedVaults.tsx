@@ -39,7 +39,7 @@ export const BoostedVaults: React.FC = () => {
 
   const boostedVaults = useMemo(() => {
     return allVaultsAssets.filter( (asset: Asset) => {
-      return bnOrZero(asset.tvlUsd).gte(VAULTS_MIN_TVL) && (!isEmpty(asset.rewardsEmissions) || !isEmpty(asset.distributedRewards))
+      return asset.status !== 'deprecated' && bnOrZero(asset.tvlUsd).gte(VAULTS_MIN_TVL) && (!isEmpty(asset.rewardsEmissions) || !isEmpty(asset.distributedRewards))
     })
   }, [allVaultsAssets])
 
