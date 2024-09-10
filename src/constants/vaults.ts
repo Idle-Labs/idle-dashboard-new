@@ -3342,6 +3342,7 @@ export const tranches: Record<
       },
       USDCFas: {
         enabledEnvs: ["prod", "beta"],
+        status: "deprecated",
         variant: "fasanara",
         operators: [
           {
