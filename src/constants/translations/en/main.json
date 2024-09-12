@@ -9,6 +9,7 @@
     "continue": "Continue",
     "sign": "Sign",
     "kyc": "KYC",
+    "type": "Type",
     "approve": "Approve",
     "confirm": "Confirm",
     "retry": "Retry",
@@ -1534,6 +1535,7 @@
       "slippageSettings": "Slippage Settings",
       "withdrawType": "Withdraw Type",
       "instant": "Instant",
+      "standard": "Standard",
       "delayed": "7 to 14 days",
       "fee": "%{fee}% %{symbol} fee",
       "noFee": "No %{symbol} fee",
@@ -2252,6 +2254,7 @@
       "rewards": {
         "claimableIn": "Claimable in",
         "claimableOn": "Claimable on",
+        "claimableFor": "Claimable for",
         "farmingRewards": "Farming Rewards",
         "currentRewards": "Current Rewards",
         "currentAPY": "Current APY",

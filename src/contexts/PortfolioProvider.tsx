@@ -3485,7 +3485,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
             : 18;
         
         const apr = bnOrZero(vaultBlock.APRs[0]?.rate)
-        const priceUsd = bnOrZero(vaultBlock.TVL.USD).eq(vaultBlock.TVL.token) ? BNify(1) : fixTokenDecimals(vaultBlock.TVL.USD, 6).div(fixTokenDecimals(vaultBlock.TVL.token, 18))
+        const priceUsd = bnOrZero(vaultBlock?.TVL?.USD).eq(vaultBlock?.TVL?.token) ? BNify(1) : fixTokenDecimals(vaultBlock?.TVL?.USD, 6).div(fixTokenDecimals(vaultBlock?.TVL?.token, 18))
         const totalSupply = fixTokenDecimals(vaultBlock.totalSupply, 18)
         const vaultPrice = fixTokenDecimals(vaultBlock.price, decimals)
 

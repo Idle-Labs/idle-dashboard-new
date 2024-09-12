@@ -268,6 +268,7 @@ export type CreditVaultEpoch = {
   instantWithdrawDelay: BigNumber;
   defaulted: boolean;
   epochApr: BigNumber;
+  bufferPeriod: BigNumber;
   lastEpochApr: BigNumber;
   lastEpochInterest: BigNumber;
   epochDuration: BigNumber;

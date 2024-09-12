@@ -13,6 +13,7 @@ import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
 import { BNify, bnOrZero, fixTokenDecimals, formatDate, isEmpty, secondsToPeriod, toDayjs } from "helpers"
 import { useCallback, useMemo } from "react"
+import Countdown from "react-countdown"
 import { useTranslate } from "react-polyglot"
 import { CreditVault } from "vaults/CreditVault"
 
@@ -37,9 +38,9 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
 
     // Instant
     if (withdrawRequest.isInstant){
-      if (!epochData?.isEpochRunning){
-        return null
-      }
+      // if (!epochData?.isEpochRunning){
+      //   return null
+      // }
       return toDayjs(epochData?.instantWithdrawDeadline*1000)
     }
 
@@ -57,7 +58,7 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
     }
 
     if (withdrawRequest.isInstant){
-      if (!epochData.isEpochRunning){
+      if (!epochData.isEpochRunning || !epochData.allowInstantWithdraw){
         return 'pending'
       }
       return claimDeadline && claimDeadline.isSameOrBefore(toDayjs()) ? 'claimable' : 'pending'
@@ -77,6 +78,57 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
 
     return claimDeadline ? formatDate(claimDeadline, DATETIME_FORMAT, true) : (("pendingWithdraws" in epochData) && bnOrZero(epochData?.pendingWithdraws).lte(0) ? '-' : translate('assets.assetCards.rewards.nextEpochEnd'))
   }, [withdrawRequest, claimDeadline, status, epochData, translate])
+
+  const countdownLabel = useMemo(() => {
+    return status === 'claimable' ? 'assets.assetCards.rewards.claimableFor' : 'assets.assetCards.rewards.claimableIn'
+  }, [status])
+
+  console.log('withdrawRequest', withdrawRequest, epochData, status, claimableOnText, claimDeadline?.toDate())
+
+  const countdown = useMemo(() => {
+    switch (status){
+      case 'claimable':
+        if (epochData && ("bufferPeriod" in epochData)){
+          if (withdrawRequest.isInstant){
+            const claimableUntil = toDayjs(epochData?.epochEndDate)
+            console.log(claimableUntil.toDate())
+            return (<Countdown date={claimableUntil.toDate()} />)
+          } else {
+            const claimableUntil = toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData?.bufferPeriod).times(1000)).toNumber())
+            return (<Countdown date={claimableUntil.toDate()} />)
+          }
+        }
+        break;
+      case 'pending':
+        if (epochData && ("bufferPeriod" in epochData)){
+          if (withdrawRequest.isInstant){
+            if (claimDeadline){
+              // Deadline not passed yet
+              if (claimDeadline.isAfter(toDayjs())){
+                return (<Countdown date={claimDeadline.toDate()} />)
+              } else {
+                const claimableIn = toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData.bufferPeriod).times(1000)).toNumber())
+                console.log(epochData?.epochEndDate, epochData.bufferPeriod, claimableIn.toDate())
+                return (<Countdown date={claimableIn.toDate()} />)
+              }
+            } else {
+              return (<Text textStyle={'heading'} fontSize={'h4'}>{claimableOnText}</Text>)
+            }
+          } else {
+            const claimableIn = !!epochData.isEpochRunning ? toDayjs(epochData?.epochEndDate) : toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData.epochDuration).times(1000)).plus(bnOrZero(epochData?.bufferPeriod).times(1000)).toNumber())
+            return (<Countdown date={claimableIn.toDate()} />)
+          }
+        }
+        break;
+      default:
+        if (!claimDeadline){
+          return (<Text textStyle={'heading'} fontSize={'h4'}>{claimableOnText}</Text>)
+        }
+        return (
+          <Countdown date={claimDeadline.toDate()} />
+        )
+    }
+  }, [withdrawRequest, status, epochData, claimDeadline, claimableOnText])
 
   const contractSendMethod = useMemo(() => {
     if (withdrawRequest.isInstant){
@@ -161,6 +213,17 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
           alignItems={'flex-start'}
           justifyContent={'flex-start'}
         >
+          <Translation translation={'common.type'} textStyle={'captionSmall'} />
+          <Translation translation={`assets.status.epoch.${withdrawRequest.isInstant ? 'instant' : 'standard'}`} fontSize={'h4'} textStyle={'heading'} />
+        </VStack>
+
+        <VStack
+          pb={[2, 0]}
+          spacing={[1, 2]}
+          width={['50%','auto']}
+          alignItems={'flex-start'}
+          justifyContent={'flex-start'}
+        >
           <Translation translation={'transactionRow.amount'} textStyle={'captionSmall'} />
           <TokenAmount assetId={asset?.underlyingId} showIcon={false} amount={amount} decimals={2} textStyle={'heading'} fontSize={'h4'} />
         </VStack>
@@ -183,8 +246,8 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
           alignItems={'flex-start'}
           justifyContent={'flex-start'}
         >
-          <Translation translation={'assets.assetCards.rewards.claimableOn'} textStyle={'captionSmall'} />
-          <Text textStyle={'heading'} fontSize={'h4'}>{claimableOnText}</Text>
+          <Translation translation={countdownLabel} textStyle={'captionSmall'} />
+          {countdown}
         </VStack>
 
         <TransactionButton text={'defi.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={amount.toFixed(2)} width={['100%', '150px']} disabled={isDisabled} />

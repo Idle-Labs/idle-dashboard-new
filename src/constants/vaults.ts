@@ -148,7 +148,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $10bn per month through strategies like market making, cross-exchange arbitrage and funding rate arbitrage. Through Idle Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.<br /><br />Users will need to be KYC’d via <a href="https://app.keyring.network/connect" class="link" rel="nofollow noopener noreferrer" target="_blank">Keyring</a> to deposit in this strategy`,
     },
   ],
-  /*
   10: [
     {
       mode: "STRATEGY",
@@ -185,25 +184,24 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         decimals: 18,
         abi: ERC20 as Abi,
         name: "IdleCreditVault_fasanara_USDC",
-        address: "0x55cf0BB9F893De8000D4d63F5c621283eE930e59",
+        address: "0xfA6bA4b504814f3fB524Ea506c79D76077E5D540",
       },
       CDO: {
         decimals: 18,
         abi: IdleCDOEpochVariant as Abi,
         name: "IdleCreditVault_fasanara_USDC",
-        address: "0x0581f1F01E05b77612Feaf529da3E048E1424A7E",
+        address: "0x7F70Ec0bdc89f0D61e108Afe921311205b4C3431",
       },
       Strategy: {
         abi: IdleCreditVault as Abi,
         name: "IdleStrategy_clearpool_bastion_USDT",
-        address: "0x6C748E4ea9f15e9c4121b90b5e5689c4deE3a938",
+        address: "0x8186AbBDF9AF3a1fc59A7C5BC34bab66a2e7bEF2",
       },
       blockNumber: 0,
-      description:
-        "Invest in Fasanara Capital, an Hedge Fund founded in 2011 and specialised in fintech strategies",
+      descriptionShort: "Test Test",
+      description: "Test Test",
     },
   ],
-  */
 };
 
 export interface Pool {

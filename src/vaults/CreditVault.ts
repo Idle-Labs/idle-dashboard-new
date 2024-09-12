@@ -639,6 +639,10 @@ export class CreditVault {
       },
       {
         assetId: this.id,
+        call: this.cdoContract.methods.bufferPeriod(),
+      },
+      {
+        assetId: this.id,
         call: this.strategyContract.methods.getApr(),
         data: {
           field: "epochApr",
