@@ -1372,6 +1372,8 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     return (<Spinner size={'sm'} />)
   }
 
+  console.log('EpochInfo', asset?.epochData)
+
   if (!asset || !asset.epochData){
     return null
   }

@@ -155,6 +155,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",
+      blockNumber: 125191725,
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
       accessCodes: [
@@ -197,7 +198,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         name: "IdleStrategy_clearpool_falconx_USDT",
         address: "0x8186AbBDF9AF3a1fc59A7C5BC34bab66a2e7bEF2",
       },
-      blockNumber: 0,
       descriptionShort: "Test Test",
       description: "Test Test",
     },
