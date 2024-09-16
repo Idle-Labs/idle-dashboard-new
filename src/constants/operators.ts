@@ -59,6 +59,22 @@ export const operators: Record<string, Operator> = {
     description:
       "Re7 Capital specialises in DeFi R&D and liquid crypto investment strategies.",
   },
+  falconx: {
+    rating: "AA",
+    founded: "-",
+    industry: "Prime Brokerage",
+    location: "California",
+    nameShort: "FalconX",
+    image: "images/borrowers/falconx.png",
+    name: "FalconX",
+    links: {
+      website: "https://www.falconx.io/",
+      twitter: "https://x.com/falconxnetwork",
+      linkedin: "https://www.linkedin.com/company/thefalconx/",
+    },
+    description:
+      "The largest, most reliable digital assets prime brokerage for the world’s leading institutions.",
+  },
   fasanara: {
     rating: "AA",
     founded: 2019,

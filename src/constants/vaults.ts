@@ -93,67 +93,67 @@ export interface CreditVaultConfig {
 }
 
 export const credits: Record<number, CreditVaultConfig[]> = {
-  1: [
-    {
-      mode: "STRATEGY",
-      kycRequired: true,
-      manager: "fasanara",
-      borrower: "fasanara",
-      status: "experimental",
-      underlyingToken: "USDC",
-      enabledEnvs: ["credit"],
-      accessCodes: [
-        "6G8R7Q",
-        "GSER6L",
-        "CDDA2X",
-        "S58PHT",
-        "J2998A",
-        "YM9Y7P",
-        "66M55D",
-        "ZG8S4A",
-        "3WSBSD",
-        "P26JQ3",
-      ],
-      operators: [
-        {
-          type: "strategist",
-          name: "fasanara",
-        },
-      ],
-      flags: {
-        compoundApr: false,
-      },
-      name: "Fasanara Credit Vault",
-      vaultType: "diversifiedBasisYield",
-      Token: {
-        decimals: 18,
-        abi: ERC20 as Abi,
-        name: "IdleCreditVault_fasanara_USDC",
-        address: "0x3283FA1EeC2A50783813f30EBE60Eb27f8A40dEd",
-      },
-      CDO: {
-        decimals: 18,
-        abi: IdleCDOEpochVariant as Abi,
-        name: "IdleCreditVault_fasanara_USDC",
-        address: "0xFb77eE48b6A69b4C97af7474b4f175591AeB61b3",
-      },
-      Strategy: {
-        abi: IdleCreditVault as Abi,
-        name: "IdleStrategy_clearpool_bastion_USDT",
-        address: "0x1cbd086e16f1188e0e15a153124d6f5c81e57f3e",
-      },
-      blockNumber: 0,
-      descriptionShort:
-        "Yield strategy using market making, cross-exchange arbitrage and funding rate arbitrage",
-      description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $10bn per month through strategies like market making, cross-exchange arbitrage and funding rate arbitrage. Through Idle Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.<br /><br />Users will need to be KYC’d via <a href="https://app.keyring.network/connect" class="link" rel="nofollow noopener noreferrer" target="_blank">Keyring</a> to deposit in this strategy`,
-    },
-  ],
+  // 1: [
+  //   {
+  //     mode: "STRATEGY",
+  //     kycRequired: true,
+  //     manager: "fasanara",
+  //     borrower: "fasanara",
+  //     status: "experimental",
+  //     underlyingToken: "USDC",
+  //     enabledEnvs: ["credit"],
+  //     accessCodes: [
+  //       "6G8R7Q",
+  //       "GSER6L",
+  //       "CDDA2X",
+  //       "S58PHT",
+  //       "J2998A",
+  //       "YM9Y7P",
+  //       "66M55D",
+  //       "ZG8S4A",
+  //       "3WSBSD",
+  //       "P26JQ3",
+  //     ],
+  //     operators: [
+  //       {
+  //         type: "strategist",
+  //         name: "fasanara",
+  //       },
+  //     ],
+  //     flags: {
+  //       compoundApr: false,
+  //     },
+  //     name: "Fasanara Credit Vault",
+  //     vaultType: "diversifiedBasisYield",
+  //     Token: {
+  //       decimals: 18,
+  //       abi: ERC20 as Abi,
+  //       name: "IdleCreditVault_fasanara_USDC",
+  //       address: "0x3283FA1EeC2A50783813f30EBE60Eb27f8A40dEd",
+  //     },
+  //     CDO: {
+  //       decimals: 18,
+  //       abi: IdleCDOEpochVariant as Abi,
+  //       name: "IdleCreditVault_fasanara_USDC",
+  //       address: "0xFb77eE48b6A69b4C97af7474b4f175591AeB61b3",
+  //     },
+  //     Strategy: {
+  //       abi: IdleCreditVault as Abi,
+  //       name: "IdleStrategy_clearpool_bastion_USDT",
+  //       address: "0x1cbd086e16f1188e0e15a153124d6f5c81e57f3e",
+  //     },
+  //     blockNumber: 0,
+  //     descriptionShort:
+  //       "Yield strategy using market making, cross-exchange arbitrage and funding rate arbitrage",
+  //     description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $10bn per month through strategies like market making, cross-exchange arbitrage and funding rate arbitrage. Through Idle Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.<br /><br />Users will need to be KYC’d via <a href="https://app.keyring.network/connect" class="link" rel="nofollow noopener noreferrer" target="_blank">Keyring</a> to deposit in this strategy`,
+  //   },
+  // ],
   10: [
     {
       mode: "STRATEGY",
       kycRequired: true,
-      manager: "fasanara",
-      borrower: "fasanara",
+      manager: "falconx",
+      borrower: "falconx",
       status: "experimental",
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
@@ -171,30 +171,30 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       operators: [
         {
-          type: "strategist",
-          name: "fasanara",
+          type: "borrower",
+          name: "falconx",
         },
       ],
       flags: {
         compoundApr: false,
       },
-      name: "Fasanara Credit Vault",
+      name: "FalconX Credit Test",
       vaultType: "diversifiedBasisYield",
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
-        name: "IdleCreditVault_fasanara_USDC",
+        name: "IdleCreditVault_falconx_USDC",
         address: "0xfA6bA4b504814f3fB524Ea506c79D76077E5D540",
       },
       CDO: {
         decimals: 18,
         abi: IdleCDOEpochVariant as Abi,
-        name: "IdleCreditVault_fasanara_USDC",
+        name: "IdleCreditVault_falconx_USDC",
         address: "0x7F70Ec0bdc89f0D61e108Afe921311205b4C3431",
       },
       Strategy: {
         abi: IdleCreditVault as Abi,
-        name: "IdleStrategy_clearpool_bastion_USDT",
+        name: "IdleStrategy_clearpool_falconx_USDT",
         address: "0x8186AbBDF9AF3a1fc59A7C5BC34bab66a2e7bEF2",
       },
       blockNumber: 0,
