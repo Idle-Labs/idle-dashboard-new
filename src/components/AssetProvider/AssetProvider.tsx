@@ -13,7 +13,7 @@ import { RateChart } from 'components/RateChart/RateChart'
 import { ProductTag } from 'components/ProductTag/ProductTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import React, { useMemo, createContext, useContext, useCallback } from 'react'
+import React, { useMemo, createContext, useContext } from 'react'
 import { selectProtocol, selectUnderlyingToken } from 'selectors/'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
@@ -22,11 +22,11 @@ import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs } from 'helpers/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 
@@ -234,7 +234,7 @@ const StatusBadge: React.FC<ImageProps> = (props) => {
 
 const ActionRequired: React.FC<ImageProps> = (props) => {
   const { vault, asset, translate } = useAssetProvider()
-  const { selectors: { selectVaultById, selectVaultPosition } } = usePortfolioProvider()
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
 
   let action = null
 
@@ -1358,12 +1358,12 @@ const CreditVaultMode: React.FC<TextProps> = (props) => {
   )
 }
 
-type EpochCountdown = {
+type EpochCountdownArgs = {
   prefix?: string
   suffix?: string
 } & TextProps
 
-const EpochCountdown: React.FC<EpochCountdown & TextProps> = ({
+const EpochCountdown: React.FC<EpochCountdownArgs & TextProps> = ({
   prefix,
   suffix,
   ...textProps
@@ -1441,7 +1441,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   switch (field){
     case 'epochStartDate':
     case 'epochEndDate':
-      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value, 'YYYY/MM/DD HH:mm', true)}</Text>)
+      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value, 'YYYY/MM/DD HH:mm')}</Text>)
     case 'epochDuration':
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
     case 'lastEpochApr':

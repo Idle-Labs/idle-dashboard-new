@@ -908,8 +908,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
         // walletAllowedResults
       ]: DecodedResult[][] = resultsByChainId[resultIndex]
 
-      console.log('maxWithdrawableResults', maxWithdrawableResults)
-
       if (withdrawRequestResults){
         output.creditVaultsWithdrawRequests = withdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsWithdrawRequests"], callResult: DecodedResult) => {
           const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -2065,8 +2063,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
       }, walletAllowed)
 
-      console.log('walletAllowed', walletAllowed)
-
       // Process paused vaults
       pausedVaults = pausedCallsResults.reduce((pausedVaults: Record<AssetId, boolean>, callResult: DecodedResult) => {
         const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
@@ -2328,7 +2324,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
             epochs: VaultContractCdoEpochData[];
           }) => cmpAddrs(epoch.assetId, assetId) )
 
-          console.log('vaultEpochs', assetId, vaultEpochs)
           if (vaultEpochs){
             vaultEpochData.epochs = vaultEpochs.epochs
           }
@@ -2336,7 +2331,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         })
       }
 
-      console.log('epochsData', epochsData)
+      // console.log('epochsData', epochsData)
       // console.log('aprsCallsResults', aprsCallsResults)
 
       // Process total aprs
@@ -3525,10 +3520,10 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const aprsBreakdown: Record<AssetId, Balances> = {}
 
       vaultBlocks.forEach( (vaultBlock: any) => {
-        const vault = state.vaults.find( (vault: Vault) => cmpAddrs(vault.id, vaultBlock.vaultAddress) )
+        const vault = state.vaults.find( (vault: Vault) => vaultBlock && cmpAddrs(vault.id, vaultBlock.vaultAddress) )
 
         if (!vault){
-          console.log('Vault not found: ', vaultBlock.vaultAddress)
+          console.log('Vault not found: ', vaultBlock?.vaultAddress)
           return
         }
 

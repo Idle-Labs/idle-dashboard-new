@@ -6,7 +6,7 @@ import { TableWithPagination } from "components/TableWithPagination/TableWithPag
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { Translation } from "components/Translation/Translation"
 import { DATETIME_FORMAT, VaultContractCdoEpochData, vaultsStatusSchemes } from "constants/"
-import { fixTokenDecimals, formatDate, sortNumeric, toDayjs } from "helpers"
+import { fixTokenDecimals, formatDate, sortDate, sortNumeric, toDayjs } from "helpers"
 import { useMemo } from "react"
 import { useTranslate } from "react-polyglot"
 import { Column, Row } from "react-table"
@@ -51,7 +51,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
           <Text textStyle={'tableCell'}>{value ? formatDate(value, DATETIME_FORMAT) : '-'}</Text>
         )
       },
-      sortType: sortNumeric
+      sortType: sortDate
     },
     {
       id:'endDate',
@@ -64,7 +64,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
           <Text textStyle={'tableCell'}>{value ? formatDate(value, DATETIME_FORMAT) : '-'}</Text>
         )
       },
-      sortType: sortNumeric
+      sortType: sortDate
     },
     {
       id:'apr',
@@ -129,7 +129,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
   const initialState = useMemo(() => ({
     sortBy: [
       {
-        id: 'count',
+        id: 'startDate',
         desc: false
       }
     ]

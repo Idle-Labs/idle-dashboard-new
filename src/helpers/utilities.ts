@@ -680,3 +680,11 @@ export function sortAlpha(a: any, b: any, field: any): number {
     getObjectPath(b.original, field)
   );
 }
+
+export function sortDate(a: any, b: any, field: any): number {
+  return toDayjs(getObjectPath(a.original, field)).isSameOrAfter(
+    toDayjs(getObjectPath(b.original, field))
+  )
+    ? 1
+    : -1;
+}
