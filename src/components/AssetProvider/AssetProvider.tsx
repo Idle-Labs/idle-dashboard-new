@@ -1386,20 +1386,29 @@ const EpochCountdown: React.FC<EpochCountdown & TextProps> = ({
     }
   }, [asset])
 
+  const isEpochRunning = useMemo(() => {
+    if (!asset || !asset.epochData || !("isEpochRunning" in asset.epochData)) return null
+    return !!asset.epochData.isEpochRunning
+  }, [asset])
+
   if (!epochNextActionDate){
     return null
   }
 
   return (
-    <Countdown date={epochNextActionDate} renderer={ ({ hours, minutes, seconds, completed }: any) => (
-      <Text {...textProps}>
-        {`${prefix ? prefix : ''}`}
-        {hours>0 && <span>{hours}h:</span>}
-        {minutes>0 && <span>{minutes}m:</span>}
-        <span>{seconds}s</span>
-        {`${suffix ? suffix : ''}`}
-      </Text>
-    )} />
+    <Countdown date={epochNextActionDate} renderer={ ({ hours, minutes, seconds, completed }: any) => {
+      return completed ? (
+        <Translation prefix={"("} suffix={')'} translation={ isEpochRunning ? 'assets.status.epoch.closing' : 'assets.status.epoch.starting'} {...textProps} />
+      ) : (
+        <Text {...textProps}>
+          {`${prefix ? prefix : ''}`}
+          {hours>0 && <span>{hours}h:</span>}
+          {minutes>0 && <span>{minutes}m:</span>}
+          <span>{seconds}s</span>
+          {`${suffix ? suffix : ''}`}
+        </Text>
+      )
+    }} />
   )
 }
 

@@ -783,7 +783,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                       spacing={2}
                       alignItems={'baseline'}
                     >
-                      <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: 24 }}>%</small>)} textStyle={'bodyTitle'} value={vaultsPosition.realizedApy} lineHeight={1} />
+                      <Amount.Percentage fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={vaultsPosition.realizedApy} lineHeight={1} />
                     </HStack>
                   </VStack>
                   <VStack
@@ -843,7 +843,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                         !isVaultsLoaded ? (
                           <Spinner size={'md'} />
                         ) : (
-                          <Amount fontSize={['lg', '2xl']} suffix={(<small style={{ fontSize: isMobile ? 18 : 24 }}>%</small>)} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                          <Amount.Percentage fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
                         )
                       }
                     </HStack>

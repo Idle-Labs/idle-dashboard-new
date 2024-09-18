@@ -4,8 +4,10 @@ import {
   EtherscanTransaction,
   Vault,
   Transaction,
+  PlatformApiFilters,
 } from "constants/";
 import {
+  callPlatformApis,
   getPlatformApiConfig,
   getPlatformApisEndpoint,
   makeRequest,
@@ -33,7 +35,7 @@ export async function getIdleAPIV2AllPages(
   const totalCount = firstPageResults?.totalCount;
   const totalRequests = Math.ceil((totalCount - limit) / limit);
 
-  let output = [...firstPageResults.data];
+  let output = [...(firstPageResults?.data || [])];
   if (totalRequests > 0) {
     const promises = Array.from(Array(totalRequests).keys()).map(
       (index: number) => {
@@ -47,10 +49,62 @@ export async function getIdleAPIV2AllPages(
     );
 
     const results = await Promise.all(promises);
-    output = [...output, ...results.map((res) => res.data).flat()];
+    output = [...output, ...results.map((res) => res?.data).flat()];
   }
 
   return output;
+}
+
+export async function getVaultsFromApiV2(): Promise<any> {
+  return await callPlatformApis(1, "idle", "vaults");
+}
+
+export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {
+  const promises = tokenIds.map((tokenId) => {
+    return callPlatformApis(1, "idle", "tokenBlocks", "", {
+      tokenId,
+      sort: "block",
+      order: "desc",
+      limit: 1,
+    });
+  });
+
+  const results = await Promise.all(promises);
+
+  return results.map((res) => res?.data).flat();
+}
+
+export async function getLatestVaultBlocks(vaultsIds: string[]): Promise<any> {
+  const promises = vaultsIds.map((vaultId) => {
+    return callPlatformApis(1, "idle", "vaultBlocks", "", {
+      vaultId,
+      sort: "block",
+      order: "desc",
+      limit: 1,
+    });
+  });
+
+  const results = await Promise.all(promises);
+  if (!results) return;
+
+  return results.map((res) => res.data).flat();
+}
+
+export async function getVaultBlocksFromApiV2(
+  filters?: PlatformApiFilters
+): Promise<any> {
+  const apiConfig = getPlatformApiConfig(1, "idle", "vaultBlocks");
+  const endpoint = getPlatformApisEndpoint(
+    1,
+    "idle",
+    "vaultBlocks",
+    "",
+    filters
+  );
+
+  if (!endpoint) return [];
+
+  return await getIdleAPIV2AllPages(endpoint, apiConfig);
 }
 
 export async function getUserTransactionsFromApiV2(
@@ -72,8 +126,6 @@ export async function getUserTransactionsFromApiV2(
     endpoint,
     apiConfig
   );
-
-  console.log("getUserTransactionsFromApiV2", transactions);
 
   return transactions.reduce(
     (acc: Transaction[], transaction: TransactionDataApiV2) => {

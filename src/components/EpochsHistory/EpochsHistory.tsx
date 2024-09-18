@@ -2,67 +2,29 @@ import { Tag, Text, VStack } from "@chakra-ui/react"
 import { Amount } from "components/Amount/Amount"
 import { useAssetProvider } from "components/AssetProvider/AssetProvider"
 import { Card } from "components/Card/Card"
-import { ReactTable } from "components/ReactTable/ReactTable"
+import { TableWithPagination } from "components/TableWithPagination/TableWithPagination"
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { Translation } from "components/Translation/Translation"
-import { AssetId, BigNumber, DATETIME_FORMAT, NumberType, vaultsStatusSchemes } from "constants/"
-import { useI18nProvider } from "contexts/I18nProvider"
-import { usePortfolioProvider } from "contexts/PortfolioProvider"
-import { useWalletProvider } from "contexts/WalletProvider"
-import { BNify, dateToLocale, fixTokenDecimals, formatDate, sortNumeric, toDayjs } from "helpers"
+import { DATETIME_FORMAT, VaultContractCdoEpochData, vaultsStatusSchemes } from "constants/"
+import { fixTokenDecimals, formatDate, sortNumeric, toDayjs } from "helpers"
 import { useMemo } from "react"
 import { useTranslate } from "react-polyglot"
 import { Column, Row } from "react-table"
 import { CreditVault } from "vaults/CreditVault"
 
 type EpochsHistoryArgs = {
-  assetId: AssetId
   sortEnabled?: boolean
-}
-
-interface VaultContractCdoEpochData {
-  TVL: {
-    token: string
-    USD: string
-  }
-
-  apr: number
-  lastApr: number
-  lastInterest: string | number
-  expectedInterest: string | number
-  deposits: string | number
-  duration: number
-  unclaimedFees: string | number
-
-  startDate?: string
-  endDate?: string
-  count?: number
-
-  status: 'WAITING' | 'RUNNING' | 'DEFAULTED'
-
-  instantWithdraws?: {
-    disabled?: boolean
-    deadline?: string
-    allowed: boolean
-    delay: number
-    amount: string | number
-    aprDelta: number
-  }
-  withdraws?: {
-    amount: string | number
-    fees: string | number
-  }
 }
 
 type RowProps = Row<VaultContractCdoEpochData>
 
 export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
-  assetId,
   sortEnabled = true,
 }) => {
   const translate = useTranslate()
   const { asset, vault, underlyingAsset } = useAssetProvider()
 
+  // @ts-ignore
   const columns: Column<VaultContractCdoEpochData>[] = useMemo(() => ([
     // {
     //   id:'count',
@@ -78,24 +40,6 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     //   },
     //   sortType: sortNumeric
     // },
-    {
-      id:'status',
-      width: '15%',
-      accessor:'status',
-      disableSortBy: !sortEnabled,
-      defaultCanSort: sortEnabled,
-      Header:translate('epochs.table.status'),
-      Cell: ({ value, row }: { value: VaultContractCdoEpochData["status"], row: RowProps }) => {
-        const statusKey =  toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'closed' : value.toLowerCase()
-        console.log(row.original.endDate, statusKey)
-        const colorScheme = vaultsStatusSchemes[statusKey]
-        const status = translate(`assets.status.epoch.${statusKey}`)
-        return (
-          <Tag variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
-        )
-      },
-      sortType: sortNumeric
-    },
     {
       id:'startDate',
       accessor:'startDate',
@@ -137,6 +81,20 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       sortType: sortNumeric
     },
     {
+      id:'tvl',
+      width: '15%',
+      accessor:'TVL.USD',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
+      Header:translate('epochs.table.tvl'),
+      Cell: ({ value }: { value: VaultContractCdoEpochData["TVL"]["USD"] }) => {
+        return asset && underlyingAsset && (
+          <TokenAmount size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+        )
+      },
+      sortType: sortNumeric
+    },
+    {
       id:'expectedInterest',
       accessor:'expectedInterest',
       disableSortBy: !sortEnabled,
@@ -144,56 +102,40 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       Header:translate('epochs.table.interests'),
       Cell: ({ value }: { value: VaultContractCdoEpochData["expectedInterest"] }) => {
         return asset && underlyingAsset && (
-          <TokenAmount assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+          <TokenAmount size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+        )
+      },
+      sortType: sortNumeric
+    },
+    {
+      id:'status',
+      width: '10%',
+      accessor:'status',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
+      Header:translate('epochs.table.status'),
+      Cell: ({ value, row }: { value: VaultContractCdoEpochData["status"], row: RowProps }) => {
+        const statusKey =  toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'closed' : value.toLowerCase()
+        const colorScheme = vaultsStatusSchemes[statusKey]
+        const status = translate(`assets.status.epoch.${statusKey}`)
+        return (
+          <Tag variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
         )
       },
       sortType: sortNumeric
     },
   ]), [sortEnabled, translate, asset, underlyingAsset])
 
-  const initialState = {
+  const initialState = useMemo(() => ({
     sortBy: [
       {
-        id: 'number',
-        desc: true
+        id: 'count',
+        desc: false
       }
     ]
-  }
+  }), [])
 
-  const data = useMemo(() => {
-    return [
-      {
-        "TVL": {
-          "token": "1500190",
-          "USD": "1500190"
-        },
-        "status": "RUNNING",
-        "expectedInterest": "14",
-        "lastApr": 246,
-        "lastInterest": "12",
-        "duration": 120,
-        "endDate": "2024-09-16T17:08:47.000Z",
-        "unclaimedFees": "0",
-        "instantWithdraws": {
-          "deadline": "2024-09-16T17:07:47.000Z",
-          "allowed": true,
-          "delay": 60,
-          "aprDelta": 1,
-          "amount": "0"
-        },
-        "withdraws": {
-          "fees": "0",
-          "amount": "0"
-        },
-        "apr": 246,
-        "deposits": "0",
-        "startDate": "2024-09-16T17:06:47.000Z",
-        "count": 8
-      }
-    ] as VaultContractCdoEpochData[]
-  }, [])
-
-  if (!(vault instanceof CreditVault)){
+  if (!asset || !(vault instanceof CreditVault) || !("epochData" in asset) || !asset.epochData || !("epochs" in asset.epochData)){
     return null
   }
 
@@ -207,7 +149,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       <Translation translation={'epochs.epochsHistory'} component={Text} textStyle={'heading'} fontSize={'h3'} />
       <Card
       >
-        <ReactTable columns={columns} data={data} page={1} rowsPerPage={data.length} initialState={initialState} />
+        <TableWithPagination<VaultContractCdoEpochData> columns={columns} data={asset.epochData.epochs || []} initialState={initialState} />
       </Card>
     </VStack>
   )

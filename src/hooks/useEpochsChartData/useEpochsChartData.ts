@@ -1,6 +1,10 @@
-import { CreditVaultEpochInterests, SECONDS_IN_YEAR } from "constants/";
+import {
+  CreditVaultEpochInterests,
+  SECONDS_IN_YEAR,
+  VaultContractCdoEpochData,
+} from "constants/";
 import { useState, useMemo, useEffect } from "react";
-import { bnOrZero, getChartTimestampBounds } from "helpers/";
+import { bnOrZero, getChartTimestampBounds, toDayjs } from "helpers/";
 import { usePortfolioProvider } from "contexts/PortfolioProvider";
 import {
   AssetId,
@@ -72,19 +76,19 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
         if (
           !asset.id ||
           !("epochData" in asset) ||
-          (asset.epochData && !("epochsInterests" in asset.epochData))
+          (asset.epochData && !("epochs" in asset.epochData))
         ) {
           return amountsByDate;
         }
 
-        const epochsInterests = asset?.epochData?.epochsInterests;
+        const epochs = asset?.epochData?.epochs;
 
-        if (!epochsInterests || !epochsInterests.length) return amountsByDate;
+        if (!epochs || !epochs.length) return amountsByDate;
         const vault = selectVaultById(asset.id);
 
-        epochsInterests.forEach((epochInterests: CreditVaultEpochInterests) => {
-          const date = epochInterests.endTimestamp;
-          const value = bnOrZero(epochInterests.apr?.net).times(100).toNumber();
+        epochs.forEach((epoch: VaultContractCdoEpochData) => {
+          const date = toDayjs(epoch.endDate).unix();
+          const value = bnOrZero(epoch.apr).toNumber();
 
           if (!amountsByDate[date]) {
             amountsByDate[date] = {

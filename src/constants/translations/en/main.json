@@ -835,6 +835,7 @@
       "start": "Start date",
       "end": "End date",
       "apr": "APR",
+      "tvl": "TVL",
       "interests": "Interests",
       "threshold": "Termination threshold"
     }
@@ -2085,7 +2086,9 @@
         "closed": "Closed",
         "waiting": "Open",
         "instant": "Instant",
-        "standard": "Standard"
+        "standard": "Standard",
+        "closing": "Closing",
+        "starting": "Starting"
       }
     },
     "assetDetails": {

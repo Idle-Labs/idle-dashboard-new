@@ -38,6 +38,7 @@ import type {
   RewardEmission,
   ApisProps,
   AmphorEpoch,
+  VaultContractCdoEpochData,
 } from "constants/";
 import {
   bnOrZero,
@@ -67,7 +68,7 @@ import {
   getBlock,
 } from "helpers/";
 import { isConstructSignatureDeclaration } from "typescript";
-import { getIdleAPIV2AllPages } from "helpers/apiv2";
+import { getIdleAPIV2AllPages, getVaultBlocksFromApiV2 } from "helpers/apiv2";
 import { CreditVault } from "vaults/CreditVault";
 import { eventNames } from "process";
 
@@ -738,6 +739,50 @@ export class VaultFunctionsHelper {
         trancheVault.underlyingToken?.decimals || 18
       )
     );
+  }
+
+  public async getCreditVaultEpochs(vault: Vault): Promise<
+    | {
+        assetId: string;
+        cdoId?: string;
+        epochs: VaultContractCdoEpochData[];
+      }
+    | undefined
+  > {
+    if (!(vault instanceof CreditVault)) {
+      return;
+    }
+
+    const vaultBlocks = await getVaultBlocksFromApiV2({
+      vaultAddress: vault.id,
+      "cdoEpoch.status": "RUNNING",
+    });
+
+    const epochs = vaultBlocks.reduce(
+      (acc: VaultContractCdoEpochData[], vaultBlock: any) => {
+        if (
+          acc.find(
+            (block: any) => vaultBlock.cdoEpoch.count === block.count
+          ) !== undefined
+        ) {
+          return acc;
+        }
+        return [
+          ...acc,
+          {
+            TVL: vaultBlock.TVL,
+            ...vaultBlock.cdoEpoch,
+          },
+        ];
+      },
+      []
+    );
+
+    return {
+      epochs,
+      assetId: vault.id,
+      cdoId: vault.cdoConfig.address,
+    };
   }
 
   public async getCreditVaultEpochsInterests(vault: Vault): Promise<any> {

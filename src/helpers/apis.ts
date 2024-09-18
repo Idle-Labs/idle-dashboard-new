@@ -73,41 +73,6 @@ export const getPlatformApiConfig = (
   return apiConfig;
 };
 
-export async function getVaultsFromApiV2(): Promise<any> {
-  return await callPlatformApis(1, "idle", "vaults");
-}
-
-export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {
-  const promises = tokenIds.map((tokenId) => {
-    return callPlatformApis(1, "idle", "tokenBlocks", "", {
-      tokenId,
-      sort: "block",
-      order: "desc",
-      limit: 1,
-    });
-  });
-
-  const results = await Promise.all(promises);
-
-  return results.map((res) => res.data).flat();
-}
-
-export async function getLatestVaultBlocks(vaultsIds: string[]): Promise<any> {
-  const promises = vaultsIds.map((vaultId) => {
-    return callPlatformApis(1, "idle", "vaultBlocks", "", {
-      vaultId,
-      sort: "block",
-      order: "desc",
-      limit: 1,
-    });
-  });
-
-  const results = await Promise.all(promises);
-  if (!results) return;
-
-  return results.map((res) => res.data).flat();
-}
-
 export const getPlatformApisEndpoint = (
   chainId: number,
   protocol: string,
@@ -122,7 +87,11 @@ export const getPlatformApisEndpoint = (
   const queryStringParams =
     filters &&
     Object.keys(filters).reduce((applyFilters: string[], field: string) => {
-      if (protocolFilters && protocolFilters.includes(field)) {
+      if (
+        protocolFilters &&
+        protocolFilters.includes(field) &&
+        filters[field] !== undefined
+      ) {
         applyFilters.push(`${field}=${filters[field]}`);
       }
       return applyFilters;
@@ -247,8 +216,8 @@ export const getSubgraphTrancheInfo = async (
     start &&
     end &&
     lastTimestamp &&
-    lastTimestamp > start &&
-    lastTimestamp < end &&
+    +lastTimestamp > +start &&
+    +lastTimestamp < +end &&
     currTime - lastTimestamp > 86400
   ) {
     const subgraphData_2 = await getSubgraphTrancheInfo(

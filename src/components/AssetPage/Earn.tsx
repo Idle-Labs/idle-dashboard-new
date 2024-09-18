@@ -16,6 +16,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { VaultRewards } from 'components/VaultRewards/VaultRewards'
 import { GenericChart } from 'components/GenericChart/GenericChart'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { EpochsHistory } from 'components/EpochsHistory/EpochsHistory'
 import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
 import { EthenaCooldowns } from 'components/EthenaCooldowns/EthenaCooldowns'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
@@ -32,7 +33,6 @@ import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/Va
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
-import { EpochsHistory } from 'components/EpochsHistory/EpochsHistory'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -457,7 +457,7 @@ export const Earn: React.FC = () => {
         </Card.Flex>
       </Box>
       {fundsOverview}
-      <EpochsHistory assetId={asset?.id} />
+      <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />
       <AssetDiscountedFees assetId={asset?.id} />

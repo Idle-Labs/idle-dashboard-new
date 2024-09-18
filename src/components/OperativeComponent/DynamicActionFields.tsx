@@ -14,7 +14,6 @@ import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
 import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate } from 'helpers/'
 import { MdArrowForward } from 'react-icons/md'
-import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -31,7 +30,7 @@ type DynamicActionFieldProps = {
 const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field, amount, amountUsd, stakingPower, ...textProps }) => {
   const translate = useTranslate()
   const { locale } = useI18nProvider()
-  const { stakingData, helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
+  const { vaultsAccountData, stakingData, helpers: { vaultFunctionsHelper }, selectors: { selectAssetById, selectVaultById, selectVaultGauge } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return assetId && selectAssetById && selectAssetById(assetId)
@@ -169,26 +168,35 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       case 'epochStart':
         return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
       case 'epochExpectedInterest':
-        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
         if (allowInstantWithdraw){
           return null
         }
-        const apr = BNify(asset.apr)
-        const epochDuration = bnOrZero(asset?.epochData?.epochDuration)
-        const expectedInterest = BNify(amount).times(apr.div(100)).times(epochDuration).div(SECONDS_IN_YEAR)
+        const currVaultPrice = BNify(asset.vaultPrice)
+        const trancheTokens = bnOrZero(asset.balance)
+        const maxWithdrawable = fixTokenDecimals(vaultsAccountData?.maxWithdrawable?.[asset.id], underlyingAsset.decimals)
+        const newVaultPrice = trancheTokens.gt(0) ? maxWithdrawable.div(trancheTokens) : BNify(0)
+        const trancheTokenRequested = newVaultPrice.gt(0) ? newVaultPrice.minus(currVaultPrice).times(amount).div(newVaultPrice) : BNify(0)
+        const expectedInterest = trancheTokenRequested.times(currVaultPrice)
+        // console.log('currVaultPrice', currVaultPrice.toString())
+        // console.log('trancheTokens', trancheTokens.toString())
+        // console.log('maxWithdrawable', maxWithdrawable.toString())
+        // console.log('newVaultPrice', newVaultPrice.toString())
+        // console.log('trancheTokenRequested', trancheTokenRequested.toString())
+        // console.log('expectedInterest', expectedInterest.toString())
         return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest} />)
       case 'epochWithdrawType':
-        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
   
         return (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={allowInstantWithdraw ? 'brightGreen' : 'primary'} />)
       case 'epochClaimPeriod':
-        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
         return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(allowInstantWithdraw ? asset?.epochData?.instantWithdrawDelay : asset?.epochData?.epochDuration)} { allowInstantWithdraw ? translate('assets.assetCards.rewards.afterEpochStart') : '' }</Text>)
       case 'epochClaimDate':
-        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
         if (allowInstantWithdraw){
           return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{formatDate(asset.epochData?.instantWithdrawDeadline*1000, DATETIME_FORMAT)}</Text>)
@@ -278,7 +286,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       default:
         return null
     }
-  }, [field, assetId, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
+  }, [field, assetId, vaultsAccountData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
 
 
   if (!dynamicActionField) return null

@@ -108,7 +108,7 @@ export type ChartData = {
   rainbow: RainbowData[];
 };
 
-export type PlatformApiFilters = Record<string, string | number>;
+export type PlatformApiFilters = Record<string, string | number | undefined>;
 
 export type DateRange = {
   startDate: moment.Moment | null;
@@ -291,6 +291,7 @@ export type CreditVaultEpoch = {
   epochDuration: BigNumber;
   epochStartDate: number;
   epochEndDate: number;
+  epochs?: VaultContractCdoEpochData[];
   epochsInterests?: CreditVaultEpochInterests[];
   pendingWithdraws: BigNumber;
   pendingInstantWithdraws: BigNumber;
@@ -436,7 +437,42 @@ export type ProtocolData = {
   uniqueVaults: number;
 };
 
-export type Asset = {
+export interface VaultContractCdoEpochData {
+  TVL: {
+    token: string;
+    USD: string;
+  };
+
+  apr: number;
+  lastApr: number;
+  lastInterest: string | number;
+  expectedInterest: string | number;
+  deposits: string | number;
+  duration: number;
+  unclaimedFees: string | number;
+
+  startDate?: string;
+  endDate?: string;
+  count?: number;
+
+  status: "WAITING" | "RUNNING" | "DEFAULTED";
+
+  instantWithdraws?: {
+    disabled?: boolean;
+    deadline?: string;
+    allowed: boolean;
+    delay: number;
+    amount: string | number;
+    aprDelta: number;
+  };
+
+  withdraws?: {
+    amount: string | number;
+    fees: string | number;
+  };
+}
+
+export interface Asset {
   id?: AssetId;
   name: string;
   icon?: string;
@@ -493,7 +529,7 @@ export type Asset = {
   discountedFees?: DistributedReward[];
   rewardsEmissions?: Record<AssetId, RewardEmission>;
   distributedRewards?: Record<AssetId, DistributedReward[]>;
-};
+}
 
 export type Assets = Record<AssetId, Asset>;
 export type Vaults = Record<AssetId, Vault>;

@@ -3,7 +3,7 @@ import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md'
 import { Column, Row, TableState, useSortBy, useTable } from 'react-table'
 import { Flex, Table, Tbody, Td, Th, Thead, Tr, HStack, useColorModeValue, useTheme } from '@chakra-ui/react'
 
-type ReactTableProps<T extends {}> = {
+export type ReactTableProps<T extends {}> = {
   columns: Column<T>[]
   data: T[]
   page?: number
