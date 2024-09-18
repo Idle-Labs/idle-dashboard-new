@@ -22,7 +22,7 @@ import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBa
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs, getObjectPath } from 'helpers/'
-import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps, Spinner } from '@chakra-ui/react'
+import { Box, Flex, Stack, SimpleGrid, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps, Spinner, Wrap } from '@chakra-ui/react'
 import { operators, AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import { CreditVault } from 'vaults/CreditVault'
@@ -517,8 +517,7 @@ export const AssetPage: React.FC = () => {
               justifyContent={'flex-start'}
             >
               {vaultHeader}
-              <SimpleGrid
-                columns={4}
+              <Wrap
                 spacing={[4, 6]}
                 alignItems={'flex-start'}
               >
@@ -599,12 +598,13 @@ export const AssetPage: React.FC = () => {
                       alignItems={'flex-start'}
                     >
                       <Translation translation={'defi.status'} fontSize={['sm', 'md']} color={'primary'} />
-                      <Flex
+                      <HStack
                         flex={1}
                         alignItems={'flex-end'}
                       >
                         <AssetProvider.EpochInfo field={'isEpochRunning'} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} fontWeight={500} lineHeight={1} />
-                      </Flex>
+                        <AssetProvider.EpochCountdown prefix='(' suffix=')' fontSize={['h4', '2xl']} textStyle={'bodyTitle'} fontWeight={500} lineHeight={1} />
+                      </HStack>
                     </VStack>
                   ) : (vault instanceof TrancheVault) && (
                     <VStack
@@ -638,7 +638,7 @@ export const AssetPage: React.FC = () => {
                     <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
                   </Flex>
                 </VStack>
-              </SimpleGrid>
+              </Wrap>
             </VStack>
           </Flex>
           {

@@ -254,6 +254,7 @@ export type CreditVaultWithdrawRequest = {
 };
 
 export type VaultsAccountData = {
+  maxWithdrawable?: Balances;
   walletAllowed?: Record<AssetId, boolean>;
   creditVaultsWithdrawRequests?: Record<AssetId, CreditVaultWithdrawRequest[]>;
 };

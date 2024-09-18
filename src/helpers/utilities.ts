@@ -2,7 +2,7 @@ import { lazy } from "react";
 import dayjs from "classes/dayjs";
 import BigNumber from "bignumber.js";
 import { Dayjs, ManipulateType } from "dayjs";
-import { MIN_TIMESTAMP } from "constants/vars";
+import { DATE_FORMAT, MIN_TIMESTAMP } from "constants/vars";
 import {
   HistoryTimeframe,
   DateRange,
@@ -240,10 +240,7 @@ export function checkVaultEnv(vaultConfig: any, environment: string) {
   return false;
 }
 
-export function dateToLocale(
-  timestamp: Date | dayjs.Dayjs | number,
-  locale: string
-) {
+export function dateToLocale(timestamp: dayjs.ConfigType, locale: string) {
   return dayjs(timestamp).locale(locale).format("LLL");
 }
 
@@ -299,11 +296,11 @@ export function uniqueValues(array: any[], attribute: string) {
 }
 
 export function formatDate(
-  timestamp: number | string | Dayjs,
-  format = "YYYY/MM/DD",
+  timestamp: dayjs.ConfigType,
+  format = DATE_FORMAT,
   isUTC = false
 ) {
-  const day = dayjs(typeof timestamp === "object" ? timestamp : +timestamp);
+  const day = dayjs(timestamp);
   return (isUTC ? day.utc() : day).format(format).concat(isUTC ? " UTC" : "");
 }
 

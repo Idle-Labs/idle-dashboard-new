@@ -44,6 +44,8 @@ export const vaultsStatusSchemes: Record<string, string> = {
   deprecated: "gray",
   boosted: "red",
   open: "green",
+  closed: "gray",
+  waiting: "green",
   running: "blue",
 };
 
@@ -150,7 +152,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
   // ],
   10: [
     {
-      mode: "STRATEGY",
+      mode: "CREDIT",
       kycRequired: true,
       manager: "falconx",
       borrower: "falconx",

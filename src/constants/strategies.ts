@@ -144,7 +144,7 @@ export const strategies: Record<string, StrategyProps> = {
       deposit: ["epochDuration", "epochAprChange", "lastEpochInterest"],
       withdraw: [
         "epochWithdrawType",
-        "epochClaimPeriod",
+        "epochClaimDate",
         "epochExpectedInterest",
       ],
     },

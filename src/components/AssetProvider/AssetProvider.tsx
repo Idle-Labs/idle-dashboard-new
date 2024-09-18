@@ -1,4 +1,5 @@
 // import dayjs from 'dayjs'
+import Countdown from "react-countdown"
 import { BigNumber } from 'bignumber.js'
 import { BsQuestion } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
@@ -12,7 +13,7 @@ import { RateChart } from 'components/RateChart/RateChart'
 import { ProductTag } from 'components/ProductTag/ProductTag'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import React, { useMemo, createContext, useContext } from 'react'
+import React, { useMemo, createContext, useContext, useCallback } from 'react'
 import { selectProtocol, selectUnderlyingToken } from 'selectors/'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
@@ -21,7 +22,7 @@ import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs } from 'helpers/'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
@@ -1349,11 +1350,56 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
 }
 
 
-const CreditVaultMode: React.FC<Partial<TextProps>> = (...props) => {
+const CreditVaultMode: React.FC<TextProps> = (props) => {
   const { vault } = useAssetProvider()
   if (!vault || !("mode" in vault)) return null
   return (
     <Translation translation={`assets.assetDetails.generalData.epoch.mode.${vault.mode}`} {...props} />
+  )
+}
+
+type EpochCountdown = {
+  prefix?: string
+  suffix?: string
+} & TextProps
+
+const EpochCountdown: React.FC<EpochCountdown & TextProps> = ({
+  prefix,
+  suffix,
+  ...textProps
+}) => {
+  const { asset } = useAssetProvider()
+
+  const epochNextActionDate = useMemo(() => {
+    if (!asset || !asset.epochData || !("isEpochRunning" in asset.epochData)) return null
+
+    // Vault defaulted
+    if (!!asset.epochData.defaulted){
+      return null
+    }
+
+    // Epoch is running, take end epoch data
+    if (!!asset.epochData.isEpochRunning){
+      return toDayjs(asset.epochData.epochEndDate).toDate()
+    } else {
+      return toDayjs(BNify(asset.epochData.epochEndDate).plus(BNify(asset.epochData.bufferPeriod).times(1000)).toNumber()).toDate()
+    }
+  }, [asset])
+
+  if (!epochNextActionDate){
+    return null
+  }
+
+  return (
+    <Countdown date={epochNextActionDate} renderer={ ({ hours, minutes, seconds, completed }: any) => (
+      <Text {...textProps}>
+        {`${prefix ? prefix : ''}`}
+        {hours>0 && <span>{hours}h:</span>}
+        {minutes>0 && <span>{minutes}m:</span>}
+        <span>{seconds}s</span>
+        {`${suffix ? suffix : ''}`}
+      </Text>
+    )} />
   )
 }
 
@@ -1371,8 +1417,6 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   if (!isPortfolioLoaded){
     return (<Spinner size={'sm'} />)
   }
-
-  console.log('EpochInfo', asset?.epochData)
 
   if (!asset || !asset.epochData){
     return null
@@ -1571,9 +1615,7 @@ const EpochStatus: React.FC<AmountProps> = (props) => {
   if (!asset?.epochData || !("status" in asset.epochData)) return null
 
   const statusKey = asset?.epochData.status
-
   const colorScheme = vaultsStatusSchemes[statusKey]
-
   const status = translate(`assets.status.epoch.${statusKey}`)
 
   return colorScheme ? (
@@ -1986,6 +2028,8 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'epochEndDate':
     case 'lastEpochApr':
       return (<EpochInfo field={field} textStyle={'tableCell'} {...props} />)
+    case 'epochCountdown':
+      return (<EpochCountdown textStyle={'tableCell'} {...props} />)
     case 'assetClass':
       return (
         <Categories {...props} />
@@ -2080,6 +2124,7 @@ AssetProvider.SeniorPoolUsd = SeniorPoolUsd
 AssetProvider.JuniorPoolUsd = JuniorPoolUsd
 AssetProvider.StrategyBadge = StrategyBadge
 AssetProvider.ApyRatioChart = ApyRatioChart
+AssetProvider.EpochCountdown = EpochCountdown
 AssetProvider.StakingEndDate = StakingEndDate
 AssetProvider.NetEarningsUsd = NetEarningsUsd
 AssetProvider.StakingRewards = StakingRewards

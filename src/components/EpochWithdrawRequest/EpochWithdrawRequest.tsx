@@ -83,7 +83,7 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
     return status === 'claimable' ? 'assets.assetCards.rewards.claimableFor' : 'assets.assetCards.rewards.claimableIn'
   }, [status])
 
-  console.log('withdrawRequest', withdrawRequest, epochData, status, claimableOnText, claimDeadline?.toDate())
+  // console.log('withdrawRequest', withdrawRequest, epochData, status, claimableOnText, claimDeadline?.toDate())
 
   const countdown = useMemo(() => {
     switch (status){
@@ -91,7 +91,6 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
         if (epochData && ("bufferPeriod" in epochData)){
           if (withdrawRequest.isInstant){
             const claimableUntil = toDayjs(epochData?.epochEndDate)
-            console.log(claimableUntil.toDate())
             return (<Countdown date={claimableUntil.toDate()} />)
           } else {
             const claimableUntil = toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData?.bufferPeriod).times(1000)).toNumber())

@@ -862,6 +862,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     const output: VaultsAccountData =  {
       walletAllowed: {},
+      maxWithdrawable: {},
       creditVaultsWithdrawRequests: {},
     }
 
@@ -870,6 +871,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     const rawCallsByChainId = vaults.filter((vault: Vault) => checkAddress(vault.id)).reduce((rawCalls: Record<number, CallData[][]>, vault: Vault): Record<number, CallData[][]> => {
       const aggregatedRawCalls = [
         ("getUserWithdrawRequestCalls" in vault) ? vault.getUserWithdrawRequestCalls(account.address) : [],
+        ("getUserMaxWithdrawableCalls" in vault) ? vault.getUserMaxWithdrawableCalls(account.address) : [],
         ("getUserInstantWithdrawRequestCalls" in vault) ? vault.getUserInstantWithdrawRequestCalls(account.address) : [],
         // ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
       ]
@@ -900,9 +902,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
     Object.keys(rawCallsByChainId).forEach((chainId, resultIndex) => {
       const [
         withdrawRequestResults,
+        maxWithdrawableResults,
         instantWithdrawRequestResults,
         // walletAllowedResults
       ]: DecodedResult[][] = resultsByChainId[resultIndex]
+
+      console.log('maxWithdrawableResults', maxWithdrawableResults)
 
       if (withdrawRequestResults){
         output.creditVaultsWithdrawRequests = withdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsWithdrawRequests"], callResult: DecodedResult) => {
@@ -919,6 +924,17 @@ export function PortfolioProvider({ children }: ProviderProps) {
             ]
           }
         }, output.creditVaultsWithdrawRequests)
+      }
+
+      if (maxWithdrawableResults){
+        output.maxWithdrawable = maxWithdrawableResults.reduce( (acc: VaultsAccountData["maxWithdrawable"], callResult: DecodedResult) => {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          if (bnOrZero(callResult.data).lte(0)) return acc
+          return {
+            ...acc,
+            [assetId]: bnOrZero(callResult.data)
+          }
+        }, output.maxWithdrawable)
       }
 
       if (instantWithdrawRequestResults){
@@ -4102,7 +4118,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           vaultsTransactions
         } = results
 
-        // console.log('vaultsAccountData', vaultsAccountData)
+        console.log('vaultsAccountData', vaultsAccountData)
 
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })

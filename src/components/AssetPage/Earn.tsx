@@ -19,19 +19,20 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { HistoryTimeframe, BigNumber, Paragraph } from 'constants/types'
 import { EthenaCooldowns } from 'components/EthenaCooldowns/EthenaCooldowns'
 import { AssetGeneralData } from 'components/AssetGeneralData/AssetGeneralData'
+import { useEpochsChartData } from 'hooks/useEpochsChartData/useEpochsChartData'
 import { TimeframeSelector } from 'components/TimeframeSelector/TimeframeSelector'
 import { useBalanceChartData } from 'hooks/useBalanceChartData/useBalanceChartData'
 import { AssetDiscountedFees } from 'components/AssetDiscountedFees/AssetDiscountedFees'
 import { EpochThresholdsTable } from 'components/EpochThresholdsTable/EpochThresholdsTable'
-import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
+import { EpochWithdrawRequest } from 'components/EpochWithdrawRequest/EpochWithdrawRequest'
 import { VaultOperatorOverview } from 'components/VaultOperatorOverview/VaultOperatorOverview'
 import { usePerformanceChartData } from 'hooks/usePerformanceChartData/usePerformanceChartData'
 import { AssetDistributedRewards } from 'components/AssetDistributedRewards/AssetDistributedRewards'
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
+import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
-import { EpochWithdrawRequest } from 'components/EpochWithdrawRequest/EpochWithdrawRequest'
-import { useEpochsChartData } from 'hooks/useEpochsChartData/useEpochsChartData'
+import { EpochsHistory } from 'components/EpochsHistory/EpochsHistory'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -456,6 +457,7 @@ export const Earn: React.FC = () => {
         </Card.Flex>
       </Box>
       {fundsOverview}
+      <EpochsHistory assetId={asset?.id} />
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />
       <AssetDiscountedFees assetId={asset?.id} />

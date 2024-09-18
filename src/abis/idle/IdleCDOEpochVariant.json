@@ -304,6 +304,19 @@
   },
   {
     "inputs": [],
+    "name": "bufferPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "claimInstantWithdrawRequest",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -352,12 +365,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "_referral",
+        "name": "",
         "type": "address"
       }
     ],
@@ -395,12 +408,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "_referral",
+        "name": "",
         "type": "address"
       }
     ],
@@ -592,19 +605,6 @@
     "name": "getFundsFromBorrower",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getIncentiveTokens",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -889,19 +889,6 @@
   },
   {
     "inputs": [],
-    "name": "bufferPeriod",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "lastEpochInterest",
     "outputs": [
       {
@@ -1041,7 +1028,7 @@
         "type": "address"
       }
     ],
-    "name": "maxWitdrawable",
+    "name": "maxWithdrawable",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1065,7 +1052,7 @@
         "type": "address"
       }
     ],
-    "name": "maxWitdrawableInstant",
+    "name": "maxWithdrawableInstant",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1267,6 +1254,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "sendFundsToBorrower",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "",
         "type": "bool"
@@ -1296,9 +1296,14 @@
         "internalType": "uint256",
         "name": "_epochDuration",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bufferPeriod",
+        "type": "uint256"
       }
     ],
-    "name": "setEpochDuration",
+    "name": "setEpochParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1426,7 +1431,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_maxDecreaseDefault",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1517,7 +1522,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_trancheAPRSplitRatio",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1530,7 +1535,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_unlentPerc",
+        "name": "",
         "type": "uint256"
       }
     ],

@@ -825,12 +825,17 @@
     }
   },
   "epochs": {
+    "epochsHistory": "Epochs history",
     "assetPerformance": "Current epoch",
     "thresholds": "Weekly thresholds",
     "table": {
+      "count": "Count",
       "number": "Week",
+      "status": "Status",
       "start": "Start date",
       "end": "End date",
+      "apr": "APR",
+      "interests": "Interests",
       "threshold": "Termination threshold"
     }
   },
@@ -1054,6 +1059,7 @@
     "epochWithdrawType": "Withdraw type",
     "epochWithdrawDeadline": "Withdraw deadline",
     "epochClaimPeriod": "Claim period",
+    "epochClaimDate": "Claim date",
     "epochExpectedInterest": "Epoch expected interests",
     "lastEpochApr": "Last epoch APR",
     "lastEpochInterest": "Last epoch interests",
@@ -1223,6 +1229,7 @@
       "withdraw": {
         "confirm": "You are withdrawing",
         "confirmed": "You have withdrawn",
+        "requestWithdraw": "Request Withdraw",
         "messages": {
           "epoch": {
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
@@ -2075,6 +2082,8 @@
         "default": "Default",
         "running": "Ongoing",
         "open": "Open",
+        "closed": "Closed",
+        "waiting": "Open",
         "instant": "Instant",
         "standard": "Standard"
       }

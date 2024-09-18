@@ -708,6 +708,16 @@ export class CreditVault {
     ];
   }
 
+  public getUserMaxWithdrawableCalls(account: string): ContractRawCall[] {
+    if (!this.cdoContract) return [];
+    return [
+      {
+        assetId: this.id,
+        call: this.cdoContract.methods.maxWithdrawable(account, this.id),
+      },
+    ];
+  }
+
   public isWalletAllowed(account: string): ContractRawCall[] {
     return [
       {

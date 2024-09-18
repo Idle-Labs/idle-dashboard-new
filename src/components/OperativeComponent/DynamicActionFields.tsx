@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { BsStars } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
 import type { AssetId } from 'constants/types'
-import { SECONDS_IN_YEAR, VAULT_LIMIT_MAX } from 'constants/vars'
+import { DATETIME_FORMAT, SECONDS_IN_YEAR, VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
 import { TrancheVault } from 'vaults/TrancheVault'
@@ -12,7 +12,7 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
-import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals } from 'helpers/'
+import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate } from 'helpers/'
 import { MdArrowForward } from 'react-icons/md'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
@@ -128,10 +128,6 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
   const redeemableAmountIsValid = amountIsValid && bnOrZero(amount).lte(redeemable)
   // console.log('redeemableAmountIsValid', bnOrZero(amountUsd).toString(), redeemable.toString(), redeemableAmountIsValid)
 
-  let textCta = 'cta'
-  let textColor = ''
-  let dynamicActionField = null
-
   const tooltipTranslateKey = useMemo(() => `dynamicActionFields.tooltips.${field}`, [field]) 
 
   const tooltipText = useMemo(() => {
@@ -142,147 +138,148 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     return tooltipText !== tooltipTranslateKey
   }, [tooltipText, tooltipTranslateKey])
 
-  let disableInstantWithdraw = false
-  let allowInstantWithdraw = false
+  const textCta = useMemo(() => {
+    switch (field){
+      case 'withdrawFee':
+        if (bnOrZero(vault.flags?.withdrawFee).gt(0)){
+          return 'orange'
+        }
+        break;
+      case 'depositLimit':
+        return 'orange'
+      default:
+        return 'cta'
+    }
+    return 'cta'
+  }, [field, vault])
+  
+  const dynamicActionField = useMemo(() => {
+    let disableInstantWithdraw = false
+    let allowInstantWithdraw = false
+    let textColor = ''
 
-  switch (field){
-    case 'boost':
-      const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.gt(9999) ? `>9999` : apyBoost.toFixed(2)}x</Text>)
-    break;
-    case 'epochDuration':
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(asset?.epochData?.epochDuration || 0)}</Text>)
-    break;
-    case 'epochEnd':
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.endDate || 0, locale)}</Text>)
-    break;
-    case 'epochStart':
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
-    break;
-    case 'epochExpectedInterest':
-      disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
-      allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
-      if (allowInstantWithdraw){
+    switch (field){
+      case 'boost':
+        const apyBoost = newApy && asset?.baseApr?.gt(0) ? newApy.div(asset?.baseApr) : BNify(0)
+        return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{apyBoost.gt(9999) ? `>9999` : apyBoost.toFixed(2)}x</Text>)
+      case 'epochDuration':
+        return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(asset?.epochData?.epochDuration || 0)}</Text>)
+      case 'epochEnd':
+        return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.endDate || 0, locale)}</Text>)
+      case 'epochStart':
+        return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
+      case 'epochExpectedInterest':
+        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+        if (allowInstantWithdraw){
+          return null
+        }
+        const apr = BNify(asset.apr)
+        const epochDuration = bnOrZero(asset?.epochData?.epochDuration)
+        const expectedInterest = BNify(amount).times(apr.div(100)).times(epochDuration).div(SECONDS_IN_YEAR)
+        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest} />)
+      case 'epochWithdrawType':
+        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+  
+        return (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={allowInstantWithdraw ? 'brightGreen' : 'primary'} />)
+      case 'epochClaimPeriod':
+        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+        return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(allowInstantWithdraw ? asset?.epochData?.instantWithdrawDelay : asset?.epochData?.epochDuration)} { allowInstantWithdraw ? translate('assets.assetCards.rewards.afterEpochStart') : '' }</Text>)
+      case 'epochClaimDate':
+        disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
+        allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+        if (allowInstantWithdraw){
+          return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{formatDate(asset.epochData?.instantWithdrawDeadline*1000, DATETIME_FORMAT)}</Text>)
+        } else {
+          return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{formatDate(BNify(asset.epochData.epochEndDate).plus(BNify(asset.epochData.bufferPeriod).plus(asset.epochData.epochDuration).times(1000)).toNumber(), DATETIME_FORMAT)}</Text>)
+        }
+      case 'epochWithdrawDeadline':
+        return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
+      case 'epochAprChange':
+        if (vault.mode === 'STRATEGY'){
+          return (<DynamicActionField
+            field={'lastEpochApr'}
+            assetId={assetId}
+            amount={amount}
+            amountUsd={amountUsd}
+            stakingPower={stakingPower}
+            {...textProps}
+          />)
+        }
+  
+        return (
+          <HStack>
+            <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />
+            <MdArrowForward size={16} />
+            <Amount.Percentage textStyle={'titleSmall'} color={'brightGreen'} {...textProps} value={fixTokenDecimals(asset?.epochData?.epochApr, 18)} />
+          </HStack>
+        )
+      case 'epochInterestChange':
+        return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />)
+      case 'lastEpochApr':
+        return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />)
+      case 'lastEpochInterest':
+        return (<Amount suffix={` ${underlyingAsset.token}`} textStyle={'titleSmall'} decimals={4} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochInterest, underlyingAsset.decimals)} />)
+      case 'riskThreshold':
+        return (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData.riskThreshold} />)
+      case 'overperformance':
+        const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
+        const tranchePerformance = bnOrZero(amountUsd).times(BNify(asset?.apy).div(100))
+        const overperformance = amountIsValid ? tranchePerformance.minus(basePerformance) : null
+        return (<Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />)
+      case 'newApy':
+        return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />)
+      case 'totalGain':
+        return (<Amount.Usd decimals={gain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? gain : null} />)
+      case 'fee':
+        return (<Amount.Usd decimals={fees.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? -fees : null} />)
+      case 'withdrawFee':
+        if (bnOrZero(vault.flags?.withdrawFee).gt(0)){
+          return (<Amount.Usd decimals={withdrawFee.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'orange'} {...textProps} value={redeemableAmountIsValid ? -withdrawFee : null} />)
+        }
+        break;
+      case 'depositLimit':
+        const remainingAmount = BigNumber.maximum(0, bnOrZero(asset.limit).minus(asset.totalTvl).minus(bnOrZero(amount)))
+        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={remainingAmount} />)
+      case 'netGain':
+        const netGain = BigNumber.minimum(totalGain.minus(fees), bnOrZero(gain).minus(fees))
+        return (<Amount.Usd decimals={netGain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? netGain : null} />)
+      case 'coverage':
+        const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
+        const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
+        return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={coverageAmount} />)
+      case 'stakingPoolShare':
+        if (stakingData){
+          const stakingPoolShare = bnOrZero(amount).div(stakingData.stkIDLE.totalSupply.plus(bnOrZero(amount))).times(100)
+          return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingPoolShare} />)
+        }
+        break;
+      case 'stkIDLE':
+      case 'stkIDLEAfterIncrease':
+        return (<Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />)
+      case 'currentFeeDiscount':
+        const currentFeeDiscount = bnOrZero(stakingData?.feeDiscount)
+        textColor = currentFeeDiscount.lte(0) ? 'orange' : 'brightGreen'
+        return (<Amount.Percentage color={textColor} textStyle={'titleSmall'} {...textProps} value={currentFeeDiscount} />)
+      case 'feeDiscount':
+        const feeDiscount = getFeeDiscount(amount)
+        textColor = feeDiscount.lte(0) ? 'orange' : 'brightGreen'
+        return (<Amount.Percentage color={textColor} textStyle={'titleSmall'} {...textProps} value={feeDiscount} />)
+      case 'feeDiscountTier':
+        return (<Amount textStyle={'titleSmall'} color={'primary'} {...textProps} value={1} />)
+      case 'stakingApy':
+        if (stakingData){
+          const stakingApy = bnOrZero(stakingPower).times(stakingData.maxApr)
+          return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingApy} />)
+        }
+        break;
+      default:
         return null
-      }
-      const apr = BNify(asset.apr)
-      const epochDuration = bnOrZero(asset?.epochData?.epochDuration)
-      const expectedInterest = BNify(amount).times(apr.div(100)).times(epochDuration).div(SECONDS_IN_YEAR)
-      dynamicActionField = (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest} />)
-    break;
-    case 'epochWithdrawType':
-      disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
-      allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
+    }
+  }, [field, assetId, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
 
-      dynamicActionField = (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={allowInstantWithdraw ? 'brightGreen' : 'primary'} />)
-    break;
-    case 'epochClaimPeriod':
-      disableInstantWithdraw = !!asset?.epochData.disableInstantWithdraw
-      allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{secondsToPeriod(allowInstantWithdraw ? asset?.epochData?.instantWithdrawDelay : asset?.epochData?.epochDuration)} { allowInstantWithdraw ? translate('assets.assetCards.rewards.afterEpochStart') : '' }</Text>)
-    break;
-    case 'epochWithdrawDeadline':
-      dynamicActionField = (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
-    break;
-    case 'epochAprChange':
-      if (vault.mode === 'STRATEGY'){
-        return (<DynamicActionField
-          field={'lastEpochApr'}
-          assetId={assetId}
-          amount={amount}
-          amountUsd={amountUsd}
-          stakingPower={stakingPower}
-          {...textProps}
-        />)
-      }
-
-      dynamicActionField = (
-        <HStack>
-          <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />
-          <MdArrowForward size={16} />
-          <Amount.Percentage textStyle={'titleSmall'} color={'brightGreen'} {...textProps} value={fixTokenDecimals(asset?.epochData?.epochApr, 18)} />
-        </HStack>
-      )
-    break;
-    case 'epochInterestChange':
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />)
-    break;
-    case 'lastEpochApr':
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />)
-    break;
-    case 'lastEpochInterest':
-      dynamicActionField = (<Amount suffix={` ${underlyingAsset.token}`} textStyle={'titleSmall'} decimals={4} color={'primary'} {...textProps} value={fixTokenDecimals(asset?.epochData?.lastEpochInterest, underlyingAsset.decimals)} />)
-    break;
-    case 'riskThreshold':
-      dynamicActionField = (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.epochData.riskThreshold} />)
-    break;
-    case 'overperformance':
-      const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
-      const tranchePerformance = bnOrZero(amountUsd).times(BNify(asset?.apy).div(100))
-      const overperformance = amountIsValid ? tranchePerformance.minus(basePerformance) : null
-      dynamicActionField = (<Amount.Usd textStyle={'titleSmall'} color={'primary'} {...textProps} value={overperformance} suffix={'/year'} />)
-    break;
-    case 'newApy':
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={newApy} />)
-    break;
-    case 'totalGain':
-      dynamicActionField = (<Amount.Usd decimals={gain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? gain : null} />)
-    break;
-    case 'fee':
-      dynamicActionField = (<Amount.Usd decimals={fees.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? -fees : null} />)
-    break;
-    case 'withdrawFee':
-      if (bnOrZero(vault.flags?.withdrawFee).gt(0)){
-        textCta = 'orange'
-        dynamicActionField = (<Amount.Usd decimals={withdrawFee.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'orange'} {...textProps} value={redeemableAmountIsValid ? -withdrawFee : null} />)
-      }
-    break;
-    case 'depositLimit':
-      textCta = 'orange'
-      const remainingAmount = BigNumber.maximum(0, bnOrZero(asset.limit).minus(asset.totalTvl).minus(bnOrZero(amount)))
-      dynamicActionField = (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={remainingAmount} />)
-    break;
-    case 'netGain':
-      const netGain = BigNumber.minimum(totalGain.minus(fees), bnOrZero(gain).minus(fees))
-      dynamicActionField = (<Amount.Usd decimals={netGain.lt(1) ? 4 : 2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={redeemableAmountIsValid ? netGain : null} />)
-    break;
-    case 'coverage':
-      const bbTranche = selectAssetById(vault?.vaultConfig.Tranches.BB.address)
-      const coverageAmount = bbTranche.tvl && newTrancheTvl ? bbTranche.tvl.div(newTrancheTvl).times(100) : 0;
-      dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={coverageAmount} />)
-    break;
-    case 'stakingPoolShare':
-      if (stakingData){
-        const stakingPoolShare = bnOrZero(amount).div(stakingData.stkIDLE.totalSupply.plus(bnOrZero(amount))).times(100)
-        dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingPoolShare} />)
-      }
-    break;
-    case 'stkIDLE':
-    case 'stkIDLEAfterIncrease':
-      dynamicActionField = (<Amount textStyle={'titleSmall'} color={'primary'} suffix={' stkIDLE'} {...textProps} value={amount} />)
-    break;
-    case 'currentFeeDiscount':
-      const currentFeeDiscount = bnOrZero(stakingData?.feeDiscount)
-      textColor = currentFeeDiscount.lte(0) ? 'orange' : 'brightGreen'
-      dynamicActionField = (<Amount.Percentage color={textColor} textStyle={'titleSmall'} {...textProps} value={currentFeeDiscount} />)
-    break;
-    case 'feeDiscount':
-      const feeDiscount = getFeeDiscount(amount)
-      textColor = feeDiscount.lte(0) ? 'orange' : 'brightGreen'
-      dynamicActionField = (<Amount.Percentage color={textColor} textStyle={'titleSmall'} {...textProps} value={feeDiscount} />)
-    break;
-    case 'feeDiscountTier':
-      dynamicActionField = (<Amount textStyle={'titleSmall'} color={'primary'} {...textProps} value={1} />)
-    break;
-    case 'stakingApy':
-      if (stakingData){
-        const stakingApy = bnOrZero(stakingPower).times(stakingData.maxApr)
-        dynamicActionField = (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingApy} />)
-      }
-    break;
-    default:
-      dynamicActionField = null
-  }
 
   if (!dynamicActionField) return null
 

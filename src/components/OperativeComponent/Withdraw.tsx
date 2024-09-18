@@ -22,6 +22,7 @@ import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalle
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
 import { VaultKycCheck } from './VaultKycCheck'
+import { CreditVault } from 'vaults/CreditVault'
 
 export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
@@ -232,7 +233,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return !isNetworkCorrect && asset ? (
       <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
     ) : account ? (
-      <Translation component={Button} translation={redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw"} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
+      <Translation component={Button} translation={vault instanceof CreditVault ? 'trade.actions.withdraw.requestWithdraw' : (redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw")} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
             <Spinner size={'sm'} />
@@ -242,7 +243,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     ) : (
       <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, transaction, withdraw, isNetworkCorrect, asset, redeemInterestBearing])
+  }, [account, disabled, transaction, withdraw, isNetworkCorrect, vault, asset, redeemInterestBearing])
 
   const vaultMessages = useMemo(() => {
     return vault && ("messages" in vault) ? vault.messages : undefined
@@ -345,6 +346,8 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [asset, vault, selectAssetById])
 
+  const showDynamicFields = useMemo(() => !epochVaultLocked, [epochVaultLocked])
+
   return (
     <VaultKycCheck
       assetId={asset?.id}
@@ -418,7 +421,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             {
               redeemInterestBearingEnabled && redeemInterestBearing ?
                 interestBearingTokens
-              : (
+              : showDynamicFields && (
                 <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
               )
             }
