@@ -68,7 +68,11 @@ import {
   getBlock,
 } from "helpers/";
 import { isConstructSignatureDeclaration } from "typescript";
-import { getIdleAPIV2AllPages, getVaultBlocksFromApiV2 } from "helpers/apiv2";
+import {
+  getDataFromApiV2,
+  getIdleAPIV2AllPages,
+  getVaultBlocksFromApiV2,
+} from "helpers/apiv2";
 import { CreditVault } from "vaults/CreditVault";
 import { eventNames } from "process";
 
@@ -753,27 +757,15 @@ export class VaultFunctionsHelper {
       return;
     }
 
-    const vaultBlocks = await getVaultBlocksFromApiV2({
+    const vaultEpochs = await getDataFromApiV2("vaultEpochs", {
       vaultAddress: vault.id,
-      "cdoEpoch.status": "RUNNING",
+      sort: "count",
+      order: "asc",
     });
 
-    const epochs = vaultBlocks.reduce(
-      (acc: VaultContractCdoEpochData[], vaultBlock: any) => {
-        if (
-          acc.find(
-            (block: any) => vaultBlock.cdoEpoch.count === block.count
-          ) !== undefined
-        ) {
-          return acc;
-        }
-        return [
-          ...acc,
-          {
-            TVL: vaultBlock.TVL,
-            ...vaultBlock.cdoEpoch,
-          },
-        ];
+    const epochs = vaultEpochs.reduce(
+      (acc: VaultContractCdoEpochData[], vaultEpoch: any) => {
+        return [...acc, vaultEpoch];
       },
       []
     );

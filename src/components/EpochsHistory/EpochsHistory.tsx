@@ -26,21 +26,22 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
 
   // @ts-ignore
   const columns: Column<VaultContractCdoEpochData>[] = useMemo(() => ([
-    // {
-    //   id:'count',
-    //   width: '10%',
-    //   accessor:'count',
-    //   disableSortBy: !sortEnabled,
-    //   defaultCanSort: sortEnabled,
-    //   Header:translate('epochs.table.count'),
-    //   Cell: ({ value }: { value: VaultContractCdoEpochData["count"] }) => {
-    //     return (
-    //       <Amount.Int textStyle={'tableCell'} value={value} />
-    //     )
-    //   },
-    //   sortType: sortNumeric
-    // },
     {
+      id:'count',
+      width: '10%',
+      accessor:'count',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
+      Header:translate('epochs.table.count'),
+      Cell: ({ value }: { value: VaultContractCdoEpochData["count"] }) => {
+        return (
+          <Amount.Int textStyle={'tableCell'} value={value} />
+        )
+      },
+      sortType: sortNumeric
+    },
+    {
+      width: '17%',
       id:'startDate',
       accessor:'startDate',
       disableSortBy: !sortEnabled,
@@ -55,6 +56,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     },
     {
       id:'endDate',
+      width: '17%',
       accessor:'endDate',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
@@ -68,7 +70,6 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     },
     {
       id:'apr',
-      width: '15%',
       accessor:'apr',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
@@ -82,14 +83,13 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     },
     {
       id:'tvl',
-      width: '15%',
       accessor:'TVL.USD',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.tvl'),
       Cell: ({ value }: { value: VaultContractCdoEpochData["TVL"]["USD"] }) => {
         return asset && underlyingAsset && (
-          <TokenAmount size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+          <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
         )
       },
       sortType: sortNumeric
@@ -102,7 +102,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       Header:translate('epochs.table.interests'),
       Cell: ({ value }: { value: VaultContractCdoEpochData["expectedInterest"] }) => {
         return asset && underlyingAsset && (
-          <TokenAmount size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+          <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
         )
       },
       sortType: sortNumeric
@@ -129,7 +129,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
   const initialState = useMemo(() => ({
     sortBy: [
       {
-        id: 'startDate',
+        id: 'count',
         desc: false
       }
     ]

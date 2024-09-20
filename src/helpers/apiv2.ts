@@ -90,6 +90,18 @@ export async function getLatestVaultBlocks(vaultsIds: string[]): Promise<any> {
   return results.map((res) => res?.data).flat();
 }
 
+export async function getDataFromApiV2(
+  api: string,
+  filters?: PlatformApiFilters
+): Promise<any> {
+  const apiConfig = getPlatformApiConfig(1, "idle", api);
+  const endpoint = getPlatformApisEndpoint(1, "idle", api, "", filters);
+
+  if (!endpoint) return [];
+
+  return await getIdleAPIV2AllPages(endpoint, apiConfig);
+}
+
 export async function getVaultBlocksFromApiV2(
   filters?: PlatformApiFilters
 ): Promise<any> {

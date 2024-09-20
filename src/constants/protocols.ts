@@ -571,6 +571,28 @@ export const protocols: Record<string, Protocol> = {
             : {},
         },
       },
+      vaultEpochs: {
+        endpoint: {
+          1: "http://localhost:3000/v1/vault-epochs",
+          10: "http://localhost:3000/v1/vault-epochs",
+          137: "http://localhost:3000/v1/vault-epochs",
+        },
+        filters: [
+          "offset",
+          "limit",
+          "vaultId",
+          "vaultAddress",
+          "count",
+          "status",
+          "order",
+          "sort",
+        ],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
       vaultBlocks: {
         endpoint: {
           1: "http://localhost:3000/v1/vault-blocks",
