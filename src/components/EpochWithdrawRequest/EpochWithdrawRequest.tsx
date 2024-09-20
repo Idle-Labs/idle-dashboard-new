@@ -1,4 +1,4 @@
-import { HStack, Stack, VStack, Text } from "@chakra-ui/react"
+import { HStack, Stack, VStack, Text, Tag } from "@chakra-ui/react"
 import { BigNumber } from "alchemy-sdk"
 import { Amount } from "components/Amount/Amount"
 import { AssetLabel } from "components/AssetLabel/AssetLabel"
@@ -7,7 +7,7 @@ import { Card } from "components/Card/Card"
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { TransactionButton } from "components/TransactionButton/TransactionButton"
 import { Translation } from "components/Translation/Translation"
-import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, SECONDS_IN_YEAR } from "constants/"
+import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, SECONDS_IN_YEAR, vaultsStatusSchemes } from "constants/"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
@@ -235,7 +235,10 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
           justifyContent={'flex-start'}
         >
           <Translation translation={'defi.status'} textStyle={'captionSmall'} />
-          <Translation translation={`transactionRow.${status}`} color={`status.${status}`} fontSize={'h4'} textStyle={'heading'} />
+          <Tag variant={'solid'} colorScheme={vaultsStatusSchemes[status]} color={'primary'} fontWeight={700}>
+            {translate(`transactionRow.${status}`)}
+          </Tag>
+          {/* <Translation translation={`transactionRow.${status}`} color={`status.${status}`} fontSize={'h4'} textStyle={'heading'} /> */}
         </VStack>
         
         <VStack

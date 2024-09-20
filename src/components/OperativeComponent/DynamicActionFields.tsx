@@ -179,12 +179,6 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         const newVaultPrice = trancheTokens.gt(0) ? maxWithdrawable.div(trancheTokens) : BNify(0)
         const trancheTokenRequested = newVaultPrice.gt(0) ? newVaultPrice.minus(currVaultPrice).times(amount).div(newVaultPrice) : BNify(0)
         const expectedInterest = trancheTokenRequested.times(currVaultPrice)
-        // console.log('currVaultPrice', currVaultPrice.toString())
-        // console.log('trancheTokens', trancheTokens.toString())
-        // console.log('maxWithdrawable', maxWithdrawable.toString())
-        // console.log('newVaultPrice', newVaultPrice.toString())
-        // console.log('trancheTokenRequested', trancheTokenRequested.toString())
-        // console.log('expectedInterest', expectedInterest.toString())
         return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest} />)
       case 'epochWithdrawType':
         disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw

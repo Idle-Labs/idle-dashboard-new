@@ -47,6 +47,8 @@ export const vaultsStatusSchemes: Record<string, string> = {
   closed: "gray",
   waiting: "green",
   running: "blue",
+  claimable: "green",
+  pending: "orangeTone",
 };
 
 export interface CDO {
