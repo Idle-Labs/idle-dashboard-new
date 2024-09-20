@@ -388,7 +388,7 @@ export const tranches: Record<
       },
       USDT: {
         enabledEnvs: ["prod", "beta"],
-        status: "boosted",
+        status: "deprecated",
         variant: "portofino",
         operators: [
           {
@@ -886,7 +886,7 @@ export const tranches: Record<
       },
       USDTPor: {
         enabledEnvs: ["prod", "beta"],
-        status: "boosted",
+        status: "deprecated",
         autoFarming: ["OP"],
         variant: "portofino",
         operators: [
@@ -2890,6 +2890,7 @@ export const tranches: Record<
     clearpool: {
       USDC: {
         enabledEnvs: ["prod", "beta"],
+        status: "deprecated",
         variant: "portofino",
         operators: [
           {
@@ -3431,6 +3432,7 @@ export const tranches: Record<
       DAI: {
         autoFarming: [],
         enabledEnvs: ["prod", "beta"],
+        status: "deprecated",
         variant: "portofino",
         operators: [
           {
@@ -4671,22 +4673,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           decimals: 18,
           functions: {},
         },
-        {
-          decimals: 18,
-          enabled: true,
-          name: "clearpool",
-          abi: IdleCDO as Abi,
-          token: "AA_clearpool_portofino_DAI",
-          label: "Clearpool Portofino DAI (Senior)",
-          address: "0x43eD68703006add5F99ce36b5182392362369C1c",
-          functions: {
-            exchangeRate: {
-              name: "virtualPrice",
-              target: "0x5dcA0B3Ed7594A6613c1A2acd367d56E1f74F92D",
-              params: ["0x43eD68703006add5F99ce36b5182392362369C1c"],
-            },
-          },
-        },
       ],
     },
     /*
@@ -4742,23 +4728,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
               name: "virtualPrice",
               target: "0x1329E8DB9Ed7a44726572D44729427F132Fa290D",
               params: ["0xf85Fd280B301c0A6232d515001dA8B6c8503D714"],
-            },
-          },
-        },
-        {
-          decimals: 18,
-          enabled: true,
-          name: "clearpool",
-          abi: IdleCDO as Abi,
-          token: "BB_clearpool_fasanara_USDC",
-          label: "Clearpool Fasanara USDC (Junior)",
-          address: "0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06",
-          functions: {
-            exchangeRate: {
-              decimals: 6,
-              name: "virtualPrice",
-              target: "0xE7C6A4525492395d65e736C3593aC933F33ee46e",
-              params: ["0xbcC845bB731632eBE8Ac0BfAcdE056170aaaaa06"],
             },
           },
         },
@@ -4931,23 +4900,6 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
           token: "aUSDCv2",
           address: "0xBcca60bB61934080951369a648Fb03DF4F96263C",
           functions: {},
-        },
-        {
-          decimals: 18,
-          enabled: true,
-          name: "clearpool",
-          abi: IdleCDO as Abi,
-          token: "AA_clearpool_portofino_USDC",
-          label: "Clearpool Portofino USDC (Senior)",
-          address: "0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2",
-          functions: {
-            exchangeRate: {
-              decimals: 6,
-              name: "virtualPrice",
-              target: "0x1329E8DB9Ed7a44726572D44729427F132Fa290D",
-              params: ["0x9CAcd44cfDf22731bc99FaCf3531C809d56BD4A2"],
-            },
-          },
         },
         {
           decimals: 18,
