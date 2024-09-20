@@ -829,6 +829,7 @@
     "assetPerformance": "Current epoch",
     "thresholds": "Weekly thresholds",
     "table": {
+      "countdown": "Countdown",
       "count": "Count",
       "number": "Week",
       "status": "Status",
@@ -836,8 +837,13 @@
       "end": "End date",
       "apr": "APR",
       "tvl": "TVL",
+      "claim": "Claim",
       "interests": "Interests",
       "threshold": "Termination threshold"
+    },
+    "actions": {
+      "waitForNewEpoch": "Waiting for new epoch",
+      "waitForApproval": "Waiting for approval"
     }
   },
   "feeDiscount": {
@@ -991,6 +997,7 @@
     "claimable": "Claimable",
     "failed": "Failed",
     "network": "Network",
+    "waiting": "Waiting",
     "blockHeight": "Block Height",
     "to": "To",
     "from": "From",

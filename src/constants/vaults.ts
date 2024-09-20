@@ -45,7 +45,7 @@ export const vaultsStatusSchemes: Record<string, string> = {
   boosted: "red",
   open: "green",
   closed: "gray",
-  waiting: "green",
+  waiting: "purple",
   running: "blue",
   claimable: "green",
   pending: "orangeTone",

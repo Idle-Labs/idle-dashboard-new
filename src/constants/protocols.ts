@@ -595,9 +595,9 @@ export const protocols: Record<string, Protocol> = {
       },
       vaultBlocks: {
         endpoint: {
-          1: "https://api.idle.finance/v1/vault-blocks",
-          10: "https://api.idle.finance/v1/vault-blocks",
-          137: "https://api.idle.finance/v1/vault-blocks",
+          1: "https://api-staging.idle.finance/v1/vault-blocks",
+          10: "https://api-staging.idle.finance/v1/vault-blocks",
+          137: "https://api-staging.idle.finance/v1/vault-blocks",
         },
         filters: [
           /*"start", "end",*/

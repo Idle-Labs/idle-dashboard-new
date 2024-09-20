@@ -4,6 +4,7 @@ import { Amount } from "components/Amount/Amount"
 import { AssetLabel } from "components/AssetLabel/AssetLabel"
 import { AssetProvider, useAssetProvider } from "components/AssetProvider/AssetProvider"
 import { Card } from "components/Card/Card"
+import { TableWithPagination } from "components/TableWithPagination/TableWithPagination"
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { TransactionButton } from "components/TransactionButton/TransactionButton"
 import { Translation } from "components/Translation/Translation"
@@ -11,10 +12,11 @@ import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, SECONDS_IN_YEAR, 
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
-import { BNify, bnOrZero, fixTokenDecimals, formatDate, isEmpty, secondsToPeriod, toDayjs } from "helpers"
+import { BNify, bnOrZero, fixTokenDecimals, formatDate, isEmpty, secondsToPeriod, sortNumeric, toDayjs } from "helpers"
 import { useCallback, useMemo } from "react"
 import Countdown from "react-countdown"
 import { useTranslate } from "react-polyglot"
+import { Row } from "react-table"
 import { CreditVault } from "vaults/CreditVault"
 
 
@@ -260,11 +262,16 @@ export const WithdrawRequest: React.FC<WithdrawRequestArgs> = ({
 
 type EpochWithdrawRequestArgs = {
   assetId: AssetId
+  sortEnabled?: boolean
 }
 
+type RowProps = Row<CreditVaultWithdrawRequest>
+
 export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
-  assetId
+  assetId,
+  sortEnabled = true
 }) => {
+  const translate = useTranslate()
   const { account } = useWalletProvider()
   const { vaultsAccountData, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
@@ -279,6 +286,186 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
   const withdrawRequests = useMemo(() => {
     return vaultsAccountData?.creditVaultsWithdrawRequests?.[asset?.id]
   }, [asset, vaultsAccountData])
+
+  const epochData = useMemo(() => {
+    return asset?.epochData
+  }, [asset])
+
+  console.log('epochData', epochData)
+
+  const getRequestClaimDeadline = useCallback((withdrawRequest: CreditVaultWithdrawRequest) => {
+    if (!epochData || !("instantWithdrawDeadline" in epochData)) return null
+
+    // Instant
+    if (!!withdrawRequest.isInstant){
+      return toDayjs(epochData?.instantWithdrawDeadline*1000)
+    }
+
+    // Standard
+    if (!!epochData?.isEpochRunning){
+      return toDayjs(epochData?.epochEndDate)
+    }
+
+    return null
+  }, [epochData])
+
+  const getRequestStatus = useCallback((withdrawRequest: CreditVaultWithdrawRequest) => {
+    if (!epochData || !("isEpochRunning" in epochData)){
+      return 'pending'
+    }
+
+    if (withdrawRequest.isInstant){
+      if (!epochData.isEpochRunning || !epochData.allowInstantWithdraw){
+        return 'waiting'
+      }
+
+      const claimDeadline = getRequestClaimDeadline(withdrawRequest)
+      return claimDeadline && claimDeadline.isSameOrBefore(toDayjs()) ? 'claimable' : 'pending'
+    }
+
+    return !!epochData?.isEpochRunning ? 'pending' : (bnOrZero(epochData?.pendingWithdraws).lte(0) ? 'claimable' : 'pending')
+  }, [epochData, getRequestClaimDeadline])
+
+  const getRequestCountdown = useCallback((withdrawRequest: CreditVaultWithdrawRequest) => {
+    const status = getRequestStatus(withdrawRequest)
+    const claimDeadline = getRequestClaimDeadline(withdrawRequest)
+    switch (status){
+      case 'claimable':
+        if (epochData && ("bufferPeriod" in epochData)){
+          if (withdrawRequest.isInstant){
+            const claimableUntil = toDayjs(epochData?.epochEndDate)
+            return (<Countdown date={claimableUntil.toDate()} />)
+          } else {
+            const claimableUntil = toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData?.bufferPeriod).times(1000)).toNumber())
+            return (<Countdown date={claimableUntil.toDate()} />)
+          }
+        }
+        break;
+      case 'pending':
+        if (epochData && ("bufferPeriod" in epochData)){
+          if (withdrawRequest.isInstant){
+            if (claimDeadline){
+              // Deadline not passed yet
+              if (claimDeadline.isAfter(toDayjs())){
+                return (<Countdown date={claimDeadline.toDate()} />)
+              } else {
+                const claimableIn = toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData.bufferPeriod).times(1000)).toNumber())
+                console.log(epochData?.epochEndDate, epochData.bufferPeriod, claimableIn.toDate())
+                return (<Countdown date={claimableIn.toDate()} />)
+              }
+            } else {
+              return (<Text textStyle={'heading'} fontSize={'h4'}></Text>)
+            }
+          } else {
+            const claimableIn = !!epochData.isEpochRunning ? toDayjs(epochData?.epochEndDate) : toDayjs(bnOrZero(epochData?.epochEndDate).plus(bnOrZero(epochData.epochDuration).times(1000)).plus(bnOrZero(epochData?.bufferPeriod).times(1000)).toNumber())
+            return (<Countdown date={claimableIn.toDate()} />)
+          }
+        }
+        break;
+      default:
+        if (!claimDeadline){
+          return (<Text textStyle={'heading'} fontSize={'h4'}></Text>)
+        }
+        return (
+          <Countdown date={claimDeadline.toDate()} />
+        )
+    }
+  }, [epochData, getRequestStatus, getRequestClaimDeadline])
+
+  const getContractSendMethod = useCallback((withdrawRequest: CreditVaultWithdrawRequest) => {
+    if (withdrawRequest.isInstant){
+      if (!vault || !("getClaimInstantContractSendMethod" in vault)) return null
+      return vault?.getClaimInstantContractSendMethod()
+    }
+    if (!vault || !("getClaimContractSendMethod" in vault)) return null
+    return vault?.getClaimContractSendMethod()
+  }, [vault])
+
+  // @ts-ignore
+  const columns: Column<CreditVaultWithdrawRequest>[] = useMemo(() => ([
+    {
+      id:'type',
+      width: '15%',
+      accessor:'isInstant',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
+      Header:translate('common.type'),
+      Cell: ({ value }: { value: CreditVaultWithdrawRequest["isInstant"] }) => {
+        return (
+          <Translation translation={`assets.status.epoch.${value ? 'instant' : 'standard'}`} fontSize={'h4'} textStyle={'heading'} />
+        )
+      },
+    },
+    {
+      id:'amount',
+      accessor:'amount',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
+      Header:translate('transactionRow.amount'),
+      Cell: ({ value }: { value: CreditVaultWithdrawRequest["isInstant"] }) => {
+        const amount = fixTokenDecimals(value, (vault?.underlyingToken?.decimals || 18))
+        return (
+          <TokenAmount assetId={asset?.underlyingId} amount={amount} decimals={2} textStyle={'heading'} fontSize={'h4'} />
+        )
+      },
+      sortType: sortNumeric
+    },
+    {
+      id:'status',
+      width: '14%',
+      accessor:'isInstant',
+      disableSortBy: !sortEnabled,
+      defaultCanSort: sortEnabled,
+      Header:translate('defi.status'),
+      Cell: ({ row }: { row: RowProps }) => {
+        const status = getRequestStatus(row.original)
+        return (
+          <Tag variant={'solid'} colorScheme={vaultsStatusSchemes[status]} color={'primary'} fontWeight={700}>
+            {translate(`transactionRow.${status}`)}
+          </Tag>
+        )
+      },
+    },
+    {
+      id:'countdown',
+      accessor:'isInstant',
+      disableSortBy: true,
+      defaultCanSort: false,
+      Header:translate('epochs.table.countdown'),
+      Cell: ({ value: isInstant, row }: { value: CreditVaultWithdrawRequest["isInstant"], row: RowProps }) => {
+        const status = getRequestStatus(row.original)
+        const countdown = getRequestCountdown(row.original)
+        return isInstant && status === 'waiting' ? (
+          <Translation translation={`epochs.actions.${!epochData.isEpochRunning ? 'waitForNewEpoch' : 'waitForApproval'}`} />
+        ) : (
+          <VStack
+            spacing={0}
+            width={'full'}
+            alignItems={'flex-start'}
+          >
+            <Translation translation={`assets.assetCards.rewards.${status === 'pending' ? 'claimableIn' : 'claimableFor'}`} textStyle={'captionSmaller'} />
+            {countdown}
+          </VStack>
+        )
+      },
+    },
+    {
+      id:'claim',
+      accessor:'amount',
+      disableSortBy: true,
+      defaultCanSort: false,
+      Header:translate('epochs.table.claim'),
+      Cell: ({ value, row }: { value: CreditVaultWithdrawRequest["amount"], row: RowProps }) => {
+        const status = getRequestStatus(row.original)
+        const contractSendMethod = getContractSendMethod(row.original)
+        const amount = fixTokenDecimals(value, (vault?.underlyingToken?.decimals || 18))
+        const isDisabled = status !== 'claimable'
+        return (
+          <TransactionButton size={'xs'} text={'defi.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={amount.toFixed(2)} width={'100%'} disabled={isDisabled} />
+        )
+      },
+    }
+  ]), [asset, translate, epochData, sortEnabled, vault, getRequestStatus, getRequestCountdown, getContractSendMethod])
 
   if (!account?.address || !asset || !vault || !(vault instanceof CreditVault) || !("getClaimContractSendMethod" in vault) || isEmpty(withdrawRequests)){
     return null
@@ -296,15 +483,10 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
         alignItems={'flex-start'}
       >
         <Translation translation={'defi.withdrawRequests'} component={Text} textStyle={'heading'} fontSize={'h3'} />
-        <VStack
-          spacing={4}
-          width={'full'}
-          alignItems={'flex-start'}
+        <Card
         >
-        {
-          withdrawRequests?.map( (withdrawRequest: CreditVaultWithdrawRequest, index: number) => (<WithdrawRequest key={index} withdrawRequest={withdrawRequest} />) )
-        }
-        </VStack>
+          <TableWithPagination<CreditVaultWithdrawRequest> columns={columns} data={withdrawRequests || []} />
+        </Card>
       </VStack>
     </AssetProvider>
   )
