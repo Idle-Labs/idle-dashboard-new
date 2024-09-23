@@ -173,13 +173,8 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         if (allowInstantWithdraw){
           return null
         }
-        const currVaultPrice = BNify(asset.vaultPrice)
-        const trancheTokens = bnOrZero(asset.balance)
-        const maxWithdrawable = fixTokenDecimals(vaultsAccountData?.maxWithdrawable?.[asset.id], underlyingAsset.decimals)
-        const newVaultPrice = trancheTokens.gt(0) ? maxWithdrawable.div(trancheTokens) : BNify(0)
-        const trancheTokenRequested = newVaultPrice.gt(0) ? newVaultPrice.minus(currVaultPrice).times(amount).div(newVaultPrice) : BNify(0)
-        const expectedInterest = trancheTokenRequested.times(currVaultPrice)
-        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest} />)
+        const expectedInterest = vault.getNextEpochInterests(bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id]), amount)
+        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest.times(bnOrZero(asset.vaultPrice))} />)
       case 'epochWithdrawType':
         disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)

@@ -27,6 +27,7 @@
     "businessDescription": "Business description",
     "calendar": "Calendar",
     "explore": "Explore",
+    "request": "Request",
     "noDeposits": "No deposits",
     "switchNetwork": "Switch network",
     "relayerGasFee": "Relayer Gas Fee",
@@ -57,6 +58,7 @@
     "stake": "Stake",
     "unstake": "Unstake",
     "withdraw": "Withdraw",
+    "withdrawProfit": "Withdraw profit",
     "withdrawInterestBearing": "Withdraw interest bearing tokens",
     "withdrawal": "Withdrawal",
     "claim": "Claim",
@@ -1242,7 +1244,8 @@
           "epoch": {
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
             "running": "The withdraw window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
-            "open": "The withdraw window has started. You can withdraw until a new epoch begins."
+            "open": "The withdraw window has started. You can withdraw until a new epoch begins.",
+            "withdrawInterestsOnly": "Make a request for the interests of the next epoch: <span style='color:white;font-weight:bold'>%{amount} %{token}</span>."
           },
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "vaultOpen": "The vault is now open. You can withdraw until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",

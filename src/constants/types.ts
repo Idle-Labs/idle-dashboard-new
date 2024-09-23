@@ -443,6 +443,9 @@ export interface VaultContractCdoEpochData {
     USD: string;
   };
 
+  price: string;
+  totalSupply: string;
+
   apr: number;
   lastApr: number;
   lastInterest: string | number;

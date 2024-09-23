@@ -141,7 +141,7 @@ export const strategies: Record<string, StrategyProps> = {
     bg: `${strategiesFolder}best-yield-bg.svg`,
     image: `${strategiesFolder}best-yield.png`,
     dynamicActionFields: {
-      deposit: ["epochDuration", "epochAprChange", "lastEpochInterest"],
+      deposit: ["epochDuration", "epochAprChange"],
       withdraw: [
         "epochWithdrawType",
         "epochClaimDate",

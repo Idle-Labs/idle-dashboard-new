@@ -291,8 +291,6 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
     return asset?.epochData
   }, [asset])
 
-  console.log('epochData', epochData)
-
   const getRequestClaimDeadline = useCallback((withdrawRequest: CreditVaultWithdrawRequest) => {
     if (!epochData || !("instantWithdrawDeadline" in epochData)) return null
 

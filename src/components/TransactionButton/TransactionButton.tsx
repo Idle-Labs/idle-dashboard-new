@@ -14,13 +14,15 @@ type TransactionButtonValueProps = {
   text: string
   // isChainEnabled?: boolean
   contractSendMethod: ContractSendMethod
-} & TextProps & FlexProps
+  textProps?: TextProps
+} & FlexProps
 
 export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
   text,
   contractSendMethod,
   // isChainEnabled = true
-  ...props
+  textProps,
+  ...flexProps
 }) => {
   const theme = useTheme()
   const intervalId = useRef<any>(null)
@@ -101,7 +103,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
         case 'success':
           return (
             <Flex
-              {...props}
+              {...flexProps}
               alignItems={'center'}
               justifyContent={'center'}
             >
@@ -112,7 +114,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
           if (transaction.error?.code !== 4001){
             return (
               <Flex
-                {...props}
+                {...flexProps}
                 alignItems={'center'}
                 justifyContent={'center'}
               >
@@ -126,9 +128,9 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
       }
     }
     return (
-      <Translation translation={text} textStyle={'ctaStatic'} />
+      <Translation translation={text} textStyle={'ctaStatic'} {...textProps} />
     )
-  }, [isRightTransaction, remainingTime, transaction, text, theme, props])
+  }, [isRightTransaction, remainingTime, transaction, text, theme, textProps, flexProps])
 
   const progressBg = useMemo(() => {
     switch (transaction.status){
@@ -163,7 +165,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
       >
         <Flex
           left={0}
-          width={props.width}
+          width={flexProps.width}
           alignItems={'center'}
           position={'absolute'}
           justifyContent={'center'}
@@ -188,6 +190,7 @@ type TransactionButtonProps = {
   assetId: AssetId
   vaultId: AssetId
   actionType?: string
+  textProps?: TextProps
   chainIds?: (string|number)[]
   contractSendMethod: ContractSendMethod
 }
@@ -200,6 +203,7 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
   actionType,
   // chainIds = [],
   contractSendMethod,
+  textProps,
   ...props
 }) => {
   // @ts-ignore
@@ -254,12 +258,12 @@ export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> =
       borderColor={borderColor}
       onClick={() => onClick()}
       ref={ref as typeof useRef}
-      variant={'ctaPrimaryOutline'}
+      variant={props.variant || 'ctaPrimaryOutline'}
       transition={'border 0.5s ease-in-out'}
       {...props}
       disabled={isButtonDisabled}
     >
-      <TransactionButtonValue text={text} contractSendMethod={contractSendMethod} width={width} />
+      <TransactionButtonValue text={text} contractSendMethod={contractSendMethod} width={width} textProps={textProps} />
     </Button>
   )
 }

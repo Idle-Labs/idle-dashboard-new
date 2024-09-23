@@ -23,6 +23,7 @@ import type {
   Operator,
   RewardSenderParams,
   RewardSenders,
+  BigNumber,
 } from "constants/types";
 import {
   BNify,
@@ -725,6 +726,30 @@ export class CreditVault {
         call: this.cdoContract.methods.isWalletAllowed(account),
       },
     ];
+  }
+
+  public getNextEpochInterests(
+    trancheTokens: BigNumber,
+    vaultPrice: BigNumber,
+    maxWithdrawable: BigNumber,
+    amount?: BigNumber
+  ): BigNumber {
+    maxWithdrawable = fixTokenDecimals(
+      maxWithdrawable,
+      this.underlyingToken?.decimals || 18
+    );
+    const newVaultPrice = trancheTokens.gt(0)
+      ? maxWithdrawable.div(trancheTokens)
+      : BNify(0);
+
+    const trancheTokenRequested = newVaultPrice.gt(0)
+      ? newVaultPrice
+          .minus(vaultPrice)
+          .times(amount || trancheTokens)
+          .div(newVaultPrice)
+      : BNify(0);
+
+    return trancheTokenRequested; //.times(newVaultPrice);
   }
 
   public getAssetsData(): Assets {
