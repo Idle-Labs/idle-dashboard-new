@@ -2648,7 +2648,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     if (!lastTransaction || !state.isPortfolioLoaded) return
     if (!lastTransaction?.lastUpdated || lastTransaction.lastUpdated < state.portfolioTimestamp) return
 
-    // console.log('lastTransaction', lastTransaction)
+    console.log('lastTransaction', lastTransaction)
     const asset = selectAssetById(lastTransaction.vaultId as string)
     const vault = selectVaultById(lastTransaction.vaultId as string)
 
@@ -2679,10 +2679,9 @@ export function PortfolioProvider({ children }: ProviderProps) {
     // console.log('Last Transaction Asset', asset)
 
     (async () => {
-      // console.log('Update vaults after transaction', lastTransaction, vaults)
+      console.log('Update vaults after transaction', lastTransaction, vaults)
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
       if (!vaultsOnChainData) return
-      // console.log('getVaultsOnchainData', vaultsOnChainData)
 
       const {
         fees,
@@ -3036,6 +3035,9 @@ export function PortfolioProvider({ children }: ProviderProps) {
         idleDistributions: newIdleDistributions,
         interestBearingTokens: newInterestBearingTokens
       }
+
+      // Reset vault positions effect
+      runningEffects.current.vaultsPositions = false
 
       dispatch({ type: 'SET_STATE', payload: newState })
       dispatch({ type: 'SET_PORTFOLIO_TIMESTAMP', payload: Date.now() })
@@ -3523,7 +3525,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         const vault = state.vaults.find( (vault: Vault) => vaultBlock && cmpAddrs(vault.id, vaultBlock.vaultAddress) )
 
         if (!vault){
-          console.log('Vault not found: ', vaultBlock?.vaultAddress)
+          // console.log('Vault not found: ', vaultBlock?.vaultAddress)
           return
         }
 
@@ -4110,7 +4112,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           vaultsTransactions
         } = results
 
-        console.log('vaultsAccountData', vaultsAccountData)
+        // console.log('vaultsAccountData', vaultsAccountData)
 
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })

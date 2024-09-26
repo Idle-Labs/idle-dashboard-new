@@ -290,18 +290,16 @@ export class Multicall {
 
     // const multicallId = Date.now()
 
-    const hash = hashCode(`${calldata}_${chainId}`);
+    // const hash = hashCode(`${calldata}_${chainId}`);
+    // const cachedResults = await this.checkCachedRequests(hash);
+    // if (cachedResults) {
+    //   return cachedResults;
+    // }
 
-    const cachedResults = await this.checkCachedRequests(hash);
-    if (cachedResults) {
-      // console.warn('Multicall - TAKE CACHED DATA', hash, cachedResults)
-      return cachedResults;
-    }
-
-    this.cachedRequests[hash] = {
-      status: "pending",
-      data: null,
-    };
+    // this.cachedRequests[hash] = {
+    //   status: "pending",
+    //   data: null,
+    // };
 
     let results = null;
     const contractAddress = this.networkContract;
@@ -331,10 +329,10 @@ export class Multicall {
       }
 
       if (!singleCallsEnabled) {
-        this.cachedRequests[hash] = {
-          status: "error",
-          data: null,
-        };
+        // this.cachedRequests[hash] = {
+        //   status: "error",
+        //   data: null,
+        // };
         return null;
       }
 
@@ -369,10 +367,10 @@ export class Multicall {
         []
       );
 
-      this.cachedRequests[hash] = {
-        status: "success",
-        data: decodedData,
-      };
+      // this.cachedRequests[hash] = {
+      //   status: "success",
+      //   data: decodedData,
+      // };
 
       // console.log(multicallId, 'Multicall - Singlecalls: ', decodedData)
     }
@@ -436,10 +434,10 @@ export class Multicall {
 
       // console.log(multicallId, 'Multicall Decoded:', decodedData)
 
-      this.cachedRequests[hash] = {
-        status: "success",
-        data: decodedData,
-      };
+      // this.cachedRequests[hash] = {
+      //   status: "success",
+      //   data: decodedData,
+      // };
 
       return decodedData;
     }

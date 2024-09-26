@@ -1,6 +1,4 @@
 import { HStack, Stack, VStack, Text, Tag } from "@chakra-ui/react"
-import { BigNumber } from "alchemy-sdk"
-import { Amount } from "components/Amount/Amount"
 import { AssetLabel } from "components/AssetLabel/AssetLabel"
 import { AssetProvider, useAssetProvider } from "components/AssetProvider/AssetProvider"
 import { Card } from "components/Card/Card"
@@ -8,11 +6,11 @@ import { TableWithPagination } from "components/TableWithPagination/TableWithPag
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { TransactionButton } from "components/TransactionButton/TransactionButton"
 import { Translation } from "components/Translation/Translation"
-import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, SECONDS_IN_YEAR, vaultsStatusSchemes } from "constants/"
+import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, vaultsStatusSchemes } from "constants/"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
-import { BNify, bnOrZero, fixTokenDecimals, formatDate, isEmpty, secondsToPeriod, sortNumeric, toDayjs } from "helpers"
+import { bnOrZero, fixTokenDecimals, formatDate, isEmpty, sortNumeric, toDayjs } from "helpers"
 import { useCallback, useMemo } from "react"
 import Countdown from "react-countdown"
 import { useTranslate } from "react-polyglot"
@@ -312,16 +310,20 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       return 'pending'
     }
 
+    const claimDeadline = getRequestClaimDeadline(withdrawRequest)
+
     if (withdrawRequest.isInstant){
       if (!epochData.isEpochRunning || !epochData.allowInstantWithdraw){
         return 'waiting'
       }
-
-      const claimDeadline = getRequestClaimDeadline(withdrawRequest)
       return claimDeadline && claimDeadline.isSameOrBefore(toDayjs()) ? 'claimable' : 'pending'
     }
 
-    return !!epochData?.isEpochRunning ? 'pending' : (bnOrZero(epochData?.pendingWithdraws).lte(0) ? 'claimable' : 'pending')
+    if (!!epochData?.isEpochRunning){
+      return claimDeadline && claimDeadline.isSameOrBefore(toDayjs()) ? 'waiting' : 'pending'
+    }
+
+    return bnOrZero(epochData?.pendingWithdraws).lte(0) ? 'claimable' : 'pending'
   }, [epochData, getRequestClaimDeadline])
 
   const getRequestCountdown = useCallback((withdrawRequest: CreditVaultWithdrawRequest) => {
@@ -435,6 +437,8 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
         const countdown = getRequestCountdown(row.original)
         return isInstant && status === 'waiting' ? (
           <Translation translation={`epochs.actions.${!epochData.isEpochRunning ? 'waitForNewEpoch' : 'waitForApproval'}`} />
+        ) : !isInstant && status === 'waiting' ? (
+          <Translation translation={`epochs.actions.waitForEpochClose`} />
         ) : (
           <VStack
             spacing={0}

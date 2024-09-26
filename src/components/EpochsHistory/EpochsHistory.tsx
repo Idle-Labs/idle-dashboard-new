@@ -70,11 +70,11 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     },
     {
       id:'apr',
-      accessor:'apr',
+      accessor:'lastApr',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.apr'),
-      Cell: ({ value }: { value: VaultContractCdoEpochData["apr"] }) => {
+      Cell: ({ value }: { value: VaultContractCdoEpochData["lastApr"] }) => {
         return (
           <Amount.Percentage textStyle={'tableCell'} value={value} />
         )
@@ -115,7 +115,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.status'),
       Cell: ({ value, row }: { value: VaultContractCdoEpochData["status"], row: RowProps }) => {
-        const statusKey =  toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'closed' : value.toLowerCase()
+        const statusKey =  value.toLowerCase() === 'waiting' && toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'closed' : value.toLowerCase()
         const colorScheme = vaultsStatusSchemes[statusKey]
         const status = translate(`assets.status.epoch.${statusKey}`)
         return (

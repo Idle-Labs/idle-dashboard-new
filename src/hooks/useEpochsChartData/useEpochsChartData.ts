@@ -4,7 +4,12 @@ import {
   VaultContractCdoEpochData,
 } from "constants/";
 import { useState, useMemo, useEffect } from "react";
-import { bnOrZero, getChartTimestampBounds, toDayjs } from "helpers/";
+import {
+  bnOrZero,
+  getChartTimestampBounds,
+  sortArrayByKey,
+  toDayjs,
+} from "helpers/";
 import { usePortfolioProvider } from "contexts/PortfolioProvider";
 import {
   AssetId,
@@ -87,7 +92,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
         const vault = selectVaultById(asset.id);
 
         epochs.forEach((epoch: VaultContractCdoEpochData) => {
-          const date = toDayjs(epoch.endDate).unix();
+          const date = toDayjs(epoch.endDate).valueOf();
           const value = bnOrZero(epoch.apr).toNumber();
 
           if (!amountsByDate[date]) {
@@ -113,7 +118,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
       {}
     );
 
-    chartData.rainbow = Object.values(amountsByDate);
+    chartData.rainbow = sortArrayByKey(Object.values(amountsByDate), "date");
 
     return chartData;
   }, [assets, selectVaultById]);

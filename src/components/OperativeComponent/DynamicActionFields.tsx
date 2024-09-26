@@ -174,7 +174,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
           return null
         }
         const expectedInterest = vault.getNextEpochInterests(bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id]), amount)
-        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={textCta} {...textProps} value={expectedInterest.times(bnOrZero(asset.vaultPrice))} />)
+        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={expectedInterest.times(bnOrZero(asset.vaultPrice))} />)
       case 'epochWithdrawType':
         disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
@@ -189,8 +189,10 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
         if (allowInstantWithdraw){
           return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{formatDate(asset.epochData?.instantWithdrawDeadline*1000, DATETIME_FORMAT)}</Text>)
-        } else {
+        } else if (asset.epochData.epochEndDate) {
           return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{formatDate(BNify(asset.epochData.epochEndDate).plus(BNify(asset.epochData.bufferPeriod).plus(asset.epochData.epochDuration).times(1000)).toNumber(), DATETIME_FORMAT)}</Text>)
+        } else {
+          return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>-</Text>)
         }
       case 'epochWithdrawDeadline':
         return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)

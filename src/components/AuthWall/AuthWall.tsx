@@ -95,8 +95,6 @@ export const AuthWall = ({ children }: ProviderProps) => {
     setLastCheckTimestamp(null)
 
     const signature = await checkSignature(account?.address as string, messageToSign)
-
-    console.log('signature', signature)
     
     setSignatureCheckError(false)
     setLastCheckTimestamp(Date.now())

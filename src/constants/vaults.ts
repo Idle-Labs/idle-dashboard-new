@@ -159,21 +159,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",
-      blockNumber: 125191725,
+      blockNumber: 125754764,
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
-      accessCodes: [
-        "6G8R7Q",
-        "GSER6L",
-        "CDDA2X",
-        "S58PHT",
-        "J2998A",
-        "YM9Y7P",
-        "66M55D",
-        "ZG8S4A",
-        "3WSBSD",
-        "P26JQ3",
-      ],
+      accessCodes: ["P26JQ3"],
       operators: [
         {
           type: "borrower",
@@ -183,7 +172,48 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         compoundApr: false,
       },
-      name: "FalconX Credit Test",
+      name: "FalconX Credit",
+      vaultType: "primeBrokerage",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_falconx_USDC",
+        address: "0x3353348Fa9526Bf76569B93d04d731cb7B46B343",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_falconx_USDC",
+        address: "0xD7d76180e12D53b6c4d835cb0F5e3df3732055a3",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_clearpool_falconx_USDT",
+        address: "0x8C1B4A409098b5326E3103458bdFE23eEEB1Aa5F",
+      },
+      descriptionShort: "Test Test",
+      description: "Test Test",
+    },
+    {
+      mode: "CREDIT",
+      kycRequired: true,
+      manager: "falconx",
+      borrower: "falconx",
+      status: "experimental",
+      blockNumber: 125191725,
+      underlyingToken: "USDC",
+      enabledEnvs: ["credit"],
+      accessCodes: ["6G8R7Q"],
+      operators: [
+        {
+          type: "borrower",
+          name: "falconx",
+        },
+      ],
+      flags: {
+        compoundApr: false,
+      },
+      name: "Idle Credit Test",
       vaultType: "diversifiedBasisYield",
       Token: {
         decimals: 18,

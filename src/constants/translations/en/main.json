@@ -218,6 +218,7 @@
     "BY": "Best-Yield",
     "AA": "Senior Tranche",
     "BB": "Junior Tranche",
+    "primeBrokerage": "Prime brokerage",
     "overcollatLending": "Overcollateralized lending",
     "diversifiedBasisYield": "Diversified Basis Yield",
     "institutionalCredit": "Institutional Credit",
@@ -845,6 +846,7 @@
     },
     "actions": {
       "waitForNewEpoch": "Waiting for new epoch",
+      "waitForEpochClose": "Waiting for epoch to close",
       "waitForApproval": "Waiting for approval"
     }
   },
@@ -1245,7 +1247,7 @@
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
             "running": "The withdraw window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
             "open": "The withdraw window has started. You can withdraw until a new epoch begins.",
-            "withdrawInterestsOnly": "Make a request for the interests of the next epoch: <span style='color:white;font-weight:bold'>%{amount} %{token}</span>."
+            "withdrawInterestsOnly": "The expected interest for the next epoch is <span style='color:white;font-weight:bold'>%{amount} %{token}</span>."
           },
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "vaultOpen": "The vault is now open. You can withdraw until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",

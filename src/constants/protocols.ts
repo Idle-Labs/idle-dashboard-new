@@ -573,9 +573,9 @@ export const protocols: Record<string, Protocol> = {
       },
       vaultEpochs: {
         endpoint: {
-          1: "http://localhost:3000/v1/vault-epochs",
-          10: "http://localhost:3000/v1/vault-epochs",
-          137: "http://localhost:3000/v1/vault-epochs",
+          1: "https://api-staging.idle.finance/v1/vault-epochs",
+          10: "https://api-staging.idle.finance/v1/vault-epochs",
+          137: "https://api-staging.idle.finance/v1/vault-epochs",
         },
         filters: [
           "offset",

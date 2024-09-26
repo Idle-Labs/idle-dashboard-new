@@ -11,7 +11,6 @@ import {
   MAX_ALLOWANCE,
   tokensFolder,
   operators,
-  distributedFeesSenders,
   CreditVaultConfig,
   ContractConfig,
 } from "constants/";
@@ -48,7 +47,6 @@ import {
   EtherscanTransaction,
   Transaction,
 } from "constants/";
-import { EventLog } from "ethers";
 
 type ConstructorProps = {
   web3: Web3;
@@ -749,7 +747,7 @@ export class CreditVault {
           .div(newVaultPrice)
       : BNify(0);
 
-    return trancheTokenRequested; //.times(newVaultPrice);
+    return trancheTokenRequested;
   }
 
   public getAssetsData(): Assets {
