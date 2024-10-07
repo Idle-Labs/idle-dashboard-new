@@ -51,7 +51,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
   const [epochsChartDataLoading, setEpochsChartDataLoading] =
     useState<boolean>(true);
   const {
-    selectors: { selectAssetsByIds, selectVaultById },
+    selectors: { selectAssetsByIds },
   } = usePortfolioProvider();
 
   const { assetIds, timeframe, dateRange } = args;
@@ -89,11 +89,10 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
         const epochs = asset?.epochData?.epochs;
 
         if (!epochs || !epochs.length) return amountsByDate;
-        const vault = selectVaultById(asset.id);
 
         epochs.forEach((epoch: VaultContractCdoEpochData) => {
           const date = toDayjs(epoch.endDate).valueOf();
-          const value = bnOrZero(epoch.apr).toNumber();
+          const value = bnOrZero(epoch.APRs.GROSS).toNumber();
 
           if (!amountsByDate[date]) {
             amountsByDate[date] = {
@@ -121,7 +120,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
     chartData.rainbow = sortArrayByKey(Object.values(amountsByDate), "date");
 
     return chartData;
-  }, [assets, selectVaultById]);
+  }, [assets]);
 
   useEffect(() => {
     if (!epochsChartData.rainbow.length) return;

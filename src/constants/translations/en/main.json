@@ -218,6 +218,7 @@
     "BY": "Best-Yield",
     "AA": "Senior Tranche",
     "BB": "Junior Tranche",
+    "strategyVault": "Strategy vault",
     "primeBrokerage": "Prime brokerage",
     "overcollatLending": "Overcollateralized lending",
     "diversifiedBasisYield": "Diversified Basis Yield",
@@ -536,7 +537,7 @@
       "amphorFeeRebate": {
         "cta": "Got it",
         "title": "Amphor fee discount program",
-        "body": "Thanks to our partnership with <a href='https://amphor.io' class='link' target='_blank' rel='noopener'>Amphor</a>, users that have deposited through Amphor can benefit from a performance fee discount distributed at the end of each epoch in the underlying token of the pool, directly in your wallet."
+        "body": "Thanks to our partnership with <a href='https://amphor.io' class='link' target='_blank' rel='noopener'>Amphor</a>, users that have deposited through Amphor can benefit from a performance fee discount distributed at the end of each cycle in the underlying token of the pool, directly in your wallet."
       },
       "learnMore": {
         "next": "Next",
@@ -642,7 +643,7 @@
     "staked": "Staked",
     "noVaultsAvailable": "No vaults available",
     "depositWithReferral": "You are depositing with the following referral address:",
-    "feeDiscountReferral": "Performance fee reduced to <strong style='color: white'>%{performanceFee}%</strong> thanks to %{protocol} partnership. Fee rebate airdropped at the end of each epoch.",
+    "feeDiscountReferral": "Performance fee reduced to <strong style='color: white'>%{performanceFee}%</strong> thanks to %{protocol} partnership. Fee rebate airdropped at the end of each cycle.",
     "amountStaked": "Amount Staked",
     "assetStaking": "%{assetName} Staking",
     "stake": "Stake",
@@ -828,8 +829,8 @@
     }
   },
   "epochs": {
-    "epochsHistory": "Epochs history",
-    "assetPerformance": "Current epoch",
+    "epochsHistory": "Cycles history",
+    "assetPerformance": "Current cycle",
     "thresholds": "Weekly thresholds",
     "table": {
       "countdown": "Countdown",
@@ -845,8 +846,8 @@
       "threshold": "Termination threshold"
     },
     "actions": {
-      "waitForNewEpoch": "Waiting for new epoch",
-      "waitForEpochClose": "Waiting for epoch to close",
+      "waitForNewEpoch": "Waiting for new cycle",
+      "waitForEpochClose": "Waiting for cycle to close",
       "waitForApproval": "Waiting for approval"
     }
   },
@@ -1064,17 +1065,17 @@
     "noSupportedAssets": "No supported assets in portfolio."
   },
   "dynamicActionFields": {
-    "epochStatus": "Epoch Status",
-    "epochDuration": "Epoch Duration",
-    "epochAPR": "Epoch APR",
-    "epochAprChange": "Epoch new APR",
+    "epochStatus": "Cycle Status",
+    "epochDuration": "Cycle Duration",
+    "epochAPR": "Cycle APR",
+    "epochAprChange": "Cycle new APR",
     "epochWithdrawType": "Withdraw type",
     "epochWithdrawDeadline": "Withdraw deadline",
     "epochClaimPeriod": "Claim period",
     "epochClaimDate": "Claim date",
-    "epochExpectedInterest": "Epoch expected interests",
-    "lastEpochApr": "Last epoch APR",
-    "lastEpochInterest": "Last epoch interests",
+    "epochExpectedInterest": "Cycle expected interests",
+    "lastEpochApr": "Last Cycle APR",
+    "lastEpochInterest": "Last Cycle interests",
     "depositLimit": "Available to deposit",
     "stakingPoolShare": "Pool share",
     "feeDiscount": "Fee discount",
@@ -1088,16 +1089,16 @@
     "overperformance": "Overperformance on base strategy",
     "newApy": "New APY (after deposit)",
     "coverage": "Coverage",
-    "epochEnd": "Epoch end",
-    "epochStart": "Epoch start",
+    "epochEnd": "Cycle end",
+    "epochStart": "Cycle start",
     "gain": "Gain",
     "totalGain": "Total gain",
     "fee": "Fee",
     "withdrawFee": "Withdraw fee",
     "netGain": "Net gain",
     "tooltips": {
-      "epochExpectedInterest": "Additional tokens you will receive at the end of the epoch",
-      "epochClaimPeriod": "Waiting time required to claim your funds after the start of the next epoch",
+      "epochExpectedInterest": "Additional tokens you will receive at the end of the cycle",
+      "epochClaimPeriod": "Waiting time required to claim your funds after the start of the next cycle",
       "riskThreshold": "If the vault reaches its maturity and %{underlying} price ends below this price, the capital would be at risk"
     }
   },
@@ -1166,8 +1167,8 @@
         "messages": {
           "epoch": {
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
-            "running": "The deposit window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to deposit.",
-            "open": "The deposit window has started. You can deposit until a new epoch begins."
+            "running": "The deposit window ended. Wait the end of the current cycle on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to deposit.",
+            "open": "The deposit window has started. You can deposit until a new cycle begins."
           },
           "buyCta": "Top up",
           "buy": "Running low on %{asset}?",
@@ -1176,7 +1177,7 @@
           "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity.",
           "vaultOpen": "The deposit window has started. You can deposit until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
           "maticNFT": "You have received an NFT representing your redeemed funds. Wait the un-bonding period to burn the NFT and get your MATIC.",
-          "vaultLocked": "The deposit window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> or an early termination to interact with the pool.",
+          "vaultLocked": "The deposit window ended. Wait the end of the current cycle on <span style='color:white;font-weight:bold'>%{epochEnd}</span> or an early termination to interact with the pool.",
           "limitCapReached": "The maximum deposit limit of <strong>%{limit}</strong> has been reached for this vault. Follow <a href='https://twitter.com/idlefinance' class='link' target='_blank' rel='noopener'>IdleDAO's Twitter page</a> to stay updated on future limit increases.",
           "paused": "Deposits are momentarily disabled for maintenance purposes. Redeems are still enabled, we appreciate your patience and will keep you updated on the progress of this matter.",
           "experimental": "This is an experimental Vault that has not been released in production yet and comes with risk. Make sure you do your own research and only supply assets you can afford to lose.",
@@ -1245,15 +1246,15 @@
         "messages": {
           "epoch": {
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
-            "running": "The withdraw window ended. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
-            "open": "The withdraw window has started. You can withdraw until a new epoch begins.",
-            "withdrawInterestsOnly": "The expected interest for the next epoch is <span style='color:white;font-weight:bold'>%{amount} %{token}</span>."
+            "running": "The withdraw window ended. Wait the end of the current cycle on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
+            "open": "The withdraw window has started. You can withdraw until a new cycle begins.",
+            "withdrawInterestsOnly": "The expected interest for the next cycle is <span style='color:white;font-weight:bold'>%{amount} %{token}</span>."
           },
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "vaultOpen": "The vault is now open. You can withdraw until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",
           "ethenaUSDeWithdraw": "By withdrawing a cooldown period of 7 days will be triggered, after which you will be able to claim back your USDe.",
           "maticNFT": "By withdrawing you will receive an NFT representing your redeemed funds. After the un-bonding period you will be able to burn the NFT and get your MATIC.",
-          "vaultLocked": "The vault is currently locked. Wait the end of the current epoch on <span style='color:white;font-weight:bold'>%{epochEnd}</span> or an early termination to interact with the pool.",
+          "vaultLocked": "The vault is currently locked. Wait the end of the current cycle on <span style='color:white;font-weight:bold'>%{epochEnd}</span> or an early termination to interact with the pool.",
           "gasEstimateError": "We have encountered an error during the gas estimate, you may not be able to withdraw your funds. This error may not be up to us, please <a href=\"https://discord.com/channels/606071749657755668/606073687799627776\" target=\"_blank\" class=\"link\">click here</a> to enter our Discord channel and communicate the following error:<br /><span class=\"error\">\"%{error}\"</span>",
           "decoded": {
             "execution reverted: NEC": "Not enough liquidity to withdraw from the lender"
@@ -2094,9 +2095,9 @@
       "epoch": {
         "default": "Default",
         "running": "Ongoing",
-        "open": "Open",
-        "closed": "Closed",
-        "waiting": "Open",
+        "open": "Netting",
+        "finished": "Finished",
+        "waiting": "Netting",
         "instant": "Instant",
         "standard": "Standard",
         "closing": "Closing",
@@ -2106,10 +2107,10 @@
     "assetDetails": {
       "generalData": {
         "epoch": {
-          "duration": "Epoch duration",
-          "startDate": "Epoch start",
-          "endDate": "Epoch end",
-          "status": "Epoch status",
+          "duration": "Cycle duration",
+          "startDate": "Cycle start",
+          "endDate": "Cycle end",
+          "status": "Cycle status",
           "lastAPY": "Last APY",
           "mode": {
             "CREDIT": "Credit",
@@ -2182,7 +2183,7 @@
         "creditVaultType": "The Credit Vault type can be Credit or Strategy",
         "stakingAvgLockTime": "The average time users have staked their IDLE",
         "weight": "The percentage of IDLE currently distributed to this gauge",
-        "epochStatus": "This badge shows whether the epoch is open or running",
+        "epochStatus": "This badge shows whether the cycle is open or running",
         "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
         "totalDiscountedFees": "The total amount of fees redistributed to users",
         "spotApy": "The annualized yield this vault is providing at the current block",
@@ -2190,7 +2191,7 @@
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "idleDistribution": "The total amount of IDLE distributed daily for the entire pool",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
-        "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next epoch",
+        "nextWeight": "The percentage of IDLE distributed to this gauge starting from the next cycle",
         "vaultStatus": "This badge shows whether the vault is in Production, Experimental or Deprecated",
         "pointsEmissionOn1000Usd": "Additional points you will get per year for a $1000 worth position.",
         "gearboxKelpMilesPointsEmission": "Kelp Miles you will get per year for a $1000 worth position.",
@@ -2285,9 +2286,9 @@
         "yourRewards": "Your Rewards",
         "currentAPYLabel": "The current APY for your rewards",
         "claimRewards": "Claim Rewards",
-        "nextEpochEnd": "Next epoch end",
-        "duringNextEpoch": "During next epoch",
-        "afterEpochStart": "after epoch start",
+        "nextEpochEnd": "Next cycle end",
+        "duringNextEpoch": "During next cycle",
+        "afterEpochStart": "after cycle start",
         "distributedRewards": "By depositing is this vault you will receive additional rewards that are distributed weekly."
       },
       "accounts": "Accounts",

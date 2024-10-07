@@ -70,11 +70,11 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     },
     {
       id:'apr',
-      accessor:'lastApr',
+      accessor:'APRs.GROSS',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.apr'),
-      Cell: ({ value }: { value: VaultContractCdoEpochData["lastApr"] }) => {
+      Cell: ({ value }: { value: number }) => {
         return (
           <Amount.Percentage textStyle={'tableCell'} value={value} />
         )
@@ -87,7 +87,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.tvl'),
-      Cell: ({ value }: { value: VaultContractCdoEpochData["TVL"]["USD"] }) => {
+      Cell: ({ value }: { value: string }) => {
         return asset && underlyingAsset && (
           <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
         )
@@ -115,7 +115,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.status'),
       Cell: ({ value, row }: { value: VaultContractCdoEpochData["status"], row: RowProps }) => {
-        const statusKey =  value.toLowerCase() === 'waiting' && toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'closed' : value.toLowerCase()
+        const statusKey = value.toLowerCase()// value.toLowerCase() === 'running' && toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'finished' : value.toLowerCase()
         const colorScheme = vaultsStatusSchemes[statusKey]
         const status = translate(`assets.status.epoch.${statusKey}`)
         return (

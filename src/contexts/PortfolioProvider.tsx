@@ -2360,6 +2360,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
             // Check APR for Credit Vault
             if (vault instanceof CreditVault && vault.vaultConfig.mode === 'STRATEGY'){
               const epochData = epochsData[assetId]
+              console.log('epochData', epochData)
               if (epochData && "epochsInterests" in epochData){
                 const epochsInterests = epochData.epochsInterests
                 if (epochsInterests){
@@ -4112,7 +4113,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           vaultsTransactions
         } = results
 
-        // console.log('vaultsAccountData', vaultsAccountData)
+        console.log('vaultsAccountData', vaultsAccountData)
 
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })

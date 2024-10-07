@@ -777,50 +777,6 @@ export class VaultFunctionsHelper {
     };
   }
 
-  public async getCreditVaultEpochsInterests(vault: Vault): Promise<any> {
-    if (!(vault instanceof CreditVault)) return null;
-
-    const accrueInterestEvents = await vault.getAccrueInterestEvents();
-
-    const epochs = await Promise.all(
-      accrueInterestEvents.map((event: EventData) =>
-        vault.cdoContract.methods
-          .getContractValue()
-          .call({}, event.blockNumber)
-          .then(async (contractValue: string) => {
-            const grossPercentage = BNify(event.returnValues.interest).div(
-              contractValue
-            );
-            const netPercentage = BNify(event.returnValues.interest)
-              .minus(event.returnValues.fees)
-              .div(contractValue);
-
-            const block = await getBlock(
-              vault.web3Rpc as Web3,
-              event.blockNumber
-            );
-
-            return {
-              earnings: {
-                gross: grossPercentage,
-                net: netPercentage,
-              },
-              blockNumber: event.blockNumber,
-              fees: BNify(event.returnValues.fees),
-              interest: BNify(event.returnValues.interest),
-              endTimestamp: bnOrZero(block?.timestamp).times(1000).toNumber(),
-            };
-          })
-      )
-    );
-
-    return {
-      epochs,
-      assetId: vault.id,
-      cdoId: vault.cdoConfig.address,
-    };
-  }
-
   public async getEthenaCooldownsEvents(
     vault: Vault,
     account: string

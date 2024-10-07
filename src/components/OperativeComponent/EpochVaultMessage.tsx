@@ -98,6 +98,12 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
     return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
   }, [asset, nextEpochTokensToWithdraw])
 
+  const isInstantWithdraw = useMemo(() => {
+    if (!epochData || !("disableInstantWithdraw" in epochData)) return false
+    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
+    return !disableInstantWithdraw && BNify(epochData?.lastEpochApr).minus(epochData?.instantWithdrawAprDelta).gt(epochData?.epochApr)
+  }, [epochData])
+
   if (!status || !asset?.id) return null
 
   return (

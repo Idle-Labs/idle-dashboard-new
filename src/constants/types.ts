@@ -438,41 +438,45 @@ export type ProtocolData = {
 };
 
 export interface VaultContractCdoEpochData {
-  TVL: {
+  block: Block;
+
+  APRs: VaultEpochAPRs;
+  TVL?: {
     token: string;
     USD: string;
   };
-
-  price: string;
   totalSupply: string;
+  price: string;
 
-  apr: number;
-  lastApr: number;
-  lastInterest: string | number;
-  expectedInterest: string | number;
-  deposits: string | number;
+  deposits: string;
   duration: number;
-  unclaimedFees: string | number;
+  bufferDuration: number;
+  unclaimedFees: string;
+  expectedInterest: string;
 
   startDate?: string;
   endDate?: string;
-  count?: number;
+  count: number;
 
-  status: "WAITING" | "RUNNING" | "DEFAULTED";
+  status: "WAITING" | "RUNNING" | "DEFAULTED" | "FINISHED";
 
   instantWithdraws?: {
-    disabled?: boolean;
     deadline?: string;
     allowed: boolean;
     delay: number;
-    amount: string | number;
+    amount: string;
     aprDelta: number;
   };
-
   withdraws?: {
-    amount: string | number;
-    fees: string | number;
+    amount: string;
+    fees: string;
   };
+}
+
+export interface VaultEpochAPRs {
+  GROSS: number;
+  EPOCH: number;
+  BUFFER: number;
 }
 
 export interface Asset {

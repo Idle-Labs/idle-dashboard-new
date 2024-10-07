@@ -198,16 +198,8 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(asset?.epochData?.startDate || 0, locale)}</Text>)
       case 'epochAprChange':
         if (vault.mode === 'STRATEGY'){
-          return (<DynamicActionField
-            field={'lastEpochApr'}
-            assetId={assetId}
-            amount={amount}
-            amountUsd={amountUsd}
-            stakingPower={stakingPower}
-            {...textProps}
-          />)
+          return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.apr} />)
         }
-  
         return (
           <HStack>
             <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={fixTokenDecimals(asset?.epochData?.lastEpochApr, 18)} />
@@ -277,7 +269,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       default:
         return null
     }
-  }, [field, assetId, vaultsAccountData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
+  }, [field, vaultsAccountData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
 
 
   if (!dynamicActionField) return null
