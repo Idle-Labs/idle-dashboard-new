@@ -1396,12 +1396,13 @@ const EpochCountdown: React.FC<EpochCountdownArgs & TextProps> = ({
   }
 
   return (
-    <Countdown date={epochNextActionDate} renderer={ ({ hours, minutes, seconds, completed }: any) => {
+    <Countdown date={epochNextActionDate} renderer={ ({ days, hours, minutes, seconds, completed }: any) => {
       return completed ? (
         <Translation prefix={"("} suffix={')'} translation={ isEpochRunning ? 'assets.status.epoch.closing' : 'assets.status.epoch.starting'} {...textProps} />
       ) : (
         <Text {...textProps}>
           {`${prefix ? prefix : ''}`}
+          {days>0 && <span>{days}d:</span>}
           {hours>0 && <span>{hours}h:</span>}
           {minutes>0 && <span>{minutes}m:</span>}
           <span>{seconds}s</span>
