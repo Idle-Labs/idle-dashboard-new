@@ -28,7 +28,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     return vault && ("kycRequired" in vault) && !!vault.kycRequired
   }, [assetId, selectVaultById])
 
-  const isWalletAllowed = useMemo(() => !checkWalletAllowed || (!!asset?.walletAllowed && account?.address), [checkWalletAllowed, asset, account])
+  const isWalletAllowed = useMemo(() => (!checkWalletAllowed || (!!asset?.walletAllowed && account?.address)), [checkWalletAllowed, asset, account])
 
   const fallbackComponent = (
     <React.Fragment>

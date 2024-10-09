@@ -173,12 +173,12 @@ const KycVerificationBadge: React.FC = () => {
 
   if (!asset || !isPortfolioLoaded) return null
 
-    const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
-    if (!checkWalletAllowed) return null
-    
-    const walletAllowed = account?.address && !!asset.walletAllowed
-    const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.orange
-    const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `${theme.colors.orange}15`
+  const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
+  if (!checkWalletAllowed) return null
+  
+  const walletAllowed = account?.address && !!asset.walletAllowed
+  const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.orange
+  const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `${theme.colors.orange}15`
 
   return (
     <Tooltip

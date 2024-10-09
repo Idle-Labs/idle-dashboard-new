@@ -79,7 +79,7 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                           alignItems={'flex-start'}
                         >
                           <Translation component={Text} translation={'common.rating'} textStyle={'titleSmall'} />
-                          <Text>{operatorInfo.rating}*</Text>
+                          <Text>{operatorInfo.rating}</Text>
                         </VStack>
                       )
                     }
@@ -121,6 +121,7 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                     </VStack>
                   </SimpleGrid>
                   {
+                    /*
                     ['borrower', 'strategist'].includes(operator.type) && (
                       <Link display={'flex'} justifyContent={'center'} href={'https://credora.io/credit-evaluations'} isExternal>
                         <HStack
@@ -133,6 +134,7 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                         </HStack>
                       </Link>
                     )
+                    */
                   }
                 </VStack>
               </Card.Dark>

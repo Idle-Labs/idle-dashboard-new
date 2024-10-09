@@ -212,8 +212,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         compoundApr: false,
       },
-      name: "Idle Credit Test",
-      vaultType: "diversifiedBasisYield",
+      name: "Falcon X (Test)",
+      vaultType: "primeBrokerage",
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
@@ -231,8 +231,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         name: "IdleStrategy_clearpool_falconx_USDT",
         address: "0x8186AbBDF9AF3a1fc59A7C5BC34bab66a2e7bEF2",
       },
-      descriptionShort: "Test Test",
-      description: "Test Test",
+      descriptionShort: "This is a test vault",
+      description: "This is a test vault, do whatever you want",
     },
   ],
 };
