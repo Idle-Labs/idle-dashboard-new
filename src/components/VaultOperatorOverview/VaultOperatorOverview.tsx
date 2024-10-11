@@ -64,24 +64,21 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                         <Translation component={Text} translation={'common.founded'} textStyle={'titleSmall'} />
                         <Text>{operatorInfo.founded}</Text>
                       </VStack>
+                      ['borrower', 'strategist'].includes(operator.type) && (
+                        <VStack
+                          spacing={2}
+                          alignItems={'flex-start'}
+                        >
+                          <Translation component={Text} translation={'common.rating'} textStyle={'titleSmall'} />
+                          <Text>{operatorInfo.rating}</Text>
+                        </VStack>
+                      )
                      */
-                  }
-                  {
-                    ['borrower', 'strategist'].includes(operator.type) && (
-                      <VStack
-                        spacing={2}
-                        alignItems={'flex-start'}
-                      >
-                        <Translation component={Text} translation={'common.rating'} textStyle={'titleSmall'} />
-                        <Text>{operatorInfo.rating}</Text>
-                      </VStack>
-                    )
                   }
                   <VStack
                     spacing={2}
                     alignItems={'flex-start'}
                   >
-                    <Translation component={Text} translation={'common.links'} textStyle={'titleSmall'} />
                     <HStack
                       spacing={3}
                     >
