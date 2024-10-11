@@ -459,7 +459,7 @@ export const AssetPage: React.FC = () => {
           spacing={[1, 2]}
           alignItems={'space-between'}
         >
-          <Translation translation={operatorInfo.nameShort || operatorInfo.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+          <Heading color={'primary'} as={'h3'} fontSize={['h3', 'xl']}>{vault.vaultConfig.name || operatorInfo.nameShort || operatorInfo.name}</Heading>
           <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
         </VStack>
       </HStack>
@@ -525,24 +525,17 @@ export const AssetPage: React.FC = () => {
                   pr={[4, 6]}
                   spacing={2}
                   height={'100%'}
+                  alignItems={'flex-start'}
                   borderRight={'1px solid'}
                   borderColor={'dividerLight'}
-                  alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.apy'} fontSize={['sm', 'md']} color={'primary'} />
-                  <HStack
+                  <Translation translation={'defi.chain'} fontSize={['sm', 'md']} color={'primary'} />
+                  <Flex
                     flex={1}
-                    spacing={0}
                     alignItems={'flex-end'}
                   >
-                    {
-                      !isPortfolioLoaded ? (
-                        <Spinner size={'md'} />
-                      ) : (
-                        <AssetProvider.Apy showTooltip={false} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
-                      )
-                    }
-                  </HStack>
+                    <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
+                  </Flex>
                 </VStack>
                 <VStack
                   pr={[4, 6]}
@@ -567,14 +560,35 @@ export const AssetPage: React.FC = () => {
                     }
                   </HStack>
                 </VStack>
+                <VStack
+                  pr={[4, 6]}
+                  spacing={2}
+                  height={'100%'}
+                  borderRight={'1px solid'}
+                  borderColor={'dividerLight'}
+                  alignItems={'flex-start'}
+                >
+                  <Translation translation={'defi.apy'} fontSize={['sm', 'md']} color={'primary'} />
+                  <HStack
+                    flex={1}
+                    spacing={0}
+                    alignItems={'flex-end'}
+                  >
+                    {
+                      !isPortfolioLoaded ? (
+                        <Spinner size={'md'} />
+                      ) : (
+                        <AssetProvider.Apy showTooltip={false} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                      )
+                    }
+                  </HStack>
+                </VStack>
                 {
                   (vault instanceof BestYieldVault) ? (
                     <VStack
                       pr={[4, 6]}
                       spacing={2}
                       height={'100%'}
-                      borderRight={'1px solid'}
-                      borderColor={'dividerLight'}
                       alignItems={'flex-start'}
                     >
                       <Translation translation={'defi.composition'} fontSize={['sm', 'md']} color={'primary'} />
@@ -593,8 +607,6 @@ export const AssetPage: React.FC = () => {
                       pr={[4, 6]}
                       spacing={2}
                       height={'100%'}
-                      borderRight={'1px solid'}
-                      borderColor={'dividerLight'}
                       alignItems={'flex-start'}
                     >
                       <Translation translation={'defi.status'} fontSize={['sm', 'md']} color={'primary'} />
@@ -625,19 +637,6 @@ export const AssetPage: React.FC = () => {
                     </VStack>
                   )
                 }
-                <VStack
-                  spacing={2}
-                  height={'100%'}
-                  alignItems={'flex-start'}
-                >
-                  <Translation translation={'defi.chain'} fontSize={['sm', 'md']} color={'primary'} />
-                  <Flex
-                    flex={1}
-                    alignItems={'flex-end'}
-                  >
-                    <AssetProvider.ChainIcon width={[6, 8]} height={[6, 8]} />
-                  </Flex>
-                </VStack>
               </Wrap>
             </VStack>
           </Flex>

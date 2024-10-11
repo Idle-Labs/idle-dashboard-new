@@ -125,9 +125,13 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       flags: {
         compoundApr: false,
+        performance: {
+          2023: [13, 19, 35, 13, 10, 21, 13, 27, 10, 25, 30, 35],
+          2024: [25, 35, 40, 11, 18, 10, 12, 10, 10],
+        },
       },
       name: "Fasanara Yield",
-      vaultType: "strategyVault",
+      vaultType: "strategistVault",
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
@@ -147,8 +151,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       blockNumber: 0,
       descriptionShort:
-        "Yield strategy using market making, cross-exchange and funding rate arbitrage",
-      description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $10bn per month through strategies like market making, cross-exchange arbitrage and funding rate arbitrage. Through Idle Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.<br /><br />Users will need to be KYC’d via <a href="https://app.keyring.network/connect" class="link" rel="nofollow noopener noreferrer" target="_blank">Keyring</a> to deposit in this strategy`,
+        "Yield strategy based on market making, cross-exchange, and funding rate arbitrage activities",
+      description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $450m daily through activities like market making, cross-exchange and cross-chain arbitrage, and funding rate arbitrage. Through Idle, Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.`,
     },
   ],
   10: [

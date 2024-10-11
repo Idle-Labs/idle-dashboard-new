@@ -136,6 +136,7 @@ const initialState: InitialState = {
   currentRatios: {},
   protocolData: {
     uniqueVaults: 0,
+    uniqueChains: 0,
     totalTvlUsd: BNify(0),
     totalAvgApy: BNify(0),
   },
@@ -4931,10 +4932,22 @@ export function PortfolioProvider({ children }: ProviderProps) {
       return uniqueVaults
     }, [])
 
+    const uniqueChains: number[] = uniqueVaults.reduce( (uniqueChains: number[], assetId: AssetId) => {
+      const asset = selectVaultById(assetId)
+      if (asset && !uniqueChains.includes(+asset.chainId)){
+        return [
+          ...uniqueChains,
+          +asset.chainId
+        ]
+      }
+      return uniqueChains
+    }, [])
+
     dispatch({
       type: 'SET_PROTOCOL_DATA', payload: {
         totalTvlUsd,
         totalAvgApy,
+        uniqueChains: uniqueChains.length,
         uniqueVaults: uniqueVaults.length
       }
     })

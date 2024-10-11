@@ -33,6 +33,8 @@ import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/Va
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
+import { CreditVault } from 'vaults/CreditVault'
+import { CreditVaultPerformance } from 'components/CreditVaultPerformance/CreditVaultPerformance'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -256,6 +258,13 @@ export const Earn: React.FC = () => {
     )
   }, [vault, strategy, strategyColor, isPortfolioLoaded])
 
+  const vaultOperatorOverview = useMemo(() => {
+    if (!vault || !("vaultConfig" in vault) || !("operators" in vault?.vaultConfig)) return null
+    return (
+      <VaultOperatorOverview vaultOperators={vault.vaultConfig.operators} />
+    )
+  }, [vault])
+
   const strategyDescription = useMemo(() => {
     if (!vault || !("description" in vault) || !vault.description) return null
     return (
@@ -267,7 +276,7 @@ export const Earn: React.FC = () => {
         borderColor={'divider'}
         alignItems={'flex-start'}
       >
-        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={'defi.strategyDescription'} />
+        <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={asset.type === 'CR' ? 'defi.strategyObjective' : 'defi.strategyDescription'} />
         <Text dangerouslySetInnerHTML={{__html: replaceTokens(vault.description, {apy: bnOrZero(asset.apy).toFixed(2), totalApr: bnOrZero(asset.totalApr).toFixed(2), riskThreshold: bnOrZero(asset.epochData?.riskThreshold).toFixed(2), aboveBelow: asset.epochData?.bullish ? 'above' : 'below', aboveBelowInverse: asset.epochData?.bullish ? 'below' : 'above', epochEnd: dateToLocale(asset.epochData?.end, locale)})}} />
         {
           (vault instanceof TrancheVault) && (
@@ -292,16 +301,10 @@ export const Earn: React.FC = () => {
             </VStack>
           )
         }
+        {vaultOperatorOverview}
       </VStack>
     )
-  }, [vault, asset, locale])
-
-  const vaultOperatorOverview = useMemo(() => {
-    if (!vault || !("vaultConfig" in vault) || !("operators" in vault?.vaultConfig)) return null
-    return (
-      <VaultOperatorOverview vaultOperators={vault.vaultConfig.operators} />
-    )
-  }, [vault])
+  }, [vault, asset, locale, vaultOperatorOverview])
 
   const epochThresholds = useMemo(() => {
     if (!asset || !asset.epochData || !asset.epochData.weeklyThresholds) return null
@@ -374,13 +377,22 @@ export const Earn: React.FC = () => {
     return !useDollarConversion && bnOrZero(assetBalanceUnderlying).lt(1000) ? 3 : 2
   }, [assetBalanceUnderlying, useDollarConversion])
 
-  return (
-    <VStack
-      spacing={10}
-      width={'full'}
-    >
-      {strategyDescription}
-      <EpochWithdrawRequest assetId={asset?.id} />
+  const performance = useMemo(() => {
+
+    if (vault instanceof CreditVault){
+      return (
+        <VStack
+          spacing={6}
+          width={'full'}
+          alignItems={'flex-start'}
+        >
+          <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={'dashboard.portfolio.performance'} />
+          <CreditVaultPerformance assetId={asset.id} />
+        </VStack>
+      )
+    }
+
+    return (
       <Box
         width={'full'}
       >
@@ -391,7 +403,7 @@ export const Earn: React.FC = () => {
           alignItems={'center'}
         >
           <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-            <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance ? 'defi.fundsOverview' : 'defi.historicalPerformance'} />
+            <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance ? 'defi.fundsOverview' : 'dashboard.portfolio.performance'} />
           </SkeletonText>
           {
             userHasBalance && (
@@ -456,6 +468,18 @@ export const Earn: React.FC = () => {
           />
         </Card.Flex>
       </Box>
+    )
+  }, [params.asset, vault, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, chartHeading, isPortfolioLoaded])
+
+  return (
+    <VStack
+      spacing={10}
+      width={'full'}
+    >
+      {strategyDescription}
+      <EpochWithdrawRequest assetId={asset?.id} />
+      <AssetGeneralData assetId={asset?.id} />
+      {performance}
       {fundsOverview}
       <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />
@@ -464,8 +488,6 @@ export const Earn: React.FC = () => {
       <AssetDistributedRewards assetId={asset?.id} />
       {vaultRewards}
       {strategyDescriptionCarousel}
-      <AssetGeneralData assetId={asset?.id} />
-      {vaultOperatorOverview}
       {epochThresholds}
       {coveredRisks}
       <VaultUnderlyingProtocols assetId={asset?.id} />

@@ -29,6 +29,7 @@ import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGri
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
+import { AddressLink } from "components/AddressLink/AddressLink"
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -1467,6 +1468,9 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
           </Box>
         </HStack>
       )
+    case 'manager':
+    case 'borrower':
+      return (<AddressLink chainId={asset?.chainId} address={value as string} />)
     default:
       return null
   }
@@ -2031,8 +2035,15 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
-    case 'mode':
-      return (<CreditVaultMode textStyle={'tableCell'} {...props} />)
+    case 'vaultAddress':
+      return (<AddressLink chainId={asset?.chainId} address={asset?.id || ''} />)
+    case 'cdoAddress':
+      const cdoAddress = vault && ("cdoConfig" in vault) ? vault.cdoConfig.address || '' : ''
+      return (<AddressLink chainId={asset?.chainId} address={cdoAddress} />)
+      case 'mode':
+        return (<CreditVaultMode textStyle={'tableCell'} {...props} />)
+    case 'manager':
+    case 'borrower':
     case 'epochDuration':
     case 'epochStartDate':
     case 'epochEndDate':

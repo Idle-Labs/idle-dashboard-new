@@ -90,7 +90,7 @@ export const operators: Record<string, Operator> = {
       crunchbase: "https://www.crunchbase.com/organization/fasanara-capital",
     },
     description:
-      "Fasanara Digital was founded in 2019 and it is part of Fasanara Capital, a 200 people London-based Hedge Fund founded in 2011 and specialised in alternative credit and fintech strategies. Fasanara Capital across its different funds manages over 4bn USD. Fasanara Digital, with a team of 15 people fully dedicated to investments and development in crypto, manages a delta neutral high turnover fund specialised in market-making and arbitrage strategies. The fund trades approximately 10bn USD per month on both spot and derivatives on all major trading venues.",
+      "Fasanara Capital is a FCA regulated $4bn AUM London-based hedge fund launched in 2011 with 200+ employees. In 2018, it started its digital assets division, Fasanara Digital. Fasanara Digital has been rated BBB by Credora with regards to creditworthiness with a probability of default (3 months) of 0.05%",
   },
   wintermute: {
     rating: "-",

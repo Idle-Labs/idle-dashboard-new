@@ -62,7 +62,7 @@ export const CreditVaults: React.FC = () => {
           >
             <Translation isHtml={true} translation={'strategies.credit.explore'} component={Heading} fontFamily={'body'} as={'h2'} size={'3xl'} fontWeight={'bold'} lineHeight={'normal'} />
             <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-              <Translation translation={'stats.protocolOverview'} fontSize={['md', 'h4']} isHtml={true} params={{ tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: bnOrZero(protocolData.totalAvgApy).toFixed(2), vaults: `${protocolData.uniqueVaults} ${protocolData.uniqueVaults === 1 ? 'vault' : 'vaults'}` }} />
+              <Translation translation={'stats.protocolOverviewCredit'} fontSize={['md', 'h4']} isHtml={true} params={{ tvlUsd: abbreviateNumber(protocolData.totalTvlUsd, 2), avgApy: bnOrZero(protocolData.totalAvgApy).toFixed(2), chains: `${protocolData.uniqueChains} ${protocolData.uniqueChains === 1 ? 'chain' : 'chains'}`, vaults: `${protocolData.uniqueVaults} ${protocolData.uniqueVaults === 1 ? 'vault' : 'vaults'}` }} />
             </SkeletonText>
           </VStack>
         </Stack>

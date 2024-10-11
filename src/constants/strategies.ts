@@ -149,32 +149,11 @@ export const strategies: Record<string, StrategyProps> = {
       ],
     },
     generalDataFields: [
-      {
-        field: "mode",
-        label: "assets.assetDetails.generalData.vaultType",
-        tooltip: "assets.assetDetails.tooltips.creditVaultType",
-      },
-      {
-        field: "pool",
-        label: "assets.assetDetails.generalData.pool",
-        props: {
-          abbreviate: false,
-        },
-      },
-      {
-        field: "apy",
-        label: "assets.assetDetails.generalData.apy",
-        tooltip: "assets.assetDetails.tooltips.apy",
-      },
-      {
-        field: "lastEpochApr",
-        label: "assets.assetDetails.generalData.epoch.lastAPY",
-        tooltip: "assets.assetDetails.tooltips.apy",
-      },
-      {
-        field: "performanceFee",
-        label: "assets.assetDetails.generalData.performanceFee",
-      },
+      // {
+      //   field: "mode",
+      //   label: "assets.assetDetails.generalData.vaultType",
+      //   tooltip: "assets.assetDetails.tooltips.creditVaultType",
+      // },
       {
         field: "epochStatus",
         label: "assets.assetDetails.generalData.epoch.status",
@@ -191,6 +170,43 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field: "epochEndDate",
         label: "assets.assetDetails.generalData.epoch.endDate",
+      },
+      // {
+      //   field: "pool",
+      //   label: "assets.assetDetails.generalData.pool",
+      //   props: {
+      //     abbreviate: false,
+      //   },
+      // },
+      // {
+      //   field: "apy",
+      //   label: "assets.assetDetails.generalData.apy",
+      //   tooltip: "assets.assetDetails.tooltips.apy",
+      // },
+      // {
+      //   field: "lastEpochApr",
+      //   label: "assets.assetDetails.generalData.epoch.lastAPY",
+      //   tooltip: "assets.assetDetails.tooltips.apy",
+      // },
+      {
+        field: "performanceFee",
+        label: "assets.assetDetails.generalData.performanceFee",
+      },
+      {
+        field: "cdoAddress",
+        label: "assets.assetDetails.generalData.cdoAddress",
+      },
+      {
+        field: "vaultAddress",
+        label: "assets.assetDetails.generalData.vaultAddress",
+      },
+      {
+        field: "manager",
+        label: "assets.assetDetails.generalData.managerAddress",
+      },
+      {
+        field: "borrower",
+        label: "assets.assetDetails.generalData.borrowerAddress",
       },
     ],
   },

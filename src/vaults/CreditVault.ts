@@ -648,6 +648,14 @@ export class CreditVault {
       },
       {
         assetId: this.id,
+        call: this.strategyContract.methods.borrower(),
+      },
+      {
+        assetId: this.id,
+        call: this.strategyContract.methods.manager(),
+      },
+      {
+        assetId: this.id,
         call: this.cdoContract.methods.instantWithdrawAprDelta(),
       },
       {

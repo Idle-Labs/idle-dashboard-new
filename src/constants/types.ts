@@ -284,6 +284,8 @@ export type CreditVaultEpoch = {
   disableInstantWithdraw: boolean;
   instantWithdrawDelay: BigNumber;
   defaulted: boolean;
+  manager: string;
+  borrower: string;
   epochApr: BigNumber;
   bufferPeriod: BigNumber;
   lastEpochApr: BigNumber;
@@ -435,6 +437,7 @@ export type ProtocolData = {
   totalTvlUsd: BigNumber;
   totalAvgApy: BigNumber;
   uniqueVaults: number;
+  uniqueChains: number;
 };
 
 export interface VaultContractCdoEpochData {
@@ -477,6 +480,8 @@ export interface VaultEpochAPRs {
   GROSS: number;
   EPOCH: number;
   BUFFER: number;
+  NET: number;
+  DELTA: number;
 }
 
 export interface Asset {
