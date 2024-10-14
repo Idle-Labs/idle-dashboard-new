@@ -834,6 +834,7 @@
     "assetPerformance": "Current cycle",
     "thresholds": "Weekly thresholds",
     "table": {
+      "epochNumber": "Epoch #",
       "countdown": "Countdown",
       "count": "Count",
       "number": "Week",

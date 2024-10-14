@@ -263,7 +263,7 @@ export const AssetPage: React.FC = () => {
     const tabs: TabType[] = [
       {
         id: 'earn',
-        label: 'navBar.earn',
+        label: asset?.type === 'CR' ? 'navBar.overview' : 'navBar.earn',
         component: Earn,
         actions
       }
@@ -321,7 +321,7 @@ export const AssetPage: React.FC = () => {
     }
 
     return tabs
-  }, [vault, vaultGauge, assetGauge, timeframe, dateRange, environment, claimableRewards, stakingEnabled])
+  }, [asset, vault, vaultGauge, assetGauge, timeframe, dateRange, environment, claimableRewards, stakingEnabled])
 
   // Get selected tab id from search params
   const selectedTabId = useMemo(() => {

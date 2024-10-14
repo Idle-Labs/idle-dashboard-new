@@ -705,6 +705,16 @@ export class CreditVault {
     ];
   }
 
+  public getUserLastWithdrawRequestCalls(account: string): ContractRawCall[] {
+    if (!this.strategyContract) return [];
+    return [
+      {
+        assetId: this.id,
+        call: this.strategyContract.methods.lastWithdrawRequest(account),
+      },
+    ];
+  }
+
   public getUserWithdrawRequestCalls(account: string): ContractRawCall[] {
     if (!this.strategyContract) return [];
     return [

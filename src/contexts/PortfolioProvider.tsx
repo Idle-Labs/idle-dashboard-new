@@ -874,6 +874,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const aggregatedRawCalls = [
         ("getUserWithdrawRequestCalls" in vault) ? vault.getUserWithdrawRequestCalls(account.address) : [],
         ("getUserMaxWithdrawableCalls" in vault) ? vault.getUserMaxWithdrawableCalls(account.address) : [],
+        ("getUserLastWithdrawRequestCalls" in vault) ? vault.getUserLastWithdrawRequestCalls(account.address) : [],
         ("getUserInstantWithdrawRequestCalls" in vault) ? vault.getUserInstantWithdrawRequestCalls(account.address) : [],
         // ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
       ]
@@ -905,9 +906,18 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const [
         withdrawRequestResults,
         maxWithdrawableResults,
+        lastWithdrawRequestResults,
         instantWithdrawRequestResults,
         // walletAllowedResults
       ]: DecodedResult[][] = resultsByChainId[resultIndex]
+
+      const lastWithdrawRequests: Record<AssetId, number> = lastWithdrawRequestResults ? lastWithdrawRequestResults.reduce( (acc: Record<AssetId, number>, callResult: DecodedResult) => {
+        const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+        return {
+          ...acc,
+          [assetId]: callResult.data
+        }
+      }, {}) : {}
 
       if (withdrawRequestResults){
         output.creditVaultsWithdrawRequests = withdrawRequestResults.reduce( (acc: VaultsAccountData["creditVaultsWithdrawRequests"], callResult: DecodedResult) => {
@@ -920,6 +930,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
               {
                 amount: bnOrZero(callResult.data),
                 isInstant: false,
+                epochNumber: lastWithdrawRequests[assetId] ?? 0
               }
             ]
           }
@@ -2327,6 +2338,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
           if (vaultEpochs){
             vaultEpochData.epochs = vaultEpochs.epochs
+            vaultEpochData.count = [...vaultEpochs.epochs].pop().count
           }
           epochsData[assetId] = vaultEpochData
         })
@@ -2361,13 +2373,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
             // Check APR for Credit Vault
             if (vault instanceof CreditVault && vault.vaultConfig.mode === 'STRATEGY'){
               const epochData = epochsData[assetId]
-              if (epochData && "epochsInterests" in epochData){
-                const epochsInterests = epochData.epochsInterests
-                if (epochsInterests){
-                  aprs[assetId] = epochsInterests.slice(-3).reduce( (acc: BigNumber, epochInterests: CreditVaultEpochInterests) => {
-                    return acc.plus(bnOrZero(epochInterests.apr?.gross).div(3).times(100))
-                  }, BNify(0))
-                }
+              if (epochData && ("epochs" in epochData) && epochData.epochs?.length){
+                const lastEpochs = epochData.epochs.filter( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' ).slice(-3)
+                aprs[assetId] = lastEpochs.reduce( (acc: BigNumber, epochData: VaultContractCdoEpochData) => {
+                  return acc.plus(bnOrZero(epochData.APRs.GROSS).div(lastEpochs.length))
+                }, BNify(0))
               }
             } else {
               aprs[assetId] = aprs[assetId].plus(BNify(callResult.data.toString()).div(`1e${decimals}`))

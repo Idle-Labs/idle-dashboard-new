@@ -251,6 +251,7 @@ export type AmphorEpoch = {
 export type CreditVaultWithdrawRequest = {
   amount: BigNumber;
   isInstant: boolean;
+  epochNumber: number;
 };
 
 export type VaultsAccountData = {
@@ -293,6 +294,7 @@ export type CreditVaultEpoch = {
   epochDuration: BigNumber;
   epochStartDate: number;
   epochEndDate: number;
+  count: number;
   epochs?: VaultContractCdoEpochData[];
   epochsInterests?: CreditVaultEpochInterests[];
   pendingWithdraws: BigNumber;

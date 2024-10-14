@@ -477,10 +477,10 @@ export const Earn: React.FC = () => {
       width={'full'}
     >
       {strategyDescription}
+      {fundsOverview}
       <EpochWithdrawRequest assetId={asset?.id} />
       <AssetGeneralData assetId={asset?.id} />
       {performance}
-      {fundsOverview}
       <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />

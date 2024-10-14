@@ -126,7 +126,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         compoundApr: false,
         performance: {
-          2023: [13, 19, 35, 13, 10, 21, 13, 27, 10, 25, 30, 35],
+          2023: [13, 19, 35, 13, 10, 21, 13, 27, 10, 25, 30, 35, 21],
           2024: [25, 35, 40, 11, 18, 10, 12, 10, 10],
         },
       },
