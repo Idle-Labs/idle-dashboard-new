@@ -64,7 +64,9 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
 
       // Calculate YTD
       if (!groupedData[year][12]){
-        
+        const monthData = groupedData[year].filter( (v: number) => v>0 )
+        const sum = monthData.reduce( (acc: number, v: number) => acc+v, 0)
+        groupedData[year][12] = sum/monthData.length
       }
     })
 
@@ -92,16 +94,17 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
           {Object.keys(groupedData).map((year) => (
             <Tr key={year}>
               <Td
-                position="sticky"
+                position={"sticky"}
                 left={0}
                 zIndex={1}
-                backgroundColor="nearBlack"
+                backgroundColor={"nearBlack"}
+                textStyle={'bold'}
               >
                 {year}
               </Td>
               {
               Array.from(Array(13).keys()).map( i =>
-                <Td key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
+                <Td key={i} textStyle={i === 12 ? 'bold' : ''}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
               )
             }
             </Tr>
@@ -109,31 +112,5 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
         </Tbody>
       </Table>
     </Box>
-  )
-
-  return (
-    <Table variant="simple" width={'full'} size={'sm'}>
-      <Thead>
-        <Tr>
-          <Th>Year</Th>
-          {
-            Array.from(Array(12).keys()).map( i => <Th key={i}>{dayjs().month(i).format('MMM')}</Th> )
-          }
-          <Th textStyle={'bold'}>YTD</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {Object.keys(groupedData).map((year) => (
-          <Tr key={year}>
-            <Td textStyle={'bold'}>{year}</Td>
-            {
-              Array.from(Array(13).keys()).map( i =>
-                <Td key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
-              )
-            }
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
   )
 }
