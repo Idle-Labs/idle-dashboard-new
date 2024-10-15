@@ -740,7 +740,7 @@
     "byFarming": " APR* by farming your ETH-FOX liquidity pool tokens",
     "overview": "Overview",
     "strategyDescription": "Strategy description",
-    "strategyObjective": "Strategy objective",
+    "strategyObjective": "Strategy",
     "borrowerOverview": "Borrower overview",
     "coveredRisks": "Covered risks",
     "vaultComposition": "Vault composition",
@@ -2168,7 +2168,7 @@
       "operatorOverview": {
         "curator": "Curator overview",
         "borrower": "Borrower overview",
-        "strategist": "Strategist overview"
+        "strategist": "Strategist"
       },
       "requiredActions": {
         "deprecated": "This vault is sunsetting, please withdraw your funds",
