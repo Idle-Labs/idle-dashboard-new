@@ -134,7 +134,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({
                 pt={6}
                 mt={6}
                 spacing={[6, 0]}
-                columns={[2, Math.min(generalDataFields.length, maxItems)]}
+                columns={[2, Math.min(generalDataFields.slice(maxItems).length, maxItems)]}
                 borderTop={'1px solid'}
                 borderTopColor={'divider'}
               >
