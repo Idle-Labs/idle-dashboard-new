@@ -7,7 +7,7 @@ import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { Translation } from "components/Translation/Translation"
 import { DATETIME_FORMAT, VaultContractCdoEpochData, vaultsStatusSchemes } from "constants/"
 import { useThemeProvider } from "contexts/ThemeProvider"
-import { fixTokenDecimals, formatDate, sortDate, sortNumeric, toDayjs } from "helpers"
+import { fixTokenDecimals, formatDate, sortDate, sortNumeric } from "helpers"
 import { useMemo } from "react"
 import { useTranslate } from "react-polyglot"
 import { Column, Row } from "react-table"
@@ -118,7 +118,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.status'),
-      Cell: ({ value, row }: { value: VaultContractCdoEpochData["status"], row: RowProps }) => {
+      Cell: ({ value }: { value: VaultContractCdoEpochData["status"] }) => {
         const statusKey = value.toLowerCase()// value.toLowerCase() === 'running' && toDayjs(row.original.endDate).isSameOrBefore(Date.now()) ? 'finished' : value.toLowerCase()
         const colorScheme = vaultsStatusSchemes[statusKey]
         const status = translate(`assets.status.epoch.${statusKey}`)

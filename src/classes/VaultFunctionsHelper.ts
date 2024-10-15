@@ -2,7 +2,6 @@ import Web3 from "web3";
 import dayjs from "dayjs";
 import { Vault } from "vaults/";
 import BigNumber from "bignumber.js";
-import { EventData } from "web3-eth-contract";
 import { Multicall, CallData } from "classes/";
 import stMATIC_abi from "abis/lido/stMATIC.json";
 import { TrancheVault } from "vaults/TrancheVault";
@@ -15,7 +14,6 @@ import { explorers, networks, chains } from "constants/";
 import { StakedIdleVault } from "vaults/StakedIdleVault";
 import { CacheContextProps } from "contexts/CacheProvider";
 import { GenericContract } from "contracts/GenericContract";
-import type { Transaction as Web3Transaction } from "web3-core";
 import PoLidoStakeManager_abi from "abis/lido/PoLidoStakeManager.json";
 import type {
   Abi,
@@ -36,7 +34,6 @@ import type {
   EpochData,
   CdoEvents,
   RewardEmission,
-  ApisProps,
   AmphorEpoch,
   VaultContractCdoEpochData,
 } from "constants/";
@@ -60,21 +57,11 @@ import {
   getAlchemyTransactionHistory,
   getEtherscanTransactionObject,
   getPlatformApiConfig,
-  makePostRequest,
-  makeRequest,
   floorTimestamp,
   sortArrayByKey,
-  decodeTxParams,
-  getBlock,
 } from "helpers/";
-import { isConstructSignatureDeclaration } from "typescript";
-import {
-  getDataFromApiV2,
-  getIdleAPIV2AllPages,
-  getVaultBlocksFromApiV2,
-} from "helpers/apiv2";
+import { getDataFromApiV2, getIdleAPIV2AllPages } from "helpers/apiv2";
 import { CreditVault } from "vaults/CreditVault";
-import { eventNames } from "process";
 
 export interface CdoLastHarvest {
   cdoId: string;

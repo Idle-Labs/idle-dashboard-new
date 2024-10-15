@@ -24,7 +24,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, CreditVaultEpochInterests, VaultContractCdoEpochData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, VaultContractCdoEpochData } from 'constants/types'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, checkVaultEnv, checkVaultAuthCode } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 import { useAuthCodeProvider } from './AuthCodeProvider'
@@ -2659,7 +2659,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
     if (!lastTransaction || !state.isPortfolioLoaded) return
     if (!lastTransaction?.lastUpdated || lastTransaction.lastUpdated < state.portfolioTimestamp) return
 
-    console.log('lastTransaction', lastTransaction)
     const asset = selectAssetById(lastTransaction.vaultId as string)
     const vault = selectVaultById(lastTransaction.vaultId as string)
 
@@ -2690,7 +2689,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
     // console.log('Last Transaction Asset', asset)
 
     (async () => {
-      console.log('Update vaults after transaction', lastTransaction, vaults)
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
       if (!vaultsOnChainData) return
 
@@ -4251,7 +4249,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
             return distributedRewardsOutput
           }
           const assetChainId = +asset.chainId
-          const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, asset.underlyingId)
+          // const underlyingToken = selectUnderlyingTokenByAddress(assetChainId, asset.underlyingId)
 
           await asyncForEach(Object.keys(state.distributedRewards[assetId]), async (rewardId: AssetId) => {
             const rewardToken = selectUnderlyingTokenByAddress(assetChainId, rewardId)

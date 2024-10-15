@@ -22,7 +22,7 @@ import { AnnouncementBanner } from 'components/AnnouncementBanner/AnnouncementBa
 import { InteractiveComponent } from 'components/InteractiveComponent/InteractiveComponent'
 import type { OperativeComponentAction } from 'components/OperativeComponent/OperativeComponent'
 import { bnOrZero, BNify, sendViewItem, checkSectionEnabled, checkAddress, cmpAddrs, getObjectPath } from 'helpers/'
-import { Box, Flex, Stack, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps, Spinner, Wrap, SimpleGrid } from '@chakra-ui/react'
+import { Box, Flex, Stack, HStack, Tabs, TabList, Image, VStack, Heading, ImageProps, Spinner, SimpleGrid } from '@chakra-ui/react'
 import { operators, AssetId, imageFolder, DateRange, HistoryTimeframe, GaugeRewardData, BigNumber, STAKING_CHAINID, ZERO_ADDRESS } from 'constants/'
 import { BestYieldVault } from 'vaults/BestYieldVault'
 import { CreditVault } from 'vaults/CreditVault'
