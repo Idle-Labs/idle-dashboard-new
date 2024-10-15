@@ -2,7 +2,7 @@ import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react"
 import { AssetId, VaultContractCdoEpochData } from "constants/"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import dayjs from "dayjs"
-import { BNify, toDayjs } from "helpers"
+import { apr2apy, BNify, toDayjs } from "helpers"
 import { useMemo } from "react"
 
 type CreditVaultPerformanceArgs = {
@@ -65,7 +65,7 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
       if (!groupedData[year][12]){
         const monthData = groupedData[year].filter( (v: number) => v>0 )
         const sum = monthData.reduce( (acc: number, v: number) => acc+v, 0)
-        groupedData[year][12] = sum
+        groupedData[year][12] = BNify(apr2apy(sum/100, 12)).times(100).toNumber()
       }
     })
 

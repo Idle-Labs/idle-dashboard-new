@@ -80,9 +80,9 @@ export function downloadFile(content: any, fileName: string = "export.csv") {
   window.URL.revokeObjectURL(url);
 }
 
-export function apr2apy(apr: BNifyInput) {
+export function apr2apy(apr: BNifyInput, period: number = 365) {
   return BNify(
-    BNify(1).plus(BNify(apr).div(365)).pow(365).minus(1).toFixed(18)
+    BNify(1).plus(BNify(apr).div(period)).pow(period).minus(1).toFixed(18)
   );
 }
 
