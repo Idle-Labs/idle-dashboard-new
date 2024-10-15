@@ -2203,7 +2203,7 @@
         "epochRedemption": "Time required to be able to claim the requested funds",
         "spotApy": "The annualized yield this vault is providing at the current block",
         "rewardEmissionApr": "Gains that will be distributed per year for the entire pool",
-        "kycRequired": "Indicates whether the KYC is requireed to interact with this vault",
+        "kycRequired": "Indicates whether the KYC is required to interact with this vault",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "idleDistribution": "The total amount of IDLE distributed daily for the entire pool",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",
