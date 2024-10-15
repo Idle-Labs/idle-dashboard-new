@@ -9,11 +9,13 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { strategies, GeneralDataField } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
-import { useTheme, HStack, VStack, SimpleGrid, Text, Tooltip } from '@chakra-ui/react'
+import { useTheme, HStack, VStack, SimpleGrid, Text, Tooltip, Heading, TextProps } from '@chakra-ui/react'
 
 type AssetGeneralDataArgs = {
   assetId?: AssetId
-}
+  maxItems?: number
+  title?: string
+} & TextProps
 
 type LabelProps = {
   generalData: GeneralDataField
@@ -68,7 +70,12 @@ export const AssetGeneralDataField: React.FC<LabelProps> = ({ generalData }) => 
   )
 }
 
-export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) => {
+export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({
+  assetId,
+  title,
+  maxItems = 5,
+  ...props
+}) => {
   // const { params } = useBrowserRouter()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
@@ -96,40 +103,51 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({ assetId }) =>
   }, [strategy, vault])
 
   return (
-    <AssetProvider
-      wrapFlex={false}
-      assetId={assetId}
+    <VStack
+      spacing={6}
+      width={'full'}
+      alignItems={'flex-start'}
     >
-      <Card.Dark>
-        <SimpleGrid
-          spacing={[6, 0]}
-          columns={[2, Math.min(generalDataFields.length, 5)]}
-        >
+      {
+        title && (
+          <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={title} {...props} />
+        )
+      }
+      <AssetProvider
+        wrapFlex={false}
+        assetId={assetId}
+      >
+        <Card.Dark>
+          <SimpleGrid
+            spacing={[6, 0]}
+            columns={[2, Math.min(generalDataFields.length, maxItems)]}
+          >
+            {
+              generalDataFields && generalDataFields.slice(0, maxItems).map( (generalData: GeneralDataField) => (
+                <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
+              ))
+            }
+          </SimpleGrid>
           {
-            generalDataFields && generalDataFields.slice(0, 5).map( (generalData: GeneralDataField) => (
-              <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
-            ))
+            generalDataFields && generalDataFields.length>maxItems && (
+              <SimpleGrid
+                pt={6}
+                mt={6}
+                spacing={[6, 0]}
+                columns={[2, Math.min(generalDataFields.length, maxItems)]}
+                borderTop={'1px solid'}
+                borderTopColor={'divider'}
+              >
+                {
+                  generalDataFields.slice(maxItems).map( (generalData: GeneralDataField) => (
+                    <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
+                  ))
+                }
+              </SimpleGrid>
+            )
           }
-        </SimpleGrid>
-        {
-          generalDataFields && generalDataFields.length>5 && (
-            <SimpleGrid
-              pt={6}
-              mt={6}
-              spacing={[6, 0]}
-              columns={[2, Math.min(generalDataFields.length, 5)]}
-              borderTop={'1px solid'}
-              borderTopColor={'divider'}
-            >
-              {
-                generalDataFields.slice(5).map( (generalData: GeneralDataField) => (
-                  <AssetGeneralDataField key={`field_${generalData.field}`} generalData={generalData} />
-                ))
-              }
-            </SimpleGrid>
-          )
-        }
-      </Card.Dark>
-    </AssetProvider>
+        </Card.Dark>
+      </AssetProvider>
+    </VStack>
   )
 }

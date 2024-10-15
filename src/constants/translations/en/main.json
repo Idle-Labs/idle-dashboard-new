@@ -249,6 +249,7 @@
       "explore": "Explore",
       "description": "Offering on-chain TradFi yield strategies",
       "kyc": {
+        "notRequired": "Not Required",
         "required": "KYC Required",
         "complete": "Complete the KYC verification process to interact.",
         "cta": "Start KYC verification",
@@ -653,6 +654,8 @@
     "feeDiscount": "Fee discount",
     "discountedFees": "Discounted fees",
     "gauges": "Gauges",
+    "custodian": "Custodian",
+    "navAgent": "NAV Agent",
     "riskProfile": "Risk profile",
     "assetClass": "Asset class",
     "seniorCoverage": "Senior Coverage",
@@ -834,6 +837,8 @@
     "assetPerformance": "Current cycle",
     "thresholds": "Weekly thresholds",
     "table": {
+      "kyc": "KYC",
+      "redemption": "Redemption",
       "epochNumber": "Epoch #",
       "countdown": "Countdown",
       "count": "Count",
@@ -847,6 +852,7 @@
       "interests": "Interests",
       "threshold": "Termination threshold"
     },
+    "redempionDaysNotice": "%{value}-days notice",
     "actions": {
       "waitForNewEpoch": "Waiting for new cycle",
       "waitForEpochClose": "Waiting for cycle to close",
@@ -2120,6 +2126,7 @@
             "STRATEGY": "Strategy"
           }
         },
+        "keyInformation": "Key information",
         "vaultType": "Vault type",
         "protocol": "Protocol",
         "rewards": "Rewards",
@@ -2193,8 +2200,10 @@
         "epochStatus": "This badge shows whether the cycle is open or running",
         "totalIDLELocked": "Total amount of IDLE locked in the staking contract",
         "totalDiscountedFees": "The total amount of fees redistributed to users",
+        "epochRedemption": "Time required to be able to claim the requested funds",
         "spotApy": "The annualized yield this vault is providing at the current block",
         "rewardEmissionApr": "Gains that will be distributed per year for the entire pool",
+        "kycRequired": "Indicates whether the KYC is requireed to interact with this vault",
         "gaugeRewards": "By staking in the gauge you are entitled to receive these rewards",
         "idleDistribution": "The total amount of IDLE distributed daily for the entire pool",
         "stakingTotalRewards": "The total amount of rewards distributed by the staking contract",

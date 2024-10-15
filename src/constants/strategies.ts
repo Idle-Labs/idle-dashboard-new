@@ -149,48 +149,31 @@ export const strategies: Record<string, StrategyProps> = {
       ],
     },
     generalDataFields: [
-      // {
-      //   field: "mode",
-      //   label: "assets.assetDetails.generalData.vaultType",
-      //   tooltip: "assets.assetDetails.tooltips.creditVaultType",
-      // },
       {
-        field: "epochStatus",
-        label: "assets.assetDetails.generalData.epoch.status",
-        tooltip: "assets.assetDetails.tooltips.epochStatus",
+        field: "asset",
+        label: "defi.asset",
       },
       {
-        field: "epochDuration",
-        label: "assets.assetDetails.generalData.epoch.duration",
+        field: "kycRequired",
+        label: "epochs.table.kyc",
+        tooltip: "assets.assetDetails.tooltips.kycRequired",
       },
-      {
-        field: "epochStartDate",
-        label: "assets.assetDetails.generalData.epoch.startDate",
-      },
-      {
-        field: "epochEndDate",
-        label: "assets.assetDetails.generalData.epoch.endDate",
-      },
-      // {
-      //   field: "pool",
-      //   label: "assets.assetDetails.generalData.pool",
-      //   props: {
-      //     abbreviate: false,
-      //   },
-      // },
-      // {
-      //   field: "apy",
-      //   label: "assets.assetDetails.generalData.apy",
-      //   tooltip: "assets.assetDetails.tooltips.apy",
-      // },
-      // {
-      //   field: "lastEpochApr",
-      //   label: "assets.assetDetails.generalData.epoch.lastAPY",
-      //   tooltip: "assets.assetDetails.tooltips.apy",
-      // },
       {
         field: "performanceFee",
         label: "assets.assetDetails.generalData.performanceFee",
+      },
+      {
+        field: "epochRedemption",
+        label: "epochs.table.redemption",
+        tooltip: "assets.assetDetails.tooltips.epochRedemption",
+      },
+      {
+        field: "custodian",
+        label: "defi.custodian",
+      },
+      {
+        field: "navAgent",
+        label: "defi.navAgent",
       },
       {
         field: "cdoAddress",

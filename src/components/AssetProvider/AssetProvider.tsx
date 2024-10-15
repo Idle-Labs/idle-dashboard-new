@@ -25,8 +25,8 @@ import { TranslationProps, Translation } from 'components/Translation/Translatio
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs } from 'helpers/'
-import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData } from 'constants/'
+import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link } from '@chakra-ui/react'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AddressLink } from "components/AddressLink/AddressLink"
@@ -164,6 +164,16 @@ const VaultVariant: React.FC<TextProps> = (props) => {
 
   return (
     <Translation translation={`products.${vaultType}`} textStyle={'tableCell'} {...props} />
+  )
+}
+
+const KycRequired: React.FC<TextProps> = ({ ...props }) => {
+  const { vault, translate } = useAssetProvider()
+  if (!vault || !("kycRequired" in vault)) return null
+  const colorScheme = vault.kycRequired ? 'orangeTone' : 'green'
+  const status = translate(`strategies.credit.kyc.${vault.kycRequired ? 'required' : 'notRequired'}`)
+  return (
+    <Tag {...props} variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
   )
 }
 
@@ -1436,9 +1446,9 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   const value = asset.epochData[field as keyof EpochData]
 
   // Waiting for value
-  if (value === undefined){
-    return (<Spinner size={'sm'} />)
-  }
+  // if (value === undefined){
+  //   return (<Spinner size={'sm'} />)
+  // }
   
   switch (field){
     case 'epochStartDate':
@@ -1448,6 +1458,8 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
     case 'lastEpochApr':
       return (<Amount.Percentage value={fixTokenDecimals(value, 18)} textStyle={'tableCell'} {...props} />)
+    case 'epochRedemption':
+      return (<Text {...props}>{secondsToPeriod((asset.epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
     case 'isEpochRunning':
       if (!("isEpochRunning" in asset.epochData)) return null
       const isDefaulted = !!asset.epochData.defaulted
@@ -2035,6 +2047,16 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<ActionRequired width={6} height={6} {...props} />)
     case 'vaultVariant':
       return (<VaultVariant {...props} />)
+    case 'kycBadge':
+      return (<KycVerificationBadge {...props} />)
+    case 'kycRequired':
+      return (<KycRequired {...props} />)
+    case 'custodian':
+      const custodian = getObjectPath(vault, 'vaultConfig.custodian')
+      return custodian && (<Link isExternal href={custodian.url} textStyle={'tableCell'} color={'link'} {...props}>{custodian.name}</Link>)
+    case 'navAgent':
+      const navAgent = getObjectPath(vault, 'vaultConfig.navAgent')
+      return navAgent && (<Link isExternal href={navAgent.url} textStyle={'tableCell'} color={'link'} {...props}>{navAgent.name}</Link>)
     case 'vaultAddress':
       return (<AddressLink chainId={asset?.chainId} address={asset?.id || ''} />)
     case 'cdoAddress':
@@ -2048,6 +2070,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'epochStartDate':
     case 'epochEndDate':
     case 'lastEpochApr':
+    case 'epochRedemption':
       return (<EpochInfo field={field} textStyle={'tableCell'} {...props} />)
     case 'epochCountdown':
       return (<EpochCountdown textStyle={'tableCell'} {...props} />)

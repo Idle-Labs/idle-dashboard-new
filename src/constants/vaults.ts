@@ -72,11 +72,18 @@ export interface Strategy {
   harvestEnabled?: boolean;
 }
 
+export interface ExternalProvider {
+  name: string;
+  url?: string;
+}
+
 export interface CreditVaultConfig {
   manager: keyof typeof operators;
   borrower: keyof typeof operators;
   kycRequired: boolean;
   name: string;
+  custodian?: ExternalProvider;
+  navAgent?: ExternalProvider;
   Token: ContractConfig;
   CDO: CDO;
   Strategy: Strategy;
@@ -117,6 +124,14 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         "ZG8S4A",
         "3WSBSD",
       ],
+      custodian: {
+        name: "Copper",
+        url: "https://copper.co",
+      },
+      navAgent: {
+        name: "Formidium",
+        url: "https://formidium.com/",
+      },
       operators: [
         {
           type: "strategist",
