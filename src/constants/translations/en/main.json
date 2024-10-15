@@ -838,7 +838,7 @@
     "thresholds": "Weekly thresholds",
     "table": {
       "kyc": "KYC",
-      "redemption": "Redemption",
+      "redemptions": "Redemptions",
       "epochNumber": "Epoch #",
       "countdown": "Countdown",
       "count": "Count",

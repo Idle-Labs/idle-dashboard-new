@@ -164,7 +164,7 @@ export const strategies: Record<string, StrategyProps> = {
       },
       {
         field: "epochRedemption",
-        label: "epochs.table.redemption",
+        label: "epochs.table.redemptions",
         tooltip: "assets.assetDetails.tooltips.epochRedemption",
       },
       {

@@ -30,18 +30,17 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
     const initialData = vault.getFlag('performance') || {}
 
     const groupedData = asset.epochData.epochs.reduce( (groupedData: any, epochData: VaultContractCdoEpochData) => {
+      // const date = toDayjs(epochData.block.timestamp*1000).toDate()
+      // const value = epochData.APRs.GROSS
 
-      const date = toDayjs(epochData.block.timestamp*1000).toDate()
-      const value = epochData.APRs.GROSS
+      // const year = date.getFullYear();
+      // const month = date.getMonth();
 
-      const year = date.getFullYear();
-      const month = date.getMonth();
+      // if (!groupedData[year]) {
+      //   groupedData[year] = Array(13).fill([]);
+      // }
 
-      if (!groupedData[year]) {
-        groupedData[year] = Array(13).fill([]);
-      }
-
-      groupedData[year][month] = [...groupedData[year][month], value];
+      // groupedData[year][month] = [...groupedData[year][month], value];
       return groupedData
     }, {});
 
@@ -66,7 +65,7 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
       if (!groupedData[year][12]){
         const monthData = groupedData[year].filter( (v: number) => v>0 )
         const sum = monthData.reduce( (acc: number, v: number) => acc+v, 0)
-        groupedData[year][12] = sum/monthData.length
+        groupedData[year][12] = sum
       }
     })
 
