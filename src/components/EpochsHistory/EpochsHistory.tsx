@@ -6,6 +6,7 @@ import { TableWithPagination } from "components/TableWithPagination/TableWithPag
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { Translation } from "components/Translation/Translation"
 import { DATETIME_FORMAT, VaultContractCdoEpochData, vaultsStatusSchemes } from "constants/"
+import { useThemeProvider } from "contexts/ThemeProvider"
 import { fixTokenDecimals, formatDate, sortDate, sortNumeric, toDayjs } from "helpers"
 import { useMemo } from "react"
 import { useTranslate } from "react-polyglot"
@@ -22,6 +23,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
   sortEnabled = true,
 }) => {
   const translate = useTranslate()
+  const { isMobile } = useThemeProvider()
   const { asset, vault, underlyingAsset } = useAssetProvider()
 
   // @ts-ignore
@@ -84,25 +86,27 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     {
       id:'tvl',
       accessor:'TVL.USD',
+      isVisible: !isMobile,
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.tvl'),
       Cell: ({ value }: { value: string }) => {
         return asset && underlyingAsset && (
-          <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+          <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} abbreviate={false} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
         )
       },
       sortType: sortNumeric
     },
     {
       id:'expectedInterest',
+      isVisible: !isMobile,
       accessor:'expectedInterest',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.interests'),
       Cell: ({ value }: { value: VaultContractCdoEpochData["expectedInterest"] }) => {
         return asset && underlyingAsset && (
-          <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
+          <TokenAmount showIcon={false} size={'xs'} assetId={asset.underlyingId} textStyle={'tableCell'} abbreviate={false} amount={fixTokenDecimals(value, underlyingAsset.decimals)} />
         )
       },
       sortType: sortNumeric
@@ -124,7 +128,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       },
       sortType: sortNumeric
     },
-  ]), [sortEnabled, translate, asset, underlyingAsset])
+  ]), [sortEnabled, isMobile, translate, asset, underlyingAsset])
 
   const initialState = useMemo(() => ({
     sortBy: [
@@ -135,7 +139,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
     ]
   }), [])
 
-  if (!asset || !(vault instanceof CreditVault) || !("epochData" in asset) || !asset.epochData || !("epochs" in asset.epochData)){
+  if (isMobile || !asset || !(vault instanceof CreditVault) || !("epochData" in asset) || !asset.epochData || !("epochs" in asset.epochData)){
     return null
   }
 
@@ -149,7 +153,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       <Translation translation={'epochs.epochsHistory'} component={Text} textStyle={'heading'} fontSize={'h3'} />
       <Card
       >
-        <TableWithPagination<VaultContractCdoEpochData> columns={columns} data={asset.epochData.epochs || []} initialState={initialState} />
+        <TableWithPagination<VaultContractCdoEpochData> columns={columns.filter( (col: any) => col.isVisible === undefined || !!col.isVisible )} data={asset.epochData.epochs || []} initialState={initialState} />
       </Card>
     </VStack>
   )

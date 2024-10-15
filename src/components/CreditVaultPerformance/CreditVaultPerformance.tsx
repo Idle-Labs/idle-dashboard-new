@@ -79,15 +79,25 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
         <Thead>
           <Tr>
             <Th
-              position="sticky"
+              position={"sticky"}
               left={0}
               zIndex={1}
-              backgroundColor="nearBlack"
+              color={'primary'}
+              backgroundColor={"card.bg"}
             >
               Year
             </Th>
             {Array.from(Array(12).keys()).map( i => <Th key={i}>{dayjs().month(i).format('MMM')}</Th> )}
-            <Th textStyle={'bold'}>YTD</Th>
+            <Th
+              right={0}
+              zIndex={1}
+              position={"sticky"}
+              textStyle={'bold'}
+              backgroundColor={"card.bg"}
+              color={'primary'}
+            >
+              YTD
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -97,15 +107,20 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
                 position={"sticky"}
                 left={0}
                 zIndex={1}
-                backgroundColor={"nearBlack"}
+                backgroundColor={"card.bg"}
                 textStyle={'bold'}
               >
                 {year}
               </Td>
               {
-              Array.from(Array(13).keys()).map( i =>
-                <Td key={i} textStyle={i === 12 ? 'bold' : ''}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
-              )
+              Array.from(Array(13).keys()).map( i => {
+                const isLastColumn = i === 12
+                return isLastColumn ? (
+                  <Td position={'sticky'} right={0} zIndex={1} key={i} color={'primary'} backgroundColor={'card.bg'} textStyle={'bold'}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
+                ) : (
+                  <Td key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
+                )
+              })
             }
             </Tr>
           ))}
