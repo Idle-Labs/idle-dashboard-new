@@ -930,7 +930,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
               {
                 amount: bnOrZero(callResult.data),
                 isInstant: false,
-                epochNumber: lastWithdrawRequests[assetId] ?? 0
+                epochNumber: bnOrZero(lastWithdrawRequests[assetId]).toNumber()
               }
             ]
           }
@@ -959,6 +959,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
               {
                 amount: bnOrZero(callResult.data),
                 isInstant: true,
+                epochNumber: 0
               }
             ]
           }
@@ -2309,11 +2310,13 @@ export function PortfolioProvider({ children }: ProviderProps) {
           if (!assetId) return vaultsEpochsData
           const methodName = callResult.callData.method.replace('()', '')
           const fieldName = callResult.extraData?.data?.field || methodName
+          const fieldData = callResult.data
+
           return {
             ...vaultsEpochsData,
             [assetId]: {
               ...vaultsEpochsData[assetId],
-              [fieldName]: callResult.data
+              [fieldName]: fieldData
             }
           }
         }, {})
@@ -2328,6 +2331,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           }
           vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
           vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
+          vaultEpochData.epochNumber = bnOrZero(vaultEpochData.epochNumber).toNumber()
 
           // Process epochs interests
           const vaultEpochs = creditVaultsEpochs?.find( (epoch: {
@@ -2338,13 +2342,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
           if (vaultEpochs){
             vaultEpochData.epochs = vaultEpochs.epochs
-            vaultEpochData.count = [...vaultEpochs.epochs].pop().count
           }
           epochsData[assetId] = vaultEpochData
         })
       }
 
-      // console.log('epochsData', epochsData)
       // console.log('aprsCallsResults', aprsCallsResults)
 
       // Process total aprs

@@ -226,14 +226,20 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       accessCodes: ["6G8R7F"],
       operators: [
         {
-          type: "borrower",
+          type: "strategist",
           name: "falconx",
         },
       ],
       flags: {
         compoundApr: false,
+        performance: {
+          2023: [
+            1.02, 1.46, 2.53, 1.02, 0.8, 1.6, 1.02, 2.01, 0.8, 1.88, 2.21, 2.53,
+          ],
+          2024: [1.88, 2.53, 2.84, 0.87, 1.39, 0.8, 0.95, 0.8, 0.8],
+        },
       },
-      name: "Falcon X (Test)",
+      name: "Test Vault",
       vaultType: "primeBrokerage",
       Token: {
         decimals: 18,

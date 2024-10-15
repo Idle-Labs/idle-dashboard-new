@@ -2053,10 +2053,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<KycRequired {...props} />)
     case 'custodian':
       const custodian = getObjectPath(vault, 'vaultConfig.custodian')
-      return custodian && (<Link isExternal href={custodian.url} textStyle={'tableCell'} color={'link'} {...props}>{custodian.name}</Link>)
+      return custodian ? (<Link isExternal href={custodian.url} textStyle={'tableCell'} color={'link'} {...props}>{custodian.name}</Link>) : (<Text textStyle={'tableCell'}>-</Text>)
     case 'navAgent':
       const navAgent = getObjectPath(vault, 'vaultConfig.navAgent')
-      return navAgent && (<Link isExternal href={navAgent.url} textStyle={'tableCell'} color={'link'} {...props}>{navAgent.name}</Link>)
+      return navAgent ? (<Link isExternal href={navAgent.url} textStyle={'tableCell'} color={'link'} {...props}>{navAgent.name}</Link>) : (<Text textStyle={'tableCell'}>-</Text>)
     case 'vaultAddress':
       return (<AddressLink chainId={asset?.chainId} address={asset?.id || ''} />)
     case 'cdoAddress':

@@ -1,21 +1,6 @@
 [
   {
     "inputs": [],
-    "name": "DeadlineNotMet",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "Default",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "EpochNotRunning",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "EpochRunning",
     "type": "error"
   },
@@ -365,12 +350,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_amount",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "",
+        "name": "_referral",
         "type": "address"
       }
     ],
@@ -747,16 +732,6 @@
         "internalType": "uint256",
         "name": "_trancheAPRSplitRatio",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
       }
     ],
     "name": "initialize",
@@ -856,6 +831,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "keyringAllowWithdraw",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1394,6 +1382,11 @@
         "internalType": "uint256",
         "name": "_keyringPolicyId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_keyringAllowWithdraw",
+        "type": "bool"
       }
     ],
     "name": "setKeyringParams",
@@ -1591,6 +1584,29 @@
       }
     ],
     "name": "stopEpoch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newApr",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_interest",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "stopEpochWithDuration",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

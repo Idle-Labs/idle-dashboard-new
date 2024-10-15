@@ -294,7 +294,7 @@ export type CreditVaultEpoch = {
   epochDuration: BigNumber;
   epochStartDate: number;
   epochEndDate: number;
-  count: number;
+  epochNumber: number;
   epochs?: VaultContractCdoEpochData[];
   epochsInterests?: CreditVaultEpochInterests[];
   pendingWithdraws: BigNumber;

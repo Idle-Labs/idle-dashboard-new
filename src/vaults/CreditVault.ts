@@ -617,6 +617,10 @@ export class CreditVault {
     return [
       {
         assetId: this.id,
+        call: this.strategyContract.methods.epochNumber(),
+      },
+      {
+        assetId: this.id,
         call: this.cdoContract.methods.epochEndDate(),
       },
       {

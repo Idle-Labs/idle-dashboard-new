@@ -58,7 +58,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
     }
 
     // Standard
-    if (epochData.count-withdrawRequest.epochNumber < 2){
+    if (epochData.epochNumber <= withdrawRequest.epochNumber){
       // Wait and of epoch
       if (epochData.isEpochRunning){
         return toDayjs(epochData?.epochEndDate)
@@ -75,10 +75,13 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
 
     if (withdrawRequest.isInstant){
       if (!epochData.allowInstantWithdraw){
+        if (claimDeadline && claimDeadline.isSameOrBefore(toDayjs())){
+          return 'waiting'
+        }
         return 'pending'
       }
     } else {
-      if (epochData.count-withdrawRequest.epochNumber < 2){
+      if (epochData.epochNumber <= withdrawRequest.epochNumber){
         return 'pending'
       }
     }
@@ -92,8 +95,6 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       return null
     }
     const claimDeadline = getRequestClaimDeadline(withdrawRequest)
-
-    console.log('getRequestCountdown', status, claimDeadline)
 
     return claimDeadline ? <Countdown date={claimDeadline.toDate()} /> : null
   }, [getRequestStatus, getRequestClaimDeadline])
@@ -112,6 +113,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
     {
       width: '16%',
       id:'epochNumber',
+      accessor: 'epochNumber',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
       Header:translate('epochs.table.epochNumber'),
@@ -159,7 +161,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       Cell: ({ row }: { row: RowProps }) => {
         const status = getRequestStatus(row.original)
         const countdown = getRequestCountdown(row.original)
-        return status === 'claimable' ? (
+        return status !== 'pending' ? (
           <Tag variant={'solid'} colorScheme={vaultsStatusSchemes[status]} color={'primary'} fontWeight={700}>
             {translate(`transactionRow.${status}`)}
           </Tag>
