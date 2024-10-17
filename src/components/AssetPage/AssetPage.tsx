@@ -558,7 +558,7 @@ export const AssetPage: React.FC = () => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <AssetProvider.PoolUsd fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.PoolUsd abbreviate={false} decimals={0} fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                       )
                     }
                   </HStack>
