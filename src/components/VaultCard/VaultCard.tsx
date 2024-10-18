@@ -418,6 +418,10 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
     return assets.filter( (asset: Asset) => asset.status === 'deprecated' ).length > 0
   }, [assets])
 
+  const isFullyDeprecated = useMemo(() => {
+    return assets.filter( (asset: Asset) => asset.status === 'deprecated' ).length === assets.length
+  }, [assets])
+
   const maxApy = useMemo((): BigNumber => {
     return assets.reduce((maxApy: BigNumber, asset: Asset) => BigNumber.maximum(maxApy, BNify(asset.apy)), BNify(0))
   }, [assets])
@@ -455,7 +459,7 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
   }, [aggregatedVault, selectAssetById, selectVaultPosition])
 
   // Don't show if deprecated and zero balance
-  if (isDeprecated && vaultsPosition.balance.lte(0)){
+  if (isFullyDeprecated && vaultsPosition.balance.lte(0)){
     return null
   }
 
