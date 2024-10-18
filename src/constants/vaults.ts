@@ -3658,7 +3658,7 @@ export const tranches: Record<
           address: "0x38989BBA00BDF8181F4082995b3DEAe96163aC5D",
         },
         description:
-          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
+          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH Morpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
         Tranches: {
           AA: {
             abi: ERC20 as Abi,
@@ -3753,7 +3753,7 @@ export const tranches: Record<
           address: "0x38989BBA00BDF8181F4082995b3DEAe96163aC5D",
         },
         description:
-          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
+          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x78Fc2c2eD1A4cDb5402365934aE5648aDAd094d0" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH Morpho vault</a>. The vault curated by Re7 Labs aims to outperform staked ETH yields by lending WETH against a diverse set of Liquid Staking and Liquid Restaking Token collateral markets.',
         Tranches: {
           AA: {
             abi: ERC20 as Abi,
@@ -3852,7 +3852,7 @@ export const tranches: Record<
           address: "0x38989BBA00BDF8181F4082995b3DEAe96163aC5D",
         },
         description:
-          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x38989BBA00BDF8181F4082995b3DEAe96163aC5D" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH MetaMorpho vault</a>. The vault curated by B.Protocol and Block Analitica is intended to optimize risk-adjusted interest earned from blue-chip LST and stablecoin collateral markets.',
+          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0x38989BBA00BDF8181F4082995b3DEAe96163aC5D" class="link" rel="nofollow noopener noreferrer" target="_blank">Flagship ETH Morpho vault</a>. The vault curated by B.Protocol and Block Analitica is intended to optimize risk-adjusted interest earned from blue-chip LST and stablecoin collateral markets.',
         Tranches: {
           AA: {
             abi: ERC20 as Abi,
@@ -3947,7 +3947,7 @@ export const tranches: Record<
           address: "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
         },
         description:
-          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB" class="link" rel="nofollow noopener noreferrer" target="_blank">Steakhouse USDC MetaMorpho vault</a>. The vault is intended to optimize yields with bluechip collateral from both crypto and tradfi markets.',
+          'This strategy deploys funds in the <a href="https://app.morpho.org/vault?vault=0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB" class="link" rel="nofollow noopener noreferrer" target="_blank">Steakhouse USDC Morpho vault</a>. The vault is intended to optimize yields with bluechip collateral from both crypto and tradfi markets.',
         Tranches: {
           AA: {
             abi: ERC20 as Abi,
