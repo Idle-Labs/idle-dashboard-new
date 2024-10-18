@@ -484,6 +484,7 @@ export const tranches: Record<
   10: {
     clearpool: {
       USDTBas: {
+        status: "deprecated",
         enabledEnvs: ["prod", "beta"],
         operators: [
           {
@@ -4548,11 +4549,12 @@ export const bestYield: Record<number, Record<string, BestYieldConfig>> = {
   10: {
     // Optimism
     USDT: {
-      enabledEnvs: ["prod", "beta"],
       autoFarming: ["OP"],
+      status: "deprecated",
       blockNumber: 117936837,
       underlyingToken: "USDT",
       aggregatedVaultId: "rwa",
+      enabledEnvs: ["prod", "beta"],
       idle: {
         decimals: 18,
         token: "idleUSDTRWA",

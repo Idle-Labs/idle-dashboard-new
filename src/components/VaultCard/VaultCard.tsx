@@ -398,6 +398,7 @@ type AggregatedProps = {
 export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
 
   const theme = useTheme()
+  const translate = useTranslate()
   const { isMobile } = useThemeProvider()
 
   const {
@@ -412,6 +413,10 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
   const assets = useMemo(() => {
     return selectAssetsByIds(aggregatedVault.vaults)
   }, [selectAssetsByIds, aggregatedVault.vaults])
+
+  const isDeprecated = useMemo(() => {
+    return assets.filter( (asset: Asset) => asset.status === 'deprecated' ).length > 0
+  }, [assets])
 
   const maxApy = useMemo((): BigNumber => {
     return assets.reduce((maxApy: BigNumber, asset: Asset) => BigNumber.maximum(maxApy, BNify(asset.apy)), BNify(0))
@@ -449,6 +454,11 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
     return vaultsPosition
   }, [aggregatedVault, selectAssetById, selectVaultPosition])
 
+  // Don't show if deprecated and zero balance
+  if (isDeprecated && vaultsPosition.balance.lte(0)){
+    return null
+  }
+
   return (
     <Card.Flex
       p={0}
@@ -468,20 +478,33 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
           width={'full'}
           alignItems={['flex-start', 'center']}
           borderRadius={'8px 8px 0 0'}
-          justifyContent={'flex-start'}
+          justifyContent={'space-between'}
           backgroundColor={'card.bgLight'}
           background={`radial-gradient(circle, ${aggregatedVault.color}50 40%, ${aggregatedVault.color}cc 100%)`}
           backgroundPosition={'top left'}
           backgroundSize={'300%'}
         >
-          <Image src={aggregatedVault.icon} w={[10, 14]} h={[10, 14]} />
-          <VStack
-            spacing={[1, 2]}
-            alignItems={'space-between'}
-          >
-            <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
-            <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
-          </VStack>
+          <HStack>
+            <Image src={aggregatedVault.icon} w={[10, 14]} h={[10, 14]} />
+            <VStack
+              spacing={[1, 2]}
+              alignItems={'space-between'}
+            >
+              <Translation translation={aggregatedVault.name} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+              <Translation translation={aggregatedVault.type} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
+            </VStack>
+          </HStack>
+          {
+            isDeprecated && (
+              <Tooltip
+                hasArrow
+                placement={'top'}
+                label={translate(`assets.assetDetails.requiredActions.deprecated`)}
+              >
+                <Image src={`images/vaults/warning.png`} width={8} height={8} />
+              </Tooltip>
+            )
+          }
         </HStack>
         <VStack
           px={5}
