@@ -248,16 +248,30 @@
       "title": "Strategist vaults",
       "explore": "Explore",
       "description": "Offering on-chain TradFi yield strategies",
+      "verification": "Complete the following steps to interact with this vault",
       "kyc": {
         "notRequired": "Not Required",
         "required": "KYC Required",
-        "complete": "Complete the KYC verification process to interact.",
-        "cta": "Start KYC verification",
+        "title": "KYC Verification",
+        "complete": "KYC verification through Keyring",
+        "completed": "KYC verification completed",
+        "cta": "Verify",
         "providedBy": "Verification provided by",
         "tooltips": {
           "required": "KYC verification required",
           "completed": "KYC verification completed"
         }
+      },
+      "signatures": {
+        "title": "Read & Sign documents",
+        "cta": "Accept and Sign",
+        "read": "Read",
+        "documents": {
+          "TS": "Term Sheet",
+          "SA": "Service Agreement",
+          "MLA": "Master Loan Agreement"
+        },
+        "acceptance": "I have read, understood, and accepted the above documents."
       }
     },
     "isolated": {

@@ -509,6 +509,48 @@ export const protocols: Record<string, Protocol> = {
             : {},
         },
       },
+      signatures: {
+        endpoint: {
+          1: "http://localhost:3000/v1/signatures",
+          10: "http://localhost:3000/v1/signatures",
+          137: "http://localhost:3000/v1/signatures",
+        },
+        path: "data",
+        filters: ["name"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
+      checkSignatureV2: {
+        endpoint: {
+          1: "http://localhost:3000/v1/signatures/:signatureId/check",
+          10: "http://localhost:3000/v1/signatures/:signatureId/check",
+          137: "http://localhost:3000/v1/signatures/:signatureId/check",
+        },
+        path: "data",
+        filters: ["walletAddress"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
+      signSignatureV2: {
+        endpoint: {
+          1: "http://localhost:3000/v1/signatures/:signatureId/sign",
+          10: "http://localhost:3000/v1/signatures/:signatureId/sign",
+          137: "http://localhost:3000/v1/signatures/:signatureId/sign",
+        },
+        path: "data",
+        filters: ["walletAddress", "hash"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
       transactions: {
         endpoint: {
           1: "https://api-staging.idle.finance/v1/transactions",
