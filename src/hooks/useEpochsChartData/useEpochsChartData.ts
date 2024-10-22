@@ -1,8 +1,4 @@
-import {
-  CreditVaultEpochInterests,
-  SECONDS_IN_YEAR,
-  VaultContractCdoEpochData,
-} from "constants/";
+import { VaultContractCdoEpochData } from "constants/";
 import { useState, useMemo, useEffect } from "react";
 import {
   bnOrZero,
