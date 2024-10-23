@@ -401,109 +401,105 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [asset, isEpochVault, limitCapReached, vaultLimitCap, underlyingAsset, vaultEnabled, assetBalance, vaultMessages, setActionIndex])
 
   return (
-    <VaultKycCheck
-      assetId={asset?.id}
+    <AssetProvider
+      flex={1}
+      width={'full'}
+      assetId={asset?.underlyingId}
     >
-      <AssetProvider
+      <VStack
+        pt={8}
         flex={1}
-        width={'full'}
-        assetId={asset?.underlyingId}
+        spacing={6}
+        height={'100%'}
+        id={'deposit-container'}
+        alignItems={'space-between'}
+        justifyContent={'flex-start'}
       >
         <VStack
-          pt={8}
           flex={1}
           spacing={6}
-          height={'100%'}
-          id={'deposit-container'}
-          alignItems={'space-between'}
-          justifyContent={'flex-start'}
+          width={'100%'}
+          alignItems={'flex-start'}
         >
-          <VStack
-            flex={1}
-            spacing={6}
+          <HStack
             width={'100%'}
+            spacing={[3, 4]}
             alignItems={'flex-start'}
           >
-            <HStack
+            <Box
+              pt={8}
+            >
+              <AssetLabel assetId={asset?.id} />
+            </Box>
+            <VStack
+              spacing={1}
               width={'100%'}
-              spacing={[3, 4]}
               alignItems={'flex-start'}
             >
-              <Box
-                pt={8}
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
               >
-                <AssetLabel assetId={asset?.id} />
-              </Box>
-              <VStack
-                spacing={1}
-                width={'100%'}
-                alignItems={'flex-start'}
-              >
-                <Card
-                  px={4}
-                  py={2}
-                  layerStyle={'cardLight'}
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
                 >
-                  <VStack
-                    spacing={2}
-                    alignItems={'flex-start'}
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
+                  <HStack
+                    width={'100%'}
+                    justifyContent={'space-between'}
                   >
-                    <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} />
                     <HStack
-                      width={'100%'}
-                      justifyContent={'space-between'}
+                      spacing={1}
                     >
-                      <HStack
-                        spacing={1}
-                      >
-                        <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                        <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
-                      </HStack>
-                      <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                      <AssetProvider.Balance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
                     </HStack>
-                  </VStack>
-                </Card>
-                {
-                  error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-                }
-              </VStack>
-            </HStack>
-            <VStack
-              spacing={3}
-              width={'full'}
-            >
-              {referralMessage}
-              {vaultMessage}
+                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                  </HStack>
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+              }
             </VStack>
-            <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
-            <FeeDiscountToggler assetId={asset?.id} />
-          </VStack>
+          </HStack>
           <VStack
-            spacing={4}
-            id={'footer'}
-            alignItems={'flex-start'}
+            spacing={3}
+            width={'full'}
           >
-            {
-              /*
-              <Card.Outline px={4} py={2}>
-                <HStack
-                  spacing={1}
-                >
-                  <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                  <AssetProvider
-                    assetId={asset?.id}
-                  >
-                    <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                  </AssetProvider>
-                </HStack>
-              </Card.Outline>
-              */
-            }
-            <EstimatedGasFees />
-            {depositButton}
+            {referralMessage}
+            {vaultMessage}
           </VStack>
+          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+          <FeeDiscountToggler assetId={asset?.id} />
         </VStack>
-      </AssetProvider>
-    </VaultKycCheck>
+        <VStack
+          spacing={4}
+          id={'footer'}
+          alignItems={'flex-start'}
+        >
+          {
+            /*
+            <Card.Outline px={4} py={2}>
+              <HStack
+                spacing={1}
+              >
+                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                <AssetProvider
+                  assetId={asset?.id}
+                >
+                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
+                </AssetProvider>
+              </HStack>
+            </Card.Outline>
+            */
+          }
+          <EstimatedGasFees />
+          {depositButton}
+        </VStack>
+      </VStack>
+    </AssetProvider>
   )
 }

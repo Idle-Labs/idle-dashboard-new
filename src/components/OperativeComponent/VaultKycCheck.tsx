@@ -18,6 +18,12 @@ type VaultKycCheckProps = {
   assetId?: AssetId
 } & BoxProps
 
+interface Document {
+  translation: string
+  url: string
+  isChecked: boolean
+}
+
 export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   assetId,
   children
@@ -28,17 +34,36 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const [ sending, setSending ] = useState<boolean>(false)
   const [ signature, setSignature ] = useState<any>(undefined)
   const [ signatureVerified, setSignatureVerified ] = useState<boolean>(false)
-  const [ documentsAccepted, setDocumentsAccepted ] = useState<boolean>(false)
+  const [ documents, setDocuments ] = useState<Document[]>([
+    {
+      url: '',
+      isChecked: false,
+      translation: 'strategies.credit.signatures.documents.MLA',
+    },
+    {
+      url: '',
+      isChecked: false,
+      translation: 'strategies.credit.signatures.documents.TS',
+    },
+    {
+      url: '',
+      isChecked: false,
+      translation: 'strategies.credit.signatures.documents.SA',
+    }
+  ])
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return selectAssetById(assetId)
   }, [assetId, selectAssetById])
 
-  const checkWalletAllowed = useMemo(() => {
-    const vault = selectVaultById(assetId)
-    return vault && ("kycRequired" in vault) && !!vault.kycRequired
+  const vault = useMemo(() => {
+    return selectVaultById(assetId)
   }, [assetId, selectVaultById])
+
+  const isKycRequired = useMemo(() => {
+    return vault && ("kycRequired" in vault) && !!vault.kycRequired
+  }, [vault])
 
   const loadSignature = useCallback(async () => {
     if (signature){
@@ -80,16 +105,35 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     }
   }, [web3, account, signature, setSending, checkSignature])
 
+  const setDocumentAccepted = useCallback( (documentIndex: number, isChecked: boolean) => {
+    setDocuments(documents.map( (document, index) => index === documentIndex ? {
+      ...document,
+      isChecked
+    } : document ))
+  }, [documents, setDocuments])
+
+  const documentsAccepted = useMemo(() => {
+    return documents.find( document => !document.isChecked ) === undefined
+  }, [documents])
+
+  const kycVerified = useMemo(() => !!asset?.walletAllowed && account?.address, [asset, account])
+
+  const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && signatureVerified)), [isKycRequired, kycVerified, signatureVerified])
+
   useEffect(() => {
+    if (!isKycRequired){
+      return
+    }
     loadSignature()
-  }, [loadSignature])
+  }, [isKycRequired, loadSignature])
 
 
   useEffect(() => {
+    if (!isKycRequired){
+      return
+    }
     checkSignature()
-  }, [checkSignature])
-
-  const isWalletAllowed = useMemo(() => (!checkWalletAllowed || (!!asset?.walletAllowed && account?.address)), [checkWalletAllowed, asset, account])
+  }, [isKycRequired, checkSignature])
 
   const fallbackComponent = (
     <React.Fragment>
@@ -97,11 +141,11 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     </React.Fragment>
   )
 
-  if (!asset || !checkWalletAllowed){
+  if (!asset || !isKycRequired){
     return fallbackComponent
   }
   
-  return (!isWalletAllowed || !signatureVerified) ? (
+  return !isWalletAllowed ? (
     <VStack
       mt={8}
       flex={1}
@@ -123,7 +167,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
         width={'full'}
         borderRadius={8}
         border={'1px solid'}
-        borderColor={isWalletAllowed ? 'brightGreen' : 'divider'}
+        borderColor={kycVerified ? 'brightGreen' : 'divider'}
         alignItems={'flex-start'}
       >
         <HStack
@@ -133,13 +177,13 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
         >
           <Translation textStyle={'tableCell'} translation={'strategies.credit.kyc.title'} prefix={'1. '} />
           {
-            isWalletAllowed && (
+            kycVerified && (
               <VscVerifiedFilled size={24} color={theme.colors.brightGreen} />
             )
           }
         </HStack>
         {
-          !isWalletAllowed && (
+          !kycVerified && (
             <VStack
               pt={2}
               pl={3}
@@ -152,7 +196,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
                 width={'full'}
                 justifyContent={'space-between'}
               >
-                <Translation translation={`strategies.credit.kyc.${ isWalletAllowed ? 'completed' : 'complete' }`} textStyle={'captionSmall'} />
+                <Translation translation={`strategies.credit.kyc.${ kycVerified ? 'completed' : 'complete' }`} textStyle={'captionSmall'} />
                 <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
               </HStack>
             </VStack>
@@ -189,46 +233,30 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
           borderTop={'1px solid'}
           borderColor={'divider'}
         >
-          <HStack
-            pb={2}
-            width={'full'}
-            justifyContent={'space-between'}
-            borderBottom={'1px solid'}
-            borderColor={'divider'}
-          >
-            <Translation translation={'strategies.credit.signatures.documents.MLA'} textStyle={'captionSmall'} />
-            <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
-          </HStack>
-          <HStack
-            pb={2}
-            width={'full'}
-            justifyContent={'space-between'}
-            borderBottom={'1px solid'}
-            borderColor={'divider'}
-          >
-            <Translation translation={'strategies.credit.signatures.documents.TS'} textStyle={'captionSmall'} />
-            <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
-          </HStack>
-          <HStack
-            width={'full'}
-            pb={signatureVerified ? 0 : 2}
-            justifyContent={'space-between'}
-            borderBottom={signatureVerified ? 0 : '1px solid'}
-            borderColor={'divider'}
-          >
-            <Translation translation={'strategies.credit.signatures.documents.SA'} textStyle={'captionSmall'} />
-            <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
-          </HStack>
+          {
+            documents.map( (document, index) => (
+              <HStack
+                pb={2}
+                key={index}
+                width={'full'}
+                justifyContent={'space-between'}
+                borderBottom={'1px solid'}
+                borderColor={'divider'}
+              >
+                <Checkbox alignItems={'baseline'} isChecked={document.isChecked} onChange={ (e) => setDocumentAccepted(index, e.target.checked) }>
+                  <Translation translation={document.translation} textStyle={'captionSmall'} isHtml={true} />
+                </Checkbox>
+                <Translation size={'sm'} py={2} px={5} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
+              </HStack>
+            ) )
+          }
           {
             !signatureVerified && (
               <VStack
                 spacing={3}
                 width={'full'}
               >
-                <Checkbox alignItems={'baseline'} isChecked={documentsAccepted} onChange={ (e) => setDocumentsAccepted(e.target.checked) } >
-                  <Translation translation={`strategies.credit.signatures.acceptance`} textStyle={'captionSmall'} />
-                </Checkbox>
-                <Translation component={Button} translation={'strategies.credit.signatures.cta'} variant={'ctaFull'} onClick={() => signAndSend() } isDisabled={!documentsAccepted} />
+                <Translation component={Button} translation={'strategies.credit.signatures.cta'} variant={'ctaFull'} onClick={() => signAndSend() } isDisabled={sending || !documentsAccepted} />
               </VStack>
             )
           }

@@ -349,110 +349,106 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const showDynamicFields = useMemo(() => !epochVaultLocked, [epochVaultLocked])
 
   return (
-    <VaultKycCheck
+    <AssetProvider
+      flex={1}
+      width={'100%'}
       assetId={asset?.id}
     >
-      <AssetProvider
+      <VStack
+        pt={8}
         flex={1}
+        spacing={6}
         width={'100%'}
-        assetId={asset?.id}
+        height={'100%'}
+        id={'withdraw-container'}
+        alignItems={'space-between'}
+        justifyContent={'flex-start'}
       >
         <VStack
-          pt={8}
           flex={1}
           spacing={6}
           width={'100%'}
-          height={'100%'}
-          id={'withdraw-container'}
-          alignItems={'space-between'}
-          justifyContent={'flex-start'}
+          alignItems={'flex-start'}
         >
-          <VStack
-            flex={1}
-            spacing={6}
+          <HStack
             width={'100%'}
+            spacing={[3, 4]}
             alignItems={'flex-start'}
           >
-            <HStack
+            <Box
+              pt={8}
+            >
+              <AssetLabel assetId={asset?.id} />
+            </Box>
+            <VStack
+              spacing={1}
               width={'100%'}
-              spacing={[3, 4]}
               alignItems={'flex-start'}
             >
-              <Box
-                pt={8}
+              <Card
+                px={4}
+                py={2}
+                layerStyle={'cardLight'}
               >
-                <AssetLabel assetId={asset?.id} />
-              </Box>
-              <VStack
-                spacing={1}
-                width={'100%'}
-                alignItems={'flex-start'}
-              >
-                <Card
-                  px={4}
-                  py={2}
-                  layerStyle={'cardLight'}
+                <VStack
+                  spacing={2}
+                  alignItems={'flex-start'}
                 >
-                  <VStack
-                    spacing={2}
-                    alignItems={'flex-start'}
+                  <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} isDisabled={inputDisabled} />
+                  <HStack
+                    width={'100%'}
+                    justifyContent={'space-between'}
                   >
-                    <InputAmount amount={amount} amountUsd={amountUsd} setAmount={setAmount} isDisabled={inputDisabled} />
                     <HStack
-                      width={'100%'}
-                      justifyContent={'space-between'}
+                      spacing={1}
                     >
-                      <HStack
-                        spacing={1}
-                      >
-                        <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
-                        <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
-                      </HStack>
-                      <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                      <Translation component={Text} translation={'common.balance'} textStyle={'captionSmaller'} />
+                      <AssetProvider.VaultBalance abbreviate={true} decimals={4} textStyle={'captionSmaller'} color={'primary'} />
                     </HStack>
-                  </VStack>
-                </Card>
-                {
-                  error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
-                }
-              </VStack>
-            </HStack>
-            {vaultMessage}
-            {
-              redeemInterestBearingEnabled && redeemInterestBearing ?
-                interestBearingTokens
-              : showDynamicFields && (
-                <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
-              )
-            }
-          </VStack>
-          <VStack
-            spacing={4}
-            id={'footer'}
-            alignItems={'flex-start'}
-          >
-            {
-              /*
-              <Card.Outline px={4} py={2}>
-                <HStack
-                  spacing={1}
-                >
-                  <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                  <AssetProvider
-                    assetId={asset?.id}
-                  >
-                    <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                  </AssetProvider>
-                </HStack>
-              </Card.Outline>
-              */
-            }
-            {withdrawInterestBearingToken}
-            <EstimatedGasFees />
-            {withdrawButton}
-          </VStack>
+                    <Button variant={'selector'} onClick={setMaxBalance}>MAX</Button>
+                  </HStack>
+                </VStack>
+              </Card>
+              {
+                error && <Text textStyle={'captionSmaller'} color={'orange'}>{error}</Text>
+              }
+            </VStack>
+          </HStack>
+          {vaultMessage}
+          {
+            redeemInterestBearingEnabled && redeemInterestBearing ?
+              interestBearingTokens
+            : showDynamicFields && (
+              <DynamicActionFields assetId={asset?.id} action={'withdraw'} amount={amount} amountUsd={amountUsd} />
+            )
+          }
         </VStack>
-      </AssetProvider>
-    </VaultKycCheck>
+        <VStack
+          spacing={4}
+          id={'footer'}
+          alignItems={'flex-start'}
+        >
+          {
+            /*
+            <Card.Outline px={4} py={2}>
+              <HStack
+                spacing={1}
+              >
+                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
+                <AssetProvider
+                  assetId={asset?.id}
+                >
+                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
+                </AssetProvider>
+              </HStack>
+            </Card.Outline>
+            */
+          }
+          {withdrawInterestBearingToken}
+          <EstimatedGasFees />
+          {withdrawButton}
+        </VStack>
+      </VStack>
+    </AssetProvider>
   )
 }

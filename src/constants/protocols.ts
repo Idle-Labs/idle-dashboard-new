@@ -511,9 +511,9 @@ export const protocols: Record<string, Protocol> = {
       },
       signatures: {
         endpoint: {
-          1: "http://localhost:3000/v1/signatures",
-          10: "http://localhost:3000/v1/signatures",
-          137: "http://localhost:3000/v1/signatures",
+          1: "https://api-staging.idle.finance/v1/signatures",
+          10: "https://api-staging.idle.finance/v1/signatures",
+          137: "https://api-staging.idle.finance/v1/signatures",
         },
         path: "data",
         filters: ["name"],
@@ -525,9 +525,9 @@ export const protocols: Record<string, Protocol> = {
       },
       checkSignatureV2: {
         endpoint: {
-          1: "http://localhost:3000/v1/signatures/:signatureId/check",
-          10: "http://localhost:3000/v1/signatures/:signatureId/check",
-          137: "http://localhost:3000/v1/signatures/:signatureId/check",
+          1: "https://api-staging.idle.finance/v1/signatures/:signatureId/check",
+          10: "https://api-staging.idle.finance/v1/signatures/:signatureId/check",
+          137: "https://api-staging.idle.finance/v1/signatures/:signatureId/check",
         },
         path: "data",
         filters: ["walletAddress"],
@@ -539,9 +539,9 @@ export const protocols: Record<string, Protocol> = {
       },
       signSignatureV2: {
         endpoint: {
-          1: "http://localhost:3000/v1/signatures/:signatureId/sign",
-          10: "http://localhost:3000/v1/signatures/:signatureId/sign",
-          137: "http://localhost:3000/v1/signatures/:signatureId/sign",
+          1: "https://api-staging.idle.finance/v1/signatures/:signatureId/sign",
+          10: "https://api-staging.idle.finance/v1/signatures/:signatureId/sign",
+          137: "https://api-staging.idle.finance/v1/signatures/:signatureId/sign",
         },
         path: "data",
         filters: ["walletAddress", "hash"],

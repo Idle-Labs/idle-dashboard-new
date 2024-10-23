@@ -267,9 +267,9 @@
         "cta": "Accept and Sign",
         "read": "Read",
         "documents": {
-          "TS": "Term Sheet",
-          "SA": "Service Agreement",
-          "MLA": "Master Loan Agreement"
+          "TS": "I have read and understood the <span class='linkStatic'>Term Sheet</span>",
+          "SA": "I have read and understood the <span class='linkStatic'>Service Agreement</span>",
+          "MLA": "I have read and understood the <span class='linkStatic'>Master Loan Agreement</span>"
         },
         "acceptance": "I have read, understood, and accepted the above documents."
       }

@@ -19,6 +19,7 @@ import { MdOutlineAccountBalanceWallet, MdOutlineLocalGasStation, MdOutlineRefre
 import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio, Button, Tabs, TabList, Tab, CircularProgress, CircularProgressLabel, SimpleGrid, Link, LinkProps } from '@chakra-ui/react'
 import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError, getStakingPower, getStkIDLE, getFeeDiscount, fixTokenDecimals, getExplorerByChainId } from 'helpers/'
 import { useThemeProvider } from "contexts/ThemeProvider";
+import { VaultKycCheck } from './VaultKycCheck'
 
 export type ActionComponentArgs = {
   itemIndex: number
@@ -889,7 +890,11 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                 flex={1}
                 width={'100%'}
               >
-                {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
+                <VaultKycCheck
+                  assetId={assetId}
+                >
+                  {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
+                </VaultKycCheck>
               </Flex>
             </Flex>
             {
