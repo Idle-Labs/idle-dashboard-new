@@ -77,10 +77,22 @@ export interface ExternalProvider {
   url?: string;
 }
 
+export interface CreditVaultSignatureDocument {
+  translation: string;
+  url: string;
+  isChecked: boolean;
+}
+
+export interface CreditVaultSignature {
+  name: string;
+  documents: CreditVaultSignatureDocument[];
+}
+
 export interface CreditVaultConfig {
   manager: keyof typeof operators;
   borrower: keyof typeof operators;
   kycRequired: boolean;
+  signature?: CreditVaultSignature;
   name: string;
   custodian?: ExternalProvider;
   navAgent?: ExternalProvider;
@@ -178,6 +190,64 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       kycRequired: true,
       manager: "falconx",
       borrower: "falconx",
+      underlyingToken: "USDC",
+      enabledEnvs: ["credit"],
+      accessCodes: [
+        "L48JR9",
+        "TNC9KP",
+        "JC4B6T",
+        "QKA72A",
+        "S22E72",
+        "NWZS8N",
+        "B74EZM",
+        "X4XNLD",
+        "L3QW7R",
+        "TGN32M",
+      ],
+      custodian: {
+        name: "-",
+      },
+      navAgent: {
+        name: "-",
+      },
+      operators: [
+        {
+          type: "strategist",
+          name: "falconx",
+        },
+      ],
+      flags: {
+        compoundApr: false,
+        performance: {},
+      },
+      name: "FalconX Credit",
+      vaultType: "primeBrokerage",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_falconx_USDC",
+        address: "0x5e8cd1a018DB46f7FA47925C22E8e3325EaC1923",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_falconx_USDC",
+        address: "0x34f54d3Dd46Fd9bef92B54c3CDe526c54F62452d",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_falconx_USDT",
+        address: "0x58BA1463fB0a781571079859D6fcdbc00b50cD55",
+      },
+      blockNumber: 0,
+      descriptionShort: "COPY SHORT",
+      description: `COPY LONG`,
+    },
+    {
+      mode: "CREDIT",
+      kycRequired: true,
+      manager: "falconx",
+      borrower: "falconx",
       status: "experimental",
       blockNumber: 125754764,
       underlyingToken: "USDC",
@@ -224,6 +294,26 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
       accessCodes: ["6G8R7F"],
+      signature: {
+        name: "CREDIT_VAULTS_ACCEPTANCE",
+        documents: [
+          {
+            url: "",
+            isChecked: false,
+            translation: "strategies.credit.signatures.documents.MLA",
+          },
+          {
+            url: "",
+            isChecked: false,
+            translation: "strategies.credit.signatures.documents.TS",
+          },
+          {
+            url: "",
+            isChecked: false,
+            translation: "strategies.credit.signatures.documents.SA",
+          },
+        ],
+      },
       operators: [
         {
           type: "strategist",

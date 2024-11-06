@@ -13,6 +13,7 @@ import {
   operators,
   CreditVaultConfig,
   ContractConfig,
+  CreditVaultSignature,
 } from "constants/";
 import type {
   Abi,
@@ -85,6 +86,7 @@ export class CreditVault {
   public readonly rewardTokens: UnderlyingTokenProps[];
   public readonly rewardsSenders: RewardSenders | undefined;
   public readonly distributedTokens: UnderlyingTokenProps[];
+  public readonly signature: CreditVaultSignature | undefined;
   public readonly rewardsEmissions: RewardEmission[] | undefined;
   public readonly underlyingToken: UnderlyingTokenProps | undefined;
   public readonly vaultType: CreditVaultConfig["vaultType"] | undefined;
@@ -111,6 +113,7 @@ export class CreditVault {
     this.vaultConfig = vaultConfig;
     this.status = vaultConfig.status;
     this.cacheProvider = cacheProvider;
+    this.signature = vaultConfig.signature;
     this.vaultType = vaultConfig.vaultType;
     this.kycRequired = vaultConfig.kycRequired;
     this.description = vaultConfig.description;

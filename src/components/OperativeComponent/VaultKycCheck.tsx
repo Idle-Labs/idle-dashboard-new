@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { TbPlugConnectedX } from 'react-icons/tb'
 import { Translation } from 'components/Translation/Translation'
 import { VStack, Flex, BoxProps, Button, HStack, Image, Link, Box, Checkbox } from '@chakra-ui/react'
-import { AssetId } from 'constants/'
+import { AssetId, CreditVaultSignatureDocument } from 'constants/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { openWindow } from 'helpers'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -18,12 +18,6 @@ type VaultKycCheckProps = {
   assetId?: AssetId
 } & BoxProps
 
-interface Document {
-  translation: string
-  url: string
-  isChecked: boolean
-}
-
 export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   assetId,
   children
@@ -33,24 +27,9 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const { account } = useWalletProvider()
   const [ sending, setSending ] = useState<boolean>(false)
   const [ signature, setSignature ] = useState<any>(undefined)
+  const [ signatureName, setSignatureName ] = useState<string | undefined>()
   const [ signatureVerified, setSignatureVerified ] = useState<boolean>(false)
-  const [ documents, setDocuments ] = useState<Document[]>([
-    {
-      url: '',
-      isChecked: false,
-      translation: 'strategies.credit.signatures.documents.MLA',
-    },
-    {
-      url: '',
-      isChecked: false,
-      translation: 'strategies.credit.signatures.documents.TS',
-    },
-    {
-      url: '',
-      isChecked: false,
-      translation: 'strategies.credit.signatures.documents.SA',
-    }
-  ])
+  const [ documents, setDocuments ] = useState<CreditVaultSignatureDocument[]>([])
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
@@ -61,19 +40,28 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     return selectVaultById(assetId)
   }, [assetId, selectVaultById])
 
+  useEffect(() => {
+    if (!vault || !vault.signature || !vault.signature.documents.length){
+      setSignatureVerified(true)
+      return
+    }
+    setSignatureName(vault.signature.name)
+    setDocuments(vault.signature.documents)
+  }, [vault])
+
   const isKycRequired = useMemo(() => {
     return vault && ("kycRequired" in vault) && !!vault.kycRequired
   }, [vault])
 
   const loadSignature = useCallback(async () => {
-    if (signature){
+    if (signature || !signatureName){
       return
     }
-    const signatureData = await getSignatureByName('CREDIT_VAULTS_ACCEPTANCE')
+    const signatureData = await getSignatureByName(signatureName)
     if (signatureData && (!signature || signatureData._id !== signature._id)){
       setSignature(signatureData)
     }
-  }, [signature, setSignature])
+  }, [signature, signatureName, setSignature])
 
   const checkSignature = useCallback(async () => {
     if (!account?.address || !signature){
@@ -203,65 +191,69 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
           )
         }
       </VStack>
-      <VStack
-        py={2}
-        px={3}
-        spacing={2}
-        width={'full'}
-        borderRadius={8}
-        border={'1px solid'}
-        borderColor={ signatureVerified ? 'brightGreen' : 'divider'}
-        alignItems={'flex-start'}
-      >
-        <HStack
-          width={'full'}
-          alignItems={'center'}
-          justifyContent={'space-between'}
-        >
-          <Translation textStyle={'tableCell'} translation={'strategies.credit.signatures.title'} prefix={'2. '} />
-          {
-            signatureVerified && (
-              <VscVerifiedFilled size={24} color={theme.colors.brightGreen} />
-            )
-          }
-        </HStack>
-        <VStack
-          py={2}
-          pl={3}
-          spacing={3}
-          width={'full'}
-          borderTop={'1px solid'}
-          borderColor={'divider'}
-        >
-          {
-            documents.map( (document, index) => (
-              <HStack
-                pb={2}
-                key={index}
-                width={'full'}
-                justifyContent={'space-between'}
-                borderBottom={'1px solid'}
-                borderColor={'divider'}
-              >
-                <Checkbox alignItems={'baseline'} isChecked={document.isChecked} onChange={ (e) => setDocumentAccepted(index, e.target.checked) }>
-                  <Translation translation={document.translation} textStyle={'captionSmall'} isHtml={true} />
-                </Checkbox>
-                <Translation size={'sm'} py={2} px={5} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
-              </HStack>
-            ) )
-          }
-          {
-            !signatureVerified && (
-              <VStack
-                spacing={3}
-                width={'full'}
-              >
-                <Translation component={Button} translation={'strategies.credit.signatures.cta'} variant={'ctaFull'} onClick={() => signAndSend() } isDisabled={sending || !documentsAccepted} />
-              </VStack>
-            )
-          }
-        </VStack>
-      </VStack>
+      {
+        documents.length > 0 && (
+          <VStack
+            py={2}
+            px={3}
+            spacing={2}
+            width={'full'}
+            borderRadius={8}
+            border={'1px solid'}
+            borderColor={ signatureVerified ? 'brightGreen' : 'divider'}
+            alignItems={'flex-start'}
+          >
+            <HStack
+              width={'full'}
+              alignItems={'center'}
+              justifyContent={'space-between'}
+            >
+              <Translation textStyle={'tableCell'} translation={'strategies.credit.signatures.title'} prefix={'2. '} />
+              {
+                signatureVerified && (
+                  <VscVerifiedFilled size={24} color={theme.colors.brightGreen} />
+                )
+              }
+            </HStack>
+            <VStack
+              py={2}
+              pl={3}
+              spacing={3}
+              width={'full'}
+              borderTop={'1px solid'}
+              borderColor={'divider'}
+            >
+              {
+                documents.map( (document, index) => (
+                  <HStack
+                    pb={2}
+                    key={index}
+                    width={'full'}
+                    justifyContent={'space-between'}
+                    borderBottom={'1px solid'}
+                    borderColor={'divider'}
+                  >
+                    <Checkbox alignItems={'baseline'} isChecked={document.isChecked} onChange={ (e) => setDocumentAccepted(index, e.target.checked) }>
+                      <Translation translation={document.translation} textStyle={'captionSmall'} isHtml={true} />
+                    </Checkbox>
+                    <Translation size={'sm'} py={2} px={5} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network/connect') } />
+                  </HStack>
+                ) )
+              }
+              {
+                !signatureVerified && (
+                  <VStack
+                    spacing={3}
+                    width={'full'}
+                  >
+                    <Translation component={Button} translation={'strategies.credit.signatures.cta'} variant={'ctaFull'} onClick={() => signAndSend() } isDisabled={sending || !documentsAccepted} />
+                  </VStack>
+                )
+              }
+            </VStack>
+          </VStack>
+        )
+      }
     </VStack>
   ) : fallbackComponent
 }
