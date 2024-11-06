@@ -6,7 +6,7 @@ import { useI18nProvider } from 'contexts/I18nProvider'
 import { Translation } from 'components/Translation/Translation'
 import { BsFillUnlockFill, BsFillShieldLockFill } from "react-icons/bs"
 import { useAssetProvider } from 'components/AssetProvider/AssetProvider'
-import { MdOutlineRemoveCircle } from 'react-icons/md'
+import { MdLockClock, MdOutlineRemoveCircle } from 'react-icons/md'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 import BigNumber from 'bignumber.js'
 import { CreditVault } from 'vaults/CreditVault'
@@ -61,13 +61,28 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
     return asset?.epochData
   }, [asset])
 
+  const depositQueueEnabled = useMemo(() => {
+    return vault && ("depositQueueContract" in vault) && !!vault.depositQueueContract
+  }, [vault])
+
   const status = useMemo(() => {
     if (!isEpochVault || !asset) return null
     if (epochData && ("status" in epochData)){
-      return epochData.status
+      const status = epochData.status
+      // Deposit queue
+      if (action === 'deposit' && status === 'running' && depositQueueEnabled){
+        return 'depositQueue'
+      }
+      
+      return status
     }
-    return asset.vaultIsOpen === false ? 'open' : 'running'
-  }, [asset, isEpochVault, epochData])
+
+    if (asset.vaultIsOpen === false){
+      return 'open'
+    }
+
+    return 'running'
+  }, [asset, isEpochVault, epochData, action, depositQueueEnabled])
 
   const epochVaultLocked = useMemo(() => {
     return status && ['default', 'running'].includes(status)
@@ -126,6 +141,8 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
               {
                 status === 'default' ? (
                   <MdOutlineRemoveCircle size={24} />
+                ) : status === 'depositQueue' ? (
+                  <MdLockClock size={24} />
                 ) : epochVaultLocked ? (
                   <BsFillShieldLockFill size={24} />
                 ) : (

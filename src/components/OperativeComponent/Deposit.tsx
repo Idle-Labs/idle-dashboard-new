@@ -23,7 +23,7 @@ import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalle
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Image, Box, VStack, HStack, Text, Button, Link } from '@chakra-ui/react'
 import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
-import { VaultKycCheck } from './VaultKycCheck'
+import { CreditVault } from 'vaults/CreditVault'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ error, setError ] = useState<string>('')
@@ -74,15 +74,19 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return false
   }, [isEpochVault, asset])
 
+  const depositQueueAvailable = useMemo(() => {
+    return vault && ("depositQueueContract" in vault) && !!vault.depositQueueContract
+  }, [vault])
+
   const epochVaultLocked = useMemo(() => {
     if (epochVaultDefaulted){
       return true
     }
     if (asset?.epochData && ("isEpochRunning" in asset.epochData)){
-      return !!asset.epochData.isEpochRunning
+      return !depositQueueAvailable && !!asset.epochData.isEpochRunning
     }
     return asset && isEpochVault && asset.vaultIsOpen === false
-  }, [asset, isEpochVault, epochVaultDefaulted])
+  }, [asset, isEpochVault, epochVaultDefaulted, depositQueueAvailable])
 
   const vaultEnabled = useMemo(() => {
     return (vault && (!("enabled" in vault) || vault.enabled)) && (asset && asset?.status !== 'deprecated')
@@ -96,10 +100,16 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return vaultLimitCap.gt(0) ? BNify(asset?.totalTvl).gte(vaultLimitCap) : false
   }, [asset, vaultLimitCap])
 
+  const depositQueueEnabled = useMemo(() => {
+    const isEpochRunning = asset?.epochData && ("isEpochRunning" in asset.epochData) && !!asset.epochData.isEpochRunning
+    console.log('depositQueueEnabled', {isEpochRunning, isEpochVault, depositQueueAvailable, epochVaultLocked})
+    return isEpochVault && depositQueueAvailable && isEpochRunning
+  }, [asset, isEpochVault, depositQueueAvailable, epochVaultLocked])
+
   const disabled = useMemo(() => {
     setError('')
 
-    if (limitCapReached || !vaultEnabled || depositsDisabled || asset?.status === 'paused' || epochVaultLocked) return true
+    if (limitCapReached || !vaultEnabled || !!depositsDisabled || (asset?.status === 'paused' && !depositQueueEnabled) || epochVaultLocked) return true
 
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
     // if (BNify(assetBalance).lte(0)) return true
@@ -119,32 +129,47 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (transaction.status === 'started') return true
 
     return false
-  }, [asset, amount, vaultLimitCap, limitCapReached, epochVaultLocked, vaultEnabled, transaction, depositsDisabled, assetBalance, underlyingAsset, translate])
+  }, [asset, amount, vaultLimitCap, limitCapReached, epochVaultLocked, vaultEnabled, transaction, depositQueueEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   // console.log(Object.getOwnPropertyNames(vault))
   // console.log('vault', vault.status, asset.status)
   // console.log('assetBalance', amount, assetBalance.toString(), disabled)
 
+  const getAllowanceContract = useCallback(() => {
+    if (!vault) return
+    if (depositQueueAvailable && "depositQueueContract" in vault){
+      return vault.depositQueueContract
+    }
+    return "getAllowanceContract" in vault ? vault.getAllowanceContract() : undefined
+  }, [vault, depositQueueAvailable])
+
+  const getAllowanceOwner = useCallback(() => {
+    if (!vault) return
+    if (depositQueueAvailable && vault instanceof CreditVault && vault.vaultConfig.depositQueue){
+      return vault.vaultConfig.depositQueue?.address
+    }
+    return getVaultAllowanceOwner(vault)
+  }, [vault, depositQueueAvailable])
+
   const getDepositAllowance = useCallback(async (): Promise<BigNumber> => {
-    if (!underlyingAsset || !vault || !("getAllowanceContract" in vault)) return BNify(0)
+    if (!underlyingAsset || !vault) return BNify(0)
     if (!account?.address) return BNify(0)
 
-    const allowanceContract = vault.getAllowanceContract()
+    const allowanceContract = getAllowanceContract()
     if (!allowanceContract) return BNify(0)
 
-    const vaultOwner = getVaultAllowanceOwner(vault)
+    const vaultOwner = getAllowanceOwner()
+    if (!vaultOwner) return BNify(0)
     const allowance = await getAllowance(allowanceContract, account.address, vaultOwner)
     return fixTokenDecimals(allowance, underlyingAsset.decimals)
-  }, [underlyingAsset, vault, account?.address])
+  }, [underlyingAsset, vault, account?.address, getAllowanceContract, getAllowanceOwner])
 
   // Deposit
   const deposit = useCallback((checkAllowance: boolean = true, forceAmount?: string | number) => {
     const amountToDeposit = forceAmount || amount
 
-    // console.log('DEPOSIT', account?.address, disabled, forceAmount, amountToDeposit, stakingEnabled)
     if (!account || (disabled && !forceAmount) || bnOrZero(amountToDeposit).gt(assetBalance)) return
     if (!vault || !("getDepositContractSendMethod" in vault) || !("getDepositParams" in vault)) return
-    // if (!underlyingAssetVault || !("contract" in underlyingAssetVault) || !underlyingAssetVault.contract) return
 
     if (stakingEnabled && !forceAmount){
       dispatch({type: 'SET_DEPOSIT_AMOUNT', payload: amountToDeposit})
@@ -153,19 +178,21 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     }
 
     ;(async() => {
-      // if (!underlyingAssetVault.contract) return
-
       const allowance = checkAllowance ? await getDepositAllowance() : BNify(amountToDeposit)
-      
-      // console.log('allowance', account.address, checkAllowance, BNify(allowance).toString(), BNify(amountToDeposit).toString())
 
       if (allowance.gte(amountToDeposit)){
 
-        // @ts-ignore
-        const depositParams = vault.getDepositParams(amountToDeposit, referral)
-        const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-        // console.log('depositParams', depositParams, depositContractSendMethod)
-        // if (checkAllowance) return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+        let depositContractSendMethod
+
+        if (depositQueueEnabled && "getRequestDepositSendMethod" in vault){
+          const depositParams = vault.getDepositParams(amountToDeposit)
+          depositContractSendMethod = vault.getRequestDepositSendMethod(depositParams)
+        } else {
+          // @ts-ignore
+          const depositParams = vault.getDepositParams(amountToDeposit, referral)
+          depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+        }
+
 
         // Send analytics event
         sendBeginCheckout(asset, amountUsd)
@@ -177,7 +204,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, referral, amount, amountUsd, assetBalance, vault, asset, underlyingAsset, stakingEnabled, dispatch, setActionIndex, getDepositAllowance, sendTransaction])
+  }, [account, disabled, referral, amount, amountUsd, assetBalance, vault, asset, depositQueueEnabled, underlyingAsset, stakingEnabled, getDepositAllowance, dispatch, setActionIndex, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -262,20 +289,30 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [amount, activeItem, underlyingAsset, itemIndex, dispatch, executeAction, deposit])
 
   const depositButton = useMemo(() => {
-    return !isNetworkCorrect && asset ? (
-      <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
-    ) : account ? (
-      <Translation component={Button} translation={stakingEnabled ? "common.stakeDeposit" : "common.deposit"} disabled={disabled} onClick={() => deposit(true)} variant={'ctaFull'}>
+    if (!isNetworkCorrect && asset){
+      return (
+        <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
+      )
+    }
+
+    if (!account){
+      return (
+        <ConnectWalletButton variant={'ctaFull'} />
+      )
+    }
+
+    const label = depositQueueEnabled ? 'common.queueDeposit' : (stakingEnabled ? "common.stakeDeposit" : "common.deposit")
+    
+    return (
+      <Translation component={Button} translation={label} disabled={disabled} onClick={() => deposit(true)} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
             <Spinner size={'sm'} />
           )
         }
       </Translation>
-    ) : (
-      <ConnectWalletButton variant={'ctaFull'} />
     )
-  }, [account, disabled, transaction, deposit, isNetworkCorrect, asset, stakingEnabled])
+  }, [account, disabled, transaction, deposit, isNetworkCorrect, asset, stakingEnabled, depositQueueEnabled])
 
   const feeDiscountOnReferral = useMemo(() => vault && ("flags" in vault) && vault.flags?.feeDiscountOnReferral ? bnOrZero(vault.flags?.feeDiscountOnReferral) : BNify(0), [vault])
 
@@ -480,22 +517,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
           id={'footer'}
           alignItems={'flex-start'}
         >
-          {
-            /*
-            <Card.Outline px={4} py={2}>
-              <HStack
-                spacing={1}
-              >
-                <Translation translation={'assets.assetDetails.generalData.performanceFee'} textStyle={'captionSmaller'} />
-                <AssetProvider
-                  assetId={asset?.id}
-                >
-                  <AssetProvider.PerformanceFee textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} />
-                </AssetProvider>
-              </HStack>
-            </Card.Outline>
-            */
-          }
           <EstimatedGasFees />
           {depositButton}
         </VStack>

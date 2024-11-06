@@ -28,6 +28,12 @@ export interface Block {
   timestamp: number;
 }
 
+export interface Signature {
+  name: string;
+  message: string;
+  checks: string[];
+}
+
 export interface TransactionDataApiV2 {
   vaultId: string;
   vaultAddress: string;
@@ -254,9 +260,15 @@ export type CreditVaultWithdrawRequest = {
   epochNumber: number;
 };
 
+export type CreditVaultDepositRequest = {
+  amount: BigNumber;
+  epochNumber: number;
+};
+
 export type VaultsAccountData = {
   maxWithdrawable?: Balances;
   walletAllowed?: Record<AssetId, boolean>;
+  creditVaultsDepositRequests?: Record<AssetId, CreditVaultDepositRequest[]>;
   creditVaultsWithdrawRequests?: Record<AssetId, CreditVaultWithdrawRequest[]>;
 };
 

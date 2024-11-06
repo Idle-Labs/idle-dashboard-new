@@ -18,6 +18,7 @@ import GaugeMultiRewards from "abis/idle/GaugeMultiRewards.json";
 import IdleCDOEpochVariant from "abis/idle/IdleCDOEpochVariant.json";
 import IdleCDOTrancheRewards from "abis/idle/IdleCDOTrancheRewards.json";
 import TrancheStakingRewards from "abis/idle/TrancheStakingRewards.json";
+import IdleCdoEpochDepositQueue from "abis/idle/IdleCdoEpochDepositQueue.json";
 import type {
   Abi,
   VaultStatus,
@@ -59,9 +60,9 @@ export interface CDO {
 }
 
 export interface ContractConfig {
-  decimals: number;
+  decimals?: number;
   abi: Abi;
-  name: string;
+  name?: string;
   address: string;
 }
 
@@ -113,6 +114,7 @@ export interface CreditVaultConfig {
   rewardsEmissions?: RewardEmission[];
   enabledEnvs?: string[];
   accessCodes?: string[];
+  depositQueue?: ContractConfig;
 }
 
 export const credits: Record<number, CreditVaultConfig[]> = {
@@ -290,7 +292,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     },
     {
       mode: "CREDIT",
-      kycRequired: true,
+      kycRequired: false,
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",
@@ -351,6 +353,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         abi: IdleCreditVault as Abi,
         name: "IdleStrategy_clearpool_falconx_USDT",
         address: "0x8186AbBDF9AF3a1fc59A7C5BC34bab66a2e7bEF2",
+      },
+      depositQueue: {
+        abi: IdleCdoEpochDepositQueue as Abi,
+        address: "0xB73F90123919780ff5fCd50bf1aFF57F3b777578",
       },
       descriptionShort: "This is a test vault",
       description: "This is a test vault, do whatever you want",

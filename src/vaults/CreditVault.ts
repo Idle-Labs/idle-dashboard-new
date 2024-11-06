@@ -96,6 +96,7 @@ export class CreditVault {
   public readonly tokenContract: Contract;
   public readonly strategyContract: Contract;
   public readonly underlyingContract: Contract | undefined;
+  public readonly depositQueueContract: Contract | undefined;
 
   // Read only contracts
   public readonly cdoContractRpc: Contract | undefined; // Used for calls on specific blocks
@@ -173,6 +174,13 @@ export class CreditVault {
       this.underlyingContract = new web3.eth.Contract(
         abi,
         this.underlyingToken.address
+      );
+    }
+
+    if (this.vaultConfig.depositQueue) {
+      this.depositQueueContract = new web3.eth.Contract(
+        this.vaultConfig.depositQueue.abi,
+        this.vaultConfig.depositQueue.address
       );
     }
 
@@ -742,6 +750,22 @@ export class CreditVault {
     ];
   }
 
+  public getUserDepositRequestCalls(
+    account: string,
+    epochNumber: string
+  ): ContractRawCall[] {
+    if (!this.depositQueueContract) return [];
+    return [
+      {
+        assetId: this.id,
+        call: this.depositQueueContract.methods.userDepositsEpochs(
+          account,
+          epochNumber
+        ),
+      },
+    ];
+  }
+
   public isWalletAllowed(account: string): ContractRawCall[] {
     return [
       {
@@ -780,8 +804,8 @@ export class CreditVault {
       [this.id]: {
         type: this.type,
         token: this.vaultConfig.name,
-        decimals: this.tokenConfig.decimals,
         color: this.underlyingToken?.colors.hex,
+        decimals: this.tokenConfig.decimals || 18,
         // icon: `${tokensFolder}${this.underlyingToken?.token}.svg`,
         underlyingId: this.underlyingToken?.address?.toLowerCase(),
         icon: `${tokensFolder}${
@@ -863,6 +887,13 @@ export class CreditVault {
     return params;
   }
 
+  // eslint-disable-next-line
+  public getRequestDepositParams(amount: NumberType): any[] {
+    const decimals = this.underlyingToken?.decimals || 18;
+    const params: any[] = [normalizeTokenAmount(amount, decimals)];
+    return params;
+  }
+
   public getFlag(flag: string): any {
     return getObjectPath(this, `flags.${flag}`);
   }
@@ -885,6 +916,24 @@ export class CreditVault {
 
   public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
     return this.cdoContract.methods.requestWithdraw(...params);
+  }
+
+  public getRequestDepositSendMethod(
+    params: any[] = []
+  ): ContractSendMethod | undefined {
+    return (
+      this.depositQueueContract &&
+      this.depositQueueContract.methods.requestDeposit(...params)
+    );
+  }
+
+  public getDeleteRequestSendMethod(
+    epochNumber: NumberType
+  ): ContractSendMethod | undefined {
+    return (
+      this.depositQueueContract &&
+      this.depositQueueContract.methods.deleteRequest(epochNumber)
+    );
   }
 
   public async getAccrueInterestEvents(): Promise<EventData[]> {

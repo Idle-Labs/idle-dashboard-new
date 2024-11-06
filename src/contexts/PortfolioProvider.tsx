@@ -865,18 +865,20 @@ export function PortfolioProvider({ children }: ProviderProps) {
     const output: VaultsAccountData =  {
       walletAllowed: {},
       maxWithdrawable: {},
+      creditVaultsDepositRequests: {},
       creditVaultsWithdrawRequests: {},
     }
 
     if (!account || !multiCall || !web3Chains) return output
 
     const rawCallsByChainId = vaults.filter((vault: Vault) => checkAddress(vault.id)).reduce((rawCalls: Record<number, CallData[][]>, vault: Vault): Record<number, CallData[][]> => {
+      
       const aggregatedRawCalls = [
+        // ("getUserDepositRequestCalls" in vault) ? vault.getUserDepositRequestCalls(account.address) : [],
         ("getUserWithdrawRequestCalls" in vault) ? vault.getUserWithdrawRequestCalls(account.address) : [],
         ("getUserMaxWithdrawableCalls" in vault) ? vault.getUserMaxWithdrawableCalls(account.address) : [],
         ("getUserLastWithdrawRequestCalls" in vault) ? vault.getUserLastWithdrawRequestCalls(account.address) : [],
         ("getUserInstantWithdrawRequestCalls" in vault) ? vault.getUserInstantWithdrawRequestCalls(account.address) : [],
-        // ("isWalletAllowed" in vault) ? vault.isWalletAllowed(account.address) : [],
       ]
 
       if (!rawCalls[vault.chainId]) {
@@ -4527,6 +4529,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     for (const vault of state.vaults) {
       if (state.pausedVaults[vault.id] && assetsData[vault.id].status !== 'deprecated') {
         assetsData[vault.id].status = 'paused'
+        console.log('Paused Vault', vault.id, state.pausedVaults[vault.id])
       }
 
       assetsData[vault.id].tvl = BNify(0)

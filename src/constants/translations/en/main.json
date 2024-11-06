@@ -34,6 +34,7 @@
     "insufficientAmountForGas": "Not enough ETH to cover gas",
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
+    "queueDeposit": "Queue deposit",
     "redeem": "Redeem",
     "headquarter": "Headquarter",
     "industry": "Industry",
@@ -1191,7 +1192,8 @@
           "epoch": {
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
             "running": "The deposit window ended. Wait the end of the current cycle on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to deposit.",
-            "open": "The deposit window has started. You can deposit until a new cycle begins."
+            "open": "The deposit window has started. You can deposit until a new cycle begins.",
+            "depositQueue": "The cycle is running, your deposits will be queued and processed during the next netting period."
           },
           "buyCta": "Top up",
           "buy": "Running low on %{asset}?",
