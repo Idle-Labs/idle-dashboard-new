@@ -2165,8 +2165,8 @@
         "performanceFee": "Performance Fee",
         "vaultAddress": "LP token",
         "cdoAddress": "Vault contract",
-        "managerAddress": "Curator address",
-        "borrowerAddress": "Strategist address",
+        "managerAddress": "Curator",
+        "borrowerAddress": "Borrower",
         "claimableRewards": "Claimable Rewards",
         "avgLockTime": "Avg. Lock Time",
         "totalRewards": "Total rewards",
@@ -2187,8 +2187,8 @@
         "lastHarvest": "Last Harvest"
       },
       "operatorOverview": {
-        "curator": "Curator overview",
-        "borrower": "Borrower overview",
+        "curator": "Curator",
+        "borrower": "Borrower",
         "strategist": "Strategist"
       },
       "requiredActions": {

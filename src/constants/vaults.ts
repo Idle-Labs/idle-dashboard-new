@@ -215,12 +215,16 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           type: "strategist",
           name: "falconx",
         },
+        {
+          type: "curator",
+          name: "maven11",
+        },
       ],
       flags: {
         compoundApr: false,
         performance: {},
       },
-      name: "FalconX Credit",
+      name: "FalconX",
       vaultType: "primeBrokerage",
       Token: {
         decimals: 18,
@@ -240,8 +244,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x58BA1463fB0a781571079859D6fcdbc00b50cD55",
       },
       blockNumber: 0,
-      descriptionShort: "COPY SHORT",
-      description: `COPY LONG`,
+      descriptionShort: "Prime brokerage credit pool",
+      description: `The borrowing vault lends funds earning yields in prime brokerage activities, such as short-duration financing, lending, liquidity, and trade execution.`,
     },
     {
       mode: "CREDIT",

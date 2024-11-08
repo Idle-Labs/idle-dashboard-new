@@ -68,7 +68,6 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
       return
     }
     const signatureCheck = await checkSignatureV2(signature._id, account.address)
-    console.log('signatureCheck', signatureCheck)
     if (signatureCheck){
       setSignatureVerified(true)
     }

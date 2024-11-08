@@ -269,7 +269,7 @@ export const Earn: React.FC = () => {
     if (!vault || !("description" in vault) || !vault.description) return null
     return (
       <VStack
-        pb={10}
+        pb={6}
         spacing={4}
         width={'full'}
         borderBottom={'1px solid'}
@@ -379,7 +379,7 @@ export const Earn: React.FC = () => {
 
   const performance = useMemo(() => {
 
-    if (vault instanceof CreditVault){
+    if (vault instanceof CreditVault && !isEmpty(vault.getFlag("performance"))){
       return (
         <VStack
           spacing={6}

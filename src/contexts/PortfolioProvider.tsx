@@ -2373,13 +2373,18 @@ export function PortfolioProvider({ children }: ProviderProps) {
             }
 
             // Check APR for Credit Vault
-            if (vault instanceof CreditVault && vault.vaultConfig.mode === 'STRATEGY'){
-              const epochData = epochsData[assetId]
-              if (epochData && ("epochs" in epochData) && epochData.epochs?.length){
+            const epochData = epochsData[assetId]
+            if (vault instanceof CreditVault && epochData && ("epochs" in epochData) && epochData.epochs?.length){
+              // Take the average of the last 3 epochs for STRATEGY vaults
+              if (vault.vaultConfig.mode === 'STRATEGY'){
                 const lastEpochs = epochData.epochs.filter( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' ).slice(-3)
                 aprs[assetId] = lastEpochs.reduce( (acc: BigNumber, epochData: VaultContractCdoEpochData) => {
                   return acc.plus(bnOrZero(epochData.APRs.GROSS).div(lastEpochs.length))
                 }, BNify(0))
+              // Take latest GROSS apr for CREDIT vaults
+              } else {
+                const latestEpoch = epochData.epochs[0]
+                aprs[assetId] = bnOrZero(latestEpoch.APRs.GROSS)
               }
             } else {
               aprs[assetId] = aprs[assetId].plus(BNify(callResult.data.toString()).div(`1e${decimals}`))

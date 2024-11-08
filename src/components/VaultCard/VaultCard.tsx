@@ -750,9 +750,8 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                 spacing={[1, 2]}
                 alignItems={'space-between'}
               >
-                {/* <Translation translation={borrower.nameShort} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} /> */}
-                <Heading color={'primary'} as={'h3'} fontSize={['h3', 'h3']}>{vault.vaultConfig.name}</Heading>
-                <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
+                <AssetProvider.VaultVariant color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+                <Text color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']}>{vault.vaultConfig.name}</Text>
               </VStack>
             </HStack>
             <AssetProvider.KycVerificationBadge />

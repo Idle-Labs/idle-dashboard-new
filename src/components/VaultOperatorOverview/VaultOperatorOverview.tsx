@@ -16,7 +16,7 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
   const { theme } = useThemeProvider()
   return (
     <VStack
-      spacing={6}
+      spacing={0}
       width={'full'}
       alignItems={'flex-start'}
     >
@@ -31,7 +31,43 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
               key={`index_${index}`}
               alignItems={'flex-start'}
             >
-              <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={`assets.assetDetails.operatorOverview.${operator.type}`} />
+              <HStack
+                spacing={3}
+                alignItems={'center'}
+              >
+                <Translation component={Heading} as={'h3'} fontSize={'h3'} translation={`assets.assetDetails.operatorOverview.${operator.type}`} />
+                <VStack
+                    spacing={2}
+                    alignItems={'flex-start'}
+                  >
+                    <HStack
+                      spacing={3}
+                    >
+                    {
+                      Object.keys(operatorInfo.links).map( linkType => {
+                        return (
+                          <Link
+                            isExternal
+                            display={'flex'}
+                            key={`link_${linkType}`}
+                            justifyContent={'center'}
+                            href={operatorInfo.links[linkType]}
+                            sx={{'>:hover':{color:'primary !important'}}}
+                          >
+                            {
+                              linkType === 'website' ? (
+                                <FaGlobe size={20} color={theme.colors.primary} />
+                              ) : linkType === 'twitter' ? (
+                                <BsTwitterX size={20} color={theme.colors.primary} />
+                              ) : null
+                            }
+                          </Link>
+                        )
+                      })
+                    }
+                    </HStack>
+                  </VStack>
+              </HStack>
               <VStack
                 spacing={6}
                 width={'full'}
@@ -75,42 +111,6 @@ export const VaultOperatorOverview: React.FC<VaultOperatorOverviewArgs> = ({ vau
                       )
                      */
                   }
-                  <VStack
-                    spacing={2}
-                    alignItems={'flex-start'}
-                  >
-                    <HStack
-                      spacing={3}
-                    >
-                    {
-                      Object.keys(operatorInfo.links).map( linkType => {
-                        return (
-                          <Link
-                            isExternal
-                            display={'flex'}
-                            key={`link_${linkType}`}
-                            justifyContent={'center'}
-                            href={operatorInfo.links[linkType]}
-                            sx={{'>:hover':{color:'primary !important'}}}
-                          >
-                            {
-                              linkType === 'website' ? (
-                                <FaGlobe size={22} color={theme.colors.primary} />
-                              ) : linkType === 'twitter' ? (
-                                <BsTwitterX size={22} color={theme.colors.primary} />
-                              ) : null
-                              // linkType === 'linkedin' ? (
-                              //   <BsLinkedin size={22} color={theme.colors.primary} />
-                              // ) : linkType === 'crunchbase' ? (
-                              //   <SiCrunchbase size={22} color={theme.colors.primary} />
-                              // ): null
-                            }
-                          </Link>
-                        )
-                      })
-                    }
-                    </HStack>
-                  </VStack>
                 </HStack>
                 {
                   /*

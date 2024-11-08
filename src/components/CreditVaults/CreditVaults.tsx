@@ -6,7 +6,6 @@ import { usePortfolioProvider } from "contexts/PortfolioProvider"
 import { useCallback, useMemo } from "react"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { abbreviateNumber, bnOrZero, isEmpty } from "helpers"
-import { StrategyOverview } from "components/StrategyOverview/StrategyOverview"
 import { useNavigate } from "react-router"
 import { Card } from "components/Card/Card"
 

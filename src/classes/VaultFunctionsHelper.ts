@@ -747,7 +747,7 @@ export class VaultFunctionsHelper {
     const vaultEpochs = await getDataFromApiV2("vaultEpochs", {
       vaultAddress: vault.id,
       sort: "count",
-      order: "asc",
+      order: "desc",
     });
 
     const epochs = vaultEpochs.reduce(
