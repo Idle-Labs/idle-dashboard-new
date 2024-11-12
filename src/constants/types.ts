@@ -164,6 +164,17 @@ export type EtherscanTransaction = {
 
 export type Balances = Record<AssetId, BigNumber>;
 
+export interface VaultBlockRequest {
+  type: "DEPOSIT" | "WITHDRAW";
+  amount: string;
+  block: Block;
+  requestedOn: string;
+  walletId: string;
+  walletAddress: string;
+  status: "PENDING" | "PROCESSED";
+  epochNumber?: number;
+}
+
 export type VaultRewards = {
   assets: AssetId[];
   amount: BigNumber;
@@ -545,6 +556,7 @@ export interface Asset {
   protocolsAprs?: Balances;
   pricesUsd?: HistoryData[];
   additionalApr?: BigNumber;
+  requests?: VaultBlockRequest[];
   epochData?: EpochData | null;
   lastHarvest?: Harvest | null;
   idleDistribution?: BigNumber;

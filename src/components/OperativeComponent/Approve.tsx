@@ -1,10 +1,10 @@
 import { Card } from 'components/Card/Card'
-import { estimateGasLimit } from 'helpers/'
+import { estimateGasLimit, getVaultAllowanceOwner } from 'helpers/'
 import { MAX_ALLOWANCE } from 'constants/vars'
 import type { NumberType } from 'constants/types'
 import { MdOutlineLockOpen } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { Translation } from 'components/Translation/Translation'
 import { InputAmount } from 'components/InputAmount/InputAmount'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
@@ -12,6 +12,7 @@ import { Flex, VStack, HStack, Text, Button, Switch } from '@chakra-ui/react'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { CreditVault } from 'vaults/CreditVault'
 
 type ApproveArgs = {
   amountUsd?: NumberType | null
@@ -24,7 +25,7 @@ export const Approve: React.FC<ApproveArgs> = ({
   const { account } = useWalletProvider()
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
-  const { underlyingAsset, vault, translate, theme } = useAssetProvider()
+  const { underlyingAsset, asset, vault, translate, theme } = useAssetProvider()
   const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(false)
   const [ amountToApprove, setAmountToApprove ] = useState<string>(defaultAmount)
   const { sendTransaction/*, sendTransactionTest*/, setGasLimit } = useTransactionManager()
@@ -33,31 +34,80 @@ export const Approve: React.FC<ApproveArgs> = ({
     setAmount(defaultAmount)
   }, [defaultAmount])
 
-  // const amountToApprove = useMemo((): string => {
-  //   return !allowanceModeExact ? MAX_ALLOWANCE : amount
-  // }, [allowanceModeExact, amount])
+  const isEpochVault = useMemo(() => {
+    return asset && !!asset.epochData
+  }, [asset])
+
+  const depositQueueAvailable = useMemo(() => {
+    return vault && ("depositQueueContract" in vault) && !!vault.depositQueueContract
+  }, [vault])
+
+  const epochVaultDefaulted = useMemo(() => {
+    if (isEpochVault && asset?.epochData && ("defaulted" in asset.epochData)){
+      return !!asset.epochData.defaulted
+    }
+    return false
+  }, [isEpochVault, asset])
+
+  const epochVaultLocked = useMemo(() => {
+    if (epochVaultDefaulted){
+      return true
+    }
+    if (asset?.epochData && ("isEpochRunning" in asset.epochData)){
+      return !depositQueueAvailable && !!asset.epochData.isEpochRunning
+    }
+    return asset && isEpochVault && asset.vaultIsOpen === false
+  }, [asset, isEpochVault, epochVaultDefaulted, depositQueueAvailable])
+
+  const depositQueueEnabled = useMemo(() => {
+    const isEpochRunning = asset?.epochData && ("isEpochRunning" in asset.epochData) && !!asset.epochData.isEpochRunning
+    return isEpochVault && depositQueueAvailable && isEpochRunning
+  }, [asset, isEpochVault, depositQueueAvailable])
+
+  const getAllowanceContract = useCallback(() => {
+    if (!vault) return
+    if (depositQueueEnabled && "depositQueueContract" in vault){
+      return vault.depositQueueContract
+    }
+    return "getAllowanceContract" in vault ? vault.getAllowanceContract() : undefined
+  }, [vault, depositQueueEnabled])
+
+  const getAllowanceOwner = useCallback(() => {
+    if (!vault) return
+    if (depositQueueEnabled && vault instanceof CreditVault && vault.vaultConfig.depositQueue){
+      return vault.vaultConfig.depositQueue?.address
+    }
+    return getVaultAllowanceOwner(vault)
+  }, [vault, depositQueueEnabled])
+
+  const getAllowanceParams = useCallback((amount: NumberType) => {
+    if (!vault || !("getAllowanceParams" in vault)) return
+    const owner = getAllowanceOwner()
+    return vault.getAllowanceParams(amount, owner)
+  }, [vault, getAllowanceOwner])
 
   const getDefaultGasLimit = useCallback(async () => {
-    if (!vault || !("getAllowanceContractSendMethod" in vault) || !("getAllowanceParams" in vault)) return
+    if (!vault || !("getAllowanceContractSendMethod" in vault)) return
     const sendOptions = {
       from: account?.address
     }
-    const allowanceParams = vault.getAllowanceParams(MAX_ALLOWANCE)
+    const allowanceParams = getAllowanceParams(MAX_ALLOWANCE)
+    if (!allowanceParams) return
     const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
     if (!allowanceContractSendMethod) return
     const estimatedGasLimit = await estimateGasLimit(allowanceContractSendMethod, sendOptions)
     // console.log('APPROVE - estimatedGasLimit', estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault])
+  }, [account, vault, getAllowanceParams])
 
   const approve = useCallback(() => {
-    if (!vault || !("getAllowanceContractSendMethod" in vault) || !("getAllowanceParams" in vault)) return
-    const allowanceParams = vault.getAllowanceParams(amountToApprove)
+    if (!vault || !("getAllowanceContractSendMethod" in vault)) return
+    const allowanceParams = getAllowanceParams(amountToApprove)
+    if (!allowanceParams) return
     const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
-    // console.log('allowanceParams', allowanceParams, allowanceContractSendMethod)
     if (!allowanceContractSendMethod) return
     sendTransaction(vault.id, underlyingAsset?.id, allowanceContractSendMethod)
-  }, [amountToApprove, vault, underlyingAsset, sendTransaction])
+  }, [amountToApprove, vault, underlyingAsset, sendTransaction, getAllowanceParams])
 
   // Update amount to approve and parent amount
   useEffect(() => {

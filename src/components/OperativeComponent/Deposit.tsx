@@ -102,9 +102,8 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
   const depositQueueEnabled = useMemo(() => {
     const isEpochRunning = asset?.epochData && ("isEpochRunning" in asset.epochData) && !!asset.epochData.isEpochRunning
-    console.log('depositQueueEnabled', {isEpochRunning, isEpochVault, depositQueueAvailable, epochVaultLocked})
     return isEpochVault && depositQueueAvailable && isEpochRunning
-  }, [asset, isEpochVault, depositQueueAvailable, epochVaultLocked])
+  }, [asset, isEpochVault, depositQueueAvailable])
 
   const disabled = useMemo(() => {
     setError('')
@@ -131,25 +130,18 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return false
   }, [asset, amount, vaultLimitCap, limitCapReached, epochVaultLocked, vaultEnabled, transaction, depositQueueEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
 
-  // console.log(Object.getOwnPropertyNames(vault))
-  // console.log('vault', vault.status, asset.status)
-  // console.log('assetBalance', amount, assetBalance.toString(), disabled)
-
   const getAllowanceContract = useCallback(() => {
-    if (!vault) return
-    if (depositQueueAvailable && "depositQueueContract" in vault){
-      return vault.depositQueueContract
-    }
-    return "getAllowanceContract" in vault ? vault.getAllowanceContract() : undefined
-  }, [vault, depositQueueAvailable])
+    if (!vault || !("getAllowanceContract" in vault)) return
+    return vault.getAllowanceContract()
+  }, [vault])
 
   const getAllowanceOwner = useCallback(() => {
     if (!vault) return
-    if (depositQueueAvailable && vault instanceof CreditVault && vault.vaultConfig.depositQueue){
+    if (depositQueueEnabled && vault instanceof CreditVault && vault.vaultConfig.depositQueue){
       return vault.vaultConfig.depositQueue?.address
     }
     return getVaultAllowanceOwner(vault)
-  }, [vault, depositQueueAvailable])
+  }, [vault, depositQueueEnabled])
 
   const getDepositAllowance = useCallback(async (): Promise<BigNumber> => {
     if (!underlyingAsset || !vault) return BNify(0)

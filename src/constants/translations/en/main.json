@@ -14,6 +14,7 @@
     "confirm": "Confirm",
     "retry": "Retry",
     "save": "Save",
+    "action": "Action",
     "apply": "Apply",
     "reject": "Reject",
     "welcome": "Welcome",
@@ -63,6 +64,7 @@
     "withdrawInterestBearing": "Withdraw interest bearing tokens",
     "withdrawal": "Withdrawal",
     "claim": "Claim",
+    "delete": "Delete",
     "enter": "Enter",
     "all": "All",
     "reset": "Reset",
@@ -1504,6 +1506,14 @@
       "verified": "Verified",
       "notVerified": "Address Mismatch",
       "blockExplorer": "Explorer"
+    },
+    "delete": {
+      "status": {
+        "confirm": "You are cancelling your deposit request",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully cancelled your request.",
+        "failed": "There was an issue with your cancel request."
+      }
     },
     "deposit": {
       "amountToDeposit": "Amount To Deposit",

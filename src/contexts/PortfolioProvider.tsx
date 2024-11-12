@@ -24,7 +24,7 @@ import { createContext, useContext, useEffect, useMemo, useCallback, useReducer,
 import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContractsHelper } from 'classes/'
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
-import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, VaultContractCdoEpochData } from 'constants/types'
+import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, VaultContractCdoEpochData, VaultBlockRequest } from 'constants/types'
 import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, checkVaultEnv, checkVaultAuthCode } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 import { useAuthCodeProvider } from './AuthCodeProvider'
@@ -43,13 +43,13 @@ type VaultsOnchainData = {
   limits: Balances
   baseAprs: Balances
   balances: Balances
-  currentRatios: Balances
   aprRatios: Balances
   totalAprs: Balances
   pricesUsd: Balances
   maticNFTs: MaticNFT[]
   gaugesData: GaugesData
   vaultsPrices: Balances
+  currentRatios: Balances
   totalSupplies: Balances
   additionalAprs: Balances
   idleDistributions: Balances
@@ -101,6 +101,7 @@ type InitialState = {
   historicalPricesUsd: Record<AssetId, HistoryData[]>
   vaultsCollectedFees: Record<AssetId, Transaction[]>
   contractsNetworks: Record<string, GenericContract[]>
+  vaultsRequests: Record<AssetId, VaultBlockRequest[]>
   distributedRewards: VaultsPositions["distributedRewards"]
 } & VaultsOnchainData
 
@@ -151,6 +152,7 @@ const initialState: InitialState = {
   vaultsNetworks: {},
   historicalTvls: {},
   discountedFees: {},
+  vaultsRequests: {},
   protocolToken: null,
   ethenaCooldowns: [],
   vaultsPositions: {},
@@ -314,6 +316,8 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
       return { ...state, balancesUsd: action.payload }
     case 'SET_VAULTS_PRICES':
       return { ...state, vaultsPrices: action.payload }
+    case 'SET_VAULTS_REQUESTS':
+      return { ...state, vaultsRequests: action.payload }
     case 'SET_PRICES_USD':
       return { ...state, pricesUsd: action.payload }
     case 'SET_TOTAL_SUPPLIES':
@@ -3538,6 +3542,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const totalSupplies: Balances = {}
       const vaultsPrices: Balances = {}
       const aprsBreakdown: Record<AssetId, Balances> = {}
+      const vaultsRequests: Record<AssetId, VaultBlockRequest[]> = {}
 
       vaultBlocks.forEach( (vaultBlock: any) => {
         const vault = state.vaults.find( (vault: Vault) => vaultBlock && cmpAddrs(vault.id, vaultBlock.vaultAddress) )
@@ -3561,10 +3566,13 @@ export function PortfolioProvider({ children }: ProviderProps) {
         pricesUsd[vault.id] = priceUsd
         totalSupplies[vault.id] = totalSupply
         vaultsPrices[vault.id] = vaultPrice
+        vaultsRequests[vault.id] = vaultBlock.requests
         aprsBreakdown[vault.id] = {
           base: apr
         }
       })
+
+      console.log('vaultsRequests', vaultsRequests)
 
       console.log('VAULTS DATA LOADED in ', (Date.now() - startTimestamp) / 1000, 'seconds')
       runningEffects.current.vaultsLoading = false
@@ -3575,6 +3583,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       dispatch({ type: 'SET_PRICES_USD', payload: pricesUsd })
       dispatch({ type: 'SET_TOTAL_SUPPLIES', payload: totalSupplies })
       dispatch({ type: 'SET_VAULTS_PRICES', payload: vaultsPrices })
+      dispatch({ type: 'SET_VAULTS_REQUESTS', payload: vaultsRequests })
       dispatch({ type: 'SET_VAULTS_LOADED', payload: true })
       dispatch({ type: 'SET_PORTFOLIO_LOADED', payload: true })
     })()
@@ -4542,6 +4551,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       assetsData[vault.id].aprRatio = state.aprRatios[vault.id]
       assetsData[vault.id].epochData = state.epochsData[vault.id]
       assetsData[vault.id].gaugeData = state.gaugesData[vault.id]
+      assetsData[vault.id].requests = state.vaultsRequests[vault.id]
       assetsData[vault.id].allocations = state.allocations[vault.id]
       assetsData[vault.id].limit = state.limits[vault.id] || BNify(0)
       assetsData[vault.id].currentRatio = state.currentRatios[vault.id]
@@ -4917,6 +4927,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     state.additionalAprs,
     state.vaultsNetworks,
     state.discountedFees,
+    state.vaultsRequests,
     vaultFunctionsHelper,
     state.historicalRates,
     state.vaultsPositions,

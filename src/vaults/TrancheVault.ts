@@ -804,13 +804,16 @@ export class TrancheVault {
     return operatorName ? operators[operatorName] : null;
   }
 
-  public getAllowanceParams(amount: NumberType): any[] {
+  public getAllowanceParams(amount: NumberType, owner?: string): any[] {
     const decimals = this.underlyingToken?.decimals || 18;
     const amountToApprove =
       amount === MAX_ALLOWANCE
         ? MAX_ALLOWANCE
         : normalizeTokenAmount(amount, decimals);
-    return [this.cdoConfig.address, amountToApprove];
+
+    const allowanceOwner = owner || this.getAllowanceOwner();
+
+    return [allowanceOwner, amountToApprove];
   }
 
   public getUnlimitedAllowanceParams(): any[] {
