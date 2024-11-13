@@ -2702,6 +2702,10 @@ export function PortfolioProvider({ children }: ProviderProps) {
     // console.log('Last Transaction Asset', asset)
 
     (async () => {
+
+      const vaultsRequests = await loadVaultsRequests(vaults);
+      dispatch({ type: 'SET_VAULTS_REQUESTS', payload: vaultsRequests })
+
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
       if (!vaultsOnChainData) return
 
@@ -3501,6 +3505,30 @@ export function PortfolioProvider({ children }: ProviderProps) {
     return historicalPricesUsd
   }, [web3, web3Chains, multiCall, selectAssetById])
 
+  const loadVaultsRequests = useCallback(async (vaults: Vault[]) => {
+    // Get vaults from APIs
+    const cacheKeyVaults = `apiv2_vaults`
+    const callbackVaults = async () => getVaultsFromApiV2()
+    const vaultsData = cacheProvider
+      ? await cacheProvider.checkAndCache(cacheKeyVaults, callbackVaults, 300)
+      : await callbackVaults();
+    
+    // Get latest vaultBlocks from APIs
+    const vaultIds = vaultsData.map( (vaultData: any) => vaultData._id )
+
+    const vaultBlocks = await getLatestVaultBlocks(vaultIds)
+    return vaultBlocks.reduce( (acc: Record<AssetId, VaultBlockRequest[]>, vaultBlock: any) => {
+      const vault = vaults.find( (vault: Vault) => vaultBlock && cmpAddrs(vault.id, vaultBlock.vaultAddress) )
+      if (!vault){
+        return
+      }
+      return {
+        ...acc,
+        [vault.id]: vaultBlock.requests
+      }
+    }, {})
+  }, [cacheProvider])
+
   useEffect(() => {
     if (isEmpty(state.vaults) || state.isVaultsLoaded || runningEffects.current.vaultsLoading === true) return
 
@@ -3524,12 +3552,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       // Get latest vaultBlocks from APIs
       const vaultIds = vaultsData.map( (vaultData: any) => vaultData._id )
-
-      const cacheKey = `apiv2_latest_vaultBlocks`
-      const callback = async () => getLatestVaultBlocks(vaultIds)
-      const vaultBlocks = cacheProvider
-        ? await cacheProvider.checkAndCache(cacheKey, callback, 300)
-        : await callback();
+      const vaultBlocks = await getLatestVaultBlocks(vaultIds)
       
       if (!vaultBlocks){
         runningEffects.current.vaultsLoading = false
@@ -3539,8 +3562,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       const aprs: Balances = {}
       const pricesUsd: Balances = {}
-      const totalSupplies: Balances = {}
       const vaultsPrices: Balances = {}
+      const totalSupplies: Balances = {}
       const aprsBreakdown: Record<AssetId, Balances> = {}
       const vaultsRequests: Record<AssetId, VaultBlockRequest[]> = {}
 
@@ -4551,9 +4574,9 @@ export function PortfolioProvider({ children }: ProviderProps) {
       assetsData[vault.id].aprRatio = state.aprRatios[vault.id]
       assetsData[vault.id].epochData = state.epochsData[vault.id]
       assetsData[vault.id].gaugeData = state.gaugesData[vault.id]
-      assetsData[vault.id].requests = state.vaultsRequests[vault.id]
       assetsData[vault.id].allocations = state.allocations[vault.id]
       assetsData[vault.id].limit = state.limits[vault.id] || BNify(0)
+      assetsData[vault.id].requests = state.vaultsRequests?.[vault.id]
       assetsData[vault.id].currentRatio = state.currentRatios[vault.id]
       assetsData[vault.id].protocolsAprs = state.protocolsAprs[vault.id]
       assetsData[vault.id].pricesUsd = state.historicalPricesUsd[vault.id]

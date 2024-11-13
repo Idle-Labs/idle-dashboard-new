@@ -723,6 +723,7 @@
     "claimable": "Claimable",
     "claimableNTFs": "Claimable NFTs",
     "pendingWithdrawals": "Pending withdrawals",
+    "pendingRequests": "Pending requests",
     "withdrawRequests": "Withdraw requests",
     "estUnlockDate": "Estimated unlock date",
     "dailyDistribution": "Daily distribution",
@@ -1507,7 +1508,7 @@
       "notVerified": "Address Mismatch",
       "blockExplorer": "Explorer"
     },
-    "delete": {
+    "cancel": {
       "status": {
         "confirm": "You are cancelling your deposit request",
         "pending": "Your transaction has been broadcast and is pending confirmation.",
@@ -1649,6 +1650,9 @@
       "increaseTime": {
         "header": "Increase stake time"
       },
+      "cancel": {
+        "header": "Confirm Cancel"
+      },
       "deposit": {
         "header": "Confirm Deposit",
         "averageApr": "Average APR",
@@ -1672,8 +1676,7 @@
       "estimatedGas": "Estimated Gas Fee",
       "notEnoughGas": "Not enough %{assetSymbol} to cover gas",
       "preFooter": "Rewards accrue automatically",
-      "signBroadcast": "Sign & Broadcast",
-      "cancel": "Cancel"
+      "signBroadcast": "Sign & Broadcast"
     },
     "status": {
       "header": {
@@ -2131,6 +2134,7 @@
         "default": "Default",
         "running": "Ongoing",
         "open": "Netting",
+        "queue": "Request",
         "finished": "Finished",
         "waiting": "Netting",
         "instant": "Instant",

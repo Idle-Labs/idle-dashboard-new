@@ -647,7 +647,7 @@ export function getObjectPath(
   if (!path) return undefined;
   const dotIndex = path ? path.indexOf(".") : -1;
 
-  if (!object || object === undefined) {
+  if (!object || typeof object !== "object" || object === undefined) {
     return fallback || undefined;
   }
 

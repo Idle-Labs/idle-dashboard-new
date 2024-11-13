@@ -146,19 +146,19 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
 
   // @ts-ignore
   const columns: Column<WalletRequest>[] = useMemo(() => ([
-    {
-      width: '16%',
-      id:'epochNumber',
-      accessor: 'epochNumber',
-      disableSortBy: !sortEnabled,
-      defaultCanSort: sortEnabled,
-      Header:translate('epochs.table.epochNumber'),
-      Cell: ({ value }: { value: WalletRequest["epochNumber"] }) => {
-        return (
-          <Amount.Int fontSize={'h4'} textStyle={'heading'} value={value} />
-        )
-      },
-    },
+    // {
+    //   width: '16%',
+    //   id:'epochNumber',
+    //   accessor: 'epochNumber',
+    //   disableSortBy: !sortEnabled,
+    //   defaultCanSort: sortEnabled,
+    //   Header:translate('epochs.table.epochNumber'),
+    //   Cell: ({ value }: { value: WalletRequest["epochNumber"] }) => {
+    //     return (
+    //       <Amount.Int fontSize={'h4'} textStyle={'heading'} value={value} />
+    //     )
+    //   },
+    // },
     {
       id:'action',
       width: '16%',
@@ -173,15 +173,15 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       },
     },
     {
-      id:'type',
+      id: 'type',
       width: '16%',
-      accessor:'isInstant',
+      accessor: 'type',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
-      Header:translate('common.type'),
+      Header: translate('common.type'),
       Cell: ({ value }: { value: WalletRequest["type"] }) => {
         return (
-          <Translation translation={`assets.status.epoch.${value ? 'instant' : 'standard'}`} fontSize={'h4'} textStyle={'heading'} />
+          <Translation translation={`assets.status.epoch.${value.toLowerCase()}`} fontSize={'h4'} textStyle={'heading'} />
         )
       },
     },
@@ -238,7 +238,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
         if (row.original.type === 'QUEUE' && value === 'PENDING'){
           const isDisabled = !!epochData?.isEpochRunning
           return (
-            <TransactionButton size={'xs'} text={'common.delete'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'delete'} width={'100%'} disabled={isDisabled} />
+            <TransactionButton size={'xs'} text={'common.cancel'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'cancel'} width={'100%'} disabled={isDisabled} />
           )
         }
         const amount = fixTokenDecimals(row.original.amount, (vault?.underlyingToken?.decimals || 18))
@@ -291,7 +291,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
         id={'vault-rewards'}
         alignItems={'flex-start'}
       >
-        <Translation translation={'defi.withdrawRequests'} component={Text} textStyle={'heading'} fontSize={'h3'} />
+        <Translation translation={'defi.pendingRequests'} component={Text} textStyle={'heading'} fontSize={'h3'} />
         <Card
         >
           <TableWithPagination<WalletRequest> columns={columns} data={walletRequests || []} />
