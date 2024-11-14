@@ -245,6 +245,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         name: "IdleStrategy_falconx_USDT",
         address: "0x58BA1463fB0a781571079859D6fcdbc00b50cD55",
       },
+      depositQueue: {
+        abi: IdleCdoEpochDepositQueue as Abi,
+        address: "0x07EE2F1272914e869D0E47E08b5a10007b8FdF31",
+      },
       blockNumber: 0,
       descriptionShort: "Prime brokerage credit pool",
       description: `The borrowing vault lends funds earning yields in prime brokerage activities, such as short-duration financing, lending, liquidity, and trade execution.`,

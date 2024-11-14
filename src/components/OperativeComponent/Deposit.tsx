@@ -293,7 +293,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       )
     }
 
-    const label = depositQueueEnabled ? 'common.queueDeposit' : (stakingEnabled ? "common.stakeDeposit" : "common.deposit")
+    const label = depositQueueEnabled ? 'common.requestDeposit' : (stakingEnabled ? "common.stakeDeposit" : "common.deposit")
     
     return (
       <Translation component={Button} translation={label} disabled={disabled} onClick={() => deposit(true)} variant={'ctaFull'}>

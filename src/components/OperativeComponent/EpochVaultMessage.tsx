@@ -106,6 +106,7 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
   const nextEpochTokensToWithdraw = useMemo(() => {
     if (!(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
     const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
+    // console.log('maxWithdrawable', bnOrZero(asset.balance).toString(), bnOrZero(maxWithdrawable).toString())
     return vault.getNextEpochInterests(bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable)
   }, [vaultsAccountData, vault, asset])
 
@@ -120,6 +121,8 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
   }, [epochData])
 
   if (!status || !asset?.id) return null
+
+  // console.log('nextEpochProfit', nextEpochProfit.toString(), expectedInterestAlreadyWithdrawn, nextEpochTokensToWithdraw.toString())
 
   return (
     <Card.Dark

@@ -36,6 +36,7 @@
     "invalidAddress": "Invalid Address",
     "deposit": "Deposit",
     "queueDeposit": "Queue deposit",
+    "requestDeposit": "Request deposit",
     "redeem": "Redeem",
     "headquarter": "Headquarter",
     "industry": "Industry",

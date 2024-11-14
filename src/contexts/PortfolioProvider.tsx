@@ -2703,7 +2703,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
     (async () => {
 
-      const vaultsRequests = await loadVaultsRequests(vaults);
+      const vaultsRequests = await loadVaultsRequests();
       dispatch({ type: 'SET_VAULTS_REQUESTS', payload: vaultsRequests })
 
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
@@ -3505,26 +3505,26 @@ export function PortfolioProvider({ children }: ProviderProps) {
     return historicalPricesUsd
   }, [web3, web3Chains, multiCall, selectAssetById])
 
-  const loadVaultsRequests = useCallback(async (vaults: Vault[]) => {
+  const loadVaultsRequests = useCallback(async () => {
     // Get vaults from APIs
     const cacheKeyVaults = `apiv2_vaults`
     const callbackVaults = async () => getVaultsFromApiV2()
     const vaultsData = cacheProvider
       ? await cacheProvider.checkAndCache(cacheKeyVaults, callbackVaults, 300)
       : await callbackVaults();
+
+    if (!vaultsData){
+      return []
+    }
     
     // Get latest vaultBlocks from APIs
     const vaultIds = vaultsData.map( (vaultData: any) => vaultData._id )
-
     const vaultBlocks = await getLatestVaultBlocks(vaultIds)
     return vaultBlocks.reduce( (acc: Record<AssetId, VaultBlockRequest[]>, vaultBlock: any) => {
-      const vault = vaults.find( (vault: Vault) => vaultBlock && cmpAddrs(vault.id, vaultBlock.vaultAddress) )
-      if (!vault){
-        return
-      }
+      const vaultId = vaultBlock.vaultAddress.toLowerCase()
       return {
         ...acc,
-        [vault.id]: vaultBlock.requests
+        [vaultId]: vaultBlock.requests
       }
     }, {})
   }, [cacheProvider])
@@ -4161,8 +4161,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
           distributedRewards,
           vaultsTransactions
         } = results
-
-        // console.log('vaultsAccountData', vaultsAccountData)
 
         dispatch({ type: 'SET_VAULTS_POSITIONS_LOADED', payload: true })
         dispatch({ type: 'SET_DISCOUNTED_FEES', payload: discountedFees })
