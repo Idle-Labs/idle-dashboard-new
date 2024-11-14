@@ -176,7 +176,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
         let depositContractSendMethod
 
-        if (depositQueueEnabled && "getRequestDepositSendMethod" in vault){
+        if (depositQueueEnabled && ("getRequestDepositSendMethod" in vault)){
           const depositParams = vault.getDepositParams(amountToDeposit)
           depositContractSendMethod = vault.getRequestDepositSendMethod(depositParams)
         } else {
