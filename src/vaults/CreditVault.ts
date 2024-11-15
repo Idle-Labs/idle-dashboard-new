@@ -14,6 +14,7 @@ import {
   CreditVaultConfig,
   ContractConfig,
   CreditVaultSignature,
+  SECONDS_IN_YEAR,
 } from "constants/";
 import type {
   Abi,
@@ -24,6 +25,8 @@ import type {
   RewardSenderParams,
   RewardSenders,
   BigNumber,
+  EpochData,
+  CreditVaultEpoch,
 } from "constants/types";
 import {
   BNify,
@@ -775,12 +778,53 @@ export class CreditVault {
     ];
   }
 
+  public getNextEpochInterestsInstant(
+    epochData: CreditVaultEpoch,
+    trancheTokens: BigNumber,
+    vaultPrice: BigNumber
+  ): BigNumber {
+    const depositedAmount = trancheTokens.times(vaultPrice);
+    const epochAnnualizedApr = fixTokenDecimals(epochData.epochApr, 18).div(
+      100
+    );
+    const epochDuration = Number(epochData.epochDuration);
+    const epochApr = epochAnnualizedApr.div(
+      BNify(SECONDS_IN_YEAR).div(epochDuration)
+    );
+    const interests = depositedAmount.times(epochApr);
+    const newDepositedAmount = depositedAmount.minus(interests);
+    const actualInterests = newDepositedAmount.times(epochApr);
+    const trancheTokenRequested = actualInterests.div(vaultPrice);
+    // console.log("getNextEpochInterestsInstant", {
+    //   virtualPrice: vaultPrice.toFixed(18),
+    //   depositedAmount: depositedAmount.toFixed(18),
+    //   epochAnnualizedApr: epochAnnualizedApr.toFixed(18),
+    //   epochDuration: epochDuration.toFixed(18),
+    //   epochApr: epochApr.toFixed(18),
+    //   interests: interests.toFixed(18),
+    //   newDepositedAmount: newDepositedAmount.toFixed(18),
+    //   actualInterests: actualInterests.toFixed(18),
+    //   trancheTokenRequested: trancheTokenRequested.toFixed(18),
+    // });
+    return trancheTokenRequested;
+  }
+
   public getNextEpochInterests(
+    epochData: CreditVaultEpoch,
     trancheTokens: BigNumber,
     vaultPrice: BigNumber,
     maxWithdrawable: BigNumber,
+    isInstant: boolean = false,
     amount?: BigNumber
   ): BigNumber {
+    if (isInstant) {
+      return this.getNextEpochInterestsInstant(
+        epochData,
+        trancheTokens,
+        vaultPrice
+      );
+    }
+
     maxWithdrawable = fixTokenDecimals(
       maxWithdrawable,
       this.underlyingToken?.decimals || 18

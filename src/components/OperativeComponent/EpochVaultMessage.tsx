@@ -11,7 +11,7 @@ import { TransactionButton } from 'components/TransactionButton/TransactionButto
 import BigNumber from 'bignumber.js'
 import { CreditVault } from 'vaults/CreditVault'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
-import { Transaction } from 'constants/'
+import { CreditVaultEpoch, Transaction } from 'constants/'
 
 type EpochWithdrawInterestArgs = {
   amount: BigNumber
@@ -50,7 +50,7 @@ type EpochVaultMessageArgs = {
 }
 export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => {
   const { locale } = useI18nProvider()
-  const { asset, vault } = useAssetProvider()
+  const { asset, vault, underlyingAsset } = useAssetProvider()
   const { vaultsAccountData, selectors: { selectVaultTransactions } } = usePortfolioProvider()
 
   const isEpochVault = useMemo(() => {
@@ -60,6 +60,8 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
   const epochData = useMemo(() => {
     return asset?.epochData
   }, [asset])
+
+  // console.log('epochData', epochData)
 
   const depositQueueEnabled = useMemo(() => {
     return vault && ("depositQueueContract" in vault) && !!vault.depositQueueContract
@@ -103,11 +105,17 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
     return toDayjs(+lastWithdrawTx.timeStamp*1000).isAfter(toDayjs(lastEpoch.endDate))
   }, [lastWithdrawTx, lastEpoch])
 
+  const allowInstantWithdraw = useMemo(() => {
+    if (!epochData || !("disableInstantWithdraw" in epochData)) return false
+    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
+    return !disableInstantWithdraw && BNify(epochData.lastEpochApr).minus(epochData.instantWithdrawAprDelta).gt(epochData.epochApr)
+  }, [epochData])
+
   const nextEpochTokensToWithdraw = useMemo(() => {
-    if (!(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
+    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
     const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
-    return vault.getNextEpochInterests(bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable)
-  }, [vaultsAccountData, vault, asset])
+    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
+  }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
 
   const nextEpochProfit = useMemo(() => {
     return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
@@ -120,16 +128,13 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
   }, [epochData])
 
   if (!status || !asset?.id) return null
-
-  // console.log('nextEpochProfit', nextEpochProfit.toString(), expectedInterestAlreadyWithdrawn, nextEpochTokensToWithdraw.toString())
-
   return (
     <Card.Dark
       p={2}
       border={0}
     >
       {
-        action === 'withdraw' && status === 'open' && nextEpochProfit.gt(0) && !expectedInterestAlreadyWithdrawn ? (
+        action === 'withdraw' && status === 'open' && nextEpochProfit.gte(fixTokenDecimals(1, underlyingAsset?.decimals)) && !expectedInterestAlreadyWithdrawn ? (
           <EpochWithdrawInterest amount={nextEpochProfit} trancheTokens={nextEpochTokensToWithdraw} />
         ) : (
           <HStack

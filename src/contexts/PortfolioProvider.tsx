@@ -4559,7 +4559,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     for (const vault of state.vaults) {
       if (state.pausedVaults[vault.id] && assetsData[vault.id].status !== 'deprecated') {
         assetsData[vault.id].status = 'paused'
-        console.log('Paused Vault', vault.id, state.pausedVaults[vault.id])
+        // console.log('Paused Vault', vault.id, state.pausedVaults[vault.id])
       }
 
       assetsData[vault.id].tvl = BNify(0)

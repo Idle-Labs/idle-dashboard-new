@@ -170,10 +170,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       case 'epochExpectedInterest':
         disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
         allowInstantWithdraw = !disableInstantWithdraw && BNify(asset?.epochData?.lastEpochApr).minus(asset?.epochData?.instantWithdrawAprDelta).gt(asset?.epochData?.epochApr)
-        if (allowInstantWithdraw){
-          return null
-        }
-        const expectedInterest = vault.getNextEpochInterests(bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id]), amount)
+        const expectedInterest = vault.getNextEpochInterests(asset?.epochData, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id]), allowInstantWithdraw, amount)
         return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={expectedInterest.times(bnOrZero(asset.vaultPrice))} />)
       case 'epochWithdrawType':
         disableInstantWithdraw = !!asset?.epochData?.disableInstantWithdraw
