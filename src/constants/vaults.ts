@@ -303,7 +303,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       blockNumber: 125191725,
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
-      accessCodes: ["6G8R7F"],
+      // accessCodes: ["6G8R7F"],
       signature: {
         name: "CREDIT_VAULTS_ACCEPTANCE",
         documents: [

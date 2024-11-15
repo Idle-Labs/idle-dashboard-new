@@ -35,6 +35,7 @@ import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, num
 import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
 import { CreditVault } from 'vaults/CreditVault'
 import { CreditVaultPerformance } from 'components/CreditVaultPerformance/CreditVaultPerformance'
+import { EpochWithdrawInterestButton } from 'components/OperativeComponent/EpochVaultMessage'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -187,7 +188,7 @@ export const Earn: React.FC = () => {
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'defi.deposited'} textStyle={'titleSmall'} />
+          <Translation translation={'defi.deposited'} textStyle={'titleSmall'} />
           <AssetProvider.DepositedUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
             <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
@@ -199,10 +200,10 @@ export const Earn: React.FC = () => {
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'defi.netEarnings'} textStyle={'titleSmall'} />
-          <AssetProvider.NetEarningsUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
+          <Translation translation={'defi.earnings'} textStyle={'titleSmall'} />
+          <AssetProvider.EarningsUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
           <HStack spacing={1}>
-            <AssetProvider.NetEarnings decimals={4} textStyle={'captionSmaller'} />
+            <AssetProvider.Earnings decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
         </VStack>
@@ -211,37 +212,23 @@ export const Earn: React.FC = () => {
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'defi.fees'} textStyle={'titleSmall'} />
-          <AssetProvider.FeesUsd abbreviate={false} textStyle={'heading'} fontSize={'h3'} />
-          {
-            feeDiscountEnabled ? (
-              bnOrZero(stakingData?.feeDiscount).gt(0) ? (
-                <Translation translation={'assets.fundsOverview.discount'} params={{discount: bnOrZero(stakingData?.feeDiscount)}} fontWeight={'600'} color={'brightGreen'} fontSize={'xs'} />
-              ) : (
-                <NavLink to={'/stake'}>
-                  <Translation translation={'feeDiscount.enable'} color={'link'} fontSize={'xs'} />
-                </NavLink>
-              )
-            ) : (
-              <HStack spacing={1}>
-                <AssetProvider.Fees decimals={4} textStyle={'captionSmaller'} />
-                <AssetProvider.Name textStyle={'captionSmaller'} />
-              </HStack>
-            )
-          }
+          <Translation translation={'defi.expectedInterests'} textStyle={'titleSmall'} />
+          {/* <Translation translation={'defi.nextCycle'} textStyle={'captionSmaller'} /> */}
+          <AssetProvider.EpochExpectedInterest textStyle={'heading'} fontSize={'h3'} />
+          <EpochWithdrawInterestButton />
         </VStack>
 
         <VStack
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation component={Text} translation={'defi.realizedApy'} textStyle={'titleSmall'} />
+          <Translation translation={'defi.realizedApy'} textStyle={'titleSmall'} />
           <AssetProvider.RealizedApy textStyle={'heading'} fontSize={'h3'} />
           <Text textStyle={'captionSmaller'}></Text>
         </VStack>
       </SimpleGrid>
     )
-  }, [asset, stakingData, userHasBalance, feeDiscountEnabled])
+  }, [asset, userHasBalance])
 
   const strategyDescriptionCarousel = useMemo(() => {
     if (!strategy || !isPortfolioLoaded) return null

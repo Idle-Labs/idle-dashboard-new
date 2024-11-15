@@ -1,47 +1,77 @@
 import React, { useMemo } from 'react'
-import { BNify, bnOrZero, dateToLocale, fixTokenDecimals, normalizeTokenAmount, sortArrayByKey, toDayjs } from 'helpers/'
+import { BNify, bnOrZero, dateToLocale, fixTokenDecimals, sortArrayByKey, toDayjs } from 'helpers/'
 import { Card } from 'components/Card/Card'
-import { Box, HStack } from '@chakra-ui/react'
+import { Box, ButtonProps, HStack } from '@chakra-ui/react'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { Translation } from 'components/Translation/Translation'
 import { BsFillUnlockFill, BsFillShieldLockFill } from "react-icons/bs"
 import { useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { MdLockClock, MdOutlineRemoveCircle } from 'react-icons/md'
-import { TransactionButton } from 'components/TransactionButton/TransactionButton'
-import BigNumber from 'bignumber.js'
 import { CreditVault } from 'vaults/CreditVault'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { CreditVaultEpoch, Transaction } from 'constants/'
+import { TransactionButton } from 'components/TransactionButton/TransactionButton'
 
-type EpochWithdrawInterestArgs = {
-  amount: BigNumber
-  trancheTokens: BigNumber
-}
-const EpochWithdrawInterest: React.FC<EpochWithdrawInterestArgs> = ({
-  amount,
-  trancheTokens
+type EpochWithdrawInterestButtonArgs = {
+  label?: string
+} & ButtonProps
+
+export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonArgs> = ({
+  label,
+  ...props
 }) => {
   const { asset, underlyingAsset, vault } = useAssetProvider()
+  const { vaultsAccountData, selectors: { selectVaultTransactions } } = usePortfolioProvider()
+
+  const epochData: CreditVaultEpoch = useMemo(() => {
+    return asset?.epochData as CreditVaultEpoch
+  }, [asset])
+
+  const lastEpoch = useMemo(() => {
+    return epochData && ("epochs" in epochData) && epochData.epochs ? sortArrayByKey(epochData.epochs.filter( epoch => epoch.status === 'FINISHED' ), 'count', 'desc')[0] : undefined
+  }, [epochData])
+
+  const lastWithdrawTx = useMemo(() => {
+    if (!asset?.id) return
+    const transactions = selectVaultTransactions(asset.id)
+    return sortArrayByKey(transactions, 'timeStamp', 'desc').find( (tx: Transaction) => tx.action === 'redeem' )
+  }, [asset, selectVaultTransactions])
+
+  const expectedInterestAlreadyWithdrawn = useMemo(() => {
+    if (!lastWithdrawTx || !lastEpoch) return false
+    return toDayjs(+lastWithdrawTx.timeStamp*1000).isAfter(toDayjs(lastEpoch.endDate))
+  }, [lastWithdrawTx, lastEpoch])
+
+  const allowInstantWithdraw = useMemo(() => {
+    if (!epochData || !("disableInstantWithdraw" in epochData)) return false
+    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
+    return !disableInstantWithdraw && BNify(epochData.lastEpochApr).minus(epochData.instantWithdrawAprDelta).gt(epochData.epochApr)
+  }, [epochData])
+
+  const nextEpochTokensToWithdraw = useMemo(() => {
+    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
+    const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
+    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
+  }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
+
+  const nextEpochProfit = useMemo(() => {
+    return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
+  }, [asset, nextEpochTokensToWithdraw])
 
   const contractSendMethod = useMemo(() => {
     if (!(vault instanceof CreditVault)) return
-    const params = vault.getWithdrawParams(trancheTokens)
+    const params = vault.getWithdrawParams(nextEpochTokensToWithdraw)
     return vault.getWithdrawContractSendMethod(params)
-  }, [vault, trancheTokens])
+  }, [vault, nextEpochTokensToWithdraw])
+
+  const isDisabled = useMemo(() => epochData.status !== 'open' || nextEpochProfit.lt(fixTokenDecimals(1, underlyingAsset?.decimals)) || expectedInterestAlreadyWithdrawn, [epochData, underlyingAsset, nextEpochProfit, expectedInterestAlreadyWithdrawn] )
 
   if (!contractSendMethod || !asset?.id){
     return null
   }
 
   return (
-    <HStack
-      pl={1}
-      spacing={3}
-      width={'full'}
-    >
-      <Translation isHtml={true} textStyle={'captionSmaller'} translation={'trade.actions.withdraw.messages.epoch.withdrawInterestsOnly'} params={{ amount: amount.toFixed(4), token: underlyingAsset?.token || '' }} textAlign={'left'} />
-      <TransactionButton variant={'ctaPrimary'} textProps={{color:'nearBlack', fontSize: 'xs'}} assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} text={`common.request`} fontSize={'xs'} height={'auto'} width={'auto'} py={3} px={7} />
-    </HStack>
+    <TransactionButton assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} text={label || `common.request`} width={'auto'} height={'auto'} disabled={isDisabled} {...props} />
   )
 }
 
@@ -90,77 +120,34 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
     return status && ['default', 'running'].includes(status)
   }, [status])
 
-  const lastEpoch = useMemo(() => {
-    return epochData && ("epochs" in epochData) && epochData.epochs ? sortArrayByKey(epochData.epochs.filter( epoch => epoch.status === 'FINISHED' ), 'count', 'desc')[0] : undefined
-  }, [epochData])
-
-  const lastWithdrawTx = useMemo(() => {
-    if (!asset?.id) return
-    const transactions = selectVaultTransactions(asset.id)
-    return sortArrayByKey(transactions, 'timeStamp', 'desc').find( (tx: Transaction) => tx.action === 'redeem' )
-  }, [asset, selectVaultTransactions])
-
-  const expectedInterestAlreadyWithdrawn = useMemo(() => {
-    if (!lastWithdrawTx || !lastEpoch) return false
-    return toDayjs(+lastWithdrawTx.timeStamp*1000).isAfter(toDayjs(lastEpoch.endDate))
-  }, [lastWithdrawTx, lastEpoch])
-
-  const allowInstantWithdraw = useMemo(() => {
-    if (!epochData || !("disableInstantWithdraw" in epochData)) return false
-    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
-    return !disableInstantWithdraw && BNify(epochData.lastEpochApr).minus(epochData.instantWithdrawAprDelta).gt(epochData.epochApr)
-  }, [epochData])
-
-  const nextEpochTokensToWithdraw = useMemo(() => {
-    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
-    const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
-    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
-  }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
-
-  const nextEpochProfit = useMemo(() => {
-    return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
-  }, [asset, nextEpochTokensToWithdraw])
-
-  const isInstantWithdraw = useMemo(() => {
-    if (!epochData || !("disableInstantWithdraw" in epochData)) return false
-    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
-    return !disableInstantWithdraw && BNify(epochData?.lastEpochApr).minus(epochData?.instantWithdrawAprDelta).gt(epochData?.epochApr)
-  }, [epochData])
-
   if (!status || !asset?.id) return null
   return (
     <Card.Dark
       p={2}
       border={0}
     >
-      {
-        action === 'withdraw' && status === 'open' && nextEpochProfit.gte(fixTokenDecimals(1, underlyingAsset?.decimals)) && !expectedInterestAlreadyWithdrawn ? (
-          <EpochWithdrawInterest amount={nextEpochProfit} trancheTokens={nextEpochTokensToWithdraw} />
-        ) : (
-          <HStack
-            spacing={3}
-            width={'full'}
-            justifyContent={'flex-start'}
-          >
-            <Box
-              pl={2}
-            >
-              {
-                status === 'default' ? (
-                  <MdOutlineRemoveCircle size={24} />
-                ) : status === 'depositQueue' ? (
-                  <MdLockClock size={24} />
-                ) : epochVaultLocked ? (
-                  <BsFillShieldLockFill size={24} />
-                ) : (
-                  <BsFillUnlockFill size={24} />
-                )
-              }
-            </Box>
-            <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.epoch.${status}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.epochStartDate || 0, locale), epochEnd: dateToLocale(asset?.epochData?.epochEndDate || 0, locale)}} textAlign={'left'} />
-          </HStack>
-        )
-      }
+      <HStack
+        spacing={3}
+        width={'full'}
+        justifyContent={'flex-start'}
+      >
+        <Box
+          pl={2}
+        >
+          {
+            status === 'default' ? (
+              <MdOutlineRemoveCircle size={24} />
+            ) : status === 'depositQueue' ? (
+              <MdLockClock size={24} />
+            ) : epochVaultLocked ? (
+              <BsFillShieldLockFill size={24} />
+            ) : (
+              <BsFillUnlockFill size={24} />
+            )
+          }
+        </Box>
+        <Translation textStyle={'captionSmaller'} translation={`trade.actions.${action}.messages.epoch.${status}`} isHtml params={{epochStart: dateToLocale(asset?.epochData?.epochStartDate || 0, locale), epochEnd: dateToLocale(asset?.epochData?.epochEndDate || 0, locale)}} textAlign={'left'} />
+      </HStack>
     </Card.Dark>
   )
 }

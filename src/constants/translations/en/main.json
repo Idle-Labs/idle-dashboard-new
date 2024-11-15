@@ -29,6 +29,7 @@
     "calendar": "Calendar",
     "explore": "Explore",
     "request": "Request",
+    "requestInterests": "Request interests",
     "noDeposits": "No deposits",
     "switchNetwork": "Switch network",
     "relayerGasFee": "Relayer Gas Fee",
@@ -638,6 +639,9 @@
         "claimYour": "Claim your %{opportunity}"
       }
     },
+    "nextCycle": "Next cycle",
+    "expectedInterests": "Expected interests",
+    "expectedInterestsNextCycle": "Expected interests (next cycle)",
     "borrower": "Borrower",
     "ratingProvidedBy": "Rating provided by",
     "yourWallet": "Your Wallet",
@@ -860,6 +864,7 @@
       "redemptions": "Redemptions",
       "epochNumber": "Epoch #",
       "countdown": "Countdown",
+      "startingIn": "Starting in",
       "count": "Count",
       "number": "Week",
       "status": "Status",

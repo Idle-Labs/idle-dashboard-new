@@ -795,17 +795,6 @@ export class CreditVault {
     const newDepositedAmount = depositedAmount.minus(interests);
     const actualInterests = newDepositedAmount.times(epochApr);
     const trancheTokenRequested = actualInterests.div(vaultPrice);
-    // console.log("getNextEpochInterestsInstant", {
-    //   virtualPrice: vaultPrice.toFixed(18),
-    //   depositedAmount: depositedAmount.toFixed(18),
-    //   epochAnnualizedApr: epochAnnualizedApr.toFixed(18),
-    //   epochDuration: epochDuration.toFixed(18),
-    //   epochApr: epochApr.toFixed(18),
-    //   interests: interests.toFixed(18),
-    //   newDepositedAmount: newDepositedAmount.toFixed(18),
-    //   actualInterests: actualInterests.toFixed(18),
-    //   trancheTokenRequested: trancheTokenRequested.toFixed(18),
-    // });
     return trancheTokenRequested;
   }
 

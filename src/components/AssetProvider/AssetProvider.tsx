@@ -30,6 +30,7 @@ import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimefr
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AddressLink } from "components/AddressLink/AddressLink"
+import { CreditVault } from "vaults/CreditVault"
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -702,6 +703,35 @@ const NetEarningsUsd: React.FC<AmountProps> = (props) => {
       </TooltipContent>
     </Tooltip>
   ) : <Spinner size={'sm'} />
+}
+
+const EpochExpectedInterest: React.FC<AmountProps> = (props) => {
+  const { asset, vault } = useAssetProvider()
+  const { vaultsAccountData } = usePortfolioProvider()
+
+  const epochData = useMemo(() => {
+    return asset?.epochData
+  }, [asset])
+
+  const allowInstantWithdraw = useMemo(() => {
+    if (!epochData || !("disableInstantWithdraw" in epochData)) return false
+    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
+    return !disableInstantWithdraw && BNify(epochData.lastEpochApr).minus(epochData.instantWithdrawAprDelta).gt(epochData.epochApr)
+  }, [epochData])
+
+  const nextEpochTokensToWithdraw = useMemo(() => {
+    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
+    const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
+    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
+  }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
+
+  const nextEpochProfit = useMemo(() => {
+    return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
+  }, [asset, nextEpochTokensToWithdraw])
+
+  return (
+    <Amount.Usd value={nextEpochProfit.toFixed(8)} {...props} />
+  )
 }
 
 const BalanceUsd: React.FC<AmountProps> = (props) => {
@@ -1409,7 +1439,7 @@ const EpochCountdown: React.FC<EpochCountdownArgs & TextProps> = ({
   return (
     <Countdown date={epochNextActionDate} renderer={ ({ days, hours, minutes, seconds, completed }: any) => {
       return completed ? (
-        <Translation prefix={"("} suffix={')'} translation={ isEpochRunning ? 'assets.status.epoch.closing' : 'assets.status.epoch.starting'} {...textProps} />
+        <Translation prefix={prefix} suffix={suffix} translation={ isEpochRunning ? 'assets.status.epoch.closing' : 'assets.status.epoch.starting'} {...textProps} />
       ) : (
         <Text {...textProps}>
           {`${prefix ? prefix : ''}`}
@@ -2179,4 +2209,5 @@ AssetProvider.RewardsEmissions = RewardsEmissions
 AssetProvider.DistributedRewards = DistributedRewards
 AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.KycVerificationBadge = KycVerificationBadge
+AssetProvider.EpochExpectedInterest = EpochExpectedInterest
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution

@@ -184,7 +184,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
   )
 }
 
-type TransactionButtonProps = {
+export type TransactionButtonProps = {
   text: string
   amount?: string
   assetId: AssetId
@@ -193,9 +193,9 @@ type TransactionButtonProps = {
   textProps?: TextProps
   chainIds?: (string|number)[]
   contractSendMethod: ContractSendMethod
-}
+} & ButtonProps
 
-export const TransactionButton: React.FC<TransactionButtonProps & ButtonProps> = ({
+export const TransactionButton: React.FC<TransactionButtonProps> = ({
   text,
   amount,
   assetId,
