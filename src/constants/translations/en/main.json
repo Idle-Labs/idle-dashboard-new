@@ -1196,6 +1196,10 @@
         "confirm": "You are approving",
         "confirmed": "You have approved"
       },
+      "request": {
+        "confirm": "You are requesting",
+        "confirmed": "You have requested"
+      },
       "deposit": {
         "confirm": "You are depositing",
         "confirmed": "You have deposited",
@@ -1522,6 +1526,14 @@
         "pending": "Your transaction has been broadcast and is pending confirmation.",
         "success": "You have successfully cancelled your request.",
         "failed": "There was an issue with your cancel request."
+      }
+    },
+    "request": {
+      "status": {
+        "confirm": "You are requesting",
+        "pending": "Your transaction has been broadcast and is pending confirmation.",
+        "success": "You have successfully requested",
+        "failed": "There was an issue with your request."
       }
     },
     "deposit": {

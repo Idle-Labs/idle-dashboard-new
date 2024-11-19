@@ -77,7 +77,7 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
       spacing={1}
       width={'full'}
     >
-      <TransactionButton assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} text={label || `common.request`} width={'auto'} height={'auto'} disabled={isDisabled} {...props} />
+      <TransactionButton assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} actionType={'request'} amount={nextEpochProfit.toFixed(8)} text={label || `common.request`} width={'auto'} height={'auto'} disabled={isDisabled} {...props} />
       <AssetProvider.EpochInfo field={'claimPeriod'} textStyle={'captionSmaller'} />
     </VStack>
   )
