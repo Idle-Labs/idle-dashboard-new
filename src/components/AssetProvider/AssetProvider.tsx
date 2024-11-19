@@ -24,7 +24,7 @@ import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/var
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs, getEpochVaultInstantWithdrawEnabled } from 'helpers/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch, Nullable } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
@@ -715,8 +715,7 @@ const EpochExpectedInterest: React.FC<AmountProps> = (props) => {
 
   const allowInstantWithdraw = useMemo(() => {
     if (!epochData || !("disableInstantWithdraw" in epochData)) return false
-    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
-    return !disableInstantWithdraw && BNify(epochData.lastEpochApr).minus(epochData.instantWithdrawAprDelta).gt(epochData.epochApr)
+    return getEpochVaultInstantWithdrawEnabled(epochData)
   }, [epochData])
 
   const nextEpochTokensToWithdraw = useMemo(() => {
@@ -1499,8 +1498,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     case 'lastEpochApr':
       return (<Amount.Percentage value={fixTokenDecimals(value, 18)} textStyle={'tableCell'} {...props} />)
     case 'claimPeriod':
-      const disableInstantWithdraw = !!epochData?.disableInstantWithdraw
-      const allowInstantWithdraw = !disableInstantWithdraw && BNify(epochData?.lastEpochApr).minus(epochData?.instantWithdrawAprDelta).gt(epochData?.epochApr)
+      const allowInstantWithdraw = getEpochVaultInstantWithdrawEnabled(epochData)
       return (<Text {...props}>{secondsToPeriod(allowInstantWithdraw ? epochData?.instantWithdrawDelay : (asset.epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
     case 'epochRedemption':
       return (<Text {...props}>{secondsToPeriod((epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)

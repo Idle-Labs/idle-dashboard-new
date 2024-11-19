@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { BNify, bnOrZero, dateToLocale, fixTokenDecimals, sortArrayByKey, toDayjs } from 'helpers/'
+import { BNify, bnOrZero, dateToLocale, fixTokenDecimals, getEpochVaultInstantWithdrawEnabled, sortArrayByKey, toDayjs } from 'helpers/'
 import { Card } from 'components/Card/Card'
 import { Box, ButtonProps, HStack, VStack } from '@chakra-ui/react'
 import { useI18nProvider } from 'contexts/I18nProvider'
@@ -44,8 +44,7 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
 
   const allowInstantWithdraw = useMemo(() => {
     if (!epochData || !("disableInstantWithdraw" in epochData)) return false
-    const disableInstantWithdraw = !!epochData.disableInstantWithdraw
-    return !disableInstantWithdraw && BNify(epochData.lastEpochApr).minus(epochData.instantWithdrawAprDelta).gt(epochData.epochApr)
+    return getEpochVaultInstantWithdrawEnabled(epochData)
   }, [epochData])
 
   const nextEpochTokensToWithdraw = useMemo(() => {

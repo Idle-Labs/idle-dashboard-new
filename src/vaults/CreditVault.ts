@@ -659,7 +659,7 @@ export class CreditVault {
       },
       {
         assetId: this.id,
-        call: this.strategyContract.methods.getApr(),
+        call: this.strategyContract.methods.unscaledApr(),
         data: {
           field: "epochApr",
         },

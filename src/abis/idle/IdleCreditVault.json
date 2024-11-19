@@ -721,6 +721,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_unscaledApr",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_apr",
+        "type": "uint256"
+      }
+    ],
+    "name": "setAprs",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_manager",
         "type": "address"
@@ -919,6 +937,19 @@
         "internalType": "contract IERC20Detailed",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unscaledApr",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
