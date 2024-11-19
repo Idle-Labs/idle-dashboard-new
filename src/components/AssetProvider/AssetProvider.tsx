@@ -26,7 +26,7 @@ import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImagePr
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs } from 'helpers/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch } from 'constants/'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch, Nullable } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AddressLink } from "components/AddressLink/AddressLink"
@@ -729,7 +729,13 @@ const EpochExpectedInterest: React.FC<AmountProps> = (props) => {
     return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
   }, [asset, nextEpochTokensToWithdraw])
 
-  return (
+  if (!vault || !("mode" in vault)){
+    return null
+  }
+
+  return vault.mode === 'STRATEGY'? 
+    <Text {...props} textStyle={'titleSmall'} color={'primary'}>-</Text>
+  : (
     <Amount.Usd value={nextEpochProfit.toFixed(8)} {...props} />
   )
 }
@@ -1402,11 +1408,13 @@ const CreditVaultMode: React.FC<TextProps> = (props) => {
 type EpochCountdownArgs = {
   prefix?: string
   suffix?: string
+  showComplete?: boolean
 } & TextProps
 
 const EpochCountdown: React.FC<EpochCountdownArgs & TextProps> = ({
   prefix,
   suffix,
+  showComplete = true,
   ...textProps
 }) => {
   const { asset } = useAssetProvider()
@@ -1438,7 +1446,7 @@ const EpochCountdown: React.FC<EpochCountdownArgs & TextProps> = ({
 
   return (
     <Countdown date={epochNextActionDate} renderer={ ({ days, hours, minutes, seconds, completed }: any) => {
-      return completed ? (
+      return completed && showComplete ? (
         <Translation prefix={prefix} suffix={suffix} translation={ isEpochRunning ? 'assets.status.epoch.closing' : 'assets.status.epoch.starting'} {...textProps} />
       ) : (
         <Text {...textProps}>
@@ -1465,15 +1473,17 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   const { asset } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
 
+  const epochData: Nullable<CreditVaultEpoch> = useMemo(() => asset?.epochData as CreditVaultEpoch, [asset])
+
   if (!isPortfolioLoaded){
     return (<Spinner size={'sm'} />)
   }
 
-  if (!asset || !asset.epochData){
+  if (!asset || !epochData){
     return null
   }
 
-  const value = asset.epochData[field as keyof EpochData]
+  const value = epochData[field as keyof EpochData]
 
   // Waiting for value
   // if (value === undefined){
@@ -1488,13 +1498,17 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
     case 'lastEpochApr':
       return (<Amount.Percentage value={fixTokenDecimals(value, 18)} textStyle={'tableCell'} {...props} />)
+    case 'claimPeriod':
+      const disableInstantWithdraw = !!epochData?.disableInstantWithdraw
+      const allowInstantWithdraw = !disableInstantWithdraw && BNify(epochData?.lastEpochApr).minus(epochData?.instantWithdrawAprDelta).gt(epochData?.epochApr)
+      return (<Text {...props}>{secondsToPeriod(allowInstantWithdraw ? epochData?.instantWithdrawDelay : (asset.epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
     case 'epochRedemption':
-      return (<Text {...props}>{secondsToPeriod((asset.epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
+      return (<Text {...props}>{secondsToPeriod((epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
     case 'isEpochRunning':
-      if (!("isEpochRunning" in asset.epochData)) return null
-      const isDefaulted = !!asset.epochData.defaulted
+      if (!("isEpochRunning" in epochData)) return null
+      const isDefaulted = !!epochData.defaulted
       const color = isDefaulted ? 'red' : (value ? 'yellow' : 'green')
-      const status = asset.epochData.status
+      const status = epochData.status
       return (
         <HStack
           spacing={2}
@@ -2101,6 +2115,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'epochEndDate':
     case 'lastEpochApr':
     case 'epochRedemption':
+    case 'claimPeriod':
       return (<EpochInfo field={field} textStyle={'tableCell'} {...props} />)
     case 'epochCountdown':
       return (<EpochCountdown textStyle={'tableCell'} {...props} />)

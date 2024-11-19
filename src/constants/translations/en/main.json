@@ -42,6 +42,8 @@
     "headquarter": "Headquarter",
     "industry": "Industry",
     "availableOn": "Available on",
+    "availableIn": "Available in",
+    "alreadyRequested": "Already requested",
     "founded": "Founded",
     "rating": "Rating",
     "links": "Links",

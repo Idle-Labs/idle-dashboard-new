@@ -697,7 +697,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
   }, [selectVaultById, assetId])
 
   const maxApy = useMemo((): BigNumber => {
-    return asset.apy
+    return asset.apr
   }, [asset])
 
   const totalTvl = useMemo((): BigNumber => {
@@ -834,7 +834,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                     borderColor={'divider'}
                     alignItems={'flex-start'}
                   >
-                    <Translation translation={'defi.apy'} textStyle={'captionSmall'} />
+                    <Translation translation={'defi.apr'} textStyle={'captionSmall'} />
                     <HStack
                       spacing={2}
                       alignItems={'baseline'}

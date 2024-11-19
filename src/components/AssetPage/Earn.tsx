@@ -175,6 +175,11 @@ export const Earn: React.FC = () => {
     return asset && "flags" in asset && !!asset.flags?.feeDiscountEnabled
   }, [asset])
 
+  const isEpochRunning = useMemo(() => {
+    if (!asset || !asset.epochData || !("isEpochRunning" in asset.epochData)) return null
+    return !!asset.epochData.isEpochRunning
+  }, [asset])
+
   const fundsOverview = useMemo(() => {
     if (!asset || !userHasBalance) return null
     return (
@@ -212,23 +217,37 @@ export const Earn: React.FC = () => {
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation translation={'defi.expectedInterests'} textStyle={'titleSmall'} />
-          {/* <Translation translation={'defi.nextCycle'} textStyle={'captionSmaller'} /> */}
-          <AssetProvider.EpochExpectedInterest textStyle={'heading'} fontSize={'h3'} />
-          <EpochWithdrawInterestButton />
+          <Translation translation={'defi.realizedApy'} textStyle={'titleSmall'} />
+          <AssetProvider.RealizedApy textStyle={'heading'} fontSize={'h3'} />
+          <Text textStyle={'captionSmaller'}></Text>
         </VStack>
 
         <VStack
           spacing={2}
           justifyContent={'center'}
         >
-          <Translation translation={'defi.realizedApy'} textStyle={'titleSmall'} />
-          <AssetProvider.RealizedApy textStyle={'heading'} fontSize={'h3'} />
-          <Text textStyle={'captionSmaller'}></Text>
+          <Translation translation={'defi.expectedInterests'} textStyle={'titleSmall'} />
+          <AssetProvider.EpochExpectedInterest textStyle={'heading'} fontSize={'h3'} />
+          {
+            vault.mode === 'CREDIT' && (
+              isEpochRunning ? (
+                <HStack
+                  spacing={1}
+                  width={'full'}
+                  justifyContent={'center'}
+                >
+                  <Translation translation={'common.availableIn'} textStyle={'captionSmaller'} />
+                  <AssetProvider.EpochCountdown showComplete={false} textStyle={'captionSmaller'} />
+                </HStack>
+              ) : (
+                <EpochWithdrawInterestButton />
+              )
+            )
+          }
         </VStack>
       </SimpleGrid>
     )
-  }, [asset, userHasBalance])
+  }, [asset, vault, userHasBalance, isEpochRunning])
 
   const strategyDescriptionCarousel = useMemo(() => {
     if (!strategy || !isPortfolioLoaded) return null

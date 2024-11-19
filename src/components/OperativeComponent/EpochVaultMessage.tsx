@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react'
 import { BNify, bnOrZero, dateToLocale, fixTokenDecimals, sortArrayByKey, toDayjs } from 'helpers/'
 import { Card } from 'components/Card/Card'
-import { Box, ButtonProps, HStack } from '@chakra-ui/react'
+import { Box, ButtonProps, HStack, VStack } from '@chakra-ui/react'
 import { useI18nProvider } from 'contexts/I18nProvider'
 import { Translation } from 'components/Translation/Translation'
 import { BsFillUnlockFill, BsFillShieldLockFill } from "react-icons/bs"
-import { useAssetProvider } from 'components/AssetProvider/AssetProvider'
+import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { MdLockClock, MdOutlineRemoveCircle } from 'react-icons/md'
 import { CreditVault } from 'vaults/CreditVault'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
@@ -70,8 +70,17 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
     return null
   }
 
-  return (
-    <TransactionButton assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} text={label || `common.request`} width={'auto'} height={'auto'} disabled={isDisabled} {...props} />
+
+  return expectedInterestAlreadyWithdrawn ? (
+    <Translation translation={'common.alreadyRequested'} textStyle={'captionSmaller'} />
+  ) : (
+    <VStack
+      spacing={1}
+      width={'full'}
+    >
+      <TransactionButton assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} text={label || `common.request`} width={'auto'} height={'auto'} disabled={isDisabled} {...props} />
+      <AssetProvider.EpochInfo field={'claimPeriod'} textStyle={'captionSmaller'} />
+    </VStack>
   )
 }
 
@@ -121,6 +130,7 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
   }, [status])
 
   if (!status || !asset?.id) return null
+
   return (
     <Card.Dark
       p={2}
