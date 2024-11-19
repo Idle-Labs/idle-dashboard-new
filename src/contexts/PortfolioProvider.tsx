@@ -25,7 +25,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, VaultContractCdoEpochData, VaultBlockRequest } from 'constants/types'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, checkVaultEnv, checkVaultAuthCode } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, checkVaultEnv, checkVaultAuthCode, normalizeTokenAmount } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 import { useAuthCodeProvider } from './AuthCodeProvider'
 import { getLatestVaultBlocks, getVaultsFromApiV2 } from 'helpers/apiv2'
@@ -2348,6 +2348,14 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
           if (vaultEpochs){
             vaultEpochData.epochs = vaultEpochs.epochs
+
+            // Set epochApr if undefined
+            if (BNify(vaultEpochData.epochApr).isNaN()){
+              const lastEpoch = sortArrayByKey(vaultEpochData.epochs, "count", "desc")[0]
+              if (lastEpoch){
+                vaultEpochData.epochApr = BNify(normalizeTokenAmount(lastEpoch.APRs.GROSS, 18));
+              }
+            }
           }
           epochsData[assetId] = vaultEpochData
         })

@@ -232,6 +232,61 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         decimals: 18,
         abi: ERC20 as Abi,
         name: "IdleCreditVault_falconx_USDC",
+        address: "0x62426336067c37c10A681Da6275c01D373AbC7E0",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_falconx_USDC",
+        address: "0x218Fcd276d03A2942e97833c92b66Eb3447b4309",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_falconx_USDT",
+        address: "0xca0E467Cf2d0011EF3424D0a2c1999009991405a",
+      },
+      depositQueue: {
+        abi: IdleCdoEpochDepositQueue as Abi,
+        address: "0x0D81b042bB9939B4d32CDf7861774c442A2685CE",
+      },
+      blockNumber: 0,
+      descriptionShort: "Prime brokerage credit pool",
+      description: `The borrowing vault lends funds earning yields in prime brokerage activities, such as short-duration financing, lending, liquidity, and trade execution.`,
+    },
+    {
+      mode: "CREDIT",
+      kycRequired: true,
+      manager: "falconx",
+      borrower: "falconx",
+      underlyingToken: "USDC",
+      enabledEnvs: ["credit"],
+      accessCodes: ["6G8R7F"],
+      custodian: {
+        name: "-",
+      },
+      navAgent: {
+        name: "-",
+      },
+      operators: [
+        {
+          type: "strategist",
+          name: "falconx",
+        },
+        {
+          type: "curator",
+          name: "maven11",
+        },
+      ],
+      flags: {
+        compoundApr: false,
+        performance: {},
+      },
+      name: "FalconX",
+      vaultType: "primeBrokerage",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_falconx_USDC",
         address: "0x5e8cd1a018DB46f7FA47925C22E8e3325EaC1923",
       },
       CDO: {
@@ -303,7 +358,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       blockNumber: 125191725,
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
-      // accessCodes: ["6G8R7F"],
+      accessCodes: ["6G8R7F"],
       signature: {
         name: "CREDIT_VAULTS_ACCEPTANCE",
         documents: [

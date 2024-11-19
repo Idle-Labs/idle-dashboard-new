@@ -795,6 +795,7 @@ export class CreditVault {
     const newDepositedAmount = depositedAmount.minus(interests);
     const actualInterests = newDepositedAmount.times(epochApr);
     const trancheTokenRequested = actualInterests.div(vaultPrice);
+
     return trancheTokenRequested;
   }
 
