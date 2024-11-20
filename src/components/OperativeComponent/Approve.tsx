@@ -26,7 +26,7 @@ export const Approve: React.FC<ApproveArgs> = ({
   const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
   const { underlyingAsset, asset, vault, translate, theme } = useAssetProvider()
-  const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(false)
+  const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(true)
   const [ amountToApprove, setAmountToApprove ] = useState<string>(defaultAmount)
   const { sendTransaction/*, sendTransactionTest*/, setGasLimit } = useTransactionManager()
 
