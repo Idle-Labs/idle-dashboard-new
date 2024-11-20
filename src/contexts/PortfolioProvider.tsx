@@ -2391,10 +2391,12 @@ export function PortfolioProvider({ children }: ProviderProps) {
             if (vault instanceof CreditVault && epochData && ("epochs" in epochData) && epochData.epochs?.length){
               // Take the average of the last 3 epochs for STRATEGY vaults
               if (vault.vaultConfig.mode === 'STRATEGY'){
-                const lastEpochs = epochData.epochs.filter( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' ).slice(-3)
-                aprs[assetId] = lastEpochs.reduce( (acc: BigNumber, epochData: VaultContractCdoEpochData) => {
-                  return acc.plus(bnOrZero(epochData.APRs.GROSS).div(lastEpochs.length))
-                }, BNify(0))
+                // const lastEpochs = epochData.epochs.filter( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' ).slice(-3)
+                // aprs[assetId] = lastEpochs.reduce( (acc: BigNumber, epochData: VaultContractCdoEpochData) => {
+                //   return acc.plus(bnOrZero(epochData.APRs.GROSS).div(lastEpochs.length))
+                // }, BNify(0))
+                const lastFinishedEpoch = epochData.epochs.find( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' )
+                aprs[assetId] = bnOrZero(lastFinishedEpoch?.APRs.GROSS)
               // Take latest GROSS apr for CREDIT vaults
               } else {
                 const latestEpoch = epochData.epochs[0]
