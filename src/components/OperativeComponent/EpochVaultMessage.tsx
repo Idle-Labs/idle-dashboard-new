@@ -71,7 +71,6 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
     return null
   }
 
-
   return notEnoughBalance ? (
     <Translation translation={'common.notEnoughBalance'} textStyle={'captionSmaller'} />
   ) : expectedInterestAlreadyWithdrawn ? (
