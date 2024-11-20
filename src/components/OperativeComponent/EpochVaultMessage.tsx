@@ -63,14 +63,18 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
     return vault.getWithdrawContractSendMethod(params)
   }, [vault, nextEpochTokensToWithdraw])
 
-  const isDisabled = useMemo(() => epochData.status !== 'open' || nextEpochProfit.lt(fixTokenDecimals(1, underlyingAsset?.decimals)) || expectedInterestAlreadyWithdrawn, [epochData, underlyingAsset, nextEpochProfit, expectedInterestAlreadyWithdrawn] )
+  const notEnoughBalance = useMemo(() => nextEpochProfit.lt(fixTokenDecimals(1, underlyingAsset?.decimals)), [nextEpochProfit, underlyingAsset] )
+
+  const isDisabled = useMemo(() => epochData.status !== 'open' || notEnoughBalance || expectedInterestAlreadyWithdrawn, [epochData, expectedInterestAlreadyWithdrawn, notEnoughBalance] )
 
   if (!contractSendMethod || !asset?.id){
     return null
   }
 
 
-  return expectedInterestAlreadyWithdrawn ? (
+  return notEnoughBalance ? (
+    <Translation translation={'common.notEnoughBalance'} textStyle={'captionSmaller'} />
+  ) : expectedInterestAlreadyWithdrawn ? (
     <Translation translation={'common.alreadyRequested'} textStyle={'captionSmaller'} />
   ) : (
     <VStack
