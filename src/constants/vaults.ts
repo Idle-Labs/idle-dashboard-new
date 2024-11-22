@@ -153,14 +153,19 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         },
       ],
       flags: {
+        benchmark: {
+          link: "https://studio.glassnode.com/metrics?a=BTC&e=aggregated&m=derivatives.FuturesFundingRatePerpetualV2&resolution=1h",
+          label: "1.5x BTC funding rate",
+        },
+        bounds: "Lower 5%, upper 30%",
         compoundApr: false,
         generalDataFields: {
           custodian: {
-            field: "benchmarkFasanara",
+            field: "benchmark",
             label: "defi.benchmark",
           },
           navAgent: {
-            field: "boundsFasanara",
+            field: "bounds",
             label: "defi.bounds",
           },
         },
@@ -272,12 +277,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
       accessCodes: ["6G8R7F"],
-      custodian: {
-        name: "-",
-      },
-      navAgent: {
-        name: "-",
-      },
       operators: [
         {
           type: "strategist",

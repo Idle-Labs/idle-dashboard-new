@@ -2083,13 +2083,17 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<GaugeNextWeight textStyle={'tableCell'} {...props} />)
     case 'gaugeTotalSupply':
       return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
-    case 'benchmarkFasanara':
+    case 'benchmark':
+      if (!vault || !("getFlag" in vault)) return null
+      const benchmark = vault.getFlag('benchmark')
       return (
-        <Link isExternal href={'https://studio.glassnode.com/metrics?a=BTC&e=aggregated&m=derivatives.FuturesFundingRatePerpetualV2&resolution=1h'} color={'link'} textStyle={'tableCell'} fontSize={'sm'} {...props}>1.5x BTC funding rate</Link>
+        <Link isExternal href={benchmark.link} color={'link'} textStyle={'tableCell'} fontSize={'sm'} {...props}>{benchmark.label}</Link>
       )
-    case 'boundsFasanara':
+    case 'bounds':
+      if (!vault || !("getFlag" in vault)) return null
+      const bounds = vault.getFlag('bounds')
       return (
-        <Text textStyle={'tableCell'} fontSize={'sm'} {...props}>Lower 5%, upper 30%</Text>
+        <Text textStyle={'tableCell'} fontSize={'sm'} {...props}>{bounds}</Text>
       )
     case 'statusBadge':
       return (<StatusBadge width={6} height={6} {...props} />)
