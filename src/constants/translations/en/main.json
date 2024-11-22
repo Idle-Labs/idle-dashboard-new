@@ -227,6 +227,7 @@
     "AA": "Senior Tranche",
     "BB": "Junior Tranche",
     "strategistVault": "Strategist vault",
+    "btcFundingRate": "BTC+ funding rate",
     "primeBrokerage": "Prime brokerage",
     "overcollatLending": "Overcollateralized lending",
     "diversifiedBasisYield": "Diversified Basis Yield",
@@ -642,6 +643,9 @@
         "claimYour": "Claim your %{opportunity}"
       }
     },
+    "bounds": "Bounds",
+    "benchmark": "Benchmark",
+    "overperformance": "Overperformance",
     "nextCycle": "Next cycle",
     "expectedInterests": "Expected interests",
     "expectedInterestsNextCycle": "Expected interests (next cycle)",
@@ -867,8 +871,9 @@
       "redemptions": "Redemptions",
       "epochNumber": "Epoch #",
       "countdown": "Countdown",
+      "duration": "Cycle length",
       "startingIn": "Starting in",
-      "count": "Count",
+      "count": "#",
       "number": "Week",
       "status": "Status",
       "start": "Start date",

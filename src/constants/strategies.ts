@@ -159,8 +159,9 @@ export const strategies: Record<string, StrategyProps> = {
         tooltip: "assets.assetDetails.tooltips.kycRequired",
       },
       {
-        field: "performanceFee",
-        label: "assets.assetDetails.generalData.performanceFee",
+        field: "epochDuration",
+        label: "epochs.table.duration",
+        tooltip: "assets.assetDetails.tooltips.epochDuration",
       },
       {
         field: "epochRedemption",

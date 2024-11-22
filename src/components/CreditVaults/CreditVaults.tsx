@@ -102,14 +102,14 @@ export const CreditVaults: React.FC = () => {
         spacing={6}
         alignItems={'flex-start'}
       >
-        <VStack
+        {/* <VStack
           spacing={4}
           width={['full', '50%']}
           alignItems={'flex-start'}
         >
           <Translation translation={'strategies.credit.title'} component={Heading} as={'h3'} fontSize={'3xl'} />
           <Translation translation={'strategies.credit.description'} />
-        </VStack>
+        </VStack> */}
         <Stack
           spacing={10}
           width={'full'}

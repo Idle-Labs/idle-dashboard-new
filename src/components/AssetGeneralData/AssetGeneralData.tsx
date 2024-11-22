@@ -94,12 +94,28 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({
   const generalDataFields = useMemo(() => {
     if (!vault || !("getFlag" in vault)) return strategy?.generalDataFields || []
     const vaultGeneralDataFields = vault.getFlag("generalDataFields")
-    if (vaultGeneralDataFields){
-      return strategy?.generalDataFields ? strategy?.generalDataFields.filter( (generalDataField: GeneralDataField) => {
-        return vaultGeneralDataFields[generalDataField.field] === undefined || vaultGeneralDataFields[generalDataField.field] === true
-      }) : []
-    }
-    return strategy?.generalDataFields || []
+    // if (vaultGeneralDataFields){
+    //   return strategy?.generalDataFields ? strategy?.generalDataFields.filter( (generalDataField: GeneralDataField) => {
+    //     return vaultGeneralDataFields[generalDataField.field] === undefined || vaultGeneralDataFields[generalDataField.field] === true
+    //   }) : []
+    // }
+    return strategy?.generalDataFields.reduce( (acc: GeneralDataField[], generalDataField: GeneralDataField) => {
+      if (vaultGeneralDataFields?.[generalDataField.field] !== undefined){
+        if (vaultGeneralDataFields[generalDataField.field] === false){
+          return acc
+        }
+        if (typeof vaultGeneralDataFields[generalDataField.field] === 'object'){
+          return [
+            ...acc,
+            vaultGeneralDataFields[generalDataField.field]
+          ]
+        }
+      }
+      return [
+        ...acc,
+        generalDataField
+      ]
+    }, []) || []
   }, [strategy, vault])
 
   return (

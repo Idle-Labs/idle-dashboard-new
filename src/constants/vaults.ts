@@ -148,12 +148,22 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       operators: [
         {
-          type: "strategist",
+          type: "borrower",
           name: "fasanara",
         },
       ],
       flags: {
         compoundApr: false,
+        generalDataFields: {
+          custodian: {
+            field: "benchmarkFasanara",
+            label: "defi.benchmark",
+          },
+          navAgent: {
+            field: "boundsFasanara",
+            label: "defi.bounds",
+          },
+        },
         performance: {
           2023: [
             1.02, 1.46, 2.53, 1.02, 0.8, 1.6, 1.02, 2.01, 0.8, 1.88, 2.21, 2.53,
@@ -161,8 +171,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           2024: [1.88, 2.53, 2.84, 0.87, 1.39, 0.8, 0.95, 0.8, 0.8],
         },
       },
-      name: "Fasanara Yield",
-      vaultType: "strategistVault",
+      name: "by Fasanara Digital",
+      vaultType: "btcFundingRate",
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
@@ -182,8 +192,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       blockNumber: 0,
       descriptionShort:
-        "Yield strategy based on market making, cross-exchange, and funding rate arbitrage activities",
-      description: `Fasanara Digital offers a delta-neutral HFT yield strategy trading approximately $450m daily through activities like market making, cross-exchange and cross-chain arbitrage, and funding rate arbitrage. Through Idle, Fasanara Digital is tokenising access to this fund with vault positions being representative of the performance.`,
+        "Variable-rate loan channeling funds into delta-neutral yield strategies overperforming the BTC funding rate.",
+      description: `The vault operates as an evergreen, variable-rate loan, channeling funds into delta-neutral yield strategies. These include market making, cross-chain and cross-market arbitrage, and funding rate optimization. Interest is distributed weekly to liquidity providers, with the option for weekly redemptions.<br /><br />The vault’s variable loan rate is pegged to the <a href="https://studio.glassnode.com/metrics?a=BTC&e=aggregated&m=derivatives.FuturesFundingRatePerpetualV2&resolution=1h" class="link" rel="nofollow noopener noreferrer" target="_blank">BTC open interest-weighted funding rate</a>, with a 1.5x performance multiplier, a guaranteed daily minimum return of 5% APR, and a maximum yield cap of 30% APR.<br /><br />The vault is institutional compliant, and users have to pass through a KYC process to lend funds.`,
     },
   ],
   10: [
@@ -225,6 +235,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         compoundApr: false,
         performance: {},
+        kycLink: "https://falconx.app.keyring.network/",
       },
       name: "FalconX",
       vaultType: "primeBrokerage",

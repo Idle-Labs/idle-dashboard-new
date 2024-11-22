@@ -459,8 +459,8 @@ export const AssetPage: React.FC = () => {
           spacing={[1, 2]}
           alignItems={'space-between'}
         >
-          <Heading color={'primary'} as={'h3'} fontSize={['h3', 'xl']}>{vault.vaultConfig.name || operatorInfo.nameShort || operatorInfo.name}</Heading>
-          <AssetProvider.VaultVariant color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']} />
+          <AssetProvider.VaultVariant color={'primary'} as={'h3'} fontSize={['h3', 'xl']} />
+          <Heading color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'h4']}>{vault.vaultConfig.name || operatorInfo.nameShort || operatorInfo.name}</Heading>
         </VStack>
       </HStack>
     ) : (
