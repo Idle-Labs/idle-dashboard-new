@@ -979,6 +979,7 @@ export const Tranches: React.FC = () => {
               return (<VaultCard.Aggregated key={`index_${index}`} aggregatedVault={aggregatedVault} onClick={() => onClickAggregatedVaults(aggregatedVault)} />)
             })
           }
+          <VaultCard.Institutional />
         </Stack>
       </VStack>
     )

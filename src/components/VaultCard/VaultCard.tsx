@@ -7,7 +7,7 @@ import { Asset, AssetId } from 'constants/types'
 import { Amount } from 'components/Amount/Amount'
 import { MdKeyboardArrowRight } from 'react-icons/md'
 import { CardProps, Card } from 'components/Card/Card'
-import { BNify, getVaultPath, bnOrZero } from 'helpers/'
+import { BNify, getVaultPath, bnOrZero, openWindow } from 'helpers/'
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import type { AggregatedAsset } from 'components/Stats/Stats'
 import { AssetLabel } from 'components/AssetLabel/AssetLabel'
@@ -1083,6 +1083,133 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
   )
 }
 
+export const Institutional = () => {
+  const theme = useTheme()
+
+  const network = useMemo(() => {
+    return networks[1]
+  }, [])
+
+  return (
+    <Card.Flex
+      p={0}
+      pb={5}
+      maxWidth={['full', '32em']}
+      layerStyle={['card', 'cardHover']}
+      onClick={() => openWindow('https://institutional.idle.finance/')}
+    >
+      <VStack
+        spacing={[4, 7]}
+        width={'full'}
+        >
+        <HStack
+          h={88}
+          px={5}
+          spacing={4}
+          width={'full'}
+          alignItems={['flex-start', 'center']}
+          borderRadius={'8px 8px 0 0'}
+          justifyContent={'space-between'}
+          // borderBottom={'1px solid #fff'}
+          background={`radial-gradient(circle, #334698 40%, #3e9cce 100%)`}
+          backgroundPosition={'top left'}
+          backgroundSize={'300%'}
+        >
+          <HStack>
+            <Image src={'images/strategies/institutional.svg'} w={[10, 14]} h={[10, 14]} />
+            <VStack
+              spacing={[1, 2]}
+              alignItems={'space-between'}
+            >
+              <Translation translation={'Institutional lending'} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+              <Translation translation={'Credit vaults'} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
+            </VStack>
+          </HStack>
+        </HStack>
+        <VStack
+          px={5}
+          flex={1}
+          width={'full'}
+          alignItems={'flex-start'}
+          justifyContent={'space-between'}
+        >
+          <VStack
+            spacing={4}
+            width={'full'}
+            alignItems={'flex-start'}
+          >
+            {/* <Translation translation={'Institutional credit on-chain'} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'xl']} /> */}
+            <Text color={'primary'} textStyle={'caption'}>Modernizing credit markets to bring speed, programmability, and compliance advantages of blockchain tokenization.</Text>
+          </VStack>
+          <VStack
+            spacing={0}
+            width={'full'}
+            alignItems={'flex-start'}
+          >
+            <Translation translation={'common.trustedBy'} color={'primary'} textStyle={'captionSmall'} />
+            <HStack
+              width={'full'}
+              justifyContent={'space-between'}
+            >
+              <Image h={6} src={'images/partners/rockaway.svg'} />
+              <Image h={6} src={'images/partners/fasanara-digital.svg'} />
+              <Image h={4} src={'images/partners/falconX.svg'} />
+              <Image h={16} src={'images/partners/maven.svg'} />
+            </HStack>
+          </VStack>
+          <HStack
+            width={'full'}
+            alignItems={'end'}
+            justifyContent={'space-between'}
+          >
+            <HStack
+              spacing={2}
+            >
+              <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
+              {
+                [1, 10].map( chainId => (
+                  <Card.Light
+                    py={0}
+                    px={1}
+                    pr={2}
+                    height={8}
+                    key={chainId}
+                    width={'auto'}
+                    display={'flex'}
+                    borderRadius={24}
+                    border={'1px solid'}
+                    alignItems={'center'}
+                    backgroundColor={'primary'}
+                  >
+                    <HStack
+                      spacing={1}
+                    >
+                      <Image src={networks[chainId].icon as string} width={6} height={6} />
+                      <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{networks[chainId].name}</Text>
+                    </HStack>
+                  </Card.Light>
+                ) )
+              }
+            </HStack>
+            <IconButton
+              size={'sm'}
+              borderRadius={'50%'}
+              colorScheme={'mattWhite'}
+              aria-label={'explore'}
+              icon={
+                <CgArrowRight
+                  size={20}
+                  color={theme.colors.card.bg}
+                />
+              }
+            />
+          </HStack>
+        </VStack>
+      </VStack>
+    </Card.Flex>
+  )
+}
+
 export const VaultCard = ({ assetId, onClick }: VaultCardProps) => {
   const navigate = useNavigate()
   const { location } = useBrowserRouter()
@@ -1183,3 +1310,4 @@ VaultCard.Credit = Credit
 VaultCard.Minimal = Minimal
 VaultCard.Tranche = Tranche
 VaultCard.Aggregated = Aggregated
+VaultCard.Institutional = Institutional
