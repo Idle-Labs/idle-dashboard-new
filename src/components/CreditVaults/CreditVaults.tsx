@@ -1,5 +1,5 @@
 import { Asset } from "constants/"
-import { Box, Center, Flex, Heading, Image, SkeletonText, Stack, VStack } from "@chakra-ui/react"
+import { Box, Center, Flex, Heading, Image, SkeletonText, Spinner, Stack, VStack } from "@chakra-ui/react"
 import { Translation } from "components/Translation/Translation"
 import { VaultCard } from "components/VaultCard/VaultCard"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
@@ -74,19 +74,8 @@ export const CreditVaults: React.FC = () => {
   }, [navigate])
 
   return isEmpty(creditVaults) ? (
-    <Center width={'full'} pt={10} mt={10} flex={1}>
-      <Card maxW={'52em'}>
-        <VStack
-          py={10}
-          spacing={4}
-          width={'full'}
-          alignItems={'center'}
-          justifyContent={'center'}
-        >
-          <Image src={'images/vaults/information.png'} width={8} />
-          <Translation textAlign={'center'} translation={'defi.empty.vaults.body'} color={'cta'} isHtml />
-        </VStack>
-      </Card>
+    <Center width={'full'} mt={10} flex={1}>
+      <Spinner size={'xl'} />
     </Center>
   ) : (
     <Flex
