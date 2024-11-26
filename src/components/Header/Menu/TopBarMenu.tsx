@@ -41,7 +41,7 @@ export const TopBarMenu: React.FC = () => {
           <MdMenu onClick={() => setMobileMenuOpened(true)} size={32} />
         )
       }
-      <Image src={'images/icon.svg'} height={[8, 10]} width={[8, 10]} />
+      <Image src={'images/idle-institutional.svg'} height={[8, 10]} />
       {
         !isMobile ? (
           <Menu>

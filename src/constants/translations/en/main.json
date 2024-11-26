@@ -228,6 +228,7 @@
     "BB": "Junior Tranche",
     "strategistVault": "Strategist vault",
     "btcFundingRate": "BTC+ funding rate",
+    "fundingRateArbitrage": "Funding rate arbitrage",
     "primeBrokerage": "Prime brokerage",
     "overcollatLending": "Overcollateralized lending",
     "diversifiedBasisYield": "Diversified Basis Yield",
@@ -255,7 +256,7 @@
       "tag": "Credit",
       "label": "Credit",
       "title": "Strategist vaults",
-      "explore": "Explore",
+      "explore": "Explore Credit Vaults",
       "description": "Offering on-chain TradFi yield strategies",
       "verification": "Complete the following steps to interact with this vault",
       "kyc": {

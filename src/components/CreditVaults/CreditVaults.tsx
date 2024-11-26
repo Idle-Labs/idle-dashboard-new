@@ -118,6 +118,8 @@ export const CreditVaults: React.FC = () => {
           {
             creditVaults.map((asset: Asset, index: number) => (<VaultCard.Credit assetId={asset.id as string} key={`index_${index}`} onClick={() => onVaultClick(asset)} />))
           }
+          <VaultCard.CreditDummy chainId={10} />
+          <VaultCard.CreditDummy chainId={42161} />
         </Stack>
       </VStack>
     </Flex>

@@ -18,7 +18,8 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { strategies, AggregatedVault, networks, Network, operators } from 'constants/'
-import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, Spinner, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image } from '@chakra-ui/react'
+import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, Spinner, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image, Center, Circle } from '@chakra-ui/react'
+import { FaCircleQuestion } from 'react-icons/fa6'
 
 export type VaultCardProps = {
   assetId: AssetId
@@ -669,6 +670,7 @@ export const Aggregated = ({ aggregatedVault, onClick }: AggregatedProps) => {
     </Card.Flex>
   )
 }
+
 type CreditProps = {
   onClick: Function
   assetId: AssetId
@@ -750,8 +752,8 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                 spacing={[1, 2]}
                 alignItems={'space-between'}
               >
-                <AssetProvider.VaultVariant color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
-                <Text color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']}>{vault.vaultConfig.name}</Text>
+                <Text color={'primary'} as={'h3'} fontSize={['h3', 'h3']} fontWeight={600}>{vault.vaultConfig.name}</Text>
+                <AssetProvider.VaultVariant as={'h4'} fontSize={['md', 'md']} fontWeight={500} />
               </VStack>
             </HStack>
             <AssetProvider.KycVerificationBadge />
@@ -920,6 +922,202 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
         </VStack>
       </Card.Flex>
     </AssetProvider>
+  )
+}
+
+
+type CreditDummyProps = {
+  chainId: number
+}
+
+export const CreditDummy = ({ chainId }: CreditDummyProps) => {
+
+  const theme = useTheme()
+  const { isMobile } = useThemeProvider()
+
+
+  const network = useMemo((): Network => {
+    return networks[chainId]
+  }, [chainId])
+
+  return (
+    <Card.Flex
+      p={0}
+      pb={5}
+      maxWidth={['full', '32em']}
+      layerStyle={['card']}
+      position={'relative'}
+    >
+      <Center
+        borderRadius={8}
+        layerStyle={'overlay'}
+        backgroundColor={'rgba(0, 0, 0, 0.3)'}
+      >
+        <VStack
+          spacing={4}
+          width={'full'}
+        >
+          <Heading
+            color={'primary'} as={'h3'} fontSize={'2xl'} fontWeight={600}
+          >
+            Coming Soon
+          </Heading>
+          <HStack
+            spacing={2}
+          >
+            <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
+            <Card.Light
+              py={0}
+              px={1}
+              pr={2}
+              height={8}
+              width={'auto'}
+              display={'flex'}
+              borderRadius={24}
+              border={'1px solid'}
+              alignItems={'center'}
+              backgroundColor={'primary'}
+            >
+              <HStack
+                spacing={1}
+              >
+                <Image src={network.icon as string} width={6} height={6} />
+                <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{network.name}</Text>
+              </HStack>
+            </Card.Light>
+          </HStack>
+        </VStack>
+      </Center>
+      <VStack
+        spacing={[4, 7]}
+        width={'full'}
+        sx={{
+          filter: 'blur(10px)'
+        }}
+      >
+        <HStack
+          px={5}
+          py={4}
+          width={'full'}
+          alignItems={'center'}
+          justifyContent={'space-between'}
+          borderRadius={'8px 8px 0 0'}
+          backgroundColor={'card.bgLight'}
+          // background={`radial-gradient(circle, ${aggregatedVault.color}50 40%, ${aggregatedVault.color}cc 100%)`}
+          backgroundPosition={'top left'}
+          backgroundSize={'300%'}
+        >
+          <HStack
+            spacing={4}
+            width={'full'}
+            alignItems={['flex-start', 'center']}
+            justifyContent={'flex-start'}
+          >
+            <Circle bg={'white'} size={14} />
+            <VStack
+              spacing={[1, 2]}
+              alignItems={'space-between'}
+            >
+              <Text color={'primary'} as={'h3'} fontSize={['h3', 'h3']} fontWeight={600}>New vault incoming</Text>
+              <Text color={'primary'} as={'h4'} fontSize={['md', 'md']} fontWeight={500}>Fabulousness</Text>
+            </VStack>
+          </HStack>
+          <AssetProvider.KycVerificationBadge />
+        </HStack>
+        <VStack
+          px={5}
+          spacing={[4, 7]}
+          width={'full'}
+          alignItems={'flex-start'}
+          flex={1}
+          justifyContent={'space-between'}
+        >
+          <Text color={'primary'} textStyle={'caption'} dangerouslySetInnerHTML={{__html: 'Probably the best vault you have ever seen before. This description deserve to be a little bit longer.'}} />
+          <SimpleGrid
+            columns={3}
+            spacing={4}
+            width={'full'}
+            justifyContent={'space-between'}
+          >
+            <VStack
+              pr={4}
+              spacing={2}
+              borderRight={'1px solid'}
+              borderColor={'divider'}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.apr'} textStyle={'captionSmall'} />
+              <HStack
+                spacing={2}
+                alignItems={'baseline'}
+              >
+                <Amount.Percentage fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={99} lineHeight={1} />
+              </HStack>
+            </VStack>
+            <VStack
+              pr={4}
+              spacing={2}
+              borderRight={'1px solid'}
+              borderColor={'divider'}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
+              <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={999999} lineHeight={1} />
+            </VStack>
+            <VStack
+              spacing={2}
+              alignItems={'flex-start'}
+            >
+              <Translation translation={'defi.status'} textStyle={'captionSmall'} />
+              <Text textStyle={'bodytitle'} lineHeight={1} fontSize={['lg', 'xl']}>Coming soon</Text>
+            </VStack>
+          </SimpleGrid>
+          <HStack
+            width={'full'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+          >
+            <HStack
+              spacing={2}
+            >
+              <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
+              <Card.Light
+                py={0}
+                px={1}
+                pr={2}
+                height={8}
+                width={'auto'}
+                display={'flex'}
+                borderRadius={24}
+                border={'1px solid'}
+                alignItems={'center'}
+                backgroundColor={'primary'}
+              >
+                <HStack
+                  spacing={1}
+                >
+                  <Image src={network.icon as string} width={6} height={6} />
+                  <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{network.name}</Text>
+                </HStack>
+              </Card.Light>
+            </HStack>
+            <IconButton
+              disabled
+              size={'sm'}
+              borderRadius={'50%'}
+              colorScheme={'mattWhite'}
+              aria-label={'explore'}
+              icon={
+                <CgArrowRight
+                  size={20}
+                  color={theme.colors.card.bg}
+                />
+              }
+            />
+          </HStack>
+        </VStack>
+      </VStack>
+    </Card.Flex>
   )
 }
 
@@ -1156,3 +1354,4 @@ VaultCard.Credit = Credit
 VaultCard.Minimal = Minimal
 VaultCard.Tranche = Tranche
 VaultCard.Aggregated = Aggregated
+VaultCard.CreditDummy = CreditDummy
