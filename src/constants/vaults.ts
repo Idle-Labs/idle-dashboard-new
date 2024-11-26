@@ -161,19 +161,23 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         compoundApr: false,
         generalDataFields: {
           custodian: {
-            field: "benchmark",
-            label: "defi.benchmark",
+            field: "performanceFee",
+            label: "assets.assetDetails.generalData.performanceFee",
           },
           navAgent: {
-            field: "bounds",
-            label: "defi.bounds",
+            field: "benchmark",
+            label: "defi.benchmark",
           },
         },
         performance: {
           2023: [
-            1.02, 1.46, 2.53, 1.02, 0.8, 1.6, 1.02, 2.01, 0.8, 1.88, 2.21, 2.53,
+            1.02, 1.01, 0.739, 0.701, 0.753, 1.034, 0.864, 0.915, 0.419, 0.93,
+            1.533, 2.017,
           ],
-          2024: [1.88, 2.53, 2.84, 0.87, 1.39, 0.8, 0.95, 0.8, 0.8],
+          2024: [
+            1.277, 1.624, 2.195, 0.873, 1.054, 0.968, 0.857, 0.498, 0.583,
+            1.092,
+          ],
         },
       },
       name: "Fasanara Digital",

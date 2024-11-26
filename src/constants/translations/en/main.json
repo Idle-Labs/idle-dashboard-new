@@ -2206,6 +2206,7 @@
         "gaugeRewards": "Gauge Rewards",
         "autoCompounding": "Auto Compounding",
         "performanceFee": "Performance Fee",
+        "strategistFee": "Strategist Fee",
         "vaultAddress": "LP token",
         "cdoAddress": "Vault contract",
         "managerAddress": "Curator",

@@ -840,8 +840,6 @@ const Apy: React.FC<ApyProps> = ({ showGross = true, showNet = false, showToolti
 
   showGross = showGross && !!asset?.apyBreakdown && Object.keys(asset.apyBreakdown).length > 1
 
-  // console.log('apyBreakdown', asset?.id, asset?.apyBreakdown);
-
   const tooltipLabel = asset?.apyBreakdown ? (
     <VStack
       py={1}
