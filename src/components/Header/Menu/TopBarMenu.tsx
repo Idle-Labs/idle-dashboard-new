@@ -8,6 +8,7 @@ import { MenuItemExpandable } from './MenuItemExpandable'
 import React, { useState, useMemo, useEffect } from 'react'
 import { Menu, Flex, HStack, Image } from '@chakra-ui/react'
 import { useBrowserRouter } from 'contexts/BrowserRouterProvider'
+import { NavLink } from 'react-router-dom'
 
 export const TopBarMenu: React.FC = () => {
   const { location } = useBrowserRouter()
@@ -27,7 +28,7 @@ export const TopBarMenu: React.FC = () => {
   }, [mobileMenuOpened, isMobile, setScrollLocked])
 
   const enabledMenuItems = useMemo(() => {
-    return menu.filter( menuItem => checkMenuItemEnv(menuItem, environment) ).filter( (menuItem: MenuItemType) => !menuItem.path || checkSectionEnabled(menuItem.path as string, environment) )
+    return menu.filter( menuItem => checkMenuItemEnv(menuItem, environment) ).filter( (menuItem: MenuItemType) => menuItem.visible && (!menuItem.path || checkSectionEnabled(menuItem.path as string, environment)) )
   }, [environment])
 
   return (
@@ -41,7 +42,11 @@ export const TopBarMenu: React.FC = () => {
           <MdMenu onClick={() => setMobileMenuOpened(true)} size={32} />
         )
       }
-      <Image src={'images/idle-institutional.svg'} height={[8, 10]} />
+      <NavLink
+        to={'/'}
+      >
+        <Image src={'images/idle-institutional.svg'} height={[8, 10]} />
+      </NavLink>
       {
         !isMobile ? (
           <Menu>

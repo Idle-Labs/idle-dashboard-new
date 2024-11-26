@@ -17,6 +17,7 @@ export type MenuListType = {
 export type MenuItemType = MenuListType & {
   color?: string;
   enabledEnvs?: string[];
+  visible?: boolean;
   children?: MenuListType[];
 };
 
@@ -35,6 +36,7 @@ export const menu: MenuItemType[] = [
   },
   {
     path: "credit",
+    visible: false,
     label: "navBar.earn",
     enabledEnvs: ["credit"],
   },
