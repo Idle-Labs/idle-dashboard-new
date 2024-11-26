@@ -1086,17 +1086,13 @@ export const New = ({ assetId, onClick }: VaultCardProps) => {
 export const Institutional = () => {
   const theme = useTheme()
 
-  const network = useMemo(() => {
-    return networks[1]
-  }, [])
-
   return (
     <Card.Flex
       p={0}
       pb={5}
       maxWidth={['full', '32em']}
       layerStyle={['card', 'cardHover']}
-      onClick={() => openWindow('https://institutional.idle.finance/')}
+      onClick={() => openWindow('https://credit.idle.finance/#/credit')}
     >
       <VStack
         spacing={[4, 7]}
@@ -1148,13 +1144,13 @@ export const Institutional = () => {
           >
             <Translation translation={'common.trustedBy'} color={'primary'} textStyle={'captionSmall'} />
             <HStack
+              spacing={6}
               width={'full'}
-              justifyContent={'space-between'}
             >
               <Image h={6} src={'images/partners/rockaway.svg'} />
-              <Image h={6} src={'images/partners/fasanara-digital.svg'} />
-              <Image h={4} src={'images/partners/falconX.svg'} />
-              <Image h={16} src={'images/partners/maven.svg'} />
+              <Image h={8} src={'images/partners/fasanara-digital.svg'} />
+              {/* <Image h={4} src={'images/partners/falconX.svg'} />
+              <Image h={16} src={'images/partners/maven.svg'} /> */}
             </HStack>
           </VStack>
           <HStack
@@ -1167,7 +1163,7 @@ export const Institutional = () => {
             >
               <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
               {
-                [1, 10].map( chainId => (
+                [1].map( chainId => (
                   <Card.Light
                     py={0}
                     px={1}
