@@ -108,6 +108,10 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
     return vault && ("depositQueueContract" in vault) && !!vault.depositQueueContract
   }, [vault])
 
+  const withdrawQueueEnabled = useMemo(() => {
+    return vault && ("withdrawQueueContract" in vault) && !!vault.withdrawQueueContract
+  }, [vault])
+
   const status = useMemo(() => {
     if (!isEpochVault || !asset) return null
     if (epochData && ("status" in epochData)){
@@ -115,6 +119,11 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
       // Deposit queue
       if (action === 'deposit' && status === 'running' && depositQueueEnabled){
         return 'depositQueue'
+      }
+
+      // Withdraw queue
+      if (action === 'withdraw' && status === 'running' && withdrawQueueEnabled){
+        return 'withdrawQueue'
       }
       
       return status
@@ -125,7 +134,7 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
     }
 
     return 'running'
-  }, [asset, isEpochVault, epochData, action, depositQueueEnabled])
+  }, [asset, isEpochVault, epochData, action, depositQueueEnabled, withdrawQueueEnabled])
 
   const epochVaultLocked = useMemo(() => {
     return status && ['default', 'running'].includes(status)
@@ -149,7 +158,7 @@ export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => 
           {
             status === 'default' ? (
               <MdOutlineRemoveCircle size={24} />
-            ) : status === 'depositQueue' ? (
+            ) : ['depositQueue', 'withdrawQueue'].includes(status) ? (
               <MdLockClock size={24} />
             ) : epochVaultLocked ? (
               <BsFillShieldLockFill size={24} />

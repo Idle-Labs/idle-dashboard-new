@@ -1,5 +1,5 @@
 import { Card } from 'components/Card/Card'
-import { estimateGasLimit, getVaultAllowanceOwner } from 'helpers/'
+import { BNify, estimateGasLimit, getVaultAllowanceOwner } from 'helpers/'
 import { MAX_ALLOWANCE } from 'constants/vars'
 import type { NumberType } from 'constants/types'
 import { MdOutlineLockOpen } from 'react-icons/md'
@@ -13,6 +13,7 @@ import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { CreditVault } from 'vaults/CreditVault'
+import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 
 type ApproveArgs = {
   amountUsd?: NumberType | null
@@ -23,7 +24,8 @@ export const Approve: React.FC<ApproveArgs> = ({
   itemIndex
 }) => {
   const { account } = useWalletProvider()
-  const { defaultAmount, dispatch, activeItem } = useOperativeComponent()
+  const { selectors: { selectVaultPrice } } = usePortfolioProvider()
+  const { defaultAmount, dispatch, activeItem, baseActionType } = useOperativeComponent()
   const [ amount, setAmount ] = useState<string>(defaultAmount)
   const { underlyingAsset, asset, vault, translate, theme } = useAssetProvider()
   const [ allowanceModeExact, setAllowanceModeExact ] = useState<boolean>(true)
@@ -40,6 +42,10 @@ export const Approve: React.FC<ApproveArgs> = ({
 
   const depositQueueAvailable = useMemo(() => {
     return vault && ("depositQueueContract" in vault) && !!vault.depositQueueContract
+  }, [vault])
+
+  const withdrawQueueAvailable = useMemo(() => {
+    return vault && ("withdrawQueueContract" in vault) && !!vault.withdrawQueueContract
   }, [vault])
 
   const epochVaultDefaulted = useMemo(() => {
@@ -64,50 +70,82 @@ export const Approve: React.FC<ApproveArgs> = ({
     return isEpochVault && depositQueueAvailable && isEpochRunning
   }, [asset, isEpochVault, depositQueueAvailable])
 
+  const withdrawQueueEnabled = useMemo(() => {
+    const isEpochRunning = asset?.epochData && ("isEpochRunning" in asset.epochData) && !!asset.epochData.isEpochRunning
+    return isEpochVault && withdrawQueueAvailable && isEpochRunning
+  }, [asset, isEpochVault, withdrawQueueAvailable])
+
   const getAllowanceContract = useCallback(() => {
     if (!vault) return
-    if (depositQueueEnabled && "depositQueueContract" in vault){
-      return vault.depositQueueContract
+    if (baseActionType === 'withdraw' && withdrawQueueEnabled && vault instanceof CreditVault){
+      return vault.tokenContract
     }
     return "getAllowanceContract" in vault ? vault.getAllowanceContract() : undefined
-  }, [vault, depositQueueEnabled])
+  }, [vault, withdrawQueueEnabled, baseActionType])
 
   const getAllowanceOwner = useCallback(() => {
     if (!vault) return
-    if (depositQueueEnabled && vault instanceof CreditVault && vault.vaultConfig.depositQueue){
-      return vault.vaultConfig.depositQueue?.address
+
+    console.log('getAllowanceOwner', {baseActionType, depositQueueEnabled, withdrawQueueEnabled})
+
+    if (baseActionType === 'deposit' && depositQueueEnabled && vault instanceof CreditVault && vault.vaultConfig.depositQueue){
+      return vault.vaultConfig.depositQueue.address
+    }
+    if (baseActionType === 'withdraw' && withdrawQueueEnabled && vault instanceof CreditVault && vault.vaultConfig.withdrawQueue){
+      return vault.vaultConfig.withdrawQueue.address
     }
     return getVaultAllowanceOwner(vault)
-  }, [vault, depositQueueEnabled])
+  }, [vault, depositQueueEnabled, withdrawQueueEnabled, baseActionType])
+
+  const isLpToken = useMemo(() => {
+    const allowanceContract = getAllowanceContract()
+    return vault && ("tokenContract" in vault && allowanceContract?.options.address === vault.tokenContract.options.address)
+  }, [vault, getAllowanceContract])
 
   const getAllowanceParams = useCallback((amount: NumberType) => {
     if (!vault || !("getAllowanceParams" in vault)) return
     const owner = getAllowanceOwner()
+    console.log('owner', owner)
+
+    // Use 18 decimals for LP token
+    if (isLpToken){
+      const vaultPrice = selectVaultPrice(vault?.id)
+      const amountToApprove = BNify(amount).div(vaultPrice)
+      return vault.getAllowanceParams(amountToApprove, owner, 18)
+    }
+
     return vault.getAllowanceParams(amount, owner)
-  }, [vault, getAllowanceOwner])
+  }, [vault, getAllowanceOwner, selectVaultPrice, isLpToken])
+
+  const getAllowanceContractSendMethod = useCallback((params: any) => {
+    const allowanceContract = getAllowanceContract();
+    console.log('allowanceContract', allowanceContract)
+    return allowanceContract?.methods.approve(...params);
+  }, [getAllowanceContract])
 
   const getDefaultGasLimit = useCallback(async () => {
-    if (!vault || !("getAllowanceContractSendMethod" in vault)) return
+    if (!vault) return
     const sendOptions = {
       from: account?.address
     }
     const allowanceParams = getAllowanceParams(MAX_ALLOWANCE)
     if (!allowanceParams) return
-    const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
+    const allowanceContractSendMethod = getAllowanceContractSendMethod(allowanceParams)
     if (!allowanceContractSendMethod) return
     const estimatedGasLimit = await estimateGasLimit(allowanceContractSendMethod, sendOptions)
     // console.log('APPROVE - estimatedGasLimit', estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, getAllowanceParams])
+  }, [account, vault, getAllowanceParams, getAllowanceContractSendMethod])
 
   const approve = useCallback(() => {
-    if (!vault || !("getAllowanceContractSendMethod" in vault)) return
+    if (!vault) return
     const allowanceParams = getAllowanceParams(amountToApprove)
+    console.log('getAllowanceParams', amountToApprove, allowanceParams)
     if (!allowanceParams) return
-    const allowanceContractSendMethod = vault.getAllowanceContractSendMethod(allowanceParams)
+    const allowanceContractSendMethod = getAllowanceContractSendMethod(allowanceParams)
     if (!allowanceContractSendMethod) return
     sendTransaction(vault.id, underlyingAsset?.id, allowanceContractSendMethod)
-  }, [amountToApprove, vault, underlyingAsset, sendTransaction, getAllowanceParams])
+  }, [amountToApprove, vault, underlyingAsset, sendTransaction, getAllowanceParams, getAllowanceContractSendMethod])
 
   // Update amount to approve and parent amount
   useEffect(() => {
@@ -126,14 +164,6 @@ export const Approve: React.FC<ApproveArgs> = ({
       setGasLimit(defaultGasLimit)
     })()
   }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit])
-
-  // Update gas fees
-  // useEffect(() => {
-  //   ;(async () => {
-  //     const defaultGasLimit = await getDefaultGasLimit()
-  //     setGasLimit(defaultGasLimit)
-  //   })()
-  // }, [getDefaultGasLimit, setGasLimit])
 
   return (
     <VStack

@@ -688,13 +688,21 @@ export class BestYieldVault {
     return getObjectPath(this, `flags.${flag}`);
   }
 
-  public getAllowanceParams(amount: NumberType, owner?: string): any[] {
-    const decimals = this.underlyingToken?.decimals || 18;
+  public getAllowanceParams(
+    amount: NumberType,
+    owner?: string,
+    decimals?: number
+  ): any[] {
+    if (!decimals) {
+      decimals = this.underlyingToken?.decimals || 18;
+    }
     const amountToApprove =
       amount === MAX_ALLOWANCE
         ? MAX_ALLOWANCE
         : normalizeTokenAmount(amount, decimals);
+
     const allowanceOwner = owner || this.getAllowanceOwner();
+
     return [allowanceOwner, amountToApprove];
   }
 

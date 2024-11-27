@@ -1303,7 +1303,8 @@
             "default": "This vault has gone into default. Deposits and withdrawals are disabled.",
             "running": "The withdraw window ended. Wait the end of the current cycle on <span style='color:white;font-weight:bold'>%{epochEnd}</span> to withdraw.",
             "open": "The withdraw window has started. You can withdraw until a new cycle begins.",
-            "withdrawInterestsOnly": "The expected interest for the next cycle is <span style='color:white;font-weight:bold'>%{amount} %{token}</span>."
+            "withdrawInterestsOnly": "The expected interest for the next cycle is <span style='color:white;font-weight:bold'>%{amount} %{token}</span>.",
+            "withdrawQueue": "The cycle is running, your withdraw request will be queued and processed during the next netting period."
           },
           "unstakeFromGauge": "To withdraw your funds you need to unstake your tranche tokens from the Gauge first.",
           "vaultOpen": "The vault is now open. You can withdraw until <span style='color:white;font-weight:bold'>%{epochStart}</span>.",

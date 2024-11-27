@@ -237,7 +237,13 @@ export const AssetPage: React.FC = () => {
         type: 'withdraw',
         label: 'common.withdraw',
         component: Withdraw,
-        steps: []
+        steps: [
+          {
+            type: 'approve',
+            component: Approve,
+            label: 'modals.approve.header',
+          }
+        ]
       }
     ]
 

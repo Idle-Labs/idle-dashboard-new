@@ -13,12 +13,12 @@ import IdleCDOPolygon from "abis/idle/IdleCDOPolygon.json";
 import LiquidityGauge from "abis/idle/LiquidityGauge.json";
 import IdleCreditVault from "abis/idle/IdleCreditVault.json";
 import { AMPHOR_WSTETH_REFERRAL } from "constants/addresses";
+import IdleCdoEpochQueue from "abis/idle/IdleCdoEpochQueue.json";
 import ClearpoolPool from "abis/clearpool/ClearpoolPool.json";
 import GaugeMultiRewards from "abis/idle/GaugeMultiRewards.json";
 import IdleCDOEpochVariant from "abis/idle/IdleCDOEpochVariant.json";
 import IdleCDOTrancheRewards from "abis/idle/IdleCDOTrancheRewards.json";
 import TrancheStakingRewards from "abis/idle/TrancheStakingRewards.json";
-import IdleCdoEpochDepositQueue from "abis/idle/IdleCdoEpochDepositQueue.json";
 import type {
   Abi,
   VaultStatus,
@@ -116,6 +116,7 @@ export interface CreditVaultConfig {
   enabledEnvs?: string[];
   accessCodes?: string[];
   depositQueue?: ContractConfig;
+  withdrawQueue?: ContractConfig;
 }
 
 export const credits: Record<number, CreditVaultConfig[]> = {
@@ -268,8 +269,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x2BCf124aa4f7F32f0fe54f498d924B934C942B31",
       },
       depositQueue: {
-        abi: IdleCdoEpochDepositQueue as Abi,
-        address: "0x463465c334742D72907CA5fB97db44688B4EC3dC",
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0x0D81b042bB9939B4d32CDf7861774c442A2685CE",
       },
       blockNumber: 130279654,
       descriptionShort:
@@ -322,7 +323,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x58BA1463fB0a781571079859D6fcdbc00b50cD55",
       },
       depositQueue: {
-        abi: IdleCdoEpochDepositQueue as Abi,
+        abi: IdleCdoEpochQueue as Abi,
         address: "0x07EE2F1272914e869D0E47E08b5a10007b8FdF31",
       },
       blockNumber: 0,
@@ -432,7 +433,11 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x8186AbBDF9AF3a1fc59A7C5BC34bab66a2e7bEF2",
       },
       depositQueue: {
-        abi: IdleCdoEpochDepositQueue as Abi,
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0xB73F90123919780ff5fCd50bf1aFF57F3b777578",
+      },
+      withdrawQueue: {
+        abi: IdleCdoEpochQueue as Abi,
         address: "0xB73F90123919780ff5fCd50bf1aFF57F3b777578",
       },
       descriptionShort: "This is a test vault",

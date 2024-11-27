@@ -101,6 +101,7 @@ export class CreditVault {
   public readonly strategyContract: Contract;
   public readonly underlyingContract: Contract | undefined;
   public readonly depositQueueContract: Contract | undefined;
+  public readonly withdrawQueueContract: Contract | undefined;
 
   // Read only contracts
   public readonly cdoContractRpc: Contract | undefined; // Used for calls on specific blocks
@@ -186,6 +187,13 @@ export class CreditVault {
       this.depositQueueContract = new web3.eth.Contract(
         this.vaultConfig.depositQueue.abi,
         this.vaultConfig.depositQueue.address
+      );
+    }
+
+    if (this.vaultConfig.withdrawQueue) {
+      this.withdrawQueueContract = new web3.eth.Contract(
+        this.vaultConfig.withdrawQueue.abi,
+        this.vaultConfig.withdrawQueue.address
       );
     }
 
@@ -876,8 +884,14 @@ export class CreditVault {
     return operatorName ? operators[operatorName] : null;
   }
 
-  public getAllowanceParams(amount: NumberType, owner?: string): any[] {
-    const decimals = this.underlyingToken?.decimals || 18;
+  public getAllowanceParams(
+    amount: NumberType,
+    owner?: string,
+    decimals?: number
+  ): any[] {
+    if (!decimals) {
+      decimals = this.underlyingToken?.decimals || 18;
+    }
     const amountToApprove =
       amount === MAX_ALLOWANCE
         ? MAX_ALLOWANCE
@@ -953,6 +967,10 @@ export class CreditVault {
     return [normalizeTokenAmount(amount, this.cdoConfig.decimals), this.id];
   }
 
+  public getRequestWithdrawParams(amount: NumberType): any[] {
+    return [normalizeTokenAmount(amount, this.cdoConfig.decimals)];
+  }
+
   public getWithdrawContractSendMethod(params: any[] = []): ContractSendMethod {
     return this.cdoContract.methods.requestWithdraw(...params);
   }
@@ -984,12 +1002,31 @@ export class CreditVault {
     );
   }
 
-  public getDeleteRequestSendMethod(
-    epochNumber: NumberType
+  public getRequestWithdrawSendMethod(
+    amount: NumberType
+  ): ContractSendMethod | undefined {
+    const amountToWithdraw = normalizeTokenAmount(amount, 18);
+    return (
+      this.withdrawQueueContract &&
+      this.withdrawQueueContract.methods.requestWithdraw(amountToWithdraw)
+    );
+  }
+
+  public getClaimRequestWithdrawSendMethod(
+    epochNumber: number | string
   ): ContractSendMethod | undefined {
     return (
-      this.depositQueueContract &&
-      this.depositQueueContract.methods.deleteRequest(epochNumber)
+      this.withdrawQueueContract &&
+      this.withdrawQueueContract.methods.claimWithdrawRequest(epochNumber)
+    );
+  }
+
+  public getDeleteRequestWithdrawSendMethod(
+    epochNumber: number | string
+  ): ContractSendMethod | undefined {
+    return (
+      this.withdrawQueueContract &&
+      this.withdrawQueueContract.methods.deleteWithdrawRequest(epochNumber)
     );
   }
 

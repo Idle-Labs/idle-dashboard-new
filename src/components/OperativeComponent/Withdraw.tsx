@@ -12,7 +12,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { useAssetPageProvider } from 'components/AssetPage/AssetPage'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTransactionManager } from 'contexts/TransactionManagerProvider'
-import { getDecodedError, bnOrZero, BNify, estimateGasLimit } from 'helpers/'
+import { getDecodedError, bnOrZero, BNify, estimateGasLimit, getAllowance } from 'helpers/'
 import { useOperativeComponent, ActionComponentArgs } from './OperativeComponent'
 import { EstimatedGasFees } from 'components/OperativeComponent/EstimatedGasFees'
 import { EpochVaultMessage } from 'components/OperativeComponent/EpochVaultMessage'
@@ -21,8 +21,8 @@ import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetwor
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Box, VStack, HStack, Text, Button, Checkbox, Image } from '@chakra-ui/react'
-import { VaultKycCheck } from './VaultKycCheck'
 import { CreditVault } from 'vaults/CreditVault'
+import type { NumberType } from 'constants/'
 
 export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   const [ amount, setAmount ] = useState('0')
@@ -53,15 +53,24 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return false
   }, [isEpochVault, asset])
 
+  const withdrawQueueAvailable = useMemo(() => {
+    return vault && ("withdrawQueueContract" in vault) && !!vault.withdrawQueueContract
+  }, [vault])
+
   const epochVaultLocked = useMemo(() => {
     if (epochVaultDefaulted){
       return true
     }
     if (asset?.epochData && ("isEpochRunning" in asset.epochData)){
-      return !!asset.epochData.isEpochRunning
+      return !withdrawQueueAvailable && !!asset.epochData.isEpochRunning
     }
     return asset && isEpochVault && asset.vaultIsOpen === false
-  }, [asset, isEpochVault, epochVaultDefaulted])
+  }, [asset, withdrawQueueAvailable, isEpochVault, epochVaultDefaulted])
+
+  const withdrawQueueEnabled = useMemo(() => {
+    const isEpochRunning = asset?.epochData && ("isEpochRunning" in asset.epochData) && !!asset.epochData.isEpochRunning
+    return isEpochVault && withdrawQueueAvailable && isEpochRunning
+  }, [asset, isEpochVault, withdrawQueueAvailable])
 
   const toggleRedeemInterestBearing = useCallback(() => {
     return setRedeemInterestBearing( prevState => !prevState )
@@ -133,26 +142,46 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return false
   }, [amount, transaction, assetBalance, underlyingAsset, translate, epochVaultLocked])
 
-  // Withdraw
-  const withdraw = useCallback(() => {
+  const getWithdrawSendMethod = useCallback(async (amountToWithdraw: NumberType) => {
     if (!account || disabled) return
     if (!vault || !(withdrawSendMethodFunction in vault) || !(withdrawParamsFunction in vault)) return
 
-    ;(async () => {
-      const vaultPrice = selectVaultPrice(vault.id)
-      const amountToWithdraw = BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice))
-
+    if (withdrawQueueEnabled && "getAllowanceContract" in vault && vault instanceof CreditVault){
+      const spenderAddress = vault.vaultConfig.withdrawQueue?.address
+      if (!spenderAddress) return
+      return vault.getRequestWithdrawSendMethod(amountToWithdraw)
+    } else {
       // @ts-ignore
       const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw)
 
-      console.log('withdrawParams', withdrawParams, BNify(amount).toString(), vaultPrice.toString(), amountToWithdraw.toString())
-
       // @ts-ignore
-      const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
+      return vault[withdrawSendMethodFunction](withdrawParams)
+    }
+  }, [account, disabled, vault, withdrawQueueEnabled, withdrawParamsFunction, withdrawSendMethodFunction])
 
-      sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
-    })()
-  }, [account, disabled, amount, vault, vaultBalance, selectVaultPrice, sendTransaction, withdrawParamsFunction, withdrawSendMethodFunction])
+  const getWithdrawAllowance = useCallback(async () => {
+    if (account && vault && withdrawQueueEnabled && "getAllowanceContract" in vault && vault instanceof CreditVault){
+      const spenderAddress = vault.vaultConfig.withdrawQueue?.address
+      if (!spenderAddress) return BNify(0)
+      return await getAllowance(vault.tokenContract, account.address, spenderAddress)
+    }
+    return BNify(vaultBalance)
+  }, [vault, withdrawQueueEnabled, account, vaultBalance])
+
+  // Withdraw
+  const withdraw = useCallback(async () => {
+    if (!vault) return
+    const vaultPrice = selectVaultPrice(vault.id)
+    const amountToWithdraw = BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice))
+    const allowance = await getWithdrawAllowance()
+    if (allowance.lt(amountToWithdraw)){
+      return dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
+    }
+
+    const withdrawContractSendMethod = await getWithdrawSendMethod(amountToWithdraw)
+    if (!vault || !withdrawContractSendMethod) return
+    sendTransaction(vault.id, vault.id, withdrawContractSendMethod)
+  }, [vault, getWithdrawSendMethod, amount, dispatch, sendTransaction, getWithdrawAllowance, vaultBalance, selectVaultPrice])
 
   // Reset amount on transaction succeeded
   useEffect(() => {
@@ -175,9 +204,12 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [underlyingAsset, vault, amount, selectVaultPrice, selectAssetPriceUsd, dispatch])
 
   const getDefaultGasLimit = useCallback(async () => {
-    if (!vault || !(withdrawSendMethodFunction in vault) || !(withdrawParamsFunction in vault)) return
+    if (!vault) return
+
+    const allowance = await getWithdrawAllowance()
+
     const defaultGasLimit = "getMethodDefaultGasLimit" in vault ? vault.getMethodDefaultGasLimit('withdraw') : 0
-    if (!account || vaultBalance.lte(0)){
+    if (!account || vaultBalance.lte(0) || allowance.lte(0)){
       return defaultGasLimit
     }
 
@@ -187,17 +219,14 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       from: account?.address
     }
 
-    const amountToWithdraw = bnOrZero(amount).gt(0) ? BigNumber.minimum(vaultBalance, BNify(amount).div(vaultPrice)) : vaultBalance
+    const amountToWithdraw = bnOrZero(amount).gt(0) ? BigNumber.minimum(allowance, vaultBalance, BNify(amount).div(vaultPrice)) : vaultBalance
 
-    // @ts-ignore
-    const withdrawParams = vault[withdrawParamsFunction](amountToWithdraw.toFixed())
-    // @ts-ignore
-    const withdrawContractSendMethod = vault[withdrawSendMethodFunction](withdrawParams)
+    const withdrawContractSendMethod = await getWithdrawSendMethod(amountToWithdraw)
     
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
     
     return estimatedGasLimit
-  }, [account, amount, vaultBalance, vault, selectVaultPrice, withdrawParamsFunction, withdrawSendMethodFunction])
+  }, [account, amount, vaultBalance, vault, selectVaultPrice, getWithdrawSendMethod, getWithdrawAllowance])
 
   // Update gas fees
   useEffect(() => {
@@ -230,18 +259,26 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [vault, asset, amount, selectVaultPrice, activeItem, itemIndex, dispatch, withdraw])
 
   const withdrawButton = useMemo(() => {
-    return !isNetworkCorrect && asset ? (
-      <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
-    ) : account ? (
-      <Translation component={Button} translation={vault instanceof CreditVault ? 'trade.actions.withdraw.requestWithdraw' : (redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw")} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
+    if (!isNetworkCorrect && asset){
+      return (
+        <SwitchNetworkButton chainId={asset.chainId as number} width={'full'} />
+      )
+    }
+
+    if (!account){
+      return (<ConnectWalletButton variant={'ctaFull'} />)
+    }
+
+    const label = vault instanceof CreditVault ? 'trade.actions.withdraw.requestWithdraw' : (redeemInterestBearing ? "common.withdrawInterestBearing" : "common.withdraw")
+    
+    return (
+      <Translation component={Button} translation={label} disabled={disabled} onClick={withdraw} variant={'ctaFull'}>
         {
           transaction.status === 'started' && (
             <Spinner size={'sm'} />
           )
         }
       </Translation>
-    ) : (
-      <ConnectWalletButton variant={'ctaFull'} />
     )
   }, [account, disabled, transaction, withdraw, isNetworkCorrect, vault, asset, redeemInterestBearing])
 
