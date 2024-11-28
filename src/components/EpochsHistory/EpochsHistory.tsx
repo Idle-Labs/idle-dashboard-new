@@ -83,6 +83,9 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
         const grossApr = bnOrZero(value)
         const netApr = grossApr.minus(grossApr.times(bnOrZero(asset?.fee)))
         const netApy = compoundVaultApr(netApr, vault, asset)
+        if ("mode" in vault && vault.mode === 'STRATEGY' && bnOrZero(netApy).lte(0)){
+          return <Text textStyle={'tableCell'}>-</Text>
+        }
         return (
           <Amount.Percentage textStyle={'tableCell'} value={netApy} />
         )
