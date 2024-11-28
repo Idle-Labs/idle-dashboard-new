@@ -47,7 +47,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
   const [epochsChartDataLoading, setEpochsChartDataLoading] =
     useState<boolean>(true);
   const {
-    selectors: { selectAssetsByIds },
+    selectors: { selectAssetsByIds, selectVaultById },
   } = usePortfolioProvider();
 
   const { assetIds, timeframe, dateRange } = args;
@@ -82,41 +82,54 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
           return amountsByDate;
         }
 
+        const vault = selectVaultById(asset.id);
         const epochs = asset?.epochData?.epochs;
-
         if (!epochs || !epochs.length) return amountsByDate;
 
-        epochs.forEach((epoch: VaultContractCdoEpochData) => {
-          const date = toDayjs(epoch.endDate).valueOf();
-          const value = bnOrZero(epoch.APRs.GROSS).toNumber();
-
-          if (!amountsByDate[date]) {
-            amountsByDate[date] = {
-              date,
-              total: 0,
-            };
-          }
-          if (asset.id) {
-            amountsByDate[date][asset.id] = value;
-
-            // Take the first asset to populate the total chart
-            if (!assetIndex) {
-              chartData.total.push({
-                date,
-                value,
-              });
+        epochs
+          .filter((epoch) => {
+            if ("mode" in vault && vault.mode === "STRATEGY") {
+              return epoch.status === "FINISHED";
             }
-          }
-        });
+            return true;
+          })
+          .forEach((epoch: VaultContractCdoEpochData) => {
+            const date = toDayjs(epoch.endDate).valueOf();
+            const value = bnOrZero(epoch.APRs.GROSS).toNumber();
+            if (
+              date < timeframeStartTimestamp ||
+              (timeframeEndTimestamp && date > timeframeEndTimestamp)
+            )
+              return;
+
+            if (!amountsByDate[date]) {
+              amountsByDate[date] = {
+                date,
+                total: 0,
+              };
+            }
+            if (asset.id) {
+              amountsByDate[date][asset.id] = value;
+
+              // Take the first asset to populate the total chart
+              if (!assetIndex) {
+                chartData.total.push({
+                  date,
+                  value,
+                });
+              }
+            }
+          });
         return amountsByDate;
       },
       {}
     );
 
+    chartData.total = sortArrayByKey(chartData.total, "date");
     chartData.rainbow = sortArrayByKey(Object.values(amountsByDate), "date");
 
     return chartData;
-  }, [assets]);
+  }, [assets, selectVaultById, timeframeEndTimestamp, timeframeStartTimestamp]);
 
   useEffect(() => {
     if (!epochsChartData.rainbow.length) return;

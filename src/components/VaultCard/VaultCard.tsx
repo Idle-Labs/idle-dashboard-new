@@ -836,6 +836,22 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                     borderColor={'divider'}
                     alignItems={'flex-start'}
                   >
+                    <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
+                    {
+                      !isVaultsLoaded ? (
+                        <Spinner size={'md'} />
+                      ) : (
+                        <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                      )
+                    }
+                  </VStack>
+                  <VStack
+                    pr={4}
+                    spacing={2}
+                    borderRight={'1px solid'}
+                    borderColor={'divider'}
+                    alignItems={'flex-start'}
+                  >
                     <Translation translation={'assets.assetDetails.apyBreakdown.net'} textStyle={'captionSmall'} />
                     <HStack
                       spacing={2}
@@ -846,26 +862,9 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                           <Spinner size={'md'} />
                         ) : (
                           <AssetProvider.NetApyWithFees fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
-                          // <Amount.Percentage fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
                         )
                       }
                     </HStack>
-                  </VStack>
-                  <VStack
-                    pr={4}
-                    spacing={2}
-                    borderRight={'1px solid'}
-                    borderColor={'divider'}
-                    alignItems={'flex-start'}
-                  >
-                    <Translation translation={'defi.tvl'} textStyle={'captionSmall'} />
-                    {
-                      !isVaultsLoaded ? (
-                        <Spinner size={'md'} />
-                      ) : (
-                        <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
-                      )
-                    }
                   </VStack>
                   <VStack
                     spacing={2}

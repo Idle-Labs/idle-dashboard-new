@@ -429,6 +429,7 @@
     "portfolio": {
       "rainbowChart": "🌈 Rainbow",
       "performance": "Performance",
+      "performanceDescription": "*Net returns",
       "composition": "Composition",
       "assetPerformance": "Asset Performance",
       "totalChart": "Total Funds",

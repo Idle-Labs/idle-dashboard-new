@@ -43,7 +43,7 @@ export const Earn: React.FC = () => {
   const { params } = useBrowserRouter()
   const { account } = useWalletProvider()
   const { isMobile } = useThemeProvider()
-  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.WEEK)
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
   const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
   const {
     stakingData,
@@ -383,20 +383,23 @@ export const Earn: React.FC = () => {
     return !useDollarConversion && bnOrZero(assetBalanceUnderlying).lt(1000) ? 3 : 2
   }, [assetBalanceUnderlying, useDollarConversion])
 
-  const performance = useMemo(() => {
-
-    if (vault instanceof CreditVault && !isEmpty(vault.getFlag("performance"))){
-      return (
-        <VStack
-          spacing={6}
-          width={'full'}
-          alignItems={'flex-start'}
-        >
-          <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={'dashboard.portfolio.performance'} />
-          <CreditVaultPerformance assetId={asset.id} />
-        </VStack>
-      )
+  const performanceTable = useMemo(() => {
+    if (!(vault instanceof CreditVault) || isEmpty(vault.getFlag("performance"))){
+      return null
     }
+    return (
+      <VStack
+        spacing={2}
+        width={'full'}
+        alignItems={'flex-start'}
+      >
+        <CreditVaultPerformance assetId={asset.id} />
+        <Translation pl={1} textStyle={'captionSmaller'} translation={'dashboard.portfolio.performanceDescription'} />
+      </VStack>
+    )
+  }, [vault, asset])
+
+  const performance = useMemo(() => {
 
     return (
       <Box
@@ -451,9 +454,8 @@ export const Earn: React.FC = () => {
             width={'full'}
             alignItems={'flex-start'}
             direction={['column', 'row']}
-            justifyContent={['center', 'space-between']}
+            justifyContent={['center', 'flex-end']}
           >
-            {chartHeading}
             {
               (!userHasBalance || (chartData && chartData.total?.length>0)) && (
                 <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
@@ -475,7 +477,7 @@ export const Earn: React.FC = () => {
         </Card.Flex>
       </Box>
     )
-  }, [params.asset, vault, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, chartHeading, isPortfolioLoaded])
+  }, [params.asset, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, isPortfolioLoaded])
 
   const maxItems = useMemo(() => {
     return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
@@ -491,6 +493,7 @@ export const Earn: React.FC = () => {
       <EpochWithdrawRequest assetId={asset?.id} />
       <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
       {performance}
+      {performanceTable}
       <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />

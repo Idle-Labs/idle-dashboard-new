@@ -185,12 +185,12 @@ export const strategies: Record<string, StrategyProps> = {
         label: "assets.assetDetails.generalData.vaultAddress",
       },
       {
-        field: "manager",
-        label: "assets.assetDetails.generalData.managerAddress",
-      },
-      {
         field: "borrower",
         label: "assets.assetDetails.generalData.borrowerAddress",
+      },
+      {
+        field: "manager",
+        label: "assets.assetDetails.generalData.managerAddress",
       },
     ],
   },
