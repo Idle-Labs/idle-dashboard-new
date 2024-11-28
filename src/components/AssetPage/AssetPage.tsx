@@ -571,7 +571,7 @@ export const AssetPage: React.FC = () => {
                   borderColor={'dividerLight'}
                   alignItems={'flex-start'}
                 >
-                  <Translation translation={'defi.apr'} fontSize={['sm', 'md']} color={'primary'} />
+                  <Translation translation={'assets.assetDetails.apyBreakdown.net'} fontSize={['sm', 'md']} color={'primary'} />
                   <HStack
                     flex={1}
                     spacing={0}
@@ -581,7 +581,7 @@ export const AssetPage: React.FC = () => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <AssetProvider.Apr fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.NetApyWithFees fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                       )
                     }
                   </HStack>

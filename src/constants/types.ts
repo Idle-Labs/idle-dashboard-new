@@ -326,7 +326,7 @@ export type CreditVaultEpoch = {
   status: "running" | "open" | "default";
 };
 
-export type EpochData = AmphorEpoch | CreditVaultEpoch;
+export type EpochData = CreditVaultEpoch;
 
 export type StakingData = {
   maxApr: BigNumber;

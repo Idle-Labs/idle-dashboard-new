@@ -501,7 +501,13 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
             {referralMessage}
             {vaultMessage}
           </VStack>
-          <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+          <AssetProvider
+            width={'full'}
+            wrapFlex={false}
+            assetId={asset?.id}
+          >
+            <DynamicActionFields assetId={asset?.id} action={'deposit'} amount={amount} amountUsd={amountUsd} />
+          </AssetProvider>
           <FeeDiscountToggler assetId={asset?.id} />
         </VStack>
         <VStack

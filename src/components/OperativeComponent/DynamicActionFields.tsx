@@ -12,8 +12,9 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
-import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate, sortArrayByKey, getEpochVaultInstantWithdrawEnabled } from 'helpers/'
+import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate, sortArrayByKey, getEpochVaultInstantWithdrawEnabled, compoundVaultApr } from 'helpers/'
 import { MdArrowForward } from 'react-icons/md'
+import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -191,13 +192,15 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(epochData?.startDate || 0, locale)}</Text>)
       case 'epochAprChange':
         if (vault.mode === 'STRATEGY' || !lastEpoch){
-          return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={asset?.apr} />)
+          return (<AssetProvider.NetApyWithFees textStyle={'titleSmall'} color={'primary'} {...textProps} />)
         }
+        const lastGrossApr = BNify(lastEpoch.APRs.GROSS)
+        const lastNetApy = compoundVaultApr(lastGrossApr.minus(lastGrossApr.times(bnOrZero(asset?.fee))), vault, asset)
         return (
           <HStack>
-            <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={fixTokenDecimals(epochData?.lastEpochApr, 18)} />
+            <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={lastNetApy} />
             <MdArrowForward size={16} />
-            <Amount.Percentage textStyle={'titleSmall'} color={'brightGreen'} {...textProps} value={asset?.apr} />
+            <AssetProvider.NetApyWithFees textStyle={'titleSmall'} color={'brightGreen'} {...textProps} />
           </HStack>
         )
       case 'epochInterestChange':

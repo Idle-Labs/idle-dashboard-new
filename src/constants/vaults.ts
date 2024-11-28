@@ -158,12 +158,9 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           label: "1.5x BTC funding rate",
         },
         bounds: "Lower 5%, upper 30%",
-        compoundApr: false,
         generalDataFields: {
-          custodian: {
-            field: "performanceFee",
-            label: "assets.assetDetails.generalData.performanceFee",
-          },
+          maxItems: 5,
+          custodian: false,
           navAgent: {
             field: "benchmark",
             label: "defi.benchmark",
@@ -242,7 +239,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         },
       ],
       flags: {
-        compoundApr: false,
         performance: {},
         kycLink: "https://falconx.app.keyring.network/",
       },
@@ -292,8 +288,12 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         },
       ],
       flags: {
-        compoundApr: false,
         performance: {},
+        generalDataFields: {
+          maxItems: 4,
+          custodian: false,
+          navAgent: false,
+        },
       },
       name: "FalconX",
       vaultType: "primeBrokerage",
@@ -338,9 +338,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           name: "falconx",
         },
       ],
-      flags: {
-        compoundApr: false,
-      },
+      flags: {},
       name: "FalconX Credit",
       vaultType: "primeBrokerage",
       Token: {
@@ -400,7 +398,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         },
       ],
       flags: {
-        compoundApr: false,
         performance: {
           2023: [
             1.02, 1.46, 2.53, 1.02, 0.8, 1.6, 1.02, 2.01, 0.8, 1.88, 2.21, 2.53,

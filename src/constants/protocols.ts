@@ -511,9 +511,9 @@ export const protocols: Record<string, Protocol> = {
       },
       signatures: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/signatures",
-          10: "https://api-staging.idle.finance/v1/signatures",
-          137: "https://api-staging.idle.finance/v1/signatures",
+          1: "https://api-v2.idle.finance/v1/signatures",
+          10: "https://api-v2.idle.finance/v1/signatures",
+          137: "https://api-v2.idle.finance/v1/signatures",
         },
         path: "data",
         filters: ["name"],
@@ -525,9 +525,9 @@ export const protocols: Record<string, Protocol> = {
       },
       checkSignatureV2: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/signatures/:signatureId/check",
-          10: "https://api-staging.idle.finance/v1/signatures/:signatureId/check",
-          137: "https://api-staging.idle.finance/v1/signatures/:signatureId/check",
+          1: "https://api-v2.idle.finance/v1/signatures/:signatureId/check",
+          10: "https://api-v2.idle.finance/v1/signatures/:signatureId/check",
+          137: "https://api-v2.idle.finance/v1/signatures/:signatureId/check",
         },
         path: "data",
         filters: ["walletAddress"],
@@ -539,9 +539,9 @@ export const protocols: Record<string, Protocol> = {
       },
       signSignatureV2: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/signatures/:signatureId/sign",
-          10: "https://api-staging.idle.finance/v1/signatures/:signatureId/sign",
-          137: "https://api-staging.idle.finance/v1/signatures/:signatureId/sign",
+          1: "https://api-v2.idle.finance/v1/signatures/:signatureId/sign",
+          10: "https://api-v2.idle.finance/v1/signatures/:signatureId/sign",
+          137: "https://api-v2.idle.finance/v1/signatures/:signatureId/sign",
         },
         path: "data",
         filters: ["walletAddress", "hash"],
@@ -553,9 +553,9 @@ export const protocols: Record<string, Protocol> = {
       },
       transactions: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/transactions",
-          10: "https://api-staging.idle.finance/v1/transactions",
-          137: "https://api-staging.idle.finance/v1/transactions",
+          1: "https://api-v2.idle.finance/v1/transactions",
+          10: "https://api-v2.idle.finance/v1/transactions",
+          137: "https://api-v2.idle.finance/v1/transactions",
         },
         path: "data",
         filters: ["walletAddress", "limit", "startBlock", "endBlock"],
@@ -567,9 +567,9 @@ export const protocols: Record<string, Protocol> = {
       },
       chains: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/chains",
-          10: "https://api-staging.idle.finance/v1/chains",
-          137: "https://api-staging.idle.finance/v1/chains",
+          1: "https://api-v2.idle.finance/v1/chains",
+          10: "https://api-v2.idle.finance/v1/chains",
+          137: "https://api-v2.idle.finance/v1/chains",
         },
         path: "data",
         config: {
@@ -580,9 +580,9 @@ export const protocols: Record<string, Protocol> = {
       },
       vaults: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/vaults",
-          10: "https://api-staging.idle.finance/v1/vaults",
-          137: "https://api-staging.idle.finance/v1/vaults",
+          1: "https://api-v2.idle.finance/v1/vaults",
+          10: "https://api-v2.idle.finance/v1/vaults",
+          137: "https://api-v2.idle.finance/v1/vaults",
         },
         path: "data",
         filters: ["address", "limit"],
@@ -594,9 +594,9 @@ export const protocols: Record<string, Protocol> = {
       },
       tokenBlocks: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/token-blocks",
-          10: "https://api-staging.idle.finance/v1/token-blocks",
-          137: "https://api-staging.idle.finance/v1/token-blocks",
+          1: "https://api-v2.idle.finance/v1/token-blocks",
+          10: "https://api-v2.idle.finance/v1/token-blocks",
+          137: "https://api-v2.idle.finance/v1/token-blocks",
         },
         filters: [
           /*"start", "end",*/
@@ -615,9 +615,9 @@ export const protocols: Record<string, Protocol> = {
       },
       vaultEpochs: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/vault-epochs",
-          10: "https://api-staging.idle.finance/v1/vault-epochs",
-          137: "https://api-staging.idle.finance/v1/vault-epochs",
+          1: "https://api-v2.idle.finance/v1/vault-epochs",
+          10: "https://api-v2.idle.finance/v1/vault-epochs",
+          137: "https://api-v2.idle.finance/v1/vault-epochs",
         },
         filters: [
           "offset",
@@ -637,9 +637,9 @@ export const protocols: Record<string, Protocol> = {
       },
       vaultBlocks: {
         endpoint: {
-          1: "https://api-staging.idle.finance/v1/vault-blocks",
-          10: "https://api-staging.idle.finance/v1/vault-blocks",
-          137: "https://api-staging.idle.finance/v1/vault-blocks",
+          1: "https://api-v2.idle.finance/v1/vault-blocks",
+          10: "https://api-v2.idle.finance/v1/vault-blocks",
+          137: "https://api-v2.idle.finance/v1/vault-blocks",
         },
         filters: [
           /*"start", "end",*/

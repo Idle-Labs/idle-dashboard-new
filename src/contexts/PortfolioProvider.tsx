@@ -25,7 +25,7 @@ import { VaultFunctionsHelper, ChainlinkHelper, FeedRoundBounds, GenericContract
 import { GaugeRewardData, strategies, GenericContractConfig, UnderlyingTokenProps, ContractRawCall, DistributedReward, explorers, networks, ZERO_ADDRESS, CreditVaultConfig, credits } from 'constants/'
 import { globalContracts, bestYield, tranches, gauges, underlyingTokens, EtherscanTransaction, stkIDLE_TOKEN, PROTOCOL_TOKEN, MAX_STAKING_DAYS, IdleTokenProtocol } from 'constants/'
 import type { ReducerActionTypes, VaultsRewards, Balances, RewardSenders, StakingData, Asset, AssetId, Assets, Vault, Transaction, BalancePeriod, VaultPosition, VaultAdditionalApr, VaultHistoricalData, HistoryData, GaugeRewards, GaugesRewards, GaugesData, MaticNFT, EpochData, RewardEmission, CdoEvents, EthenaCooldown, ProtocolData, Address, VaultsAccountData, VaultContractCdoEpochData, VaultBlockRequest } from 'constants/types'
-import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, checkVaultEnv, checkVaultAuthCode, normalizeTokenAmount } from 'helpers/'
+import { BNify, bnOrZero, makeEtherscanApiRequest, apr2apy, isEmpty, dayDiff, fixTokenDecimals, asyncReduce, avgArray, asyncWait, checkAddress, cmpAddrs, sendCustomEvent, asyncForEach, getFeeDiscount, floorTimestamp, sortArrayByKey, toDayjs, getAlchemyTransactionHistory, arrayUnique, getEtherscanTransactionObject, checkVaultEnv, checkVaultAuthCode, normalizeTokenAmount, compoundVaultApr } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 import { useAuthCodeProvider } from './AuthCodeProvider'
 import { getLatestVaultBlocks, getVaultsFromApiV2 } from 'helpers/apiv2'
@@ -1906,11 +1906,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
     }, new Map())
 
     // Get vaults epochs
-    const vaultsEpochsPromises = vaults.reduce((promises: Map<AssetId, Promise<EpochData | null> | undefined>, vault: Vault): Map<AssetId, Promise<EpochData | null> | undefined> => {
-      if (!("cdoConfig" in vault) || promises.has(vault.cdoConfig.address)) return promises
-      promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getVaultEpochData(vault))
-      return promises
-    }, new Map())
+    // const vaultsEpochsPromises = vaults.reduce((promises: Map<AssetId, Promise<EpochData | null> | undefined>, vault: Vault): Map<AssetId, Promise<EpochData | null> | undefined> => {
+    //   if (!("cdoConfig" in vault) || promises.has(vault.cdoConfig.address)) return promises
+    //   promises.set(vault.cdoConfig.address, vaultFunctionsHelper.getVaultEpochData(vault))
+    //   return promises
+    // }, new Map())
 
     // Get vaults total aprs
     const vaultsTotalAprsPromises = vaults.reduce((promises: Map<AssetId, Promise<VaultAdditionalApr | null>>, vault: Vault): Map<AssetId, Promise<VaultAdditionalApr | null>> => {
@@ -1955,7 +1955,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       vaultsAdditionalAprs,
       vaultsAdditionalBaseAprs,
       vaultsLastHarvests,
-      vaultsEpochsData,
+      // vaultsEpochsData,
       vaultsTotalAprs,
       rawCallsResultsByChain,
       poolDataRawCallsResultsByChain,
@@ -1984,7 +1984,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       Promise.all(Array.from(vaultsAdditionalAprsPromises.values())),
       Promise.all(Array.from(vaultsAdditionalBaseAprsPromises.values())),
       Promise.all(Array.from(vaultsLastHarvestsPromises.values())),
-      Promise.all(Array.from(vaultsEpochsPromises.values())),
+      // Promise.all(Array.from(vaultsEpochsPromises.values())),
       Promise.all(Array.from(vaultsTotalAprsPromises.values())),
       Promise.all(Object.keys(rawCallsByChainId).map(chainId => multiCall.executeMultipleBatches(rawCallsByChainId[+chainId], +chainId, web3Chains[chainId]))),
       Promise.all(Object.keys(poolsDataRawCallsByChainId).map(chainId => multiCall.executeMulticalls(Object.values(poolsDataRawCallsByChainId[+chainId]).flat(), true, +chainId, web3Chains[chainId]))),
@@ -2295,16 +2295,16 @@ export function PortfolioProvider({ children }: ProviderProps) {
       }, lastHarvests)
 
       // Process vaults epochs
-      epochsData = vaultsEpochsData.reduce((epochsData: Record<AssetId, Asset["epochData"]>, epochData: Asset["epochData"]) => {
-        if (epochData?.cdoId) {
-          const filteredVaults = vaults.filter((vault: Vault) => ("cdoConfig" in vault) && cmpAddrs(vault.cdoConfig.address, epochData.cdoId as string))
-          filteredVaults.forEach((vault: Vault) => {
-            const assetId = vault.id
-            epochsData[assetId] = epochData
-          })
-        }
-        return epochsData
-      }, epochsData)
+      // epochsData = vaultsEpochsData.reduce((epochsData: Record<AssetId, Asset["epochData"]>, epochData: Asset["epochData"]) => {
+      //   if (epochData?.cdoId) {
+      //     const filteredVaults = vaults.filter((vault: Vault) => ("cdoConfig" in vault) && cmpAddrs(vault.cdoConfig.address, epochData.cdoId as string))
+      //     filteredVaults.forEach((vault: Vault) => {
+      //       const assetId = vault.id
+      //       epochsData[assetId] = epochData
+      //     })
+      //   }
+      //   return epochsData
+      // }, epochsData)
 
       // console.log('epochDataResults', epochDataResults)
 
@@ -3605,8 +3605,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
       })
 
-      console.log('vaultsRequests', vaultsRequests)
-
       console.log('VAULTS DATA LOADED in ', (Date.now() - startTimestamp) / 1000, 'seconds')
       runningEffects.current.vaultsLoading = false
 
@@ -4892,11 +4890,10 @@ export function PortfolioProvider({ children }: ProviderProps) {
           const apr = assetsData[vault.id].aprBreakdown?.[type]
           if (apr) {
             if (type !== 'rewards' && compoundApr) {
-              apyBreakdown[type] = apr2apy(BNify(apr).div(100)).times(100)
+              apyBreakdown[type] = compoundVaultApr(apr, vault, assetsData[vault.id])
             } else {
               apyBreakdown[type] = apr
             }
-            // console.log(vault.id, type, apr.toString(), apyBreakdown[type].toString())
           }
           return apyBreakdown
         }, {})

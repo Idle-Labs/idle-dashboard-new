@@ -477,6 +477,10 @@ export const Earn: React.FC = () => {
     )
   }, [params.asset, vault, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, chartHeading, isPortfolioLoaded])
 
+  const maxItems = useMemo(() => {
+    return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
+  }, [vault])
+
   return (
     <VStack
       spacing={10}
@@ -485,7 +489,7 @@ export const Earn: React.FC = () => {
       {strategyDescription}
       {fundsOverview}
       <EpochWithdrawRequest assetId={asset?.id} />
-      <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={6} assetId={asset?.id} />
+      <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
       {performance}
       <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />

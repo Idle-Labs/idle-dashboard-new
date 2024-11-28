@@ -1,5 +1,5 @@
 import { Asset } from "constants/"
-import { Box, Center, Flex, Heading, Image, SkeletonText, Spinner, Stack, VStack } from "@chakra-ui/react"
+import { Box, Center, Flex, Heading, SimpleGrid, SkeletonText, Spinner, Stack, VStack } from "@chakra-ui/react"
 import { Translation } from "components/Translation/Translation"
 import { VaultCard } from "components/VaultCard/VaultCard"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
@@ -7,19 +7,19 @@ import { useCallback, useMemo } from "react"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { abbreviateNumber, bnOrZero, isEmpty } from "helpers"
 import { useNavigate } from "react-router"
-import { Card } from "components/Card/Card"
+import useLocalForge from "hooks/useLocalForge"
 
 export const CreditVaults: React.FC = () => {
   const navigate = useNavigate()
   const { theme } = useThemeProvider()
   const {
     protocolData,
-    isVaultsLoaded,
     isPortfolioLoaded,
     selectors: {
       selectVaultsAssetsByType,
     }
   } = usePortfolioProvider()
+  const [ storedAuthCode ] = useLocalForge('authCode', null)
 
   const creditVaults = useMemo(() => {
     return selectVaultsAssetsByType('CR')
@@ -91,25 +91,20 @@ export const CreditVaults: React.FC = () => {
         spacing={6}
         alignItems={'flex-start'}
       >
-        {/* <VStack
-          spacing={4}
-          width={['full', '50%']}
-          alignItems={'flex-start'}
-        >
-          <Translation translation={'strategies.credit.title'} component={Heading} as={'h3'} fontSize={'3xl'} />
-          <Translation translation={'strategies.credit.description'} />
-        </VStack> */}
-        <Stack
+        <SimpleGrid
           spacing={10}
           width={'full'}
-          direction={['column', 'row']}
+          columns={[1, 3]}
         >
           {
             creditVaults.map((asset: Asset, index: number) => (<VaultCard.Credit assetId={asset.id as string} key={`index_${index}`} onClick={() => onVaultClick(asset)} />))
           }
-          <VaultCard.CreditDummy chainId={10} />
-          <VaultCard.CreditDummy chainId={42161} />
-        </Stack>
+          {
+            !storedAuthCode && (
+              [10, 42161].map( chainId => <VaultCard.CreditDummy key={`index_${chainId}`} chainId={chainId} /> )
+            )
+          }
+        </SimpleGrid>
       </VStack>
     </Flex>
   )

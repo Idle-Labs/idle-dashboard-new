@@ -679,7 +679,6 @@ type CreditProps = {
 export const Credit = ({ assetId, onClick }: CreditProps) => {
 
   const theme = useTheme()
-  const { isMobile } = useThemeProvider()
 
   const {
     isVaultsLoaded,
@@ -737,7 +736,6 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
             justifyContent={'space-between'}
             borderRadius={'8px 8px 0 0'}
             backgroundColor={'card.bgLight'}
-            // background={`radial-gradient(circle, ${aggregatedVault.color}50 40%, ${aggregatedVault.color}cc 100%)`}
             backgroundPosition={'top left'}
             backgroundSize={'300%'}
           >
@@ -762,7 +760,9 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
             px={5}
             spacing={[4, 7]}
             width={'full'}
+            flex={1}
             alignItems={'flex-start'}
+            justifyContent={'space-between'}
           >
             <Text color={'primary'} textStyle={'caption'} dangerouslySetInnerHTML={{__html: vault.vaultConfig.descriptionShort}} />
             {
@@ -836,7 +836,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                     borderColor={'divider'}
                     alignItems={'flex-start'}
                   >
-                    <Translation translation={'defi.apr'} textStyle={'captionSmall'} />
+                    <Translation translation={'assets.assetDetails.apyBreakdown.net'} textStyle={'captionSmall'} />
                     <HStack
                       spacing={2}
                       alignItems={'baseline'}
@@ -845,7 +845,8 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                         !isVaultsLoaded ? (
                           <Spinner size={'md'} />
                         ) : (
-                          <Amount.Percentage fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
+                          <AssetProvider.NetApyWithFees fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                          // <Amount.Percentage fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={maxApy} lineHeight={1} />
                         )
                       }
                     </HStack>

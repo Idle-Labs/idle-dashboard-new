@@ -882,6 +882,8 @@
       "apr": "APR",
       "tvl": "TVL",
       "claim": "Claim",
+      "netApr": "Net APR",
+      "netApy": "Net APY",
       "interests": "Interests",
       "threshold": "Termination threshold"
     },
@@ -1110,7 +1112,7 @@
     "epochStatus": "Cycle Status",
     "epochDuration": "Cycle Duration",
     "epochAPR": "Cycle APR",
-    "epochAprChange": "Cycle new APR",
+    "epochAprChange": "Cycle new APY",
     "epochWithdrawType": "Withdraw type",
     "epochWithdrawDeadline": "Withdraw deadline",
     "epochClaimPeriod": "Claim period",
@@ -2293,6 +2295,17 @@
           "BB_BB": "The Junior class has higher yield and always overperform the underlying yield, as it protects the Senior class from losses."
         }
       },
+      "aprBreakdown": {
+        "base": "Base APR",
+        "lidoStaking": "Lido staking APR",
+        "rewards": "Rewards APR",
+        "strategy": "Strategy APR",
+        "harvest": "Harvest APR",
+        "gauge": "Gauge APR",
+        "fee": "Performance fee",
+        "gross": "Gross APR",
+        "net": "Net APR"
+      },
       "apyBreakdown": {
         "base": "Base APY",
         "lidoStaking": "Lido staking APY",
@@ -2300,6 +2313,7 @@
         "strategy": "Strategy APY",
         "harvest": "Harvest APY",
         "gauge": "Gauge APY",
+        "fee": "Performance fee",
         "gross": "Gross APY",
         "net": "Net APY"
       },

@@ -36,6 +36,7 @@ import type {
   RewardEmission,
   AmphorEpoch,
   VaultContractCdoEpochData,
+  NumberType,
 } from "constants/";
 import {
   bnOrZero,
@@ -59,6 +60,7 @@ import {
   getPlatformApiConfig,
   floorTimestamp,
   sortArrayByKey,
+  apr2apy,
 } from "helpers/";
 import { getDataFromApiV2, getIdleAPIV2AllPages } from "helpers/apiv2";
 import { CreditVault } from "vaults/CreditVault";
@@ -1215,7 +1217,7 @@ export class VaultFunctionsHelper {
     return BNify(0);
   }
 
-  public async getVaultEpochData(vault: Vault): Promise<EpochData | null> {
+  public async getVaultEpochData(vault: Vault): Promise<AmphorEpoch | null> {
     if (vault instanceof TrancheVault) {
       switch (vault.cdoConfig.name) {
         case "IdleCDO_amphor_wstETH":

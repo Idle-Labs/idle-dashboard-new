@@ -7,7 +7,7 @@ import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { Translation } from "components/Translation/Translation"
 import { DATETIME_FORMAT, VaultContractCdoEpochData, vaultsStatusSchemes } from "constants/"
 import { useThemeProvider } from "contexts/ThemeProvider"
-import { fixTokenDecimals, formatDate, sortDate, sortNumeric } from "helpers"
+import { apr2apy, bnOrZero, compoundVaultApr, fixTokenDecimals, formatDate, sortDate, sortNumeric } from "helpers"
 import { useMemo } from "react"
 import { useTranslate } from "react-polyglot"
 import { Column, Row } from "react-table"
@@ -75,10 +75,16 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       accessor:'APRs.GROSS',
       disableSortBy: !sortEnabled,
       defaultCanSort: sortEnabled,
-      Header:translate('epochs.table.apr'),
+      Header:translate('epochs.table.netApy'),
       Cell: ({ value }: { value: number }) => {
+        if (!vault || !asset){
+          return null
+        }
+        const grossApr = bnOrZero(value)
+        const netApr = grossApr.minus(grossApr.times(bnOrZero(asset?.fee)))
+        const netApy = compoundVaultApr(netApr, vault, asset)
         return (
-          <Amount.Percentage textStyle={'tableCell'} value={value} />
+          <Amount.Percentage textStyle={'tableCell'} value={netApy} />
         )
       },
       sortType: sortNumeric
@@ -128,7 +134,7 @@ export const EpochsHistory: React.FC<EpochsHistoryArgs> = ({
       },
       sortType: sortNumeric
     },
-  ]), [sortEnabled, isMobile, translate, asset, underlyingAsset])
+  ]), [sortEnabled, isMobile, translate, asset, underlyingAsset, vault])
 
   const initialState = useMemo(() => ({
     sortBy: [

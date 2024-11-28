@@ -7,7 +7,11 @@ import {
   HistoryTimeframe,
   DateRange,
   EtherscanTransaction,
+  NumberType,
+  Vault,
+  Asset,
 } from "constants/types";
+import { CreditVault } from "vaults/CreditVault";
 
 type BNifyInput = any;
 
@@ -78,6 +82,35 @@ export function downloadFile(content: any, fileName: string = "export.csv") {
 
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
+}
+
+export function compoundVaultApr(
+  apr: NumberType,
+  vault: Vault,
+  asset: Asset
+): BigNumber {
+  let compoundingPeriod = 365;
+  if (
+    vault instanceof CreditVault &&
+    bnOrZero(asset.epochData?.epochDuration).gt(0)
+  ) {
+    compoundingPeriod = BigNumber.minimum(
+      365,
+      BigNumber.maximum(
+        1,
+        BNify(365).div(bnOrZero(asset.epochData?.epochDuration).div(86400))
+      )
+    )
+      .integerValue(BigNumber.ROUND_FLOOR)
+      .toNumber();
+  }
+  // console.log(
+  //   vault.id,
+  //   compoundingPeriod,
+  //   apr.toString(),
+  //   apr2apy(BNify(apr).div(100), compoundingPeriod).times(100).toString()
+  // );
+  return apr2apy(BNify(apr).div(100), compoundingPeriod).times(100);
 }
 
 export function apr2apy(apr: BNifyInput, period: number = 365) {

@@ -24,7 +24,7 @@ import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/var
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs, getEpochVaultInstantWithdrawEnabled } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs, getEpochVaultInstantWithdrawEnabled, compoundVaultApr } from 'helpers/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch, Nullable } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
@@ -799,6 +799,150 @@ const GaugeUserDistribution: React.FC<AmountProps> = (props) => {
   ) : <Spinner size={'sm'} />
 }
 
+const NetAprWithFees: React.FC<PercentageProps> = (props) => {
+  const { asset, vault } = useAssetProvider()
+
+  const grossApr = bnOrZero(asset?.apr)
+  const netApr = grossApr.minus(grossApr.times(bnOrZero(asset?.fee)))
+
+  const tooltipLabel = (
+    <VStack
+      py={1}
+      spacing={1}
+    >
+      <VStack
+        spacing={1}
+        pb={1}
+        borderBottom={'1px dashed'}
+        borderBottomColor={'cta'}
+      >
+        <HStack
+          spacing={3}
+          width={'100%'}
+          alignItems={'baseline'}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'assets.assetDetails.apyBreakdown.gross'} />
+          <Amount.Percentage value={grossApr} textStyle={'tableCell'} />
+        </HStack>
+        <HStack
+          spacing={3}
+          width={'100%'}
+          alignItems={'baseline'}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'assets.assetDetails.generalData.performanceFee'} />
+          <AssetProvider.PerformanceFee textStyle={'tableCell'} />
+        </HStack>
+      </VStack>
+      <HStack
+        spacing={3}
+        width={'100%'}
+        alignItems={'baseline'}
+        justifyContent={'space-between'}
+      >
+        <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
+        <Amount.Percentage value={netApr} textStyle={'tableCell'} />
+      </HStack>
+    </VStack>
+  )
+
+  return asset?.apr ? (
+    <HStack
+      spacing={2}
+      alignItems={'center'}
+      justifyContent={'flex-start'}
+    >
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        label={tooltipLabel}
+      >
+        <TooltipContent>
+          <Amount.Percentage value={netApr} {...props} stackProps={{ spacing: 1 }} borderBottom={'1px dashed'} borderBottomColor={'cta'} />
+        </TooltipContent>
+      </Tooltip>
+    </HStack>
+  ) : <Spinner size={'sm'} />
+}
+
+type NetApyWithFeesArgs = {
+  tooltipEnabled?: boolean
+} & PercentageProps
+
+const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
+  tooltipEnabled = false,
+  ...props
+}) => {
+  const { asset, vault } = useAssetProvider()
+
+  if (!asset || !vault) return null
+
+  const grossApr = bnOrZero(asset?.apr)
+  const netApy = compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), vault, asset)
+
+  const tooltipLabel = (
+    <VStack
+      py={1}
+      spacing={1}
+    >
+      <VStack
+        spacing={1}
+        pb={1}
+        borderBottom={'1px dashed'}
+        borderBottomColor={'cta'}
+      >
+        <HStack
+          spacing={3}
+          width={'100%'}
+          alignItems={'baseline'}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'assets.assetDetails.aprBreakdown.gross'} />
+          <Amount.Percentage value={grossApr} textStyle={'tableCell'} />
+        </HStack>
+        <HStack
+          spacing={3}
+          width={'100%'}
+          alignItems={'baseline'}
+          justifyContent={'space-between'}
+        >
+          <Translation translation={'assets.assetDetails.generalData.performanceFee'} />
+          <AssetProvider.PerformanceFee textStyle={'tableCell'} />
+        </HStack>
+      </VStack>
+      <HStack
+        spacing={3}
+        width={'100%'}
+        alignItems={'baseline'}
+        justifyContent={'space-between'}
+      >
+        <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
+        <Amount.Percentage value={netApy} textStyle={'tableCell'} />
+      </HStack>
+    </VStack>
+  )
+
+  return asset?.apr ? (
+    <HStack
+      spacing={2}
+      alignItems={'center'}
+      justifyContent={'flex-start'}
+    >
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        label={tooltipLabel}
+        isDisabled={!tooltipEnabled}
+      >
+        <TooltipContent>
+          <Amount.Percentage value={netApy} {...props} stackProps={{ spacing: 1 }} borderBottom={tooltipEnabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+        </TooltipContent>
+      </Tooltip>
+    </HStack>
+  ) : <Spinner size={'sm'} />
+}
+
 const Apr: React.FC<PercentageProps> = (props) => {
   const { asset } = useAssetProvider()
 
@@ -1480,7 +1624,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     return null
   }
 
-  const value = epochData[field as keyof EpochData]
+  const value = epochData[field as keyof CreditVaultEpoch]
 
   // Waiting for value
   // if (value === undefined){
@@ -1490,7 +1634,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   switch (field){
     case 'epochStartDate':
     case 'epochEndDate':
-      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value, 'YYYY/MM/DD HH:mm')}</Text>)
+      return (<Text {...props}>{ BNify(value).lte(0) ? '-' : formatDate(value as number, 'YYYY/MM/DD HH:mm')}</Text>)
     case 'epochDuration':
       return (<Text {...props}>{secondsToPeriod(value)}</Text>)
     case 'lastEpochApr':
@@ -2085,7 +2229,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       if (!vault || !("getFlag" in vault)) return null
       const benchmark = vault.getFlag('benchmark')
       return (
-        <Link isExternal href={benchmark.link} color={'link'} textStyle={'tableCell'} fontSize={'sm'} {...props}>{benchmark.label}</Link>
+        <Link isExternal href={benchmark.link} color={'link'} textStyle={'tableCell'} {...props}>{benchmark.label}</Link>
       )
     case 'bounds':
       if (!vault || !("getFlag" in vault)) return null
@@ -2221,6 +2365,8 @@ AssetProvider.SeniorPoolUsd = SeniorPoolUsd
 AssetProvider.JuniorPoolUsd = JuniorPoolUsd
 AssetProvider.StrategyBadge = StrategyBadge
 AssetProvider.ApyRatioChart = ApyRatioChart
+AssetProvider.NetAprWithFees = NetAprWithFees
+AssetProvider.NetApyWithFees = NetApyWithFees
 AssetProvider.EpochCountdown = EpochCountdown
 AssetProvider.StakingEndDate = StakingEndDate
 AssetProvider.NetEarningsUsd = NetEarningsUsd
