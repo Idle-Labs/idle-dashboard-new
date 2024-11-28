@@ -222,6 +222,10 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     const amountToWithdraw = bnOrZero(amount).gt(0) ? BigNumber.minimum(allowance, vaultBalance, BNify(amount).div(vaultPrice)) : vaultBalance
 
     const withdrawContractSendMethod = await getWithdrawSendMethod(amountToWithdraw)
+
+    if (!withdrawContractSendMethod){
+      return defaultGasLimit
+    }
     
     const estimatedGasLimit = await estimateGasLimit(withdrawContractSendMethod, sendOptions) || defaultGasLimit
     
