@@ -61,6 +61,7 @@ import {
   floorTimestamp,
   sortArrayByKey,
   apr2apy,
+  compoundVaultApr,
 } from "helpers/";
 import { getDataFromApiV2, getIdleAPIV2AllPages } from "helpers/apiv2";
 import { CreditVault } from "vaults/CreditVault";
@@ -1399,6 +1400,26 @@ export class VaultFunctionsHelper {
         //     };
         //   }
         //   break;
+        default:
+          return {
+            apr: BNify(0),
+            vaultId: vault.id,
+          };
+      }
+    } else if (vault instanceof CreditVault) {
+      switch (vault.cdoConfig.name) {
+        case "IdleCreditVault_bastion_USDT":
+          const grossApr = bnOrZero(asset.apr);
+          const netApy = compoundVaultApr(
+            grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
+            vault,
+            asset
+          );
+          return {
+            type: "rewards",
+            vaultId: vault.id,
+            apr: BigNumber.maximum(0, BNify(20).minus(netApy)),
+          };
         default:
           return {
             apr: BNify(0),

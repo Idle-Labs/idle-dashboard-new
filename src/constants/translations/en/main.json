@@ -2319,7 +2319,8 @@
         "gauge": "Gauge APY",
         "fee": "Performance fee",
         "gross": "Gross APY",
-        "net": "Net APY"
+        "net": "Net APY",
+        "total": "Total APY"
       },
       "assetHeader": {
         "balance": "Balance",

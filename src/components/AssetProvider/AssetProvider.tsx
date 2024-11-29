@@ -871,17 +871,17 @@ type NetApyWithFeesArgs = {
 } & PercentageProps
 
 const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
-  tooltipEnabled = false,
+  tooltipEnabled = true,
   ...props
 }) => {
   const { asset, vault } = useAssetProvider()
 
-  if (!asset || !vault) return null
+  const grossApr = useMemo(() => bnOrZero(asset?.aprBreakdown?.base), [asset])
+  const netApy = useMemo(() => vault && asset? compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), vault, asset) : BNify(0), [grossApr, vault, asset])
+  const rewardsApy = useMemo(() => bnOrZero(asset?.aprBreakdown?.rewards), [asset])
+  const totalApy = useMemo(() => netApy.plus(rewardsApy), [netApy, rewardsApy])
 
-  const grossApr = bnOrZero(asset?.apr)
-  const netApy = compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), vault, asset)
-
-  const tooltipLabel = (
+  const tooltipLabel = useMemo(() => (
     <VStack
       py={1}
       spacing={1}
@@ -898,8 +898,8 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
           alignItems={'baseline'}
           justifyContent={'space-between'}
         >
-          <Translation translation={'assets.assetDetails.aprBreakdown.gross'} />
-          <Amount.Percentage value={grossApr} textStyle={'tableCell'} />
+          <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
+          <Amount.Percentage value={netApy} textStyle={'tableCell'} />
         </HStack>
         <HStack
           spacing={3}
@@ -907,8 +907,8 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
           alignItems={'baseline'}
           justifyContent={'space-between'}
         >
-          <Translation translation={'assets.assetDetails.generalData.performanceFee'} />
-          <AssetProvider.PerformanceFee textStyle={'tableCell'} />
+          <Translation translation={'assets.assetDetails.apyBreakdown.rewards'} />
+          <Amount.Percentage value={rewardsApy} textStyle={'tableCell'} />
         </HStack>
       </VStack>
       <HStack
@@ -917,11 +917,15 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
         alignItems={'baseline'}
         justifyContent={'space-between'}
       >
-        <Translation translation={'assets.assetDetails.apyBreakdown.net'} />
-        <Amount.Percentage value={netApy} textStyle={'tableCell'} />
+        <Translation translation={'assets.assetDetails.apyBreakdown.total'} />
+        <Amount.Percentage value={totalApy} textStyle={'tableCell'} />
       </HStack>
     </VStack>
-  )
+  ), [netApy, rewardsApy, totalApy])
+
+  const isTooltipDisabled = useMemo(() => !tooltipEnabled || rewardsApy.lte(0), [tooltipEnabled, rewardsApy])
+
+  if (!asset || !vault) return null
 
   return asset?.apr ? (
     <HStack
@@ -933,10 +937,10 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
         hasArrow
         placement={'top'}
         label={tooltipLabel}
-        isDisabled={!tooltipEnabled}
+        isDisabled={isTooltipDisabled}
       >
         <TooltipContent>
-          <Amount.Percentage value={netApy} {...props} stackProps={{ spacing: 1 }} borderBottom={tooltipEnabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+          <Amount.Percentage value={totalApy} {...props} stackProps={{ spacing: 1 }} borderBottom={!isTooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
         </TooltipContent>
       </Tooltip>
     </HStack>
