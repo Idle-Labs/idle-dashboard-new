@@ -1,7 +1,9 @@
 import { VaultContractCdoEpochData } from "constants/";
 import { useState, useMemo, useEffect } from "react";
 import {
+  BNify,
   bnOrZero,
+  compoundVaultApr,
   getChartTimestampBounds,
   sortArrayByKey,
   toDayjs,
@@ -95,12 +97,20 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
           })
           .forEach((epoch: VaultContractCdoEpochData) => {
             const date = toDayjs(epoch.endDate).valueOf();
-            const value = bnOrZero(epoch.APRs.GROSS).toNumber();
+
+            const grossAPR = BNify(epoch.APRs.GROSS);
+            const value = compoundVaultApr(
+              grossAPR.minus(grossAPR.times(bnOrZero(asset?.fee))),
+              vault,
+              asset
+            ).toNumber();
+
             if (
               date < timeframeStartTimestamp ||
               (timeframeEndTimestamp && date > timeframeEndTimestamp)
-            )
+            ) {
               return;
+            }
 
             if (!amountsByDate[date]) {
               amountsByDate[date] = {

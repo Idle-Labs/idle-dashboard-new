@@ -401,9 +401,15 @@ export const Earn: React.FC = () => {
 
   const performance = useMemo(() => {
 
+    if (!chartData?.total?.length){
+      return null
+    }
+
     return (
-      <Box
+      <VStack
+        spacing={4}
         width={'full'}
+        alignItems={'flex-start'}
       >
         <HStack
           mb={6}
@@ -475,9 +481,10 @@ export const Earn: React.FC = () => {
             formatFn={ asset?.epochData ? (n: any) => `${numberToPercentage(n, 2, 9999, 0.01)}` : (!useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined) }
           />
         </Card.Flex>
-      </Box>
+        {performanceTable}
+      </VStack>
     )
-  }, [params.asset, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, isPortfolioLoaded])
+  }, [params.asset, performanceTable, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, isPortfolioLoaded])
 
   const maxItems = useMemo(() => {
     return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
@@ -493,7 +500,6 @@ export const Earn: React.FC = () => {
       <EpochWithdrawRequest assetId={asset?.id} />
       <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
       {performance}
-      {performanceTable}
       <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />

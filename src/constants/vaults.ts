@@ -199,7 +199,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       blockNumber: 0,
       descriptionShort:
         "Variable-rate loan channeling funds into delta-neutral yield strategies overperforming the BTC funding rate.",
-      description: `The vault operates as an evergreen, variable-rate loan, channeling funds into delta-neutral yield strategies. These include market making, cross-chain and cross-market arbitrage, and funding rate optimization. Interest is distributed weekly to liquidity providers, with the option for weekly redemptions.<br /><br />The vault’s variable loan rate is pegged to the <a href="https://studio.glassnode.com/metrics?a=BTC&e=aggregated&m=derivatives.FuturesFundingRatePerpetualV2&resolution=1h" class="link" rel="nofollow noopener noreferrer" target="_blank">BTC open interest-weighted funding rate</a>, with a 1.5x performance multiplier, a guaranteed daily minimum return of 5% APY, and a maximum yield cap of 30% APY.<br /><br />The vault is institutional compliant, and users have to pass through a KYC process to lend funds.`,
+      description: `The vault operates as an evergreen, variable-rate loan, channeling funds into delta-neutral yield strategies. These include market making, cross-chain and cross-market arbitrage, and funding rate optimization. Interest is distributed weekly to liquidity providers, with the option for weekly redemptions.<br /><br />The vault’s variable loan rate is pegged to the <a href="https://studio.glassnode.com/metrics?a=BTC&e=aggregated&m=derivatives.FuturesFundingRatePerpetualV2&resolution=1h" class="link" rel="nofollow noopener noreferrer" target="_blank">BTC open interest-weighted funding rate</a>, with a 1.5x performance multiplier, a minimum return of 5% net APY, and a maximum return cap of 30% net APY.<br /><br />The vault is institutional compliant, and users have to pass through a KYC process to lend funds.`,
     },
   ],
   10: [
@@ -432,6 +432,79 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       description: "This is a test vault, do whatever you want",
     },
   ],
+  42161: [
+    {
+      mode: "CREDIT",
+      kycRequired: true,
+      manager: "bastion",
+      borrower: "bastion",
+      underlyingToken: "USDT",
+      enabledEnvs: ["credit"],
+      accessCodes: [
+        "7LBV4C",
+        "9SP8TL",
+        "BN8TFD",
+        "MQSJ6Q",
+        "9AHYWB",
+        "6WP2NE",
+        "52SNUV",
+        "ATU4VH",
+        "W45UX8",
+        "N77ZMD",
+      ],
+      custodian: {
+        name: "-",
+      },
+      navAgent: {
+        name: "-",
+      },
+      operators: [
+        {
+          type: "strategist",
+          name: "bastion",
+        },
+        {
+          type: "curator",
+          name: "idle",
+        },
+      ],
+      flags: {
+        performance: {},
+        generalDataFields: {
+          maxItems: 4,
+          custodian: false,
+          navAgent: false,
+        },
+      },
+      name: "Bastion Trading",
+      vaultType: "derivativesMM",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_bastion_USDT",
+        address: "0x97F476F664A95106931f78113489e0361Cf1c9Fa",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_bastion_USDT",
+        address: "0x3919396Cd445b03E6Bb62995A7a4CB2AC544245D",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_bastion_USDT",
+        address: "0x5b11507F8A91005aD1591F54ef64133AabA6d06E",
+      },
+      depositQueue: {
+        abi: IdleCdoEpochDepositQueue as Abi,
+        address: "0x133F1C751f25C2AAf0E83f0609A67074915144A4",
+      },
+      blockNumber: 0,
+      descriptionShort:
+        "Fixed-rate loan channeling funds into derivatives trading, market making and systematic strategies",
+      description: `The Vault provides an evergreen fixed-rate loan facility, directing capital into Bastion's derivatives trading, market-making, and systematic strategies. Monthly interest distributions ensure consistent returns for liquidity providers, while flexible redemption options are available on a monthly basis.<br />Designed with institutional-grade compliance, the vault is exclusively available to Qualified Lenders in supported jurisdictions. All participants must complete a KYC process before accessing the lending opportunities.`,
+    },
+  ],
 };
 
 export interface Pool {
@@ -521,6 +594,7 @@ export const tranches: Record<
   number,
   Record<string, Record<string, TrancheConfig>>
 > = {
+  42161: {},
   1101: {
     clearpool: {
       USDCFas: {

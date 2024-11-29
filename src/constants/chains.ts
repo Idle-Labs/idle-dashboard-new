@@ -19,6 +19,13 @@ export const chains: Record<number, Chain> = {
     publicRpcUrl: `https://mainnet.optimism.io`,
     rpcUrl: `https://optimism-mainnet.infura.io/v3/${env.REACT_APP_INFURA_OPTIMISM_KEY}`,
   },
+  42161: {
+    id: "0xa4b1",
+    token: "ARB",
+    label: "Arbitrum One",
+    publicRpcUrl: `https://arb1.arbitrum.io/rpc`,
+    rpcUrl: `https://arbitrum-mainnet.infura.io/v3/${env.REACT_APP_INFURA_KEY}`,
+  },
   // 1101: {
   //   id: "0x44d",
   //   token: "ETH",

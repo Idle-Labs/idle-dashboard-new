@@ -907,4 +907,17 @@ export const underlyingTokens: Record<
       address: "0xda7cd765DF426fCA6FB5E1438c78581E4e66bFe7",
     },
   },
+  42161: {
+    USDT: {
+      decimals: 6,
+      token: "USDT",
+      enabled: true,
+      colors: {
+        hex: "#22a079",
+        rgb: [34, 160, 121],
+        hsl: ["161", "65%", "38%"],
+      },
+      address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+    },
+  },
 };

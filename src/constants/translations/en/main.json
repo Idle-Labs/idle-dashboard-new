@@ -230,6 +230,7 @@
     "btcFundingRate": "BTC+ funding rate",
     "fundingRateArbitrage": "Funding rate arbitrage",
     "primeBrokerage": "Prime brokerage",
+    "derivativesMM": "Derivatives & Market-Making",
     "overcollatLending": "Overcollateralized lending",
     "diversifiedBasisYield": "Diversified Basis Yield",
     "institutionalCredit": "Institutional Credit",

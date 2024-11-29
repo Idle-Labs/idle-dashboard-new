@@ -978,7 +978,7 @@ export class VaultFunctionsHelper {
 
     const collectedFeesPromises = Object.keys(chains).map((chainId: string) =>
       asyncReduce<any, any>(
-        FEES_COLLECTORS[chainId],
+        FEES_COLLECTORS[chainId] || [],
         async (feeCollectorAddress) => {
           const explorer = getExplorerByChainId(+chainId);
           const endpoint = `${
