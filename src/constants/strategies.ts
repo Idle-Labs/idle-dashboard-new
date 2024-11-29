@@ -161,7 +161,7 @@ export const strategies: Record<string, StrategyProps> = {
       {
         field: "epochDuration",
         label: "epochs.table.duration",
-        tooltip: "assets.assetDetails.tooltips.epochDuration",
+        // tooltip: "assets.assetDetails.tooltips.epochDuration",
       },
       {
         field: "epochRedemption",

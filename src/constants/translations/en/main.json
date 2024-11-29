@@ -872,6 +872,7 @@
     "table": {
       "kyc": "KYC",
       "redemptions": "Redemptions",
+      "maturity": "Maturity",
       "epochNumber": "Epoch #",
       "countdown": "Countdown",
       "duration": "Cycle length",
@@ -2286,8 +2287,9 @@
         "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution",
         "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy. Rewards are harvested weekly and distributed over a week",
-        "rewardEmissionToken": "Tokens that will be distributed per year for the entire pool. Received rewards will be harvested monthly and distributed over a week",
         "AA": "This Vault can deploy funds into Senior Tranches, providing higher yields while keeping a low-risk profile, thanks to Seniors’ built-in coverage",
+        "rewardEmissionToken": "Tokens that will be distributed per year for the entire pool. Received rewards will be harvested monthly and distributed over a week",
+        "maturity": "The predetermined end date of a loan, marking the point at which the principal amount, along with any outstanding interest, becomes due for repayment by the borrower",
         "rewardEmissionTokenOn1000Usd": "Tokens that will be distributed per year for a $1000 worth position. Received rewards, once transferrable, will be harvested monthly and distributed over a week",
         "BB": "This Vault routes deposits across multiple Junior Tranches, and automatically rebalance funds in order to seek the highest Junior APY, while providing coverage to their Senior counterparts",
         "riskProfiles": {

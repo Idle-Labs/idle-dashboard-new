@@ -2231,11 +2231,17 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (
         <Link isExternal href={benchmark.link} color={'link'} textStyle={'tableCell'} {...props}>{benchmark.label}</Link>
       )
+    case 'maturity':
+      if (!vault || !("getFlag" in vault)) return null
+      const maturity = vault.getFlag('maturity')
+      return (
+        <Text textStyle={'tableCell'} {...props}>{maturity}</Text>
+      )
     case 'bounds':
       if (!vault || !("getFlag" in vault)) return null
       const bounds = vault.getFlag('bounds')
       return (
-        <Text textStyle={'tableCell'} fontSize={'sm'} {...props}>{bounds}</Text>
+        <Text textStyle={'tableCell'} {...props}>{bounds}</Text>
       )
     case 'statusBadge':
       return (<StatusBadge width={6} height={6} {...props} />)

@@ -470,10 +470,16 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       flags: {
         performance: {},
+        maturity: "28th Feb 2025",
         generalDataFields: {
           maxItems: 4,
           custodian: false,
           navAgent: false,
+          epochRedemption: {
+            field: "maturity",
+            label: "epochs.table.maturity",
+            tooltip: "assets.assetDetails.tooltips.maturity",
+          },
         },
       },
       name: "Bastion Trading",
