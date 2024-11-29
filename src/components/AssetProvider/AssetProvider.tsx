@@ -907,8 +907,13 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
           alignItems={'baseline'}
           justifyContent={'space-between'}
         >
-          <Translation translation={'assets.assetDetails.apyBreakdown.rewards'} />
-          <Amount.Percentage value={rewardsApy} textStyle={'tableCell'} />
+          <HStack
+            spacing={2}
+          >
+            <Translation translation={'assets.assetDetails.apyBreakdown.rewards'} />
+            <DistributedRewards size={'2xs'} />
+          </HStack>
+          <Amount.Percentage prefix={'+'} value={rewardsApy} textStyle={'tableCell'} />
         </HStack>
       </VStack>
       <HStack

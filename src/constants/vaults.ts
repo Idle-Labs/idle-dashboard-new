@@ -482,6 +482,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           },
         },
       },
+      distributedTokens: ["ARB"],
       name: "Bastion Trading",
       vaultType: "derivativesMM",
       Token: {

@@ -919,5 +919,16 @@ export const underlyingTokens: Record<
       },
       address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
     },
+    ARB: {
+      decimals: 18,
+      enabled: true,
+      token: "ARB",
+      colors: {
+        hex: "#8247E5",
+        rgb: [130, 71, 229],
+        hsl: ["262, 75%, 59%"],
+      },
+      address: "0x912CE59144191C1204E64559FE8253a0e49E6548",
+    },
   },
 };
