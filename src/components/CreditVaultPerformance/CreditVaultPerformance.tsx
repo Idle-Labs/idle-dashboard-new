@@ -117,7 +117,7 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
                 return isLastColumn ? (
                   <Td position={'sticky'} right={0} zIndex={1} key={i} color={'primary'} backgroundColor={'card.bg'} textStyle={'bold'}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
                 ) : (
-                  <Td key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
+                  <Td key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(3)}%`}</Td>
                 )
               })
             }
