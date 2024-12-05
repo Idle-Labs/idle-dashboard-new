@@ -45,7 +45,7 @@ export const TopBarMenu: React.FC = () => {
       <NavLink
         to={'/'}
       >
-        <Image src={'images/idle-institutional.svg'} height={[8, 10]} />
+        <Image src={'images/protocols/pareto.svg'} height={[3, 5]} />
       </NavLink>
       {
         !isMobile ? (
