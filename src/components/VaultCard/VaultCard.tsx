@@ -19,7 +19,6 @@ import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { strategies, AggregatedVault, networks, Network, operators } from 'constants/'
 import { useTheme, TextProps, Flex, AvatarProps, BoxProps, ThemingProps, VStack, Spinner, SimpleGrid, HStack, Box, Text, Tooltip, Heading, IconButton, Image, Center, Circle } from '@chakra-ui/react'
-import { FaCircleQuestion } from 'react-icons/fa6'
 
 export type VaultCardProps = {
   assetId: AssetId
