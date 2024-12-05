@@ -256,7 +256,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
   ]), [asset, translate, sortEnabled, vault, epochData, getContractSendMethod])
 
   const walletRequests: WalletRequest[] = useMemo(() => {
-    if (!asset || !account) return []
+    if (!asset || !account || !epochData) return []
     const requests: WalletRequest[] = withdrawRequests ? withdrawRequests.map( request => ({
       type: request.isInstant ? "INSTANT" : "STANDARD",
       action: "WITHDRAW",
@@ -284,7 +284,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       ...requests,
       ...queueRequests
     ]
-  }, [withdrawRequests, asset, account, getRequestStatus, getRequestCountdown])
+  }, [withdrawRequests, asset, account, epochData, getRequestStatus, getRequestCountdown])
 
   if (!account?.address || !asset || !vault || !(vault instanceof CreditVault) || !("getClaimContractSendMethod" in vault) || isEmpty(walletRequests)){
     return null
