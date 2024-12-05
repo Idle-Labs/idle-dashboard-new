@@ -1116,16 +1116,9 @@ export const Institutional = () => {
             width={'full'}
             alignItems={'center'}
           >
-            <Image src={'images/strategies/institutional.svg'} w={[10, 14]} h={[10, 14]} />
-            <VStack
-              spacing={[1, 2]}
-              alignItems={'space-between'}
-            >
-              <Translation translation={'Institutional lending'} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h4', 'h3']} />
-              <Translation translation={'Credit vaults'} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
-            </VStack>
+            <Image src={'images/partners/pareto.svg'} w={[14, 28]} />
+            <Translation translation={'Credit vaults'} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'xl']} pl={4} borderLeft={'1px solid white'} />
           </HStack>
-          <Image src={'images/partners/pareto.svg'} w={[14, 16]} />
         </HStack>
         <VStack
           px={5}
