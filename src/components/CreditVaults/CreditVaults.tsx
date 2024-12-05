@@ -101,7 +101,7 @@ export const CreditVaults: React.FC = () => {
           }
           {
             !storedAuthCode && (
-              [10, 42161].map( chainId => <VaultCard.CreditDummy key={`index_${chainId}`} chainId={chainId} /> )
+              [10].map( chainId => <VaultCard.CreditDummy key={`index_${chainId}`} chainId={chainId} /> )
             )
           }
         </SimpleGrid>
