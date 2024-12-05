@@ -1092,7 +1092,7 @@ export const Institutional = () => {
       pb={5}
       maxWidth={['full', '32em']}
       layerStyle={['card', 'cardHover']}
-      onClick={() => openWindow('https://credit.idle.finance/#/credit')}
+      onClick={() => openWindow('https://pareto.idle.finance')}
     >
       <VStack
         spacing={[4, 7]}
