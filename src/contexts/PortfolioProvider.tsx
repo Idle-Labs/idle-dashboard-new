@@ -4903,6 +4903,10 @@ export function PortfolioProvider({ children }: ProviderProps) {
       assetsData[vault.id].apr = assetsData[vault.id].aprBreakdown ? (Object.values(assetsData[vault.id].aprBreakdown || {}) as BigNumber[]).reduce((total: BigNumber, apr: BigNumber) => total.plus(apr), BNify(0)) : BNify(0)
       assetsData[vault.id].apy = assetsData[vault.id].apyBreakdown ? (Object.values(assetsData[vault.id].apyBreakdown || {}) as BigNumber[]).reduce((total: BigNumber, apy: BigNumber) => total.plus(apy), BNify(0)) : BNify(0)
 
+      const grossApr = bnOrZero(assetsData[vault.id].aprBreakdown?.base)
+      assetsData[vault.id].netApr = grossApr.minus(grossApr.times(bnOrZero(assetsData[vault.id].fee)))
+      assetsData[vault.id].netApy = compoundVaultApr(assetsData[vault.id].netApr as BigNumber, vault, assetsData[vault.id])
+
       // Add rewards on top
       const vaultRewardsEmissionsTotalApr: VaultAdditionalApr = vaultFunctionsHelper.getRewardsEmissionTotalApr(vault, assetsData[vault.id])
       if (vaultRewardsEmissionsTotalApr && bnOrZero(vaultRewardsEmissionsTotalApr.apr).gt(0)) {
@@ -4973,7 +4977,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     if (!state.isPortfolioLoaded || isEmpty(state.assetsData)) return;
     const visibleAssets: Asset[] = (Object.values(state.assetsData) as Asset[]).filter((asset: Asset) => (!!strategies[asset.type as string]?.visible))
     const totalTvlUsd = Object.values(visibleAssets).reduce((totalTvlUsd: BigNumber, asset: Asset) => totalTvlUsd.plus(bnOrZero(asset?.tvlUsd)), BNify(0))
-    const totalAvgApy = Object.values(visibleAssets).reduce((avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.apy)))), BNify(0)).div(totalTvlUsd)
+    const totalAvgApy = Object.values(visibleAssets).reduce((avgApy: BigNumber, asset: Asset) => avgApy.plus(bnOrZero(asset?.tvlUsd).times(BigNumber.minimum(9999, bnOrZero(asset?.netApy)))), BNify(0)).div(totalTvlUsd)
     const uniqueVaults: AssetId[] = visibleAssets.reduce((uniqueVaults: AssetId[], asset: Asset) => {
       const vault = selectVaultById(asset.id)
       if (asset.status !== 'deprecated' && vault) {

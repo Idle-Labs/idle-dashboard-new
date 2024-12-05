@@ -530,6 +530,8 @@ export interface Asset {
   protocol?: string;
   tvlUsd?: BigNumber;
   rewards?: Balances;
+  netApr?: BigNumber;
+  netApy?: BigNumber;
   balance?: BigNumber;
   baseApr?: BigNumber;
   poolData?: Balances;
