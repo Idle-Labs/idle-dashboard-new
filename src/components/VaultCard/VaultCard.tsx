@@ -1100,10 +1100,10 @@ export const Institutional = () => {
         >
         <HStack
           h={88}
-          px={5}
+          px={[3, 5]}
           spacing={4}
           width={'full'}
-          alignItems={['flex-start', 'center']}
+          alignItems={'center'}
           borderRadius={'8px 8px 0 0'}
           justifyContent={'space-between'}
           // borderBottom={'1px solid #fff'}
@@ -1111,20 +1111,26 @@ export const Institutional = () => {
           backgroundPosition={'top left'}
           backgroundSize={'300%'}
         >
-          <HStack>
+          <HStack
+            spacing={4}
+            width={'full'}
+            alignItems={'center'}
+          >
             <Image src={'images/strategies/institutional.svg'} w={[10, 14]} h={[10, 14]} />
             <VStack
               spacing={[1, 2]}
               alignItems={'space-between'}
             >
-              <Translation translation={'Institutional lending'} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h3', 'h3']} />
+              <Translation translation={'Institutional lending'} isHtml={true} component={Heading} color={'primary'} as={'h3'} fontSize={['h4', 'h3']} />
               <Translation translation={'Credit vaults'} component={Heading} color={'primary'} as={'h4'} fontWeight={500} fontSize={['md', 'md']} />
             </VStack>
           </HStack>
+          <Image src={'images/partners/pareto.svg'} w={[14, 16]} />
         </HStack>
         <VStack
           px={5}
           flex={1}
+          spacing={[4, 0]}
           width={'full'}
           alignItems={'flex-start'}
           justifyContent={'space-between'}
@@ -1147,8 +1153,9 @@ export const Institutional = () => {
               spacing={6}
               width={'full'}
             >
-              <Image h={6} src={'images/partners/rockaway.svg'} />
-              <Image h={8} src={'images/partners/fasanara-digital.svg'} />
+              <Image h={[5, 6]} src={'images/partners/rockaway.svg'} />
+              <Image h={[5, 8]} src={'images/partners/fasanara-digital.svg'} />
+              <Image h={[5, 6]} src={'images/partners/bastion-trading.svg'} />
               {/* <Image h={4} src={'images/partners/falconX.svg'} />
               <Image h={16} src={'images/partners/maven.svg'} /> */}
             </HStack>
