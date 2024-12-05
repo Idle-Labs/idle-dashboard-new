@@ -2714,6 +2714,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     (async () => {
 
       const vaultsRequests = await loadVaultsRequests();
+      console.log('vaultsRequests', vaultsRequests)
       dispatch({ type: 'SET_VAULTS_REQUESTS', payload: vaultsRequests })
 
       const vaultsOnChainData = await getVaultsOnchainData(vaults);
@@ -3517,12 +3518,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
   const loadVaultsRequests = useCallback(async () => {
     // Get vaults from APIs
-    const cacheKeyVaults = `apiv2_vaults`
-    const callbackVaults = async () => getVaultsFromApiV2()
-    const vaultsData = cacheProvider
-      ? await cacheProvider.checkAndCache(cacheKeyVaults, callbackVaults, 300)
-      : await callbackVaults();
-
+    const vaultsData = await getVaultsFromApiV2();
     if (!vaultsData){
       return []
     }
@@ -3537,7 +3533,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         [vaultId]: vaultBlock.requests
       }
     }, {})
-  }, [cacheProvider])
+  }, [])
 
   useEffect(() => {
     if (isEmpty(state.vaults) || state.isVaultsLoaded || runningEffects.current.vaultsLoading === true) return

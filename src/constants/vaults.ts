@@ -50,6 +50,7 @@ export const vaultsStatusSchemes: Record<string, string> = {
   running: "blue",
   claimable: "green",
   pending: "orangeTone",
+  processed: "orangeTone",
 };
 
 export interface CDO {
@@ -508,7 +509,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x5b11507F8A91005aD1591F54ef64133AabA6d06E",
       },
       depositQueue: {
-        abi: IdleCdoEpochDepositQueue as Abi,
+        abi: IdleCdoEpochQueue as Abi,
         address: "0x133F1C751f25C2AAf0E83f0609A67074915144A4",
       },
       blockNumber: 0,

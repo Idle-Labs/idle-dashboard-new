@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { Card } from 'components/Card/Card'
 import { MdDiscount } from "react-icons/md"
-import { VAULT_LIMIT_MAX } from 'constants/'
+import { NumberType, VAULT_LIMIT_MAX } from 'constants/'
 import { imageFolder } from 'constants/folders'
 import { sendBeginCheckout } from 'helpers/analytics'
 import { useWalletProvider } from 'contexts/WalletProvider'
@@ -170,6 +170,21 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return fixTokenDecimals(allowance, underlyingAsset.decimals)
   }, [underlyingAsset, vault, account?.address, getAllowanceContract, getAllowanceOwner])
 
+  const getDepositContractSendMethod = useCallback((amountToDeposit: NumberType) => {
+    if (!vault || !("getDepositContractSendMethod" in vault)) return
+    let depositContractSendMethod
+
+    if (depositQueueEnabled && ("getRequestDepositSendMethod" in vault)){
+      const depositParams = vault.getDepositParams(amountToDeposit)
+      depositContractSendMethod = vault.getRequestDepositSendMethod(depositParams)
+    } else {
+      // @ts-ignore
+      const depositParams = vault.getDepositParams(amountToDeposit, referral)
+      depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+    }
+    return depositContractSendMethod
+  }, [vault, referral, depositQueueEnabled])
+  
   // Deposit
   const deposit = useCallback((checkAllowance: boolean = true, forceAmount?: string | number) => {
     const amountToDeposit = forceAmount || amount
@@ -188,17 +203,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
 
       if (allowance.gte(amountToDeposit)){
 
-        let depositContractSendMethod
-
-        if (depositQueueEnabled && ("getRequestDepositSendMethod" in vault)){
-          const depositParams = vault.getDepositParams(amountToDeposit)
-          depositContractSendMethod = vault.getRequestDepositSendMethod(depositParams)
-        } else {
-          // @ts-ignore
-          const depositParams = vault.getDepositParams(amountToDeposit, referral)
-          depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
-        }
-
+        const depositContractSendMethod = getDepositContractSendMethod(amountToDeposit)
 
         // Send analytics event
         sendBeginCheckout(asset, amountUsd)
@@ -210,7 +215,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
         dispatch({type: 'SET_ACTIVE_STEP', payload: 1})
       }
     })()
-  }, [account, disabled, referral, amount, amountUsd, assetBalance, vault, asset, depositQueueEnabled, underlyingAsset, stakingEnabled, getDepositAllowance, dispatch, setActionIndex, sendTransaction])
+  }, [account, disabled, amount, amountUsd, assetBalance, vault, asset, underlyingAsset, stakingEnabled, getDepositContractSendMethod, getDepositAllowance, dispatch, setActionIndex, sendTransaction])
 
   // Set max balance function
   const setMaxBalance = useCallback(() => {
@@ -228,26 +233,22 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!account || assetBalance.lte(0) || allowance.lte(0)){
       return defaultGasLimit
     }
-
-    const balanceToDeposit = BigNumber.minimum(assetBalance, allowance)
-
-    // console.log('balanceToDeposit', assetBalance.toFixed(), allowance.toFixed(), balanceToDeposit.toFixed())
-
+    
     const sendOptions = {
       from: account?.address
     }
-    // const depositParams = vault.getDepositParams(balanceToDeposit.toFixed())
+    const balanceToDeposit = BigNumber.minimum(assetBalance, allowance)
     const amount = balanceToDeposit.toFixed()
 
-    // @ts-ignore
-    const depositParams = vault.getDepositParams(amount, referral)
-
-    const depositContractSendMethod = vault.getDepositContractSendMethod(depositParams)
+    const depositContractSendMethod = getDepositContractSendMethod(amount)
+    if (!depositContractSendMethod){
+      return defaultGasLimit
+    }
 
     const estimatedGasLimit = await estimateGasLimit(depositContractSendMethod, sendOptions) || defaultGasLimit
     // console.log('DEPOSIT - estimatedGasLimit', allowance.toString(), assetBalance.toFixed(), depositParams, estimatedGasLimit)
     return estimatedGasLimit
-  }, [account, vault, referral, getDepositAllowance, assetBalance])
+  }, [account, vault, getDepositAllowance, assetBalance, getDepositContractSendMethod])
 
   // Update gas fees
   useEffect(() => {

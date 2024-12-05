@@ -115,7 +115,11 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
     if (request.type === 'QUEUE'){
       switch (request.action){
         case 'WITHDRAW':
-         
+          if (request.status === 'PENDING'){
+            return vault?.getDeleteRequestWithdrawSendMethod(request.epochNumber)
+          } else if (request.status === 'CLAIMABLE'){
+            return vault?.getClaimRequestWithdrawSendMethod(request.epochNumber)
+          }
         break;
         case 'DEPOSIT':
           if (request.status === 'PENDING'){
@@ -123,7 +127,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
           } else if (request.status === 'CLAIMABLE'){
             return vault?.getClaimRequestDepositSendMethod(request.epochNumber)
           }
-          return
+        break;
         default:
         break;
       }
@@ -208,9 +212,10 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       defaultCanSort: sortEnabled,
       Header:translate('defi.status'),
       Cell: ({ row }: { row: RowProps }) => {
+        const type = row.original.type
         const status = row.original.status.toLowerCase()
         const countdown = row.original.countdown
-        return status !== 'PENDING' ? (
+        return type === 'QUEUE' && status !== 'processed' ? (
           <Tag variant={'solid'} colorScheme={vaultsStatusSchemes[status]} color={'primary'} fontWeight={700}>
             {translate(`transactionRow.${status}`)}
           </Tag>
@@ -235,13 +240,13 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       Header:translate('epochs.table.claim'),
       Cell: ({ value, row }: { value: WalletRequest["status"], row: RowProps }) => {
         const contractSendMethod = getContractSendMethod(row.original)
+        const amount = fixTokenDecimals(row.original.amount, (vault?.underlyingToken?.decimals || 18))
         if (row.original.type === 'QUEUE' && value === 'PENDING'){
-          const isDisabled = !!epochData?.isEpochRunning
+          const isDisabled = row.original.action === 'DEPOSIT' && !!epochData?.isEpochRunning
           return (
-            <TransactionButton size={'xs'} text={'common.cancel'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'cancel'} width={'100%'} disabled={isDisabled} />
+            <TransactionButton size={'xs'} text={'common.cancel'} amount={amount.toFixed(2)} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'cancel'} width={'100%'} disabled={isDisabled} />
           )
         }
-        const amount = fixTokenDecimals(row.original.amount, (vault?.underlyingToken?.decimals || 18))
         const isDisabled = value !== 'CLAIMABLE'
         return (
           <TransactionButton size={'xs'} text={'common.claim'} vaultId={asset.id as string} assetId={asset.id as string} contractSendMethod={contractSendMethod} actionType={'claim'} amount={amount.toFixed(2)} width={'100%'} disabled={isDisabled} />
@@ -266,8 +271,13 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       action: request.type,
       amount: BNify(request.amount),
       epochNumber: request.epochNumber,
+      requestedOn: request.requestedOn,
       status: request.status === 'CLAIMED' ? 'CLAIMABLE' : 'PENDING',
-      requestedOn: request.requestedOn
+      countdown: getRequestCountdown({
+        isInstant: false,
+        amount: BNify(request.amount),
+        epochNumber: Number(request.epochNumber)
+      })
     }) ) : []
 
     return [

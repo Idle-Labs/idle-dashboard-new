@@ -1048,6 +1048,7 @@
     "status": "Status",
     "confirmed": "Confirmed",
     "pending": "Pending",
+    "processed": "Pending",
     "claimable": "Claimable",
     "failed": "Failed",
     "network": "Network",
@@ -1539,7 +1540,7 @@
     },
     "cancel": {
       "status": {
-        "confirm": "You are cancelling your deposit request",
+        "confirm": "You are cancelling your request",
         "pending": "Your transaction has been broadcast and is pending confirmation.",
         "success": "You have successfully cancelled your request.",
         "failed": "There was an issue with your cancel request."
