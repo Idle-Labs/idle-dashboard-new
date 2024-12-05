@@ -471,6 +471,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         performance: {},
         maturity: "28th Feb 2025",
+        kycLink: "https://app.keyring.network/policies/bastion-trading",
         generalDataFields: {
           maxItems: 4,
           custodian: false,
