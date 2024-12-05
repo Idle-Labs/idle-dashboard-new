@@ -1620,7 +1620,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
   field,
   ...props
 }) => {
-  const { asset } = useAssetProvider()
+  const { asset, vault } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
 
   const epochData: Nullable<CreditVaultEpoch> = useMemo(() => asset?.epochData as CreditVaultEpoch, [asset])
@@ -1629,7 +1629,7 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     return (<Spinner size={'sm'} />)
   }
 
-  if (!asset || !epochData){
+  if (!asset || !vault || !epochData){
     return null
   }
 
@@ -1652,7 +1652,8 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
       const allowInstantWithdraw = getEpochVaultInstantWithdrawEnabled(epochData)
       return (<Text {...props}>{secondsToPeriod(allowInstantWithdraw ? epochData?.instantWithdrawDelay : (asset.epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
     case 'epochRedemption':
-      return (<Text {...props}>{secondsToPeriod((epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
+      const redemption = "getFlag" in vault ? vault.getFlag('redemption') : undefined
+      return (<Text {...props}>{ redemption || `${secondsToPeriod((epochData as CreditVaultEpoch)['epochDuration'])} notice`}</Text>)
     case 'isEpochRunning':
       if (!("isEpochRunning" in epochData)) return null
       const isDefaulted = !!epochData.defaulted

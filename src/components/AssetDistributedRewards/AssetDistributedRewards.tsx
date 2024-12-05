@@ -10,7 +10,7 @@ import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { VStack, Heading, SimpleGrid, Text, HStack } from '@chakra-ui/react'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TransactionItem } from 'components/TransactionItem/TransactionItem'
-import { BNify, sortArrayByKey, isEmpty, toDayjs, getVaultFlag, bnOrZero, getObjectPath } from 'helpers/'
+import { BNify, sortArrayByKey, isEmpty, toDayjs, getVaultFlag, bnOrZero, getObjectPath, openWindow } from 'helpers/'
 import type { AssetId, BigNumber, DistributedReward, UnderlyingTokenProps, ModalProps, Transaction } from 'constants/'
 
 type AssetDistributedRewardsProps = {
@@ -34,6 +34,10 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
   }, [assetId, selectVaultPosition])
 
   const openHowItWorksModal = useCallback(() => {
+    const distributionLink = vault.getFlag("rewardsDistributionLink")
+    if (distributionLink){
+      return openWindow(distributionLink)
+    }
     const modalProps = vault.translations.distributedTokens.modal
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, vault])

@@ -401,7 +401,9 @@ export const Earn: React.FC = () => {
 
   const performance = useMemo(() => {
 
-    if (!chartData?.total?.length){
+    const performanceEnabled = vault && ("getFlag" in vault) ? vault.getFlag('performanceEnabled') : true
+
+    if (!chartData?.total?.length || performanceEnabled === false){
       return null
     }
 
@@ -484,7 +486,7 @@ export const Earn: React.FC = () => {
         {performanceTable}
       </VStack>
     )
-  }, [params.asset, performanceTable, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, isPortfolioLoaded])
+  }, [params.asset, performanceTable, vault, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, isPortfolioLoaded])
 
   const maxItems = useMemo(() => {
     return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
@@ -499,12 +501,12 @@ export const Earn: React.FC = () => {
       {fundsOverview}
       <EpochWithdrawRequest assetId={asset?.id} />
       <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
+      <AssetDistributedRewards assetId={asset?.id} />
       {performance}
       <EpochsHistory />
       <MaticNFTs assetId={asset?.id} />
       <EthenaCooldowns assetId={asset?.id} />
       <AssetDiscountedFees assetId={asset?.id} />
-      <AssetDistributedRewards assetId={asset?.id} />
       {vaultRewards}
       {strategyDescriptionCarousel}
       {epochThresholds}

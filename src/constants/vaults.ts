@@ -230,7 +230,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       operators: [
         {
-          type: "strategist",
+          type: "borrower",
           name: "falconx",
         },
         {
@@ -279,7 +279,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       accessCodes: ["6G8R7F"],
       operators: [
         {
-          type: "strategist",
+          type: "borrower",
           name: "falconx",
         },
         {
@@ -393,7 +393,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       operators: [
         {
-          type: "strategist",
+          type: "borrower",
           name: "falconx",
         },
       ],
@@ -448,7 +448,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       operators: [
         {
-          type: "strategist",
+          type: "borrower",
           name: "bastion",
         },
         {
@@ -458,13 +458,16 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       flags: {
         performance: {},
+        redemption: "Monthly",
         maturity: "28th Feb 2025",
+        performanceEnabled: false,
         kycLink: "https://app.keyring.network/policies/bastion-trading",
+        rewardsDistributionLink:
+          "https://medium.com/idle-finance/credit-vaults-are-coming-to-arbitrum-b646563d71e9",
         generalDataFields: {
-          maxItems: 4,
+          maxItems: 5,
           custodian: false,
-          navAgent: false,
-          epochRedemption: {
+          navAgent: {
             field: "maturity",
             label: "epochs.table.maturity",
             tooltip: "assets.assetDetails.tooltips.maturity",
