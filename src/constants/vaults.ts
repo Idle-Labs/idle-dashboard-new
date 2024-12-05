@@ -440,18 +440,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       borrower: "bastion",
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
-      accessCodes: [
-        "7LBV4C",
-        "9SP8TL",
-        "BN8TFD",
-        "MQSJ6Q",
-        "9AHYWB",
-        "6WP2NE",
-        "52SNUV",
-        "ATU4VH",
-        "W45UX8",
-        "N77ZMD",
-      ],
       custodian: {
         name: "-",
       },
