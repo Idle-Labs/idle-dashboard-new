@@ -104,12 +104,6 @@ export function compoundVaultApr(
       .integerValue(BigNumber.ROUND_FLOOR)
       .toNumber();
   }
-  // console.log(
-  //   vault.id,
-  //   compoundingPeriod,
-  //   apr.toString(),
-  //   apr2apy(BNify(apr).div(100), compoundingPeriod).times(100).toString()
-  // );
   return apr2apy(BNify(apr).div(100), compoundingPeriod).times(100);
 }
 

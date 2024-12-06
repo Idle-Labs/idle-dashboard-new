@@ -97,13 +97,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
           })
           .forEach((epoch: VaultContractCdoEpochData) => {
             const date = toDayjs(epoch.endDate).valueOf();
-
-            const grossAPR = BNify(epoch.APRs.GROSS);
-            const value = compoundVaultApr(
-              grossAPR.minus(grossAPR.times(bnOrZero(asset?.fee))),
-              vault,
-              asset
-            ).toNumber();
+            const value = bnOrZero(asset?.netApy).toNumber();
 
             if (
               date < timeframeStartTimestamp ||
