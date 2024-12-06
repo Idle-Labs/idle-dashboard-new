@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { chains } from 'constants/'
 import { Multicall } from 'classes/'
-import { isEmpty, asyncReduce } from 'helpers/'
+import { isEmpty, asyncReduce, BNify } from 'helpers/'
 import type { ProviderProps } from './common/types'
 import { useWalletProvider } from './WalletProvider'
 import React, { useState, useContext, useEffect, useMemo } from 'react'
@@ -49,6 +49,8 @@ export function Web3Provider({ children }: ProviderProps) {
 
   // @ts-ignore
   window.web3 = web3
+  // @ts-ignore
+  window.BNify = BNify
   // @ts-ignore
   window.web3Chains = web3Chains
 

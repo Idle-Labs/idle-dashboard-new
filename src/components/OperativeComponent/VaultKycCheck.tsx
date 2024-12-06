@@ -12,6 +12,7 @@ import { checkSignatureV2, getSignatureByName, saveSignatureV2 } from 'helpers/a
 import { useWeb3Provider } from 'contexts/Web3Provider'
 import { VscVerifiedFilled } from "react-icons/vsc";
 import { useThemeProvider } from 'contexts/ThemeProvider'
+import { KeyringConnect } from '@keyringnetwork/keyring-connect-sdk'
 
 
 type VaultKycCheckProps = {
@@ -39,6 +40,34 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const vault = useMemo(() => {
     return selectVaultById(assetId)
   }, [assetId, selectVaultById])
+
+  const kycLink = useMemo(() => {
+    return vault?.getFlag("kycLink") || 'https://app.keyring.network'
+  }, [vault])
+
+  const startKeyringVerification = useCallback(async () => {
+    if (!vault || !vault.vaultConfig.keyringPolicyId){
+      return openWindow(kycLink)
+    }
+    const extensionConfig = {
+      name: 'Pareto',
+      app_url: 'https://credit.idle.finance',
+      logo_url: 'https://credit.idle.finance/images/protocols/pareto.svg',
+      policy_id: vault.vaultConfig.keyringPolicyId,
+    };
+    
+    try {
+      const isInstalled = await KeyringConnect.isKeyringConnectInstalled();
+    
+      if (isInstalled) {
+        await KeyringConnect.launchExtension(extensionConfig);
+      } else {
+        return openWindow(kycLink)
+      }
+    } catch (error) {
+      console.error('Failed to launch Keyring Connect:', error);
+    }
+  }, [vault, kycLink])
 
   useEffect(() => {
     if (!vault || !vault.signature || !vault.signature.documents.length){
@@ -106,10 +135,6 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const kycVerified = useMemo(() => !!asset?.walletAllowed && account?.address, [asset, account])
 
   const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && signatureVerified)), [isKycRequired, kycVerified, signatureVerified])
-
-  const kycLink = useMemo(() => {
-    return vault?.getFlag("kycLink") || 'https://app.keyring.network'
-  }, [vault])
 
   useEffect(() => {
     if (!isKycRequired){
@@ -188,7 +213,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
                 justifyContent={'space-between'}
               >
                 <Translation translation={`strategies.credit.kyc.${ kycVerified ? 'completed' : 'complete' }`} textStyle={'captionSmall'} />
-                <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow(kycLink) } />
+                <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => startKeyringVerification() } />
               </HStack>
             </VStack>
           )

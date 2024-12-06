@@ -841,7 +841,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const endpoint = `${explorer.endpoints[chainIdToUse]}?module=account&action=txlist&address=${account.address}&startblock=${txlistStartBlock}&endblock=${txlistEndBlock}&sort=asc`
       const txsList = await makeEtherscanApiRequest(endpoint, explorer.keys)
       // console.log('txsList', txlistStartBlock, txlistEndBlock, txsList)
-      txsList.filter((tx: any) => !!tx.functionName).forEach((tx: any) => {
+      txsList?.filter((tx: any) => !!tx.functionName).forEach((tx: any) => {
         const etherscanTxs = userTransactions.filter((etherscanTx: EtherscanTransaction) => cmpAddrs(etherscanTx.hash, tx.hash))
         etherscanTxs.forEach((etherscanTx: EtherscanTransaction) => {
           if (etherscanTx) {

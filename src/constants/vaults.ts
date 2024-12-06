@@ -95,6 +95,7 @@ export interface CreditVaultConfig {
   kycRequired: boolean;
   signature?: CreditVaultSignature;
   name: string;
+  keyringPolicyId?: number;
   custodian?: ExternalProvider;
   navAgent?: ExternalProvider;
   Token: ContractConfig;
@@ -122,6 +123,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     {
       mode: "STRATEGY",
       kycRequired: true,
+      keyringPolicyId: 4,
       manager: "fasanara",
       borrower: "fasanara",
       status: "experimental",
@@ -193,7 +195,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       Strategy: {
         abi: IdleCreditVault as Abi,
-        name: "IdleStrategy_clearpool_bastion_USDT",
+        name: "IdleStrategy_clearpool_fasanara_USDT",
         address: "0xC35D078092872Ec1f2ae82bcd6f0b6b89F0850de",
       },
       blockNumber: 0,
@@ -208,6 +210,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       kycRequired: true,
       manager: "falconx",
       borrower: "falconx",
+      // keyringPolicyId: 18,
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
       accessCodes: [
@@ -438,6 +441,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       kycRequired: true,
       manager: "bastion",
       borrower: "bastion",
+      keyringPolicyId: 20,
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
       custodian: {
