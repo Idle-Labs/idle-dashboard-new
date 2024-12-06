@@ -8,6 +8,7 @@
     "@emotion/styled": "^11.0.0",
     "@fontsource/open-sans": "^4.5.12",
     "@fontsource/source-sans-pro": "^4.5.11",
+    "@keyringnetwork/keyring-connect-sdk": "^1.0.3",
     "@react-spring/web": "^9.5.5",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.0.1",
@@ -42,6 +43,7 @@
     "node-polyglot": "^2.4.2",
     "react": "^18.1.0",
     "react-app-rewired": "^2.2.1",
+    "react-countdown": "^2.3.6",
     "react-dates": "^21.8.0",
     "react-dom": "^18.1.0",
     "react-fast-marquee": "^1.3.5",
@@ -67,9 +69,11 @@
     "build-storybook": "build-storybook -s public",
     "deploy": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
     "deploy-beta": "echo 'beta.idle.finance\nwww.beta.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote beta",
+    "deploy-credit": "echo 'credit.idle.finance\nwww.credit.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote credit",
     "deploy-all": "yarn deploy && yarn deploy-beta",
     "build-deploy": "yarn build && yarn deploy",
     "build-deploy-beta": "yarn build && yarn deploy-beta",
+    "build-deploy-credit": "yarn build && yarn deploy-credit",
     "build-deploy-all": "yarn build && yarn deploy-all"
   },
   "browserslist": {
