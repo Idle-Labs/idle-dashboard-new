@@ -243,6 +243,8 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       flags: {
         performance: {},
+        protectedByKyc: true,
+        protectedInfos: ["apy"],
         kycLink: "https://falconx.app.keyring.network/",
       },
       name: "FalconX",
@@ -269,8 +271,9 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x0D81b042bB9939B4d32CDf7861774c442A2685CE",
       },
       blockNumber: 0,
-      descriptionShort: "Prime brokerage credit pool",
-      description: `The borrowing vault lends funds earning yields in prime brokerage activities, such as short-duration financing, lending, liquidity, and trade execution.`,
+      descriptionShort:
+        "Lending funds to an SPV managed by a top-tier Prime Broker, providing financing to end-counterparties while being secured by structural protections",
+      description: `The vault lends funds to an SPV managed by a top-tier Prime Broker to facilitate financing to end-counterparties (such as Trading Firms, Hedge Funds, etc.) while being backed by layers of structural protections, including an equity tranche, transaction-level collateralization, and real-time risk engine.`,
     },
     {
       mode: "CREDIT",

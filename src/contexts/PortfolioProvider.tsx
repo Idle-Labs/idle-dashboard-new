@@ -202,7 +202,7 @@ const reducer = (state: InitialState, action: ReducerActionTypes) => {
         distributedRewards: {},
         isPortfolioLoaded: false,
         portfolioTimestamp: null,
-        isPortfolioAccountReady: true,
+        isPortfolioAccountReady: false,
         isVaultsPositionsLoaded: false,
       }
     /*

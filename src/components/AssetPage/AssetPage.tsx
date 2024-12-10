@@ -711,24 +711,24 @@ export const AssetPage: React.FC = () => {
             spacing={[0, 10]}
             alignItems={'space-between'}
           >
-            <Stack
+            <VStack
               flex={1}
               mt={'7.5em'}
               mb={[20, 0]}
               spacing={10}
+              alignItems={'flex-start'}
               width={['100%', 14 / 20]}
             >
               <Stack
-                flex={1}
                 spacing={0}
-                width={['100%', 'auto']}
+                width={'full'}
                 justifyContent={'space-between'}
                 borderBottom={[0, '1px solid']}
                 direction={['column', 'row']}
                 borderColor={['divider', 'divider']}
               >
                 <HStack
-                  width={['full', 'auto']}
+                  width={'full'}
                   borderBottom={['1px solid', 0]}
                   borderColor={'divider'}
                 >
@@ -737,7 +737,7 @@ export const AssetPage: React.FC = () => {
                 {headerRightSide}
               </Stack>
               <TabComponent {...tabs[selectedTabIndex].componentProps} />
-            </Stack>
+            </VStack>
             {interactiveComponent}
           </HStack>
         </Box>

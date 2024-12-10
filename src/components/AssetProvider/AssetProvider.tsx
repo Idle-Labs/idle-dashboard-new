@@ -179,18 +179,19 @@ const KycRequired: React.FC<TextProps> = ({ ...props }) => {
 }
 
 const KycVerificationBadge: React.FC = () => {
+  const theme = useTheme()
   const { account } = useWalletProvider()
-  const { asset, vault, translate, theme } = useAssetProvider()
+  const { asset, vault, translate } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
 
-  if (!asset || !isPortfolioLoaded) return null
-
-  const checkWalletAllowed = vault && ("kycRequired" in vault) && !!vault.kycRequired
-  if (!checkWalletAllowed) return null
+  const checkWalletAllowed = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
   
-  const walletAllowed = account?.address && !!asset.walletAllowed
-  const statusColor = walletAllowed ? theme.colors.brightGreen : theme.colors.orange
-  const statusColorBg = walletAllowed ? `${theme.colors.brightGreen}15` : `${theme.colors.orange}15`
+  const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
+  const statusColor = useMemo(() => walletAllowed ? theme.colors.brightGreen : theme.colors.orange, [walletAllowed, theme])
+  const statusColorBg = useMemo(() => walletAllowed ? `${theme.colors.brightGreen}15` : `${theme.colors.orange}15`, [walletAllowed, theme])
+  
+  if (!asset || !isPortfolioLoaded) return null
+  if (!checkWalletAllowed) return null
 
   return (
     <Tooltip
@@ -874,7 +875,14 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   tooltipEnabled = true,
   ...props
 }) => {
+  const { account } = useWalletProvider()
   const { asset, vault } = useAssetProvider()
+
+  const isProtected = useMemo(() => vault && ("getFlag" in vault) && vault.getFlag('protectedInfos')?.includes('apy'), [vault])
+  const checkWalletAllowed = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
+  const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
+
+  // console.log('isProtected', asset?.id, isProtected)
 
   const grossApr = useMemo(() => bnOrZero(asset?.aprBreakdown?.base), [asset])
   const netApy = useMemo(() => vault && asset? compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), vault, asset) : BNify(0), [grossApr, vault, asset])
@@ -931,6 +939,13 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   const isTooltipDisabled = useMemo(() => !tooltipEnabled || rewardsApy.lte(0), [tooltipEnabled, rewardsApy])
 
   if (!asset || !vault) return null
+
+  // Don't show apy
+  if (isProtected && checkWalletAllowed && !walletAllowed){
+    return (
+      <Text {...props} sx={{filter: 'blur(7px)'}}>XX%</Text>
+    )
+  }
 
   return asset?.apr ? (
     <HStack

@@ -1,5 +1,4 @@
 import { strategies } from 'constants/'
-import { NavLink } from "react-router-dom"
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
@@ -32,10 +31,12 @@ import { AssetDistributedRewards } from 'components/AssetDistributedRewards/Asse
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
-import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText } from '@chakra-ui/react'
+import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText, Button } from '@chakra-ui/react'
 import { CreditVault } from 'vaults/CreditVault'
 import { CreditVaultPerformance } from 'components/CreditVaultPerformance/CreditVaultPerformance'
 import { EpochWithdrawInterestButton } from 'components/OperativeComponent/EpochVaultMessage'
+import { MdLock } from 'react-icons/md'
+import { VaultKycVerifyButton } from 'components/OperativeComponent/VaultKycCheck'
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -48,6 +49,7 @@ export const Earn: React.FC = () => {
   const {
     stakingData,
     isPortfolioLoaded,
+    isPortfolioAccountReady,
     isVaultsPositionsLoaded,
     selectors: {
       selectAssetById,
@@ -492,26 +494,62 @@ export const Earn: React.FC = () => {
     return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
   }, [vault])
 
+  const isProtected = useMemo(() => vault && ("getFlag" in vault) && !!vault.getFlag('protectedByKyc'), [vault])
+  const walletAllowedRequired = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
+  const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
+  const showProtectedData = useMemo(() => {
+    return !isProtected || (isPortfolioAccountReady && (!walletAllowedRequired || walletAllowed))
+  }, [isPortfolioAccountReady, isProtected, walletAllowedRequired, walletAllowed])
+
   return (
     <VStack
       spacing={10}
       width={'full'}
     >
       {strategyDescription}
-      {fundsOverview}
-      <EpochWithdrawRequest assetId={asset?.id} />
-      <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
-      <AssetDistributedRewards assetId={asset?.id} />
-      {performance}
-      <EpochsHistory />
-      <MaticNFTs assetId={asset?.id} />
-      <EthenaCooldowns assetId={asset?.id} />
-      <AssetDiscountedFees assetId={asset?.id} />
-      {vaultRewards}
-      {strategyDescriptionCarousel}
-      {epochThresholds}
-      {coveredRisks}
-      <VaultUnderlyingProtocols assetId={asset?.id} />
+      {
+        showProtectedData ? (
+          <VStack
+            spacing={10}
+            width={'full'}
+          >
+            {fundsOverview}
+            <EpochWithdrawRequest assetId={asset?.id} />
+            <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
+            <AssetDistributedRewards assetId={asset?.id} />
+            {performance}
+            <EpochsHistory />
+            <MaticNFTs assetId={asset?.id} />
+            <EthenaCooldowns assetId={asset?.id} />
+            <AssetDiscountedFees assetId={asset?.id} />
+            {vaultRewards}
+            {strategyDescriptionCarousel}
+            {epochThresholds}
+            {coveredRisks}
+            <VaultUnderlyingProtocols assetId={asset?.id} />
+          </VStack>
+        ) : (
+          <Center
+            py={6}
+            flex={1}
+            px={[4, 10]}
+            width={'full'}
+          >
+            <VStack
+              spacing={6}
+            >
+              <MdLock size={64} />
+              <VStack
+                spacing={4}
+              >
+                <Translation component={Text} translation={"strategies.credit.kyc.required"} textStyle={'heading'} as={'h3'} fontSize={'h3'} textAlign={'center'} />
+                <Translation component={Text} translation={`strategies.credit.kyc.unlock`} textStyle={'caption'} textAlign={'center'} />
+                <VaultKycVerifyButton assetId={asset?.id} size={'lg'} fontSize={'md'} />
+              </VStack>
+            </VStack>
+          </Center>
+        )
+      }
     </VStack>
   )
 }

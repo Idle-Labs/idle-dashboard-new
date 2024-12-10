@@ -72,7 +72,7 @@ export const operators: Record<string, Operator> = {
       twitter: "https://x.com/M11Credit",
     },
     description:
-      "M11 Credit, part of the M11 Group, acts as a pool curator dealing with the vault’s management activities.",
+      "M11 Credit acts as a pool curator/administrator managing the vault’s reporting and epoch cycles.",
   },
   falconx: {
     rating: "AA",
@@ -88,7 +88,7 @@ export const operators: Record<string, Operator> = {
       linkedin: "https://www.linkedin.com/company/thefalconx/",
     },
     description:
-      "FalconX is a leading digital asset prime brokerage for the world’s top institutions with more than $1.5T in trading volume. It provides comprehensive access to global digital asset liquidity and a full range of trading services.",
+      "FalconX is a leading digital asset prime brokerage, providing trading, financing, and technology for market access to the world’s top institutions.",
   },
   fasanara: {
     rating: "AA",

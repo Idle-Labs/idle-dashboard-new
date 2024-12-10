@@ -264,9 +264,10 @@
         "notRequired": "Not Required",
         "required": "KYC Required",
         "title": "KYC Verification",
-        "complete": "KYC verification through Keyring",
+        "complete": "Complete KYC verification to interact",
         "completed": "KYC verification completed",
         "cta": "Verify",
+        "unlock": "Complete the KYC verification to view more details",
         "providedBy": "Verification provided by",
         "tooltips": {
           "required": "KYC verification required",

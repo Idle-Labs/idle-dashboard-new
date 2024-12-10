@@ -10,6 +10,7 @@ import { strategies, GeneralDataField } from 'constants/strategies'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { useTheme, HStack, VStack, SimpleGrid, Text, Tooltip, Heading, TextProps } from '@chakra-ui/react'
+import { useWalletProvider } from 'contexts/WalletProvider'
 
 type AssetGeneralDataArgs = {
   assetId?: AssetId
@@ -77,6 +78,7 @@ export const AssetGeneralData: React.FC<AssetGeneralDataArgs> = ({
   ...props
 }) => {
   // const { params } = useBrowserRouter()
+  const { account } = useWalletProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { TbPlugConnectedX } from 'react-icons/tb'
 import { Translation } from 'components/Translation/Translation'
-import { VStack, Flex, BoxProps, Button, HStack, Image, Link, Box, Checkbox } from '@chakra-ui/react'
+import { VStack, Flex, BoxProps, Button, HStack, Image, Link, Box, Checkbox, ButtonProps, Center } from '@chakra-ui/react'
 import { AssetId, CreditVaultSignatureDocument } from 'constants/'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { openWindow } from 'helpers'
@@ -14,28 +14,16 @@ import { VscVerifiedFilled } from "react-icons/vsc";
 import { useThemeProvider } from 'contexts/ThemeProvider'
 import { KeyringConnect } from '@keyringnetwork/keyring-connect-sdk'
 
-
-type VaultKycCheckProps = {
+type VaultKycVerifyButtonProps = {
   assetId?: AssetId
-} & BoxProps
+} & ButtonProps
 
-export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
+export const VaultKycVerifyButton: React.FC<VaultKycVerifyButtonProps> = ({
   assetId,
-  children
+  ...buttonProps
 }) => {
-  const { web3 } = useWeb3Provider()
-  const { theme } = useThemeProvider()
-  const { account } = useWalletProvider()
-  const [ sending, setSending ] = useState<boolean>(false)
-  const [ signature, setSignature ] = useState<any>(undefined)
-  const [ signatureName, setSignatureName ] = useState<string | undefined>()
-  const [ signatureVerified, setSignatureVerified ] = useState<boolean>(false)
-  const [ documents, setDocuments ] = useState<CreditVaultSignatureDocument[]>([])
+  const { account } = useWalletProvider()
   const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
-
-  const asset = useMemo(() => {
-    return selectAssetById(assetId)
-  }, [assetId, selectAssetById])
 
   const vault = useMemo(() => {
     return selectVaultById(assetId)
@@ -68,6 +56,39 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
       console.error('Failed to launch Keyring Connect:', error);
     }
   }, [vault, kycLink])
+
+  if (!account){
+    return <ConnectWalletButton variant={'ctaFull'} width={40} height={'auto'} size={'md'} py={3} px={6} {...buttonProps} />
+  }
+
+  return (<Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} width={'auto'} height={'auto'} {...buttonProps} onClick={() => startKeyringVerification() } />)
+}
+
+type VaultKycCheckProps = {
+  assetId?: AssetId
+} & BoxProps
+
+export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
+  assetId,
+  children
+}) => {
+  const { web3 } = useWeb3Provider()
+  const { theme } = useThemeProvider()
+  const { account } = useWalletProvider()
+  const [ sending, setSending ] = useState<boolean>(false)
+  const [ signature, setSignature ] = useState<any>(undefined)
+  const [ signatureName, setSignatureName ] = useState<string | undefined>()
+  const [ signatureVerified, setSignatureVerified ] = useState<boolean>(false)
+  const [ documents, setDocuments ] = useState<CreditVaultSignatureDocument[]>([])
+  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+
+  const asset = useMemo(() => {
+    return selectAssetById(assetId)
+  }, [assetId, selectAssetById])
+
+  const vault = useMemo(() => {
+    return selectVaultById(assetId)
+  }, [assetId, selectVaultById])
 
   useEffect(() => {
     if (!vault || !vault.signature || !vault.signature.documents.length){
@@ -157,8 +178,49 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     </React.Fragment>
   )
 
+  const bothVerificationRequired = useMemo(() => !kycVerified && documents.length, [kycVerified, documents] )
+
   if (!asset || !isKycRequired){
     return fallbackComponent
+  }
+
+  if (!bothVerificationRequired && !isWalletAllowed){
+    return (
+      <VStack
+      flex={1}
+      width={'100%'}
+      justifyContent={'space-between'}
+    >
+      <Center
+        px={10}
+        flex={1}
+        width={'100%'}
+      >
+        <VStack
+          spacing={6}
+        >
+          <TbPlugConnectedX size={64} />
+          <VStack
+            spacing={4}
+          >
+            <Translation translation={"strategies.credit.kyc.required"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+            <Translation translation={`strategies.credit.kyc.complete`} textStyle={'caption'} textAlign={'center'} />
+            <VaultKycVerifyButton assetId={assetId} size={'lg'} fontSize={'md'} />
+          </VStack>
+        </VStack>
+      </Center>
+      <HStack
+        spacing={2}
+        alignItems={'center'}
+        justifyContent={'center'}
+      >
+        <Translation translation={`strategies.credit.kyc.providedBy`} textStyle={'captionSmaller'} textAlign={'center'} />
+        <Link display={'flex'} justifyContent={'center'} href={'https://app.keyring.network/connect'} isExternal>
+          <Image src={'images/partners/keyring.svg'} height={'10px'} />
+        </Link>
+      </HStack>
+    </VStack>
+    )
   }
   
   return !isWalletAllowed ? (
@@ -213,7 +275,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
                 justifyContent={'space-between'}
               >
                 <Translation translation={`strategies.credit.kyc.${ kycVerified ? 'completed' : 'complete' }`} textStyle={'captionSmall'} />
-                <Translation size={'sm'} py={2} px={6} component={Button} translation={'strategies.credit.kyc.cta'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => startKeyringVerification() } />
+                <VaultKycVerifyButton assetId={assetId} />
               </HStack>
             </VStack>
           )
