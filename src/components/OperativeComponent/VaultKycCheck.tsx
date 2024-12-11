@@ -80,7 +80,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const [ signatureName, setSignatureName ] = useState<string | undefined>()
   const [ signatureVerified, setSignatureVerified ] = useState<boolean>(false)
   const [ documents, setDocuments ] = useState<CreditVaultSignatureDocument[]>([])
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { isPortfolioAccountReady, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return selectAssetById(assetId)
@@ -179,51 +179,55 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   )
 
   const bothVerificationRequired = useMemo(() => !kycVerified && documents.length, [kycVerified, documents] )
+  const isProtected = useMemo(() => vault && ("getFlag" in vault) && !!vault.getFlag('protectedByKyc'), [vault])
+  const showProtectedData = useMemo(() => {
+    return !isProtected || (isPortfolioAccountReady && (!isKycRequired || isWalletAllowed))
+  }, [isPortfolioAccountReady, isProtected, isKycRequired, isWalletAllowed])
 
-  if (!asset || !isKycRequired){
+  if (showProtectedData && (!asset || !isKycRequired)){
     return fallbackComponent
   }
 
-  if (!bothVerificationRequired && !isWalletAllowed){
+  if (!bothVerificationRequired && (!isWalletAllowed || !showProtectedData)){
     return (
       <VStack
-      flex={1}
-      width={'100%'}
-      justifyContent={'space-between'}
-    >
-      <Center
-        px={10}
         flex={1}
         width={'100%'}
+        justifyContent={'space-between'}
       >
-        <VStack
-          spacing={6}
+        <Center
+          px={10}
+          flex={1}
+          width={'100%'}
         >
-          <TbPlugConnectedX size={64} />
           <VStack
-            spacing={4}
+            spacing={6}
           >
-            <Translation translation={"strategies.credit.kyc.required"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
-            <Translation translation={`strategies.credit.kyc.complete`} textStyle={'caption'} textAlign={'center'} />
-            <VaultKycVerifyButton assetId={assetId} size={'lg'} fontSize={'md'} />
+            <TbPlugConnectedX size={64} />
+            <VStack
+              spacing={4}
+            >
+              <Translation translation={"strategies.credit.kyc.required"} textStyle={'heading'} fontSize={'h3'} textAlign={'center'} />
+              <Translation translation={`strategies.credit.kyc.complete`} textStyle={'caption'} textAlign={'center'} />
+              <VaultKycVerifyButton assetId={assetId} size={'lg'} fontSize={'md'} />
+            </VStack>
           </VStack>
-        </VStack>
-      </Center>
-      <HStack
-        spacing={2}
-        alignItems={'center'}
-        justifyContent={'center'}
-      >
-        <Translation translation={`strategies.credit.kyc.providedBy`} textStyle={'captionSmaller'} textAlign={'center'} />
-        <Link display={'flex'} justifyContent={'center'} href={'https://app.keyring.network/connect'} isExternal>
-          <Image src={'images/partners/keyring.svg'} height={'10px'} />
-        </Link>
-      </HStack>
-    </VStack>
+        </Center>
+        <HStack
+          spacing={2}
+          alignItems={'center'}
+          justifyContent={'center'}
+        >
+          <Translation translation={`strategies.credit.kyc.providedBy`} textStyle={'captionSmaller'} textAlign={'center'} />
+          <Link display={'flex'} justifyContent={'center'} href={'https://app.keyring.network/connect'} isExternal>
+            <Image src={'images/partners/keyring.svg'} height={'10px'} />
+          </Link>
+        </HStack>
+      </VStack>
     )
   }
   
-  return !isWalletAllowed ? (
+  return (!isWalletAllowed || !showProtectedData) ? (
     <VStack
       mt={8}
       flex={1}
