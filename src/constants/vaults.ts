@@ -155,6 +155,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         },
       ],
       flags: {
+        kycLink: "https://app.keyring.network/policies/fasanara-digital",
         benchmark: {
           link: "https://studio.glassnode.com/metrics?a=BTC&e=aggregated&m=derivatives.FuturesFundingRatePerpetualV2&resolution=1h",
           label: "1.5x BTC funding rate",
