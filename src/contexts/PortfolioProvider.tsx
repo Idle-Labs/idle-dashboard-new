@@ -2308,59 +2308,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       // console.log('epochDataResults', epochDataResults)
 
-      if (!isEmpty(epochDataResults)){
-        // @ts-ignore
-        const vaultsEpochsData = epochDataResults.reduce( (vaultsEpochsData: Record<AssetId, CreditVaultEpoch>, callResult: DecodedResult) => {
-          // @ts-ignore
-          const assetId = callResult.extraData.assetId
-          if (!assetId) return vaultsEpochsData
-          const methodName = callResult.callData.method.replace('()', '')
-          const fieldName = callResult.extraData?.data?.field || methodName
-          const fieldData = callResult.data
-
-          return {
-            ...vaultsEpochsData,
-            [assetId]: {
-              ...vaultsEpochsData[assetId],
-              [fieldName]: fieldData
-            }
-          }
-        }, {})
-
-        Object.keys(vaultsEpochsData).forEach( (assetId: AssetId) => {
-          const vaultEpochData = vaultsEpochsData[assetId]
-          // Set epoch start date
-          if (vaultEpochData.defaulted){
-            vaultEpochData.status = 'default'  
-          } else {
-            vaultEpochData.status = vaultEpochData.isEpochRunning ? 'running' : 'open'
-          }
-          vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
-          vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
-          vaultEpochData.epochNumber = bnOrZero(vaultEpochData.epochNumber).toNumber()
-
-          // Process epochs interests
-          const vaultEpochs = creditVaultsEpochs?.find( (epoch: {
-            assetId: string;
-            cdoId?: string;
-            epochs: VaultContractCdoEpochData[];
-          }) => cmpAddrs(epoch.assetId, assetId) )
-
-          if (vaultEpochs){
-            vaultEpochData.epochs = vaultEpochs.epochs
-
-            // Set epochApr if undefined
-            if (BNify(vaultEpochData.epochApr).isNaN()){
-              const lastEpoch = sortArrayByKey(vaultEpochData.epochs, "count", "desc")[0]
-              if (lastEpoch){
-                vaultEpochData.epochApr = BNify(normalizeTokenAmount(lastEpoch.APRs.GROSS, 18));
-              }
-            }
-          }
-          epochsData[assetId] = vaultEpochData
-        })
-      }
-
       // console.log('aprsCallsResults', aprsCallsResults)
 
       // Process total aprs
@@ -2374,79 +2321,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
         return totalAprs
       }, totalAprs)
-
-      aprs = aprsCallsResults.reduce((aprs: Balances, callResult: DecodedResult) => {
-        if (callResult.data) {
-          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
-          const asset = selectAssetById(assetId)
-          const vault = selectVaultById(assetId)
-          if (asset && vault) {
-            const decimals = callResult.extraData.decimals || 18
-            if (!aprs[assetId]) {
-              aprs[assetId] = BNify(0)
-            }
-
-            // Check APR for Credit Vault
-            const epochData = epochsData[assetId]
-            if (vault instanceof CreditVault && epochData && ("epochs" in epochData) && epochData.epochs?.length){
-              // Take the average of the last 3 epochs for STRATEGY vaults
-              if (vault.vaultConfig.mode === 'STRATEGY'){
-                // const lastEpochs = epochData.epochs.filter( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' ).slice(-3)
-                // aprs[assetId] = lastEpochs.reduce( (acc: BigNumber, epochData: VaultContractCdoEpochData) => {
-                //   return acc.plus(bnOrZero(epochData.APRs.GROSS).div(lastEpochs.length))
-                // }, BNify(0))
-                const lastFinishedEpoch = epochData.epochs.find( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' )
-                aprs[assetId] = bnOrZero(lastFinishedEpoch?.APRs.GROSS)
-              // Take latest GROSS apr for CREDIT vaults
-              } else {
-                const latestEpoch = epochData.epochs[0]
-                aprs[assetId] = bnOrZero(latestEpoch.APRs.GROSS)
-              }
-            } else {
-              aprs[assetId] = aprs[assetId].plus(BNify(callResult.data.toString()).div(`1e${decimals}`))
-            }
-
-            aprsBreakdown[assetId] = {
-              base: aprs[assetId]
-            }
-
-            // Add additional Apr
-            const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find((apr: VaultAdditionalApr) => (apr.vaultId === assetId))
-            if (vaultAdditionalApr && vaultAdditionalApr.apr.gt(0)) {
-              const additionalApr = vaultAdditionalApr.apr.div(`1e${decimals}`)
-              // console.log(`Additional Apr ${asset.id}: ${vaultAdditionalApr.apr.toString()}, decimals ${decimals} => ${additionalApr.toString()}`)
-              // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalApr.toString()} = ${aprs[assetId].plus(additionalApr).toString()}`)
-              aprs[assetId] = aprs[assetId].plus(additionalApr)
-
-              // Add to base APR if no type
-              if (!vaultAdditionalApr.type) {
-                aprsBreakdown[assetId].base = aprsBreakdown[assetId].base.plus(additionalApr)
-              } else {
-                aprsBreakdown[assetId][vaultAdditionalApr.type] = additionalApr
-              }
-            }
-
-            additionalAprs[assetId] = BNify(0)
-
-            // Add harvest apr
-            const addHarvestApy = !("flags" in vault) || vault.flags?.addHarvestApy === undefined || vault.flags.addHarvestApy
-            if (lastHarvests[assetId] && addHarvestApy) {
-              additionalAprs[assetId] = additionalAprs[assetId].plus(BNify(lastHarvests[assetId]?.aprs[vault.type]).times(100))
-              // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalAprs[assetId].toString()} = ${aprs[assetId].plus(additionalAprs[assetId]).toString()}`)
-              aprs[assetId] = aprs[assetId].plus(additionalAprs[assetId])
-              aprsBreakdown[assetId].harvest = additionalAprs[assetId]
-
-              const harvestDays = dayDiff((lastHarvests[assetId]?.timestamp!) * 1000, Date.now())
-
-              // Reset harvest APY if base APY is zero
-              if (aprsBreakdown[assetId].base.lte(0) && harvestDays > 1) {
-                aprsBreakdown[assetId].harvest = BNify(0)
-              }
-            }
-          }
-        }
-        return aprs
-      }, aprs)
 
       // Process Fees
       fees = feesCallsResults.reduce((fees: Balances, callResult: DecodedResult) => {
@@ -2530,6 +2404,150 @@ export function PortfolioProvider({ children }: ProviderProps) {
         }
         return totalSupplies
       }, totalSupplies)
+
+
+      if (!isEmpty(epochDataResults)){
+        // @ts-ignore
+        const vaultsEpochsData = epochDataResults.reduce( (vaultsEpochsData: Record<AssetId, CreditVaultEpoch>, callResult: DecodedResult) => {
+          // @ts-ignore
+          const assetId = callResult.extraData.assetId
+          if (!assetId) return vaultsEpochsData
+          const methodName = callResult.callData.method.replace('()', '')
+          const fieldName = callResult.extraData?.data?.field || methodName
+          const fieldData = callResult.data
+
+          return {
+            ...vaultsEpochsData,
+            [assetId]: {
+              ...vaultsEpochsData[assetId],
+              [fieldName]: fieldData
+            }
+          }
+        }, {})
+
+        Object.keys(vaultsEpochsData).forEach( (assetId: AssetId) => {
+          const vaultEpochData = vaultsEpochsData[assetId]
+          // Set epoch start date
+          if (vaultEpochData.defaulted){
+            vaultEpochData.status = 'default'  
+          } else {
+            vaultEpochData.status = vaultEpochData.isEpochRunning ? 'running' : 'open'
+          }
+          vaultEpochData.epochStartDate = bnOrZero(vaultEpochData.epochEndDate).gt(0) ? BNify(vaultEpochData.epochEndDate).minus(vaultEpochData.epochDuration).times(1000).toNumber() : 0
+          vaultEpochData.epochEndDate = BNify(vaultEpochData.epochEndDate).times(1000).toNumber()
+          vaultEpochData.epochNumber = bnOrZero(vaultEpochData.epochNumber).toNumber()
+
+          // Process epochs interests
+          const vaultEpochs = creditVaultsEpochs?.find( (epoch: {
+            assetId: string;
+            cdoId?: string;
+            epochs: VaultContractCdoEpochData[];
+          }) => cmpAddrs(epoch.assetId, assetId) )
+
+          if (vaultEpochs){
+
+            const assetFees = bnOrZero(fees[assetId])
+
+            vaultEpochData.epochs = vaultEpochs.epochs.map( (epoch: VaultContractCdoEpochData) => {
+              const grossAPR = BNify(epoch.APRs.GROSS);
+              const netAPY = compoundVaultApr(
+                grossAPR.minus(grossAPR.times(assetFees)),
+                vaultEpochData.epochDuration
+              ).toNumber();
+
+              const APYs = {
+                NET: netAPY
+              }
+              return {
+                ...epoch,
+                APYs
+              }
+            })
+
+            // Set epochApr if undefined
+            if (BNify(vaultEpochData.epochApr).isNaN()){
+              const lastEpoch = sortArrayByKey(vaultEpochData.epochs, "count", "desc")[0]
+              if (lastEpoch){
+                vaultEpochData.epochApr = BNify(normalizeTokenAmount(lastEpoch.APRs.GROSS, 18));
+              }
+            }
+          }
+          epochsData[assetId] = vaultEpochData
+        })
+      }
+
+      aprs = aprsCallsResults.reduce((aprs: Balances, callResult: DecodedResult) => {
+        if (callResult.data) {
+          const assetId = callResult.extraData.assetId?.toString() || callResult.callData.target.toLowerCase()
+          const asset = selectAssetById(assetId)
+          const vault = selectVaultById(assetId)
+          if (asset && vault) {
+            const decimals = callResult.extraData.decimals || 18
+            if (!aprs[assetId]) {
+              aprs[assetId] = BNify(0)
+            }
+
+            // Check APR for Credit Vault
+            const epochData = epochsData[assetId]
+            if (vault instanceof CreditVault && epochData && ("epochs" in epochData) && epochData.epochs?.length){
+              // Take the average of the last 3 epochs for STRATEGY vaults
+              if (vault.vaultConfig.mode === 'STRATEGY'){
+                // const lastEpochs = epochData.epochs.filter( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' ).slice(-3)
+                // aprs[assetId] = lastEpochs.reduce( (acc: BigNumber, epochData: VaultContractCdoEpochData) => {
+                //   return acc.plus(bnOrZero(epochData.APRs.GROSS).div(lastEpochs.length))
+                // }, BNify(0))
+                const lastFinishedEpoch = epochData.epochs.find( (epochData: VaultContractCdoEpochData) => epochData.status === 'FINISHED' )
+                aprs[assetId] = bnOrZero(lastFinishedEpoch?.APRs.GROSS)
+              // Take latest GROSS apr for CREDIT vaults
+              } else {
+                const latestEpoch = epochData.epochs[0]
+                aprs[assetId] = bnOrZero(latestEpoch.APRs.GROSS)
+              }
+            } else {
+              aprs[assetId] = aprs[assetId].plus(BNify(callResult.data.toString()).div(`1e${decimals}`))
+            }
+
+            aprsBreakdown[assetId] = {
+              base: aprs[assetId]
+            }
+
+            // Add additional Apr
+            const vaultAdditionalApr: VaultAdditionalApr | undefined = vaultsAdditionalAprs.find((apr: VaultAdditionalApr) => (apr.vaultId === assetId))
+            if (vaultAdditionalApr && vaultAdditionalApr.apr.gt(0)) {
+              const additionalApr = vaultAdditionalApr.apr.div(`1e${decimals}`)
+              // console.log(`Additional Apr ${asset.id}: ${vaultAdditionalApr.apr.toString()}, decimals ${decimals} => ${additionalApr.toString()}`)
+              // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalApr.toString()} = ${aprs[assetId].plus(additionalApr).toString()}`)
+              aprs[assetId] = aprs[assetId].plus(additionalApr)
+
+              // Add to base APR if no type
+              if (!vaultAdditionalApr.type) {
+                aprsBreakdown[assetId].base = aprsBreakdown[assetId].base.plus(additionalApr)
+              } else {
+                aprsBreakdown[assetId][vaultAdditionalApr.type] = additionalApr
+              }
+            }
+
+            additionalAprs[assetId] = BNify(0)
+
+            // Add harvest apr
+            const addHarvestApy = !("flags" in vault) || vault.flags?.addHarvestApy === undefined || vault.flags.addHarvestApy
+            if (lastHarvests[assetId] && addHarvestApy) {
+              additionalAprs[assetId] = additionalAprs[assetId].plus(BNify(lastHarvests[assetId]?.aprs[vault.type]).times(100))
+              // console.log(`Additional Apr ${asset.name}: ${aprs[assetId].toString()} + ${additionalAprs[assetId].toString()} = ${aprs[assetId].plus(additionalAprs[assetId]).toString()}`)
+              aprs[assetId] = aprs[assetId].plus(additionalAprs[assetId])
+              aprsBreakdown[assetId].harvest = additionalAprs[assetId]
+
+              const harvestDays = dayDiff((lastHarvests[assetId]?.timestamp!) * 1000, Date.now())
+
+              // Reset harvest APY if base APY is zero
+              if (aprsBreakdown[assetId].base.lte(0) && harvestDays > 1) {
+                aprsBreakdown[assetId].harvest = BNify(0)
+              }
+            }
+          }
+        }
+        return aprs
+      }, aprs)
 
     })
 
@@ -4886,7 +4904,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
           const apr = assetsData[vault.id].aprBreakdown?.[type]
           if (apr) {
             if (type !== 'rewards' && compoundApr) {
-              apyBreakdown[type] = compoundVaultApr(apr, vault, assetsData[vault.id])
+              apyBreakdown[type] = compoundVaultApr(apr, assetsData[vault.id].epochData?.epochDuration)
             } else {
               apyBreakdown[type] = apr
             }
@@ -4901,7 +4919,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       const grossApr = bnOrZero(assetsData[vault.id].aprBreakdown?.base)
       assetsData[vault.id].netApr = grossApr.minus(grossApr.times(bnOrZero(assetsData[vault.id].fee)))
-      assetsData[vault.id].netApy = compoundVaultApr(assetsData[vault.id].netApr as BigNumber, vault, assetsData[vault.id])
+      assetsData[vault.id].netApy = compoundVaultApr(assetsData[vault.id].netApr as BigNumber, assetsData[vault.id].epochData?.epochDuration)
 
       // Add rewards on top
       const vaultRewardsEmissionsTotalApr: VaultAdditionalApr = vaultFunctionsHelper.getRewardsEmissionTotalApr(vault, assetsData[vault.id])

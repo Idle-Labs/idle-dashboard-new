@@ -86,20 +86,13 @@ export function downloadFile(content: any, fileName: string = "export.csv") {
 
 export function compoundVaultApr(
   apr: NumberType,
-  vault: Vault,
-  asset: Asset
+  epochDuration?: NumberType
 ): BigNumber {
   let compoundingPeriod = 365;
-  if (
-    vault instanceof CreditVault &&
-    bnOrZero(asset.epochData?.epochDuration).gt(0)
-  ) {
+  if (bnOrZero(epochDuration).gt(0)) {
     compoundingPeriod = BigNumber.minimum(
       365,
-      BigNumber.maximum(
-        1,
-        BNify(365).div(bnOrZero(asset.epochData?.epochDuration).div(86400))
-      )
+      BigNumber.maximum(1, BNify(365).div(bnOrZero(epochDuration).div(86400)))
     )
       .integerValue(BigNumber.ROUND_FLOOR)
       .toNumber();

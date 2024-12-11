@@ -97,7 +97,7 @@ export const useEpochsChartData: UseEpochsChartData = (args) => {
           })
           .forEach((epoch: VaultContractCdoEpochData) => {
             const date = toDayjs(epoch.endDate).valueOf();
-            const value = bnOrZero(asset?.netApy).toNumber();
+            const value = bnOrZero(epoch.APYs?.NET).toNumber();
 
             if (
               date < timeframeStartTimestamp ||

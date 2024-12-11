@@ -1412,8 +1412,7 @@ export class VaultFunctionsHelper {
           const grossApr = bnOrZero(asset.apr);
           const netApy = compoundVaultApr(
             grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
-            vault,
-            asset
+            asset.epochData?.epochDuration
           );
           return {
             type: "rewards",

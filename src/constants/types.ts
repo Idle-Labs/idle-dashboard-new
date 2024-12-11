@@ -474,7 +474,7 @@ export type ProtocolData = {
 
 export interface VaultContractCdoEpochData {
   block: Block;
-
+  APYs?: VaultEpochAPRs;
   APRs: VaultEpochAPRs;
   TVL?: {
     token: string;

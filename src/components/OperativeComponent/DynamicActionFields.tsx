@@ -200,7 +200,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
           return (<AssetProvider.NetApyWithFees textStyle={'titleSmall'} color={'primary'} {...textProps} />)
         }
         const lastGrossApr = BNify(lastEpoch.APRs.GROSS)
-        const lastNetApy = compoundVaultApr(lastGrossApr.minus(lastGrossApr.times(bnOrZero(asset?.fee))), vault, asset)
+        const lastNetApy = compoundVaultApr(lastGrossApr.minus(lastGrossApr.times(bnOrZero(asset?.fee))), asset.epochData?.epochDuration)
         return (
           <HStack>
             <Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} textDecoration={'line-through'} value={lastNetApy} />

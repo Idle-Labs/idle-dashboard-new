@@ -884,7 +884,7 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
 
   const grossApr = useMemo(() => bnOrZero(asset?.aprBreakdown?.base), [asset])
-  const netApy = useMemo(() => vault && asset? compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), vault, asset) : BNify(0), [grossApr, vault, asset])
+  const netApy = useMemo(() => vault && asset? compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), asset.epochData?.epochDuration) : BNify(0), [grossApr, vault, asset])
   const rewardsApy = useMemo(() => bnOrZero(asset?.aprBreakdown?.rewards), [asset])
   const totalApy = useMemo(() => netApy.plus(rewardsApy), [netApy, rewardsApy])
 
