@@ -25,7 +25,11 @@ export function AuthCodeProvider({ children }: ProviderProps) {
   const authCode = useMemo((): string | undefined => {
     const authCode = getSearchParams.get('_authCode')
     if (authCode?.length){
-      return atob(authCode)
+      try {
+        return atob(authCode)
+      } catch (err){
+        return
+      }
     }
     return storedAuthCode
   }, [getSearchParams, storedAuthCode])
