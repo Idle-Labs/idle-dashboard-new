@@ -14,16 +14,9 @@ export function getEpochVaultInstantWithdrawEnabled(
     return false;
   }
 
-  const lastEpoch =
-    "epochs" in epochData && !!epochData.epochs?.length
-      ? sortArrayByKey(epochData.epochs, "count", "desc")[0]
-      : undefined;
-
-  const epochApr = !BNify(epochData.epochApr).isNaN()
-    ? epochData.epochApr
-    : normalizeTokenAmount(lastEpoch?.APRs.GROSS || 0, 18);
+  const epochGrossAPR = BNify(epochData.grossEpochApr);
 
   return BNify(epochData.lastEpochApr)
     .minus(epochData.instantWithdrawAprDelta)
-    .gt(epochApr);
+    .gt(epochGrossAPR);
 }

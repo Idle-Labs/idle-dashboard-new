@@ -170,6 +170,7 @@ export interface VaultBlockRequest {
   block: Block;
   requestedOn: string;
   walletId: string;
+  isInstant?: boolean;
   walletAddress: string;
   status:
     | "PENDING"
@@ -316,6 +317,7 @@ export type CreditVaultEpoch = {
   manager: string;
   borrower: string;
   epochApr: BigNumber;
+  grossEpochApr: BigNumber;
   bufferPeriod: BigNumber;
   lastEpochApr: BigNumber;
   lastEpochInterest: BigNumber;

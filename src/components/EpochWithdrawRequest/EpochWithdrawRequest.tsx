@@ -1,17 +1,14 @@
-import { HStack, Stack, VStack, Text, Tag } from "@chakra-ui/react"
-import { Amount } from "components/Amount/Amount"
-import { AssetLabel } from "components/AssetLabel/AssetLabel"
-import { AssetProvider, useAssetProvider } from "components/AssetProvider/AssetProvider"
+import { VStack, Text, Tag } from "@chakra-ui/react"
+import { AssetProvider } from "components/AssetProvider/AssetProvider"
 import { Card } from "components/Card/Card"
 import { TableWithPagination } from "components/TableWithPagination/TableWithPagination"
 import { TokenAmount } from "components/TokenAmount/TokenAmount"
 import { TransactionButton } from "components/TransactionButton/TransactionButton"
 import { Translation } from "components/Translation/Translation"
-import { AssetId, CreditVaultWithdrawRequest, DATETIME_FORMAT, NumberType, VaultBlockRequest, vaultsStatusSchemes } from "constants/"
+import { AssetId, CreditVaultWithdrawRequest, NumberType, VaultBlockRequest, vaultsStatusSchemes } from "constants/"
 import { usePortfolioProvider } from "contexts/PortfolioProvider"
-import { useThemeProvider } from "contexts/ThemeProvider"
 import { useWalletProvider } from "contexts/WalletProvider"
-import { BNify, bnOrZero, cmpAddrs, fixTokenDecimals, formatDate, isEmpty, sortNumeric, toDayjs } from "helpers"
+import { BNify, bnOrZero, cmpAddrs, fixTokenDecimals, isEmpty, sortNumeric, toDayjs } from "helpers"
 import { useCallback, useMemo } from "react"
 import Countdown from "react-countdown"
 import { useTranslate } from "react-polyglot"
@@ -31,6 +28,14 @@ interface WalletRequest {
   status: "PENDING" | "WAITING" | "CLAIMABLE";
   epochNumber?: number;
   countdown?: React.ReactNode
+}
+
+
+function processQueueRequestStatus(request: VaultBlockRequest): WalletRequest["status"] {
+  if (request.status === 'CLAIMED'){
+    return 'CLAIMABLE'
+  }
+  return request.status === 'PENDING' ? 'PENDING' : 'WAITING'
 }
 
 type RowProps = Row<WalletRequest>
@@ -272,9 +277,9 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       amount: BNify(request.amount),
       epochNumber: request.epochNumber,
       requestedOn: request.requestedOn,
-      status: request.status === 'CLAIMED' ? 'CLAIMABLE' : 'PENDING',
+      status: processQueueRequestStatus(request),
       countdown: getRequestCountdown({
-        isInstant: false,
+        isInstant: !!request.isInstant,
         amount: BNify(request.amount),
         epochNumber: Number(request.epochNumber)
       })
