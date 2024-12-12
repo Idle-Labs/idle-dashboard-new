@@ -218,11 +218,11 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       Header:translate('defi.status'),
       Cell: ({ row }: { row: RowProps }) => {
         const type = row.original.type
-        const status = row.original.status.toLowerCase()
+        const status = row.original.status
         const countdown = row.original.countdown
-        return type === 'QUEUE' && status !== 'processed' ? (
-          <Tag variant={'solid'} colorScheme={vaultsStatusSchemes[status]} color={'primary'} fontWeight={700}>
-            {translate(`transactionRow.${status}`)}
+        return ((type === 'QUEUE' && status !== 'PENDING') || status === 'CLAIMABLE') ? (
+          <Tag variant={'solid'} colorScheme={vaultsStatusSchemes[status.toLowerCase()]} color={'primary'} fontWeight={700}>
+            {translate(`transactionRow.${status.toLowerCase()}`)}
           </Tag>
         ) : (
           <VStack

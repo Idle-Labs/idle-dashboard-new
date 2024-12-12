@@ -2732,7 +2732,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
     (async () => {
 
       const vaultsRequests = await loadVaultsRequests();
-      console.log('vaultsRequests', vaultsRequests)
       dispatch({ type: 'SET_VAULTS_REQUESTS', payload: vaultsRequests })
 
       const vaultsOnChainData = await getVaultsOnchainData(vaults);

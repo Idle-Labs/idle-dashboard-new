@@ -387,7 +387,7 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     )
   }, [asset, vault, selectAssetById])
 
-  const showDynamicFields = useMemo(() => !epochVaultLocked, [epochVaultLocked])
+  const showDynamicFields = useMemo(() => !epochVaultLocked && !withdrawQueueEnabled, [epochVaultLocked, withdrawQueueEnabled])
 
   return (
     <AssetProvider
