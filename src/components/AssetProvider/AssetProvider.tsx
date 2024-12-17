@@ -1993,7 +1993,7 @@ type GeneralDataProps = {
 } & AssetProviderPropsType
 
 const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) => {
-  const { asset, vault } = useAssetProvider()
+  const { asset, vault, underlyingAsset } = useAssetProvider()
 
   const operatorInfo = useMemo(() => {
     const operatorName = getObjectPath(vault, 'vaultConfig.operators.0.name')
@@ -2254,7 +2254,7 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
     case 'ticketSize':
       if (!vault || !("getFlag" in vault)) return null
       const ticketSize = bnOrZero(vault.getFlag('ticketSize'))
-      return (<Amount.Usd value={ticketSize} abbreviate={false} decimals={0} textStyle={'tableCell'} {...props} />)
+      return (<TokenAmount assetId={underlyingAsset?.id} amount={ticketSize} abbreviate={false} decimals={0} showIcon={false} textStyle={'tableCell'} {...props} />)
     case 'benchmark':
       if (!vault || !("getFlag" in vault)) return null
       const benchmark = vault.getFlag('benchmark')

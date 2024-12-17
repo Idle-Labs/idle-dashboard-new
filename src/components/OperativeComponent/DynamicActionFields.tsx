@@ -15,6 +15,7 @@ import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
 import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate, sortArrayByKey, getEpochVaultInstantWithdrawEnabled, compoundVaultApr } from 'helpers/'
 import { MdArrowForward } from 'react-icons/md'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { TokenAmount } from 'components/TokenAmount/TokenAmount'
 
 type DynamicActionFieldsProps = {
   action: string
@@ -217,7 +218,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         return (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={epochData.riskThreshold} />)
       case 'ticketSize':
         textColor = BNify(amount).lte(0) ? 'primary' : ticketSize.gt(0) && BNify(amount).lt(ticketSize) ? 'orange' : 'brightGreen'
-        return (<Amount.Usd value={ticketSize} abbreviate={false} decimals={0} textStyle={'tableCell'} color={textColor} {...textProps} />)
+        return (<TokenAmount assetId={underlyingAsset?.id} amount={ticketSize} abbreviate={false} decimals={0} showIcon={false} textStyle={'tableCell'} color={textColor} {...textProps} />)
       case 'overperformance':
         const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
         const tranchePerformance = bnOrZero(amountUsd).times(BNify(asset?.apy).div(100))
