@@ -1408,7 +1408,7 @@ export class VaultFunctionsHelper {
       }
     } else if (vault instanceof CreditVault) {
       switch (vault.cdoConfig.name) {
-        case "IdleCreditVault_bastion_USDT":
+        case "IdleCreditVault_bastion_USDT": {
           const grossApr = bnOrZero(asset.apr);
           const netApy = compoundVaultApr(
             grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
@@ -1420,6 +1420,20 @@ export class VaultFunctionsHelper {
             vaultId: vault.id,
             apr: BigNumber.maximum(0, BNify(20).minus(netApy)),
           };
+        }
+        case "IdleCreditVault_falconx_USDC": {
+          const grossApr = bnOrZero(asset.apr);
+          const netApy = compoundVaultApr(
+            grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
+            vault,
+            asset
+          );
+          return {
+            type: "rewards",
+            vaultId: vault.id,
+            apr: BigNumber.maximum(0, BNify(19).minus(netApy)),
+          };
+        }
         default:
           return {
             apr: BNify(0),

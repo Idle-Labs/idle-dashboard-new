@@ -405,7 +405,7 @@ export const Earn: React.FC = () => {
 
     const performanceEnabled = vault && ("getFlag" in vault) ? vault.getFlag('performanceEnabled') : true
 
-    if (!chartData?.total?.length || performanceEnabled === false){
+    if (performanceEnabled === false || bnOrZero(chartData?.total?.length).lt(3)){
       return null
     }
 

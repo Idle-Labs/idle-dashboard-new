@@ -214,6 +214,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       // keyringPolicyId: 18,
       underlyingToken: "USDC",
       enabledEnvs: ["credit"],
+      distributedTokens: ["OP"],
       accessCodes: [
         "L48JR9",
         "TNC9KP",
