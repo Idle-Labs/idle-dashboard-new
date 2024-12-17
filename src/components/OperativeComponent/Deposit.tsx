@@ -22,7 +22,7 @@ import { SwitchNetworkButton } from 'components/SwitchNetworkButton/SwitchNetwor
 import { ConnectWalletButton } from 'components/ConnectWalletButton/ConnectWalletButton'
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { Spinner, Image, Box, VStack, HStack, Text, Button, Link } from '@chakra-ui/react'
-import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize } from 'helpers/'
+import { BNify, bnOrZero, getVaultAllowanceOwner, getAllowance, fixTokenDecimals, estimateGasLimit, capitalize, formatMoney } from 'helpers/'
 import { CreditVault } from 'vaults/CreditVault'
 
 export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
@@ -43,6 +43,11 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (!selectAssetBalance) return BNify(0)
     return selectAssetBalance(underlyingAsset?.id)
   }, [selectAssetBalance, underlyingAsset?.id])
+
+  const vaultBalance = useMemo(() => {
+    if (!selectAssetBalance) return BNify(0)
+    return selectAssetBalance(vault?.id)
+  }, [selectAssetBalance, vault?.id])
 
   const positionReferral = useMemo(() => {
     return referral || asset?.vaultPosition?.referral
@@ -105,15 +110,24 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     return isEpochVault && depositQueueAvailable && isEpochRunning
   }, [asset, isEpochVault, depositQueueAvailable])
 
+  const minTicketSize = useMemo(() => {
+    return vault && "getFlag" in vault ? bnOrZero(vault.getFlag('ticketSize')) : BNify(0)
+  }, [vault])
+
   const disabled = useMemo(() => {
     setError('')
 
     if (limitCapReached || !vaultEnabled || !!depositsDisabled || (asset?.status === 'paused' && !depositQueueEnabled) || epochVaultLocked) return true
 
     if (BNify(amount).isNaN() || BNify(amount).lte(0)) return true
-    // if (BNify(assetBalance).lte(0)) return true
+
     if (BNify(amount).gt(assetBalance)){
       setError(translate('trade.errors.insufficientFundsForAmount', {symbol: underlyingAsset?.name}))
+      return true
+    }
+
+    if (BNify(amount).plus(vaultBalance).lt(minTicketSize)){
+      setError(translate('trade.errors.minTicketSize', {ticketSize: formatMoney(minTicketSize.toNumber(), 0), symbol: underlyingAsset?.name}))
       return true
     }
 
@@ -128,7 +142,7 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
     if (transaction.status === 'started') return true
 
     return false
-  }, [asset, amount, vaultLimitCap, limitCapReached, epochVaultLocked, vaultEnabled, transaction, depositQueueEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
+  }, [asset, amount, vaultLimitCap, minTicketSize, vaultBalance, limitCapReached, epochVaultLocked, vaultEnabled, transaction, depositQueueEnabled, depositsDisabled, assetBalance, underlyingAsset, translate])
 
   const getAllowanceContract = useCallback(() => {
     if (!vault || !("getAllowanceContract" in vault)) return

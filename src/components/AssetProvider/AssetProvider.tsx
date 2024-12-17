@@ -2251,6 +2251,10 @@ const GeneralData: React.FC<GeneralDataProps> = ({ field, section, ...props }) =
       return (<GaugeNextWeight textStyle={'tableCell'} {...props} />)
     case 'gaugeTotalSupply':
       return (<GaugeTotalSupply textStyle={'tableCell'} {...props} />)
+    case 'ticketSize':
+      if (!vault || !("getFlag" in vault)) return null
+      const ticketSize = bnOrZero(vault.getFlag('ticketSize'))
+      return (<Amount.Usd value={ticketSize} abbreviate={false} decimals={0} textStyle={'tableCell'} {...props} />)
     case 'benchmark':
       if (!vault || !("getFlag" in vault)) return null
       const benchmark = vault.getFlag('benchmark')

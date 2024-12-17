@@ -138,6 +138,10 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     return tooltipText !== tooltipTranslateKey
   }, [tooltipText, tooltipTranslateKey])
 
+  const ticketSize = useMemo(() => {
+    return vault && "getFlag" in vault ? bnOrZero(vault.getFlag('ticketSize')) : BNify(0)
+  }, [vault])
+
   const textCta = useMemo(() => {
     switch (field){
       case 'withdrawFee':
@@ -211,6 +215,9 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
         return (<Amount suffix={` ${underlyingAsset.token}`} textStyle={'titleSmall'} decimals={4} color={'primary'} {...textProps} value={fixTokenDecimals(epochData?.lastEpochInterest, underlyingAsset.decimals)} />)
       case 'riskThreshold':
         return (<Amount.Usd abbreviate={false} decimals={0} textStyle={'titleSmall'} color={'primary'} {...textProps} value={epochData.riskThreshold} />)
+      case 'ticketSize':
+        textColor = BNify(amount).lte(0) ? 'primary' : ticketSize.gt(0) && BNify(amount).lt(ticketSize) ? 'orange' : 'brightGreen'
+        return (<Amount.Usd value={ticketSize} abbreviate={false} decimals={0} textStyle={'tableCell'} color={textColor} {...textProps} />)
       case 'overperformance':
         const basePerformance = bnOrZero(amountUsd).times(BNify(asset?.baseApr).div(100))
         const tranchePerformance = bnOrZero(amountUsd).times(BNify(asset?.apy).div(100))
@@ -265,7 +272,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       default:
         return null
     }
-  }, [field, vaultsAccountData, lastEpoch, epochData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
+  }, [field, vaultsAccountData, ticketSize, lastEpoch, epochData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
 
 
   if (!dynamicActionField) return null
@@ -333,6 +340,10 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     return bnOrZero(asset?.limit).lt(VAULT_LIMIT_MAX) ? bnOrZero(asset?.limit) : BNify(0)
   }, [asset])
 
+  const minTicketSize = useMemo(() => {
+    return vault && "getFlag" in vault ? bnOrZero(vault.getFlag('ticketSize')) : BNify(0)
+  }, [vault])
+
   const limitCapReached = useMemo(() => {
     return vaultLimitCap.gt(0) ? BNify(asset?.totalTvl).gte(vaultLimitCap) : false
   }, [asset, vaultLimitCap])
@@ -370,6 +381,14 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
       ]
     }
 
+    // Add min investment
+    if (action === 'deposit' && minTicketSize.gt(0)) {
+      fields = [
+        'ticketSize',
+        ...fields
+      ]
+    }
+
     // Add fee discount
     if (showFeeDiscount && action === 'deposit' && fields.indexOf('currentFeeDiscount') === -1) {
       fields = [
@@ -387,7 +406,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     }
     */
     return fields
-  }, [action, vault, asset, strategy, limitCapReached, stakingData, vaultLimitCap])
+  }, [action, vault, asset, strategy, minTicketSize, limitCapReached, stakingData, vaultLimitCap])
   
   if (!dynamicActionFields) return null
 
