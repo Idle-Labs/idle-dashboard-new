@@ -264,22 +264,22 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         decimals: 18,
         abi: ERC20 as Abi,
         name: "IdleCreditVault_falconx_USDC",
-        address: "0x62426336067c37c10A681Da6275c01D373AbC7E0",
+        address: "0x4898A7a2039f583170AbEf343a6110e68E4dd9CD",
       },
       CDO: {
         decimals: 18,
         abi: IdleCDOEpochVariant as Abi,
         name: "IdleCreditVault_falconx_USDC",
-        address: "0x218Fcd276d03A2942e97833c92b66Eb3447b4309",
+        address: "0xBd9Ad85Ab0115ceFF7A1c51652D3DE3171dA1E56",
       },
       Strategy: {
         abi: IdleCreditVault as Abi,
         name: "IdleStrategy_falconx_USDT",
-        address: "0xca0E467Cf2d0011EF3424D0a2c1999009991405a",
+        address: "0x2bfcaC093774Ec1CbBeA994334C69279caEB4E6B",
       },
       depositQueue: {
         abi: IdleCdoEpochDepositQueue as Abi,
-        address: "0x0D81b042bB9939B4d32CDf7861774c442A2685CE",
+        address: "0x42Ab464A3de110ac91cbdfCaa69B0E0C4f3a59A1",
       },
       blockNumber: 0,
       descriptionShort:
