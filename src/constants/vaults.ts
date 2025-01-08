@@ -245,7 +245,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       ],
       flags: {
         performance: {},
-        // ticketSize: 250000,
+        ticketSize: 250000,
         protectedByKyc: true,
         protectedInfos: ["apy"],
         kycLink: "https://falconx.app.keyring.network/",
