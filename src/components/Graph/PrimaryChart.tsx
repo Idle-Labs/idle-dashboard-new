@@ -87,7 +87,7 @@ export const PrimaryChart = ({
   const priceScale = useMemo(() => {
     return scaleLinear({
       range: [yMax + margins.top, margins.top],
-      domain: [min(data, getValue) || 0, max(data, getValue) || 0],
+      domain: [0, max(data, getValue) || 0],
       nice: true,
     })
     //
@@ -174,16 +174,16 @@ export const PrimaryChart = ({
                 yMax={yMax}
                 stroke={chartColor}
               />
-              <MinPrice
+              {/* <MinPrice
                 yText={yMax + 5}
-                label={formatFn(minPrice)}
+                label={'0.00%'}
                 xScale={dateScale}
                 xDate={minPriceDate}
                 width={width}
                 yMax={yMax}
                 stroke={chartColor}
                 margin={{ ...margins }}
-              />
+              /> */}
             </Group>
           )
         }
