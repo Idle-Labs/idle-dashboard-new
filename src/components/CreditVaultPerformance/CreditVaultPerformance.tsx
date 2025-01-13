@@ -105,6 +105,7 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
           {Object.keys(groupedData).map((year) => (
             <Tr key={year}>
               <Td
+                p={2}
                 position={"sticky"}
                 left={0}
                 zIndex={1}
