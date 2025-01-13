@@ -78,6 +78,7 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
         <Thead>
           <Tr>
             <Th
+              p={2}
               position={"sticky"}
               left={0}
               zIndex={1}
@@ -88,6 +89,7 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
             </Th>
             {Array.from(Array(12).keys()).map( i => <Th key={i}>{dayjs().month(i).format('MMM')}</Th> )}
             <Th
+              p={2}
               right={0}
               zIndex={1}
               position={"sticky"}
@@ -115,9 +117,9 @@ export const CreditVaultPerformance: React.FC<CreditVaultPerformanceArgs> = ({
               Array.from(Array(13).keys()).map( i => {
                 const isLastColumn = i === 12
                 return isLastColumn ? (
-                  <Td position={'sticky'} right={0} zIndex={1} key={i} color={'primary'} backgroundColor={'card.bg'} textStyle={'bold'}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
+                  <Td position={'sticky'} p={2} right={0} zIndex={1} key={i} color={'primary'} backgroundColor={'card.bg'} textStyle={'bold'}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(2)}%`}</Td>
                 ) : (
-                  <Td key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(3)}%`}</Td>
+                  <Td p={2} key={i}>{groupedData[year][i] <= 0 ? '' : `${BNify(groupedData[year][i]).toFixed(3)}%`}</Td>
                 )
               })
             }
