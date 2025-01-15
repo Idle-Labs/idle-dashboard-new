@@ -38,7 +38,8 @@ export const AssetDistributedRewards: React.FC<AssetDistributedRewardsProps> = (
     if (distributionLink){
       return openWindow(distributionLink)
     }
-    const modalProps = vault.translations.distributedTokens.modal
+    const modalProps = vault.translations?.distributedTokens?.modal
+    if (!modalProps) return
     return openModal(modalProps as ModalProps, '2xl')
   }, [openModal, vault])
 

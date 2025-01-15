@@ -281,7 +281,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         abi: IdleCdoEpochDepositQueue as Abi,
         address: "0x463465c334742D72907CA5fB97db44688B4EC3dC",
       },
-      blockNumber: 0,
+      blockNumber: 130279654,
       descriptionShort:
         "Lending funds to an SPV managed by a top-tier Prime Broker, providing financing to end-counterparties while being secured by structural protections",
       description: `The vault lends funds to an SPV managed by a top-tier Prime Broker to facilitate financing to end-counterparties (such as Trading Firms, Hedge Funds, etc.) while being backed by layers of structural protections, including an equity tranche, transaction-level collateralization, and real-time risk engine.`,
@@ -427,13 +427,13 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
-        name: "IdleCreditVault_falconx_USDC",
+        name: "IdleCreditVault_falconx_USDC-TEST",
         address: "0xfA6bA4b504814f3fB524Ea506c79D76077E5D540",
       },
       CDO: {
         decimals: 18,
         abi: IdleCDOEpochVariant as Abi,
-        name: "IdleCreditVault_falconx_USDC",
+        name: "IdleCreditVault_falconx_USDC-TEST",
         address: "0x7F70Ec0bdc89f0D61e108Afe921311205b4C3431",
       },
       Strategy: {
