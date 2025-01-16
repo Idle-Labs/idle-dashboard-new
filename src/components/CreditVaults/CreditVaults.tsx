@@ -99,11 +99,6 @@ export const CreditVaults: React.FC = () => {
           {
             creditVaults.map((asset: Asset, index: number) => (<VaultCard.Credit assetId={asset.id as string} key={`index_${index}`} onClick={() => onVaultClick(asset)} />))
           }
-          {
-            !storedAuthCode && (
-              [10].map( chainId => <VaultCard.CreditDummy key={`index_${chainId}`} chainId={chainId} /> )
-            )
-          }
         </SimpleGrid>
       </VStack>
     </Flex>
