@@ -671,7 +671,6 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       intervalId.current = setInterval(() => {
         updateGasPrices()
       }, 20000)
-      // console.log('intervalId.current', intervalId.current)
     }
 
     return () => {

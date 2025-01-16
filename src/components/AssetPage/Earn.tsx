@@ -1,4 +1,4 @@
-import { strategies } from 'constants/'
+import { Asset, AssetId, strategies } from 'constants/'
 import { Card } from 'components/Card/Card'
 import { useTranslate } from 'react-polyglot'
 import useLocalForge from 'hooks/useLocalForge'
@@ -37,6 +37,161 @@ import { CreditVaultPerformance } from 'components/CreditVaultPerformance/Credit
 import { EpochWithdrawInterestButton } from 'components/OperativeComponent/EpochVaultMessage'
 import { MdLock } from 'react-icons/md'
 import { VaultKycVerifyButton } from 'components/OperativeComponent/VaultKycCheck'
+
+type AssetPerformanceChartArgs = {
+  assetId: AssetId
+}
+
+export const AssetPerformanceChart: React.FC<AssetPerformanceChartArgs> = ({
+  assetId
+}) => {
+  const { isMobile } = useThemeProvider()
+  const { isPortfolioLoaded, selectors: { selectAssetBalanceUsd, selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const [ timeframe, setTimeframe ] = useState<HistoryTimeframe>(HistoryTimeframe.MONTH)
+  const [ useDollarConversion, setUseDollarConversion ] = useLocalForge('useDollarConversion', true)
+
+  const { balanceChartData } = useBalanceChartData({ assetIds: [assetId], timeframe, useDollarConversion })
+  const { performanceChartData } = usePerformanceChartData({ assetIds: [assetId], timeframe })
+  const { epochsChartData } = useEpochsChartData({ assetIds: [assetId], timeframe })
+
+  const asset = useMemo(() => {
+    return selectAssetById && selectAssetById(assetId)
+  }, [selectAssetById, assetId])
+
+  const vault = useMemo(() => {
+    return asset && selectVaultById && selectVaultById(asset.id)
+  }, [selectVaultById, asset])
+
+  const strategy = useMemo(() => {
+    return asset?.type
+  }, [asset])
+
+  const strategyColor = useMemo(() => {
+    return strategy && strategies[strategy].color
+  }, [strategy])
+
+  const assetBalance = useMemo(() => {
+    if (!asset?.id) return
+    return selectAssetBalanceUsd && selectAssetBalanceUsd(asset.id)
+  }, [asset, selectAssetBalanceUsd])
+
+  const userHasBalance = useMemo(() => {
+    return asset?.vaultPosition && assetBalance && assetBalance.gt(0)
+  }, [asset, assetBalance])
+
+  const chartData = useMemo(() => {
+    if (!isPortfolioLoaded) return
+    return asset?.epochData ? epochsChartData : (userHasBalance ? balanceChartData : performanceChartData)
+  }, [asset, isPortfolioLoaded, userHasBalance, epochsChartData, balanceChartData, performanceChartData])
+
+  const performanceEnabled = useMemo(() => vault && ("getFlag" in vault) ? vault.getFlag('performanceEnabled') ?? true : true, [vault])
+
+  const performanceTable = useMemo(() => {
+    if (!(vault instanceof CreditVault) || isEmpty(vault.getFlag("performance"))){
+      return null
+    }
+    return (
+      <VStack
+        spacing={2}
+        width={'full'}
+        alignItems={'flex-start'}
+      >
+        <CreditVaultPerformance assetId={asset.id} />
+        <Translation pl={1} textStyle={'captionSmaller'} translation={'dashboard.portfolio.performanceDescription'} />
+      </VStack>
+    )
+  }, [vault, asset])
+
+  const showChartData = useMemo(() => bnOrZero(chartData?.total?.length).gte(3), [chartData])
+
+  if (!asset || ((!performanceEnabled || isEmpty(vault.getFlag("performance"))) && !showChartData)){
+    return null
+  }
+
+  return (
+    <VStack
+      spacing={4}
+      width={'full'}
+      alignItems={'flex-start'}
+    >
+      <HStack
+        mb={6}
+        spacing={6}
+        width={'full'}
+        alignItems={'center'}
+      >
+        <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
+          <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance && !asset?.epochData ? 'defi.fundsOverview' : 'dashboard.portfolio.performance'} />
+        </SkeletonText>
+        {
+          userHasBalance && !asset?.epochData && (
+            <HStack
+              spacing={2}
+            >
+              <AssetProvider.Name fontWeight={600} />
+              <Switch size={'md'} isChecked={useDollarConversion} onChange={ (e) => setUseDollarConversion(e.target.checked) } />
+              <Text fontWeight={600}>USD</Text>
+            </HStack>
+          )
+        }
+      </HStack>
+      {
+        showChartData && (
+          <Card.Flex
+            p={0}
+            border={0}
+            width={'full'}
+            overflow={'hidden'}
+            direction={'column'}
+            minH={['auto', 460]}
+            position={'relative'}
+            layerStyle={'cardDark'}
+            justifyContent={'space-between'}
+          >
+            {
+              chartData && !chartData.total?.length && (
+                <Center
+                  layerStyle={'overlay'}
+                >
+                  <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
+                </Center>
+              )
+            }
+            <Stack
+              pt={0}
+              px={0}
+              pb={[4, 0]}
+              zIndex={9}
+              width={'full'}
+              alignItems={'flex-start'}
+              direction={['column', 'row']}
+              justifyContent={['center', 'flex-end']}
+            >
+              {
+                (!userHasBalance || (chartData && chartData.total?.length>0)) && (
+                  <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
+                )
+              }
+            </Stack>
+            <GenericChart
+              data={chartData}
+              percentChange={0}
+              color={strategyColor}
+              timeframe={timeframe}
+              isRainbowChart={false}
+              assetIds={[asset.id]}
+              setPercentChange={() => {}}
+              height={isMobile ? '300px' : '350px'}
+              margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
+              formatFn={ asset?.epochData ? (n: any) => `${numberToPercentage(n, 2, 9999, 0.01)}` : (!useDollarConversion ? (n: any) => `${formatMoney(n, 3)} ${asset?.name}` : undefined) }
+            />
+          </Card.Flex>
+        )
+      }
+      {performanceTable}
+    </VStack>
+  )
+}
 
 export const Earn: React.FC = () => {
   const translate = useTranslate()
@@ -91,91 +246,12 @@ export const Earn: React.FC = () => {
 
   // console.log('asset', asset, assetBalance, userHasBalance)
 
-  const { balanceChartData } = useBalanceChartData({ assetIds: [asset?.id], timeframe, useDollarConversion })
-  const { performanceChartData } = usePerformanceChartData({ assetIds: [asset?.id], timeframe })
-  const { epochsChartData } = useEpochsChartData({ assetIds: [asset?.id], timeframe })
-
-  // console.log('epochsChartData', epochsChartData)
-
-  const chartData = useMemo(() => {
-    if (!isPortfolioLoaded) return
-    return asset?.epochData ? epochsChartData : (userHasBalance ? balanceChartData : performanceChartData)
-  }, [asset, isPortfolioLoaded, userHasBalance, epochsChartData, balanceChartData, performanceChartData])
-
   useEffect(() => {
     if (!isPortfolioLoaded) return
     if (useDollarConversion && (!userHasBalance || !!asset?.epochData)){
       setUseDollarConversion(false)
     }
   }, [isPortfolioLoaded, useDollarConversion, userHasBalance, setUseDollarConversion, asset?.epochData])
-
-  const chartHeading = useMemo(() => {
-    let apy = BNify(0)
-    const showCurrentApy = !!asset?.flags?.showCurrentApy
-    const isLoaded = (chartData?.total/* && chartData.total.length>0*/) && !!isPortfolioLoaded && (!account || isVaultsPositionsLoaded)
-    if (asset?.epochData || showCurrentApy){
-      apy = bnOrZero(asset?.apy)
-    } else {
-      const earningsPercentage = userHasBalance ? asset?.vaultPosition?.earningsPercentage : chartData?.total?.length && BNify(chartData.total[chartData.total.length-1].value).div(chartData.total[0].value).minus(1).times(100)
-      const earningsDays = chartData?.total?.length ? BNify(chartData.total[chartData.total.length-1].date).minus(chartData.total[0].date).div(1000).div(86400) : BNify(0)
-      
-      let apy = earningsPercentage && earningsDays.gt(0) ? earningsPercentage.times(365).div(earningsDays) : bnOrZero(asset?.apy)
-  
-      if (asset?.apyBreakdown?.harvest && BNify(asset?.apyBreakdown?.harvest).gt(0)){
-        apy = apy.plus(asset?.apyBreakdown?.harvest)
-      }
-  
-      if (earningsPercentage && earningsDays.gt(0)){
-        if (asset?.apyBreakdown?.rewards && BNify(asset?.apyBreakdown?.rewards).gt(0)){
-          apy = apy.plus(asset?.apyBreakdown?.rewards)
-        }
-      }
-    }
-
-    if (showCurrentApy){
-      apy = asset.apy
-    }
-
-    return (
-      <VStack
-        spacing={1}
-        width={['full','auto']}
-        alignItems={['center','flex-start']}
-      >
-        <SkeletonText noOfLines={2} isLoaded={isLoaded}>
-          <Translation translation={ userHasBalance ? 'dashboard.portfolio.totalChart' : (asset?.epochData ? 'epochs.assetPerformance' : 'dashboard.portfolio.assetPerformance')} component={Text} textStyle={'caption'} textAlign={['center','left']} />
-          <HStack
-            spacing={3}
-            width={['full','auto']}
-            alignItems={'baseline'}
-          >
-            {
-              userHasBalance ? (
-                useDollarConversion ? <AssetProvider.BalanceUsd abbreviate={false} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} /> : <AssetProvider.Redeemable abbreviate={false} decimals={2} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} suffix={` ${asset?.name}`} />
-              ) : (
-                <Stack
-                  spacing={[0, 2]}
-                  alignItems={'baseline'}
-                  direction={['column', 'row']}
-                >
-                  <Amount.Percentage value={apy} suffix={' APY'} textStyle={'heading'} textAlign={['center','left']} fontSize={'3xl'} />
-                  {
-                    asset?.apyBreakdown?.gauge && BNify(asset?.apyBreakdown?.gauge).gt(0) && (
-                      <Amount.Percentage prefix={'+'} value={asset?.apyBreakdown?.gauge} suffix={` (${translate('assets.assetDetails.apyBreakdown.gauge')})`} textStyle={'caption'} />
-                    )
-                  }
-                </Stack>
-              )
-            }
-          </HStack>
-        </SkeletonText>
-      </VStack>
-    )
-  }, [asset, userHasBalance, translate, chartData, useDollarConversion, account, isVaultsPositionsLoaded, isPortfolioLoaded])
-
-  const feeDiscountEnabled = useMemo(() => {
-    return asset && "flags" in asset && !!asset.flags?.feeDiscountEnabled
-  }, [asset])
 
   const isEpochRunning = useMemo(() => {
     if (!asset || !asset.epochData || !("isEpochRunning" in asset.epochData)) return null
@@ -381,115 +457,6 @@ export const Earn: React.FC = () => {
     ) : null
   }, [asset])
 
-  const decimals = useMemo(() => {
-    return !useDollarConversion && bnOrZero(assetBalanceUnderlying).lt(1000) ? 3 : 2
-  }, [assetBalanceUnderlying, useDollarConversion])
-
-  const performanceTable = useMemo(() => {
-    if (!(vault instanceof CreditVault) || isEmpty(vault.getFlag("performance"))){
-      return null
-    }
-    return (
-      <VStack
-        spacing={2}
-        width={'full'}
-        alignItems={'flex-start'}
-      >
-        <CreditVaultPerformance assetId={asset.id} />
-        <Translation pl={1} textStyle={'captionSmaller'} translation={'dashboard.portfolio.performanceDescription'} />
-      </VStack>
-    )
-  }, [vault, asset])
-
-  const performance = useMemo(() => {
-
-    const performanceEnabled = vault && ("getFlag" in vault) ? vault.getFlag('performanceEnabled') : true
-
-    if (performanceEnabled === false || bnOrZero(chartData?.total?.length).lt(3)){
-      return null
-    }
-
-    return (
-      <VStack
-        spacing={4}
-        width={'full'}
-        alignItems={'flex-start'}
-      >
-        <HStack
-          mb={6}
-          spacing={6}
-          width={'full'}
-          alignItems={'center'}
-        >
-          <SkeletonText noOfLines={2} isLoaded={!!isPortfolioLoaded}>
-            <Translation component={Heading} as={'h3'} fontSize={'lg'} translation={userHasBalance ? 'defi.fundsOverview' : 'dashboard.portfolio.performance'} />
-          </SkeletonText>
-          {
-            userHasBalance && (
-              <HStack
-                spacing={2}
-              >
-                <AssetProvider.Name fontWeight={600} />
-                <Switch size={'md'} isChecked={useDollarConversion} onChange={ (e) => setUseDollarConversion(e.target.checked) } />
-                <Text fontWeight={600}>USD</Text>
-              </HStack>
-            )
-          }
-        </HStack>
-        <Card.Flex
-          p={0}
-          border={0}
-          width={'full'}
-          overflow={'hidden'}
-          direction={'column'}
-          minH={['auto', 460]}
-          position={'relative'}
-          layerStyle={'cardDark'}
-          justifyContent={'space-between'}
-        >
-          {
-            chartData && !chartData.total?.length && (
-              <Center
-                layerStyle={'overlay'}
-              >
-                <Translation translation={'dashboard.assetChart.empty'} textAlign={'center'} component={Text} py={1} px={3} bg={'rgba(0, 0, 0, 0.2)'} borderRadius={8} />
-              </Center>
-            )
-          }
-          <Stack
-            pt={0}
-            px={0}
-            pb={[4, 0]}
-            zIndex={9}
-            width={'full'}
-            alignItems={'flex-start'}
-            direction={['column', 'row']}
-            justifyContent={['center', 'flex-end']}
-          >
-            {
-              (!userHasBalance || (chartData && chartData.total?.length>0)) && (
-                <TimeframeSelector width={['full', 'auto']} justifyContent={['center', 'flex-end']} timeframe={timeframe} setTimeframe={setTimeframe} />
-              )
-            }
-          </Stack>
-          <GenericChart
-            data={chartData}
-            percentChange={0}
-            color={strategyColor}
-            timeframe={timeframe}
-            isRainbowChart={false}
-            assetIds={[params.asset]}
-            setPercentChange={() => {}}
-            height={isMobile ? '300px' : '350px'}
-            margins={{ top: 10, right: 0, bottom: 65, left: 0 }}
-            formatFn={ asset?.epochData ? (n: any) => `${numberToPercentage(n, 2, 9999, 0.01)}` : (!useDollarConversion ? (n: any) => `${formatMoney(n, decimals)} ${asset?.name}` : undefined) }
-          />
-        </Card.Flex>
-        {performanceTable}
-      </VStack>
-    )
-  }, [params.asset, performanceTable, vault, asset, isMobile, userHasBalance, setUseDollarConversion, strategyColor, useDollarConversion, decimals, timeframe, chartData, isPortfolioLoaded])
-
   const maxItems = useMemo(() => {
     return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
   }, [vault])
@@ -517,7 +484,7 @@ export const Earn: React.FC = () => {
             <EpochWithdrawRequest assetId={asset?.id} />
             <AssetGeneralData title={'assets.assetDetails.generalData.keyInformation'} maxItems={maxItems} assetId={asset?.id} />
             <AssetDistributedRewards assetId={asset?.id} />
-            {performance}
+            <AssetPerformanceChart assetId={params.asset} />
             <EpochsHistory />
             <MaticNFTs assetId={asset?.id} />
             <EthenaCooldowns assetId={asset?.id} />

@@ -380,7 +380,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     },
     {
       mode: "CREDIT",
-      kycRequired: false,
+      kycRequired: true,
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",

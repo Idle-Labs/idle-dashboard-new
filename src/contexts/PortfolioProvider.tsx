@@ -4927,8 +4927,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
       }
     }
 
-    // console.log('assetsData', assetsData)
-
     dispatch({ type: 'SET_ASSETS_DATA', payload: assetsData })
   }, [
     state.fees,

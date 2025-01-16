@@ -91,7 +91,8 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   }, [assetId, selectVaultById])
 
   useEffect(() => {
-    if (!vault || !vault.signature || !vault.signature.documents.length){
+    if (!vault) return
+    if (!vault.signature || !vault.signature.documents.length){
       setSignatureVerified(true)
       return
     }
@@ -178,7 +179,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     </React.Fragment>
   )
 
-  const bothVerificationRequired = useMemo(() => !kycVerified && documents.length, [kycVerified, documents] )
+  const bothVerificationRequired = useMemo(() => isKycRequired && documents.length, [isKycRequired, documents] )
   const isProtected = useMemo(() => vault && ("getFlag" in vault) && !!vault.getFlag('protectedByKyc'), [vault])
   const showProtectedData = useMemo(() => {
     return !isProtected || (isPortfolioAccountReady && (!isKycRequired || isWalletAllowed))

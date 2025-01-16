@@ -114,9 +114,10 @@ export function compoundVaultApr(
 }
 
 export function apr2apy(apr: BNifyInput, period: number = 365) {
-  return BNify(
-    BNify(1).plus(BNify(apr).div(period)).pow(period).minus(1).toFixed(18)
-  );
+  return BNify(Math.pow(1 + Number(apr) / period, period) - 1);
+  // return BNify(
+  //   BNify(1).plus(BNify(apr).div(period)).pow(period).minus(1).toFixed(18)
+  // );
 }
 
 export function removeItemFromArray<T>(arr: T[], item: T): T[] {

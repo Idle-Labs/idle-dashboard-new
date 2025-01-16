@@ -261,7 +261,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
   }, [activeItem, itemIndex, getDefaultGasLimit, setGasLimit, epochVaultLocked])
 
   useEffect(() => {
-    // console.log('useEffect', activeItem, itemIndex, executeAction, stakingEnabled, depositAmount)
     if (activeItem !== itemIndex || !executeAction || !stakingEnabled || bnOrZero(depositAmount).lte(0)) return
     dispatch({type: 'SET_AMOUNT', payload: depositAmount})
     dispatch({type: 'SET_DEFAULT_AMOUNT', payload: depositAmount})
