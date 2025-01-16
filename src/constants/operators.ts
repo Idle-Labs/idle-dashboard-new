@@ -88,7 +88,7 @@ export const operators: Record<string, Operator> = {
       // linkedin: "https://www.linkedin.com/company/thefalconx/",
     },
     description:
-      "A leading digital asset prime brokerage, providing trading, financing, and technology for market access to the world’s top institutions. + Eliminare entrambi i link a website e Twitter",
+      "A leading digital asset prime brokerage, providing trading, financing, and technology for market access to the world’s top institutions.",
   },
   fasanara: {
     rating: "AA",
