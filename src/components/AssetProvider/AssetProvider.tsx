@@ -6,6 +6,7 @@ import { useTranslate } from 'react-polyglot'
 import { networks } from 'constants/networks'
 import { strategies } from 'constants/strategies'
 import { TrancheVault } from 'vaults/TrancheVault'
+import { AiOutlineEyeInvisible } from 'react-icons/ai'
 import { UnderlyingToken } from 'vaults/UnderlyingToken'
 import type { IdleTokenProtocol } from 'constants/vaults'
 // import { useI18nProvider } from 'contexts/I18nProvider'
@@ -941,7 +942,7 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   // Don't show apy
   if (isProtected && checkWalletAllowed && !walletAllowed){
     return (
-      <Text {...props} sx={{filter: 'blur(7px)'}}>XX%</Text>
+      <AiOutlineEyeInvisible size={28} color={'white'} />
     )
   }
 
