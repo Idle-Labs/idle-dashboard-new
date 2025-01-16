@@ -1229,7 +1229,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         async (vault: Vault) => {
           if ("getDistributedRewards" in vault) {
             const vaultPosition = output.vaultsPositions[vault.id]
-            const vaultStartBlock = vaultPosition && vaultPosition.firstDepositTx ? +vaultPosition.firstDepositTx.blockNumber : 0
+            const vaultStartBlock = vaultPosition && vaultPosition.firstDepositTx ? +vaultPosition.firstDepositTx.blockNumber : ("blockNumber" in vault ? vault.blockNumber : 0)
             const distributedRewardsTxs = vault.getDistributedRewards(account.address, etherscanTransactions, vaultStartBlock)
             output.distributedRewards[vault.id] = distributedRewardsTxs.reduce((distributedRewards: NonNullable<Asset["distributedRewards"]>, tx: EtherscanTransaction) => {
               const underlyingToken = selectUnderlyingTokenByAddress(+chainId, tx.contractAddress)

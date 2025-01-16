@@ -80,15 +80,15 @@ export const operators: Record<string, Operator> = {
     industry: "Prime Brokerage",
     location: "California",
     nameShort: "FalconX",
-    image: "images/borrowers/falconx.png",
+    image: "images/borrowers/m11.svg",
     name: "FalconX",
     links: {
-      website: "https://www.falconx.io/",
-      twitter: "https://x.com/falconxnetwork",
-      linkedin: "https://www.linkedin.com/company/thefalconx/",
+      // website: "https://www.falconx.io/",
+      // twitter: "https://x.com/falconxnetwork",
+      // linkedin: "https://www.linkedin.com/company/thefalconx/",
     },
     description:
-      "FalconX is a leading digital asset prime brokerage, providing trading, financing, and technology for market access to the world’s top institutions.",
+      "A leading digital asset prime brokerage, providing trading, financing, and technology for market access to the world’s top institutions. + Eliminare entrambi i link a website e Twitter",
   },
   fasanara: {
     rating: "AA",

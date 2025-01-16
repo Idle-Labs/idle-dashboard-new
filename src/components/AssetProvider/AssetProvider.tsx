@@ -877,13 +877,10 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
 }) => {
   const { account } = useWalletProvider()
   const { asset, vault } = useAssetProvider()
-  const { isPortfolioAccountReady } = usePortfolioProvider()
 
   const isProtected = useMemo(() => vault && ("getFlag" in vault) && vault.getFlag('protectedInfos')?.includes('apy'), [vault])
   const checkWalletAllowed = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
   const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
-
-  // console.log('isProtected', asset?.id, isProtected)
 
   const grossApr = useMemo(() => bnOrZero(asset?.aprBreakdown?.base), [asset])
   const netApy = useMemo(() => vault && asset? compoundVaultApr(grossApr.minus(grossApr.times(bnOrZero(asset?.fee))), vault, asset) : BNify(0), [grossApr, vault, asset])
@@ -942,7 +939,7 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   if (!asset || !vault) return null
 
   // Don't show apy
-  if (isProtected && (!isPortfolioAccountReady || (checkWalletAllowed && !walletAllowed))){
+  if (isProtected && checkWalletAllowed && !walletAllowed){
     return (
       <Text {...props} sx={{filter: 'blur(7px)'}}>XX%</Text>
     )

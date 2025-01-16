@@ -248,6 +248,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         ticketSize: 250000,
         protectedByKyc: true,
         protectedInfos: ["apy"],
+        redemption: "Monthly",
         kycLink: "https://falconx.app.keyring.network/",
         generalDataFields: {
           maxItems: 5,
@@ -258,7 +259,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           navAgent: false,
         },
       },
-      name: "FalconX",
+      name: "M11 Credit",
       vaultType: "primeBrokerage",
       Token: {
         decimals: 18,
@@ -380,7 +381,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     },
     {
       mode: "CREDIT",
-      kycRequired: true,
+      kycRequired: false,
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",

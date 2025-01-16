@@ -69,6 +69,7 @@ export class BestYieldVault {
 
   // Raw config
   public readonly type: string;
+  public readonly blockNumber: number;
   public readonly idleConfig: IdleToken;
   public readonly variant: string | undefined;
   public readonly tokenConfig: BestYieldConfig;
@@ -113,6 +114,7 @@ export class BestYieldVault {
     this.cacheProvider = cacheProvider;
     this.idleConfig = tokenConfig.idle;
     this.idleController = idleController;
+    this.blockNumber = tokenConfig.blockNumber;
     this.description = tokenConfig.description;
     this.id = this.idleConfig.address.toLowerCase();
     this.rewardsSenders = tokenConfig.rewardsSenders;

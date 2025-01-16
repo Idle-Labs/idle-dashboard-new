@@ -1431,7 +1431,7 @@ export class VaultFunctionsHelper {
           return {
             type: "rewards",
             vaultId: vault.id,
-            apr: BigNumber.maximum(0, BNify(19).minus(netApy)),
+            apr: BigNumber.maximum(0, BNify(20).minus(netApy)),
           };
         }
         default:
