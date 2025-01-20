@@ -171,7 +171,12 @@ export interface VaultBlockRequest {
   requestedOn: string;
   walletId: string;
   walletAddress: string;
-  status: "PENDING" | "PROCESSED";
+  status:
+    | "PENDING"
+    | "PROCESSED"
+    | "CLAIMABLE"
+    | "INSTANT_CLAIMABLE"
+    | "CLAIMED";
   epochNumber?: number;
 }
 

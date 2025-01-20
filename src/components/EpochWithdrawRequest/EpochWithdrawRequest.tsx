@@ -266,7 +266,7 @@ export const EpochWithdrawRequest: React.FC<EpochWithdrawRequestArgs> = ({
       action: request.type,
       amount: BNify(request.amount),
       epochNumber: request.epochNumber,
-      status: request.status === 'PROCESSED' ? 'CLAIMABLE' : 'PENDING',
+      status: request.status === 'CLAIMED' ? 'CLAIMABLE' : 'PENDING',
       requestedOn: request.requestedOn
     }) ) : []
 

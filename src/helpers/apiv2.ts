@@ -101,7 +101,10 @@ export async function getSignatureByName(name: string): Promise<any> {
 }
 
 export async function getVaultsFromApiV2(): Promise<any> {
-  return await callPlatformApis(1, "idle", "vaults");
+  return await callPlatformApis(1, "idle", "vaults", "", {
+    fields:
+      "_id,tokenId,chainId,name,address,symbol,protocol,contractType,status,feePercentage",
+  });
 }
 
 export async function getLatestTokenBlocks(tokenIds: string[]): Promise<any> {

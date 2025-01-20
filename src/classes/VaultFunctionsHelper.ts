@@ -1724,7 +1724,7 @@ export class VaultFunctionsHelper {
         };
         const rate = {
           date,
-          value: bnOrZero(result.APRs[0]?.rate).toNumber(),
+          value: bnOrZero(result.APRs?.GROSS).toNumber(),
         };
         const price = {
           date,

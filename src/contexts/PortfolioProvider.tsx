@@ -3522,6 +3522,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
     const vaultsData = cacheProvider
       ? await cacheProvider.checkAndCache(cacheKeyVaults, callbackVaults, 300)
       : await callbackVaults();
+    
+    console.log('vaultsData', vaultsData)
 
     if (!vaultsData){
       return []
@@ -3530,6 +3532,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     // Get latest vaultBlocks from APIs
     const vaultIds = vaultsData.map( (vaultData: any) => vaultData._id )
     const vaultBlocks = await getLatestVaultBlocks(vaultIds)
+    console.log({vaultBlocks})
     return vaultBlocks.reduce( (acc: Record<AssetId, VaultBlockRequest[]>, vaultBlock: any) => {
       const vaultId = vaultBlock.vaultAddress.toLowerCase()
       return {
@@ -3590,7 +3593,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
             ? vault.underlyingToken?.decimals
             : 18;
         
-        const apr = bnOrZero(vaultBlock.APRs[0]?.rate)
+        const apr = bnOrZero(vaultBlock?.APRs?.GROSS)
         const priceUsd = bnOrZero(vaultBlock?.TVL?.USD).eq(vaultBlock?.TVL?.token) ? BNify(1) : fixTokenDecimals(vaultBlock?.TVL?.USD, 6).div(fixTokenDecimals(vaultBlock?.TVL?.token, 18))
         const totalSupply = fixTokenDecimals(vaultBlock.totalSupply, 18)
         const vaultPrice = fixTokenDecimals(vaultBlock.price, decimals)
