@@ -3522,8 +3522,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
     const vaultsData = cacheProvider
       ? await cacheProvider.checkAndCache(cacheKeyVaults, callbackVaults, 300)
       : await callbackVaults();
-    
-    console.log('vaultsData', vaultsData)
 
     if (!vaultsData){
       return []
@@ -3532,7 +3530,6 @@ export function PortfolioProvider({ children }: ProviderProps) {
     // Get latest vaultBlocks from APIs
     const vaultIds = vaultsData.map( (vaultData: any) => vaultData._id )
     const vaultBlocks = await getLatestVaultBlocks(vaultIds)
-    console.log({vaultBlocks})
     return vaultBlocks.reduce( (acc: Record<AssetId, VaultBlockRequest[]>, vaultBlock: any) => {
       const vaultId = vaultBlock.vaultAddress.toLowerCase()
       return {
