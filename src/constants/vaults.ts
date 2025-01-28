@@ -180,7 +180,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         kycLink: "https://app.keyring.network/policies/fasanara-digital",
         benchmark: {
           link: "https://www.coinglass.com/FundingRate",
-          label: "1.5x BTC funding rate",
+          label: "1.2x BTC funding rate",
         },
         bounds: "Lower 5%, upper 30%",
         generalDataFields: {
@@ -224,7 +224,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       blockNumber: 0,
       descriptionShort:
         "Variable-rate loan channeling funds into delta-neutral yield strategies overperforming the BTC funding rate.",
-      description: `The vault operates as an evergreen, variable-rate loan, channeling funds into delta-neutral yield strategies. These include market making, cross-chain and cross-market arbitrage, and funding rate optimization. Interest is distributed weekly to liquidity providers, with the option for weekly redemptions.<br /><br />The vault’s variable loan rate is pegged to the <a href="https://www.coinglass.com/FundingRate" class="link" rel="nofollow noopener noreferrer" target="_blank">BTC open interest-weighted funding rate</a>, with a 1.5x performance multiplier, a minimum return of 5% net APY, and a maximum return cap of 30% net APY.<br /><br />The vault is institutional compliant, and users have to pass through a KYC process to lend funds.`,
+      description: `The vault operates as an evergreen, variable-rate loan, channeling funds into delta-neutral yield strategies. These include market making, cross-chain and cross-market arbitrage, and funding rate optimization. Interest is distributed weekly to liquidity providers, with the option for weekly redemptions.<br /><br />The vault’s variable loan rate is pegged to the <a href="https://www.coinglass.com/FundingRate" class="link" rel="nofollow noopener noreferrer" target="_blank">BTC open interest-weighted funding rate</a>, with a 1.2x performance multiplier, a minimum return of 5% net APY, and a maximum return cap of 30% net APY.<br /><br />The vault is institutional compliant, and users have to pass through a KYC process to lend funds.`,
     },
   ],
   10: [
