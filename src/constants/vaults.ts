@@ -170,7 +170,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
             translation: "strategies.credit.signatures.documents.TOS",
           },
           {
-            url: "https://ipfs.io/ipfs/bafybeibbdrhf76wl5bfzglbvdtmahin2jc4yol6av4k3lfbmyd25jtkl6i",
+            url: "https://brown-biological-nightingale-117.mypinata.cloud/ipfs/bafybeibbdrhf76wl5bfzglbvdtmahin2jc4yol6av4k3lfbmyd25jtkl6i",
             isChecked: false,
             translation: "strategies.credit.signatures.documents.MLA",
           },
