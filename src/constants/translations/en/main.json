@@ -277,9 +277,10 @@
       "signatures": {
         "title": "Read & Sign documents",
         "cta": "Accept and Sign",
-        "read": "Read",
+        "read": "View",
         "documents": {
           "TS": "I have read and understood the <span class='linkStatic'>Term Sheet</span>",
+          "TOS": "I have read and understood the <span class='linkStatic'>Terms of Service</span>",
           "SA": "I have read and understood the <span class='linkStatic'>Service Agreement</span>",
           "MLA": "I have read and understood the <span class='linkStatic'>Master Loan Agreement</span>"
         },

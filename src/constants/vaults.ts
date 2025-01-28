@@ -87,6 +87,7 @@ export interface CreditVaultSignatureDocument {
 
 export interface CreditVaultSignature {
   name: string;
+  skipAddresses?: string[];
   documents: CreditVaultSignatureDocument[];
 }
 
@@ -156,6 +157,25 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           name: "fasanara",
         },
       ],
+      signature: {
+        skipAddresses: [
+          "0x93647309137E6196a747D6c4d0770214D99Ac9c4",
+          "0x96C6bCc66EFdBC92Eee00204f52870d534FFEFe3",
+        ],
+        name: "FASANARA_MLA",
+        documents: [
+          {
+            url: "https://idle.finance/terms-of-service",
+            isChecked: false,
+            translation: "strategies.credit.signatures.documents.TOS",
+          },
+          {
+            url: "https://ipfs.io/ipfs/bafybeibbdrhf76wl5bfzglbvdtmahin2jc4yol6av4k3lfbmyd25jtkl6i",
+            isChecked: false,
+            translation: "strategies.credit.signatures.documents.MLA",
+          },
+        ],
+      },
       flags: {
         kycLink: "https://app.keyring.network/policies/fasanara-digital",
         benchmark: {

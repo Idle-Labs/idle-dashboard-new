@@ -150,13 +150,15 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     } : document ))
   }, [documents, setDocuments])
 
+  const skipWallet = useMemo(() => !!vault?.signature?.skipAddresses?.map( (addr: string) => addr.toLowerCase())?.includes(account?.address?.toLowerCase()), [vault, account] )
+
   const documentsAccepted = useMemo(() => {
     return documents.find( document => !document.isChecked ) === undefined
   }, [documents])
 
   const kycVerified = useMemo(() => !!asset?.walletAllowed && account?.address, [asset, account])
 
-  const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && signatureVerified)), [isKycRequired, kycVerified, signatureVerified])
+  const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && (signatureVerified || skipWallet))), [isKycRequired, kycVerified, signatureVerified, skipWallet])
 
   useEffect(() => {
     if (!isKycRequired){
@@ -179,7 +181,9 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     </React.Fragment>
   )
 
-  const bothVerificationRequired = useMemo(() => isKycRequired && documents.length, [isKycRequired, documents] )
+  const documentsVerificationRequired = useMemo(() => documents.length && !skipWallet, [skipWallet, documents])
+
+  const bothVerificationRequired = useMemo(() => isKycRequired && documentsVerificationRequired, [isKycRequired, documentsVerificationRequired] )
   const isProtected = useMemo(() => vault && ("getFlag" in vault) && !!vault.getFlag('protectedByKyc'), [vault])
   const showProtectedData = useMemo(() => {
     return !isProtected || (isPortfolioAccountReady && (!isKycRequired || isWalletAllowed))
@@ -287,7 +291,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
         }
       </VStack>
       {
-        documents.length > 0 && (
+        documentsVerificationRequired && (
           <VStack
             py={2}
             px={3}
@@ -331,7 +335,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
                     <Checkbox alignItems={'baseline'} isChecked={document.isChecked} onChange={ (e) => setDocumentAccepted(index, e.target.checked) }>
                       <Translation translation={document.translation} textStyle={'captionSmall'} isHtml={true} />
                     </Checkbox>
-                    <Translation size={'sm'} py={2} px={5} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow('https://app.keyring.network') } />
+                    <Translation size={'sm'} py={2} px={5} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow(document.url) } />
                   </HStack>
                 ) )
               }
