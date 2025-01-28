@@ -98,6 +98,10 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     }
     setSignatureName(vault.signature.name)
     setDocuments(vault.signature.documents)
+
+    return () => {
+      setSignatureVerified(false)
+    }
   }, [vault])
 
   const isKycRequired = useMemo(() => {
@@ -120,8 +124,9 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     }
     const signatureCheck = await checkSignatureV2(signature._id, account.address)
     if (signatureCheck){
-      setSignatureVerified(true)
+      return setSignatureVerified(true)
     }
+    setSignatureVerified(false)
   }, [signature, account, setSignatureVerified])
 
   const signAndSend = useCallback(async () => {
@@ -166,7 +171,6 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     }
     loadSignature()
   }, [isKycRequired, loadSignature])
-
 
   useEffect(() => {
     if (!isKycRequired){
@@ -329,10 +333,10 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
                     key={index}
                     width={'full'}
                     justifyContent={'space-between'}
-                    borderBottom={'1px solid'}
+                    borderBottom={ signatureVerified && index === documents.length -1 ? 'none' : '1px solid'}
                     borderColor={'divider'}
                   >
-                    <Checkbox alignItems={'baseline'} isChecked={document.isChecked} onChange={ (e) => setDocumentAccepted(index, e.target.checked) }>
+                    <Checkbox alignItems={'baseline'} isChecked={signatureVerified || document.isChecked} onChange={ (e) => signatureVerified ? true : setDocumentAccepted(index, e.target.checked) } >
                       <Translation translation={document.translation} textStyle={'captionSmall'} isHtml={true} />
                     </Checkbox>
                     <Translation size={'sm'} py={2} px={5} component={Button} translation={'strategies.credit.signatures.read'} variant={'ctaFull'} width={'auto'} height={'auto'} onClick={() => openWindow(document.url) } />
@@ -345,7 +349,13 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
                     spacing={3}
                     width={'full'}
                   >
-                    <Translation component={Button} translation={'strategies.credit.signatures.cta'} variant={'ctaFull'} onClick={() => signAndSend() } isDisabled={sending || !documentsAccepted} />
+                    {
+                      !account ? (
+                        <ConnectWalletButton variant={'ctaFull'} />
+                      ) : (
+                        <Translation component={Button} translation={'strategies.credit.signatures.cta'} variant={'ctaFull'} onClick={() => signAndSend() } isDisabled={sending || !documentsAccepted} />
+                      )
+                    }
                   </VStack>
                 )
               }
