@@ -4304,6 +4304,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
         async (assetId) => {
           const distributedRewardsOutput = state.distributedRewards
           const asset = selectAssetById(assetId)
+          const vault = selectVaultById(assetId)
           const vaultPosition = selectVaultPosition(assetId)
           if (!asset || !vaultPosition || !asset.chainId || !asset.underlyingId){
             return distributedRewardsOutput
@@ -4342,12 +4343,22 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
                   // Check if first deposit is older than a week, otherwise annualize using the balance period
                   let distributedRewardUsdAnnualized = BNify(0)
+
                   const secondsFromFirstDeposit = BNify(distributedReward.timeStamp).div(1000).minus(bnOrZero(vaultPosition.firstDepositTx?.timeStamp))
-                  if (secondsFromFirstDeposit.div(86400).gte(7)) {
-                    distributedRewardUsdAnnualized = bnOrZero(distributedReward.valueUsd).times(WEEKS_PER_YEAR)
+
+                  // Use credit vault epoch duration
+                  if (vault instanceof CreditVault){
+                    const epochDuration = BNify(asset?.epochData?.epochDuration || 0)
+                    distributedRewardUsdAnnualized = bnOrZero(distributedReward.valueUsd).times(BNify(SECONDS_IN_YEAR).div(epochDuration))
+                    // console.log({secondsFromFirstDeposit, epochDuration, distributedRewards: distributedReward.valueUsd, distributedRewardUsdAnnualized})
                   } else {
-                    distributedRewardUsdAnnualized = bnOrZero(distributedReward.valueUsd).times(SECONDS_IN_YEAR).div(secondsFromFirstDeposit)
+                    if (secondsFromFirstDeposit.div(86400).gte(7)) {
+                      distributedRewardUsdAnnualized = bnOrZero(distributedReward.valueUsd).times(WEEKS_PER_YEAR)
+                    } else {
+                      distributedRewardUsdAnnualized = bnOrZero(distributedReward.valueUsd).times(SECONDS_IN_YEAR).div(secondsFromFirstDeposit)
+                    }
                   }
+
 
                   distributedReward.apr = distributedRewardUsdAnnualized.div(latestBalanceUsd).times(100)
 
@@ -4403,7 +4414,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       // runningEffects.current.distributedRewards = false
       // dispatch({type: 'SET_DISTRIBUTED_REWARDS', payload: {}})
     }
-  }, [state.distributedRewards, state.historicalPricesUsd, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, state.contractsNetworks, web3Chains, account?.address])
+  }, [state.distributedRewards, state.historicalPricesUsd, selectVaultPosition, state.isVaultsPositionsLoaded, selectAssetById, selectVaultById, state.contractsNetworks, web3Chains, account?.address])
 
   // Set isPortfolioAccountReady
   useEffect(() => {
