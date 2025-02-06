@@ -200,6 +200,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
             1.277, 1.624, 2.195, 0.873, 1.054, 0.968, 0.857, 0.498, 0.583,
             1.092, 1.622, 1.5,
           ],
+          2025: [1.03],
         },
       },
       name: "Fasanara Digital",
