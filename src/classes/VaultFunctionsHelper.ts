@@ -355,6 +355,24 @@ export class VaultFunctionsHelper {
     return BNify(0);
   }
 
+  public async getUSD0PPrancheStrategyApr(chainId: number): Promise<BigNumber> {
+    const platformApiEndpoint = getPlatformApisEndpoint(
+      chainId,
+      "usual",
+      "USD0PP"
+    );
+    const callback = async () =>
+      await callPlatformApis(chainId, "usual", "USD0PP");
+    const apr = this.cacheProvider
+      ? await this.cacheProvider.checkAndCache(platformApiEndpoint, callback)
+      : await callback();
+
+    if (!BNify(apr).isNaN()) {
+      return BNify(apr);
+    }
+    return BNify(0);
+  }
+
   public async getGearboxTokenSupply(
     chainId: number,
     assetId: string
@@ -382,6 +400,15 @@ export class VaultFunctionsHelper {
     trancheVault: TrancheVault
   ): Promise<BigNumber> {
     const strategyApr = await this.getStETHTrancheStrategyApr(
+      trancheVault.chainId
+    );
+    return await this.getTrancheApy(strategyApr, trancheVault);
+  }
+
+  public async getUSD0PPrancheApy(
+    trancheVault: TrancheVault
+  ): Promise<BigNumber> {
+    const strategyApr = await this.getUSD0PPrancheStrategyApr(
       trancheVault.chainId
     );
     return await this.getTrancheApy(strategyApr, trancheVault);
@@ -1280,6 +1307,12 @@ export class VaultFunctionsHelper {
                 cdoId: vault.cdoConfig.address,
                 apr: await this.getStETHTrancheApy(vault),
               };
+            case "IdleCDO_usual_USD0PP":
+              return {
+                vaultId: vault.id,
+                cdoId: vault.cdoConfig.address,
+                apr: await this.getUSD0PPrancheApy(vault),
+              };
             case "IdleCDO_amphor_wstETH":
               return {
                 type: "strategy",
@@ -1450,6 +1483,14 @@ export class VaultFunctionsHelper {
           };
         case "IdleCDO_lido_stETH":
           strategyApr = await this.getStETHTrancheStrategyApr(vault.chainId);
+          apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0);
+          return {
+            apr,
+            vaultId: vault.id,
+            cdoId: vault.cdoConfig.address,
+          };
+        case "IdleCDO_usual_USD0PP":
+          strategyApr = await this.getUSD0PPrancheStrategyApr(vault.chainId);
           apr = strategyApr ? BNify(strategyApr).times(100) : BNify(0);
           return {
             apr,

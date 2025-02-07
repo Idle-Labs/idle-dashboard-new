@@ -227,7 +227,8 @@
     "leveragedLSD": "Leverage LSD",
     "blueChipLending": "Blue-chip lending markets",
     "cryptoRwaLending": "Crypto & RWA-secured lending",
-    "strategist": "Strategist"
+    "strategist": "Strategist",
+    "interestRateSwap": "Interest rate swap"
   },
   "strategies": {
     "general": {

@@ -49,6 +49,18 @@ export const underlyingTokens: Record<
   Record<string, UnderlyingTokenProps>
 > = {
   1: {
+    USD0PP: {
+      token: "USD0++",
+      decimals: 18,
+      enabled: true,
+      icon: "USD0PP.svg",
+      colors: {
+        hex: "#F7B24A",
+        rgb: [250, 184, 51],
+        hsl: ["40", "95%", "59%"],
+      },
+      address: "0x35D8949372D46B7a3D5A56006AE77B215fc69bC0",
+    },
     DAI: {
       token: "DAI",
       decimals: 18,

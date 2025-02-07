@@ -368,6 +368,26 @@ export const protocols: Record<string, Protocol> = {
       hsl: ["82", "84%", "54%"],
     },
   },
+  usual: {
+    icon: `${protocolsFolder}usual.svg`,
+    stats: {
+      showLegend: false,
+    },
+    enabled: true,
+    label: "Usual",
+    apis: {
+      USD0PP: {
+        path: "rewards.0.apr",
+        endpoint: {
+          1: "https://app.usual.money/api/rewards/rates/USD0++",
+        },
+      },
+    },
+    colors: {
+      rgb: [163, 236, 38],
+      hsl: ["82", "84%", "54%"],
+    },
+  },
   gearbox: {
     icon: `${protocolsFolder}gearbox.svg`,
     stats: {
