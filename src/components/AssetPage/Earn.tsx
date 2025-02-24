@@ -277,6 +277,7 @@ export const Earn: React.FC = () => {
             <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
+          <AssetProvider.WalletRewardsEmissions />
         </VStack>
 
         <VStack

@@ -556,8 +556,7 @@
     "modals": {
       "pointsCampaign": {
         "cta": "Got it",
-        "title": "Earn Efficiency Points",
-        "body": "The Pareto points campaign is officially live! You can now earn Efficiency Points by depositing in our vaults.<br />The rules are simple:<br />- Receive 30 EP / day for each $1 deposited in any credit vaults.<br />- Double the earnings to 30 EP /day by depositing using the Queue (during running cycle)<br />- Boost your multiplier up to 3x by maintaining your funds in the vault for up to 6 months."
+        "title": "Want to earn some Pareto Efficiency Point?"
       },
       "feeDiscount": {
         "cta": "Got it",

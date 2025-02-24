@@ -951,25 +951,35 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   }
 
   return asset?.apr ? (
-    <Tooltip
-      hasArrow
-      placement={'top'}
-      label={tooltipLabel}
-      isDisabled={isTooltipDisabled}
+    <Stack
+      spacing={2}
+      direction={direction}
+      alignItems={direction === 'row' ? 'center' : 'flex-start'}
+      justifyContent={direction === 'row' ? 'flex-start' : 'center'}
     >
-      <TooltipContent>
-        <Stack
-          spacing={2}
-          direction={direction}
-          alignItems={direction === 'row' ? 'center' : 'flex-start'}
-          justifyContent={direction === 'row' ? 'flex-start' : 'center'}
-        >
+      <Tooltip
+        hasArrow
+        placement={'top'}
+        label={tooltipLabel}
+        isDisabled={isTooltipDisabled}
+      >
+        <TooltipContent>
           <Amount.Percentage value={totalApy} {...props} stackProps={{ spacing: 1 }} borderBottom={!isTooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
-          {showRewards && <RewardsEmissions />}
-        </Stack>
-      </TooltipContent>
-    </Tooltip>
+        </TooltipContent>
+      </Tooltip>
+      {showRewards && <RewardsEmissions />}
+    </Stack>
   ) : <Spinner size={'sm'} />
+}
+
+const WalletRewardsEmissions: React.FC = () => {
+  const { asset } = useAssetProvider()
+
+  const balanceUsd = useMemo(() => bnOrZero(asset?.vaultPosition?.usd.deposited), [asset])
+
+  if (balanceUsd.lte(0)) return null
+
+  return <RewardsEmissions depositedAmount={balanceUsd} />
 }
 
 const Apr: React.FC<PercentageProps> = (props) => {
@@ -1510,26 +1520,31 @@ const StkIDLEBalance: React.FC<TextProps> = (props) => {
 }
 
 type RewardsEmissionsProps = {
+  depositedAmount?: BigNumber
   flexProps?: FlexProps
 } & AssetProviderPropsType
 
 // @ts-ignore
-const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps, ...props }) => {
+const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ depositedAmount, children, flexProps, ...props }) => {
   const { asset, translate } = useAssetProvider()
 
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
 
   const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr)
 
-  const getDistributionAmount = (rewardEmission: RewardEmission) => {
+  const getDistributionAmount = (rewardEmission: RewardEmission, depositedAmount?: BigNumber) => {
     if (rewardEmission.apr){
       return rewardEmission.apr
     }
     if (rewardEmission.period){
+      let amount = BNify(rewardEmission.annualDistributionOn1000Usd)
       if (rewardEmission.period === 'day'){
-        return BNify(rewardEmission.annualDistributionOn1000Usd).div(365)
+        amount = BNify(rewardEmission.annualDistributionOn1000Usd).div(365)
       }
-      return BNify(rewardEmission.annualDistributionOn1000Usd)
+      if (bnOrZero(depositedAmount).gt(0)){
+        return amount.times(bnOrZero(depositedAmount)).div(1000)
+      }
+      return amount
     }
   }
 
@@ -1547,7 +1562,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
           const period = rewardEmission.period || 'year'
           const prefix = rewardEmission.prefix !== undefined ? rewardEmission.prefix : '+'
           const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
-          const amount = getDistributionAmount(rewardEmission)
+          const amount = getDistributionAmount(rewardEmission, depositedAmount)
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
           const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip, {period}) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
 
@@ -2435,3 +2450,4 @@ AssetProvider.TrancheTotalPoolUsd = TrancheTotalPoolUsd
 AssetProvider.KycVerificationBadge = KycVerificationBadge
 AssetProvider.EpochExpectedInterest = EpochExpectedInterest
 AssetProvider.GaugeUserDistribution = GaugeUserDistribution
+AssetProvider.WalletRewardsEmissions = WalletRewardsEmissions

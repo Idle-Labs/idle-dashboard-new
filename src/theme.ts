@@ -787,6 +787,15 @@ export const theme = extendTheme({
         },
       },
     },
+    Table: {
+      variants: {
+        striped: {
+          th: {
+            p: 2,
+          },
+        },
+      },
+    },
     Menu: {
       baseStyle: {
         groupTitle: {
