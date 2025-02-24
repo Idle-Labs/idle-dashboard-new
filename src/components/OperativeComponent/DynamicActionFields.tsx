@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import React, { useMemo } from 'react'
 import { BsStars } from 'react-icons/bs'
 import { useTranslate } from 'react-polyglot'
-import type { AssetId, VaultContractCdoEpochData } from 'constants/types'
+import type { AssetId, RewardEmission, VaultContractCdoEpochData } from 'constants/types'
 import { DATETIME_FORMAT, SECONDS_IN_YEAR, VAULT_LIMIT_MAX } from 'constants/vars'
 import { strategies } from 'constants/strategies'
 import { Amount } from 'components/Amount/Amount'
@@ -12,7 +12,7 @@ import { Translation } from 'components/Translation/Translation'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { TooltipContent } from 'components/TooltipContent/TooltipContent'
 import { TextProps, VStack, HStack, Text, Tooltip } from '@chakra-ui/react'
-import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate, sortArrayByKey, getEpochVaultInstantWithdrawEnabled, compoundVaultApr } from 'helpers/'
+import { BNify, bnOrZero, apr2apy, getFeeDiscount, dateToLocale, toDayjs, secondsToPeriod, fixTokenDecimals, formatDate, sortArrayByKey, getEpochVaultInstantWithdrawEnabled, compoundVaultApr, isEmpty } from 'helpers/'
 import { MdArrowForward } from 'react-icons/md'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
 import { TokenAmount } from 'components/TokenAmount/TokenAmount'
@@ -143,6 +143,10 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
     return vault && "getFlag" in vault ? bnOrZero(vault.getFlag('ticketSize')) : BNify(0)
   }, [vault])
 
+  const rewardsEmissions = useMemo(() => {
+    return Object.keys(asset?.rewardsEmissions || []).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr).map( (rewardId: AssetId) => asset.rewardsEmissions[rewardId] )
+  }, [asset])
+
   const textCta = useMemo(() => {
     switch (field){
       case 'withdrawFee':
@@ -270,10 +274,31 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
           return (<Amount.Percentage textStyle={'titleSmall'} color={'primary'} {...textProps} value={stakingApy} />)
         }
         break;
+      case 'rewardsEmissions':
+        if (!rewardsEmissions?.length){
+          return
+        }
+        return (
+          <VStack
+            spacing={2}
+            width={'full'}
+            alignItems={'flex-end'}
+          >
+            {
+              rewardsEmissions.map( rewardEmission => {
+                const rewardAsset = selectAssetById(rewardEmission.assetId)
+                const dailyRewardsOn1000Usd = bnOrZero(rewardEmission.annualDistributionOn1000Usd).times(bnOrZero(amountUsd)).div(1000).div(365)
+                return (
+                  <TokenAmount assetId={rewardEmission.assetId} size={'xs'} abbreviate={true} showName={false} amount={dailyRewardsOn1000Usd} suffix={` ${rewardAsset.token} / day`} textStyle={'titleSmall'} color={'primary'} {...textProps} />
+                )
+              })
+            }
+          </VStack>
+        )
       default:
-        return null
+        return
     }
-  }, [field, vaultsAccountData, ticketSize, lastEpoch, epochData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
+  }, [field, rewardsEmissions, vaultsAccountData, ticketSize, lastEpoch, epochData, amount, textCta, textProps, asset, locale, amountIsValid, amountUsd, fees, gain, newApy, newTrancheTvl, redeemableAmountIsValid, selectAssetById, stakingData, stakingPower, totalGain, translate, underlyingAsset, vault, withdrawFee])
 
 
   if (!dynamicActionField) return null
@@ -349,6 +374,10 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     return vaultLimitCap.gt(0) ? BNify(asset?.totalTvl).gte(vaultLimitCap) : false
   }, [asset, vaultLimitCap])
 
+  const rewardsEmissions = useMemo(() => {
+    return Object.keys(asset?.rewardsEmissions || []).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr).map( (rewardId: AssetId) => asset.rewardsEmissions[rewardId] )
+  }, [asset])
+
   const dynamicActionFields = useMemo(() => {
     if (!strategy?.dynamicActionFields?.[action]) return null
     let fields = strategy?.dynamicActionFields[action]
@@ -369,6 +398,14 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
           ...fields
         ]
       }
+    }
+
+    // Add reward emissions
+    if (action === 'deposit' && rewardsEmissions?.length){
+      fields = [
+        ...fields,
+        'rewardsEmissions'
+      ]
     }
 
     const showLimitCap = vault && ("flags" in vault) && vault.flags?.showLimitCap
@@ -407,7 +444,7 @@ export const DynamicActionFields: React.FC<DynamicActionFieldsProps> = (props) =
     }
     */
     return fields
-  }, [action, vault, asset, strategy, minTicketSize, limitCapReached, stakingData, vaultLimitCap])
+  }, [action, vault, asset, strategy, minTicketSize, rewardsEmissions, limitCapReached, stakingData, vaultLimitCap])
   
   if (!dynamicActionFields) return null
 

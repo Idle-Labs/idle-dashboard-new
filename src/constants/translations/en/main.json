@@ -554,6 +554,11 @@
   },
   "defi": {
     "modals": {
+      "pointsCampaign": {
+        "cta": "Got it",
+        "title": "Earn Efficiency Points",
+        "body": "The Pareto points campaign is officially live! You can now earn Efficiency Points by depositing in our vaults.<br />The rules are simple:<br />- Receive 30 EP / day for each $1 deposited in any credit vaults.<br />- Double the earnings to 30 EP /day by depositing using the Queue (during running cycle)<br />- Boost your multiplier up to 3x by maintaining your funds in the vault for up to 6 months."
+      },
       "feeDiscount": {
         "cta": "Got it",
         "title": "Fee Discount program",
@@ -1134,6 +1139,7 @@
     "feeDiscount": "Fee discount",
     "currentFeeDiscount": "Fee discount",
     "feeDiscountTier": "Discount tier",
+    "rewardsEmissions": "Rewards",
     "stakingApy": "Estimated APY",
     "riskThreshold": "Risk threshold",
     "stkIDLE": "You will receive",
@@ -1150,6 +1156,7 @@
     "withdrawFee": "Withdraw fee",
     "netGain": "Net gain",
     "tooltips": {
+      "rewardsEmissions": "Collect additional rewards by depositing in the vault",
       "epochExpectedInterest": "Additional tokens you will receive at the end of the cycle",
       "epochClaimPeriod": "Waiting time required to claim your funds after the start of the next cycle",
       "riskThreshold": "If the vault reaches its maturity and %{underlying} price ends below this price, the capital would be at risk"

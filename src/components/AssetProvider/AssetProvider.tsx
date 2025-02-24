@@ -871,11 +871,13 @@ const NetAprWithFees: React.FC<PercentageProps> = (props) => {
 type NetApyWithFeesArgs = {
   direction?: StackProps["direction"]
   tooltipEnabled?: boolean
+  showRewards?: boolean
 } & PercentageProps
 
 const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   direction = 'row',
   tooltipEnabled = true,
+  showRewards = false,
   ...props
 }) => {
   const { account } = useWalletProvider()
@@ -963,7 +965,7 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
           justifyContent={direction === 'row' ? 'flex-start' : 'center'}
         >
           <Amount.Percentage value={totalApy} {...props} stackProps={{ spacing: 1 }} borderBottom={!isTooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
-          <RewardsEmissions />
+          {showRewards && <RewardsEmissions />}
         </Stack>
       </TooltipContent>
     </Tooltip>

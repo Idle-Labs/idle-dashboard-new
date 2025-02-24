@@ -8,6 +8,7 @@ import { AccountSelector } from './AccountSelector'
 import { HStack, Stack, VStack } from '@chakra-ui/react'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AssetProvider } from 'components/AssetProvider/AssetProvider'
+import { PointsCampaignBadge } from './PointsCampaign'
 
 export const Header: React.FC = () => {
   const { account } = useWalletProvider()
@@ -53,7 +54,7 @@ export const Header: React.FC = () => {
           alignItems={'center'}
           justifyContent={'flex-end'}
         >
-          {assetBalance}
+          <PointsCampaignBadge />
           <NetworkSelector />
           <AccountSelector />
           {/*<NotificationList />*/}

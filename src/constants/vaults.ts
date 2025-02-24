@@ -293,6 +293,18 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       name: "M11 Credit",
       vaultType: "primeBrokerage",
+      rewardsEmissions: {
+        "0x0000000000000000000000000000000000000001": {
+          prefix: "+",
+          period: "day",
+          suffix: " / day",
+          annualDistribution: "0",
+          annualDistributionUsd: "0",
+          annualDistributionOn1000Usd: "10950000",
+          assetId: "0x0000000000000000000000000000000000000001",
+          tooltip: "assets.assetDetails.tooltips.efficiencyPointsEmission",
+        },
+      },
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
@@ -455,6 +467,18 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           2024: [1.88, 2.53, 2.84, 0.87, 1.39, 0.8, 0.95, 0.8, 0.8],
         },
       },
+      rewardsEmissions: {
+        "0x0000000000000000000000000000000000000001": {
+          prefix: "+",
+          period: "day",
+          suffix: " / day",
+          annualDistribution: "0",
+          annualDistributionUsd: "0",
+          annualDistributionOn1000Usd: "10950000",
+          assetId: "0x0000000000000000000000000000000000000001",
+          tooltip: "assets.assetDetails.tooltips.efficiencyPointsEmission",
+        },
+      },
       name: "Test Vault",
       vaultType: "primeBrokerage",
       Token: {
@@ -532,6 +556,18 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       distributedTokens: ["ARB"],
       name: "Bastion Trading",
       vaultType: "derivativesMM",
+      rewardsEmissions: {
+        "0x0000000000000000000000000000000000000001": {
+          prefix: "+",
+          period: "day",
+          suffix: " / day",
+          annualDistribution: "0",
+          annualDistributionUsd: "0",
+          annualDistributionOn1000Usd: "10950000",
+          assetId: "0x0000000000000000000000000000000000000001",
+          tooltip: "assets.assetDetails.tooltips.efficiencyPointsEmission",
+        },
+      },
       Token: {
         decimals: 18,
         abi: ERC20 as Abi,
