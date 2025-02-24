@@ -24,6 +24,7 @@ import type {
   Operator,
   RewardSenderParams,
   RewardSenders,
+  AssetId,
 } from "constants/types";
 import {
   BNify,
@@ -101,9 +102,9 @@ export class TrancheVault {
   public readonly rewardsSenders: RewardSenders | undefined;
   public readonly distributedTokens: UnderlyingTokenProps[];
   public readonly gaugeConfig: GaugeConfig | null | undefined;
-  public readonly rewardsEmissions: RewardEmission[] | undefined;
   public readonly pointsEmission: TrancheConfig["pointsEmission"];
   public readonly underlyingToken: UnderlyingTokenProps | undefined;
+  public readonly rewardsEmissions: Record<AssetId, RewardEmission> | undefined;
 
   // Contracts
   public readonly cdoContract: Contract;

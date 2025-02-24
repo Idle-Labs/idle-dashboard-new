@@ -860,7 +860,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                         !isVaultsLoaded ? (
                           <Spinner size={'md'} />
                         ) : (
-                          <AssetProvider.NetApyWithFees fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                          <AssetProvider.NetApyWithFees fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} direction={'column'} />
                         )
                       }
                     </HStack>

@@ -10,6 +10,7 @@ export type TokenAmountProps = {
   spacing?: number
   showIcon?: boolean
   showName?: boolean
+  iconPos?: 'left' | 'right',
   amount: AmountProps["value"]
   size?: ResponsiveValue<string> | undefined
   amountComponent?: React.FC | React.ElementType | null
@@ -21,6 +22,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
   size = 'sm',
   spacing = 2,
   amountComponent,
+  iconPos = 'left',
   showIcon = true,
   showName = true,
   ...props
@@ -38,7 +40,7 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
         alignItems={'center'}
       >
         {
-          showIcon && (
+          showIcon && iconPos === 'left' && (
             <AssetProvider.Icon size={size} />
           )
         }
@@ -47,6 +49,11 @@ export const TokenAmount: React.FC<TokenAmountProps> = ({
           alignItems={'baseline'}
         >
           <AmountComponent value={amount} decimals={BNify(amount).lt(1) && BNify(amount).gt(0) ? 4 : 2} {...amountProps} />
+          {
+            showIcon && iconPos === 'right' && (
+              <AssetProvider.Icon size={size} />
+            )
+          }
           {
             showName && (
               <AssetProvider.Name {...assetFieldProps} fontSize={'85%'} fontWeight={400} />

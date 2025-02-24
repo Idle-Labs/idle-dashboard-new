@@ -23,11 +23,11 @@ import { TransactionLink } from 'components/TransactionLink/TransactionLink'
 import { Amount, AmountProps, PercentageProps } from 'components/Amount/Amount'
 import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/vars'
 import { TranslationProps, Translation } from 'components/Translation/Translation'
-import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps } from '@chakra-ui/react'
+import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps, StackProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
 import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs, getEpochVaultInstantWithdrawEnabled, compoundVaultApr } from 'helpers/'
-import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link } from '@chakra-ui/react'
-import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch, Nullable } from 'constants/'
+import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link, Stack } from '@chakra-ui/react'
+import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch, Nullable, RewardEmission } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AddressLink } from "components/AddressLink/AddressLink"
@@ -869,10 +869,12 @@ const NetAprWithFees: React.FC<PercentageProps> = (props) => {
 }
 
 type NetApyWithFeesArgs = {
+  direction?: StackProps["direction"]
   tooltipEnabled?: boolean
 } & PercentageProps
 
 const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
+  direction = 'row',
   tooltipEnabled = true,
   ...props
 }) => {
@@ -947,22 +949,24 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   }
 
   return asset?.apr ? (
-    <HStack
-      spacing={2}
-      alignItems={'center'}
-      justifyContent={'flex-start'}
+    <Tooltip
+      hasArrow
+      placement={'top'}
+      label={tooltipLabel}
+      isDisabled={isTooltipDisabled}
     >
-      <Tooltip
-        hasArrow
-        placement={'top'}
-        label={tooltipLabel}
-        isDisabled={isTooltipDisabled}
-      >
-        <TooltipContent>
+      <TooltipContent>
+        <Stack
+          spacing={2}
+          direction={direction}
+          alignItems={direction === 'row' ? 'center' : 'flex-start'}
+          justifyContent={direction === 'row' ? 'flex-start' : 'center'}
+        >
           <Amount.Percentage value={totalApy} {...props} stackProps={{ spacing: 1 }} borderBottom={!isTooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
-        </TooltipContent>
-      </Tooltip>
-    </HStack>
+          <RewardsEmissions />
+        </Stack>
+      </TooltipContent>
+    </Tooltip>
   ) : <Spinner size={'sm'} />
 }
 
@@ -1514,6 +1518,19 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
   if (!asset || !asset.rewardsEmissions || isEmpty(asset.rewardsEmissions)) return children
 
   const visibleRewardsIds = Object.keys(asset.rewardsEmissions).filter(rewardId => !asset.rewardsEmissions?.[rewardId].apr)
+
+  const getDistributionAmount = (rewardEmission: RewardEmission) => {
+    if (rewardEmission.apr){
+      return rewardEmission.apr
+    }
+    if (rewardEmission.period){
+      if (rewardEmission.period === 'day'){
+        return BNify(rewardEmission.annualDistributionOn1000Usd).div(365)
+      }
+      return BNify(rewardEmission.annualDistributionOn1000Usd)
+    }
+  }
+
   return (
     <SimpleGrid
       spacing={1}
@@ -1525,11 +1542,13 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ children, flexProps
         visibleRewardsIds.map(rewardId => {
           const rewardEmission = asset.rewardsEmissions?.[rewardId]
           if (!rewardEmission || rewardEmission.apr) return null
+          const period = rewardEmission.period || 'year'
           const prefix = rewardEmission.prefix !== undefined ? rewardEmission.prefix : '+'
           const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
-          const amount = rewardEmission.apr || rewardEmission.annualDistributionOn1000Usd
+          const amount = getDistributionAmount(rewardEmission)
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
-          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
+          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip, {period}) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
+
           return (
             <Tooltip
               hasArrow

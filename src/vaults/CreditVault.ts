@@ -27,6 +27,7 @@ import type {
   BigNumber,
   EpochData,
   CreditVaultEpoch,
+  AssetId,
 } from "constants/types";
 import {
   BNify,
@@ -91,9 +92,9 @@ export class CreditVault {
   public readonly rewardsSenders: RewardSenders | undefined;
   public readonly distributedTokens: UnderlyingTokenProps[];
   public readonly signature: CreditVaultSignature | undefined;
-  public readonly rewardsEmissions: RewardEmission[] | undefined;
   public readonly underlyingToken: UnderlyingTokenProps | undefined;
   public readonly vaultType: CreditVaultConfig["vaultType"] | undefined;
+  public readonly rewardsEmissions: Record<AssetId, RewardEmission> | undefined;
 
   // Contracts
   public readonly cdoContract: Contract;

@@ -446,11 +446,12 @@ export type RewardEmission = {
   suffix?: string;
   tooltip?: string;
   assetId: AssetId;
+  period?: "day" | "year";
   apr?: BigNumber | null;
-  totalSupply?: BigNumber;
-  annualDistribution: BigNumber;
-  annualDistributionUsd: BigNumber;
-  annualDistributionOn1000Usd?: BigNumber;
+  totalSupply?: BigNumber | string;
+  annualDistribution: BigNumber | string;
+  annualDistributionUsd: BigNumber | string;
+  annualDistributionOn1000Usd?: BigNumber | string;
 };
 
 export type DistributedReward = {

@@ -49,6 +49,18 @@ export const underlyingTokens: Record<
   Record<string, UnderlyingTokenProps>
 > = {
   1: {
+    EP: {
+      decimals: 18,
+      token: "EP",
+      label: "EP",
+      enabled: true,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"],
+      },
+      address: "0x0000000000000000000000000000000000000001",
+    },
     DAI: {
       token: "DAI",
       decimals: 18,
@@ -649,6 +661,18 @@ export const underlyingTokens: Record<
     // }
   },
   10: {
+    EP: {
+      decimals: 18,
+      token: "EP",
+      label: "EP",
+      enabled: true,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"],
+      },
+      address: "0x0000000000000000000000000000000000000001",
+    },
     ETH: {
       abi: null,
       symbol: "Ξ",
@@ -740,6 +764,18 @@ export const underlyingTokens: Record<
     },
   },
   1101: {
+    EP: {
+      decimals: 18,
+      token: "EP",
+      label: "EP",
+      enabled: true,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"],
+      },
+      address: "0x0000000000000000000000000000000000000001",
+    },
     ETH: {
       abi: null,
       symbol: "Ξ",
@@ -789,6 +825,18 @@ export const underlyingTokens: Record<
     },
   },
   137: {
+    EP: {
+      decimals: 18,
+      token: "EP",
+      label: "EP",
+      enabled: true,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"],
+      },
+      address: "0x0000000000000000000000000000000000000001",
+    },
     DAI: {
       token: "DAI",
       decimals: 18,
@@ -919,6 +967,18 @@ export const underlyingTokens: Record<
     },
   },
   42161: {
+    EP: {
+      decimals: 18,
+      token: "EP",
+      label: "EP",
+      enabled: true,
+      colors: {
+        hex: "#2875C8",
+        rgb: [40, 117, 200],
+        hsl: ["211", "67%", "47%"],
+      },
+      address: "0x0000000000000000000000000000000000000001",
+    },
     USDT: {
       decimals: 6,
       token: "USDT",

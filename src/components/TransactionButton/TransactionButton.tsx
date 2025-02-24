@@ -30,7 +30,7 @@ export const TransactionButtonValue: React.FC<TransactionButtonValueProps> = ({
   const { state: { transaction }, cleanTransaction } = useTransactionManager()
 
   // @ts-ignore
-  const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
+  const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod?._method), [transaction, contractSendMethod])
 
   const transactionStarted = useMemo(() => {
     return isRightTransaction && transaction.status && ['pending', 'success', 'failed'].includes(transaction.status) && transaction.estimatedTime
@@ -215,7 +215,7 @@ export const TransactionButton: React.FC<TransactionButtonProps> = ({
   // const isChainEnabled = useMemo(() => checkChainEnabled(chainIds), [chainIds, checkChainEnabled])
 
   // @ts-ignore
-  const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod._method), [transaction, contractSendMethod])
+  const isRightTransaction = useMemo(() => JSON.stringify(transaction?.contractSendMethod?._method) === JSON.stringify(contractSendMethod?._method), [transaction, contractSendMethod])
 
   const asset = useMemo(() => {
     if (!selectAssetById) return null

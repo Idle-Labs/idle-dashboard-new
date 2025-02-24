@@ -114,7 +114,7 @@ export interface CreditVaultConfig {
   mode: "CREDIT" | "STRATEGY";
   vaultType?: string;
   translations?: Record<string, any>;
-  rewardsEmissions?: RewardEmission[];
+  rewardsEmissions?: Record<AssetId, RewardEmission>;
   enabledEnvs?: string[];
   accessCodes?: string[];
   depositQueue?: ContractConfig;
@@ -157,6 +157,18 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           name: "fasanara",
         },
       ],
+      rewardsEmissions: {
+        "0x0000000000000000000000000000000000000001": {
+          prefix: "+",
+          period: "day",
+          suffix: " / day",
+          annualDistribution: "0",
+          annualDistributionUsd: "0",
+          annualDistributionOn1000Usd: "10950000",
+          assetId: "0x0000000000000000000000000000000000000001",
+          tooltip: "assets.assetDetails.tooltips.efficiencyPointsEmission",
+        },
+      },
       signature: {
         skipAddresses: [
           "0x93647309137E6196a747D6c4d0770214D99Ac9c4",
@@ -651,7 +663,7 @@ export interface Tranche {
   tranche: string;
   functions: Record<string, string | null>;
   CDORewards: CDOReward;
-  rewardsEmissions?: RewardEmission[];
+  rewardsEmissions?: Record<AssetId, RewardEmission>;
   blockNumber: number;
   label: string;
   name: string;

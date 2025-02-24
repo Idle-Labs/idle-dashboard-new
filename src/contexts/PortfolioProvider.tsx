@@ -1770,8 +1770,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
           if (!rewardsEmissions[cdoAddress][rewardTokenAddress]) {
             rewardsEmissions[cdoAddress][rewardTokenAddress] = rewardEmission
           } else {
-            rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistribution = rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistribution.plus(annualDistribution)
-            rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistributionUsd = rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistributionUsd.plus(annualDistributionUsd)
+            rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistribution = BNify(rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistribution).plus(annualDistribution)
+            rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistributionUsd = BNify(rewardsEmissions[cdoAddress][rewardTokenAddress].annualDistributionUsd).plus(annualDistributionUsd)
           }
         }
       })
@@ -4756,6 +4756,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
       // Init rewards emissions
       assetsData[vault.id].rewardsEmissions = {}
 
+      // Override with vault rewards emissions
+      if ("rewardsEmissions" in vault){
+        assetsData[vault.id].rewardsEmissions = {...vault.rewardsEmissions}
+      }
+
       if (("cdoConfig" in vault)) {
 
         // Morpho rewards
@@ -4845,7 +4850,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
       assetsData[vault.id].rewardsEmissions = assetRewardsEmissions
 
-      assetsData[vault.id].aprBreakdown = { ...state.aprsBreakdown[vault.id] } || {}
+      assetsData[vault.id].aprBreakdown = { ...(state.aprsBreakdown[vault.id] || {}) }
 
       // Add gauge to vault apr breakdown
       if (vault.type === 'GG' && ("trancheVault" in vault) && vault.enabled) {
