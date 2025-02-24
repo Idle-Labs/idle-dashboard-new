@@ -162,7 +162,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           "0x93647309137E6196a747D6c4d0770214D99Ac9c4",
           "0x96C6bCc66EFdBC92Eee00204f52870d534FFEFe3",
         ],
-        name: "FASANARA_MLA",
+        name: "6798be536fdad8ec973c47f4",
         documents: [
           {
             url: "https://idle.finance/terms-of-service",

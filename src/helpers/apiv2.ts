@@ -91,13 +91,17 @@ export const checkSignatureV2 = async (
   return await makeRequest(endpoint, apiConfig?.config);
 };
 
-export async function getSignatureByName(name: string): Promise<any> {
-  const results = await callPlatformApis(1, "idle", "signatures", "", {
-    name,
-    limit: 1,
-  });
-
-  return results?.[0];
+export async function getSignatureByName(signatureId: string): Promise<any> {
+  const signature = await callPlatformApis(
+    1,
+    "idle",
+    "signatures",
+    signatureId,
+    {
+      limit: 1,
+    }
+  );
+  return signature;
 }
 
 export async function getVaultsFromApiV2(): Promise<any> {

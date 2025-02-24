@@ -135,7 +135,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     }
     setSending(true)
     try {
-      const hash = await web3.eth.personal.sign(atob(signature.message), account.address, '', () => {})
+      const hash = await web3.eth.personal.sign(atob(signature.walletMessage), account.address, '', () => {})
       if (hash){
         const proof = await saveSignatureV2(signature._id, account.address, hash)
         if (proof){
@@ -143,6 +143,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
         }
       }
     } catch (err){
+      
     } finally {
       setSending(false)
     }
