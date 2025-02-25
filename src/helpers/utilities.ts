@@ -266,37 +266,20 @@ export function dateToLocale(timestamp: dayjs.ConfigType, locale: string) {
 }
 
 export function formatMoney(
-  amount: number,
+  amount: number | string,
   decimalCount = 2,
-  decimal = ".",
-  thousands = ","
-): string | null {
+  locale = "en-US"
+): string {
   try {
-    decimalCount = Math.abs(decimalCount);
-    decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-
-    const negativeSign = amount < 0 ? "-" : "";
-
-    let i = parseInt(
-      // @ts-ignore
-      (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
-    ).toString();
-    let j = i.length > 3 ? i.length % 3 : 0;
-
-    return (
-      negativeSign +
-      (j ? i.substr(0, j) + thousands : "") +
-      i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
-      (decimalCount
-        ? decimal +
-          // @ts-ignore
-          Math.abs(amount - i)
-            .toFixed(decimalCount)
-            .slice(2)
-        : "")
-    );
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "USD", // Puoi cambiare la valuta se necessario
+      minimumFractionDigits: decimalCount,
+      // maximumFractionDigits: decimalCount,
+      // minimumSignificantDigits: decimalCount,
+    }).format(Number(amount));
   } catch (e) {
-    return null;
+    return "";
   }
 }
 

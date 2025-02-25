@@ -25,7 +25,7 @@ import { MAX_STAKING_DAYS, PROTOCOL_TOKEN, BLOCKS_PER_YEAR } from 'constants/var
 import { TranslationProps, Translation } from 'components/Translation/Translation'
 import type { FlexProps, BoxProps, ThemingProps, TextProps, AvatarProps, ImageProps, StackProps } from '@chakra-ui/react'
 import { BarChart, BarChartData, BarChartLabels, BarChartColors, BarChartKey } from 'components/BarChart/BarChart'
-import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs, getEpochVaultInstantWithdrawEnabled, compoundVaultApr } from 'helpers/'
+import { BNify, bnOrZero, abbreviateNumber, formatDate, isEmpty, getObjectPath, secondsToPeriod, fixTokenDecimals, toDayjs, getEpochVaultInstantWithdrawEnabled, compoundVaultApr, formatMoney } from 'helpers/'
 import { useTheme, SkeletonText, Text, Flex, Avatar, Tooltip, Spinner, SimpleGrid, VStack, HStack, Tag, Image, Box, Link, Stack } from '@chakra-ui/react'
 import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimeframe, vaultsStatusSchemes, GOVERNANCE_CHAINID, EpochData, CreditVaultEpoch, Nullable, RewardEmission } from 'constants/'
 import { MdError, MdVerified } from 'react-icons/md'
@@ -1564,7 +1564,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ depositedAmount, ch
           const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
           const amount = getDistributionAmount(rewardEmission, depositedAmount)
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
-          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip, {period}) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
+          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip, {period, amountUsd: formatMoney(depositedAmount?.toNumber() || 1000)}) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
 
           return (
             <Tooltip
