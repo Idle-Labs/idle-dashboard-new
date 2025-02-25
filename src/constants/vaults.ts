@@ -222,6 +222,14 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         name: "IdleStrategy_clearpool_fasanara_USDT",
         address: "0xC35D078092872Ec1f2ae82bcd6f0b6b89F0850de",
       },
+      depositQueue: {
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0x0b4F695B05902efc14344d19ED1d0B0E061C8A3E",
+      },
+      withdrawQueue: {
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0x0b4F695B05902efc14344d19ED1d0B0E061C8A3E",
+      },
       blockNumber: 0,
       descriptionShort:
         "Variable-rate loan channeling funds into delta-neutral yield strategies overperforming the BTC funding rate.",
