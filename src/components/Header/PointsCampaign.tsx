@@ -1,10 +1,8 @@
 import { useCallback } from "react";
-import { ModalProps } from "constants/";
-import { Flex, HStack, keyframes, List, ListIcon, ListItem, OrderedList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
+import { ModalProps, tokensFolder } from "constants/";
+import { Flex, Heading, HStack, Image, keyframes, List, ListItem, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
 import { useModalProvider } from "contexts/ModalProvider";
 import { AssetProvider } from "components/AssetProvider/AssetProvider";
-import { MdAddCircle, MdCheckCircle } from "react-icons/md";
-import { BsRocketTakeoffFill } from "react-icons/bs";
 
 export function PointsCampaignBadge(){
   const { openModal } = useModalProvider()
@@ -12,7 +10,15 @@ export function PointsCampaignBadge(){
   const onClick = useCallback(() => {
     const modalProps = {
       cta: 'defi.modals.pointsCampaign.cta',
-      subtitle: 'defi.modals.pointsCampaign.title',
+      subtitle: (
+        <HStack
+          spacing={2}
+          width={'full'}
+        >
+          <Heading as={'h3'} fontSize={'lg'}>Want to earn some Pareto Efficiency Point?</Heading>
+          <Image src={`${tokensFolder}EP.svg`} w={6} h={6} />
+        </HStack>
+      ),
       body: (
         <VStack
           spacing={3}
@@ -24,13 +30,13 @@ export function PointsCampaignBadge(){
           </Text>
           <List spacing={1}>
             <ListItem>
-              <ListIcon as={MdCheckCircle} color='brightGreen' />Receive 30 EP per day for every $1 deposited in any Credit Vault
+              <b>1. Deposit:</b> Receive 30 EP per day for every $1 deposited in any Vault
             </ListItem>
             <ListItem>
-              <ListIcon as={MdAddCircle} color='violet' />Earn an additional 60 EP per $1 for every day your deposit stays in the queue
+              <b>2. Queue:</b> Earn an additional 60 EP per $1 for every day your deposit stays in the deposit queue
             </ListItem>
             <ListItem>
-              <ListIcon as={BsRocketTakeoffFill} color='orange' />Get up to 3x multiplier by locking your deposits for 6 months
+              <b>3. Commit:</b> get up to 3x EP by committing your deposit up to 6 months
             </ListItem>
           </List>
           <Text>
@@ -98,8 +104,9 @@ export function PointsCampaignBadge(){
       border={'1px solid'}
       animation={animation}
       borderColor={'card.bg'}
-      layerStyle={'bgRainbow'}
       justifyContent={'center'}
+      backgroundSize={"400% 400%"}
+      backgroundImage={"linear-gradient(-45deg,#0519d3,#ff70fa,#0519d3,#ff70fa)"}
     >
       <AssetProvider assetId={"0x0000000000000000000000000000000000000001"}>
         <HStack spacing={0} width={"100%"} alignItems={"center"}>

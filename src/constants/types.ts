@@ -428,8 +428,8 @@ export type VaultStatus =
   | "discount";
 
 export type ModalProps = {
-  title?: string;
-  subtitle?: string;
+  title?: string | JSX.Element;
+  subtitle?: string | JSX.Element;
   text?: string;
   cta?: string;
   body?: JSX.Element | null;

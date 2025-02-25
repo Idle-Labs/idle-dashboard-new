@@ -89,15 +89,15 @@ export function ModalProvider({ children }: ProviderProps) {
         <ModalOverlay />
         <ModalContent>
           {
-            modalProps.title && modalProps.title?.length>0 && (
+            modalProps.title && modalProps.title !== '' && (
               <ModalHeader textStyle={'heading'} fontSize={'md'} color={'cta'}>{modalProps.title}</ModalHeader>
             )
           }
           <ModalCloseButton zIndex={999} />
           <ModalBody>
             {
-              modalProps.subtitle && modalProps.subtitle?.length>0 && (
-                <Heading as={'h3'} fontSize={'lg'} mt={modalProps.title && modalProps.title?.length>0 ? 0 : 6} mb={6}>
+              modalProps.subtitle && modalProps.subtitle !== '' && (
+                <Heading as={'h3'} fontSize={'lg'} mt={modalProps.title && modalProps.title !== '' ? 0 : 6} mb={6}>
                   {modalProps.subtitle}
                 </Heading>
               )
