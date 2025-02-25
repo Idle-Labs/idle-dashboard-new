@@ -39,8 +39,8 @@ export const VaultKycVerifyButton: React.FC<VaultKycVerifyButtonProps> = ({
     }
     const extensionConfig = {
       name: 'Pareto',
-      app_url: 'https://credit.idle.finance',
-      logo_url: 'https://credit.idle.finance/images/protocols/pareto.svg',
+      app_url: 'https://app.pareto.credit',
+      logo_url: 'https://app.pareto.credit/images/protocols/pareto.svg',
       policy_id: vault.vaultConfig.keyringPolicyId,
     };
     

@@ -22,7 +22,7 @@ export const PROD_HOSTNAME = "app.idle.finance";
 export const ENVIRONMENTS_HOSTNAMES: Record<string, string> = {
   "app.idle.finance": "prod",
   "beta.idle.finance": "beta",
-  "credit.idle.finance": "credit",
+  "app.pareto.credit": "credit",
 };
 export const MIN_TVL_USD_DEPRECATED_VAULTS = 500;
 export const LANDING_URL = "https://idle.finance";
