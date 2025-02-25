@@ -1,7 +1,7 @@
 import React, { isValidElement } from 'react'
 import type { NumberType } from 'constants/types'
 import { Text, TextProps, HStack, StackProps } from '@chakra-ui/react'
-import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney } from 'helpers/'
+import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney, formatNumber } from 'helpers/'
 
 export type AmountProps = {
   stackProps?: StackProps
@@ -13,6 +13,7 @@ export type AmountProps = {
   maxPrecision?: number
   minPrecision?: number
   abbreviateThresold?: number
+  formatOptions?: Intl.NumberFormatOptions
 } & TextProps
 
 export type PercentageProps = {
@@ -27,27 +28,39 @@ export const Amount = ({
   decimals,
   maxPrecision,
   minPrecision,
+  formatOptions,
   stackProps = {},
   abbreviate = true,
   abbreviateThresold,
   ...props
 }: AmountProps) => {
-  const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) &&  value>=abbreviateThresold)
-  let parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals, maxPrecision, minPrecision) : (decimals ? BNify(value).toFixed(decimals) : value)))
+  const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) && Number(value)>=abbreviateThresold)
+  // let parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals, maxPrecision, minPrecision) : (decimals ? BNify(value).toFixed(decimals) : value)))
+
+  // Add minus sign in prefix
+  // if (BNify(parsedValue).lt(0)){
+  //   prefix=`-${prefix}`
+  //   parsedValue = Math.abs(parsedValue)
+  // }
+
+  let parsedValue: string | number = Number(value)
+
+  if (!isNaN(parsedValue)){
+    parsedValue = formatNumber(parsedValue, decimals, {
+      ...formatOptions,
+      notation: abbreviate ? 'compact' : 'standard'
+    })
+  } else {
+    parsedValue = '-'
+  }
 
   const showPrefixSuffix = parsedValue.toString().length>0 && parsedValue !== '-'
 
-  // Add minus sign in prefix
-  if (BNify(parsedValue).lt(0)){
-    prefix=`-${prefix}`
-    parsedValue = Math.abs(parsedValue)
-  }
-
-  if (!abbreviate && !BNify(parsedValue).isNaN() && BNify(parsedValue).gte(1000)){
-    parsedValue = formatMoney(+parsedValue, decimals)
-  } else if (!BNify(parsedValue).isNaN() && decimals !== undefined) {
-    parsedValue = BNify(parsedValue).toFixed(decimals)
-  }
+  // if (!abbreviate && !BNify(parsedValue).isNaN() && BNify(parsedValue).gte(1000)){
+  //   parsedValue = formatNumber(+parsedValue, decimals, formatOptions)
+  // } else if (!BNify(parsedValue).isNaN() && decimals !== undefined) {
+  //   parsedValue = formatNumber(+parsedValue, decimals, formatOptions)
+  // }
 
   const showPrefix = showPrefixSuffix && !!prefix
   const showSuffix = showPrefixSuffix && !!suffix
@@ -80,7 +93,7 @@ export const Percentage: React.FC<PercentageProps> = ({
 }) => {
   const parsedValue = numberToPercentage(value, decimals, maxValue, minValue)
   return (
-    <Amount abbreviate={false} value={parsedValue} {...props} />
+    <Text {...props}>{parsedValue}</Text>
   )
 }
 
@@ -90,17 +103,8 @@ export const Usd: React.FC<AmountProps> = ({
   decimals = 2,
   ...props
 }) => {
-  prefix = ''//isBigNumberNaN(value) ? '' : `${prefix.replace(/\$/,'')}$`
-  // Check minus values
-  if (!isBigNumberNaN(value) && BNify(value).lt(0)){
-    // Show minus sign if parsed value is lower than 0.01
-    if (BNify(value).lte(-0.01)){
-      prefix = `-${prefix}`
-    }
-    value = BNify(value).abs()
-  }
   return (
-    <Amount value={value} prefix={prefix} decimals={decimals} {...props} />
+    <Amount value={value} prefix={prefix} decimals={decimals} {...props} formatOptions={{style: "currency", currency: "USD"}} />
   )
 }
 

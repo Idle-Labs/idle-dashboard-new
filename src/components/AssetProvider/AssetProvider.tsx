@@ -1564,7 +1564,7 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ depositedAmount, ch
           const suffix = rewardEmission.suffix !== undefined ? rewardEmission.suffix : ''
           const amount = getDistributionAmount(rewardEmission, depositedAmount)
           const amountComponent = rewardEmission.apr ? Amount.Percentage : null
-          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip, {period, amountUsd: formatMoney(depositedAmount?.toNumber() || 1000)}) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
+          const tooltipLabel = rewardEmission.tooltip ? translate(rewardEmission.tooltip, {period, amountUsd: formatMoney(depositedAmount?.toNumber() || 1000, depositedAmount ? 2 : 0)}) : (rewardEmission.apr ? translate('assets.assetDetails.tooltips.rewardEmissionApr') : translate('assets.assetDetails.tooltips.rewardEmissionTokenOn1000Usd'))
 
           return (
             <Tooltip

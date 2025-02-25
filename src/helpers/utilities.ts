@@ -283,6 +283,22 @@ export function formatMoney(
   }
 }
 
+export function formatNumber(
+  amount: number | string,
+  decimalCount = 2,
+  options?: Intl.NumberFormatOptions
+): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "decimal",
+      maximumFractionDigits: decimalCount,
+      ...options,
+    }).format(Number(amount));
+  } catch (e) {
+    return "";
+  }
+}
+
 export function uniqueValues(array: any[], attribute: string) {
   const uniqueValues = new Set();
   const result = [];
