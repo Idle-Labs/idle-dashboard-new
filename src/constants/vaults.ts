@@ -547,6 +547,80 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       description: `The Vault provides an evergreen fixed-rate loan facility, directing capital into Bastion's derivatives trading, market-making, and systematic strategies. Monthly interest distributions ensure consistent returns for liquidity providers, while flexible redemption options are available on a monthly basis.<br />Designed with institutional-grade compliance, the vault is exclusively available to Qualified Lenders in supported jurisdictions. All participants must complete a KYC process before accessing the lending opportunities.`,
     },
   ],
+  137: [
+    {
+      mode: "CREDIT",
+      kycRequired: false,
+      manager: "bastion",
+      borrower: "bastion",
+      keyringPolicyId: 20,
+      underlyingToken: "USDT",
+      enabledEnvs: ["credit"],
+      accessCodes: ["6G8R7R"],
+      custodian: {
+        name: "-",
+      },
+      navAgent: {
+        name: "-",
+      },
+      operators: [
+        {
+          type: "borrower",
+          name: "bastion",
+        },
+        {
+          type: "curator",
+          name: "idle",
+        },
+      ],
+      flags: {
+        performance: {},
+        redemption: "Monthly",
+        maturity: "28th Feb 2025",
+        performanceEnabled: false,
+        kycLink: "https://app.keyring.network/policies/bastion-trading",
+        rewardsDistributionLink:
+          "https://medium.com/idle-finance/credit-vaults-are-coming-to-arbitrum-b646563d71e9",
+        generalDataFields: {
+          maxItems: 5,
+          custodian: false,
+          navAgent: {
+            field: "maturity",
+            label: "epochs.table.maturity",
+            tooltip: "assets.assetDetails.tooltips.maturity",
+          },
+        },
+      },
+      distributedTokens: ["ARB"],
+      name: "Bastion Trading",
+      vaultType: "derivativesMM",
+      Token: {
+        decimals: 18,
+        abi: ERC20 as Abi,
+        name: "IdleCreditVault_bastion_USDT",
+        address: "0xaE65d6C295E4a28519182a632FB25b7C1966AED7",
+      },
+      CDO: {
+        decimals: 18,
+        abi: IdleCDOEpochVariant as Abi,
+        name: "IdleCreditVault_bastion_USDT",
+        address: "0xF9E2AE779a7d25cDe46FccC41a27B8A4381d4e52",
+      },
+      Strategy: {
+        abi: IdleCreditVault as Abi,
+        name: "IdleStrategy_bastion_USDT",
+        address: "0x4Ddb301403Ee3C4B4099ED128b34c36d86f6df35",
+      },
+      depositQueue: {
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0xeAB324e9450d1EfFa087ccE8eff6C1FB476d60Ff",
+      },
+      blockNumber: 0,
+      descriptionShort:
+        "Fixed-rate loan channeling funds into derivatives trading, market making and systematic strategies",
+      description: `The Vault provides an evergreen fixed-rate loan facility, directing capital into Bastion's derivatives trading, market-making, and systematic strategies. Monthly interest distributions ensure consistent returns for liquidity providers, while flexible redemption options are available on a monthly basis.<br />Designed with institutional-grade compliance, the vault is exclusively available to Qualified Lenders in supported jurisdictions. All participants must complete a KYC process before accessing the lending opportunities.`,
+    },
+  ],
 };
 
 export interface Pool {

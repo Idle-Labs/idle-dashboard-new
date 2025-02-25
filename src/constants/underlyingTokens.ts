@@ -859,8 +859,8 @@ export const underlyingTokens: Record<
     MATIC: {
       decimals: 18,
       enabled: true,
-      symbol: " MATIC",
-      token: "MATIC",
+      symbol: " POL",
+      token: "POL",
       colors: {
         hex: "#8247E5",
         rgb: [130, 71, 229],
@@ -905,6 +905,17 @@ export const underlyingTokens: Record<
       },
       abi: QuickswapLiquidityPool as Abi,
       address: "0xda7cd765DF426fCA6FB5E1438c78581E4e66bFe7",
+    },
+    USDT: {
+      decimals: 6,
+      token: "USDT",
+      enabled: true,
+      colors: {
+        hex: "#22a079",
+        rgb: [34, 160, 121],
+        hsl: ["161", "65%", "38%"],
+      },
+      address: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
     },
   },
   42161: {
