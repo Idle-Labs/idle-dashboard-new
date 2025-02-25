@@ -69,7 +69,7 @@
     "build-storybook": "build-storybook -s public",
     "deploy": "echo 'app.idle.finance\nwww.app.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote origin",
     "deploy-beta": "echo 'beta.idle.finance\nwww.beta.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote beta",
-    "deploy-credit": "echo 'credit.idle.finance\nwww.credit.idle.finance' > build/CNAME;gh-pages -b gh-pages -d build --remote credit",
+    "deploy-credit": "echo 'app.pareto.credit\nwww.app.pareto.credit' > build/CNAME;gh-pages -b gh-pages -d build --remote credit",
     "deploy-all": "yarn deploy && yarn deploy-beta",
     "build-deploy": "yarn build && yarn deploy",
     "build-deploy-beta": "yarn build && yarn deploy-beta",
