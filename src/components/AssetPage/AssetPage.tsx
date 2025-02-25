@@ -587,7 +587,7 @@ export const AssetPage: React.FC = () => {
                       !isPortfolioLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <AssetProvider.NetApyWithFees fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.NetApyWithFees fontSize={['h4', '2xl']} textStyle={'bodyTitle'} lineHeight={1} showRewards={true} />
                       )
                     }
                   </HStack>

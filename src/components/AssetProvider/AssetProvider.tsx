@@ -1596,7 +1596,6 @@ const RewardsEmissions: React.FC<RewardsEmissionsProps> = ({ depositedAmount, ch
   )
 }
 
-
 const CreditVaultMode: React.FC<TextProps> = (props) => {
   const { vault } = useAssetProvider()
   if (!vault || !("mode" in vault)) return null

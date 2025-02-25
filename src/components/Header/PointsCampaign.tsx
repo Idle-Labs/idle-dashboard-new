@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { ModalProps } from "constants/";
-import { Flex, HStack, List, ListIcon, ListItem, OrderedList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
+import { Flex, HStack, keyframes, List, ListIcon, ListItem, OrderedList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
 import { useModalProvider } from "contexts/ModalProvider";
 import { AssetProvider } from "components/AssetProvider/AssetProvider";
 import { MdAddCircle, MdCheckCircle } from "react-icons/md";
@@ -27,7 +27,7 @@ export function PointsCampaignBadge(){
               <ListIcon as={MdCheckCircle} color='brightGreen' />Receive 30 EP per day for every $1 deposited in any Credit Vault
             </ListItem>
             <ListItem>
-              <ListIcon as={MdAddCircle} color='violet' />Earn an additional 30 EP per $1 for every day your deposit stays in the queue
+              <ListIcon as={MdAddCircle} color='violet' />Earn an additional 60 EP per $1 for every day your deposit stays in the queue
             </ListItem>
             <ListItem>
               <ListIcon as={BsRocketTakeoffFill} color='orange' />Get up to 3x multiplier by locking your deposits for 6 months
@@ -61,15 +61,15 @@ export function PointsCampaignBadge(){
                   <Td>30,000</Td>
                   <Td>3 months + (5 queue days)</Td>
                   <Td>1.5x</Td>
-                  <Td>150,000</Td>
-                  <Td>4,200,000 EP</Td>
+                  <Td>300,000</Td>
+                  <Td>4,350,000 EP</Td>
                 </Tr>
                 <Tr>
                   <Td>30,000</Td>
                   <Td>6 months + (10 queue days)</Td>
                   <Td>3x</Td>
-                  <Td>300,000</Td>
-                  <Td>16,500,000 EP</Td>
+                  <Td>600,000</Td>
+                  <Td>16,800,000 EP</Td>
                 </Tr>
               </Tbody>
             </Table>
@@ -80,22 +80,31 @@ export function PointsCampaignBadge(){
     return openModal(modalProps as ModalProps, '3xl')
   }, [openModal])
 
+  const frames = keyframes`
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  `
+
+  const animation = `${frames} 10s linear infinite`
+
   return (
     <Flex
       py={1}
       px={2}
       width={'auto'}
-      borderRadius={8}
+      borderRadius={16}
       onClick={onClick}
       border={'1px solid'}
+      animation={animation}
       borderColor={'card.bg'}
+      layerStyle={'bgRainbow'}
       justifyContent={'center'}
-      backgroundColor={'card.bgLight'}
     >
       <AssetProvider assetId={"0x0000000000000000000000000000000000000001"}>
         <HStack spacing={0} width={"100%"} alignItems={"center"}>
           <AssetProvider.Icon size={"xs"} mr={2} />
-          <Text textStyle={'cta'} fontSize={'xs'}>Earn Points</Text>
+          <Text textStyle={'cta'} color={'white'} fontSize={'sm'}>Earn EP</Text>
         </HStack>
       </AssetProvider>
     </Flex>

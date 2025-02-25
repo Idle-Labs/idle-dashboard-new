@@ -244,6 +244,11 @@ export const theme = extendTheme({
   },
   // Group different layer styles
   layerStyles: {
+    bgRainbow: {
+      backgroundSize: "400% 400%",
+      backgroundImage:
+        "linear-gradient(-45deg,#0519d3,#ff70fa,#0519d3,#ff70fa)",
+    },
     tableRow: {
       borderBottomWidth: "1px",
       borderBottomStyle: "solid",
