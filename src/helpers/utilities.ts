@@ -274,7 +274,7 @@ export function formatMoney(
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: "USD", // Puoi cambiare la valuta se necessario
-      minimumFractionDigits: decimalCount,
+      maximumFractionDigits: decimalCount,
       // maximumFractionDigits: decimalCount,
       // minimumSignificantDigits: decimalCount,
     }).format(Number(amount));
