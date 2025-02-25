@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { ModalProps, tokensFolder } from "constants/";
-import { Flex, Heading, HStack, Image, keyframes, List, ListItem, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
+import { Flex, Heading, HStack, Image, keyframes, Link, List, ListItem, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
 import { useModalProvider } from "contexts/ModalProvider";
 import { AssetProvider } from "components/AssetProvider/AssetProvider";
 
@@ -15,7 +15,7 @@ export function PointsCampaignBadge(){
           spacing={2}
           width={'full'}
         >
-          <Heading as={'h3'} fontSize={'lg'}>Want to earn some Pareto Efficiency Point?</Heading>
+          <Heading as={'h3'} fontSize={'lg'}>Want to join the Pareto's Efficiency Campaign?</Heading>
           <Image src={`${tokensFolder}EP.svg`} w={6} h={6} />
         </HStack>
       ),
@@ -26,7 +26,10 @@ export function PointsCampaignBadge(){
           alignItems={'flex-start'}
         >
           <Text>
-            The rules are simple:
+            Season 1 of the Efficiency campaign is live! Read more in the <Link isExternal href={'https://paragraph.xyz/@pareto/pareto-efficiency-campaign'} color={'link'} textStyle={'tableCell'}>official blogpost</Link>
+          </Text>
+          <Text>
+            To earn Efficiency Points the rules are simple:
           </Text>
           <List spacing={1}>
             <ListItem>

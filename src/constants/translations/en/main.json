@@ -2298,7 +2298,7 @@
         "apyRatio": "The base strategy yield is split across the Senior and Junior tranches with a specific ratio",
         "autoCompounding": "These rewards are automatically re-invested in the strategy and distributed over a week",
         "lockEndDate": "This is the expiration date of your lock, after this date you will be able to withdraw your IDLE",
-        "efficiencyPointsEmission": "Pareto Efficiency Points you will get per %{period} for a %{amountUsd} worth position.",
+        "efficiencyPointsEmission": "Pareto's Efficiency Points you will get per %{period} for a %{amountUsd} worth position.",
         "stakingShare": "This percentage indicates the portion of rewards that will be reserved for you at every distribution",
         "deprecated": "This vault is sunsetting and in withdrawal-only mode, please withdraw all deposits at earliest opportunity",
         "lastHarvest": "The amount of the last harvest, automatically re-invested in the strategy. Rewards are harvested weekly and distributed over a week",
