@@ -51,10 +51,10 @@ export const Footer: React.FC = () => {
           columns={4}
           width={['full', 'auto']}
         >
-          <Link display={'flex'} justifyContent={'center'} href={"https://medium.com/idle-finance"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+          <Link display={'flex'} justifyContent={'center'} href={"https://paragraph.xyz/@pareto"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
             <SiMedium size={24} color={theme.colors.divider} />
           </Link>
-          <Link display={'flex'} justifyContent={'center'} href={"https://twitter.com/idlefinance"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
+          <Link display={'flex'} justifyContent={'center'} href={"https://x.com/paretocredit"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
             <FaXTwitter size={24} color={theme.colors.divider} />
           </Link>
           <Link display={'flex'} justifyContent={'center'} href={"https://discord.gg/mpySAJp"} isExternal sx={{'>:hover':{color:'primary !important'}}}>
