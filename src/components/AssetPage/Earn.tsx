@@ -31,7 +31,7 @@ import { AssetDistributedRewards } from 'components/AssetDistributedRewards/Asse
 import { VaultUnderlyingProtocols } from 'components/VaultUnderlyingProtocols/VaultUnderlyingProtocols'
 import { StrategyDescriptionCarousel } from 'components/StrategyDescriptionCarousel/StrategyDescriptionCarousel'
 import { bnOrZero, BNify, formatMoney, isEmpty, replaceTokens, dateToLocale, numberToPercentage } from 'helpers/'
-import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText, Button } from '@chakra-ui/react'
+import { Heading, Center, Box, Stack, Text, SimpleGrid, HStack, Switch, VStack, SkeletonText, Button, Flex } from '@chakra-ui/react'
 import { CreditVault } from 'vaults/CreditVault'
 import { CreditVaultPerformance } from 'components/CreditVaultPerformance/CreditVaultPerformance'
 import { EpochWithdrawInterestButton } from 'components/OperativeComponent/EpochVaultMessage'
@@ -277,7 +277,6 @@ export const Earn: React.FC = () => {
             <AssetProvider.Deposited decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
-          <AssetProvider.WalletRewardsEmissions />
         </VStack>
 
         <VStack
@@ -290,6 +289,11 @@ export const Earn: React.FC = () => {
             <AssetProvider.Earnings decimals={4} textStyle={'captionSmaller'} />
             <AssetProvider.Name textStyle={'captionSmaller'} />
           </HStack>
+          <Flex
+            width={'auto'}
+          >
+            <AssetProvider.WalletRewardsEmissions />
+          </Flex>
         </VStack>
 
         <VStack
