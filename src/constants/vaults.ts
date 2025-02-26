@@ -531,7 +531,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     {
       mode: "CREDIT",
       kyc: {
-        required: false,
+        required: true,
         keyringPolicyId: 20,
         skipAddresses: ["0x93647309137E6196a747D6c4d0770214D99Ac9c4"],
       },
@@ -619,7 +619,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     {
       mode: "CREDIT",
       kyc: {
-        required: false,
+        required: true,
         keyringPolicyId: 20,
         skipAddresses: ["0x93647309137E6196a747D6c4d0770214D99Ac9c4"],
       },
