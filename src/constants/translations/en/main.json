@@ -135,7 +135,8 @@
     "1": "Ethereum Mainnet",
     "10": "Optimism Mainnet",
     "1101": "Polygon zkEVM",
-    "137": "Polygon PoS"
+    "137": "Polygon PoS",
+    "42161": "Arbitrum One"
   },
   "announcements": {
     "zkEVM": {
@@ -741,6 +742,7 @@
     "redeemable": "Redeemable",
     "depositedAssets": "Deposited assets",
     "availableAssets": "Available assets",
+    "alsoAvailableIn": "Also available in",
     "searchToken": "Search token",
     "deprecatedAssets": "Decommissioned assets",
     "claimable": "Claimable",

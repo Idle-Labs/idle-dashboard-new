@@ -171,9 +171,9 @@ const VaultVariant: React.FC<TextProps> = (props) => {
 
 const KycRequired: React.FC<TextProps> = ({ ...props }) => {
   const { vault, translate } = useAssetProvider()
-  if (!vault || !("kycRequired" in vault)) return null
-  const colorScheme = vault.kycRequired ? 'orangeTone' : 'green'
-  const status = translate(`strategies.credit.kyc.${vault.kycRequired ? 'required' : 'notRequired'}`)
+  if (!vault || !("kyc" in vault)) return null
+  const colorScheme = vault.kyc.required ? 'orangeTone' : 'green'
+  const status = translate(`strategies.credit.kyc.${vault.kyc.required ? 'required' : 'notRequired'}`)
   return (
     <Tag {...props} variant={'solid'} colorScheme={colorScheme} color={'primary'} fontWeight={700}>{status}</Tag>
   )
@@ -185,7 +185,7 @@ const KycVerificationBadge: React.FC = () => {
   const { asset, vault, translate } = useAssetProvider()
   const { isPortfolioLoaded } = usePortfolioProvider()
 
-  const checkWalletAllowed = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
+  const checkWalletAllowed = useMemo(() => vault && ("kyc" in vault) && !!vault.kyc.required, [vault])
   
   const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
   const statusColor = useMemo(() => walletAllowed ? theme.colors.brightGreen : theme.colors.orange, [walletAllowed, theme])
@@ -884,7 +884,7 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
   const { asset, vault } = useAssetProvider()
 
   const isProtected = useMemo(() => vault && ("getFlag" in vault) && vault.getFlag('protectedInfos')?.includes('apy'), [vault])
-  const checkWalletAllowed = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
+  const checkWalletAllowed = useMemo(() => vault && ("kyc" in vault) && !!vault.kyc.required, [vault])
   const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
 
   const grossApr = useMemo(() => bnOrZero(asset?.aprBreakdown?.base), [asset])

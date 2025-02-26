@@ -91,14 +91,20 @@ export interface CreditVaultSignature {
   documents: CreditVaultSignatureDocument[];
 }
 
+export interface CreditVaultKyc {
+  required: boolean;
+  protected?: boolean;
+  skipAddresses?: string[];
+  keyringPolicyId?: number;
+}
+
 export interface CreditVaultConfig {
   manager: keyof typeof operators;
   borrower: keyof typeof operators;
-  kycRequired: boolean;
+  kyc: CreditVaultKyc;
   signature?: CreditVaultSignature;
   name: string;
   parentId?: string;
-  keyringPolicyId?: number;
   custodian?: ExternalProvider;
   navAgent?: ExternalProvider;
   Token: ContractConfig;
@@ -126,8 +132,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
   1: [
     {
       mode: "STRATEGY",
-      kycRequired: true,
-      keyringPolicyId: 4,
+      kyc: {
+        required: true,
+        keyringPolicyId: 4,
+      },
       manager: "fasanara",
       borrower: "fasanara",
       status: "experimental",
@@ -252,7 +260,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
   10: [
     {
       mode: "CREDIT",
-      kycRequired: true,
+      kyc: {
+        required: true,
+        protected: true,
+      },
       manager: "falconx",
       borrower: "falconx",
       // keyringPolicyId: 18,
@@ -279,7 +290,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         performance: {},
         ticketSize: 250000,
-        protectedByKyc: true,
         protectedInfos: ["apy"],
         redemption: "Monthly",
         kycLink: "https://falconx.app.keyring.network/",
@@ -334,7 +344,9 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     },
     {
       mode: "CREDIT",
-      kycRequired: true,
+      kyc: {
+        required: true,
+      },
       manager: "falconx",
       borrower: "falconx",
       underlyingToken: "USDC",
@@ -387,7 +399,9 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     },
     {
       mode: "CREDIT",
-      kycRequired: true,
+      kyc: {
+        required: true,
+      },
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",
@@ -426,7 +440,9 @@ export const credits: Record<number, CreditVaultConfig[]> = {
     },
     {
       mode: "CREDIT",
-      kycRequired: false,
+      kyc: {
+        required: false,
+      },
       manager: "falconx",
       borrower: "falconx",
       status: "experimental",
@@ -514,10 +530,13 @@ export const credits: Record<number, CreditVaultConfig[]> = {
   42161: [
     {
       mode: "CREDIT",
-      kycRequired: true,
+      kyc: {
+        required: false,
+        keyringPolicyId: 20,
+        skipAddresses: ["0x93647309137E6196a747D6c4d0770214D99Ac9c4"],
+      },
       manager: "bastion",
       borrower: "bastion",
-      keyringPolicyId: 20,
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
       parentId: "0xaE65d6C295E4a28519182a632FB25b7C1966AED7",
@@ -599,10 +618,13 @@ export const credits: Record<number, CreditVaultConfig[]> = {
   137: [
     {
       mode: "CREDIT",
-      kycRequired: false,
+      kyc: {
+        required: false,
+        keyringPolicyId: 20,
+        skipAddresses: ["0x93647309137E6196a747D6c4d0770214D99Ac9c4"],
+      },
       manager: "bastion",
       borrower: "bastion",
-      keyringPolicyId: 20,
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
       custodian: {

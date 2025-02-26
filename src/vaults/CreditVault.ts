@@ -15,6 +15,7 @@ import {
   ContractConfig,
   CreditVaultSignature,
   SECONDS_IN_YEAR,
+  CreditVaultKyc,
 } from "constants/";
 import type {
   Abi,
@@ -79,8 +80,8 @@ export class CreditVault {
   // Raw config
   public readonly type: string;
   public readonly cdoConfig: CDO;
+  public readonly kyc: CreditVaultKyc;
   public readonly blockNumber: number;
-  public readonly kycRequired: boolean;
   public readonly strategyConfig: Strategy;
   public readonly tokenConfig: ContractConfig;
   public readonly variant: string | undefined;
@@ -115,6 +116,7 @@ export class CreditVault {
     this.type = type;
     this.web3Rpc = web3Rpc;
     this.chainId = chainId;
+    this.kyc = vaultConfig.kyc;
     this.mode = vaultConfig.mode;
     this.flags = vaultConfig.flags;
     this.vaultConfig = vaultConfig;
@@ -123,7 +125,6 @@ export class CreditVault {
     this.signature = vaultConfig.signature;
     this.vaultType = vaultConfig.vaultType;
     this.blockNumber = vaultConfig.blockNumber;
-    this.kycRequired = vaultConfig.kycRequired;
     this.description = vaultConfig.description;
     this.rewardsEmissions = vaultConfig.rewardsEmissions;
     this.vaultFunctionsHelper = new VaultFunctionsHelper({

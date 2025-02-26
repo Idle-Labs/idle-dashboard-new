@@ -145,6 +145,7 @@ export const theme = extendTheme({
       bg: "#202A3E",
       bgDark: "#1B1E27",
       bgLight: "#323D53",
+      bgLighter: "#444d5f",
       borderColor: "#555B67",
     },
     chart: {
@@ -285,6 +286,13 @@ export const theme = extendTheme({
       cursor: "pointer",
       _hover: {
         backgroundColor: "card.bgLight",
+      },
+    },
+    cardLightHover: {
+      cursor: "pointer",
+      bg: "card.bgLight",
+      _hover: {
+        backgroundColor: "card.bgLighter",
       },
     },
     tableFilter: {

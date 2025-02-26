@@ -466,8 +466,8 @@ export const Earn: React.FC = () => {
     return vault ? vault.getFlag("generalDataFields.maxItems") || 6 : 6
   }, [vault])
 
-  const isProtected = useMemo(() => vault && ("getFlag" in vault) && !!vault.getFlag('protectedByKyc'), [vault])
-  const walletAllowedRequired = useMemo(() => vault && ("kycRequired" in vault) && !!vault.kycRequired, [vault])
+  const isProtected = useMemo(() => vault && ("kyc" in vault) && !!vault.kyc.protected, [vault])
+  const walletAllowedRequired = useMemo(() => vault && ("kyc" in vault) && !!vault.kyc.required, [vault])
   const walletAllowed = useMemo(() => asset && account?.address && !!asset.walletAllowed, [asset, account])
   const showProtectedData = useMemo(() => {
     return !isProtected || (isPortfolioAccountReady && (!walletAllowedRequired || walletAllowed))

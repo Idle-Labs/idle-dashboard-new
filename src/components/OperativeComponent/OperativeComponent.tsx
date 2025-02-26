@@ -20,6 +20,7 @@ import { BoxProps, Center, Box, Flex, VStack, HStack, SkeletonText, Text, Radio,
 import { BNify, bnOrZero, formatTime, abbreviateNumber, getExplorerTxUrl, sendCustomEvent, sendPurchase, getDecodedError, getStakingPower, getStkIDLE, getFeeDiscount, fixTokenDecimals, getExplorerByChainId } from 'helpers/'
 import { useThemeProvider } from "contexts/ThemeProvider";
 import { VaultKycCheck } from './VaultKycCheck'
+import { useNavigate } from 'react-router'
 
 export type ActionComponentArgs = {
   itemIndex: number
@@ -290,7 +291,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
                 >
                   <Translation translation={'trade.depositGauge'} textAlign={'center'} />
                   <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.buttonGauge`} onClick={() => { resetAndGoBack(); setTimeout(() => setSearchParams(`?tab=gauge`), 1000) }} variant={'ctaFull'} />
-                  <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => { resetAndGoBack() }} variant={'ctaPrimaryOutline'} width={'100%'} />
+                  <Translation component={Button} translation={`trade.actions.${txActionType}.status.success.button`} onClick={() => { resetAndGoBack() }} variant={'ctaPrimaryOutline'} width={'full'} />
                   {/*<Translation<LinkProps> component={Link} translation={`trade.actions.${txActionType}.status.success.button`} textStyle={['captionSmall', 'link', 'bold']}  onClick={() => resetAndGoBack()} />*/}
                 </VStack>
               ) : activeStep ? (
@@ -415,7 +416,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
         px={3}
         py={14}
         flex={1}
-        width={'100%'}
+        width={'full'}
         justifyContent={'center'}
       >
         <VStack
@@ -429,7 +430,7 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ goBack }) => {
         transactionState?.hash && (
           <HStack
             spacing={1}
-            width={'100%'}
+            width={'full'}
             justifyContent={'center'}
           >
             <Translation<LinkProps> component={Link} translation={`defi.viewOnExplorer`} params={{explorer}} textStyle={'link'} fontSize={'sm'} fontWeight={700} isExternal href={getExplorerTxUrl(asset?.chainId, transactionState.hash)} />
@@ -450,7 +451,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
     <VStack
       p={4}
       flex={1}
-      width={'100%'}
+      width={'full'}
       justifyContent={'space-between'}
     >
       <NavBar height={'auto'} mb={10} translation={'common.transactionSpeed'} />
@@ -458,7 +459,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
         p={0}
         flex={1}
         spacing={2}
-        width={'100%'}
+        width={'full'}
         justifyContent={'flex-start'}
       >
         {
@@ -472,7 +473,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                 style={{
                   cursor:'pointer'
                 }}
-                width={'100%'}
+                width={'full'}
                 aria-selected={isActive}
                 layerStyle={['cardInteractive']}
                 key={`transactionSpeed_${transactionSpeed}`} 
@@ -481,7 +482,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
               >
                 <HStack
                   spacing={4}
-                  width={'100%'}
+                  width={'full'}
                   alignItems={'center'}
                 >
                   <HStack
@@ -496,7 +497,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                       alignItems={'center'}
                     >
                       <Translation component={Text} whiteSpace={'nowrap'} textStyle={['tableCell', 'primary']} translation={`modals.send.sendForm.${transactionSpeed}`} />
-                      <SkeletonText noOfLines={1} isLoaded={!!gasPrices} width={'100%'}>
+                      <SkeletonText noOfLines={1} isLoaded={!!gasPrices} width={'full'}>
                         <Amount prefix={'('} suffix={')'} decimals={bnOrZero(gasPrices?.[transactionSpeed]).mod(1).gt(0) ? 2 : 0} textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} value={gasPrices?.[transactionSpeed]}></Amount>
                       </SkeletonText>
                     </HStack>
@@ -508,7 +509,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                     justifyContent={'flex-start'}
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`common.gasFee`} />
-                    <SkeletonText noOfLines={1} isLoaded={!!estimatedFeesUsd} width={'100%'}>
+                    <SkeletonText noOfLines={1} isLoaded={!!estimatedFeesUsd} width={'full'}>
                       <Amount.Usd textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'} prefix={TILDE} value={estimatedFeesUsd?.[transactionSpeed]}></Amount.Usd>
                     </SkeletonText>
                   </VStack>
@@ -519,7 +520,7 @@ const TransactionSpeedSelector: React.FC<TransactionSpeedSelectorProps> = ({ sav
                     justifyContent={'flex-start'}
                   >
                     <Translation component={Text} textStyle={'captionSmall'} translation={`modals.status.estimatedTime`} />
-                    <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={'100%'}>
+                    <SkeletonText noOfLines={1} isLoaded={!!estimatedTimes} width={'full'}>
                       <Text textStyle={'captionSmaller'} fontWeight={'600'} color={'primary'}>{formatTime(estimatedTimes?.[transactionSpeed])}</Text>
                     </SkeletonText>
                   </VStack>
@@ -619,6 +620,91 @@ const reducer = (state: OperativeComponentContextProps, action: ReducerActionTyp
     default:
       return {...state}
   }
+}
+
+export const VaultNetworkSwitcher: React.FC<{
+  assetId: string | undefined
+}> = ({
+  assetId
+}) => {
+  const {
+    selectors: {
+      selectAssetById,
+      selectAssetsByParentId
+    }
+  } = usePortfolioProvider()
+  const navigate = useNavigate()
+  
+  const asset = useMemo(() => {
+    return selectAssetById && selectAssetById(assetId)
+  }, [selectAssetById, assetId])
+
+  const assets = useMemo(() => {
+    if (!asset){
+      return []
+    }
+    if (asset.parentId){
+      const parentAsset = selectAssetById(asset.parentId)
+      const childrenAssets = selectAssetsByParentId(asset.parentId)
+      return [
+        parentAsset,
+        ...childrenAssets
+      ]
+    } else {
+      const childrenAssets = selectAssetsByParentId(asset.id)
+      if (childrenAssets?.length){
+        return [
+          asset,
+          ...childrenAssets
+        ]
+      }
+    }
+    return [asset]
+  }, [asset, selectAssetById, selectAssetsByParentId])
+
+  if (assets.length <= 1){
+    return null
+  }
+
+  return (
+    <Card
+      pl={3}
+      py={1}
+      pr={1}
+      border={'1px solid'}
+      borderColor={'card.borderColor'}
+      // bg={'tab.bgSelected'}
+    >
+      <HStack
+        width={'full'}
+        justifyContent={'space-between'}
+      >
+        <Translation textStyle={'titleSmall'} translation={'defi.alsoAvailableIn'} />
+        <HStack
+          spacing={3}
+        >
+          {
+            assets.filter( a => a.id !== assetId ).map( a => (
+              <Card.Flex
+                p={2}
+                layerStyle={['card','cardLightHover']}
+                onClick={() => navigate(`/credit/${a.id}`)}
+              >
+                <AssetProvider
+                  assetId={a.id}
+                >
+                  <HStack>
+                    <AssetProvider.ChainIcon w={6} h={6} />
+                    <AssetProvider.NetApyWithFees textStyle={'captionSmall'} fontWeight={600} />
+                  </HStack>
+                </AssetProvider>
+              </Card.Flex>
+            ))
+          }
+        </HStack>
+      </HStack>
+    </Card>
+  )
 }
 
 const OperativeComponentContext = createContext<OperativeComponentContextProps>(initialState)
@@ -821,7 +907,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
       <OperativeComponentContext.Provider value={{...state, activeItem, dispatch, setActionIndex}}>
         <Card.Flex
           p={4}
-          width={'100%'}
+          width={'full'}
           overflow={'hidden'}
           minHeight={'590px'}
           direction={'column'}
@@ -846,7 +932,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                 flex={1}
                 zIndex={10}
                 bg={'card.bg'}
-                width={'100%'}
+                width={'full'}
                 height={'100%'}
                 position={'absolute'}
                 id={'transaction-speed-selector'}
@@ -859,9 +945,10 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
             gap={0}
             activeItem={activeItem}
           >
-            <Flex
+            <VStack
               flex={1}
-              width={'100%'}
+              spacing={4}
+              width={'full'}
               direction={'column'}
               alignItems={'flex-start'}
             >
@@ -885,9 +972,10 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   </TabList>
                 </Tabs>
               </HStack>
+              <VaultNetworkSwitcher assetId={assetId} />
               <Flex
                 flex={1}
-                width={'100%'}
+                width={'full'}
               >
                 <VaultKycCheck
                   assetId={assetId}
@@ -895,7 +983,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
                   {!!ActionComponent && <ActionComponent chainIds={activeAction.chainIds} itemIndex={0} />}
                 </VaultKycCheck>
               </Flex>
-            </Flex>
+            </VStack>
             {
               actions[actionIndex].steps.map((step, index) => {
                 const StepComponent = step.component
@@ -922,7 +1010,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
               <Center
                 p={14}
                 flex={1}
-                width={'100%'}
+                width={'full'}
               >
                 <VStack
                   spacing={6}
@@ -947,7 +1035,7 @@ export const OperativeComponent: React.FC<OperativeComponentArgs> = ({
               </Center>
               <HStack
                 spacing={1}
-                width={'100%'}
+                width={'full'}
                 justifyContent={'center'}
               >
                 <Translation component={Text} translation={`trade.transactionDontAppear`} textStyle={'captionSmall'} />

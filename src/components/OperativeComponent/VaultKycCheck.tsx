@@ -106,14 +106,12 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
       if (childrenAssets?.length){
         return [
           asset,
-          childrenAssets
+          ...childrenAssets
         ]
       }
     }
     return [asset]
   }, [asset, selectAssetById, selectAssetsByParentId])
-
-  console.log({assets})
 
   useEffect(() => {
     if (!vault) return
@@ -130,7 +128,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   }, [vault])
 
   const isKycRequired = useMemo(() => {
-    return vault && ("kycRequired" in vault) && !!vault.kycRequired
+    return vault && ("kyc" in vault) && !!vault.kyc.required
   }, [vault])
 
   const loadSignature = useCallback(async () => {
@@ -181,15 +179,16 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     } : document ))
   }, [documents, setDocuments])
 
-  const skipWallet = useMemo(() => !!vault?.signature?.skipAddresses?.map( (addr: string) => addr.toLowerCase())?.includes(account?.address?.toLowerCase()), [vault, account] )
+  const skipWalletKyc = useMemo(() => !!vault?.kyc?.skipAddresses?.map( (addr: string) => addr.toLowerCase())?.includes(account?.address?.toLowerCase()), [vault, account] )
+  const skipWalletSignature = useMemo(() => !!vault?.signature?.skipAddresses?.map( (addr: string) => addr.toLowerCase())?.includes(account?.address?.toLowerCase()), [vault, account] )
 
   const documentsAccepted = useMemo(() => {
     return documents.find( document => !document.isChecked ) === undefined
   }, [documents])
 
-  const kycVerified = useMemo(() => account?.address && assets.find( asset => !!asset.walletAllowed ), [assets, account])
+  const kycVerified = useMemo(() => skipWalletKyc || (account?.address && assets.find( asset => !!asset.walletAllowed )), [assets, account, skipWalletKyc])
 
-  const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && (signatureVerified || skipWallet))), [isKycRequired, kycVerified, signatureVerified, skipWallet])
+  const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && (signatureVerified || skipWalletSignature))), [isKycRequired, kycVerified, signatureVerified, skipWalletSignature])
 
   useEffect(() => {
     if (!isKycRequired){
@@ -211,10 +210,10 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     </React.Fragment>
   )
 
-  const documentsVerificationRequired = useMemo(() => documents.length && !skipWallet, [skipWallet, documents])
+  const documentsVerificationRequired = useMemo(() => documents.length && !skipWalletSignature, [skipWalletSignature, documents])
 
   const bothVerificationRequired = useMemo(() => isKycRequired && documentsVerificationRequired, [isKycRequired, documentsVerificationRequired] )
-  const isProtected = useMemo(() => vault && ("getFlag" in vault) && !!vault.getFlag('protectedByKyc'), [vault])
+  const isProtected = useMemo(() => vault && ("kyc" in vault) && !!vault.kyc.protected, [vault])
   const showProtectedData = useMemo(() => {
     return !isProtected || (isPortfolioAccountReady && (!isKycRequired || isWalletAllowed))
   }, [isPortfolioAccountReady, isProtected, isKycRequired, isWalletAllowed])

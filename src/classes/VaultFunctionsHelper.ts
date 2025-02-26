@@ -1408,18 +1408,32 @@ export class VaultFunctionsHelper {
       }
     } else if (vault instanceof CreditVault) {
       switch (vault.cdoConfig.name) {
-        case "IdleCreditVault_bastion_USDT": {
-          const grossApr = bnOrZero(asset.apr);
-          const netApy = compoundVaultApr(
-            grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
-            asset.epochData?.epochDuration
-          );
-          return {
-            type: "rewards",
-            vaultId: vault.id,
-            apr: BigNumber.maximum(0, BNify(20).minus(netApy)),
-          };
-        }
+        case "IdleCreditVault_bastion_USDT":
+          // if (asset.chainId === 42161) {
+          //   const grossApr = bnOrZero(asset.apr);
+          //   const netApy = compoundVaultApr(
+          //     grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
+          //     asset.epochData?.epochDuration
+          //   );
+          //   return {
+          //     type: "rewards",
+          //     vaultId: vault.id,
+          //     apr: BigNumber.maximum(0, BNify(20).minus(netApy)),
+          //   };
+          // }
+          if (asset.chainId === 137) {
+            const grossApr = bnOrZero(asset.apr);
+            const netApy = compoundVaultApr(
+              grossApr.minus(grossApr.times(bnOrZero(asset?.fee))),
+              asset.epochData?.epochDuration
+            );
+            return {
+              type: "rewards",
+              vaultId: vault.id,
+              apr: BigNumber.maximum(0, BNify(17.5).minus(netApy)),
+            };
+          }
+          break;
         case "IdleCreditVault_falconx_USDC": {
           const grossApr = bnOrZero(asset.apr);
           const netApy = compoundVaultApr(

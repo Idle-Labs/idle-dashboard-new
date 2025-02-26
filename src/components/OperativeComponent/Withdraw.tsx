@@ -396,7 +396,6 @@ export const Withdraw: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       assetId={asset?.id}
     >
       <VStack
-        pt={8}
         flex={1}
         spacing={6}
         width={'100%'}

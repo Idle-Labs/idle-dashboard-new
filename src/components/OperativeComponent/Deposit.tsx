@@ -450,7 +450,6 @@ export const Deposit: React.FC<ActionComponentArgs> = ({ itemIndex }) => {
       assetId={asset?.underlyingId}
     >
       <VStack
-        pt={8}
         flex={1}
         spacing={6}
         height={'100%'}
