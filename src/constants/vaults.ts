@@ -97,6 +97,7 @@ export interface CreditVaultConfig {
   kycRequired: boolean;
   signature?: CreditVaultSignature;
   name: string;
+  parentId?: string;
   keyringPolicyId?: number;
   custodian?: ExternalProvider;
   navAgent?: ExternalProvider;
@@ -519,6 +520,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       keyringPolicyId: 20,
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
+      parentId: "0xaE65d6C295E4a28519182a632FB25b7C1966AED7",
       custodian: {
         name: "-",
       },
@@ -538,7 +540,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         performance: {},
         redemption: "Monthly",
-        maturity: "28th Feb 2025",
+        maturity: "31st Apr 2025",
         performanceEnabled: false,
         kycLink: "https://app.keyring.network/policies/bastion-trading",
         rewardsDistributionLink:
@@ -553,7 +555,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           },
         },
       },
-      distributedTokens: ["ARB"],
       name: "Bastion Trading",
       vaultType: "derivativesMM",
       rewardsEmissions: {
@@ -604,7 +605,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       keyringPolicyId: 20,
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
-      accessCodes: ["6G8R7R"],
       custodian: {
         name: "-",
       },
@@ -624,7 +624,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       flags: {
         performance: {},
         redemption: "Monthly",
-        maturity: "28th Feb 2025",
+        maturity: "31st Apr 2025",
         performanceEnabled: false,
         kycLink: "https://app.keyring.network/policies/bastion-trading",
         rewardsDistributionLink:
@@ -639,7 +639,19 @@ export const credits: Record<number, CreditVaultConfig[]> = {
           },
         },
       },
-      distributedTokens: ["ARB"],
+      rewardsEmissions: {
+        "0x0000000000000000000000000000000000000001": {
+          prefix: "+",
+          period: "day",
+          suffix: " / day",
+          annualDistribution: "0",
+          annualDistributionUsd: "0",
+          annualDistributionOn1000Usd: "10950000",
+          assetId: "0x0000000000000000000000000000000000000001",
+          tooltip: "assets.assetDetails.tooltips.efficiencyPointsEmission",
+        },
+      },
+      distributedTokens: ["MATIC"],
       name: "Bastion Trading",
       vaultType: "derivativesMM",
       Token: {

@@ -1,4 +1,4 @@
-import { Asset } from "constants/"
+import { Asset, AssetId } from "constants/"
 import { Box, Center, Flex, Heading, SimpleGrid, SkeletonText, Spinner, Stack, VStack } from "@chakra-ui/react"
 import { Translation } from "components/Translation/Translation"
 import { VaultCard } from "components/VaultCard/VaultCard"
@@ -7,7 +7,7 @@ import { useCallback, useMemo } from "react"
 import { useThemeProvider } from "contexts/ThemeProvider"
 import { abbreviateNumber, bnOrZero, isEmpty } from "helpers"
 import { useNavigate } from "react-router"
-import useLocalForge from "hooks/useLocalForge"
+import { CreditVault } from "vaults/CreditVault"
 
 export const CreditVaults: React.FC = () => {
   const navigate = useNavigate()
@@ -16,14 +16,13 @@ export const CreditVaults: React.FC = () => {
     protocolData,
     isPortfolioLoaded,
     selectors: {
-      selectVaultsAssetsByType,
+      selectVaultsByType,
     }
   } = usePortfolioProvider()
-  const [ storedAuthCode ] = useLocalForge('authCode', null)
-
   const creditVaults = useMemo(() => {
-    return selectVaultsAssetsByType('CR')
-  }, [selectVaultsAssetsByType])
+    const vaults = selectVaultsByType('CR')
+    return vaults?.filter( (v: CreditVault) => !v.vaultConfig?.parentId )
+  }, [selectVaultsByType])
 
   const heading = useMemo(() => {
     return (
@@ -69,8 +68,8 @@ export const CreditVaults: React.FC = () => {
     )
   }, [theme, protocolData, isPortfolioLoaded])
 
-  const onVaultClick = useCallback((asset: Asset) => {
-    return navigate(`/credit/${asset.id}`)
+  const onVaultClick = useCallback((assetId: AssetId) => {
+    return navigate(`/credit/${assetId}`)
   }, [navigate])
 
   return isEmpty(creditVaults) ? (
@@ -97,7 +96,7 @@ export const CreditVaults: React.FC = () => {
           columns={[1, 3]}
         >
           {
-            creditVaults.map((asset: Asset, index: number) => (<VaultCard.Credit assetId={asset.id as string} key={`index_${index}`} onClick={() => onVaultClick(asset)} />))
+            creditVaults.map((vault: CreditVault, index: number) => (<VaultCard.Credit assetId={vault.id as string} key={`index_${index}`} onClick={() => onVaultClick(vault.id)} />))
           }
         </SimpleGrid>
       </VStack>

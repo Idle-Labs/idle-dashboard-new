@@ -908,7 +908,7 @@ export const underlyingTokens: Record<
       decimals: 18,
       enabled: true,
       symbol: " POL",
-      token: "POL",
+      token: "MATIC",
       colors: {
         hex: "#8247E5",
         rgb: [130, 71, 229],

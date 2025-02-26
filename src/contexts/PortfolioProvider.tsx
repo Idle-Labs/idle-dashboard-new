@@ -379,6 +379,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       const vaultAssetsData = vault.getAssetsData()
       const status = ("status" in vault) && vault.status ? vault.status : 'production'
       const chainId = +vault.chainId
+      const parentId = "vaultConfig" in vault && "parentId" in vault.vaultConfig ? vault.vaultConfig.parentId : undefined
 
       // Add assets IDs
       const vaultAssetsDataWithIds = Object.keys(vaultAssetsData).reduce((vaultAssetsDataWithIds: Assets, assetId: AssetId) => {
@@ -386,7 +387,8 @@ export function PortfolioProvider({ children }: ProviderProps) {
           id: assetId,
           ...vaultAssetsData[assetId],
           status,
-          chainId
+          chainId,
+          parentId
         }
         return vaultAssetsDataWithIds
       }, {})
@@ -494,6 +496,11 @@ export function PortfolioProvider({ children }: ProviderProps) {
 
   const selectVaultsAssetsByType = useCallback((vaultType: string): Asset[] | null => {
     const vaults = state.vaults ? state.vaults.filter((vault: Vault) => vault.type.toLowerCase() === vaultType.toLowerCase()) || null : null
+    return Object.keys(state.assetsData).filter(assetId => vaults.map((vault: Vault) => vault.id.toLowerCase()).includes(assetId)).map(assetId => state.assetsData[assetId])
+  }, [state.vaults, state.assetsData])
+
+  const selectAssetsByParentId = useCallback((parentId: string): Asset[] | null => {
+    const vaults = state.vaults ? state.vaults.filter((vault: Vault) => ("vaultConfig" in vault && "parentId" in vault.vaultConfig && cmpAddrs(vault.vaultConfig.parentId, parentId))) || null : null
     return Object.keys(state.assetsData).filter(assetId => vaults.map((vault: Vault) => vault.id.toLowerCase()).includes(assetId)).map(assetId => state.assetsData[assetId])
   }, [state.vaults, state.assetsData])
 
@@ -3303,6 +3310,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       selectAssetStrategies,
       selectAssetBalanceUsd,
       selectNetworkByVaultId,
+      selectAssetsByParentId,
       selectVaultNetworkById,
       selectVaultByCdoAddress,
       selectVaultTransactions,
@@ -3333,6 +3341,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     selectAssetStrategies,
     selectAssetBalanceUsd,
     selectNetworkByVaultId,
+    selectAssetsByParentId,
     selectVaultNetworkById,
     selectVaultByCdoAddress,
     selectVaultTransactions,
@@ -4954,6 +4963,15 @@ export function PortfolioProvider({ children }: ProviderProps) {
         assetsData[vault.id].apr = assetsData[vault.id].aprBreakdown ? (Object.values(assetsData[vault.id].aprBreakdown || {}) as BigNumber[]).reduce((total: BigNumber, apr: BigNumber) => total.plus(apr), BNify(0)) : BNify(0)
         assetsData[vault.id].apy = assetsData[vault.id].apyBreakdown ? (Object.values(assetsData[vault.id].apyBreakdown || {}) as BigNumber[]).reduce((total: BigNumber, apy: BigNumber) => total.plus(apy), BNify(0)) : BNify(0)
       }
+
+      // Add parent vaults TVL
+      // if ("vaultConfig" in vault && "parentId" in vault.vaultConfig && checkAddress(vault.vaultConfig.parentId)){
+      //   const parentId = vault.vaultConfig.parentId.toLowerCase()
+      //   assetsData[parentId].tvl = BNify(assetsData[parentId].tvl).plus(bnOrZero(assetsData[vault.id].tvl))
+      //   assetsData[parentId].tvlUsd = BNify(assetsData[parentId].tvlUsd).plus(bnOrZero(assetsData[vault.id].tvlUsd))
+      //   assetsData[parentId].totalTvl = BNify(assetsData[parentId].totalTvl).plus(bnOrZero(assetsData[vault.id].totalTvl))
+      //   assetsData[parentId].totalTvlUsd = BNify(assetsData[parentId].totalTvlUsd).plus(bnOrZero(assetsData[vault.id].totalTvlUsd))
+      // }
     }
 
     dispatch({ type: 'SET_ASSETS_DATA', payload: assetsData })

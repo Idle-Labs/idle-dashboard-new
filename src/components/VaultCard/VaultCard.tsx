@@ -684,7 +684,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
     selectors: {
       selectAssetById,
       selectVaultById,
-      selectVaultPosition
+      selectVaultPosition,
     }
   } = usePortfolioProvider()
 
@@ -698,10 +698,6 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
 
   const maxApy = useMemo((): BigNumber => {
     return asset.apr
-  }, [asset])
-
-  const totalTvl = useMemo((): BigNumber => {
-    return asset.tvlUsd
   }, [asset])
 
   const network = useMemo((): Network => {
@@ -840,7 +836,8 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                       !isVaultsLoaded ? (
                         <Spinner size={'md'} />
                       ) : (
-                        <Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />
+                        /*<Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />*/
+                        <AssetProvider.PoolUsd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                       )
                     }
                   </VStack>

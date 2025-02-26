@@ -1335,9 +1335,28 @@ const Fees: React.FC<AmountProps> = (props) => {
 
 const PoolUsd: React.FC<AmountProps> = (props) => {
   const { asset } = useAssetProvider()
+  const { selectors: { selectAssetById, selectAssetsByParentId } } = usePortfolioProvider()
+
+  const totalTvl = useMemo(() => {
+    if (!asset){
+      return BNify(0)
+    }
+    if (asset.parentId){
+      const parentAsset = selectAssetById(asset.parentId)
+      const childAssets = selectAssetsByParentId(asset.parentId)
+      return (childAssets || []).reduce( (acc: BigNumber, childAsset: Asset) => {
+        return acc.plus(bnOrZero(childAsset.tvlUsd))
+      }, bnOrZero(parentAsset?.tvlUsd))
+    } else {
+      const childAssets = selectAssetsByParentId(asset?.id)
+      return (childAssets || []).reduce( (acc: BigNumber, childAsset: Asset) => {
+        return acc.plus(bnOrZero(childAsset.tvlUsd))
+      }, bnOrZero(asset?.tvlUsd))
+    }
+  }, [asset, selectAssetById, selectAssetsByParentId])
 
   return asset?.tvlUsd ? (
-    <Amount.Usd value={asset?.tvlUsd} {...props} />
+    <Amount.Usd value={totalTvl} {...props} />
   ) : <Spinner size={'sm'} />
 }
 

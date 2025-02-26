@@ -533,6 +533,7 @@ export interface Asset {
   decimals: number;
   variant?: string;
   apy7?: BigNumber;
+  parentId?: string;
   limit?: BigNumber;
   apy30?: BigNumber;
   protocol?: string;

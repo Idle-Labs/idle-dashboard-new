@@ -289,7 +289,7 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
                 const rewardAsset = selectAssetById(rewardEmission.assetId)
                 const dailyRewardsOn1000Usd = bnOrZero(rewardEmission.annualDistributionOn1000Usd).times(bnOrZero(amountUsd)).div(1000).div(365)
                 return (
-                  <TokenAmount assetId={rewardEmission.assetId} size={'xs'} abbreviate={true} showName={false} amount={dailyRewardsOn1000Usd} suffix={` ${rewardAsset.token} / day`} textStyle={'titleSmall'} color={'primary'} {...textProps} />
+                  <TokenAmount key={rewardEmission.assetId} assetId={rewardEmission.assetId} size={'xs'} abbreviate={true} showName={false} amount={dailyRewardsOn1000Usd} suffix={` ${rewardAsset.token} / day`} textStyle={'titleSmall'} color={'primary'} {...textProps} />
                 )
               })
             }

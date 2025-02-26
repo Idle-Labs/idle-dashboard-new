@@ -23,7 +23,7 @@ export const VaultKycVerifyButton: React.FC<VaultKycVerifyButtonProps> = ({
   ...buttonProps
 }) => {
   const { account } = useWalletProvider()
-  const { selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { selectors: { selectVaultById } } = usePortfolioProvider()
 
   const vault = useMemo(() => {
     return selectVaultById(assetId)
@@ -80,7 +80,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const [ signatureName, setSignatureName ] = useState<string | undefined>()
   const [ signatureVerified, setSignatureVerified ] = useState<boolean>(false)
   const [ documents, setDocuments ] = useState<CreditVaultSignatureDocument[]>([])
-  const { isPortfolioAccountReady, selectors: { selectAssetById, selectVaultById } } = usePortfolioProvider()
+  const { isPortfolioAccountReady, selectors: { selectAssetById, selectVaultById, selectAssetsByParentId } } = usePortfolioProvider()
 
   const asset = useMemo(() => {
     return selectAssetById(assetId)
@@ -89,6 +89,31 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
   const vault = useMemo(() => {
     return selectVaultById(assetId)
   }, [assetId, selectVaultById])
+
+  const assets = useMemo(() => {
+    if (!asset){
+      return []
+    }
+    if (asset.parentId){
+      const parentAsset = selectAssetById(asset.parentId)
+      const childrenAssets = selectAssetsByParentId(asset.parentId)
+      return [
+        parentAsset,
+        ...childrenAssets
+      ]
+    } else {
+      const childrenAssets = selectAssetsByParentId(asset.id)
+      if (childrenAssets?.length){
+        return [
+          asset,
+          childrenAssets
+        ]
+      }
+    }
+    return [asset]
+  }, [asset, selectAssetById, selectAssetsByParentId])
+
+  console.log({assets})
 
   useEffect(() => {
     if (!vault) return
@@ -162,7 +187,7 @@ export const VaultKycCheck: React.FC<VaultKycCheckProps> = ({
     return documents.find( document => !document.isChecked ) === undefined
   }, [documents])
 
-  const kycVerified = useMemo(() => !!asset?.walletAllowed && account?.address, [asset, account])
+  const kycVerified = useMemo(() => account?.address && assets.find( asset => !!asset.walletAllowed ), [assets, account])
 
   const isWalletAllowed = useMemo(() => (!isKycRequired || (kycVerified && (signatureVerified || skipWallet))), [isKycRequired, kycVerified, signatureVerified, skipWallet])
 
