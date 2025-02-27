@@ -630,7 +630,7 @@ export const VaultNetworkSwitcher: React.FC<{
   const {
     selectors: {
       selectAssetById,
-      selectAssetsByParentId
+      selectAllConnectedAssets
     }
   } = usePortfolioProvider()
   const navigate = useNavigate()
@@ -639,28 +639,7 @@ export const VaultNetworkSwitcher: React.FC<{
     return selectAssetById && selectAssetById(assetId)
   }, [selectAssetById, assetId])
 
-  const assets = useMemo(() => {
-    if (!asset){
-      return []
-    }
-    if (asset.parentId){
-      const parentAsset = selectAssetById(asset.parentId)
-      const childrenAssets = selectAssetsByParentId(asset.parentId)
-      return [
-        parentAsset,
-        ...childrenAssets
-      ]
-    } else {
-      const childrenAssets = selectAssetsByParentId(asset.id)
-      if (childrenAssets?.length){
-        return [
-          asset,
-          ...childrenAssets
-        ]
-      }
-    }
-    return [asset]
-  }, [asset, selectAssetById, selectAssetsByParentId])
+  const assets = useMemo(() => selectAllConnectedAssets(asset), [asset, selectAllConnectedAssets])
 
   if (assets.length <= 1){
     return null
@@ -684,7 +663,7 @@ export const VaultNetworkSwitcher: React.FC<{
           spacing={3}
         >
           {
-            assets.filter( a => a.id !== assetId ).map( a => (
+            assets.filter( (a: Asset) => a.id !== assetId ).map( (a: Asset) => (
               <Card.Flex
                 p={2}
                 layerStyle={['card','cardLightHover']}

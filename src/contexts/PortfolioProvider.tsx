@@ -504,6 +504,31 @@ export function PortfolioProvider({ children }: ProviderProps) {
     return Object.keys(state.assetsData).filter(assetId => vaults.map((vault: Vault) => vault.id.toLowerCase()).includes(assetId)).map(assetId => state.assetsData[assetId])
   }, [state.vaults, state.assetsData])
 
+  const selectAllConnectedAssets = useCallback((asset: Asset): Asset[] => {
+    if (!asset?.id){
+      return []
+    }
+    if (asset.parentId){
+      const parentAsset = selectAssetById(asset.parentId)
+      if (parentAsset){
+        const childrenAssets = selectAssetsByParentId(asset.parentId)
+        return [
+          parentAsset,
+          ...(childrenAssets || [])
+        ]
+      }
+    } else {
+      const childrenAssets = selectAssetsByParentId(asset.id)
+      if (childrenAssets?.length){
+        return [
+          asset,
+          ...childrenAssets
+        ]
+      }
+    }
+    return [asset]
+  }, [selectAssetById, selectAssetsByParentId])
+
   const selectVaultsWithBalance = useCallback((vaultType: string | null = null): Vault[] | null => {
     return state.vaults ? state.vaults.filter((vault: Vault) => (!vaultType || vault.type.toLowerCase() === vaultType.toLowerCase()) && state.assetsData[vault.id.toLowerCase()] && state.assetsData[vault.id.toLowerCase()].balance && BNify(state.assetsData[vault.id.toLowerCase()].balance).gt(0)) || null : null
   }, [state.vaults, state.assetsData])
@@ -3316,6 +3341,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
       selectVaultTransactions,
       selectVaultsWithBalance,
       selectVaultsAssetsByType,
+      selectAllConnectedAssets,
       selectAssetHistoricalTvls,
       selectAssetHistoricalRates,
       selectAssetHistoricalPrices,
@@ -3347,6 +3373,7 @@ export function PortfolioProvider({ children }: ProviderProps) {
     selectVaultTransactions,
     selectVaultsWithBalance,
     selectVaultsAssetsByType,
+    selectAllConnectedAssets,
     selectAssetHistoricalTvls,
     selectAssetHistoricalRates,
     selectAssetHistoricalPrices,

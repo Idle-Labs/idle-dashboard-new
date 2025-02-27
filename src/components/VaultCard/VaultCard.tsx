@@ -685,6 +685,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
       selectAssetById,
       selectVaultById,
       selectVaultPosition,
+      selectAllConnectedAssets
     }
   } = usePortfolioProvider()
 
@@ -696,13 +697,14 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
     return selectVaultById(assetId)
   }, [selectVaultById, assetId])
 
-  const maxApy = useMemo((): BigNumber => {
-    return asset.apr
-  }, [asset])
+  const assets = useMemo(() => {
+    return selectAllConnectedAssets(asset)
+  }, [asset, selectAllConnectedAssets])
 
-  const network = useMemo((): Network => {
-    return networks[asset.chainId]
-  }, [asset])
+  const assetsNetworks = useMemo(() => {
+    const chainIds: number[] = Array.from(new Set((assets || []).map( (a: Asset) => Number(a.chainId) )))
+    return chainIds.map( (chainId: number) => networks[chainId])
+  }, [assets])
 
   const borrower = useMemo(() => operators[vault.vaultConfig.borrower], [vault]) 
   const vaultsPosition = useMemo(() => selectVaultPosition(asset.id), [asset, selectVaultPosition])
@@ -878,28 +880,36 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
               justifyContent={'space-between'}
             >
               <HStack
-                spacing={2}
+                spacing={3}
               >
                 <Translation translation={'common.availableOn'} textStyle={'captionSmall'} />
-                <Card.Light
-                  py={0}
-                  px={1}
-                  pr={2}
-                  height={8}
-                  width={'auto'}
-                  display={'flex'}
-                  borderRadius={24}
-                  border={'1px solid'}
-                  alignItems={'center'}
-                  backgroundColor={'primary'}
+                <HStack
+                  spacing={2}
                 >
-                  <HStack
-                    spacing={1}
-                  >
-                    <Image src={network.icon as string} width={6} height={6} />
-                    <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{network.name}</Text>
-                  </HStack>
-                </Card.Light>
+                  {
+                    assetsNetworks.map( n => (
+                      <Card.Light
+                        py={0}
+                        px={1}
+                        pr={2}
+                        height={8}
+                        width={'auto'}
+                        display={'flex'}
+                        borderRadius={24}
+                        border={'1px solid'}
+                        alignItems={'center'}
+                        backgroundColor={'primary'}
+                      >
+                        <HStack
+                          spacing={1}
+                        >
+                          <Image src={n.icon as string} width={6} height={6} />
+                          <Text fontSize={'sm'} fontWeight={600} color={'card.bg'}>{n.name}</Text>
+                        </HStack>
+                      </Card.Light>
+                    ))
+                  }
+                </HStack>
               </HStack>
               <IconButton
                 size={'sm'}
