@@ -609,6 +609,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         abi: IdleCdoEpochQueue as Abi,
         address: "0x133F1C751f25C2AAf0E83f0609A67074915144A4",
       },
+      withdrawQueue: {
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0x133F1C751f25C2AAf0E83f0609A67074915144A4",
+      },
       blockNumber: 0,
       descriptionShort:
         "Fixed-rate loan channeling funds into derivatives trading, market making and systematic strategies",
@@ -694,6 +698,10 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         address: "0x4Ddb301403Ee3C4B4099ED128b34c36d86f6df35",
       },
       depositQueue: {
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0xeAB324e9450d1EfFa087ccE8eff6C1FB476d60Ff",
+      },
+      withdrawQueue: {
         abi: IdleCdoEpochQueue as Abi,
         address: "0xeAB324e9450d1EfFa087ccE8eff6C1FB476d60Ff",
       },
