@@ -964,7 +964,7 @@ const NetApyWithFees: React.FC<NetApyWithFeesArgs> = ({
         isDisabled={isTooltipDisabled}
       >
         <TooltipContent>
-          <Amount.Percentage value={totalApy} {...props} stackProps={{ spacing: 1 }} borderBottom={!isTooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} />
+          <Amount.Percentage value={totalApy} stackProps={{ spacing: 1 }} borderBottom={!isTooltipDisabled ? '1px dashed' : 'none'} borderBottomColor={'cta'} {...props} />
         </TooltipContent>
       </Tooltip>
       {showRewards && <RewardsEmissions />}

@@ -693,9 +693,11 @@ export const VaultNetworkSwitcher: React.FC<{
                 <AssetProvider
                   assetId={a.id}
                 >
-                  <HStack>
-                    <AssetProvider.ChainIcon w={6} h={6} />
-                    <AssetProvider.NetApyWithFees textStyle={'captionSmall'} fontWeight={600} />
+                  <HStack
+                    spacing={1}
+                  >
+                    <AssetProvider.ChainIcon w={6} h={6} mr={1} />
+                    <AssetProvider.NetApyWithFees textStyle={'captionSmall'} fontWeight={600} suffix={<Translation translation={'defi.apy'} textStyle={'captionSmall'} fontWeight={500} fontSize={'xs'} />} />
                   </HStack>
                 </AssetProvider>
               </Card.Flex>

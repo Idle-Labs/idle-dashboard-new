@@ -1,7 +1,7 @@
 import React, { isValidElement } from 'react'
 import type { NumberType } from 'constants/types'
 import { Text, TextProps, HStack, StackProps } from '@chakra-ui/react'
-import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney, formatNumber } from 'helpers/'
+import { BNify, abbreviateNumber, numberToPercentage, isBigNumberNaN, formatMoney, formatNumber, bnOrZero } from 'helpers/'
 
 export type AmountProps = {
   stackProps?: StackProps
@@ -35,13 +35,6 @@ export const Amount = ({
   ...props
 }: AmountProps) => {
   const checkThreshold = !abbreviateThresold || (value && !isBigNumberNaN(value) && Number(value)>=abbreviateThresold)
-  // let parsedValue = isBigNumberNaN(value) ? '-' : (typeof value === 'string' && isNaN(parseFloat(value)) ? value : (abbreviate && checkThreshold ? abbreviateNumber(value, decimals, maxPrecision, minPrecision) : (decimals ? BNify(value).toFixed(decimals) : value)))
-
-  // Add minus sign in prefix
-  // if (BNify(parsedValue).lt(0)){
-  //   prefix=`-${prefix}`
-  //   parsedValue = Math.abs(parsedValue)
-  // }
 
   let parsedValue: string | number = Number(value)
 
@@ -91,9 +84,8 @@ export const Percentage: React.FC<PercentageProps> = ({
   maxValue = 9999,
   ...props
 }) => {
-  const parsedValue = numberToPercentage(value, decimals, maxValue, minValue)
   return (
-    <Text {...props}>{parsedValue}</Text>
+    <Amount value={bnOrZero(value).div(100)} abbreviate={false} decimals={decimals} {...props} formatOptions={{style: "percent"}} />
   )
 }
 
