@@ -30,7 +30,7 @@ export const Amount = ({
   minPrecision,
   formatOptions,
   stackProps = {},
-  abbreviate = true,
+  abbreviate = false,
   abbreviateThresold,
   ...props
 }: AmountProps) => {
