@@ -38,7 +38,7 @@ export const GenericChart: React.FC<GenericChartArgs> = ({
   // setPercentChange,
   maxMinEnabled = true,
   color = 'chart.stroke',
-  formatFn = (n: any) => `$${formatMoney(n)}`,
+  formatFn = (n: any) => formatMoney(n),
   margins = { top: 0, right: 0, bottom: 0, left: 0 }
 }) => {
 

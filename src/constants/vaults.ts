@@ -543,7 +543,7 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       borrower: "bastion",
       underlyingToken: "USDT",
       enabledEnvs: ["credit"],
-      // parentId: "0xaE65d6C295E4a28519182a632FB25b7C1966AED7",
+      parentId: "0xaE65d6C295E4a28519182a632FB25b7C1966AED7",
       custodian: {
         name: "-",
       },
@@ -631,7 +631,6 @@ export const credits: Record<number, CreditVaultConfig[]> = {
         keyringPolicyId: 20,
         skipAddresses: ["0x93647309137E6196a747D6c4d0770214D99Ac9c4"],
       },
-      parentId: "0x97F476F664A95106931f78113489e0361Cf1c9Fa",
       manager: "bastion",
       borrower: "bastion",
       underlyingToken: "USDT",

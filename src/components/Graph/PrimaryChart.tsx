@@ -2,7 +2,7 @@
 import { BNify, toDayjs } from 'helpers/'
 import { useColorModeValue } from '@chakra-ui/color-mode'
 import { useToken } from '@chakra-ui/system'
-import { useTheme } from '@chakra-ui/react'
+import { Text, useTheme } from '@chakra-ui/react'
 import { HistoryData } from 'constants/types'
 import { localPoint } from '@visx/event'
 import { Group } from '@visx/group'
@@ -241,7 +241,7 @@ export const PrimaryChart = ({
           >
             <ul style={{ padding: '0', margin: '0', listStyle: 'none' }}>
               <li>
-                <Amount abbreviate={false} fontWeight='bold' fontSize='lg' my={2} value={formatFn(tooltipData.value)} />
+                <Text fontWeight='bold' fontSize='lg' my={2}>{formatFn(tooltipData.value)}</Text>
               </li>
               <li style={{ paddingBottom: '0.25rem', fontSize: '12px', color: theme.colors.gray[300] }}>
                 {dateToLocale(tooltipData)}
