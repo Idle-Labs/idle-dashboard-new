@@ -723,11 +723,11 @@ const EpochExpectedInterest: React.FC<AmountProps> = (props) => {
   const nextEpochExpectedInterestInfo = useMemo((): CreditVaultExpectedInterest | undefined => {
     if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return
     const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
-    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw && false)
+    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
   }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
 
   const nextEpochProfit = useMemo(() => {
-    return nextEpochExpectedInterestInfo?.underlying || BNify(0)
+    return nextEpochExpectedInterestInfo?.interest || BNify(0)
   }, [nextEpochExpectedInterestInfo])
 
   if (!vault || !("mode" in vault)){
@@ -1717,8 +1717,9 @@ const EpochInfo: React.FC<EpochInfoArgs> = ({
     case 'lastEpochApr':
       return (<Amount.Percentage value={fixTokenDecimals(value, 18)} textStyle={'tableCell'} {...props} />)
     case 'claimPeriod':
+    case 'claimPeriodShort':
       const allowInstantWithdraw = getEpochVaultInstantWithdrawEnabled(epochData)
-      return (<Text {...props}>{secondsToPeriod(allowInstantWithdraw ? epochData?.instantWithdrawDelay : (asset.epochData as CreditVaultEpoch)['epochDuration'])} notice</Text>)
+      return (<Text {...props}>{secondsToPeriod(allowInstantWithdraw ? epochData?.instantWithdrawDelay : (asset.epochData as CreditVaultEpoch)['epochDuration'], field === 'claimPeriodShort')} notice</Text>)
     case 'epochRedemption':
       const redemption = "getFlag" in vault ? vault.getFlag('redemption') : undefined
       return (<Text {...props}>{ redemption || `${secondsToPeriod((epochData as CreditVaultEpoch)['epochDuration'])} notice`}</Text>)

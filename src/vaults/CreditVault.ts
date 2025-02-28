@@ -66,7 +66,7 @@ type ConstructorProps = {
 export interface CreditVaultExpectedInterest {
   trancheTokens: BigNumber;
   newVaultPrice: BigNumber;
-  underlying: BigNumber;
+  interest: BigNumber;
 }
 
 export class CreditVault {
@@ -807,12 +807,7 @@ export class CreditVault {
     epochData: CreditVaultEpoch,
     trancheTokens: BigNumber,
     vaultPrice: BigNumber
-  ): {
-    trancheTokens: BigNumber;
-    newVaultPrice: BigNumber;
-    underlying: BigNumber;
-  } {
-    // const depositedAmount = trancheTokens.times(vaultPrice);
+  ): CreditVaultExpectedInterest {
     const epochAnnualizedApr = fixTokenDecimals(epochData.epochApr, 18).div(
       100
     );
@@ -820,36 +815,23 @@ export class CreditVault {
     const epochApr = epochAnnualizedApr.div(
       BNify(SECONDS_IN_YEAR).div(epochDuration)
     );
-    // const interests = depositedAmount.times(epochApr);
-    // const newDepositedAmount = depositedAmount.minus(interests);
-    // const actualInterests = newDepositedAmount.times(epochApr);
-    // const trancheTokenRequested = actualInterests.div(vaultPrice);
 
     // Calculate future interests
     const trancheTokenRequested = BNify(trancheTokens)
       .times(epochApr)
       .div(BNify(epochApr).plus(1));
 
-    const newVaultPrice = BNify(vaultPrice)
-      .times(epochApr)
-      .div(BNify(epochApr).plus(1));
+    const remainingTokens = BNify(trancheTokens).minus(trancheTokenRequested);
 
-    const underlying = trancheTokenRequested.times(newVaultPrice);
-
-    // console.log({
-    //   epochDuration,
-    //   epochApr: epochApr.toString(),
-    //   depositedAmount: depositedAmount.toString(),
-    //   epochAnnualizedApr: epochAnnualizedApr.toString(),
-    //   vaultPrice: vaultPrice.toString(),
-    //   interests: interests?.toString(),
-    //   newDepositedAmount: newDepositedAmount.toString(),
-    //   trancheTokenRequested: trancheTokenRequested.toString(),
-    // });
+    const interest = remainingTokens
+      .times(vaultPrice)
+      .times(epochAnnualizedApr)
+      .times(epochDuration)
+      .div(SECONDS_IN_YEAR);
 
     return {
-      underlying,
-      newVaultPrice,
+      interest,
+      newVaultPrice: vaultPrice,
       trancheTokens: trancheTokenRequested,
     };
   }
@@ -861,11 +843,7 @@ export class CreditVault {
     maxWithdrawable: BigNumber,
     isInstant: boolean = false,
     amount?: BigNumber
-  ): {
-    trancheTokens: BigNumber;
-    newVaultPrice: BigNumber;
-    underlying: BigNumber;
-  } {
+  ): CreditVaultExpectedInterest {
     if (isInstant) {
       return this.getNextEpochInterestsInstant(
         epochData,
@@ -901,7 +879,7 @@ export class CreditVault {
     return {
       newVaultPrice,
       trancheTokens: trancheTokenRequested,
-      underlying: trancheTokenRequested.times(newVaultPrice),
+      interest: trancheTokenRequested.times(newVaultPrice),
     };
   }
 

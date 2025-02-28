@@ -839,7 +839,7 @@ export const Credit = ({ assetId, onClick }: CreditProps) => {
                         <Spinner size={'md'} />
                       ) : (
                         /*<Amount.Usd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} value={totalTvl} lineHeight={1} />*/
-                        <AssetProvider.PoolUsd fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
+                        <AssetProvider.PoolUsd abbreviate={true} fontSize={['lg', '2xl']} textStyle={'bodyTitle'} lineHeight={1} />
                       )
                     }
                   </VStack>

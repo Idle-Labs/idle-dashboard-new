@@ -344,13 +344,13 @@ export function hashCode(s: string): string {
   return Math.abs(h).toString();
 }
 
-export function secondsToPeriod(seconds: any) {
+export function secondsToPeriod(seconds: any, short: boolean = false) {
   const units = [
-    { label: "year", seconds: 31536000 },
-    { label: "day", seconds: 86400 },
-    { label: "hour", seconds: 3600 },
-    { label: "minute", seconds: 60 },
-    { label: "second", seconds: 1 },
+    { label: short ? "y" : "year", seconds: 31536000 },
+    { label: short ? "d" : "day", seconds: 86400 },
+    { label: short ? "h" : "hour", seconds: 3600 },
+    { label: short ? "m" : "minute", seconds: 60 },
+    { label: short ? "s" : "second", seconds: 1 },
   ];
 
   let timeString = "";
@@ -358,7 +358,9 @@ export function secondsToPeriod(seconds: any) {
   for (const unit of units) {
     const unitValue = Math.floor(seconds / unit.seconds);
     if (unitValue > 0) {
-      timeString += `${unitValue} ${unit.label}${unitValue > 1 ? "s" : ""} `;
+      timeString += `${unitValue}${short ? "" : " "}${unit.label}${
+        !short && unitValue > 1 ? "s" : ""
+      } `;
       seconds %= unit.seconds;
     }
   }

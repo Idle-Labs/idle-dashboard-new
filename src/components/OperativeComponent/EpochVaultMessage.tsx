@@ -54,7 +54,7 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
   }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
 
   const nextEpochProfit = useMemo(() => {
-    return bnOrZero(nextEpochExpectedInterestInfo?.underlying)
+    return bnOrZero(nextEpochExpectedInterestInfo?.interest)
   }, [nextEpochExpectedInterestInfo])
 
   const contractSendMethod = useMemo(() => {
@@ -81,7 +81,7 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
       width={'full'}
     >
       <TransactionButton assetId={asset.id} vaultId={asset.id} contractSendMethod={contractSendMethod} actionType={'request'} amount={nextEpochProfit.toFixed(8)} text={label || `common.request`} width={'auto'} height={'auto'} disabled={isDisabled} {...props} />
-      <AssetProvider.EpochInfo field={'claimPeriod'} textStyle={'captionSmaller'} />
+      <AssetProvider.EpochInfo field={'claimPeriodShort'} textStyle={'captionSmaller'} />
     </VStack>
   )
 }
@@ -91,8 +91,7 @@ type EpochVaultMessageArgs = {
 }
 export const EpochVaultMessage: React.FC<EpochVaultMessageArgs> = ({action}) => {
   const { locale } = useI18nProvider()
-  const { asset, vault, underlyingAsset } = useAssetProvider()
-  const { vaultsAccountData, selectors: { selectVaultTransactions } } = usePortfolioProvider()
+  const { asset, vault } = useAssetProvider()
 
   const isEpochVault = useMemo(() => {
     return asset && !!asset.epochData
