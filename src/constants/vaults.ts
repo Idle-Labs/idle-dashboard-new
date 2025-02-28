@@ -335,7 +335,11 @@ export const credits: Record<number, CreditVaultConfig[]> = {
       },
       depositQueue: {
         abi: IdleCdoEpochQueue as Abi,
-        address: "0x0D81b042bB9939B4d32CDf7861774c442A2685CE",
+        address: "0x463465c334742D72907CA5fB97db44688B4EC3dC",
+      },
+      withdrawQueue: {
+        abi: IdleCdoEpochQueue as Abi,
+        address: "0x463465c334742D72907CA5fB97db44688B4EC3dC",
       },
       blockNumber: 130279654,
       descriptionShort:
