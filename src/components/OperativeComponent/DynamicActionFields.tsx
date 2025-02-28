@@ -183,8 +183,8 @@ const DynamicActionField: React.FC<DynamicActionFieldProps> = ({ assetId, field,
       case 'epochStart':
         return (<Text {...textProps} textStyle={'titleSmall'} color={'primary'}>{dateToLocale(epochData?.startDate || 0, locale)}</Text>)
       case 'epochExpectedInterest':
-        const expectedInterest = vault.getNextEpochInterests(epochData, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id]), allowInstantWithdraw, amount)
-        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={expectedInterest.times(bnOrZero(asset.vaultPrice))} />)
+        const expectedInterestInfo = vault.getNextEpochInterests(epochData, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id]), allowInstantWithdraw, amount)
+        return (<Amount suffix={` ${underlyingAsset.token}`} decimals={2} textStyle={'titleSmall'} color={'primary'} {...textProps} value={expectedInterestInfo.underlying} />)
       case 'epochWithdrawType':
         return (<Translation translation={`assets.status.epoch.${allowInstantWithdraw ? 'instant' : 'standard'}`} {...textProps} textStyle={'titleSmall'} color={allowInstantWithdraw ? 'brightGreen' : 'primary'} />)
       case 'epochClaimPeriod':

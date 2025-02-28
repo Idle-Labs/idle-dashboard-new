@@ -43,7 +43,7 @@ export const InputAmount: React.FC<InputAmountArgs> = ({ inputHeight, amount, am
       <Input height={inputHeight} flex={1} type={'number'} placeholder={'0'} variant={'balance'} value={BNify(amount).toString()} onChange={handleAmountChange} disabled={isDisabled} />
       {
         amountUsd !== null && (
-          <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ $'} value={bnOrZero(amountUsdToDisplay).toString()} />
+          <Amount.Usd abbreviateThresold={10000} textStyle={'captionSmall'} color={'brightGreen'} prefix={'≈ '} value={bnOrZero(amountUsdToDisplay).toString()} />
         )
       }
     </HStack>

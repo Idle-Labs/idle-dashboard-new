@@ -7,7 +7,7 @@ import { Translation } from 'components/Translation/Translation'
 import { BsFillUnlockFill, BsFillShieldLockFill } from "react-icons/bs"
 import { AssetProvider, useAssetProvider } from 'components/AssetProvider/AssetProvider'
 import { MdLockClock, MdOutlineRemoveCircle } from 'react-icons/md'
-import { CreditVault } from 'vaults/CreditVault'
+import { CreditVault, CreditVaultExpectedInterest } from 'vaults/CreditVault'
 import { usePortfolioProvider } from 'contexts/PortfolioProvider'
 import { CreditVaultEpoch, Transaction } from 'constants/'
 import { TransactionButton } from 'components/TransactionButton/TransactionButton'
@@ -47,21 +47,21 @@ export const EpochWithdrawInterestButton: React.FC<EpochWithdrawInterestButtonAr
     return getEpochVaultInstantWithdrawEnabled(epochData)
   }, [epochData])
 
-  const nextEpochTokensToWithdraw = useMemo(() => {
-    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
+  const nextEpochExpectedInterestInfo = useMemo((): CreditVaultExpectedInterest | undefined => {
+    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return
     const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
     return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
   }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
 
   const nextEpochProfit = useMemo(() => {
-    return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
-  }, [asset, nextEpochTokensToWithdraw])
+    return bnOrZero(nextEpochExpectedInterestInfo?.underlying)
+  }, [nextEpochExpectedInterestInfo])
 
   const contractSendMethod = useMemo(() => {
-    if (!(vault instanceof CreditVault)) return
-    const params = vault.getWithdrawParams(nextEpochTokensToWithdraw)
+    if (!(vault instanceof CreditVault) || !nextEpochExpectedInterestInfo) return
+    const params = vault.getWithdrawParams(nextEpochExpectedInterestInfo?.trancheTokens)
     return vault.getWithdrawContractSendMethod(params)
-  }, [vault, nextEpochTokensToWithdraw])
+  }, [vault, nextEpochExpectedInterestInfo])
 
   const notEnoughBalance = useMemo(() => nextEpochProfit.lt(fixTokenDecimals(1, underlyingAsset?.decimals)), [nextEpochProfit, underlyingAsset] )
 

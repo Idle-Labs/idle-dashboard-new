@@ -31,7 +31,7 @@ import { Asset, Vault, operators, UnderlyingTokenProps, protocols, HistoryTimefr
 import { MdError, MdVerified } from 'react-icons/md'
 import { useWalletProvider } from 'contexts/WalletProvider'
 import { AddressLink } from "components/AddressLink/AddressLink"
-import { CreditVault } from "vaults/CreditVault"
+import { CreditVault, CreditVaultExpectedInterest } from "vaults/CreditVault"
 
 type AssetCellProps = {
   wrapFlex?: boolean,
@@ -720,15 +720,15 @@ const EpochExpectedInterest: React.FC<AmountProps> = (props) => {
     return getEpochVaultInstantWithdrawEnabled(epochData)
   }, [epochData])
 
-  const nextEpochTokensToWithdraw = useMemo(() => {
-    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return BNify(0)
+  const nextEpochExpectedInterestInfo = useMemo((): CreditVaultExpectedInterest | undefined => {
+    if (!epochData || !(vault instanceof CreditVault) || !asset?.id || bnOrZero(asset.balance).lte(0)) return
     const maxWithdrawable = bnOrZero(vaultsAccountData?.maxWithdrawable?.[asset.id])
-    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw)
+    return vault.getNextEpochInterests(epochData as CreditVaultEpoch, bnOrZero(asset.balance), bnOrZero(asset.vaultPrice), maxWithdrawable, allowInstantWithdraw && false)
   }, [vaultsAccountData, vault, asset, epochData, allowInstantWithdraw])
 
   const nextEpochProfit = useMemo(() => {
-    return nextEpochTokensToWithdraw.times(bnOrZero(asset?.vaultPrice))
-  }, [asset, nextEpochTokensToWithdraw])
+    return nextEpochExpectedInterestInfo?.underlying || BNify(0)
+  }, [nextEpochExpectedInterestInfo])
 
   if (!vault || !("mode" in vault)){
     return null
