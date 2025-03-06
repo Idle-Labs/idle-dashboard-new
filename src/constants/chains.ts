@@ -17,14 +17,14 @@ export const chains: Record<number, Chain> = {
     token: "ETH",
     label: "OP Mainnet",
     publicRpcUrl: `https://mainnet.optimism.io`,
-    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_OPTIMISM_KEY}`,
+    rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_KEY}`,
   },
   1101: {
     id: "0x44d",
     token: "ETH",
     label: "Polygon zkEVM",
     publicRpcUrl: `https://zkevm-rpc.com`,
-    rpcUrl: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_ZK_KEY}`,
+    rpcUrl: `https://polygonzkevm-mainnet.g.alchemy.com/v2/${env.REACT_APP_ALCHEMY_KEY}`,
   },
 };
 

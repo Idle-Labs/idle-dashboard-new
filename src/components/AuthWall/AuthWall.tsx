@@ -67,6 +67,8 @@ export const AuthWall = ({ children }: ProviderProps) => {
   const sendSignature = useCallback(async (signature: string) => {
     if (!account?.address) return;
 
+    console.log('sendSignature', account, cacheProvider, messageToSign)
+
     // Send signature to server
     const response = await saveSignature(account.address, messageToSign, signature);
 
