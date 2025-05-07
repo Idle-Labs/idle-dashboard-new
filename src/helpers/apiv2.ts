@@ -6,8 +6,10 @@ import {
   Transaction,
 } from "constants/";
 import {
+  callPlatformApis,
   getPlatformApiConfig,
   getPlatformApisEndpoint,
+  makePostRequest,
   makeRequest,
 } from "./apis";
 import { BNify, cmpAddrs } from "./utilities";
@@ -53,6 +55,54 @@ export async function getIdleAPIV2AllPages(
   return output;
 }
 
+export const saveSignatureV2 = async (
+  signatureId: string,
+  walletAddress: string,
+  hash: string
+): Promise<any> => {
+  const apiConfig = getPlatformApiConfig(1, "idle", "signSignatureV2");
+  const endpoint = getPlatformApisEndpoint(
+    1,
+    "idle",
+    "signSignatureV2"
+  )?.replace(":signatureId", signatureId);
+  if (!endpoint) return null;
+  return await makePostRequest(
+    endpoint,
+    {
+      walletAddress,
+      hash,
+    },
+    apiConfig?.config
+  );
+};
+
+export const checkSignatureV2 = async (
+  signatureId: string,
+  walletAddress: string
+): Promise<any> => {
+  const apiConfig = getPlatformApiConfig(1, "idle", "checkSignatureV2");
+  const endpoint = getPlatformApisEndpoint(1, "idle", "checkSignatureV2", "", {
+    walletAddress,
+  })?.replace(":signatureId", signatureId);
+  if (!endpoint) return null;
+
+  return await makeRequest(endpoint, apiConfig?.config);
+};
+
+export async function getSignatureByName(signatureId: string): Promise<any> {
+  const signature = await callPlatformApis(
+    1,
+    "idle",
+    "signatures",
+    signatureId,
+    {
+      limit: 1,
+    }
+  );
+  return signature;
+}
+
 export async function getUserTransactionsFromApiV2(
   vaults: Vault[],
   walletAddress: string,
@@ -72,8 +122,6 @@ export async function getUserTransactionsFromApiV2(
     endpoint,
     apiConfig
   );
-
-  console.log("getUserTransactionsFromApiV2", transactions);
 
   return transactions.reduce(
     (acc: Transaction[], transaction: TransactionDataApiV2) => {
