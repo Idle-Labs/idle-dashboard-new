@@ -90,7 +90,7 @@ export const checkSignatureV2 = async (
   return await makeRequest(endpoint, apiConfig?.config);
 };
 
-export async function getSignatureByName(signatureId: string): Promise<any> {
+export async function getSignatureById(signatureId: string): Promise<any> {
   const signature = await callPlatformApis(
     1,
     "idle",

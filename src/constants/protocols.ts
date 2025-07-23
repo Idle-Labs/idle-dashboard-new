@@ -529,6 +529,46 @@ export const protocols: Record<string, Protocol> = {
             : {},
         },
       },
+      signatures: {
+        endpoint: {
+          1: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/`,
+          10: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/`,
+          137: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/`,
+        },
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
+      checkSignatureV2: {
+        endpoint: {
+          1: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/:signatureId/check`,
+          10: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/:signatureId/check`,
+          137: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/:signatureId/check`,
+        },
+        path: "data",
+        filters: ["walletAddress"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
+      signSignatureV2: {
+        endpoint: {
+          1: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/:signatureId/sign`,
+          10: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/:signatureId/sign`,
+          137: `${env.REACT_APP_IDLE_API_V2_ENDPOINT}signatures/:signatureId/sign`,
+        },
+        path: "data",
+        filters: ["walletAddress", "hash"],
+        config: {
+          headers: env.REACT_APP_IDLE_API_V2_KEY
+            ? { Authorization: `Bearer ${env.REACT_APP_IDLE_API_V2_KEY}` }
+            : {},
+        },
+      },
       transactions: {
         endpoint: {
           1: "https://api-v2.idle.finance/v1/transactions",
